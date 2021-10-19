@@ -33,27 +33,26 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Date;
-
-
 
 /**
+ *
+ *
  * <ul>
- *  <li>Collector ID: <b>acs.repository.usage.sessions</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>activeTickets:</b> int - The number of non-expired tickets. {@link RepoServerMgmtMBean#getTicketCountNonExpired()}</li>
- *      </ul>
- *  </li>
+ *   <li>Collector ID: <b>acs.repository.usage.sessions</b>
+ *   <li>Data:
+ *       <ul>
+ *         <li><b>activeTickets:</b> int - The number of non-expired tickets. {@link
+ *             RepoServerMgmtMBean#getTicketCountNonExpired()}
+ *       </ul>
  * </ul>
  *
  * @author eknizat
  */
-public class SessionsUsageDataCollector extends HBBaseDataCollector
-{
+public class SessionsUsageDataCollector extends HBBaseDataCollector {
     /** The logger. */
     private static final Log logger = LogFactory.getLog(SessionsUsageDataCollector.class);
 
@@ -62,34 +61,35 @@ public class SessionsUsageDataCollector extends HBBaseDataCollector
 
     private RepoServerMgmtMBean repoServerMgmt;
 
-    public SessionsUsageDataCollector(String collectorId, String collectorVersion, String cronExpression, HeartBeatJobScheduler hbJobScheduler)
-    {
+    public SessionsUsageDataCollector(
+            String collectorId,
+            String collectorVersion,
+            String cronExpression,
+            HeartBeatJobScheduler hbJobScheduler) {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
+    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO) {
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setRepoServerMgmt(RepoServerMgmtMBean repoServerMgmt)
-    {
+    public void setRepoServerMgmt(RepoServerMgmtMBean repoServerMgmt) {
         this.repoServerMgmt = repoServerMgmt;
     }
 
     @Override
-    public List<HBData> collectData()
-    {
+    public List<HBData> collectData() {
         Map<String, Object> sessionValues = new HashMap<>();
 
         sessionValues.put("activeTickets", repoServerMgmt.getTicketCountNonExpired());
 
-        HBData sessionsData = new HBData(
-                this.currentRepoDescriptorDAO.getDescriptor().getId(),
-                this.getCollectorId(),
-                this.getCollectorVersion(),
-                new Date(),
-                sessionValues);
+        HBData sessionsData =
+                new HBData(
+                        this.currentRepoDescriptorDAO.getDescriptor().getId(),
+                        this.getCollectorId(),
+                        this.getCollectorVersion(),
+                        new Date(),
+                        sessionValues);
 
         return Arrays.asList(sessionsData);
     }

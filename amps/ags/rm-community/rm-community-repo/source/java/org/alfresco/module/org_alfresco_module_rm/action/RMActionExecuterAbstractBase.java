@@ -29,12 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 
 import static org.apache.commons.lang3.StringUtils.leftPad;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -65,16 +59,19 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.util.StringUtils;
 
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Records management action executer base class
  *
  * @author Roy Wetherall
  */
-public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExecuterAbstractBase
-                                                    implements RecordsManagementAction,
-                                                               RecordsManagementModel,
-                                                               BeanNameAware
-{
+public abstract class RMActionExecuterAbstractBase extends PropertySubActionExecuterAbstractBase
+        implements RecordsManagementAction, RecordsManagementModel, BeanNameAware {
     /** Namespace service */
     private NamespaceService namespaceService;
 
@@ -114,7 +111,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /** Records management action service */
     private RecordsManagementAdminService recordsManagementAdminService;
 
-    /** Ownable service **/
+    /** Ownable service * */
     private OwnableService ownableService;
 
     /** Freeze service */
@@ -140,8 +137,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The transaction service
      */
-    protected TransactionService getTransactionService()
-    {
+    protected TransactionService getTransactionService() {
         return this.transactionService;
     }
 
@@ -150,8 +146,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param transactionService The transaction service
      */
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
@@ -160,8 +155,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The namespace service
      */
-    protected NamespaceService getNamespaceService()
-    {
+    protected NamespaceService getNamespaceService() {
         return this.namespaceService;
     }
 
@@ -170,8 +164,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param namespaceService The namespace service
      */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
@@ -180,8 +173,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The node service
      */
-    protected NodeService getNodeService()
-    {
+    protected NodeService getNodeService() {
         return this.nodeService;
     }
 
@@ -190,8 +182,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param nodeService The node service
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -200,8 +191,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The dictionary service
      */
-    protected DictionaryService getDictionaryService()
-    {
+    protected DictionaryService getDictionaryService() {
         return this.dictionaryService;
     }
 
@@ -210,8 +200,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param dictionaryService The dictionary service
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
@@ -220,8 +209,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The content service
      */
-    protected ContentService getContentService()
-    {
+    protected ContentService getContentService() {
         return this.contentService;
     }
 
@@ -230,8 +218,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param contentService The content service
      */
-    public void setContentService(ContentService contentService)
-    {
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
 
@@ -240,8 +227,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The action service
      */
-    protected ActionService getActionService()
-    {
+    protected ActionService getActionService() {
         return this.actionService;
     }
 
@@ -250,8 +236,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param actionService The action service
      */
-    public void setActionService(ActionService actionService)
-    {
+    public void setActionService(ActionService actionService) {
         this.actionService = actionService;
     }
 
@@ -260,8 +245,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The records management audit service
      */
-    protected RecordsManagementAuditService getRecordsManagementAuditService()
-    {
+    protected RecordsManagementAuditService getRecordsManagementAuditService() {
         return this.recordsManagementAuditService;
     }
 
@@ -270,8 +254,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param recordsManagementAuditService The audit service that action details will be sent to
      */
-    public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
-    {
+    public void setRecordsManagementAuditService(
+            RecordsManagementAuditService recordsManagementAuditService) {
         this.recordsManagementAuditService = recordsManagementAuditService;
     }
 
@@ -280,8 +264,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The records management action service
      */
-    protected RecordsManagementActionService getRecordsManagementActionService()
-    {
+    protected RecordsManagementActionService getRecordsManagementActionService() {
         return this.recordsManagementActionService;
     }
 
@@ -290,8 +273,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param recordsManagementActionService The records management service
      */
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
+    public void setRecordsManagementActionService(
+            RecordsManagementActionService recordsManagementActionService) {
         this.recordsManagementActionService = recordsManagementActionService;
     }
 
@@ -300,8 +283,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The disposition service
      */
-    protected DispositionService getDispositionService()
-    {
+    protected DispositionService getDispositionService() {
         return this.dispositionService;
     }
 
@@ -310,8 +292,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param dispositionService The disposition service
      */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
@@ -320,8 +301,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The vital record service
      */
-    protected VitalRecordService getVitalRecordService()
-    {
+    protected VitalRecordService getVitalRecordService() {
         return this.vitalRecordService;
     }
 
@@ -330,8 +310,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param vitalRecordService vital record service
      */
-    public void setVitalRecordService(VitalRecordService vitalRecordService)
-    {
+    public void setVitalRecordService(VitalRecordService vitalRecordService) {
         this.vitalRecordService = vitalRecordService;
     }
 
@@ -340,8 +319,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The records management event service
      */
-    protected RecordsManagementEventService getRecordsManagementEventService()
-    {
+    protected RecordsManagementEventService getRecordsManagementEventService() {
         return this.recordsManagementEventService;
     }
 
@@ -350,8 +328,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param recordsManagementEventService The records management event service
      */
-    public void setRecordsManagementEventService(RecordsManagementEventService recordsManagementEventService)
-    {
+    public void setRecordsManagementEventService(
+            RecordsManagementEventService recordsManagementEventService) {
         this.recordsManagementEventService = recordsManagementEventService;
     }
 
@@ -360,8 +338,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The ownable service
      */
-    protected OwnableService getOwnableService()
-    {
+    protected OwnableService getOwnableService() {
         return this.ownableService;
     }
 
@@ -370,8 +347,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param ownableService The ownable service
      */
-    public void setOwnableService(OwnableService ownableService)
-    {
+    public void setOwnableService(OwnableService ownableService) {
         this.ownableService = ownableService;
     }
 
@@ -380,8 +356,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The freeze service
      */
-    protected FreezeService getFreezeService()
-    {
+    protected FreezeService getFreezeService() {
         return this.freezeService;
     }
 
@@ -390,8 +365,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param freezeService freeze service
      */
-    public void setFreezeService(FreezeService freezeService)
-    {
+    public void setFreezeService(FreezeService freezeService) {
         this.freezeService = freezeService;
     }
 
@@ -400,8 +374,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The record service
      */
-    protected RecordService getRecordService()
-    {
+    protected RecordService getRecordService() {
         return this.recordService;
     }
 
@@ -410,8 +383,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param recordService record service
      */
-    public void setRecordService(RecordService recordService)
-    {
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
@@ -420,8 +392,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The records management admin service
      */
-    protected RecordsManagementAdminService getRecordsManagementAdminService()
-    {
+    protected RecordsManagementAdminService getRecordsManagementAdminService() {
         return recordsManagementAdminService;
     }
 
@@ -430,8 +401,8 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param recordsManagementAdminService records management admin service
      */
-    public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
-    {
+    public void setRecordsManagementAdminService(
+            RecordsManagementAdminService recordsManagementAdminService) {
         this.recordsManagementAdminService = recordsManagementAdminService;
     }
 
@@ -440,18 +411,16 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The model security service
      */
-    protected ModelSecurityService getModelSecurityService()
-    {
+    protected ModelSecurityService getModelSecurityService() {
         return this.modelSecurityService;
     }
 
     /**
      * Sets the model security service
      *
-     * @param modelSecurityService  model security service
+     * @param modelSecurityService model security service
      */
-    public void setModelSecurityService(ModelSecurityService modelSecurityService)
-    {
+    public void setModelSecurityService(ModelSecurityService modelSecurityService) {
         this.modelSecurityService = modelSecurityService;
     }
 
@@ -460,8 +429,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The record folder service
      */
-    protected RecordFolderService getRecordFolderService()
-    {
+    protected RecordFolderService getRecordFolderService() {
         return this.recordFolderService;
     }
 
@@ -470,8 +438,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param recordFolderService record folder service
      */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
+    public void setRecordFolderService(RecordFolderService recordFolderService) {
         this.recordFolderService = recordFolderService;
     }
 
@@ -480,8 +447,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @return The hold service
      */
-    protected HoldService getHoldService()
-    {
+    protected HoldService getHoldService() {
         return this.holdService;
     }
 
@@ -490,79 +456,69 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
      *
      * @param holdService hold service
      */
-    public void setHoldService(HoldService holdService)
-    {
+    public void setHoldService(HoldService holdService) {
         this.holdService = holdService;
     }
 
     /**
      * Gets the identifier service
-     * 
+     *
      * @return the identifier service
      */
-    public IdentifierService getIdentifierService()
-    {
+    public IdentifierService getIdentifierService() {
         return identifierService;
     }
 
     /**
      * Sets the identifier service
-     * 
+     *
      * @param identifierService the identifier service
      */
-    public void setIdentifierService(IdentifierService identifierService)
-    {
+    public void setIdentifierService(IdentifierService identifierService) {
         this.identifierService = identifierService;
     }
 
     /**
      * Sets the applicable kinds
      *
-     * @param applicableKinds   kinds that this action is applicable for
+     * @param applicableKinds kinds that this action is applicable for
      */
-    public void setApplicableKinds(String[] applicableKinds)
-    {
-        for(String kind : applicableKinds)
-        {
+    public void setApplicableKinds(String[] applicableKinds) {
+        for (String kind : applicableKinds) {
             this.applicableKinds.add(FilePlanComponentKind.valueOf(kind));
         }
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#createActionDefinition(java.lang.String)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#createActionDefinition(java.lang.String)
      */
     @Override
-    protected ActionDefinition createActionDefinition(String name)
-    {
+    protected ActionDefinition createActionDefinition(String name) {
         return new RecordsManagementActionDefinitionImpl(name);
     }
 
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#getActionDefinition()
-     */
+    /** @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#getActionDefinition() */
     @Override
-    public ActionDefinition getActionDefinition()
-    {
+    public ActionDefinition getActionDefinition() {
         ActionDefinition actionDefinition = super.getActionDefinition();
-        ((RecordsManagementActionDefinitionImpl)this.actionDefinition).setApplicableKinds(applicableKinds);
+        ((RecordsManagementActionDefinitionImpl) this.actionDefinition)
+                .setApplicableKinds(applicableKinds);
         return actionDefinition;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getRecordsManagementActionDefinition()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getRecordsManagementActionDefinition()
      */
     @Override
-    public RecordsManagementActionDefinition getRecordsManagementActionDefinition()
-    {
-        return (RecordsManagementActionDefinition)getActionDefinition();
+    public RecordsManagementActionDefinition getRecordsManagementActionDefinition() {
+        return (RecordsManagementActionDefinition) getActionDefinition();
     }
 
-    /**
-     * Init method
-     */
+    /** Init method */
     @Override
-    public void init()
-    {
+    public void init() {
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
@@ -570,10 +526,14 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "actionService", actionService);
         PropertyCheck.mandatory(this, "transactionService", transactionService);
-        PropertyCheck.mandatory(this, "recordsManagementAuditService", recordsManagementAuditService);
-        PropertyCheck.mandatory(this, "recordsManagementActionService", recordsManagementActionService);
-        PropertyCheck.mandatory(this, "recordsManagementAdminService", recordsManagementAdminService);
-        PropertyCheck.mandatory(this, "recordsManagementEventService", recordsManagementEventService);
+        PropertyCheck.mandatory(
+                this, "recordsManagementAuditService", recordsManagementAuditService);
+        PropertyCheck.mandatory(
+                this, "recordsManagementActionService", recordsManagementActionService);
+        PropertyCheck.mandatory(
+                this, "recordsManagementAdminService", recordsManagementAdminService);
+        PropertyCheck.mandatory(
+                this, "recordsManagementEventService", recordsManagementEventService);
         PropertyCheck.mandatory(this, "identifierService", identifierService);
 
         super.init();
@@ -582,40 +542,29 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Indicates whether this records management action is public or not
      *
-     * @return  boolean true if public, false otherwise
+     * @return boolean true if public, false otherwise
      */
     @Override
-    public boolean isPublicAction()
-    {
+    public boolean isPublicAction() {
         return publicAction;
     }
 
-    /**
-     * @see org.alfresco.repo.action.CommonResourceAbstractBase#setBeanName(java.lang.String)
-     */
+    /** @see org.alfresco.repo.action.CommonResourceAbstractBase#setBeanName(java.lang.String) */
     @Override
-    public void setBeanName(String name)
-    {
+    public void setBeanName(String name) {
         this.name = name;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getName()
-     */
-    public String getName()
-    {
+    /** @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getName() */
+    public String getName() {
         return this.name;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getLabel()
-     */
-    public String getLabel()
-    {
+    /** @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getLabel() */
+    public String getLabel() {
         String label = I18NUtil.getMessage(this.getTitleKey());
 
-        if (label == null)
-        {
+        if (label == null) {
             // default to the name of the action with first letter capitalised
             label = StringUtils.capitalize(this.name);
         }
@@ -624,14 +573,13 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getDescription()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getDescription()
      */
-    public String getDescription()
-    {
+    public String getDescription() {
         String desc = I18NUtil.getMessage(this.getDescriptionKey());
 
-        if (desc == null)
-        {
+        if (desc == null) {
             // default to the name of the action with first letter capitalised
             desc = StringUtils.capitalize(this.name);
         }
@@ -642,31 +590,30 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * By default an action is not a disposition action
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#isDispositionAction()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#isDispositionAction()
      */
-    public boolean isDispositionAction()
-    {
+    public boolean isDispositionAction() {
         return false;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#execute(org.alfresco.service.cmr.repository.NodeRef, java.util.Map)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#execute(org.alfresco.service.cmr.repository.NodeRef,
+     *     java.util.Map)
      */
-    public RecordsManagementActionResult execute(NodeRef filePlanComponent, Map<String, Serializable> parameters)
-    {
+    public RecordsManagementActionResult execute(
+            NodeRef filePlanComponent, Map<String, Serializable> parameters) {
         // Create the action
         Action action = this.actionService.createAction(name);
         action.setParameterValues(parameters);
 
         // disable model security whilst we execute the RM rule
         modelSecurityService.disable();
-        try
-        {
+        try {
             // Execute the action
             actionService.executeAction(action, filePlanComponent);
-        }
-        finally
-        {
+        } finally {
             modelSecurityService.enable();
         }
 
@@ -678,35 +625,30 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     /**
      * Function to pad a string with zero '0' characters to the required length
      *
-     * @param s     String to pad with leading zero '0' characters
-     * @param len   Length to pad to
-     *
+     * @param s String to pad with leading zero '0' characters
+     * @param len Length to pad to
      * @return padded string or the original if already at &gt;= len characters
-     *
-     * @deprecated As of 2.1, replaced by {@link org.apache.commons.lang3.StringUtils#leftPad(String, int)}
+     * @deprecated As of 2.1, replaced by {@link
+     *     org.apache.commons.lang3.StringUtils#leftPad(String, int)}
      */
     @Deprecated
-    protected String padString(String s, int len)
-    {
-       return leftPad(s, len);
+    protected String padString(String s, int len) {
+        return leftPad(s, len);
     }
 
     /**
      * By default there are no parameters.
      *
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+     * @see
+     *     org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
         // No parameters
     }
 
-    /**
-     * By default, rmActions do not provide an implicit target nodeRef.
-     */
-    public NodeRef getImplicitTargetNodeRef()
-    {
+    /** By default, rmActions do not provide an implicit target nodeRef. */
+    public NodeRef getImplicitTargetNodeRef() {
         return null;
     }
 }

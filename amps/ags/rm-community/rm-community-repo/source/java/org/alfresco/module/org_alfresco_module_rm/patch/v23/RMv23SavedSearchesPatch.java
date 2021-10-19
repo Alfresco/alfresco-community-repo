@@ -42,60 +42,43 @@ import org.alfresco.service.cmr.site.SiteService;
  * @author Ross Gale
  * @since 2.3
  */
-public class RMv23SavedSearchesPatch extends AbstractModulePatch
-{
-    /**
-     * records management search service
-     */
+public class RMv23SavedSearchesPatch extends AbstractModulePatch {
+    /** records management search service */
     private RecordsManagementSearchService recordsManagementSearchService;
 
-    /**
-     * node service
-     */
+    /** node service */
     private NodeService nodeService;
 
-    /**
-     * Site service fundamental API.
-     */
+    /** Site service fundamental API. */
     private SiteService siteService;
 
-    /**
-     * @param recordsManagementSearchService records management search service
-     */
-    public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
-    {
+    /** @param recordsManagementSearchService records management search service */
+    public void setRecordsManagementSearchService(
+            RecordsManagementSearchService recordsManagementSearchService) {
         this.recordsManagementSearchService = recordsManagementSearchService;
     }
 
-    /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /**
      * Setter for siteService
+     *
      * @param siteService Site service fundamental API.
      */
-    public void setSiteService(SiteService siteService)
-    {
+    public void setSiteService(SiteService siteService) {
         this.siteService = siteService;
     }
 
-    /**
-     * Retrieves all saved searches for the records management site and adds ASPECT_SAVED_SEARCH
-     */
+    /** Retrieves all saved searches for the records management site and adds ASPECT_SAVED_SEARCH */
     @Override
-    public void applyInternal()
-    {
-        if(siteService.getSite(DEFAULT_SITE_NAME) != null)
-        {
-            for (SavedSearchDetails savedSearchDetails : recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME))
-            {
-                if (nodeService.hasAspect(savedSearchDetails.getNodeRef(), ASPECT_SAVED_SEARCH))
-                {
+    public void applyInternal() {
+        if (siteService.getSite(DEFAULT_SITE_NAME) != null) {
+            for (SavedSearchDetails savedSearchDetails :
+                    recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME)) {
+                if (nodeService.hasAspect(savedSearchDetails.getNodeRef(), ASPECT_SAVED_SEARCH)) {
                     break;
                 }
                 nodeService.addAspect(savedSearchDetails.getNodeRef(), ASPECT_SAVED_SEARCH, null);
@@ -103,4 +86,3 @@ public class RMv23SavedSearchesPatch extends AbstractModulePatch
         }
     }
 }
-

@@ -20,23 +20,15 @@ package org.alfresco.util.cache;
 
 /**
  * Describes an entry that is stale in the cache
- * 
- * @author Andy
  *
+ * @author Andy
  */
-public class RefreshableCacheRefreshEvent extends AbstractRefreshableCacheEvent
-{
-    /**
-     * @param cacheId
-     */
-    RefreshableCacheRefreshEvent(String cacheId, String key)
-    {
+public class RefreshableCacheRefreshEvent extends AbstractRefreshableCacheEvent {
+    /** @param cacheId */
+    RefreshableCacheRefreshEvent(String cacheId, String key) {
         super(cacheId, key);
     }
 
-    /**
-     * 
-     */
+    /** */
     private static final long serialVersionUID = -8011932788039835334L;
-
 }

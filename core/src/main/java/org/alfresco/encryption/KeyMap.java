@@ -24,51 +24,42 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A simple map of key aliases to keys. Each key has an associated timestamp indicating
- * when it was last loaded from the keystore on disk.
- * 
- * @since 4.0
+ * A simple map of key aliases to keys. Each key has an associated timestamp indicating when it was
+ * last loaded from the keystore on disk.
  *
+ * @since 4.0
  */
-public class KeyMap
-{
+public class KeyMap {
     private Map<String, CachedKey> keys;
 
-    public KeyMap()
-    {
+    public KeyMap() {
         this.keys = new HashMap<String, CachedKey>(5);
     }
 
-    public KeyMap(Map<String, CachedKey> keys)
-    {
+    public KeyMap(Map<String, CachedKey> keys) {
         super();
         this.keys = keys;
     }
-    
-    public int numKeys()
-    {
+
+    public int numKeys() {
         return keys.size();
     }
 
-    public Set<String> getKeyAliases()
-    {
+    public Set<String> getKeyAliases() {
         return keys.keySet();
     }
 
     // always returns an instance; if null will return a CachedKey.NULL
-    public CachedKey getCachedKey(String keyAlias)
-    {
+    public CachedKey getCachedKey(String keyAlias) {
         CachedKey cachedKey = keys.get(keyAlias);
         return (cachedKey != null ? cachedKey : CachedKey.NULL);
     }
 
-    public Key getKey(String keyAlias)
-    {
+    public Key getKey(String keyAlias) {
         return getCachedKey(keyAlias).getKey();
     }
-    
-    public void setKey(String keyAlias, Key key)
-    {
+
+    public void setKey(String keyAlias, Key key) {
         keys.put(keyAlias, new CachedKey(key));
     }
 }

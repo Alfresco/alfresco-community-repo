@@ -4,34 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.policy;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
@@ -58,15 +50,21 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * Test Transaction-level Policies
- */
+import javax.transaction.UserTransaction;
+
+/** Test Transaction-level Policies */
 @Category(OwnJVMTestsCategory.class)
-public class PolicyComponentTransactionTest extends TestCase
-{
-    private static final String TEST_MODEL = "org/alfresco/repo/policy/policycomponenttest_model.xml";
-    private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/policycomponenttest/1.0";
+public class PolicyComponentTransactionTest extends TestCase {
+    private static final String TEST_MODEL =
+            "org/alfresco/repo/policy/policycomponenttest_model.xml";
+    private static final String TEST_NAMESPACE =
+            "http://www.alfresco.org/test/policycomponenttest/1.0";
     private static QName BASE_TYPE = QName.createQName(TEST_NAMESPACE, "base");
     private static QName FILE_TYPE = QName.createQName(TEST_NAMESPACE, "file");
 
@@ -92,46 +90,47 @@ public class PolicyComponentTransactionTest extends TestCase
     private TestOnUpdateNodePolicy bTypeUpdateBehavior;
     private TestOnUpdateNodePolicy cTypeUpdateBehavior;
 
-    
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         applicationContext = ApplicationContextHelper.getApplicationContext();
         // initialise policy test model
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
         bootstrapModels.add(TEST_MODEL);
         bootstrap.setModels(bootstrapModels);
-        bootstrap.setDictionaryDAO((DictionaryDAO)applicationContext.getBean("dictionaryDAO"));
-        bootstrap.setTenantService((TenantService)applicationContext.getBean("tenantService"));
+        bootstrap.setDictionaryDAO((DictionaryDAO) applicationContext.getBean("dictionaryDAO"));
+        bootstrap.setTenantService((TenantService) applicationContext.getBean("tenantService"));
         bootstrap.bootstrap();
-        
+
         // retrieve policy component
-        this.policyComponent = (PolicyComponent)applicationContext.getBean("policyComponent");
-        this.behaviourFilter = (BehaviourFilter) applicationContext.getBean("policyBehaviourFilter");
+        this.policyComponent = (PolicyComponent) applicationContext.getBean("policyComponent");
+        this.behaviourFilter =
+                (BehaviourFilter) applicationContext.getBean("policyBehaviourFilter");
         this.trxService = (TransactionService) applicationContext.getBean("transactionComponent");
         this.nodeService = (NodeService) applicationContext.getBean("nodeService");
-        this.nodeLocatorService = (NodeLocatorService) applicationContext.getBean("nodeLocatorService");
-        this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
+        this.nodeLocatorService =
+                (NodeLocatorService) applicationContext.getBean("nodeLocatorService");
+        this.authenticationComponent =
+                (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        
+
         // Register Policy
-        if (sideEffectDelegate == null)
-        {
-	        sideEffectDelegate = policyComponent.registerClassPolicy(SideEffectTestPolicy.class);
-	
-	        // Bind Behaviour to side effect policy
-	        QName policyName = QName.createQName(TEST_NAMESPACE, "sideEffect");
-	        Behaviour baseBehaviour = new JavaBehaviour(this, "sideEffectTest", NotificationFrequency.TRANSACTION_COMMIT);
-	        this.policyComponent.bindClassBehaviour(policyName, BASE_TYPE, baseBehaviour);
+        if (sideEffectDelegate == null) {
+            sideEffectDelegate = policyComponent.registerClassPolicy(SideEffectTestPolicy.class);
+
+            // Bind Behaviour to side effect policy
+            QName policyName = QName.createQName(TEST_NAMESPACE, "sideEffect");
+            Behaviour baseBehaviour =
+                    new JavaBehaviour(
+                            this, "sideEffectTest", NotificationFrequency.TRANSACTION_COMMIT);
+            this.policyComponent.bindClassBehaviour(policyName, BASE_TYPE, baseBehaviour);
         }
 
         this.companyHome = nodeLocatorService.getNode(CompanyHomeNodeLocator.NAME, null, null);
         createAndEnableBehaviours();
     }
 
-    private void createAndEnableBehaviours()
-    {
+    private void createAndEnableBehaviours() {
         aTypeBehavior = new TestOnCreateNodePolicy();
         aTypeUpdateBehavior = new TestOnUpdateNodePolicy();
         bTypeBehavior = new TestOnCreateNodePolicy();
@@ -140,32 +139,42 @@ public class PolicyComponentTransactionTest extends TestCase
         cTypeUpdateBehavior = new TestOnUpdateNodePolicy();
 
         // bind custom behavior for super type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, A_TYPE, new JavaBehaviour(aTypeBehavior, "onCreateNode"));
-        policyComponent.bindClassBehaviour(OnUpdateNodePolicy.QNAME, A_TYPE, new JavaBehaviour(aTypeUpdateBehavior, "onUpdateNode"));
+        policyComponent.bindClassBehaviour(
+                OnCreateNodePolicy.QNAME, A_TYPE, new JavaBehaviour(aTypeBehavior, "onCreateNode"));
+        policyComponent.bindClassBehaviour(
+                OnUpdateNodePolicy.QNAME,
+                A_TYPE,
+                new JavaBehaviour(aTypeUpdateBehavior, "onUpdateNode"));
         // bind custom behavior for "middle" type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, B_TYPE, new JavaBehaviour(bTypeBehavior, "onCreateNode"));
-        policyComponent.bindClassBehaviour(OnUpdateNodePolicy.QNAME, B_TYPE, new JavaBehaviour(bTypeUpdateBehavior, "onUpdateNode"));
+        policyComponent.bindClassBehaviour(
+                OnCreateNodePolicy.QNAME, B_TYPE, new JavaBehaviour(bTypeBehavior, "onCreateNode"));
+        policyComponent.bindClassBehaviour(
+                OnUpdateNodePolicy.QNAME,
+                B_TYPE,
+                new JavaBehaviour(bTypeUpdateBehavior, "onUpdateNode"));
         // bind custom behavior for sub type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, C_TYPE, new JavaBehaviour(cTypeBehavior, "onCreateNode"));
-        policyComponent.bindClassBehaviour(OnUpdateNodePolicy.QNAME, C_TYPE, new JavaBehaviour(cTypeUpdateBehavior, "onUpdateNode"));
+        policyComponent.bindClassBehaviour(
+                OnCreateNodePolicy.QNAME, C_TYPE, new JavaBehaviour(cTypeBehavior, "onCreateNode"));
+        policyComponent.bindClassBehaviour(
+                OnUpdateNodePolicy.QNAME,
+                C_TYPE,
+                new JavaBehaviour(cTypeUpdateBehavior, "onUpdateNode"));
         // bind custom behavior for aspect
     }
-    
+
     @Override
-    protected void tearDown() throws Exception
-    {
+    protected void tearDown() throws Exception {
         authenticationComponent.clearCurrentSecurityContext();
     }
-    
-        
-    public void testStartTransactionPolicy()
-        throws Exception
-    {
-        ClassPolicyDelegate<StartTestPolicy> startDelegate = policyComponent.registerClassPolicy(StartTestPolicy.class);
+
+    public void testStartTransactionPolicy() throws Exception {
+        ClassPolicyDelegate<StartTestPolicy> startDelegate =
+                policyComponent.registerClassPolicy(StartTestPolicy.class);
 
         // Register Policy
         QName policyName = QName.createQName(TEST_NAMESPACE, "start");
-        PolicyDefinition<Policy> definition = policyComponent.getRegisteredPolicy(PolicyType.Class, policyName);
+        PolicyDefinition<Policy> definition =
+                policyComponent.getRegisteredPolicy(PolicyType.Class, policyName);
         assertNotNull(definition);
         Arg arg0 = definition.getArgument(0);
         assertEquals(Arg.KEY, arg0);
@@ -175,69 +184,73 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(Arg.START_VALUE, arg2);
         Arg arg3 = definition.getArgument(3);
         assertEquals(Arg.END_VALUE, arg3);
-        
+
         // Bind Behaviour
-        Behaviour baseBehaviour = new JavaBehaviour(this, "startTransactionTest", NotificationFrequency.FIRST_EVENT);
+        Behaviour baseBehaviour =
+                new JavaBehaviour(this, "startTransactionTest", NotificationFrequency.FIRST_EVENT);
         policyComponent.bindClassBehaviour(policyName, BASE_TYPE, baseBehaviour);
-        
+
         // Invoke Behaviour
         UserTransaction userTransaction1 = trxService.getUserTransaction();
-        try
-        {
+        try {
             userTransaction1.begin();
-            
+
             List<TestResult> results = new ArrayList<TestResult>();
-            
+
             StartTestPolicy basePolicy = startDelegate.get(BASE_TYPE);
             String baseResult1 = basePolicy.start("1", "2", "value1a", "value2a", false, results);
-            TestResult result1 = new TestResult("startTransactionTest", "1", "2", "value1a", "value2a");
+            TestResult result1 =
+                    new TestResult("startTransactionTest", "1", "2", "value1a", "value2a");
             assertEquals(result1.toString(), baseResult1);
             assertEquals(1, results.size());
             assertEquals(result1, results.get(0));
             String baseResult2 = basePolicy.start("2", "1", "value1b", "value2b", false, results);
-            TestResult result2 = new TestResult("startTransactionTest", "2", "1", "value1b", "value2b");
+            TestResult result2 =
+                    new TestResult("startTransactionTest", "2", "1", "value1b", "value2b");
             assertEquals(result2.toString(), baseResult2);
             assertEquals(2, results.size());
             assertEquals(result2, results.get(1));
             String baseResult3 = basePolicy.start("1", "2", "value1c", "value2c", false, results);
             assertEquals(result1.toString(), baseResult3);
             assertEquals(2, results.size());
-            
+
             userTransaction1.commit();
 
             assertEquals(2, results.size());
             assertEquals(result1, results.get(0));
             assertEquals(result2, results.get(1));
-        }
-        catch(Exception e)
-        {
-            try { userTransaction1.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                userTransaction1.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
-        }        
+        }
 
         // Invoke Behaviour
         UserTransaction userTransaction2 = trxService.getUserTransaction();
-        try
-        {
+        try {
             userTransaction2.begin();
-            
+
             List<TestResult> results = new ArrayList<TestResult>();
-            
+
             StartTestPolicy basePolicy = startDelegate.get(BASE_TYPE);
             String baseResult1 = basePolicy.start("1", "2", "value1a", "value2a", true, results);
-            TestResult result1 = new TestResult("startTransactionTest", "1", "2", "value1a", "value2a");
+            TestResult result1 =
+                    new TestResult("startTransactionTest", "1", "2", "value1a", "value2a");
             assertEquals(result1.toString(), baseResult1);
             assertEquals(1, results.size());
             assertEquals(result1, results.get(0));
             String baseResult2 = basePolicy.start("2", "1", "value1b", "value2b", true, results);
-            TestResult result2 = new TestResult("startTransactionTest", "2", "1", "value1b", "value2b");
+            TestResult result2 =
+                    new TestResult("startTransactionTest", "2", "1", "value1b", "value2b");
             assertEquals(result2.toString(), baseResult2);
             assertEquals(2, results.size());
             assertEquals(result2, results.get(1));
             String baseResult3 = basePolicy.start("1", "2", "value1c", "value2c", true, results);
             assertEquals(result1.toString(), baseResult3);
             assertEquals(2, results.size());
-            
+
             TestResult result3 = new TestResult("sideEffectTest", "1", "2", "value1a", "value2a");
             TestResult result4 = new TestResult("sideEffectTest", "2", "1", "value1b", "value2b");
 
@@ -248,22 +261,22 @@ public class PolicyComponentTransactionTest extends TestCase
             assertEquals(result2, results.get(1));
             assertEquals(result3, results.get(2));
             assertEquals(result4, results.get(3));
-        }
-        catch(Exception e)
-        {
-            try { userTransaction2.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                userTransaction2.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
-        }        
+        }
     }
 
-
-    public void testEndTransactionPolicy()
-        throws Exception
-    {
-        ClassPolicyDelegate<EndTestPolicy> endDelegate = policyComponent.registerClassPolicy(EndTestPolicy.class);
+    public void testEndTransactionPolicy() throws Exception {
+        ClassPolicyDelegate<EndTestPolicy> endDelegate =
+                policyComponent.registerClassPolicy(EndTestPolicy.class);
 
         QName policyName = QName.createQName(TEST_NAMESPACE, "end");
-        PolicyDefinition<Policy> definition = policyComponent.getRegisteredPolicy(PolicyType.Class, policyName);
+        PolicyDefinition<Policy> definition =
+                policyComponent.getRegisteredPolicy(PolicyType.Class, policyName);
         assertNotNull(definition);
         Arg arg0 = definition.getArgument(0);
         assertEquals(Arg.KEY, arg0);
@@ -273,18 +286,19 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(Arg.START_VALUE, arg2);
         Arg arg3 = definition.getArgument(3);
         assertEquals(Arg.END_VALUE, arg3);
-        
+
         // Bind Behaviour
-        Behaviour baseBehaviour = new JavaBehaviour(this, "endTransactionTest", NotificationFrequency.TRANSACTION_COMMIT);
+        Behaviour baseBehaviour =
+                new JavaBehaviour(
+                        this, "endTransactionTest", NotificationFrequency.TRANSACTION_COMMIT);
         policyComponent.bindClassBehaviour(policyName, BASE_TYPE, baseBehaviour);
-        
+
         UserTransaction userTransaction1 = trxService.getUserTransaction();
-        try
-        {
+        try {
             userTransaction1.begin();
-            
+
             List<TestResult> results = new ArrayList<TestResult>();
-                    
+
             // Invoke Behaviour
             EndTestPolicy basePolicy = endDelegate.get(BASE_TYPE);
             String baseResult1 = basePolicy.end("1", "2", "value1a", "value2a", false, results);
@@ -296,29 +310,31 @@ public class PolicyComponentTransactionTest extends TestCase
             String baseResult3 = basePolicy.end("1", "2", "value1a", "value2c", false, results);
             assertEquals(null, baseResult3);
             assertEquals(0, results.size());
-            
-            TestResult result1 = new TestResult("endTransactionTest", "1", "2", "value1a", "value2c");
-            TestResult result2 = new TestResult("endTransactionTest", "2", "1", "value1b", "value2b");
-            
+
+            TestResult result1 =
+                    new TestResult("endTransactionTest", "1", "2", "value1a", "value2c");
+            TestResult result2 =
+                    new TestResult("endTransactionTest", "2", "1", "value1b", "value2b");
+
             userTransaction1.commit();
 
             assertEquals(2, results.size());
             assertEquals(result1, results.get(0));
             assertEquals(result2, results.get(1));
-        }
-        catch(Exception e)
-        {
-            try { userTransaction1.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                userTransaction1.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
-        }        
+        }
 
         UserTransaction userTransaction2 = trxService.getUserTransaction();
-        try
-        {
+        try {
             userTransaction2.begin();
-            
+
             List<TestResult> results = new ArrayList<TestResult>();
-                    
+
             // Invoke Behaviour
             EndTestPolicy basePolicy = endDelegate.get(BASE_TYPE);
             String baseResult1 = basePolicy.end("1", "2", "value1a", "value2a", true, results);
@@ -330,12 +346,14 @@ public class PolicyComponentTransactionTest extends TestCase
             String baseResult3 = basePolicy.end("1", "2", "value1a", "value2c", true, results);
             assertEquals(null, baseResult3);
             assertEquals(0, results.size());
-            
-            TestResult result1 = new TestResult("endTransactionTest", "1", "2", "value1a", "value2c");
-            TestResult result2 = new TestResult("endTransactionTest", "2", "1", "value1b", "value2b");
+
+            TestResult result1 =
+                    new TestResult("endTransactionTest", "1", "2", "value1a", "value2c");
+            TestResult result2 =
+                    new TestResult("endTransactionTest", "2", "1", "value1b", "value2b");
             TestResult result3 = new TestResult("sideEffectTest", "1", "2", "value1a", "value2c");
             TestResult result4 = new TestResult("sideEffectTest", "2", "1", "value1b", "value2b");
-            
+
             userTransaction2.commit();
 
             assertEquals(4, results.size());
@@ -343,25 +361,25 @@ public class PolicyComponentTransactionTest extends TestCase
             assertEquals(result2, results.get(1));
             assertEquals(result3, results.get(2));
             assertEquals(result4, results.get(3));
-            
-        }
-        catch(Exception e)
-        {
-            try { userTransaction2.rollback(); } catch (IllegalStateException ee) {}
+
+        } catch (Exception e) {
+            try {
+                userTransaction2.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
         }
-        
+
         NodeRef nodeRef = new NodeRef(TEST_NAMESPACE, "test", "123");
         // Check enabling and disabling of behaviours within the transaction
         // We disable multiple times and enable, including enabling when not disabled
         UserTransaction userTransaction3 = trxService.getUserTransaction();
-        try
-        {
+        try {
             userTransaction3.begin();
 
             // Check all enabled to start
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
-            
+
             // Check instance with nesting
             behaviourFilter.enableBehaviour(nodeRef);
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
@@ -373,7 +391,7 @@ public class PolicyComponentTransactionTest extends TestCase
             checkBehaviour(BASE_TYPE, nodeRef, true, true, false, false);
             behaviourFilter.enableBehaviour(nodeRef);
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
-            
+
             // Check class and instance with nesting
             behaviourFilter.enableBehaviour(nodeRef, BASE_TYPE);
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
@@ -385,7 +403,7 @@ public class PolicyComponentTransactionTest extends TestCase
             checkBehaviour(BASE_TYPE, nodeRef, true, true, false, true);
             behaviourFilter.enableBehaviour(nodeRef, BASE_TYPE);
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
-            
+
             // Check class with nesting
             behaviourFilter.enableBehaviour(BASE_TYPE);
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
@@ -397,7 +415,7 @@ public class PolicyComponentTransactionTest extends TestCase
             checkBehaviour(BASE_TYPE, nodeRef, true, false, false, true);
             behaviourFilter.enableBehaviour(BASE_TYPE);
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
-            
+
             // Check global with nesting
             behaviourFilter.enableBehaviour();
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
@@ -409,71 +427,66 @@ public class PolicyComponentTransactionTest extends TestCase
             checkBehaviour(BASE_TYPE, nodeRef, false, false, false, false);
             behaviourFilter.enableBehaviour();
             checkBehaviour(BASE_TYPE, nodeRef, true, true, true, true);
-            
+
             userTransaction3.commit();
-        }
-        catch(Exception e)
-        {
-            try { userTransaction3.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                userTransaction3.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
-        }        
+        }
     }
 
-    public void behaviourHierarchyTestWork(QName createDocType, ClassFilter... disableTypes) throws Exception
-    {
+    public void behaviourHierarchyTestWork(QName createDocType, ClassFilter... disableTypes)
+            throws Exception {
         UserTransaction transaction = trxService.getUserTransaction();
-        try
-        {
+        try {
             transaction.begin();
             disableBehaviours(disableTypes);
-            try
-            {
+            try {
                 createDocOfType(createDocType);
-            }
-            finally
-            {
+            } finally {
                 enableBehaviours(disableTypes);
             }
             transaction.commit();
-        }
-        catch(Exception e)
-        {
-            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                transaction.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
         }
     }
 
-    public void behaviourHierarchyNodeTestWork(QName createDocType, QName... disableTypes) throws Exception
-    {
+    public void behaviourHierarchyNodeTestWork(QName createDocType, QName... disableTypes)
+            throws Exception {
         UserTransaction transaction = trxService.getUserTransaction();
-        try
-        {
+        try {
             transaction.begin();
             NodeRef nodeRef = createDocOfType(createDocType);
             disableBehaviours(nodeRef, disableTypes);
-            try
-            {
+            try {
                 nodeService.addAspect(nodeRef, ASPECT, null);
-            }
-            finally
-            {
+            } finally {
                 enableBehaviours(nodeRef, disableTypes);
             }
             transaction.commit();
-        }
-        catch(Exception e)
-        {
-            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                transaction.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
         }
     }
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyEnableAll1() throws Exception
-    {
+    public void testBehaviourHierarchyEnableAll1() throws Exception {
         behaviourHierarchyTestWork(A_TYPE);
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -483,23 +496,24 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeEnableAll1() throws Exception
-    {
+    public void testBehaviourHierarchyNodeEnableAll1() throws Exception {
         behaviourHierarchyNodeTestWork(A_TYPE);
         assertTrue("Behavior should be executed for a type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyEnableAll2() throws Exception
-    {
+    public void testBehaviourHierarchyEnableAll2() throws Exception {
         behaviourHierarchyTestWork(B_TYPE);
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -509,23 +523,23 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeEnableAll2() throws Exception
-    {
+    public void testBehaviourHierarchyNodeEnableAll2() throws Exception {
         behaviourHierarchyNodeTestWork(B_TYPE);
         assertTrue("Behavior should be executed for a type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
         assertTrue("Behavior should be executed for b type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(1, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyEnableAll3() throws Exception
-    {
+    public void testBehaviourHierarchyEnableAll3() throws Exception {
         behaviourHierarchyTestWork(C_TYPE);
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -535,8 +549,7 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(1, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeEnableAll3() throws Exception
-    {
+    public void testBehaviourHierarchyNodeEnableAll3() throws Exception {
         behaviourHierarchyNodeTestWork(C_TYPE);
         assertTrue("Behavior should be executed for a type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
@@ -548,16 +561,15 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableAllUpHierarchy1() throws Exception
-    {
+    public void testBehaviourHierarchyDisableAllUpHierarchy1() throws Exception {
         behaviourHierarchyTestWork(
                 A_TYPE,
                 new ClassFilter(A_TYPE, false),
                 new ClassFilter(B_TYPE, false),
-                new ClassFilter(C_TYPE, false)
-        );
+                new ClassFilter(C_TYPE, false));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
@@ -568,16 +580,15 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableAllUpHierarchy2() throws Exception
-    {
+    public void testBehaviourHierarchyDisableAllUpHierarchy2() throws Exception {
         behaviourHierarchyTestWork(
                 B_TYPE,
                 new ClassFilter(A_TYPE, false),
                 new ClassFilter(B_TYPE, false),
-                new ClassFilter(C_TYPE, false)
-        );
+                new ClassFilter(C_TYPE, false));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
@@ -588,16 +599,15 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableAllUpHierarchy3() throws Exception
-    {
+    public void testBehaviourHierarchyDisableAllUpHierarchy3() throws Exception {
         behaviourHierarchyTestWork(
                 C_TYPE,
                 new ClassFilter(A_TYPE, false),
                 new ClassFilter(B_TYPE, false),
-                new ClassFilter(C_TYPE, false)
-        );
+                new ClassFilter(C_TYPE, false));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
@@ -608,16 +618,15 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableAllDownHierarchy1() throws Exception
-    {
+    public void testBehaviourHierarchyDisableAllDownHierarchy1() throws Exception {
         behaviourHierarchyTestWork(
                 A_TYPE,
                 new ClassFilter(A_TYPE, true),
                 new ClassFilter(B_TYPE, true),
-                new ClassFilter(C_TYPE, true)
-        );
+                new ClassFilter(C_TYPE, true));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
@@ -628,16 +637,15 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableAllDownHierarchy2() throws Exception
-    {
+    public void testBehaviourHierarchyDisableAllDownHierarchy2() throws Exception {
         behaviourHierarchyTestWork(
                 B_TYPE,
                 new ClassFilter(A_TYPE, true),
                 new ClassFilter(B_TYPE, true),
-                new ClassFilter(C_TYPE, true)
-        );
+                new ClassFilter(C_TYPE, true));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
@@ -648,16 +656,15 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableAllDownHierarchy3() throws Exception
-    {
+    public void testBehaviourHierarchyDisableAllDownHierarchy3() throws Exception {
         behaviourHierarchyTestWork(
                 C_TYPE,
                 new ClassFilter(A_TYPE, true),
                 new ClassFilter(B_TYPE, true),
-                new ClassFilter(C_TYPE, true)
-        );
+                new ClassFilter(C_TYPE, true));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
         assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
@@ -668,10 +675,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSuper1() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSuper1() throws Exception {
         behaviourHierarchyTestWork(A_TYPE, new ClassFilter(A_TYPE, false));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -683,10 +690,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSuper2() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSuper2() throws Exception {
         behaviourHierarchyTestWork(B_TYPE, new ClassFilter(A_TYPE, false));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -698,10 +705,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSuper3() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSuper3() throws Exception {
         behaviourHierarchyTestWork(C_TYPE, new ClassFilter(A_TYPE, false));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -713,10 +720,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSuper4() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSuper4() throws Exception {
         behaviourHierarchyTestWork(A_TYPE, new ClassFilter(A_TYPE, true));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -726,23 +733,25 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableSuper1() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableSuper1() throws Exception {
         behaviourHierarchyNodeTestWork(A_TYPE, A_TYPE);
-        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSuper5() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSuper5() throws Exception {
         behaviourHierarchyTestWork(B_TYPE, new ClassFilter(A_TYPE, true));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -752,23 +761,25 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableSuper2() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableSuper2() throws Exception {
         behaviourHierarchyNodeTestWork(B_TYPE, A_TYPE);
-        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSuper6() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSuper6() throws Exception {
         behaviourHierarchyTestWork(C_TYPE, new ClassFilter(A_TYPE, true));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -778,23 +789,25 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableSuper3() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableSuper3() throws Exception {
         behaviourHierarchyNodeTestWork(C_TYPE, A_TYPE);
-        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableMiddle1() throws Exception
-    {
+    public void testBehaviourHierarchyDisableMiddle1() throws Exception {
         behaviourHierarchyTestWork(A_TYPE, new ClassFilter(B_TYPE, false));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -806,10 +819,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableMiddle2() throws Exception
-    {
+    public void testBehaviourHierarchyDisableMiddle2() throws Exception {
         behaviourHierarchyTestWork(B_TYPE, new ClassFilter(B_TYPE, false));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -821,10 +834,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableMiddle3() throws Exception
-    {
+    public void testBehaviourHierarchyDisableMiddle3() throws Exception {
         behaviourHierarchyTestWork(C_TYPE, new ClassFilter(B_TYPE, false));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -836,10 +849,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableMiddle4() throws Exception
-    {
+    public void testBehaviourHierarchyDisableMiddle4() throws Exception {
         behaviourHierarchyTestWork(A_TYPE, new ClassFilter(B_TYPE, true));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -849,23 +862,24 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableMiddle1() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableMiddle1() throws Exception {
         behaviourHierarchyNodeTestWork(A_TYPE, B_TYPE);
         assertTrue("Behavior should be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableMiddle5() throws Exception
-    {
+    public void testBehaviourHierarchyDisableMiddle5() throws Exception {
         behaviourHierarchyTestWork(B_TYPE, new ClassFilter(B_TYPE, true));
         assertFalse("Behavior should notbe executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -875,23 +889,25 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableMiddle2() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableMiddle2() throws Exception {
         behaviourHierarchyNodeTestWork(B_TYPE, B_TYPE);
-        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableMiddle6() throws Exception
-    {
+    public void testBehaviourHierarchyDisableMiddle6() throws Exception {
         behaviourHierarchyTestWork(C_TYPE, new ClassFilter(B_TYPE, true));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -901,23 +917,25 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableMiddle3() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableMiddle3() throws Exception {
         behaviourHierarchyNodeTestWork(C_TYPE, B_TYPE);
-        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSub1() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSub1() throws Exception {
         behaviourHierarchyTestWork(A_TYPE, new ClassFilter(C_TYPE, false));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -929,10 +947,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSub2() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSub2() throws Exception {
         behaviourHierarchyTestWork(B_TYPE, new ClassFilter(C_TYPE, false));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -944,10 +962,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSub3() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSub3() throws Exception {
         behaviourHierarchyTestWork(C_TYPE, new ClassFilter(C_TYPE, false));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -959,10 +977,10 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSub4() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSub4() throws Exception {
         behaviourHierarchyTestWork(A_TYPE, new ClassFilter(C_TYPE, true));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -972,23 +990,24 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableSub1() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableSub1() throws Exception {
         behaviourHierarchyNodeTestWork(A_TYPE, C_TYPE);
         assertTrue("Behavior should be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSub5() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSub5() throws Exception {
         behaviourHierarchyTestWork(B_TYPE, new ClassFilter(C_TYPE, true));
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(1, aTypeBehavior.getExecutionCount());
@@ -998,23 +1017,23 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableSub2() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableSub2() throws Exception {
         behaviourHierarchyNodeTestWork(B_TYPE, C_TYPE);
         assertTrue("Behavior should be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(1, aTypeUpdateBehavior.getExecutionCount());
         assertTrue("Behavior should be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(1, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchyDisableSub6() throws Exception
-    {
+    public void testBehaviourHierarchyDisableSub6() throws Exception {
         behaviourHierarchyTestWork(C_TYPE, new ClassFilter(C_TYPE, true));
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
         assertEquals(0, aTypeBehavior.getExecutionCount());
@@ -1024,127 +1043,174 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(0, cTypeBehavior.getExecutionCount());
     }
 
-    public void testBehaviourHierarchyNodeDisableSub3() throws Exception
-    {
+    public void testBehaviourHierarchyNodeDisableSub3() throws Exception {
         behaviourHierarchyNodeTestWork(C_TYPE, C_TYPE);
-        assertFalse("Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for a_type.", aTypeUpdateBehavior.isExecuted());
         assertEquals(0, aTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for b_type.", bTypeUpdateBehavior.isExecuted());
         assertEquals(0, bTypeUpdateBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
+        assertFalse(
+                "Behavior should not be executed for c_type.", cTypeUpdateBehavior.isExecuted());
         assertEquals(0, cTypeUpdateBehavior.getExecutionCount());
     }
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testIsEnabled1() throws Exception
-    {
+    public void testIsEnabled1() throws Exception {
         UserTransaction transaction = trxService.getUserTransaction();
-        try
-        {
+        try {
             transaction.begin();
             disableBehaviours(new ClassFilter(B_TYPE, true));
-            try
-            {
-                assertEquals("Incorrect behaviour state: global: ", true, behaviourFilter.isEnabled());
+            try {
+                assertEquals(
+                        "Incorrect behaviour state: global: ", true, behaviourFilter.isEnabled());
                 // A_TYPE
-                assertEquals("Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(A_TYPE));
-                assertEquals("Incorrect behaviour state: classAndInstance", true, behaviourFilter.isEnabled(companyHome, A_TYPE));
-                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+                assertEquals(
+                        "Incorrect behaviour state: class: ",
+                        true,
+                        behaviourFilter.isEnabled(A_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: classAndInstance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome, A_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: instance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome));
                 // B_TYPE
-                assertEquals("Incorrect behaviour state: class: ", false, behaviourFilter.isEnabled(B_TYPE));
-                assertEquals("Incorrect behaviour state: classAndInstance", false, behaviourFilter.isEnabled(companyHome, B_TYPE));
-                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+                assertEquals(
+                        "Incorrect behaviour state: class: ",
+                        false,
+                        behaviourFilter.isEnabled(B_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: classAndInstance",
+                        false,
+                        behaviourFilter.isEnabled(companyHome, B_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: instance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome));
                 // C_TYPE
-                assertEquals("Incorrect behaviour state: class: ", false, behaviourFilter.isEnabled(C_TYPE));
-                assertEquals("Incorrect behaviour state: classAndInstance", false, behaviourFilter.isEnabled(companyHome, C_TYPE));
-                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
-            }
-            finally
-            {
+                assertEquals(
+                        "Incorrect behaviour state: class: ",
+                        false,
+                        behaviourFilter.isEnabled(C_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: classAndInstance",
+                        false,
+                        behaviourFilter.isEnabled(companyHome, C_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: instance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome));
+            } finally {
                 behaviourFilter.enableBehaviour(B_TYPE);
             }
             transaction.commit();
-        }
-        catch(Exception e)
-        {
-            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                transaction.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
         }
-
     }
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testIsEnabled2() throws Exception
-    {
+    public void testIsEnabled2() throws Exception {
         UserTransaction transaction = trxService.getUserTransaction();
-        try
-        {
+        try {
             transaction.begin();
             disableBehaviours(new ClassFilter(B_TYPE, false));
-            try
-            {
-                assertEquals("Incorrect behaviour state: global: ", true, behaviourFilter.isEnabled());
+            try {
+                assertEquals(
+                        "Incorrect behaviour state: global: ", true, behaviourFilter.isEnabled());
                 // A_TYPE
-                assertEquals("Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(A_TYPE));
-                assertEquals("Incorrect behaviour state: classAndInstance", true, behaviourFilter.isEnabled(companyHome, A_TYPE));
-                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+                assertEquals(
+                        "Incorrect behaviour state: class: ",
+                        true,
+                        behaviourFilter.isEnabled(A_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: classAndInstance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome, A_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: instance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome));
                 // B_TYPE
-                assertEquals("Incorrect behaviour state: class: ", false, behaviourFilter.isEnabled(B_TYPE));
-                assertEquals("Incorrect behaviour state: classAndInstance", false, behaviourFilter.isEnabled(companyHome, B_TYPE));
-                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+                assertEquals(
+                        "Incorrect behaviour state: class: ",
+                        false,
+                        behaviourFilter.isEnabled(B_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: classAndInstance",
+                        false,
+                        behaviourFilter.isEnabled(companyHome, B_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: instance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome));
                 // C_TYPE
-                assertEquals("Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(C_TYPE));
-                assertEquals("Incorrect behaviour state: classAndInstance", true, behaviourFilter.isEnabled(companyHome, C_TYPE));
-                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
-            }
-            finally
-            {
+                assertEquals(
+                        "Incorrect behaviour state: class: ",
+                        true,
+                        behaviourFilter.isEnabled(C_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: classAndInstance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome, C_TYPE));
+                assertEquals(
+                        "Incorrect behaviour state: instance",
+                        true,
+                        behaviourFilter.isEnabled(companyHome));
+            } finally {
                 behaviourFilter.enableBehaviour(B_TYPE);
             }
             transaction.commit();
-        }
-        catch(Exception e)
-        {
-            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                transaction.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
         }
     }
 
-
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchySequence1() throws Exception
-    {
+    public void testBehaviourHierarchySequence1() throws Exception {
         UserTransaction transaction = trxService.getUserTransaction();
-        try
-        {
+        try {
             transaction.begin();
             disableBehaviours(new ClassFilter(A_TYPE, true), new ClassFilter(B_TYPE, true));
 
             behaviourFilter.enableBehaviour(B_TYPE);
             // Should be still disabled
             checkBehaviour(B_TYPE, companyHome, true, false, false, true);
-            try
-            {
+            try {
                 createDocOfType(C_TYPE);
-            }
-            finally
-            {
+            } finally {
                 enableBehaviours(new ClassFilter(A_TYPE, true), new ClassFilter(B_TYPE, true));
             }
             transaction.commit();
-        }
-        catch(Exception e)
-        {
-            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                transaction.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
         }
         assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
@@ -1157,33 +1223,37 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchySequence2() throws Exception
-    {
+    public void testBehaviourHierarchySequence2() throws Exception {
         UserTransaction transaction = trxService.getUserTransaction();
-        try
-        {
+        try {
             transaction.begin();
             disableBehaviours(new ClassFilter(A_TYPE, false), new ClassFilter(B_TYPE, true));
 
             behaviourFilter.enableBehaviour(B_TYPE);
-            assertEquals("Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(B_TYPE));
-            assertEquals("Incorrect behaviour state: classAndInstance", true, behaviourFilter.isEnabled(companyHome, B_TYPE));
-            assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
-            try
-            {
+            assertEquals(
+                    "Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(B_TYPE));
+            assertEquals(
+                    "Incorrect behaviour state: classAndInstance",
+                    true,
+                    behaviourFilter.isEnabled(companyHome, B_TYPE));
+            assertEquals(
+                    "Incorrect behaviour state: instance",
+                    true,
+                    behaviourFilter.isEnabled(companyHome));
+            try {
                 createDocOfType(C_TYPE);
-            }
-            finally
-            {
+            } finally {
                 enableBehaviours(new ClassFilter(A_TYPE, true), new ClassFilter(B_TYPE, true));
             }
             transaction.commit();
-        }
-        catch(Exception e)
-        {
-            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                transaction.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
         }
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
@@ -1196,28 +1266,25 @@ public class PolicyComponentTransactionTest extends TestCase
 
     /**
      * Test for MNT-13836 (new API)
+     *
      * @throws Exception
      */
-    public void testBehaviourHierarchySequence3() throws Exception
-    {
+    public void testBehaviourHierarchySequence3() throws Exception {
         UserTransaction transaction = trxService.getUserTransaction();
-        try
-        {
+        try {
             transaction.begin();
             disableBehaviours(new ClassFilter(A_TYPE, false), new ClassFilter(B_TYPE, false));
-            try
-            {
+            try {
                 createDocOfType(C_TYPE);
-            }
-            finally
-            {
+            } finally {
                 enableBehaviours(new ClassFilter(A_TYPE, true), new ClassFilter(B_TYPE, true));
             }
             transaction.commit();
-        }
-        catch(Exception e)
-        {
-            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+        } catch (Exception e) {
+            try {
+                transaction.rollback();
+            } catch (IllegalStateException ee) {
+            }
             throw e;
         }
         assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
@@ -1228,88 +1295,89 @@ public class PolicyComponentTransactionTest extends TestCase
         assertEquals(1, cTypeBehavior.getExecutionCount());
     }
 
-    private void disableBehaviours(ClassFilter... classFilters)
-    {
-        for(int i = 0; i < classFilters.length; i++)
-        {
+    private void disableBehaviours(ClassFilter... classFilters) {
+        for (int i = 0; i < classFilters.length; i++) {
             behaviourFilter.disableBehaviour(
-                    classFilters[i].getClassName(),
-                    classFilters[i].isDisableSubClasses()
-            );
+                    classFilters[i].getClassName(), classFilters[i].isDisableSubClasses());
             // check that behavior is disabled correctly
             checkBehaviour(classFilters[i].getClassName(), companyHome, true, false, false, true);
         }
     }
 
-    private void disableBehaviours(NodeRef nodeRef, QName... classNames)
-    {
-        for(int i = 0; i < classNames.length; i++)
-        {
+    private void disableBehaviours(NodeRef nodeRef, QName... classNames) {
+        for (int i = 0; i < classNames.length; i++) {
             behaviourFilter.disableBehaviour(nodeRef, classNames[i]);
             // check that behavior is disabled correctly
             checkBehaviour(classNames[i], nodeRef, true, true, false, true);
         }
     }
 
-    private void enableBehaviours(ClassFilter... types)
-    {
-        for(int i = 0; i < types.length; i++)
-        {
+    private void enableBehaviours(ClassFilter... types) {
+        for (int i = 0; i < types.length; i++) {
             behaviourFilter.enableBehaviour(types[i].getClassName());
         }
-        for(int i = 0; i < types.length; i++)
-        {
+        for (int i = 0; i < types.length; i++) {
             checkBehaviour(types[i].getClassName(), companyHome, true, true, true, true);
         }
     }
 
-    private void enableBehaviours(NodeRef nodeRef, QName... types)
-    {
-        for(int i = 0; i < types.length; i++)
-        {
+    private void enableBehaviours(NodeRef nodeRef, QName... types) {
+        for (int i = 0; i < types.length; i++) {
             behaviourFilter.enableBehaviour(nodeRef, types[i]);
         }
-        for(int i = 0; i < types.length; i++)
-        {
+        for (int i = 0; i < types.length; i++) {
             checkBehaviour(types[i], companyHome, true, true, true, true);
         }
     }
 
-    private NodeRef createDocOfType(QName type)
-    {
+    private NodeRef createDocOfType(QName type) {
         final String name = "Test (" + System.currentTimeMillis() + ").docx";
         final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
         contentProps.put(ContentModel.PROP_NAME, name);
 
         // create node of child type
-        return nodeService.createNode(companyHome,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
-                type,
-                contentProps).getChildRef();
+        return nodeService
+                .createNode(
+                        companyHome,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
+                        type,
+                        contentProps)
+                .getChildRef();
     }
 
     /**
-     * @param className                 the class to check
-     * @param nodeRef                   the node instance to check
-     * @param globalEnabled             <tt>true</tt> if the global filter should be enabled
-     * @param classEnabled              <tt>true</tt> if the class should be enabled
-     * @param classInstanceEnabled      <tt>true</tt> if the class and instance should be enabled
-     * @param instanceEnabled           <tt>true</tt> if the instance should be enabled
+     * @param className the class to check
+     * @param nodeRef the node instance to check
+     * @param globalEnabled <tt>true</tt> if the global filter should be enabled
+     * @param classEnabled <tt>true</tt> if the class should be enabled
+     * @param classInstanceEnabled <tt>true</tt> if the class and instance should be enabled
+     * @param instanceEnabled <tt>true</tt> if the instance should be enabled
      */
     private void checkBehaviour(
-            QName className, NodeRef nodeRef,
+            QName className,
+            NodeRef nodeRef,
             boolean globalEnabled,
             boolean classEnabled,
             boolean classInstanceEnabled,
-            boolean instanceEnabled)
-            
-    {
-        assertEquals("Incorrect behaviour state: global: ", globalEnabled, behaviourFilter.isEnabled());
-        assertEquals("Incorrect behaviour state: class: ", classEnabled, behaviourFilter.isEnabled(className));
-        assertEquals("Incorrect behaviour state: classAndInstance", classInstanceEnabled, behaviourFilter.isEnabled(nodeRef, className));
-        assertEquals("Incorrect behaviour state: instance", instanceEnabled, behaviourFilter.isEnabled(nodeRef));
-        assertEquals("'Active' flag incorrect: ",
+            boolean instanceEnabled) {
+
+        assertEquals(
+                "Incorrect behaviour state: global: ", globalEnabled, behaviourFilter.isEnabled());
+        assertEquals(
+                "Incorrect behaviour state: class: ",
+                classEnabled,
+                behaviourFilter.isEnabled(className));
+        assertEquals(
+                "Incorrect behaviour state: classAndInstance",
+                classInstanceEnabled,
+                behaviourFilter.isEnabled(nodeRef, className));
+        assertEquals(
+                "Incorrect behaviour state: instance",
+                instanceEnabled,
+                behaviourFilter.isEnabled(nodeRef));
+        assertEquals(
+                "'Active' flag incorrect: ",
                 !(globalEnabled && classEnabled && classInstanceEnabled && instanceEnabled),
                 behaviourFilter.isActivated());
     }
@@ -1317,80 +1385,93 @@ public class PolicyComponentTransactionTest extends TestCase
     //
     // Behaviour Implementations
     //
-    
-    public String startTransactionTest(String key1, String key2, String arg1, String arg2, boolean sideEffect, List<TestResult> results)
-    {
+
+    public String startTransactionTest(
+            String key1,
+            String key2,
+            String arg1,
+            String arg2,
+            boolean sideEffect,
+            List<TestResult> results) {
         TestResult result = new TestResult("startTransactionTest", key1, key2, arg1, arg2);
         results.add(result);
-        if (sideEffect)
-        {
+        if (sideEffect) {
             SideEffectTestPolicy policy = sideEffectDelegate.get(BASE_TYPE);
             policy.sideEffect(key1, key2, arg1, arg2, results);
         }
         return result.toString();
     }
 
-    public String endTransactionTest(String key1, String key2, String arg1, String arg2, boolean sideEffect, List<TestResult> results)
-    {
+    public String endTransactionTest(
+            String key1,
+            String key2,
+            String arg1,
+            String arg2,
+            boolean sideEffect,
+            List<TestResult> results) {
         TestResult result = new TestResult("endTransactionTest", key1, key2, arg1, arg2);
         results.add(result);
-        if (sideEffect)
-        {
+        if (sideEffect) {
             SideEffectTestPolicy policy = sideEffectDelegate.get(BASE_TYPE);
             policy.sideEffect(key1, key2, arg1, arg2, results);
         }
         return result.toString();
     }
-    
-    public String sideEffectTest(String key1, String key2, String arg1, String arg2, List<TestResult> results)
-    {
+
+    public String sideEffectTest(
+            String key1, String key2, String arg1, String arg2, List<TestResult> results) {
         TestResult result = new TestResult("sideEffectTest", key1, key2, arg1, arg2);
         results.add(result);
         return result.toString();
-    }    
+    }
 
-    
     //
     // Policy Definitions
     //
-    
-    public interface StartTestPolicy extends ClassPolicy
-    {
-        public String start(String key1, String key2, String arg1, String arg2, boolean sideEffect, List<TestResult> results);
-        
-        static String NAMESPACE = TEST_NAMESPACE;
-        static Arg ARG_0 = Arg.KEY;
-        static Arg ARG_1 = Arg.KEY;
-        static Arg ARG_2 = Arg.START_VALUE;
-        static Arg ARG_3 = Arg.END_VALUE;
-    }
-    
-    public interface EndTestPolicy extends ClassPolicy
-    {
-        public String end(String key1, String key2, String arg1, String arg2, boolean sideEffect, List<TestResult> results);
-        
-        static String NAMESPACE = TEST_NAMESPACE;
-        static Arg ARG_0 = Arg.KEY;
-        static Arg ARG_1 = Arg.KEY;
-        static Arg ARG_2 = Arg.START_VALUE;
-        static Arg ARG_3 = Arg.END_VALUE;
-    }
-    
-    public interface SideEffectTestPolicy extends ClassPolicy
-    {
-        public String sideEffect(String key1, String key2, String arg1, String arg2, List<TestResult> resultTest);
-        
-        static String NAMESPACE = TEST_NAMESPACE;
-        static Arg ARG_0 = Arg.KEY;
-        static Arg ARG_1 = Arg.KEY;
-    }
-    
 
-    /**
-     * Result of Policy Invocation
-     */
-    private class TestResult
-    {
+    public interface StartTestPolicy extends ClassPolicy {
+        public String start(
+                String key1,
+                String key2,
+                String arg1,
+                String arg2,
+                boolean sideEffect,
+                List<TestResult> results);
+
+        static String NAMESPACE = TEST_NAMESPACE;
+        static Arg ARG_0 = Arg.KEY;
+        static Arg ARG_1 = Arg.KEY;
+        static Arg ARG_2 = Arg.START_VALUE;
+        static Arg ARG_3 = Arg.END_VALUE;
+    }
+
+    public interface EndTestPolicy extends ClassPolicy {
+        public String end(
+                String key1,
+                String key2,
+                String arg1,
+                String arg2,
+                boolean sideEffect,
+                List<TestResult> results);
+
+        static String NAMESPACE = TEST_NAMESPACE;
+        static Arg ARG_0 = Arg.KEY;
+        static Arg ARG_1 = Arg.KEY;
+        static Arg ARG_2 = Arg.START_VALUE;
+        static Arg ARG_3 = Arg.END_VALUE;
+    }
+
+    public interface SideEffectTestPolicy extends ClassPolicy {
+        public String sideEffect(
+                String key1, String key2, String arg1, String arg2, List<TestResult> resultTest);
+
+        static String NAMESPACE = TEST_NAMESPACE;
+        static Arg ARG_0 = Arg.KEY;
+        static Arg ARG_1 = Arg.KEY;
+    }
+
+    /** Result of Policy Invocation */
+    private class TestResult {
         private String trxId;
         private String behaviour;
         private String key1;
@@ -1400,15 +1481,14 @@ public class PolicyComponentTransactionTest extends TestCase
 
         /**
          * Construct
-         * 
+         *
          * @param behaviour String
          * @param key1 String
          * @param key2 String
          * @param arg1 String
          * @param arg2 String
          */
-        public TestResult(String behaviour, String key1, String key2, String arg1, String arg2)
-        {
+        public TestResult(String behaviour, String key1, String key2, String arg1, String arg2) {
             this.trxId = AlfrescoTransactionSupport.getTransactionId();
             this.behaviour = behaviour;
             this.key1 = key1;
@@ -1416,76 +1496,71 @@ public class PolicyComponentTransactionTest extends TestCase
             this.arg1 = arg1;
             this.arg2 = arg2;
         }
-        
+
         @Override
-        public boolean equals(Object obj)
-        {
-            if (this == obj)
-            {
+        public boolean equals(Object obj) {
+            if (this == obj) {
                 return true;
             }
-            if (obj instanceof TestResult)
-            {
+            if (obj instanceof TestResult) {
                 TestResult that = (TestResult) obj;
-                return (this.trxId.equals(that.trxId) &&
-                        this.behaviour.equals(that.behaviour) &&
-                        this.key1.equals(that.key1) &&
-                        this.key2.equals(that.key2) &&
-                        this.arg1.equals(that.arg1) &&
-                        this.arg2.equals(that.arg2));
-            }
-            else
-            {
+                return (this.trxId.equals(that.trxId)
+                        && this.behaviour.equals(that.behaviour)
+                        && this.key1.equals(that.key1)
+                        && this.key2.equals(that.key2)
+                        && this.arg1.equals(that.arg1)
+                        && this.arg2.equals(that.arg2));
+            } else {
                 return false;
             }
         }
 
         @Override
-        public String toString()
-        {
-            return "trxId=" + trxId + ", behaviour=" + behaviour + ", key1=" + key1 + ", key2=" + key2 + ", arg1=" + arg1 + ", arg2=" + arg2;
+        public String toString() {
+            return "trxId="
+                    + trxId
+                    + ", behaviour="
+                    + behaviour
+                    + ", key1="
+                    + key1
+                    + ", key2="
+                    + key2
+                    + ", arg1="
+                    + arg1
+                    + ", arg2="
+                    + arg2;
         }
     }
-    
-    private abstract class TestExecutionPolicy
-    {
+
+    private abstract class TestExecutionPolicy {
         private boolean executed;
         private int executionCount;
-        
-        protected void execute()
-        {
+
+        protected void execute() {
             executed = true;
             executionCount++;
         }
-        
-        public boolean isExecuted()
-        {
+
+        public boolean isExecuted() {
             return executed;
         }
-        
-        public int getExecutionCount()
-        {
+
+        public int getExecutionCount() {
             return executionCount;
         }
     }
-    
-    private class TestOnCreateNodePolicy extends TestExecutionPolicy implements OnCreateNodePolicy
-    {
-        @Override
-        public void onCreateNode(ChildAssociationRef childAssocRef)
-        {
-            execute();
-        }
-    }
-    
-    private class TestOnUpdateNodePolicy extends TestExecutionPolicy implements OnUpdateNodePolicy
-    {
-        @Override
-        public void onUpdateNode(NodeRef nodeRef)
-        {
-            execute();
-        }
-    }
-    
-}
 
+    private class TestOnCreateNodePolicy extends TestExecutionPolicy implements OnCreateNodePolicy {
+        @Override
+        public void onCreateNode(ChildAssociationRef childAssocRef) {
+            execute();
+        }
+    }
+
+    private class TestOnUpdateNodePolicy extends TestExecutionPolicy implements OnUpdateNodePolicy {
+        @Override
+        public void onUpdateNode(NodeRef nodeRef) {
+            execute();
+        }
+    }
+}

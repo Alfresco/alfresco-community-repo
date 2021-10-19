@@ -29,16 +29,6 @@ package org.alfresco.rest.core.v0;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNull;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.dataprep.ContentService;
@@ -64,33 +54,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * The base API class containing common methods for making v0 API requests
  *
  * @author Kristijan Conkas
  * @since 2.5
  */
-public abstract class BaseAPI
-{
+public abstract class BaseAPI {
     // logger
     protected static final Logger LOGGER = LoggerFactory.getLogger(BaseAPI.class);
 
     /** exception key in JSON response body */
     private static final String EXCEPTION_KEY = "exception";
+
     private static final String MESSAGE_KEY = "message";
     public static final String NODE_PREFIX = "workspace/SpacesStore/";
     protected static final String UPDATE_METADATA_API = "{0}node/{1}/formprocessor";
     protected static final String ACTIONS_API = "{0}actionQueue";
     protected static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
     public static final String RM_SITE_ID = "rm";
-    protected static final String SHARE_ACTION_API = "{0}internal/shared/share/workspace/SpacesStore/{1}";
+    protected static final String SHARE_ACTION_API =
+            "{0}internal/shared/share/workspace/SpacesStore/{1}";
     private static final String SLINGSHOT_PREFIX = "alfresco/s/slingshot/";
 
-    @Autowired
-    private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
+    @Autowired private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
 
-    @Autowired
-    protected ContentService contentService;
+    @Autowired protected ContentService contentService;
 
     public static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
     private static final String FILE_PLAN_PATH = "/Sites/rm/documentLibrary";
@@ -102,20 +101,15 @@ public abstract class BaseAPI
      * @return list of specified property values in result
      * @throws RuntimeException for malformed response
      */
-    protected List<String> getPropertyValues(JSONObject result, String propertyName)
-    {
+    protected List<String> getPropertyValues(JSONObject result, String propertyName) {
         ArrayList<String> results = new ArrayList<>();
-        try
-        {
+        try {
             JSONArray items = result.getJSONArray("items");
 
-            for (int i = 0; i < items.length(); i++)
-            {
+            for (int i = 0; i < items.length(); i++) {
                 results.add(items.getJSONObject(i).getString(propertyName));
             }
-        }
-        catch (JSONException error)
-        {
+        } catch (JSONException error) {
             throw new RuntimeException("Unable to parse result", error);
         }
 
@@ -124,62 +118,55 @@ public abstract class BaseAPI
 
     /**
      * Helper method to extract the property value for the given nodeRef and property name
-     * 
+     *
      * @param result
      * @param nodeRef
      * @param propertyName
      * @return
      */
-    protected String getPropertyValue(JSONObject result, String nodeRef, String propertyName)
-    {
+    protected String getPropertyValue(JSONObject result, String nodeRef, String propertyName) {
         String propertyValue = "";
-        try
-        {
+        try {
             JSONArray items = result.getJSONArray("items");
-            for (int i = 0; i < items.length(); i++)
-            {
+            for (int i = 0; i < items.length(); i++) {
                 JSONObject item = items.getJSONObject(i);
-                if(nodeRef.equals(item.getString("nodeRef")))
-                {
+                if (nodeRef.equals(item.getString("nodeRef"))) {
                     propertyValue = item.getJSONObject("properties").getString(propertyName);
                 }
             }
-        }
-        catch (JSONException error)
-        {
+        } catch (JSONException error) {
             throw new RuntimeException("Unable to parse result", error);
         }
 
         return propertyValue;
     }
-    
+
     /**
-     * Helper method to extract property values from request result and put them in map as a list that corresponds to a unique property value.
+     * Helper method to extract property values from request result and put them in map as a list
+     * that corresponds to a unique property value.
      *
      * @param requestResult the request response
-     * @return a map containing information about multiple properties values that correspond to a unique one
+     * @return a map containing information about multiple properties values that correspond to a
+     *     unique one
      * @throws RuntimeException for malformed response
      */
-    protected Map<String, List<String>> getPropertyValuesByUniquePropertyValue(JSONObject requestResult, String uniqueProperty, List<String> otherProperties)
-    {
+    protected Map<String, List<String>> getPropertyValuesByUniquePropertyValue(
+            JSONObject requestResult, String uniqueProperty, List<String> otherProperties) {
         Map<String, List<String>> valuesByUniqueProperty = new HashMap<>();
-        try
-        {
+        try {
             JSONArray items = requestResult.getJSONArray("items");
 
-            for (int i = 0; i < items.length(); i++)
-            {
+            for (int i = 0; i < items.length(); i++) {
                 List<String> otherPropertiesValues = new ArrayList<>();
 
-                for (int j = 0; j < otherProperties.size(); j++)
-                {
-                    otherPropertiesValues.add(items.getJSONObject(i).get(otherProperties.get(j)).toString());
+                for (int j = 0; j < otherProperties.size(); j++) {
+                    otherPropertiesValues.add(
+                            items.getJSONObject(i).get(otherProperties.get(j)).toString());
                 }
-                valuesByUniqueProperty.put(items.getJSONObject(i).getString(uniqueProperty), otherPropertiesValues);
+                valuesByUniqueProperty.put(
+                        items.getJSONObject(i).getString(uniqueProperty), otherPropertiesValues);
             }
-        }
-        catch (JSONException error)
-        {
+        } catch (JSONException error) {
             throw new RuntimeException("Unable to parse result", error);
         }
 
@@ -191,13 +178,12 @@ public abstract class BaseAPI
      *
      * @param username the username
      * @param password the password
-     * @param path     the path to the container eg. in case of a category it would be the category name,
-     *                 in case of a folder it would be /categoryName/folderName
-     *                 when trying to get File Plan, the path would be ""
+     * @param path the path to the container eg. in case of a category it would be the category
+     *     name, in case of a folder it would be /categoryName/folderName when trying to get File
+     *     Plan, the path would be ""
      * @return the container nodeRef
      */
-    public String getItemNodeRef(String username, String password, String path)
-    {
+    public String getItemNodeRef(String username, String password, String path) {
         return contentService.getNodeRefByPath(username, password, FILE_PLAN_PATH + path);
     }
 
@@ -206,17 +192,14 @@ public abstract class BaseAPI
      *
      * @param username the user's username
      * @param password its password
-     * @param path     the object path
+     * @param path the object path
      * @return the object in case it exists, null if its does not exist
      */
-    protected CmisObject getObjectByPath(String username, String password, String path)
-    {
+    protected CmisObject getObjectByPath(String username, String password, String path) {
         CmisObject object;
-        try
-        {
+        try {
             object = contentService.getCMISSession(username, password).getObjectByPath(path);
-        } catch (CmisObjectNotFoundException notFoundError)
-        {
+        } catch (CmisObjectNotFoundException notFoundError) {
             return null;
         }
         return object;
@@ -230,23 +213,19 @@ public abstract class BaseAPI
      * @param parameters if the request has parameters
      * @return result object (see API reference for more details), null for any errors
      */
-    protected JSONObject facetedRequest(String username, String password, List<NameValuePair> parameters, String requestURI)
-    {
+    protected JSONObject facetedRequest(
+            String username, String password, List<NameValuePair> parameters, String requestURI) {
         String requestURL;
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
 
-        if (parameters == null || parameters.isEmpty())
-        {
-             requestURL = MessageFormat.format(
-                    requestURI,
-                    client.getAlfrescoUrl());
-        }
-        else
-        {
-             requestURL = MessageFormat.format(
-                    requestURI,
-                    client.getAlfrescoUrl(),
-                    URLEncodedUtils.format(parameters, "UTF-8"));
+        if (parameters == null || parameters.isEmpty()) {
+            requestURL = MessageFormat.format(requestURI, client.getAlfrescoUrl());
+        } else {
+            requestURL =
+                    MessageFormat.format(
+                            requestURI,
+                            client.getAlfrescoUrl(),
+                            URLEncodedUtils.format(parameters, "UTF-8"));
         }
         LOGGER.info("On GET {}, received following response: ", requestURL);
         client.close();
@@ -255,89 +234,77 @@ public abstract class BaseAPI
 
     /**
      * Helper method for GET requests
+     *
      * @param adminUser user with administrative privileges
      * @param adminPassword password for adminUser
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected JSONObject doGetRequest(String adminUser,
-        String adminPassword,
-        String urlTemplate,
-        String ... urlTemplateParams)
-    {
+    protected JSONObject doGetRequest(
+            String adminUser,
+            String adminPassword,
+            String urlTemplate,
+            String... urlTemplateParams) {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String requestUrl = MessageFormat.format(
-            urlTemplate,
-            client.getApiUrl(),
-            urlTemplateParams);
+        String requestUrl =
+                MessageFormat.format(urlTemplate, client.getApiUrl(), urlTemplateParams);
         client.close();
 
-        try
-        {
+        try {
             return doRequest(HttpGet.class, requestUrl, adminUser, adminPassword, null);
-        }
-        catch (InstantiationException | IllegalAccessException error)
-        {
+        } catch (InstantiationException | IllegalAccessException error) {
             throw new IllegalArgumentException("doGetRequest failed", error);
         }
     }
 
     /**
      * Helper method for Delete requests
+     *
      * @param adminUser user with administrative privileges
      * @param adminPassword password for adminUser
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected JSONObject doDeleteRequest(String adminUser,
-        String adminPassword,
-        String urlTemplate,
-        String ... urlTemplateParams)
-    {
+    protected JSONObject doDeleteRequest(
+            String adminUser,
+            String adminPassword,
+            String urlTemplate,
+            String... urlTemplateParams) {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String requestUrl = MessageFormat.format(
-            urlTemplate,
-            client.getApiUrl(),
-            urlTemplateParams);
+        String requestUrl =
+                MessageFormat.format(urlTemplate, client.getApiUrl(), urlTemplateParams);
         client.close();
 
-        try
-        {
+        try {
             return doRequest(HttpDelete.class, requestUrl, adminUser, adminPassword, null);
-        }
-        catch (InstantiationException | IllegalAccessException error)
-        {
+        } catch (InstantiationException | IllegalAccessException error) {
             throw new IllegalArgumentException("doDeleteRequest failed", error);
         }
     }
 
     /**
      * Helper method for PUT requests
+     *
      * @param adminUser user with administrative privileges
      * @param adminPassword password for adminUser
      * @param requestParams zero or more endpoint specific request parameters
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected JSONObject doPutRequest(String adminUser,
-        String adminPassword,
-        JSONObject requestParams,
-        String urlTemplate,
-        String ... urlTemplateParams)
-    {
+    protected JSONObject doPutRequest(
+            String adminUser,
+            String adminPassword,
+            JSONObject requestParams,
+            String urlTemplate,
+            String... urlTemplateParams) {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String requestUrl = MessageFormat.format(
-            urlTemplate,
-            client.getApiUrl(),
-            urlTemplateParams);
+        String requestUrl =
+                MessageFormat.format(urlTemplate, client.getApiUrl(), urlTemplateParams);
         client.close();
 
-        try
-        {
+        try {
             return doRequest(HttpPut.class, requestUrl, adminUser, adminPassword, requestParams);
-        }
-        catch (InstantiationException | IllegalAccessException error)
-        {
+        } catch (InstantiationException | IllegalAccessException error) {
             throw new IllegalArgumentException("doPutRequest failed", error);
         }
     }
@@ -352,15 +319,22 @@ public abstract class BaseAPI
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected HttpResponse doPutJsonRequest(String adminUser,
-                String adminPassword,
-                int expectedStatusCode,
-                JSONObject requestParams,
-                String urlTemplate,
-                String... urlTemplateParams)
-    {
+    protected HttpResponse doPutJsonRequest(
+            String adminUser,
+            String adminPassword,
+            int expectedStatusCode,
+            JSONObject requestParams,
+            String urlTemplate,
+            String... urlTemplateParams) {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        return doPutJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
+        return doPutJsonRequest(
+                adminUser,
+                adminPassword,
+                expectedStatusCode,
+                client.getApiUrl(),
+                requestParams,
+                urlTemplate,
+                urlTemplateParams);
     }
 
     /**
@@ -375,23 +349,25 @@ public abstract class BaseAPI
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      * @throws AssertionError if the returned status code is not as expected.
      */
-    private HttpResponse doPutJsonRequest(String adminUser,
-                String adminPassword,
-                int expectedStatusCode,
-                String urlStart,
-                JSONObject requestParams,
-                String urlTemplate,
-                String... urlTemplateParams)
-    {
+    private HttpResponse doPutJsonRequest(
+            String adminUser,
+            String adminPassword,
+            int expectedStatusCode,
+            String urlStart,
+            JSONObject requestParams,
+            String urlTemplate,
+            String... urlTemplateParams) {
         String requestUrl = formatRequestUrl(urlStart, urlTemplate, urlTemplateParams);
-        try
-        {
-            HttpResponse httpResponse = doRequestJson(HttpPut.class, requestUrl, adminUser, adminPassword, requestParams);
-            assertEquals("PUT request to " + requestUrl + " was not successful.", expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
+        try {
+            HttpResponse httpResponse =
+                    doRequestJson(
+                            HttpPut.class, requestUrl, adminUser, adminPassword, requestParams);
+            assertEquals(
+                    "PUT request to " + requestUrl + " was not successful.",
+                    expectedStatusCode,
+                    httpResponse.getStatusLine().getStatusCode());
             return httpResponse;
-        }
-        catch (InstantiationException | IllegalAccessException error)
-        {
+        } catch (InstantiationException | IllegalAccessException error) {
             throw new IllegalArgumentException("doPutRequest failed", error);
         }
     }
@@ -404,10 +380,9 @@ public abstract class BaseAPI
      * @param urlTemplateParams Any parameters that need to be filled into the URL template.
      * @return The resultant URL.
      */
-    private String formatRequestUrl(String urlStart, String urlTemplate, String[] urlTemplateParams)
-    {
-        if (urlTemplateParams.length == 1)
-        {
+    private String formatRequestUrl(
+            String urlStart, String urlTemplate, String[] urlTemplateParams) {
+        if (urlTemplateParams.length == 1) {
             // The format method needs some help to know not to use the whole array object.
             return MessageFormat.format(urlTemplate, urlStart, urlTemplateParams[0]);
         }
@@ -416,31 +391,27 @@ public abstract class BaseAPI
 
     /**
      * Helper method for POST requests
+     *
      * @param adminUser user with administrative privileges
      * @param adminPassword password for adminUser
      * @param requestParams zero or more endpoint specific request parameters
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected JSONObject doPostRequest(String adminUser,
-        String adminPassword,
-        JSONObject requestParams,
-        String urlTemplate,
-        String ... urlTemplateParams)
-    {
+    protected JSONObject doPostRequest(
+            String adminUser,
+            String adminPassword,
+            JSONObject requestParams,
+            String urlTemplate,
+            String... urlTemplateParams) {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String requestUrl = MessageFormat.format(
-            urlTemplate,
-            client.getApiUrl(),
-            urlTemplateParams);
+        String requestUrl =
+                MessageFormat.format(urlTemplate, client.getApiUrl(), urlTemplateParams);
         client.close();
 
-        try
-        {
+        try {
             return doRequest(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
-        }
-        catch (InstantiationException | IllegalAccessException error)
-        {
+        } catch (InstantiationException | IllegalAccessException error) {
             throw new IllegalArgumentException("doPostRequest failed", error);
         }
     }
@@ -455,15 +426,22 @@ public abstract class BaseAPI
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected HttpResponse doPostJsonRequest(String adminUser,
-                                    String adminPassword,
-                                    int expectedStatusCode,
-                                    JSONObject requestParams,
-                                    String urlTemplate,
-                                    String... urlTemplateParams)
-    {
+    protected HttpResponse doPostJsonRequest(
+            String adminUser,
+            String adminPassword,
+            int expectedStatusCode,
+            JSONObject requestParams,
+            String urlTemplate,
+            String... urlTemplateParams) {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        return doPostJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getApiUrl(), requestParams, urlTemplate, urlTemplateParams);
+        return doPostJsonRequest(
+                adminUser,
+                adminPassword,
+                expectedStatusCode,
+                client.getApiUrl(),
+                requestParams,
+                urlTemplate,
+                urlTemplateParams);
     }
 
     /**
@@ -476,15 +454,22 @@ public abstract class BaseAPI
      * @param urlTemplate request URL template
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      */
-    protected HttpResponse doSlingshotPostJsonRequest(String adminUser,
-                String adminPassword,
-                int expectedStatusCode,
-                JSONObject requestParams,
-                String urlTemplate,
-                String... urlTemplateParams)
-    {
+    protected HttpResponse doSlingshotPostJsonRequest(
+            String adminUser,
+            String adminPassword,
+            int expectedStatusCode,
+            JSONObject requestParams,
+            String urlTemplate,
+            String... urlTemplateParams) {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        return doPostJsonRequest(adminUser, adminPassword, expectedStatusCode, client.getAlfrescoUrl() + SLINGSHOT_PREFIX, requestParams, urlTemplate, urlTemplateParams);
+        return doPostJsonRequest(
+                adminUser,
+                adminPassword,
+                expectedStatusCode,
+                client.getAlfrescoUrl() + SLINGSHOT_PREFIX,
+                requestParams,
+                urlTemplate,
+                urlTemplateParams);
     }
 
     /**
@@ -499,30 +484,33 @@ public abstract class BaseAPI
      * @param urlTemplateParams zero or more parameters used with <i>urlTemplate</i>
      * @throws AssertionError if the returned status code is not as expected.
      */
-    private HttpResponse doPostJsonRequest(String adminUser,
-                String adminPassword,
-                int expectedStatusCode,
-                String urlStart,
-                JSONObject requestParams,
-                String urlTemplate,
-                String... urlTemplateParams)
-    {
+    private HttpResponse doPostJsonRequest(
+            String adminUser,
+            String adminPassword,
+            int expectedStatusCode,
+            String urlStart,
+            JSONObject requestParams,
+            String urlTemplate,
+            String... urlTemplateParams) {
         String requestUrl;
         requestUrl = formatRequestUrl(urlStart, urlTemplate, urlTemplateParams);
-        try
-        {
-            HttpResponse httpResponse = doRequestJson(HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
-            assertEquals("POST request to " + requestUrl + " was not successful.", expectedStatusCode, httpResponse.getStatusLine().getStatusCode());
+        try {
+            HttpResponse httpResponse =
+                    doRequestJson(
+                            HttpPost.class, requestUrl, adminUser, adminPassword, requestParams);
+            assertEquals(
+                    "POST request to " + requestUrl + " was not successful.",
+                    expectedStatusCode,
+                    httpResponse.getStatusLine().getStatusCode());
             return httpResponse;
-        }
-        catch (InstantiationException | IllegalAccessException error)
-        {
+        } catch (InstantiationException | IllegalAccessException error) {
             throw new IllegalArgumentException("doPostRequest failed", error);
         }
     }
 
     /**
      * Helper method for handling generic HTTP requests
+     *
      * @param requestType request type (a subclass of {@link HttpRequestBase})
      * @param requestUrl URL the request is to be sent to
      * @param adminUser user with administrative privileges
@@ -533,88 +521,76 @@ public abstract class BaseAPI
      * @throws InstantiationException for invalid <i>requestType</i>
      */
     private <T extends HttpRequestBase> JSONObject doRequest(
-        Class<T> requestType,
-        String requestUrl,
-        String adminUser,
-        String adminPassword,
-        JSONObject requestParams) throws InstantiationException, IllegalAccessException
-    {
+            Class<T> requestType,
+            String requestUrl,
+            String adminUser,
+            String adminPassword,
+            JSONObject requestParams)
+            throws InstantiationException, IllegalAccessException {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         T request = requestType.newInstance();
 
         JSONObject responseBody = null;
         JSONObject returnValues = null;
 
-        try
-        {
+        try {
             request.setURI(new URI(requestUrl));
 
-            if (requestParams != null && request instanceof HttpEntityEnclosingRequestBase)
-            {
-                ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(requestParams.toString()));
+            if (requestParams != null && request instanceof HttpEntityEnclosingRequestBase) {
+                ((HttpEntityEnclosingRequestBase) request)
+                        .setEntity(new StringEntity(requestParams.toString()));
             }
             LOGGER.info("Sending {} request to {}", requestType.getSimpleName(), requestUrl);
             LOGGER.info("Request body: {}", requestParams);
             HttpResponse response = client.execute(adminUser, adminPassword, request);
             LOGGER.info("Response: {}", response.getStatusLine());
 
-            try
-            {
+            try {
                 responseBody = new JSONObject(EntityUtils.toString(response.getEntity()));
-            }
-            catch (JSONException error)
-            {
-                LOGGER.error("Converting message body to JSON failed. Body: {}", responseBody, error);
-            }
-            catch (ParseException | IOException error)
-            {
+            } catch (JSONException error) {
+                LOGGER.error(
+                        "Converting message body to JSON failed. Body: {}", responseBody, error);
+            } catch (ParseException | IOException error) {
                 LOGGER.error("Parsing message body failed.", error);
             }
 
-            switch (response.getStatusLine().getStatusCode())
-            {
+            switch (response.getStatusLine().getStatusCode()) {
                 case HttpStatus.SC_OK:
                 case HttpStatus.SC_CREATED:
                     // request successful
-                    if (responseBody != null)
-                    {
+                    if (responseBody != null) {
                         returnValues = responseBody;
                     }
                     break;
 
                 case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-					if (responseBody != null  && responseBody.has(EXCEPTION_KEY))
-                    {
-                        LOGGER.error("Request failed with error message: {}", responseBody.getString(MESSAGE_KEY));
+                    if (responseBody != null && responseBody.has(EXCEPTION_KEY)) {
+                        LOGGER.error(
+                                "Request failed with error message: {}",
+                                responseBody.getString(MESSAGE_KEY));
                         returnValues = responseBody;
                     }
                     break;
                 case HttpStatus.SC_BAD_REQUEST:
                 case HttpStatus.SC_UNPROCESSABLE_ENTITY:
-                    if (responseBody != null  && responseBody.has(EXCEPTION_KEY))
-                    {
+                    if (responseBody != null && responseBody.has(EXCEPTION_KEY)) {
                         LOGGER.error("Request failed: {}", responseBody.getString(EXCEPTION_KEY));
                         returnValues = responseBody;
                     }
                     break;
 
                 default:
-                    LOGGER.error("Request returned unexpected HTTP status {}", response.getStatusLine().getStatusCode());
+                    LOGGER.error(
+                            "Request returned unexpected HTTP status {}",
+                            response.getStatusLine().getStatusCode());
                     break;
             }
-        }
-        catch (JSONException error)
-        {
+        } catch (JSONException error) {
             LOGGER.error("Unable to extract response parameter", error);
-        }
-        catch (UnsupportedEncodingException | URISyntaxException error1)
-        {
+        } catch (UnsupportedEncodingException | URISyntaxException error1) {
             LOGGER.error("Unable to construct request", error1);
-        }
-        finally
-        {
-            if (request != null)
-            {
+        } finally {
+            if (request != null) {
                 request.releaseConnection();
             }
             client.close();
@@ -628,19 +604,18 @@ public abstract class BaseAPI
             String requestUrl,
             String adminUser,
             String adminPassword,
-            JSONObject requestParams) throws InstantiationException, IllegalAccessException
-    {
+            JSONObject requestParams)
+            throws InstantiationException, IllegalAccessException {
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         T request = requestType.newInstance();
 
-        try
-        {
+        try {
             request.setURI(new URI(requestUrl));
             request.setHeader("Content-Type", "application/json");
 
-            if (requestParams != null && request instanceof HttpEntityEnclosingRequestBase)
-            {
-                ((HttpEntityEnclosingRequestBase) request).setEntity(new StringEntity(requestParams.toString()));
+            if (requestParams != null && request instanceof HttpEntityEnclosingRequestBase) {
+                ((HttpEntityEnclosingRequestBase) request)
+                        .setEntity(new StringEntity(requestParams.toString()));
             }
 
             LOGGER.info("Sending {} request to {}", requestType.getSimpleName(), requestUrl);
@@ -648,15 +623,10 @@ public abstract class BaseAPI
             HttpResponse httpResponse = client.execute(adminUser, adminPassword, request);
             LOGGER.info("Response: {}", httpResponse.getStatusLine());
             return httpResponse;
-        }
-        catch (UnsupportedEncodingException | URISyntaxException error1)
-        {
+        } catch (UnsupportedEncodingException | URISyntaxException error1) {
             LOGGER.error("Unable to construct request", error1);
-        }
-        finally
-        {
-            if (request != null)
-            {
+        } finally {
+            if (request != null) {
                 request.releaseConnection();
             }
             client.close();
@@ -665,12 +635,8 @@ public abstract class BaseAPI
         return null;
     }
 
-    /**
-     * Used to set RM items properties
-     * including records, categories and folders
-     */
-    public enum RMProperty
-    {
+    /** Used to set RM items properties including records, categories and folders */
+    public enum RMProperty {
         NAME,
         TITLE,
         CONTENT,
@@ -687,8 +653,7 @@ public abstract class BaseAPI
         PUBLICATION_DATE
     }
 
-    public enum RETENTION_SCHEDULE
-    {
+    public enum RETENTION_SCHEDULE {
         NAME,
         DESCRIPTION,
         RETENTION_AUTHORITY,
@@ -702,11 +667,8 @@ public abstract class BaseAPI
         COMBINE_DISPOSITION_STEP_CONDITIONS
     }
 
-    /**
-     * Used to execute rm actions on a node
-     */
-    public enum RM_ACTIONS
-    {
+    /** Used to execute rm actions on a node */
+    public enum RM_ACTIONS {
         EDIT_DISPOSITION_DATE("editDispositionActionAsOfDate"),
         END_RETENTION("retain"),
         CUT_OFF("cutoff"),
@@ -717,19 +679,16 @@ public abstract class BaseAPI
         DESTROY("destroy");
         String action;
 
-        private RM_ACTIONS(String action)
-        {
+        private RM_ACTIONS(String action) {
             this.action = action;
         }
 
-        public String getAction()
-        {
+        public String getAction() {
             return action;
         }
     }
 
-    public enum PermissionType
-    {
+    public enum PermissionType {
         SET_READ,
         REMOVE_READ,
         SET_READ_AND_FILE,
@@ -740,14 +699,13 @@ public abstract class BaseAPI
      * Util to return the property value from a map
      *
      * @param properties the map containing properties
-     * @param property   to get value for
+     * @param property to get value for
      * @return the property value
      */
-    public <K extends Enum<?>> String getPropertyValue(Map<K, String> properties, Enum<?> property)
-    {
+    public <K extends Enum<?>> String getPropertyValue(
+            Map<K, String> properties, Enum<?> property) {
         String value = properties.get(property);
-        if (value == null)
-        {
+        if (value == null) {
             return "";
         }
         return value;
@@ -756,18 +714,22 @@ public abstract class BaseAPI
     /**
      * Retrieves the property value and decides if that gets to be added to the request
      *
-     * @param requestParams        the request parameters
+     * @param requestParams the request parameters
      * @param propertyRequestValue the property name in the request, eg. "prop_cm_name"
-     * @param itemProperties       map of item's properties values
-     * @param property             the property in the property map to check value for
-     * @return the json object used in request with the property with its value added if that is not null or empty
+     * @param itemProperties map of item's properties values
+     * @param property the property in the property map to check value for
+     * @return the json object used in request with the property with its value added if that is not
+     *     null or empty
      */
-    protected <K extends Enum<?>> JSONObject addPropertyToRequest(JSONObject requestParams, String propertyRequestValue, Map<K, String> itemProperties, Enum<?> property) throws JSONException
-    {
+    protected <K extends Enum<?>> JSONObject addPropertyToRequest(
+            JSONObject requestParams,
+            String propertyRequestValue,
+            Map<K, String> itemProperties,
+            Enum<?> property)
+            throws JSONException {
         String propertyValue = getPropertyValue(itemProperties, property);
 
-        if (!propertyValue.equals(""))
-        {
+        if (!propertyValue.equals("")) {
             requestParams.put(propertyRequestValue, propertyValue);
         }
         return requestParams;
@@ -778,16 +740,14 @@ public abstract class BaseAPI
      *
      * @param username the username with whom the delete is performed
      * @param password the user's password
-     * @param itemPath the path to the item eg. in case of a category it would be the "/" + category name,
-     *                 in case of a folder or subCategory it would be /categoryName/folderName or /categoryName/subCategoryName/
-     *                 in case of a record /categoryName/folderName/recordName
+     * @param itemPath the path to the item eg. in case of a category it would be the "/" + category
+     *     name, in case of a folder or subCategory it would be /categoryName/folderName or
+     *     /categoryName/subCategoryName/ in case of a record /categoryName/folderName/recordName
      * @throws AssertionError if the delete was not successful.
      */
-    protected void deleteItem(String username, String password, String itemPath)
-    {
+    protected void deleteItem(String username, String password, String itemPath) {
         CmisObject container = getObjectByPath(username, password, FILE_PLAN_PATH + itemPath);
-        if (container != null)
-        {
+        if (container != null) {
             container.delete();
         }
         assertNull("Could not delete " + itemPath, getObjectByPath(username, password, itemPath));
@@ -798,8 +758,7 @@ public abstract class BaseAPI
      *
      * @return node ref spaces store
      */
-    public static String getNodeRefSpacesStore()
-    {
+    public static String getNodeRefSpacesStore() {
         return NODE_REF_WORKSPACE_SPACES_STORE;
     }
 
@@ -808,8 +767,7 @@ public abstract class BaseAPI
      *
      * @return the File Plan path
      */
-    public static String getFilePlanPath()
-    {
+    public static String getFilePlanPath() {
         return FILE_PLAN_PATH;
     }
 }

@@ -51,8 +51,7 @@ import org.alfresco.service.cmr.rule.RuleService;
  * @author Tuna Aksoy
  * @since 2.2.1.1
  */
-public class RM2192Test extends BaseRMTestCase
-{
+public class RM2192Test extends BaseRMTestCase {
     private static final String PATH = "/111/222/333";
 
     private RuleService ruleService;
@@ -63,8 +62,7 @@ public class RM2192Test extends BaseRMTestCase
     private NodeRef documentLibrary2;
 
     @Override
-    protected void initServices()
-    {
+    protected void initServices() {
         super.initServices();
 
         ruleService = (RuleService) applicationContext.getBean("RuleService");
@@ -72,39 +70,38 @@ public class RM2192Test extends BaseRMTestCase
     }
 
     @Override
-    protected boolean isCollaborationSiteTest()
-    {
+    protected boolean isCollaborationSiteTest() {
         return true;
     }
 
     @Override
-    protected boolean isRecordTest()
-    {
+    protected boolean isRecordTest() {
         return true;
     }
 
     @Override
-    protected boolean isUserTest()
-    {
+    protected boolean isUserTest() {
         return true;
     }
 
     @Override
-    protected void setupCollaborationSiteTestDataImpl()
-    {
+    protected void setupCollaborationSiteTestDataImpl() {
         super.setupCollaborationSiteTestDataImpl();
 
         String collabSiteId2 = generate();
         siteService.createSite("site-dashboard", collabSiteId2, generate(), generate(), PUBLIC);
-        documentLibrary2 = getSiteContainer(
-                collabSiteId2,
-                DOCUMENT_LIBRARY,
-                true,
-                siteService,
-                transactionService,
-                taggingService);
+        documentLibrary2 =
+                getSiteContainer(
+                        collabSiteId2,
+                        DOCUMENT_LIBRARY,
+                        true,
+                        siteService,
+                        transactionService,
+                        taggingService);
 
-        assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary2);
+        assertNotNull(
+                "Collaboration site document library component was not successfully created.",
+                documentLibrary2);
 
         user = generate();
         createPerson(user);
@@ -114,69 +111,73 @@ public class RM2192Test extends BaseRMTestCase
         filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_RECORDS_MANAGER, user);
     }
 
-    public void testAccessToRecordAfterDeclaring()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                folder = fileFolderService.create(documentLibrary2, generate(), TYPE_FOLDER).getNodeRef();
+    public void testAccessToRecordAfterDeclaring() {
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() {
+                        folder =
+                                fileFolderService
+                                        .create(documentLibrary2, generate(), TYPE_FOLDER)
+                                        .getNodeRef();
 
-                Action createAction = actionService.createAction(CreateRecordAction.NAME);
-                createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
+                        Action createAction = actionService.createAction(CreateRecordAction.NAME);
+                        createAction.setParameterValue(
+                                CreateRecordAction.PARAM_FILE_PLAN, filePlan);
 
-                Rule declareRule = new Rule();
-                declareRule.setRuleType(INBOUND);
-                declareRule.setTitle(generate());
-                declareRule.setAction(createAction);
-                declareRule.setExecuteAsynchronously(true);
-                declareRule.applyToChildren(true);
-                ruleService.saveRule(folder, declareRule);
+                        Rule declareRule = new Rule();
+                        declareRule.setRuleType(INBOUND);
+                        declareRule.setTitle(generate());
+                        declareRule.setAction(createAction);
+                        declareRule.setExecuteAsynchronously(true);
+                        declareRule.applyToChildren(true);
+                        ruleService.saveRule(folder, declareRule);
 
-                Action fileAction = actionService.createAction(FileToAction.NAME);
-                fileAction.setParameterValue(FileToAction.PARAM_PATH, PATH);
-                fileAction.setParameterValue(FileToAction.PARAM_CREATE_RECORD_PATH, true);
+                        Action fileAction = actionService.createAction(FileToAction.NAME);
+                        fileAction.setParameterValue(FileToAction.PARAM_PATH, PATH);
+                        fileAction.setParameterValue(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
-                Rule fileRule = new Rule();
-                fileRule.setRuleType(INBOUND);
-                fileRule.setTitle(generate());
-                fileRule.setAction(fileAction);
-                fileRule.setExecuteAsynchronously(true);
-                ruleService.saveRule(unfiledContainer, fileRule);
+                        Rule fileRule = new Rule();
+                        fileRule.setRuleType(INBOUND);
+                        fileRule.setTitle(generate());
+                        fileRule.setAction(fileAction);
+                        fileRule.setExecuteAsynchronously(true);
+                        ruleService.saveRule(unfiledContainer, fileRule);
 
-                return null;
-            }
+                        return null;
+                    }
 
-            @Override
-            public void test(Void result) throws Exception
-            {
-                assertFalse(ruleService.getRules(folder).isEmpty());
-                assertFalse(ruleService.getRules(unfiledContainer).isEmpty());
-            }
-        });
+                    @Override
+                    public void test(Void result) throws Exception {
+                        assertFalse(ruleService.getRules(folder).isEmpty());
+                        assertFalse(ruleService.getRules(unfiledContainer).isEmpty());
+                    }
+                });
 
-        doTestInTransaction(new Test<Void>()
-        {
-            NodeRef document;
+        doTestInTransaction(
+                new Test<Void>() {
+                    NodeRef document;
 
-            @Override
-            public Void run()
-            {
-                document = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
+                    @Override
+                    public Void run() {
+                        document =
+                                fileFolderService
+                                        .create(folder, generate(), TYPE_CONTENT)
+                                        .getNodeRef();
 
-                return null;
-            }
+                        return null;
+                    }
 
-            @Override
-            public void test(Void result) throws InterruptedException
-            {
-                Thread.sleep(10000);
+                    @Override
+                    public void test(Void result) throws InterruptedException {
+                        Thread.sleep(10000);
 
-                assertEquals(permissionService.hasPermission(document, READ_RECORDS), ALLOWED);
-                assertTrue(recordService.isFiled(document));
-                assertNotNull(converter.toJSON(document, true));
-            }
-        }, user);
+                        assertEquals(
+                                permissionService.hasPermission(document, READ_RECORDS), ALLOWED);
+                        assertTrue(recordService.isFiled(document));
+                        assertNotNull(converter.toJSON(document, true));
+                    }
+                },
+                user);
     }
 }

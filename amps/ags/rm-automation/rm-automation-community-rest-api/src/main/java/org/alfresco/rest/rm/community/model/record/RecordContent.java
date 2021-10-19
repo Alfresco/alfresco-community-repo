@@ -28,13 +28,13 @@ package org.alfresco.rest.rm.community.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.alfresco.utility.model.TestModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for record content field
@@ -48,17 +48,16 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecordContent extends TestModel
-{
-    @JsonProperty (required = true)
+public class RecordContent extends TestModel {
+    @JsonProperty(required = true)
     private String mimeType;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String mimeTypeName;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private Integer sizeInBytes;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String encoding;
 }

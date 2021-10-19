@@ -26,11 +26,8 @@
  */
 package org.alfresco.rest.rm.community.model.rules;
 
-/**
- * Action values.
- */
-public enum ActionsOnRule
-{
+/** Action values. */
+public enum ActionsOnRule {
     COMPLETE_RECORD("declareRecord"),
     REOPEN_RECORD("undeclareRecord"),
     OPEN_RECORD_FOLDER("openRecordFolder"),
@@ -54,13 +51,11 @@ public enum ActionsOnRule
 
     private String actionValue;
 
-    ActionsOnRule(String value)
-    {
+    ActionsOnRule(String value) {
         this.actionValue = value;
     }
 
-    public String getActionValue()
-    {
+    public String getActionValue() {
         return actionValue;
     }
 }

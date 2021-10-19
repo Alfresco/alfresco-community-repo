@@ -4,32 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.node;
-
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -47,10 +41,15 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+
 @Category(BaseSpringTestsCategory.class)
 @Transactional
-public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
-{
+public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest {
 
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/NodeRefTestModel";
 
@@ -90,54 +89,64 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
     private DictionaryDAO dictionaryDAO;
 
-    public NodeRefPropertyMethodInterceptorTest()
-    {
+    public NodeRefPropertyMethodInterceptorTest() {
         super();
     }
 
     @Before
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         mlAwareNodeService = (NodeService) applicationContext.getBean("mlAwareNodeService");
         nodeService = (NodeService) applicationContext.getBean("nodeService");
         dictionaryDAO = (DictionaryDAO) applicationContext.getBean("dictionaryDAO");
 
-        authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
+        authenticationComponent =
+                (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
 
         authenticationComponent.setSystemUserAsCurrentUser();
 
         ClassLoader cl = BaseNodeServiceTest.class.getClassLoader();
-        InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/node/NodeRefTestModel.xml");
+        InputStream modelStream =
+                cl.getResourceAsStream("org/alfresco/repo/node/NodeRefTestModel.xml");
         assertNotNull(modelStream);
         M2Model model = M2Model.createModel(modelStream);
         dictionaryDAO.putModel(model);
 
-        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        StoreRef storeRef =
+                nodeService.createStore(
+                        StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
-
     }
 
     @After
-    public void after() throws Exception
-    {
-        try
-        {
+    public void after() throws Exception {
+        try {
             authenticationComponent.clearCurrentSecurityContext();
-        }
-        catch (Throwable e)
-        {
+        } catch (Throwable e) {
             // do nothing
         }
     }
 
     @Test
-    public void testOnRead()
-    {
+    public void testOnRead() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         // Add aspect
 
@@ -196,16 +205,23 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoryProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoryProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp))
+                        .size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNull(nodeService.getProperty(n1, aspectCategoryProp));
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
@@ -214,10 +230,12 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(0, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNull(nodeService.getProperties(n1).get(aspectCategoryProp));
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNull(nodeService.getProperties(n1).get(aspectNoderefProp));
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
 
         // Set valid node ref
 
@@ -228,30 +246,45 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoryProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoryProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp))
+                        .size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNull(nodeService.getProperty(n1, aspectCategoryProp));
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectNoderefProp));
         assertNotNull(nodeService.getProperty(n1, aspectNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
-        assertTrue(((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next() instanceof NodeRef);
+        assertTrue(
+                ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next()
+                        instanceof NodeRef);
         assertNull(nodeService.getProperties(n1).get(aspectCategoryProp));
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefProp));
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
-        assertTrue(((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).iterator().next() instanceof NodeRef);
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertTrue(
+                ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp))
+                                .iterator()
+                                .next()
+                        instanceof NodeRef);
 
         // Set valid cat
 
@@ -263,33 +296,54 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoryProp));
         assertTrue(nodeService.getProperty(n1, aspectCategoryProp) instanceof NodeRef);
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoryProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp))
+                        .size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectCategoryProp));
         assertTrue(nodeService.getProperty(n1, aspectCategoryProp) instanceof NodeRef);
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
-        assertTrue(((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).iterator().next() instanceof NodeRef);
+        assertTrue(
+                ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).iterator().next()
+                        instanceof NodeRef);
         assertNotNull(nodeService.getProperty(n1, aspectNoderefProp));
         assertNotNull(nodeService.getProperty(n1, aspectNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
-        assertTrue(((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next() instanceof NodeRef);
+        assertTrue(
+                ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next()
+                        instanceof NodeRef);
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoryProp));
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
-        assertTrue(((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).iterator().next() instanceof NodeRef);
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertTrue(
+                ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp))
+                                .iterator()
+                                .next()
+                        instanceof NodeRef);
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefProp));
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
-        assertTrue(((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).iterator().next() instanceof NodeRef);
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertTrue(
+                ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp))
+                                .iterator()
+                                .next()
+                        instanceof NodeRef);
 
         // Set empty list
 
@@ -297,21 +351,30 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         mlAwareNodeService.setProperty(n1, aspectNoderefsProp, new ArrayList<NodeRef>());
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp))
+                        .size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectNoderefsProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
 
         // Set invalid noderef in list
 
@@ -321,21 +384,30 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         mlAwareNodeService.setProperty(n1, aspectNoderefsProp, cats);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp))
+                        .size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectNoderefsProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
 
         // Set valid ref in list
 
@@ -345,23 +417,38 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         mlAwareNodeService.setProperty(n1, aspectNoderefsProp, cats);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp))
+                        .size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
-        assertTrue(((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next() instanceof NodeRef);
+        assertTrue(
+                ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next()
+                        instanceof NodeRef);
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
-        assertTrue(((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).iterator().next() instanceof NodeRef);
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertTrue(
+                ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp))
+                                .iterator()
+                                .next()
+                        instanceof NodeRef);
 
         // set valid cat in list
 
@@ -371,25 +458,46 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         mlAwareNodeService.setProperty(n1, aspectNoderefsProp, cats);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp))
+                        .size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
-        assertTrue( ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).iterator().next() instanceof NodeRef);
+        assertTrue(
+                ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).iterator().next()
+                        instanceof NodeRef);
         assertNotNull(nodeService.getProperty(n1, aspectNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
-        assertTrue(((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next() instanceof NodeRef);
+        assertTrue(
+                ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).iterator().next()
+                        instanceof NodeRef);
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
-        assertTrue(((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).iterator().next() instanceof NodeRef);
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertTrue(
+                ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp))
+                                .iterator()
+                                .next()
+                        instanceof NodeRef);
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
-        assertTrue(((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).iterator().next() instanceof NodeRef);
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertTrue(
+                ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp))
+                                .iterator()
+                                .next()
+                        instanceof NodeRef);
 
         // Test list with invalid, noderef and cat
 
@@ -401,32 +509,53 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         mlAwareNodeService.setProperty(n1, aspectNoderefsProp, cats);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(3, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                3, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(3, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                3, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(3, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                3,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectCategoriesProp))
+                        .size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(3, ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                3,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, aspectNoderefsProp));
         assertEquals(2, ((Collection) nodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
-
+        assertEquals(
+                2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testAddAspectNull()
-    {
+    public void testAddAspectNull() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         // Add aspect
 
@@ -454,13 +583,26 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testAddAspectNullValues()
-    {
+    public void testAddAspectNullValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -497,14 +639,27 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testAddAspectInvalidValues()
-    {
+    public void testAddAspectInvalidValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
         NodeRef testInvalid = invalidNodeRef;
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -514,7 +669,7 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties2.put(aspectCategoriesProp, invalidNodeRef);
         properties3.put(aspectNoderefProp, invalidNodeRef);
         properties4.put(aspectNoderefsProp, invalidNodeRef);
-        
+
         assertEquals(testInvalid, invalidNodeRef);
 
         // Add aspect
@@ -543,13 +698,26 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testAddAspectValidNode()
-    {
+    public void testAddAspectValidNode() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -586,13 +754,26 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testAddAspectValidCategory()
-    {
+    public void testAddAspectValidCategory() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -629,13 +810,26 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testAddAspectEmptyList()
-    {
+    public void testAddAspectEmptyList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -653,31 +847,52 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.addAspect(n1, noderefsAspect, properties4);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testAddAspectInvalidList()
-    {
+    public void testAddAspectInvalidList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -694,35 +909,56 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.addAspect(n1, categoriesAspect, properties2);
         nodeService.addAspect(n1, noderefAspect, properties3);
         nodeService.addAspect(n1, noderefsAspect, properties4);
-        
+
         assertEquals(1, properties4.size());
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testAddAspectNodeRefList()
-    {
+    public void testAddAspectNodeRefList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -741,31 +977,52 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.addAspect(n1, noderefsAspect, properties4);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testAddAspectCatList()
-    {
+    public void testAddAspectCatList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -784,31 +1041,52 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.addAspect(n1, noderefsAspect, properties4);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testAddAspectMixedList()
-    {
+    public void testAddAspectMixedList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
 
-        NodeRef n1 = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
+        NodeRef n1 =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
 
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties1 = new HashMap<QName, Serializable>();
         HashMap<QName, Serializable> properties2 = new HashMap<QName, Serializable>();
@@ -829,30 +1107,52 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.addAspect(n1, noderefsAspect, properties4);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(2, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                2, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(2, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                2, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testCreateNodeNull()
-    {
+    public void testCreateNodeNull() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, null).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                null)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, aspectCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
@@ -873,10 +1173,16 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testCreateNodeNullValues()
-    {
+    public void testCreateNodeNullValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(aspectCategoryProp, null);
@@ -884,7 +1190,15 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectNoderefProp, null);
         properties.put(aspectNoderefsProp, null);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, aspectCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
@@ -905,10 +1219,16 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testCreateNodeInvalidValues()
-    {
+    public void testCreateNodeInvalidValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(aspectCategoryProp, invalidNodeRef);
@@ -916,7 +1236,15 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectNoderefProp, invalidNodeRef);
         properties.put(aspectNoderefsProp, invalidNodeRef);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoryProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
@@ -937,10 +1265,16 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testCreateNodeNodeRefValues()
-    {
+    public void testCreateNodeNodeRefValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(aspectCategoryProp, rootNodeRef);
@@ -948,7 +1282,15 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectNoderefProp, rootNodeRef);
         properties.put(aspectNoderefsProp, rootNodeRef);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoryProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
@@ -969,10 +1311,16 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testCreateNodeCatValues()
-    {
+    public void testCreateNodeCatValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(aspectCategoryProp, cat);
@@ -980,7 +1328,15 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectNoderefProp, cat);
         properties.put(aspectNoderefsProp, cat);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoryProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
@@ -1001,10 +1357,16 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testCreateEmptyListValues()
-    {
+    public void testCreateEmptyListValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         ArrayList<NodeRef> val = new ArrayList<NodeRef>();
@@ -1012,31 +1374,53 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectCategoriesProp, val);
         properties.put(aspectNoderefsProp, val);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testCreateInvalidListValues()
-    {
+    public void testCreateInvalidListValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         ArrayList<NodeRef> val = new ArrayList<NodeRef>();
@@ -1045,31 +1429,53 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectCategoriesProp, val);
         properties.put(aspectNoderefsProp, val);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testCreateNodeRefListValues()
-    {
+    public void testCreateNodeRefListValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         ArrayList<NodeRef> val = new ArrayList<NodeRef>();
@@ -1078,31 +1484,53 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectCategoriesProp, val);
         properties.put(aspectNoderefsProp, val);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testCreateCatListValues()
-    {
+    public void testCreateCatListValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         ArrayList<NodeRef> val = new ArrayList<NodeRef>();
@@ -1111,31 +1539,53 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectCategoriesProp, val);
         properties.put(aspectNoderefsProp, val);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testCreateMixedListValues()
-    {
+    public void testCreateMixedListValues() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         ArrayList<NodeRef> val = new ArrayList<NodeRef>();
@@ -1146,33 +1596,62 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         properties.put(aspectCategoriesProp, val);
         properties.put(aspectNoderefsProp, val);
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER, properties).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                ContentModel.TYPE_FOLDER,
+                                properties)
+                        .getChildRef();
 
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(3, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                3, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(3, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                3, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectCategoriesProp));
-        assertEquals(3, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
+        assertEquals(
+                3, ((Collection) mlAwareNodeService.getProperty(n1, aspectCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, aspectNoderefsProp));
-        assertEquals(3, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
+        assertEquals(
+                3, ((Collection) mlAwareNodeService.getProperty(n1, aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(aspectCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(aspectNoderefsProp));
-        assertEquals(2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
+        assertEquals(
+                2, ((Collection) nodeService.getProperties(n1).get(aspectNoderefsProp)).size());
     }
 
     @Test
-    public void testSetPropertyNull()
-    {
+    public void testSetPropertyNull() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1215,12 +1694,25 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testSetPropertyInvalid()
-    {
+    public void testSetPropertyInvalid() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1263,12 +1755,25 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testSetPropertyNodeRef()
-    {
+    public void testSetPropertyNodeRef() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1301,7 +1806,9 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNull(nodeService.getProperty(n1, typeCategoryProp));
         assertNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertNotNull(nodeService.getProperty(n1, typeNoderefProp));
@@ -1315,12 +1822,25 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testSetPropertyCat()
-    {
+    public void testSetPropertyCat() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1346,16 +1866,21 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoryProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoryProp));
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
@@ -1364,20 +1889,33 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoryProp));
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefProp));
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
-
     }
 
     @Test
-    public void testSetPropertyEmptyList()
-    {
+    public void testSetPropertyEmptyList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
@@ -1394,30 +1932,49 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.setProperty(n1, typeNoderefsProp, values);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                0,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                0,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(0, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
     @Test
-    public void testSetPropertyNodeRefList()
-    {
+    public void testSetPropertyNodeRefList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
@@ -1435,30 +1992,49 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.setProperty(n1, typeNoderefsProp, values);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                0,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
     @Test
-    public void testSetPropertyCatList()
-    {
+    public void testSetPropertyCatList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
@@ -1477,30 +2053,49 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.setProperty(n1, typeNoderefsProp, values);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(2, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(2, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                2,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(2, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(2, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
     @Test
-    public void testSetPropertyMixedList()
-    {
+    public void testSetPropertyMixedList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
@@ -1520,30 +2115,49 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.setProperty(n1, typeNoderefsProp, values);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(2, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(2, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                2,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(2, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(2, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
     @Test
-    public void testSetPropertiesNull()
-    {
+    public void testSetPropertiesNull() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1589,12 +2203,25 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testSetPropertiesInvalid()
-    {
+    public void testSetPropertiesInvalid() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1640,12 +2267,25 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testSetPropertiesNodeRef()
-    {
+    public void testSetPropertiesNodeRef() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1681,7 +2321,9 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNull(nodeService.getProperty(n1, typeCategoryProp));
         assertNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertNotNull(nodeService.getProperty(n1, typeNoderefProp));
@@ -1695,12 +2337,25 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
     }
 
     @Test
-    public void testSetPropertiesCat()
-    {
+    public void testSetPropertiesCat() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
@@ -1729,16 +2384,21 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoryProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefProp));
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoryProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefProp));
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoryProp));
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
@@ -1747,20 +2407,33 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoryProp));
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefProp));
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
-
     }
 
     @Test
-    public void testSetPropertiesEmptyList()
-    {
+    public void testSetPropertiesEmptyList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
@@ -1780,30 +2453,49 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         nodeService.setProperties(n1, properties);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                0,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                0,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(0, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
     @Test
-    public void testSetPropertiesNodeRefList()
-    {
+    public void testSetPropertiesNodeRefList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
@@ -1820,34 +2512,53 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(typeCategoriesProp, values);
         properties.put(typeNoderefsProp, values);
-        
+
         nodeService.setProperties(n1, properties);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(0, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                0,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(0, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(0, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                0, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
     @Test
-    public void testSetPropertiesCatList()
-    {
+    public void testSetPropertiesCatList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
@@ -1864,34 +2575,53 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(typeCategoriesProp, values);
         properties.put(typeNoderefsProp, values);
-        
+
         nodeService.setProperties(n1, properties);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
 
     @Test
-    public void testSetPropertiesMixedList()
-    {
+    public void testSetPropertiesMixedList() {
         NodeRef invalidNodeRef = new NodeRef(rootNodeRef.getStoreRef(), "InvalidNode");
-        NodeRef cat = mlAwareNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}cat"), ContentModel.TYPE_CATEGORY).getChildRef();
+        NodeRef cat =
+                mlAwareNodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}cat"),
+                                ContentModel.TYPE_CATEGORY)
+                        .getChildRef();
 
-        NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), testType).getChildRef();
+        NodeRef n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{namespace}one"),
+                                testType)
+                        .getChildRef();
 
         assertNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
         assertNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
@@ -1910,25 +2640,30 @@ public class NodeRefPropertyMethodInterceptorTest extends BaseSpringTest
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(typeCategoriesProp, values);
         properties.put(typeNoderefsProp, values);
-        
+
         nodeService.setProperties(n1, properties);
 
         assertNotNull(mlAwareNodeService.getProperty(n1, typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) mlAwareNodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(2, ((Collection) mlAwareNodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(mlAwareNodeService.getProperties(n1).get(typeNoderefsProp));
-        assertEquals(2, ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
+        assertEquals(
+                2,
+                ((Collection) mlAwareNodeService.getProperties(n1).get(typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeCategoriesProp));
         assertEquals(1, ((Collection) nodeService.getProperty(n1, typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperty(n1, typeNoderefsProp));
         assertEquals(2, ((Collection) nodeService.getProperty(n1, typeNoderefsProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeCategoriesProp));
-        assertEquals(1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
+        assertEquals(
+                1, ((Collection) nodeService.getProperties(n1).get(typeCategoriesProp)).size());
         assertNotNull(nodeService.getProperties(n1).get(typeNoderefsProp));
         assertEquals(2, ((Collection) nodeService.getProperties(n1).get(typeNoderefsProp)).size());
     }
-
 }

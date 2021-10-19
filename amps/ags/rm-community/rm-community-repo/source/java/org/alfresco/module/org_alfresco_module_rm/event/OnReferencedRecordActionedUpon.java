@@ -27,12 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.event;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
@@ -53,6 +47,12 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Behaviour executed when a references record is actioned upon.
  *
@@ -60,10 +60,8 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 @BehaviourBean
 public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEventTypeImpl
-                                            implements RecordsManagementModel,
-                                            BeforeRMActionExecution
+        implements RecordsManagementModel, BeforeRMActionExecution {
 
-{
     /** Disposition service */
     private DispositionService dispositionService;
 
@@ -85,68 +83,48 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     /** Reference */
     private QName reference;
 
-    /**
-     * @param dispositionService    the disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    /** @param dispositionService the disposition service */
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
-    /**
-     * @param recordsManagementActionService the recordsManagementActionService to set
-     */
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
+    /** @param recordsManagementActionService the recordsManagementActionService to set */
+    public void setRecordsManagementActionService(
+            RecordsManagementActionService recordsManagementActionService) {
         this.recordsManagementActionService = recordsManagementActionService;
     }
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
+    /** @param recordService record service */
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
-    /**
-     * @param recordFolderService record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
+    /** @param recordFolderService record folder service */
+    public void setRecordFolderService(RecordFolderService recordFolderService) {
         this.recordFolderService = recordFolderService;
     }
 
-    /**
-     * @param reference reference name
-     */
-    public void setReferenceName(String reference)
-    {
+    /** @param reference reference name */
+    public void setReferenceName(String reference) {
         this.reference = QName.createQName(reference);
     }
 
-    /**
-     * @param actionName    action name
-     */
-    public void setActionName(String actionName)
-    {
+    /** @param actionName action name */
+    public void setActionName(String actionName) {
         this.actionName = actionName;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl#isAutomaticEvent()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl#isAutomaticEvent()
      */
     @Override
-    public boolean isAutomaticEvent()
-    {
+    public boolean isAutomaticEvent() {
         return true;
     }
 
@@ -158,99 +136,85 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
      * @param parameters
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             type = "rma:filePlanComponent",
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
-    public void beforeRMActionExecution(final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters)
-    {
-        AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                if (nodeService.exists(nodeRef) && name.equals(actionName))
-                {
-                    QName type = nodeService.getType(nodeRef);
-                    if (TYPE_TRANSFER.equals(type))
-                    {
-                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
-                        for (ChildAssociationRef assoc : assocs)
-                        {
-                            processRecordFolder(assoc.getChildRef());
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
+    public void beforeRMActionExecution(
+            final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters) {
+        AuthenticationUtil.RunAsWork<Object> work =
+                new AuthenticationUtil.RunAsWork<Object>() {
+                    public Object doWork() {
+                        if (nodeService.exists(nodeRef) && name.equals(actionName)) {
+                            QName type = nodeService.getType(nodeRef);
+                            if (TYPE_TRANSFER.equals(type)) {
+                                List<ChildAssociationRef> assocs =
+                                        nodeService.getChildAssocs(
+                                                nodeRef,
+                                                ASSOC_TRANSFERRED,
+                                                RegexQNamePattern.MATCH_ALL);
+                                for (ChildAssociationRef assoc : assocs) {
+                                    processRecordFolder(assoc.getChildRef());
+                                }
+                            } else {
+                                processRecordFolder(nodeRef);
+                            }
                         }
-                    }
-                    else
-                    {
-                        processRecordFolder(nodeRef);
-                    }
-                }
 
-                return null;
-            }
-        };
+                        return null;
+                    }
+                };
 
         AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminUserName());
-
     }
 
-    private void processRecordFolder(NodeRef recordFolder)
-    {
-        if (recordService.isRecord(recordFolder))
-        {
+    private void processRecordFolder(NodeRef recordFolder) {
+        if (recordService.isRecord(recordFolder)) {
             processRecord(recordFolder);
-        }
-        else if (recordFolderService.isRecordFolder(recordFolder))
-        {
-            for (NodeRef record : recordService.getRecords(recordFolder))
-            {
+        } else if (recordFolderService.isRecordFolder(recordFolder)) {
+            for (NodeRef record : recordService.getRecords(recordFolder)) {
                 processRecord(record);
             }
         }
     }
 
-    private void processRecord(NodeRef record)
-    {
-        List<AssociationRef> fromAssocs = nodeService.getTargetAssocs(record, RegexQNamePattern.MATCH_ALL);
-        for (AssociationRef fromAssoc : fromAssocs)
-        {
-            if (reference.equals(fromAssoc.getTypeQName()))
-            {
+    private void processRecord(NodeRef record) {
+        List<AssociationRef> fromAssocs =
+                nodeService.getTargetAssocs(record, RegexQNamePattern.MATCH_ALL);
+        for (AssociationRef fromAssoc : fromAssocs) {
+            if (reference.equals(fromAssoc.getTypeQName())) {
                 NodeRef nodeRef = fromAssoc.getTargetRef();
                 doEventComplete(nodeRef);
             }
         }
 
-        List<AssociationRef> toAssocs = nodeService.getSourceAssocs(record, RegexQNamePattern.MATCH_ALL);
-        for (AssociationRef toAssoc : toAssocs)
-        {
-            if (reference.equals(toAssoc.getTypeQName()))
-            {
+        List<AssociationRef> toAssocs =
+                nodeService.getSourceAssocs(record, RegexQNamePattern.MATCH_ALL);
+        for (AssociationRef toAssoc : toAssocs) {
+            if (reference.equals(toAssoc.getTypeQName())) {
                 NodeRef nodeRef = toAssoc.getSourceRef();
                 doEventComplete(nodeRef);
             }
         }
     }
 
-    private void doEventComplete(NodeRef nodeRef)
-    {
+    private void doEventComplete(NodeRef nodeRef) {
         DispositionAction da = dispositionService.getNextDispositionAction(nodeRef);
-        if (da != null)
-        {
+        if (da != null) {
             List<EventCompletionDetails> events = da.getEventCompletionDetails();
-            for (EventCompletionDetails event : events)
-            {
-                RecordsManagementEvent rmEvent = getRecordsManagementEventService().getEvent(event.getEventName());
-                if (!event.isEventComplete() &&
-                    rmEvent.getType().equals(getName()))
-                {
+            for (EventCompletionDetails event : events) {
+                RecordsManagementEvent rmEvent =
+                        getRecordsManagementEventService().getEvent(event.getEventName());
+                if (!event.isEventComplete() && rmEvent.getType().equals(getName())) {
                     // Complete the event
                     Map<String, Serializable> params = new HashMap<>(3);
                     params.put(CompleteEventAction.PARAM_EVENT_NAME, event.getEventName());
-                    params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
+                    params.put(
+                            CompleteEventAction.PARAM_EVENT_COMPLETED_BY,
+                            AuthenticationUtil.getFullyAuthenticatedUser());
                     params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_AT, new Date());
-                    recordsManagementActionService.executeRecordsManagementAction(nodeRef, "completeEvent", params);
+                    recordsManagementActionService.executeRecordsManagementAction(
+                            nodeRef, "completeEvent", params);
 
                     break;
                 }

@@ -33,7 +33,8 @@ import org.junit.extensions.cpsuite.SuiteType;
 import org.junit.runner.RunWith;
 
 /**
- * Convenience test suite that runs all the tests. THIS HAS BEEN SPLIT INTO PARTS SO THAT THE BUILD TIME IS REDUCED.
+ * Convenience test suite that runs all the tests. THIS HAS BEEN SPLIT INTO PARTS SO THAT THE BUILD
+ * TIME IS REDUCED.
  *
  * @author Roy Wetherall
  * @since 2.1
@@ -42,34 +43,34 @@ import org.junit.runner.RunWith;
 @SuiteTypes({SuiteType.TEST_CLASSES, SuiteType.RUN_WITH_CLASSES, SuiteType.JUNIT38_TEST_CLASSES})
 @ClassnameFilters({
 
-        // The following packages are run by Pt2. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.destroy\\..*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.disposition\\..*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.dod\\..*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\..*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\..*Test",
-        "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\..*Test",
+    // The following packages are run by Pt2. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN
+    // AllTestSuitePt3.
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.destroy\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.disposition\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.dod\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\..*Test",
 
-        // Exclude all UnitTests
-        "!.*UnitTest",
+    // Exclude all UnitTests
+    "!.*UnitTest",
 
-        // Put the test classes you want to exclude here
-        "!.*DataLoadSystemTest",
-        "!.*RM2072Test",
-        "!.*RM2190Test",
-        "!.*RM981SystemTest",
-        "!.*RM3993Test",
-        "!.*RM4163Test",
-        "!.*RecordsManagementEventServiceImplTest",
-        "!.*RmRestApiTest",
-        "!.*NotificationServiceHelperSystemTest",
-        "!.*RetryingTransactionHelperBaseTest",
-        "!.*RMCaveatConfigServiceImplTest",
-        // This test is running successfully locally but not on bamboo (if executed as a single test).
-        // The problem can be reproduced if the whole test suite is run locally as well.
-        // Tests should not be dependant on other test classes and should run in any order without any problems.
-        "!.*EmailMapScriptTest"
+    // Put the test classes you want to exclude here
+    "!.*DataLoadSystemTest",
+    "!.*RM2072Test",
+    "!.*RM2190Test",
+    "!.*RM981SystemTest",
+    "!.*RM3993Test",
+    "!.*RM4163Test",
+    "!.*RecordsManagementEventServiceImplTest",
+    "!.*RmRestApiTest",
+    "!.*NotificationServiceHelperSystemTest",
+    "!.*RetryingTransactionHelperBaseTest",
+    "!.*RMCaveatConfigServiceImplTest",
+    // This test is running successfully locally but not on bamboo (if executed as a single test).
+    // The problem can be reproduced if the whole test suite is run locally as well.
+    // Tests should not be dependant on other test classes and should run in any order without any
+    // problems.
+    "!.*EmailMapScriptTest"
 })
-public class AllTestSuitePt2
-{
-}
+public class AllTestSuitePt2 {}

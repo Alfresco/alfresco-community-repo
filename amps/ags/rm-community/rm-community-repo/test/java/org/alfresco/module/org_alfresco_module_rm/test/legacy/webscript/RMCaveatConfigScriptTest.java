@@ -27,9 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.util.GUID;
 import org.json.JSONArray;
@@ -41,21 +38,18 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
-/**
- *
- *
- * @author Mark Rogers
- */
+import java.util.ArrayList;
+import java.util.List;
+
+/** @author Mark Rogers */
 @SuppressWarnings("unused")
-public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
-{
-    protected final static String RM_LIST          = "rmc:smListTest";
-    protected final static String RM_LIST_URI_ELEM = "rmc_smListTest";
+public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase {
+    protected static final String RM_LIST = "rmc:smListTest";
+    protected static final String RM_LIST_URI_ELEM = "rmc_smListTest";
 
     private static final String URL_RM_CONSTRAINTS = "/api/rma/admin/rmconstraints";
 
-    public void testGetRMConstraints() throws Exception
-    {
+    public void testGetRMConstraints() throws Exception {
         {
             Response response = sendRequest(new GetRequest(URL_RM_CONSTRAINTS), Status.STATUS_OK);
 
@@ -64,9 +58,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             assertNotNull(top.getJSONArray("data"));
         }
 
-        /**
-         * Add a list, then get it back via the list rest script
-         */
+        /** Add a list, then get it back via the list rest script */
         caveatConfigService.addRMConstraint(RM_LIST, "my title", new String[0]);
 
         {
@@ -76,47 +68,34 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             JSONArray data = top.getJSONArray("data");
 
             boolean found = false;
-            assertTrue("no data returned",  data.length() > 0);
-            for(int i = 0; i < data.length(); i++)
-            {
+            assertTrue("no data returned", data.length() > 0);
+            for (int i = 0; i < data.length(); i++) {
                 JSONObject obj = data.getJSONObject(i);
-                String name = (String)obj.getString("constraintName");
+                String name = (String) obj.getString("constraintName");
                 assertNotNull("constraintName is null", name);
-                String url = (String)obj.getString("url");
+                String url = (String) obj.getString("url");
                 assertNotNull("detail url is null", name);
-                if(name.equalsIgnoreCase(RM_LIST))
-                {
+                if (name.equalsIgnoreCase(RM_LIST)) {
                     found = true;
                 }
 
-                /**
-                 * vallidate the detail URL returned
-                 */
+                /** vallidate the detail URL returned */
                 sendRequest(new GetRequest(url), Status.STATUS_OK);
             }
         }
     }
 
-    /**
-     *
-     * @throws Exception
-     */
-    public void testGetRMConstraint() throws Exception
-    {
-        /**
-         * Delete the list to remove any junk then recreate it.
-         */
-        if (caveatConfigService.getRMConstraint(RM_LIST) != null)
-        {
+    /** @throws Exception */
+    public void testGetRMConstraint() throws Exception {
+        /** Delete the list to remove any junk then recreate it. */
+        if (caveatConfigService.getRMConstraint(RM_LIST) != null) {
             caveatConfigService.deleteRMConstraint(RM_LIST);
         }
         caveatConfigService.addRMConstraint(RM_LIST, "my title", new String[0]);
 
-
         createUser("fbloggs");
         createUser("jrogers");
         createUser("jdoe");
-
 
         List<String> values = new ArrayList<>();
         values.add("NOFORN");
@@ -125,9 +104,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
         caveatConfigService.updateRMConstraintListAuthority(RM_LIST, "jrogers", values);
         caveatConfigService.updateRMConstraintListAuthority(RM_LIST, "jdoe", values);
 
-        /**
-         * Positive test Get the constraint
-         */
+        /** Positive test Get the constraint */
         {
             String url = URL_RM_CONSTRAINTS + "/" + RM_LIST_URI_ELEM;
             Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
@@ -138,27 +115,23 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             String constraintName = data.getString("constraintName");
             assertNotNull("constraintName is null", constraintName);
-//            JSONArray allowedValues = data.getJSONArray("allowedValues");
+            //            JSONArray allowedValues = data.getJSONArray("allowedValues");
 
-//            assertTrue("values not correct", compare(array, allowedValues));
+            //            assertTrue("values not correct", compare(array, allowedValues));
 
-//            JSONArray constraintDetails = data.getJSONArray("constraintDetails");
-//
-//            assertTrue("details array does not contain 3 elements", constraintDetails.length() == 3);
-//            for(int i =0; i < constraintDetails.length(); i++)
-//            {
-//                JSONObject detail = constraintDetails.getJSONObject(i);
-//            }
+            //            JSONArray constraintDetails = data.getJSONArray("constraintDetails");
+            //
+            //            assertTrue("details array does not contain 3 elements",
+            // constraintDetails.length() == 3);
+            //            for(int i =0; i < constraintDetails.length(); i++)
+            //            {
+            //                JSONObject detail = constraintDetails.getJSONObject(i);
+            //            }
         }
 
-        /**
-         *
-         * @throws Exception
-         */
+        /** @throws Exception */
 
-        /**
-         * Negative test - Attempt to get a constraint that does exist
-         */
+        /** Negative test - Attempt to get a constraint that does exist */
         {
             String url = URL_RM_CONSTRAINTS + "/" + "rmc_wibble";
             sendRequest(new GetRequest(url), Status.STATUS_NOT_FOUND);
@@ -167,18 +140,14 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
         deleteUser("fbloggs");
         deleteUser("jrogers");
         deleteUser("jdoe");
-
-
-
-
     }
 
     /**
      * Create an RM Constraint
+     *
      * @throws Exception
      */
-    public void testUpdateRMConstraint() throws Exception
-    {
+    public void testUpdateRMConstraint() throws Exception {
 
         String constraintName = null;
         /*
@@ -194,23 +163,20 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             JSONObject obj = new JSONObject();
             obj.put("allowedValues", array);
             obj.put("constraintTitle", title);
-            /**
-             * Now do a post to create a new list
-             */
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"), Status.STATUS_OK);
+            /** Now do a post to create a new list */
+            Response response =
+                    sendRequest(
+                            new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"),
+                            Status.STATUS_OK);
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
             constraintName = data.getString("constraintName");
             JSONArray allowedValues = data.getJSONArray("allowedValues");
             assertTrue("values not correct", compare(array, allowedValues));
-
         }
 
-        /**
-          * Now update both values and title - remove BANANA, PEACH, Add APPLE.
-          */
-
+        /** Now update both values and title - remove BANANA, PEACH, Add APPLE. */
         {
             String newTitle = "this is the new title";
             JSONArray array = new JSONArray();
@@ -224,10 +190,14 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             System.out.println(obj.toString());
 
-            /**
-              * Now do a post to update list
-              */
-            Response response = sendRequest(new PutRequest(URL_RM_CONSTRAINTS + "/" + constraintName, obj.toString(), "application/json"), Status.STATUS_OK);
+            /** Now do a post to update list */
+            Response response =
+                    sendRequest(
+                            new PutRequest(
+                                    URL_RM_CONSTRAINTS + "/" + constraintName,
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
             // Check the response
             JSONObject top = new JSONObject(response.getContentAsString());
             JSONObject data = top.getJSONObject("data");
@@ -259,12 +229,9 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             assertEquals(constraintName2, constraintName);
             assertNotNull(constraintTitle2);
             assertEquals("title not as expected", constraintTitle2, newTitle);
-
         }
 
-        /**
-         * Now put without allowed values
-         */
+        /** Now put without allowed values */
         {
             String newTitle = "update with no values";
 
@@ -273,33 +240,34 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             obj.put("constraintName", RM_LIST);
             obj.put("constraintTitle", newTitle);
 
-            /**
-              * Now do a put to update a new list
-              */
+            /** Now do a put to update a new list */
+            Response response =
+                    sendRequest(
+                            new PutRequest(
+                                    URL_RM_CONSTRAINTS + "/" + constraintName,
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
+            // Check the response
+            JSONObject top = new JSONObject(response.getContentAsString());
 
-                Response response = sendRequest(new PutRequest(URL_RM_CONSTRAINTS + "/" + constraintName, obj.toString(), "application/json"), Status.STATUS_OK);
-                // Check the response
-                JSONObject top = new JSONObject(response.getContentAsString());
+            JSONObject data = top.getJSONObject("data");
+            System.out.println(response.getContentAsString());
 
-                JSONObject data = top.getJSONObject("data");
-                System.out.println(response.getContentAsString());
+            String url = data.getString("url");
+            String constraintName2 = data.getString("constraintName");
+            String constraintTitle = data.getString("constraintTitle");
+            JSONArray allowedValues = data.getJSONArray("allowedValues");
 
-                String url = data.getString("url");
-                String constraintName2 = data.getString("constraintName");
-                String constraintTitle = data.getString("constraintTitle");
-                JSONArray allowedValues = data.getJSONArray("allowedValues");
+            assertTrue(allowedValues.length() == 2);
 
-                assertTrue(allowedValues.length() == 2);
-
-                assertNotNull(url);
-                assertEquals(constraintName2, constraintName);
-                assertNotNull(constraintTitle);
-                assertEquals("title not as expected", constraintTitle, newTitle);
+            assertNotNull(url);
+            assertEquals(constraintName2, constraintName);
+            assertNotNull(constraintTitle);
+            assertEquals("title not as expected", constraintTitle, newTitle);
         }
 
-        /**
-         * Now post without constraint Title
-         */
+        /** Now post without constraint Title */
         {
             JSONArray array = new JSONArray();
             array.put("LEMON");
@@ -310,21 +278,22 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             System.out.println(obj.toString());
 
-            /**
-              * Now do a Put to update the list - title should remain
-              */
+            /** Now do a Put to update the list - title should remain */
+            Response response =
+                    sendRequest(
+                            new PutRequest(
+                                    URL_RM_CONSTRAINTS + "/" + constraintName,
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
+            // Check the response
+            JSONObject top = new JSONObject(response.getContentAsString());
 
-                Response response = sendRequest(new PutRequest(URL_RM_CONSTRAINTS + "/" + constraintName, obj.toString(), "application/json"), Status.STATUS_OK);
-                // Check the response
-                JSONObject top = new JSONObject(response.getContentAsString());
-
-                JSONObject data = top.getJSONObject("data");
-                System.out.println(response.getContentAsString());
+            JSONObject data = top.getJSONObject("data");
+            System.out.println(response.getContentAsString());
         }
 
-        /**
-         * Add a new value (PEAR) to the list
-         */
+        /** Add a new value (PEAR) to the list */
         {
             JSONArray array = new JSONArray();
             array.put("PEAR");
@@ -336,7 +305,13 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             System.out.println(obj.toString());
 
-            Response response = sendRequest(new PutRequest(URL_RM_CONSTRAINTS + "/" + constraintName, obj.toString(), "application/json"), Status.STATUS_OK);
+            Response response =
+                    sendRequest(
+                            new PutRequest(
+                                    URL_RM_CONSTRAINTS + "/" + constraintName,
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
             // Check the response
             JSONObject top = new JSONObject(response.getContentAsString());
 
@@ -344,9 +319,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             System.out.println(response.getContentAsString());
         }
 
-        /**
-         * Remove a value (PEAR) from the list
-         */
+        /** Remove a value (PEAR) from the list */
         {
             JSONArray array = new JSONArray();
             array.put("APPLE");
@@ -357,31 +330,31 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             System.out.println(obj.toString());
 
-            Response response = sendRequest(new PutRequest(URL_RM_CONSTRAINTS + "/" + constraintName, obj.toString(), "application/json"), Status.STATUS_OK);
+            Response response =
+                    sendRequest(
+                            new PutRequest(
+                                    URL_RM_CONSTRAINTS + "/" + constraintName,
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
             // Check the response
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
             System.out.println(response.getContentAsString());
         }
-
     }
-
 
     /**
      * Create an RM Constraint
+     *
      * @throws Exception
      */
-    public void testCreateRMConstraint() throws Exception
-    {
-        /**
-         * Delete the list to remove any junk then recreate it.
-         */
-        //caveatConfigService.deleteRMConstraint(RM_LIST);
+    public void testCreateRMConstraint() throws Exception {
+        /** Delete the list to remove any junk then recreate it. */
+        // caveatConfigService.deleteRMConstraint(RM_LIST);
 
-        /**
-         * create a new list
-         */
+        /** create a new list */
         {
             JSONArray array = new JSONArray();
             array.put("NOFORN");
@@ -394,17 +367,15 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             System.out.println(obj.toString());
 
-            /**
-             * Now do a post to create a new list
-             */
+            /** Now do a post to create a new list */
+            Response response =
+                    sendRequest(
+                            new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"),
+                            Status.STATUS_OK);
+            // Check the response
+        }
 
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"), Status.STATUS_OK);
-                // Check the response
-       }
-
-        /**
-         * Now go and get the constraint
-         */
+        /** Now go and get the constraint */
         {
             String url = URL_RM_CONSTRAINTS + "/" + RM_LIST_URI_ELEM;
             Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
@@ -416,18 +387,17 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             String constraintName = data.getString("constraintName");
             assertNotNull("constraintName is null", constraintName);
 
-//            JSONArray constraintDetails = data.getJSONArray("constraintDetails");
-//
-//            assertTrue("details array does not contain 3 elements", constraintDetails.length() == 3);
-//            for(int i =0; i < constraintDetails.length(); i++)
-//            {
-//                JSONObject detail = constraintDetails.getJSONObject(i);
-//            }
+            //            JSONArray constraintDetails = data.getJSONArray("constraintDetails");
+            //
+            //            assertTrue("details array does not contain 3 elements",
+            // constraintDetails.length() == 3);
+            //            for(int i =0; i < constraintDetails.length(); i++)
+            //            {
+            //                JSONObject detail = constraintDetails.getJSONObject(i);
+            //            }
         }
 
-        /**
-         * Now a constraint with a generated name
-         */
+        /** Now a constraint with a generated name */
         {
             String title = GUID.generate();
             JSONArray array = new JSONArray();
@@ -441,10 +411,11 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             System.out.println(obj.toString());
 
-            /**
-             * Now do a post to create a new list
-             */
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"), Status.STATUS_OK);
+            /** Now do a post to create a new list */
+            Response response =
+                    sendRequest(
+                            new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"),
+                            Status.STATUS_OK);
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
@@ -463,14 +434,9 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             assertNotNull(constraintTitle);
             assertEquals("title not as expected", constraintTitle, title);
             sendRequest(new GetRequest(url), Status.STATUS_OK);
+        }
 
-
-       }
-
-
-        /**
-         * Now a constraint with an empty list of values.
-         */
+        /** Now a constraint with an empty list of values. */
         {
             JSONArray array = new JSONArray();
 
@@ -481,63 +447,57 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             System.out.println(obj.toString());
 
-            /**
-             * Now do a post to create a new list
-             */
-
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"), Status.STATUS_OK);
+            /** Now do a post to create a new list */
+            Response response =
+                    sendRequest(
+                            new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"),
+                            Status.STATUS_OK);
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
             System.out.println(response.getContentAsString());
 
             // Check the response
-       }
+        }
 
-
-//        /**
-//         * Negative tests - duplicate list
-//         */
-//        {
-//            JSONArray array = new JSONArray();
-//            array.put("NOFORN");
-//            array.put("FGI");
-//
-//            JSONObject obj = new JSONObject();
-//            obj.put("allowedValues", array);
-//            obj.put("constraintName", RM_LIST);
-//            obj.put("constraintTitle", "this is the title");
-//
-//            System.out.println(obj.toString());
-//
-//            /**
-//             * Now do a post to create a new list
-//             */
-//            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"), Status.STATUS_CREATED);
-//           JSONObject top = new JSONObject(response.getContentAsString());
-//
-//            JSONObject data = top.getJSONObject("data");
-//            System.out.println(response.getContentAsString());
-//
-//            // Check the response
-//       }
-
+        //        /**
+        //         * Negative tests - duplicate list
+        //         */
+        //        {
+        //            JSONArray array = new JSONArray();
+        //            array.put("NOFORN");
+        //            array.put("FGI");
+        //
+        //            JSONObject obj = new JSONObject();
+        //            obj.put("allowedValues", array);
+        //            obj.put("constraintName", RM_LIST);
+        //            obj.put("constraintTitle", "this is the title");
+        //
+        //            System.out.println(obj.toString());
+        //
+        //            /**
+        //             * Now do a post to create a new list
+        //             */
+        //            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS,
+        // obj.toString(), "application/json"), Status.STATUS_CREATED);
+        //           JSONObject top = new JSONObject(response.getContentAsString());
+        //
+        //            JSONObject data = top.getJSONObject("data");
+        //            System.out.println(response.getContentAsString());
+        //
+        //            // Check the response
+        //       }
 
     }
 
-
-    public void testGetRMConstraintValues() throws Exception
-    {
+    public void testGetRMConstraintValues() throws Exception {
         createUser("fbloggs");
         createUser("jrogers");
         createUser("jdoe");
 
-        /**
-         * Delete the list to remove any junk then recreate it.
-         */
+        /** Delete the list to remove any junk then recreate it. */
         {
-            if (caveatConfigService.getRMConstraint(RM_LIST) != null)
-            {
+            if (caveatConfigService.getRMConstraint(RM_LIST) != null) {
                 caveatConfigService.deleteRMConstraint(RM_LIST);
             }
             caveatConfigService.addRMConstraint(RM_LIST, "my title", new String[0]);
@@ -550,9 +510,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             caveatConfigService.updateRMConstraintListAuthority(RM_LIST, "jdoe", values);
         }
 
-        /**
-         * Positive test Get the constraint
-         */
+        /** Positive test Get the constraint */
         {
             String url = URL_RM_CONSTRAINTS + "/" + RM_LIST_URI_ELEM + "/values";
             Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
@@ -572,22 +530,16 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             boolean fgiFound = false;
             boolean nofornFound = false;
 
-            for(int i =0; i < values.length(); i++)
-            {
+            for (int i = 0; i < values.length(); i++) {
                 JSONObject value = values.getJSONObject(i);
 
-                if(value.getString("valueName").equalsIgnoreCase("FGI"))
-                {
+                if (value.getString("valueName").equalsIgnoreCase("FGI")) {
                     fgiFound = true;
-
                 }
 
-                if(value.getString("valueName").equalsIgnoreCase("NOFORN"))
-                {
+                if (value.getString("valueName").equalsIgnoreCase("NOFORN")) {
                     nofornFound = true;
                 }
-
-
             }
             assertTrue("fgi not found", fgiFound);
             assertTrue("noforn not found", nofornFound);
@@ -598,23 +550,18 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
         deleteUser("jdoe");
     }
 
-
-
     /**
      * Update a value in a constraint
+     *
      * @throws Exception
      */
-    public void testUpdateRMConstraintValue() throws Exception
-    {
-        if (caveatConfigService.getRMConstraint(RM_LIST) != null)
-        {
+    public void testUpdateRMConstraintValue() throws Exception {
+        if (caveatConfigService.getRMConstraint(RM_LIST) != null) {
             caveatConfigService.deleteRMConstraint(RM_LIST);
         }
         caveatConfigService.addRMConstraint(RM_LIST, "my title", new String[0]);
 
-        /**
-         * Add some data to an empty list
-         */
+        /** Add some data to an empty list */
         {
             JSONArray values = new JSONArray();
 
@@ -637,13 +584,14 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             JSONObject obj = new JSONObject();
             obj.put("values", values);
 
-
-            /**
-             * Do the first update - should get back
-             * NOFORN - fbloggs, jdoe
-             * FGI - fbloggs, jdoe
-             */
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS + "/" + RM_LIST + "/values" , obj.toString(), "application/json"), Status.STATUS_OK);
+            /** Do the first update - should get back NOFORN - fbloggs, jdoe FGI - fbloggs, jdoe */
+            Response response =
+                    sendRequest(
+                            new PostRequest(
+                                    URL_RM_CONSTRAINTS + "/" + RM_LIST + "/values",
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
@@ -652,15 +600,12 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             JSONArray myValues = data.getJSONArray("values");
             assertTrue("two values not found", myValues.length() == 2);
-            for(int i = 0; i < myValues.length(); i++)
-            {
+            for (int i = 0; i < myValues.length(); i++) {
                 JSONObject myObj = myValues.getJSONObject(i);
             }
         }
 
-        /**
-         * Add to a new value, NOCON, fbloggs, jrogers
-         */
+        /** Add to a new value, NOCON, fbloggs, jrogers */
         {
             JSONArray values = new JSONArray();
 
@@ -674,19 +619,21 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             values.put(valueA);
 
-
             JSONObject obj = new JSONObject();
             obj.put("values", values);
 
-
             /**
-             * Add a new value - should get back
-             * NOFORN - fbloggs, jdoe
-             * FGI - fbloggs, jdoe
-             * NOCON - fbloggs, jrogers
+             * Add a new value - should get back NOFORN - fbloggs, jdoe FGI - fbloggs, jdoe NOCON -
+             * fbloggs, jrogers
              */
             System.out.println(obj.toString());
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS + "/" + RM_LIST + "/values" , obj.toString(), "application/json"), Status.STATUS_OK);
+            Response response =
+                    sendRequest(
+                            new PostRequest(
+                                    URL_RM_CONSTRAINTS + "/" + RM_LIST + "/values",
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
@@ -695,18 +642,14 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             JSONArray myValues = data.getJSONArray("values");
             assertTrue("three values not found", myValues.length() == 3);
-            for(int i = 0; i < myValues.length(); i++)
-            {
+            for (int i = 0; i < myValues.length(); i++) {
                 JSONObject myObj = myValues.getJSONObject(i);
             }
         }
 
         /**
-         * Add to an existing value (NOFORN, jrogers)
-         * should get back
-         * NOFORN - fbloggs, jdoe, jrogers
-         * FGI - fbloggs, jdoe
-         * NOCON - fbloggs, jrogers
+         * Add to an existing value (NOFORN, jrogers) should get back NOFORN - fbloggs, jdoe,
+         * jrogers FGI - fbloggs, jdoe NOCON - fbloggs, jrogers
          */
         {
             JSONArray values = new JSONArray();
@@ -722,11 +665,16 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             values.put(valueA);
 
-
             JSONObject obj = new JSONObject();
             obj.put("values", values);
 
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS + "/" + RM_LIST + "/values" , obj.toString(), "application/json"), Status.STATUS_OK);
+            Response response =
+                    sendRequest(
+                            new PostRequest(
+                                    URL_RM_CONSTRAINTS + "/" + RM_LIST + "/values",
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
@@ -735,16 +683,12 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             JSONArray myValues = data.getJSONArray("values");
             assertTrue("three values not found", myValues.length() == 3);
-            for(int i = 0; i < myValues.length(); i++)
-            {
+            for (int i = 0; i < myValues.length(); i++) {
                 JSONObject myObj = myValues.getJSONObject(i);
             }
         }
 
-
-        /**
-         * Remove from existing value (NOCON, fbloggs)
-         */
+        /** Remove from existing value (NOCON, fbloggs) */
         {
             JSONArray values = new JSONArray();
 
@@ -757,18 +701,17 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
 
             values.put(valueA);
 
-
             JSONObject obj = new JSONObject();
             obj.put("values", values);
 
-
-            /**
-             * should get back
-             * NOFORN - fbloggs, jdoe
-             * FGI - fbloggs, jdoe
-             * NOCON - jrogers
-             */
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS + "/" + RM_LIST + "/values" , obj.toString(), "application/json"), Status.STATUS_OK);
+            /** should get back NOFORN - fbloggs, jdoe FGI - fbloggs, jdoe NOCON - jrogers */
+            Response response =
+                    sendRequest(
+                            new PostRequest(
+                                    URL_RM_CONSTRAINTS + "/" + RM_LIST + "/values",
+                                    obj.toString(),
+                                    "application/json"),
+                            Status.STATUS_OK);
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
@@ -781,20 +724,16 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             boolean foundNOFORN = false;
             boolean foundFGI = false;
 
-            for(int i = 0; i < myValues.length(); i++)
-            {
+            for (int i = 0; i < myValues.length(); i++) {
                 JSONObject myObj = myValues.getJSONObject(i);
 
-                if(myObj.getString("valueName").equalsIgnoreCase("NOCON"))
-                {
+                if (myObj.getString("valueName").equalsIgnoreCase("NOCON")) {
                     foundNOCON = true;
                 }
-                if(myObj.getString("valueName").equalsIgnoreCase("NOFORN"))
-                {
+                if (myObj.getString("valueName").equalsIgnoreCase("NOFORN")) {
                     foundNOFORN = true;
                 }
-                if(myObj.getString("valueName").equalsIgnoreCase("FGI"))
-                {
+                if (myObj.getString("valueName").equalsIgnoreCase("FGI")) {
                     foundFGI = true;
                 }
             }
@@ -805,84 +744,70 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
         }
     }
 
-
     /**
      * Delete the entire constraint
      *
      * @throws Exception
      */
-    public void testDeleteRMConstraint() throws Exception
-    {
-        /**
-         * Delete the list to remove any junk then recreate it.
-         */
-        if (caveatConfigService.getRMConstraint(RM_LIST) != null)
-        {
+    public void testDeleteRMConstraint() throws Exception {
+        /** Delete the list to remove any junk then recreate it. */
+        if (caveatConfigService.getRMConstraint(RM_LIST) != null) {
             caveatConfigService.deleteRMConstraint(RM_LIST);
         }
         caveatConfigService.addRMConstraint(RM_LIST, "my title", new String[0]);
 
-        /**
-         * Now do a delete
-         */
-        Response response = sendRequest(new DeleteRequest(URL_RM_CONSTRAINTS + "/" + RM_LIST), Status.STATUS_OK);
+        /** Now do a delete */
+        Response response =
+                sendRequest(
+                        new DeleteRequest(URL_RM_CONSTRAINTS + "/" + RM_LIST), Status.STATUS_OK);
 
-        /**
-         * Now delete the list that should have been deleted
-         */
+        /** Now delete the list that should have been deleted */
         // TODO NEED TO THINK ABOUT THIS BEHAVIOUR
-        //{
-        //    sendRequest(new DeleteRequest(URL_RM_CONSTRAINTS + "/" + RM_LIST), Status.STATUS_NOT_FOUND);
-        //}
+        // {
+        //    sendRequest(new DeleteRequest(URL_RM_CONSTRAINTS + "/" + RM_LIST),
+        // Status.STATUS_NOT_FOUND);
+        // }
 
-        /**
-         * Negative test - delete list that does not exist
-         */
+        /** Negative test - delete list that does not exist */
         {
-            sendRequest(new DeleteRequest(URL_RM_CONSTRAINTS + "/" + "rmc_wibble"), Status.STATUS_NOT_FOUND);
+            sendRequest(
+                    new DeleteRequest(URL_RM_CONSTRAINTS + "/" + "rmc_wibble"),
+                    Status.STATUS_NOT_FOUND);
         }
     }
 
-    private boolean compare(JSONArray from, JSONArray to) throws Exception
-    {
+    private boolean compare(JSONArray from, JSONArray to) throws Exception {
         List<String> ret = new ArrayList<>();
 
-        if(from.length() != to.length())
-        {
-            fail("arrays are different lengths" + from.length() +", " + to.length());
+        if (from.length() != to.length()) {
+            fail("arrays are different lengths" + from.length() + ", " + to.length());
             return false;
         }
 
-        for(int i = 0 ; i < to.length(); i++)
-        {
+        for (int i = 0; i < to.length(); i++) {
             ret.add(to.getString(i));
         }
 
-        for(int i = 0 ; i < from.length(); i++)
-        {
+        for (int i = 0; i < from.length(); i++) {
             String val = from.getString(i);
 
-            if(ret.contains(val))
-            {
+            if (ret.contains(val)) {
 
-            }
-            else
-            {
-               fail("Value not contained in list:" + val);
-               return false;
+            } else {
+                fail("Value not contained in list:" + val);
+                return false;
             }
         }
 
         return true;
     }
 
-
     /**
      * Create an RM Constraint value
+     *
      * @throws Exception
      */
-    public void testGetRMConstraintValue() throws Exception
-    {
+    public void testGetRMConstraintValue() throws Exception {
 
         String constraintName = null;
 
@@ -899,10 +824,11 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             JSONObject obj = new JSONObject();
             obj.put("allowedValues", array);
             obj.put("constraintTitle", title);
-            /**
-             * Now do a post to create a new list
-             */
-            Response response = sendRequest(new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"), Status.STATUS_OK);
+            /** Now do a post to create a new list */
+            Response response =
+                    sendRequest(
+                            new PostRequest(URL_RM_CONSTRAINTS, obj.toString(), "application/json"),
+                            Status.STATUS_OK);
             JSONObject top = new JSONObject(response.getContentAsString());
 
             JSONObject data = top.getJSONObject("data");
@@ -911,9 +837,7 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
             assertTrue("values not correct", compare(array, allowedValues));
         }
 
-        /**
-         * Get the CARROT value
-         */
+        /** Get the CARROT value */
         {
             String url = URL_RM_CONSTRAINTS + "/" + constraintName + "/values/" + "CARROT";
             Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
@@ -926,4 +850,3 @@ public class RMCaveatConfigScriptTest extends BaseRMWebScriptTestCase
         }
     }
 }
-

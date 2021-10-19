@@ -35,21 +35,19 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.5
  */
 @AlfrescoPublicApi
-public enum UpdateActionType
-{
+public enum UpdateActionType {
     ADD,
     REMOVE;
 
-    public static UpdateActionType valueOfIgnoreCase(String name)
-    {
+    public static UpdateActionType valueOfIgnoreCase(String name) {
         UpdateActionType actionType;
-        try
-        {
+        try {
             actionType = UpdateActionType.valueOf(name.toUpperCase());
-        }
-        catch (Exception e)
-        {
-            throw new IllegalArgumentException("Could not find enum with name '" + name + "'. Not one of the values accepted for Enum class: [ADD, REMOVE]");
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Could not find enum with name '"
+                            + name
+                            + "'. Not one of the values accepted for Enum class: [ADD, REMOVE]");
         }
 
         return actionType;

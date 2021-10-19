@@ -18,6 +18,12 @@
  */
 package org.alfresco.encryption;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.Resource;
+import org.springframework.util.ResourceUtils;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,131 +32,91 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.io.Resource;
-import org.springframework.util.ResourceUtils;
-
 /**
  * Loads key resources (key store and key store passwords) from the Spring classpath.
- * 
- * @since 4.0
  *
+ * @since 4.0
  */
-public class SpringKeyResourceLoader implements KeyResourceLoader, ApplicationContextAware
-{
+public class SpringKeyResourceLoader implements KeyResourceLoader, ApplicationContextAware {
     /**
-     * The application context might not be available, in which case the usual URL
-     * loading is used.
+     * The application context might not be available, in which case the usual URL loading is used.
      */
     private ApplicationContext applicationContext;
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
-     * Helper method to switch between application context resource loading or
-     * simpler current classloader resource loading.
+     * Helper method to switch between application context resource loading or simpler current
+     * classloader resource loading.
      */
-    private InputStream getSafeInputStream(String location)
-    {
-        try
-        {
+    private InputStream getSafeInputStream(String location) {
+        try {
             final InputStream is;
-            if (applicationContext != null)
-            {
+            if (applicationContext != null) {
                 Resource resource = applicationContext.getResource(location);
-                if (resource.exists())
-                {
+                if (resource.exists()) {
                     is = new BufferedInputStream(resource.getInputStream());
-                }
-                else
-                {
+                } else {
                     // Fall back to conventional loading
                     File file = ResourceUtils.getFile(location);
-                    if (file.exists())
-                    {
+                    if (file.exists()) {
                         is = new BufferedInputStream(new FileInputStream(file));
-                    }
-                    else
-                    {
+                    } else {
                         is = null;
                     }
                 }
-            }
-            else
-            {
+            } else {
                 // Load conventionally (i.e. we are in a unit test)
                 File file = ResourceUtils.getFile(location);
-                if (file.exists())
-                {
+                if (file.exists()) {
                     is = new BufferedInputStream(new FileInputStream(file));
-                }
-                else
-                {
+                } else {
                     is = null;
                 }
             }
 
             return is;
-        }
-        catch (IOException e) 
-        {
+        } catch (IOException e) {
             return null;
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
-    public InputStream getKeyStore(String keyStoreLocation)
-    {
-        if (keyStoreLocation == null)
-        {
+    public InputStream getKeyStore(String keyStoreLocation) {
+        if (keyStoreLocation == null) {
             return null;
         }
         return getSafeInputStream(keyStoreLocation);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
-    public Properties loadKeyMetaData(String keyMetaDataFileLocation) throws IOException
-    {
-        if (keyMetaDataFileLocation == null)
-        {
+    public Properties loadKeyMetaData(String keyMetaDataFileLocation) throws IOException {
+        if (keyMetaDataFileLocation == null) {
             return null;
         }
 
-        try
-        {
+        try {
             InputStream is = getSafeInputStream(keyMetaDataFileLocation);
-            if (is == null)
-            {
+            if (is == null) {
                 return null;
-            }
-            else
-            {
-                try
-                {
+            } else {
+                try {
                     Properties p = new Properties();
                     p.load(is);
                     return p;
-                }
-                finally
-                {
-                    try { is.close(); } catch (Throwable e) {}
+                } finally {
+                    try {
+                        is.close();
+                    } catch (Throwable e) {
+                    }
                 }
             }
-        }
-        catch(FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             return null;
         }
     }

@@ -36,31 +36,29 @@ import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 @EntityResource(name = "aspects", title = "Aspects")
-public class AspectEntityResource implements EntityResourceAction.ReadById<Aspect>, EntityResourceAction.Read<Aspect>, InitializingBean
-{
+public class AspectEntityResource
+        implements EntityResourceAction.ReadById<Aspect>,
+                EntityResourceAction.Read<Aspect>,
+                InitializingBean {
 
     private Aspects aspects;
 
-    public void setAspects(Aspects aspects)
-    {
+    public void setAspects(Aspects aspects) {
         this.aspects = aspects;
     }
 
     @Override
-    public void afterPropertiesSet()
-    {
+    public void afterPropertiesSet() {
         ParameterCheck.mandatory("aspects", this.aspects);
     }
 
     @Override
-    public CollectionWithPagingInfo<Aspect> readAll(Parameters params)
-    {
+    public CollectionWithPagingInfo<Aspect> readAll(Parameters params) {
         return aspects.listAspects(params);
     }
 
     @Override
-    public Aspect readById(String id, Parameters parameters)
-    {
+    public Aspect readById(String id, Parameters parameters) {
         return aspects.getAspect(id);
     }
 }

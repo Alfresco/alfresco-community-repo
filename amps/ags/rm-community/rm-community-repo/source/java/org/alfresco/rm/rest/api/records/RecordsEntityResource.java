@@ -70,13 +70,13 @@ import org.springframework.dao.ConcurrencyFailureException;
  * @author Tuna Aksoy
  * @since 2.6
  */
-@EntityResource(name="records", title = "Records")
-public class RecordsEntityResource implements BinaryResourceAction.Read,
-                                              EntityResourceAction.ReadById<Record>,
-                                              EntityResourceAction.Delete,
-                                              EntityResourceAction.Update<Record>,
-                                              InitializingBean
-{
+@EntityResource(name = "records", title = "Records")
+public class RecordsEntityResource
+        implements BinaryResourceAction.Read,
+                EntityResourceAction.ReadById<Record>,
+                EntityResourceAction.Delete,
+                EntityResourceAction.Update<Record>,
+                InitializingBean {
 
     private ApiNodesModelFactory nodesModelFactory;
     private FilePlanComponentsApiUtils apiUtils;
@@ -85,33 +85,27 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     private NodeService nodeService;
     private TransactionService transactionService;
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
         this.nodesModelFactory = nodesModelFactory;
     }
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
         this.apiUtils = apiUtils;
     }
 
-    public void setRecordService(RecordService recordService)
-    {
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
@@ -124,17 +118,21 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
      * @throws EntityNotFoundException
      */
     @Override
-    @WebApiDescription(title = "Download content", description = "Download content for a record with id 'recordId'")
+    @WebApiDescription(
+            title = "Download content",
+            description = "Download content for a record with id 'recordId'")
     @BinaryProperties({"content"})
-    public BinaryResource readProperty(String recordId, Parameters parameters) throws EntityNotFoundException
-    {
+    public BinaryResource readProperty(String recordId, Parameters parameters)
+            throws EntityNotFoundException {
         checkNotBlank("recordId", recordId);
         mandatory("parameters", parameters);
 
         NodeRef record = apiUtils.validateRecord(recordId);
-        if(nodeService.getType(record).equals(RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT))
-        {
-            throw new IllegalArgumentException("Cannot read content from Non-electronic record " + recordId + ".");
+        if (nodeService
+                .getType(record)
+                .equals(RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT)) {
+            throw new IllegalArgumentException(
+                    "Cannot read content from Non-electronic record " + recordId + ".");
         }
         BinaryResource content = apiUtils.getContent(record, parameters, true);
         NodeRef primaryParent = nodeService.getPrimaryParent(record).getParentRef();
@@ -144,9 +142,12 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     }
 
     @Operation("file")
-    @WebApiDescription(title = "File record", description="File a record into fileplan.")
-    public Record fileRecord(String recordId, TargetContainer target, Parameters parameters, WithResponse withResponse)
-    {
+    @WebApiDescription(title = "File record", description = "File a record into fileplan.")
+    public Record fileRecord(
+            String recordId,
+            TargetContainer target,
+            Parameters parameters,
+            WithResponse withResponse) {
         checkNotBlank("recordId", recordId);
         mandatory("target", target);
         mandatory("targetParentId", target.getTargetParentId());
@@ -154,26 +155,20 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
 
         // Get record and target folder
         NodeRef record = apiUtils.validateRecord(recordId);
-        NodeRef targetRecordFolder = apiUtils.lookupAndValidateNodeType(target.getTargetParentId(), RecordsManagementModel.TYPE_RECORD_FOLDER);
+        NodeRef targetRecordFolder =
+                apiUtils.lookupAndValidateNodeType(
+                        target.getTargetParentId(), RecordsManagementModel.TYPE_RECORD_FOLDER);
 
         // Get the current parent type to decide if we link or move the record
         NodeRef primaryParent = nodeService.getPrimaryParent(record).getParentRef();
-        if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(primaryParent)))
-        {    
+        if (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(primaryParent))) {
             recordService.link(record, targetRecordFolder);
-        }
-        else
-        {
-            try
-            {
+        } else {
+            try {
                 fileFolderService.moveFrom(record, primaryParent, targetRecordFolder, null);
-            }
-            catch (FileExistsException e)
-            {
+            } catch (FileExistsException e) {
                 throw new IntegrityException(e.getMessage(), null);
-            }
-            catch (FileNotFoundException e)
-            {
+            } catch (FileNotFoundException e) {
                 throw new ConcurrencyFailureException("The record was deleted while filing it", e);
             }
         }
@@ -183,10 +178,11 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         return nodesModelFactory.createRecord(info, parameters, null, false);
     }
 
-    @WebApiDescription(title = "Get record information", description = "Gets information for a record with id 'recordId'")
+    @WebApiDescription(
+            title = "Get record information",
+            description = "Gets information for a record with id 'recordId'")
     @WebApiParam(name = "recordId", title = "The record id")
-    public Record readById(String recordId, Parameters parameters)
-    {
+    public Record readById(String recordId, Parameters parameters) {
         checkNotBlank("recordId", recordId);
         mandatory("parameters", parameters);
 
@@ -196,9 +192,8 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     }
 
     @Override
-    @WebApiDescription(title="Update record", description = "Updates a record with id 'recordId'")
-    public Record update(String recordId, Record recordInfo, Parameters parameters)
-    {
+    @WebApiDescription(title = "Update record", description = "Updates a record with id 'recordId'")
+    public Record update(String recordId, Record recordInfo, Parameters parameters) {
         checkNotBlank("recordId", recordId);
         mandatory("recordInfo", recordInfo);
         mandatory("parameters", parameters);
@@ -207,34 +202,35 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         NodeRef record = apiUtils.validateRecord(recordId);
 
         // update info
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateNode(record, recordInfo, parameters);
-                return null;
-            }
-        };
+        RetryingTransactionCallback<Void> callback =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() {
+                        apiUtils.updateNode(record, recordInfo, parameters);
+                        return null;
+                    }
+                };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
         // return record state
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(record);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
-        
+        RetryingTransactionCallback<FileInfo> readCallback =
+                new RetryingTransactionCallback<FileInfo>() {
+                    public FileInfo execute() {
+                        return fileFolderService.getFileInfo(record);
+                    }
+                };
+        FileInfo info =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(readCallback, false, true);
+
         apiUtils.postActivity(info, recordInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createRecord(info, parameters, null, false);
     }
 
-    @Operation ("complete")
-    @WebApiDescription (title = "Complete record", description = "Complete a record.")
-    public Record completeRecord(String recordId, Void body, Parameters parameters, WithResponse withResponse)
-    {
+    @Operation("complete")
+    @WebApiDescription(title = "Complete record", description = "Complete a record.")
+    public Record completeRecord(
+            String recordId, Void body, Parameters parameters, WithResponse withResponse) {
         checkNotBlank("recordId", recordId);
         mandatory("parameters", parameters);
 
@@ -242,13 +238,10 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
         NodeRef record = apiUtils.validateRecord(recordId);
 
         // Complete the record
-        try
-        {
+        try {
             recordService.complete(record);
-        }
-        catch (RecordMissingMetadataException e)
-        {
-            throw new IntegrityException("The record has missing mandatory properties.", null); 
+        } catch (RecordMissingMetadataException e) {
+            throw new IntegrityException("The record has missing mandatory properties.", null);
         }
 
         // return record state
@@ -257,9 +250,8 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     }
 
     @Override
-    @WebApiDescription(title = "Delete record", description="Deletes a record with id 'recordId'")
-    public void delete(String recordId, Parameters parameters)
-    {
+    @WebApiDescription(title = "Delete record", description = "Deletes a record with id 'recordId'")
+    public void delete(String recordId, Parameters parameters) {
         checkNotBlank("recordId", recordId);
         mandatory("parameters", parameters);
 
@@ -268,8 +260,7 @@ public class RecordsEntityResource implements BinaryResourceAction.Read,
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
         ParameterCheck.mandatory("apiUtils", apiUtils);
         ParameterCheck.mandatory("fileFolderService", fileFolderService);

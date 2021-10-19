@@ -28,11 +28,11 @@ package org.alfresco.rest.rm.community.model.recordcategory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.alfresco.rest.core.RestModels;
-import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import org.alfresco.rest.core.RestModels;
+import org.alfresco.rest.rm.community.model.fileplan.FilePlan;
 
 /**
  * POJO for file plan entry
@@ -43,8 +43,6 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class RecordCategoryEntry extends RestModels<FilePlan, RecordCategoryEntry>
-{
-    @JsonProperty
-    private RecordCategory entry;
+public class RecordCategoryEntry extends RestModels<FilePlan, RecordCategoryEntry> {
+    @JsonProperty private RecordCategory entry;
 }

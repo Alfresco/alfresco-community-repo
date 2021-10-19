@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -40,6 +36,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Audits user group deletion.
  *
@@ -47,8 +47,7 @@ import org.alfresco.service.namespace.QName;
  * @since 2.7
  */
 @BehaviourBean
-public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDeleteNodePolicy
-{
+public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDeleteNodePolicy {
     /** Node Service */
     private NodeService nodeService;
 
@@ -57,8 +56,7 @@ public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDelet
      *
      * @param nodeService nodeService to set
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -69,14 +67,15 @@ public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDelet
      */
     @Override
     @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
+    public void beforeDeleteNode(NodeRef nodeRef) {
         // Retrieve the authority name property to be audited
         Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
-                    nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
+        auditProperties.put(
+                ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
+                nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
 
-        //audit the property values before the delete event
-        recordsManagementAuditService.auditEvent(nodeRef, getName(), auditProperties, null, true, false);
+        // audit the property values before the delete event
+        recordsManagementAuditService.auditEvent(
+                nodeRef, getName(), auditProperties, null, true, false);
     }
 }

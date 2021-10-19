@@ -27,9 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.security;
 
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.PermissionReference;
@@ -42,6 +39,9 @@ import org.alfresco.util.Pair;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Extended readers dynamic authority implementation.
  *
@@ -49,10 +49,8 @@ import org.springframework.context.ApplicationContextAware;
  * @since 2.1
  */
 @Deprecated
-public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAuthority,
-                                                                      RecordsManagementModel,
-                                                                      ApplicationContextAware
-{
+public abstract class ExtendedSecurityBaseDynamicAuthority
+        implements DynamicAuthority, RecordsManagementModel, ApplicationContextAware {
     /** Authority service */
     private AuthorityService authorityService;
 
@@ -74,71 +72,54 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     // NOTE: we get the services directly from the application context in this way to avoid
     //       cyclic relationships and issues when loading the application context
 
-    /**
-     * @return  authority service
-     */
-    protected AuthorityService getAuthorityService()
-    {
-        if (authorityService == null)
-        {
-            authorityService = (AuthorityService)applicationContext.getBean("authorityService");
+    /** @return authority service */
+    protected AuthorityService getAuthorityService() {
+        if (authorityService == null) {
+            authorityService = (AuthorityService) applicationContext.getBean("authorityService");
         }
         return authorityService;
     }
 
-    /**
-     * @return  extended security service
-     */
-    protected ExtendedSecurityService getExtendedSecurityService()
-    {
-        if (extendedSecurityService == null)
-        {
-            extendedSecurityService = (ExtendedSecurityService)applicationContext.getBean("extendedSecurityService");
+    /** @return extended security service */
+    protected ExtendedSecurityService getExtendedSecurityService() {
+        if (extendedSecurityService == null) {
+            extendedSecurityService =
+                    (ExtendedSecurityService) applicationContext.getBean("extendedSecurityService");
         }
         return extendedSecurityService;
     }
 
-    /**
-     * @return  node service
-     */
-    protected NodeService getNodeService()
-    {
-        if (nodeService == null)
-        {
-            nodeService = (NodeService)applicationContext.getBean("dbNodeService");
+    /** @return node service */
+    protected NodeService getNodeService() {
+        if (nodeService == null) {
+            nodeService = (NodeService) applicationContext.getBean("dbNodeService");
         }
         return nodeService;
     }
 
-    /**
-     * @return	model DAO
-     */
-    protected ModelDAO getModelDAO()
-    {
-    	if (modelDAO == null)
-    	{
-    		modelDAO = (ModelDAO)applicationContext.getBean("permissionsModelDAO");
-    	}
-    	return modelDAO;
+    /** @return model DAO */
+    protected ModelDAO getModelDAO() {
+        if (modelDAO == null) {
+            modelDAO = (ModelDAO) applicationContext.getBean("permissionsModelDAO");
+        }
+        return modelDAO;
     }
 
-    /**
-     * @return	String transaction cache name
-     */
+    /** @return String transaction cache name */
     protected abstract String getTransactionCacheName();
 
     /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     * @see
+     *     org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext)
-    {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
     /**
-     * Gets a list of the authorities from the extended security aspect that this dynamic
-     * authority is checking against.
+     * Gets a list of the authorities from the extended security aspect that this dynamic authority
+     * is checking against.
      *
      * @param nodeRef
      * @return
@@ -146,45 +127,39 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     protected abstract Set<String> getAuthorites(NodeRef nodeRef);
 
     /**
-     * @see org.alfresco.repo.security.permissions.DynamicAuthority#hasAuthority(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see
+     *     org.alfresco.repo.security.permissions.DynamicAuthority#hasAuthority(org.alfresco.service.cmr.repository.NodeRef,
+     *     java.lang.String)
      */
     @Override
-    public boolean hasAuthority(NodeRef nodeRef, String userName)
-    {
+    public boolean hasAuthority(NodeRef nodeRef, String userName) {
         boolean result = false;
 
-        Map<Pair<NodeRef, String>, Boolean> transactionCache = TransactionalResourceHelper.getMap(getTransactionCacheName());
+        Map<Pair<NodeRef, String>, Boolean> transactionCache =
+                TransactionalResourceHelper.getMap(getTransactionCacheName());
         Pair<NodeRef, String> key = new Pair<>(nodeRef, userName);
 
-        if (transactionCache.containsKey(key))
-        {
+        if (transactionCache.containsKey(key)) {
             result = transactionCache.get(key);
-        }
-        else
-        {
-	        if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY))
-	        {
-	            Set<String> authorities = getAuthorites(nodeRef);
-	            if (authorities != null)
-	            {
-	            	// check for everyone or the user
-	            	if (authorities.contains("GROUP_EVEYONE") ||
-	            		authorities.contains(userName))
-	            	{
-	            		result = true;
-	            	}
-	            	else
-	            	{
-	            		// determine whether any of the users groups are in the extended security
-	            		Set<String> contained = getAuthorityService().getAuthoritiesForUser(userName);
-	            		authorities.retainAll(contained);
-	            		result = (authorities.size() != 0);
-	            	}
-	            }
-	        }
+        } else {
+            if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY)) {
+                Set<String> authorities = getAuthorites(nodeRef);
+                if (authorities != null) {
+                    // check for everyone or the user
+                    if (authorities.contains("GROUP_EVEYONE") || authorities.contains(userName)) {
+                        result = true;
+                    } else {
+                        // determine whether any of the users groups are in the extended security
+                        Set<String> contained =
+                                getAuthorityService().getAuthoritiesForUser(userName);
+                        authorities.retainAll(contained);
+                        result = (authorities.size() != 0);
+                    }
+                }
+            }
 
-	        // cache result
-	        transactionCache.put(key, result);
+            // cache result
+            transactionCache.put(key, result);
         }
 
         return result;

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,14 +32,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Repository project tests using the main context alfresco/application-context.xml.
- * To balance test jobs tests using this context have been split into multiple test suites.
- * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ * Repository project tests using the main context alfresco/application-context.xml. To balance test
+ * jobs tests using this context have been split into multiple test suites. Tests marked as DBTests
+ * are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
  *
- * <p>
- *    All of the tests are using Spring annotations to load full application context, see BaseSpringTest
- *    Any new tests included in this test suite must follow the same pattern
- * </p>
+ * <p>All of the tests are using Spring annotations to load full application context, see
+ * BaseSpringTest Any new tests included in this test suite must follow the same pattern
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
@@ -56,7 +54,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,
     org.alfresco.repo.rendition2.LocalRenditionTest.class,
     org.alfresco.repo.rendition2.NoneRenditionTest.class,
-
     org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
     org.alfresco.repo.tagging.TaggingServiceImplTest.class,
     org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,
@@ -70,9 +67,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.search.SearcherComponentTest.class,
     org.alfresco.repo.blog.BlogServiceImplTest.class,
     org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceTest.class,
-
     org.alfresco.repo.rendition2.RenditionDefinitionTest.class
 })
-public class AppContext06TestSuite
-{
-}
+public class AppContext06TestSuite {}

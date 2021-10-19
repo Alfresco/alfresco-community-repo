@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,26 +28,31 @@ package org.alfresco.repo.invitation;
 
 import org.alfresco.service.namespace.QName;
 
-/**
- * Workflow Model for a Nominated Invitation
- */
-public interface WorkflowModelNominatedInvitation
-{
+/** Workflow Model for a Nominated Invitation */
+public interface WorkflowModelNominatedInvitation {
     // namespace
-    public static final String NAMESPACE_URI = "http://www.alfresco.org/model/workflow/invite/nominated/1.0";
+    public static final String NAMESPACE_URI =
+            "http://www.alfresco.org/model/workflow/invite/nominated/1.0";
 
     // process name
-    public static final QName WF_PROCESS_INVITE = QName.createQName(NAMESPACE_URI, "invitation-nominated");
+    public static final QName WF_PROCESS_INVITE =
+            QName.createQName(NAMESPACE_URI, "invitation-nominated");
 
     // workflow definition name
-    public static final String WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE = "activiti$activitiInvitationNominated";
-    public static final String WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT = "activiti$activitiInvitationNominatedAddDirect";
+    public static final String WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE =
+            "activiti$activitiInvitationNominated";
+    public static final String WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT =
+            "activiti$activitiInvitationNominatedAddDirect";
 
     // tasks
-    public static final QName WF_TASK_INVITE_TO_SITE = QName.createQName(NAMESPACE_URI, "inviteToSiteTask");
-    public static final QName WF_TASK_ACTIVIT_INVITE_PENDING = QName.createQName(NAMESPACE_URI, "activitiInvitePendingTask");
-    public static final QName WF_TASK_ACCEPT_INVITE = QName.createQName(NAMESPACE_URI, "acceptInviteTask");
-    public static final QName WF_TASK_REJECT_INVITE = QName.createQName(NAMESPACE_URI, "rejectInviteTask");
+    public static final QName WF_TASK_INVITE_TO_SITE =
+            QName.createQName(NAMESPACE_URI, "inviteToSiteTask");
+    public static final QName WF_TASK_ACTIVIT_INVITE_PENDING =
+            QName.createQName(NAMESPACE_URI, "activitiInvitePendingTask");
+    public static final QName WF_TASK_ACCEPT_INVITE =
+            QName.createQName(NAMESPACE_URI, "acceptInviteTask");
+    public static final QName WF_TASK_REJECT_INVITE =
+            QName.createQName(NAMESPACE_URI, "rejectInviteTask");
 
     // transition names
     public static final String WF_TRANSITION_SEND_INVITE = "sendInvite";
@@ -61,18 +66,30 @@ public interface WorkflowModelNominatedInvitation
     public static final QName WF_PROP_SERVER_PATH = QName.createQName(NAMESPACE_URI, "serverPath");
     public static final QName WF_PROP_ACCEPT_URL = QName.createQName(NAMESPACE_URI, "acceptUrl");
     public static final QName WF_PROP_REJECT_URL = QName.createQName(NAMESPACE_URI, "rejectUrl");
-    public static final QName WF_PROP_INVITE_TICKET = QName.createQName(NAMESPACE_URI, "inviteTicket");
-    public static final QName WF_PROP_INVITER_USER_NAME = QName.createQName(NAMESPACE_URI, "inviterUserName");
-    public static final QName WF_PROP_INVITEE_USER_NAME = QName.createQName(NAMESPACE_URI, "inviteeUserName");
-    public static final QName WF_PROP_INVITEE_EMAIL = QName.createQName(NAMESPACE_URI, "inviteeEmail");
-    public static final QName WF_PROP_INVITEE_FIRSTNAME = QName.createQName(NAMESPACE_URI, "inviteeFirstName");
-    public static final QName WF_PROP_INVITEE_LASTNAME = QName.createQName(NAMESPACE_URI, "inviteeLastName");
-    public static final QName WF_PROP_RESOURCE_TYPE = QName.createQName(NAMESPACE_URI, "resourceType");
-    public static final QName WF_PROP_RESOURCE_NAME = QName.createQName(NAMESPACE_URI, "resourceName");
-    public static final QName WF_PROP_RESOURCE_TITLE = QName.createQName(NAMESPACE_URI, "resourceTitle");
-    public static final QName WF_PROP_RESOURCE_DESCRIPTION = QName.createQName(NAMESPACE_URI, "resourceDescription");   
-    public static final QName WF_PROP_INVITEE_ROLE = QName.createQName(NAMESPACE_URI, "inviteeRole");
-    public static final QName WF_PROP_INVITEE_GEN_PASSWORD = QName.createQName(NAMESPACE_URI, "inviteeGenPassword");
+    public static final QName WF_PROP_INVITE_TICKET =
+            QName.createQName(NAMESPACE_URI, "inviteTicket");
+    public static final QName WF_PROP_INVITER_USER_NAME =
+            QName.createQName(NAMESPACE_URI, "inviterUserName");
+    public static final QName WF_PROP_INVITEE_USER_NAME =
+            QName.createQName(NAMESPACE_URI, "inviteeUserName");
+    public static final QName WF_PROP_INVITEE_EMAIL =
+            QName.createQName(NAMESPACE_URI, "inviteeEmail");
+    public static final QName WF_PROP_INVITEE_FIRSTNAME =
+            QName.createQName(NAMESPACE_URI, "inviteeFirstName");
+    public static final QName WF_PROP_INVITEE_LASTNAME =
+            QName.createQName(NAMESPACE_URI, "inviteeLastName");
+    public static final QName WF_PROP_RESOURCE_TYPE =
+            QName.createQName(NAMESPACE_URI, "resourceType");
+    public static final QName WF_PROP_RESOURCE_NAME =
+            QName.createQName(NAMESPACE_URI, "resourceName");
+    public static final QName WF_PROP_RESOURCE_TITLE =
+            QName.createQName(NAMESPACE_URI, "resourceTitle");
+    public static final QName WF_PROP_RESOURCE_DESCRIPTION =
+            QName.createQName(NAMESPACE_URI, "resourceDescription");
+    public static final QName WF_PROP_INVITEE_ROLE =
+            QName.createQName(NAMESPACE_URI, "inviteeRole");
+    public static final QName WF_PROP_INVITEE_GEN_PASSWORD =
+            QName.createQName(NAMESPACE_URI, "inviteeGenPassword");
 
     // workflow execution context variable names
     public static final String wfVarInviteeUserName = "inwf_inviteeUserName";
@@ -88,5 +105,4 @@ public interface WorkflowModelNominatedInvitation
     public static final String wfVarAcceptUrl = "inwf_acceptUrl";
     public static final String wfVarRejectUrl = "inwf_rejectUrl";
     public static final String wfVarInviteeGenPassword = "inwf_inviteeGenPassword";
-
 }

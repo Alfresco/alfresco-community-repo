@@ -43,11 +43,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewPeriod
-{
-    @JsonProperty (required = true)
+public class ReviewPeriod {
+    @JsonProperty(required = true)
     private String periodType;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String expression;
 }

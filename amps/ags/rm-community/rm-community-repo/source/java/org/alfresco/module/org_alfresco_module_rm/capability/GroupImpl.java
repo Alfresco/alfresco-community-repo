@@ -36,8 +36,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class GroupImpl implements Group
-{
+public class GroupImpl implements Group {
     /** The group id */
     private String id;
 
@@ -55,60 +54,45 @@ public class GroupImpl implements Group
      *
      * @param capabilityService the capability service
      */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
+    public void setCapabilityService(CapabilityService capabilityService) {
         this.capabilityService = capabilityService;
     }
 
-    public void init()
-    {
+    public void init() {
         this.capabilityService.addGroup(this);
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.Group#getId()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.capability.Group#getId() */
     @Override
-    public String getId()
-    {
+    public String getId() {
         return this.id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.Group#getTitle()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.capability.Group#getTitle() */
     @Override
-    public String getTitle()
-    {
+    public String getTitle() {
         String title = this.title;
-        if (StringUtils.isBlank(title))
-        {
+        if (StringUtils.isBlank(title)) {
             title = I18NUtil.getMessage("capability.group." + getId() + ".title");
         }
         return title;
     }
 
-    public void setTitle(String title)
-    {
+    public void setTitle(String title) {
         this.title = title;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.Group#getIndex()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.capability.Group#getIndex() */
     @Override
-    public int getIndex()
-    {
+    public int getIndex() {
         return this.index;
     }
 
-    public void setIndex(int index)
-    {
+    public void setIndex(int index) {
         this.index = index;
     }
 }

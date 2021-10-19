@@ -49,31 +49,23 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-/**
- * @author silviudinuta
- */
-public class NonElectronicRecordTypeUnitTest implements RecordsManagementModel, ContentModel
-{
-    private final static NodeRef CHILD_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                GUID.generate());
-    private final static NodeRef PARENT_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                GUID.generate());
+/** @author silviudinuta */
+public class NonElectronicRecordTypeUnitTest implements RecordsManagementModel, ContentModel {
+    private static final NodeRef CHILD_NODE_REF =
+            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+    private static final NodeRef PARENT_NODE_REF =
+            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
 
-    @InjectMocks
-    NonElectronicRecordType nonElectronicRecordType;
+    @InjectMocks NonElectronicRecordType nonElectronicRecordType;
 
-    @Mock
-    AuthenticationUtil mockAuthenticationUtil;
+    @Mock AuthenticationUtil mockAuthenticationUtil;
 
-    @Mock
-    RecordService mockedRecordService;
+    @Mock RecordService mockedRecordService;
 
-    @Mock
-    NodeService mockedNodeService;
+    @Mock NodeService mockedNodeService;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
         when(mockedNodeService.exists(CHILD_NODE_REF)).thenReturn(true);
@@ -83,31 +75,34 @@ public class NonElectronicRecordTypeUnitTest implements RecordsManagementModel, 
         when(generateChildAssociationRef.getParentRef()).thenReturn(PARENT_NODE_REF);
         when(generateChildAssociationRef.getChildRef()).thenReturn(CHILD_NODE_REF);
 
-        when(mockedNodeService.getPrimaryParent(CHILD_NODE_REF)).thenReturn(generateChildAssociationRef);
+        when(mockedNodeService.getPrimaryParent(CHILD_NODE_REF))
+                .thenReturn(generateChildAssociationRef);
         when(mockedNodeService.getType(PARENT_NODE_REF)).thenReturn(TYPE_UNFILED_RECORD_FOLDER);
     }
 
     @Test
-    public void testOnUpdateWithAspectsAlreadyPresent()
-    {
-        when(mockedNodeService.hasAspect(CHILD_NODE_REF, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(true);
+    public void testOnUpdateWithAspectsAlreadyPresent() {
+        when(mockedNodeService.hasAspect(CHILD_NODE_REF, ASPECT_FILE_PLAN_COMPONENT))
+                .thenReturn(true);
         when(mockedNodeService.hasAspect(CHILD_NODE_REF, ASPECT_RECORD)).thenReturn(true);
 
         nonElectronicRecordType.onUpdateNode(CHILD_NODE_REF);
 
-        verify(mockedNodeService, never()).addAspect(CHILD_NODE_REF, ASPECT_FILE_PLAN_COMPONENT, null);
+        verify(mockedNodeService, never())
+                .addAspect(CHILD_NODE_REF, ASPECT_FILE_PLAN_COMPONENT, null);
         verify(mockedRecordService, never()).makeRecord(CHILD_NODE_REF);
     }
 
     @Test
-    public void testOnUpdateWithoutTheAspects()
-    {
-        when(mockedNodeService.hasAspect(CHILD_NODE_REF, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(false);
+    public void testOnUpdateWithoutTheAspects() {
+        when(mockedNodeService.hasAspect(CHILD_NODE_REF, ASPECT_FILE_PLAN_COMPONENT))
+                .thenReturn(false);
         when(mockedNodeService.hasAspect(CHILD_NODE_REF, ASPECT_RECORD)).thenReturn(false);
 
         nonElectronicRecordType.onUpdateNode(CHILD_NODE_REF);
 
-        verify(mockedNodeService, times(1)).addAspect(CHILD_NODE_REF, ASPECT_FILE_PLAN_COMPONENT, null);
+        verify(mockedNodeService, times(1))
+                .addAspect(CHILD_NODE_REF, ASPECT_FILE_PLAN_COMPONENT, null);
         verify(mockedRecordService, times(1)).makeRecord(CHILD_NODE_REF);
     }
 }

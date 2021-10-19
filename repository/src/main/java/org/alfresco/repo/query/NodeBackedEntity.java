@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -30,115 +30,99 @@ import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Parent class of Canned Query Entities which are a
- *  {@link NodeEntity} with additional properties
+ * Parent class of Canned Query Entities which are a {@link NodeEntity} with additional properties
  *
  * @author Nick Burch
  * @since 4.0
  */
-public class NodeBackedEntity implements PermissionCheckValue
-{
+public class NodeBackedEntity implements PermissionCheckValue {
     private Long id; // node id
     private String name;
     private NodeEntity node;
-    
+
     // Supplemental query-related parameters
     private Long parentNodeId;
     private Long nameQNameId;
     private Long contentTypeQNameId;
-    
-    /**
-     * Default constructor
-     */
-    public NodeBackedEntity()
-    {
+
+    /** Default constructor */
+    public NodeBackedEntity() {}
+
+    /** Query constructor */
+    public NodeBackedEntity(Long parentNodeId, Long nameQNameId, Long contentTypeQNameId) {
+        this.parentNodeId = parentNodeId;
+        this.nameQNameId = nameQNameId;
+        this.contentTypeQNameId = contentTypeQNameId;
     }
-    
-    /**
-     * Query constructor
-     */
-    public NodeBackedEntity(Long parentNodeId, Long nameQNameId, Long contentTypeQNameId)
-    {
-       this.parentNodeId = parentNodeId;
-       this.nameQNameId = nameQNameId;
-       this.contentTypeQNameId = contentTypeQNameId;
-    }
-    
-    public Long getId()
-    {
+
+    public Long getId() {
         return id;
     }
-    
-    public void setId(Long id)
-    {
+
+    public void setId(Long id) {
         this.id = id;
     }
-    
+
     // helper
-    public NodeRef getNodeRef()
-    {
+    public NodeRef getNodeRef() {
         return (node != null ? node.getNodeRef() : null);
     }
-    
+
     // helper (ISO 8061)
-    public String getCreatedDate()
-    {
-        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditCreated() : null);
+    public String getCreatedDate() {
+        return ((node != null && node.getAuditableProperties() != null)
+                ? node.getAuditableProperties().getAuditCreated()
+                : null);
     }
-    
+
     // helper
-    public String getCreator()
-    {
-        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditCreator() : null);
+    public String getCreator() {
+        return ((node != null && node.getAuditableProperties() != null)
+                ? node.getAuditableProperties().getAuditCreator()
+                : null);
     }
-    
+
     // helper (ISO 8061)
-    public String getModifiedDate()
-    {
-        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditModified() : null);
+    public String getModifiedDate() {
+        return ((node != null && node.getAuditableProperties() != null)
+                ? node.getAuditableProperties().getAuditModified()
+                : null);
     }
-    
+
     // helper
-    public String getModifier()
-    {
-        return ((node != null && node.getAuditableProperties() != null) ? node.getAuditableProperties().getAuditModifier() : null);
+    public String getModifier() {
+        return ((node != null && node.getAuditableProperties() != null)
+                ? node.getAuditableProperties().getAuditModifier()
+                : null);
     }
-    
-    public NodeEntity getNode()
-    {
+
+    public NodeEntity getNode() {
         return node;
     }
-    
-    public void setNode(NodeEntity childNode)
-    {
+
+    public void setNode(NodeEntity childNode) {
         this.node = childNode;
     }
-    
-    public String getName()
-    {
+
+    public String getName() {
         return name;
     }
-    
-    public void setName(String name)
-    {
+
+    public void setName(String name) {
         this.name = name;
     }
-    
-    
+
     // Supplemental query-related parameters
-    
-    public Long getParentNodeId()
-    {
+
+    public Long getParentNodeId() {
         return parentNodeId;
     }
-    
-    public Long getNameQNameId()
-    {
+
+    public Long getNameQNameId() {
         return nameQNameId;
     }
 
-    public Long getContentTypeQNameId() 
-    {
-       return contentTypeQNameId;
+    public Long getContentTypeQNameId() {
+        return contentTypeQNameId;
     }
 }

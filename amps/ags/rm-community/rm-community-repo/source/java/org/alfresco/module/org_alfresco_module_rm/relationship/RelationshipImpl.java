@@ -30,9 +30,9 @@ package org.alfresco.module.org_alfresco_module_rm.relationship;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
 
-import java.io.Serializable;
-
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.io.Serializable;
 
 /**
  * Relationship implementation
@@ -40,9 +40,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RelationshipImpl implements Relationship, Serializable
-{
-        /** serial UID */
+public class RelationshipImpl implements Relationship, Serializable {
+    /** serial UID */
     private static final long serialVersionUID = 9120649510198344978L;
 
     /** The unique name of the relationship */
@@ -61,8 +60,7 @@ public class RelationshipImpl implements Relationship, Serializable
      * @param source The source of the relationship
      * @param target The target of the relationship
      */
-    public RelationshipImpl(String uniqueName, NodeRef source, NodeRef target)
-    {
+    public RelationshipImpl(String uniqueName, NodeRef source, NodeRef target) {
         mandatoryString("uniqueName", uniqueName);
         mandatory("source", source);
         mandatory("target", target);
@@ -72,12 +70,9 @@ public class RelationshipImpl implements Relationship, Serializable
         setTarget(target);
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.Relationship#getUniqueName()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.relationship.Relationship#getUniqueName() */
     @Override
-    public String getUniqueName()
-    {
+    public String getUniqueName() {
         return uniqueName;
     }
 
@@ -86,17 +81,13 @@ public class RelationshipImpl implements Relationship, Serializable
      *
      * @param uniqueName The unique name of the relationship
      */
-    private void setUniqueName(String uniqueName)
-    {
+    private void setUniqueName(String uniqueName) {
         this.uniqueName = uniqueName;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.Relationship#getSource()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.relationship.Relationship#getSource() */
     @Override
-    public NodeRef getSource()
-    {
+    public NodeRef getSource() {
         return source;
     }
 
@@ -105,17 +96,13 @@ public class RelationshipImpl implements Relationship, Serializable
      *
      * @param source The source of the relationship
      */
-    private void setSource(NodeRef source)
-    {
+    private void setSource(NodeRef source) {
         this.source = source;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.Relationship#getTarget()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.relationship.Relationship#getTarget() */
     @Override
-    public NodeRef getTarget()
-    {
+    public NodeRef getTarget() {
         return target;
     }
 
@@ -124,43 +111,32 @@ public class RelationshipImpl implements Relationship, Serializable
      *
      * @param target The target of the relationship
      */
-    private void setTarget(NodeRef target)
-    {
+    private void setTarget(NodeRef target) {
         this.target = target;
     }
-    
-    /**
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
+
+    /** @see java.lang.Object#equals(java.lang.Object) */
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (obj instanceof Relationship)
-        {
+        if (obj instanceof Relationship) {
             RelationshipImpl that = (RelationshipImpl) obj;
             return (this.uniqueName.equals(that.uniqueName)
                     && this.source.equals(that.source)
                     && this.target.equals(that.target));
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
-    
-    /**
-     * @see java.lang.Object#hashCode()
-     */
+
+    /** @see java.lang.Object#hashCode() */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int prime = 31;
         int result = prime + uniqueName.hashCode();
-        result = (prime*result) + source.hashCode();
-        return (prime*result) + target.hashCode();
+        result = (prime * result) + source.hashCode();
+        return (prime * result) + target.hashCode();
     }
 }

@@ -33,91 +33,80 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Sara Aspery
  */
-public class SystemWideDirectUrlConfig implements DirectUrlConfig
-{
+public class SystemWideDirectUrlConfig implements DirectUrlConfig {
     private static final Log logger = LogFactory.getLog(SystemWideDirectUrlConfig.class);
 
     /** Direct access url configuration settings */
     private Boolean enabled;
+
     private Long defaultExpiryTimeInSec;
     private Long maxExpiryTimeInSec;
 
-    public void setEnabled(Boolean enabled)
-    {
+    public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
 
-    public void setDefaultExpiryTimeInSec(Long defaultExpiryTimeInSec)
-    {
+    public void setDefaultExpiryTimeInSec(Long defaultExpiryTimeInSec) {
         this.defaultExpiryTimeInSec = defaultExpiryTimeInSec;
     }
 
-    public void setMaxExpiryTimeInSec(Long maxExpiryTimeInSec)
-    {
+    public void setMaxExpiryTimeInSec(Long maxExpiryTimeInSec) {
         this.maxExpiryTimeInSec = maxExpiryTimeInSec;
     }
 
-    public Boolean isEnabled()
-    {
+    public Boolean isEnabled() {
         return enabled;
     }
 
-    public Long getDefaultExpiryTimeInSec()
-    {
+    public Long getDefaultExpiryTimeInSec() {
         return defaultExpiryTimeInSec;
     }
 
-    public Long getMaxExpiryTimeInSec()
-    {
+    public Long getMaxExpiryTimeInSec() {
         return maxExpiryTimeInSec;
     }
 
-    /**
-     * Configuration initialise
-     */
-    public void init()
-    {
+    /** Configuration initialise */
+    public void init() {
         validate();
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
-    public void validate()
-    {
-        // Disable direct access URLs system-wide if any error found in the system-wide direct access URL config
-        try
-        {
+    public void validate() {
+        // Disable direct access URLs system-wide if any error found in the system-wide direct
+        // access URL config
+        try {
             validateSystemDirectAccessUrlConfig();
-        }
-        catch (InvalidDirectAccessUrlConfigException ex)
-        {
-            logger.error("Disabling system-wide direct access URLs due to configuration error: " + ex.getMessage());
+        } catch (InvalidDirectAccessUrlConfigException ex) {
+            logger.error(
+                    "Disabling system-wide direct access URLs due to configuration error: "
+                            + ex.getMessage());
             setEnabled(false);
         }
         logger.info("System-wide direct access URLs are " + (isEnabled() ? "enabled" : "disabled"));
     }
 
     /* Helper method to validate the system-wide direct access url configuration settings */
-    private void validateSystemDirectAccessUrlConfig() throws InvalidDirectAccessUrlConfigException
-    {
-        if (isEnabled())
-        {
-            if (getDefaultExpiryTimeInSec() == null || getDefaultExpiryTimeInSec() < 1)
-            {
-                throw new InvalidDirectAccessUrlConfigException("System-wide direct access URL default expiry time is missing or invalid.");
+    private void validateSystemDirectAccessUrlConfig()
+            throws InvalidDirectAccessUrlConfigException {
+        if (isEnabled()) {
+            if (getDefaultExpiryTimeInSec() == null || getDefaultExpiryTimeInSec() < 1) {
+                throw new InvalidDirectAccessUrlConfigException(
+                        "System-wide direct access URL default expiry time is missing or invalid.");
             }
 
-            if (getMaxExpiryTimeInSec() == null || getMaxExpiryTimeInSec() < 1)
-            {
-                throw new InvalidDirectAccessUrlConfigException("System-wide direct access URL maximum expiry time is missing or invalid.");
+            if (getMaxExpiryTimeInSec() == null || getMaxExpiryTimeInSec() < 1) {
+                throw new InvalidDirectAccessUrlConfigException(
+                        "System-wide direct access URL maximum expiry time is missing or invalid.");
             }
 
-            if (getDefaultExpiryTimeInSec() > getMaxExpiryTimeInSec())
-            {
-                String errorMsg = String.format("System-wide direct access URL default expiry time [%s] exceeds maximum expiry time [%s].",
-                        getDefaultExpiryTimeInSec(), getMaxExpiryTimeInSec());
+            if (getDefaultExpiryTimeInSec() > getMaxExpiryTimeInSec()) {
+                String errorMsg =
+                        String.format(
+                                "System-wide direct access URL default expiry time [%s] exceeds"
+                                        + " maximum expiry time [%s].",
+                                getDefaultExpiryTimeInSec(), getMaxExpiryTimeInSec());
                 throw new InvalidDirectAccessUrlConfigException(errorMsg);
             }
         }

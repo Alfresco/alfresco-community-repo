@@ -26,15 +26,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
@@ -42,30 +35,32 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Unit test class for PropertyModificationAllowedCheck
  *
  * @author Ross Gale
  * @since 3.2
  */
-public class PropertyModificationAllowedCheckUnitTest
-{
+public class PropertyModificationAllowedCheckUnitTest {
 
     private PropertyModificationAllowedCheck propertyModificationAllowedCheck;
 
     private Map<QName, Serializable> before, after;
-
     private QName qName, qName2;
 
     private List<QName> list;
     private List<String> editableURIs;
 
-    @Mock
-    private Serializable serializable, serializable2;
+    @Mock private Serializable serializable, serializable2;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         propertyModificationAllowedCheck = new PropertyModificationAllowedCheck();
         before = new HashMap();
@@ -80,23 +75,17 @@ public class PropertyModificationAllowedCheckUnitTest
         propertyModificationAllowedCheck.setEditableURIs(editableURIs);
     }
 
-    /**
-     * Test modification check passes when property is in whitelist
-     */
+    /** Test modification check passes when property is in whitelist */
     @Test
-    public void testCheckMethodReturnsTrueWhenPropertyInList()
-    {
+    public void testCheckMethodReturnsTrueWhenPropertyInList() {
         list.add(qName);
         propertyModificationAllowedCheck.setWhiteList(list);
         assertTrue(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check fails when property is not in whitelist
-     */
+    /** Test modification check fails when property is not in whitelist */
     @Test
-    public void testCheckMethodReturnsFalseIfAnyNonAllowedPropertyInListIsChanged()
-    {
+    public void testCheckMethodReturnsFalseIfAnyNonAllowedPropertyInListIsChanged() {
         list.add(qName);
         before.put(qName2, serializable2);
         after.put(qName2, serializable);
@@ -104,12 +93,9 @@ public class PropertyModificationAllowedCheckUnitTest
         assertFalse(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check fails when first property is not in whitelist
-     */
+    /** Test modification check fails when first property is not in whitelist */
     @Test
-    public void testCheckMethodReturnsFalseIfFirstPropertyInListIsChangedWithoutWhitelist()
-    {
+    public void testCheckMethodReturnsFalseIfFirstPropertyInListIsChangedWithoutWhitelist() {
         list.add(qName2);
         before.put(qName2, serializable2);
         after.put(qName2, serializable);
@@ -117,12 +103,9 @@ public class PropertyModificationAllowedCheckUnitTest
         assertFalse(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check passes when all properties are in whitelist
-     */
+    /** Test modification check passes when all properties are in whitelist */
     @Test
-    public void testCheckMethodReturnsTrueIfAllEditedPropertiesInWhitelist()
-    {
+    public void testCheckMethodReturnsTrueIfAllEditedPropertiesInWhitelist() {
         list.add(qName);
         list.add(qName2);
         before.put(qName2, serializable2);
@@ -131,48 +114,36 @@ public class PropertyModificationAllowedCheckUnitTest
         assertTrue(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check fails when property added
-     */
+    /** Test modification check fails when property added */
     @Test
-    public void testCheckMethodReturnsFalseIfPropertyNotInBeforeList()
-    {
+    public void testCheckMethodReturnsFalseIfPropertyNotInBeforeList() {
         list.add(qName);
         after.put(qName2, serializable);
         propertyModificationAllowedCheck.setWhiteList(list);
         assertFalse(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check passes when allowed property added
-     */
+    /** Test modification check passes when allowed property added */
     @Test
-    public void testCheckMethodReturnsTrueIfAllowedPropertyNotInBeforeList()
-    {
+    public void testCheckMethodReturnsTrueIfAllowedPropertyNotInBeforeList() {
         list.add(qName2);
         after.put(qName2, serializable);
         propertyModificationAllowedCheck.setWhiteList(list);
         assertFalse(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check fails when property removed
-     */
+    /** Test modification check fails when property removed */
     @Test
-    public void testCheckMethodReturnsFalseIfPropertyNotInAfterList()
-    {
+    public void testCheckMethodReturnsFalseIfPropertyNotInAfterList() {
         list.add(qName);
         before.put(qName2, serializable);
         propertyModificationAllowedCheck.setWhiteList(list);
         assertFalse(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check passes when allowed property removed
-     */
+    /** Test modification check passes when allowed property removed */
     @Test
-    public void testCheckMethodReturnsTrueIfAllowedPropertyNotInAfterList()
-    {
+    public void testCheckMethodReturnsTrueIfAllowedPropertyNotInAfterList() {
         list.add(qName);
         list.add(qName2);
         before.put(qName2, serializable);
@@ -180,69 +151,51 @@ public class PropertyModificationAllowedCheckUnitTest
         assertTrue(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check for empty property in before map without whitelist
-     */
+    /** Test modification check for empty property in before map without whitelist */
     @Test
-    public void testNullValueInBeforeList()
-    {
+    public void testNullValueInBeforeList() {
         before.put(qName, null);
         propertyModificationAllowedCheck.setWhiteList(list);
         assertFalse(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check for empty property in after map without whitelist
-     */
+    /** Test modification check for empty property in after map without whitelist */
     @Test
-    public void testNullValueInAfterList()
-    {
+    public void testNullValueInAfterList() {
         after.put(qName, null);
         propertyModificationAllowedCheck.setWhiteList(list);
         assertFalse(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check for empty property in before map with whitelist
-     */
+    /** Test modification check for empty property in before map with whitelist */
     @Test
-    public void testNullValueInBeforeListWithAllowedProperty()
-    {
+    public void testNullValueInBeforeListWithAllowedProperty() {
         list.add(qName);
         before.put(qName, null);
         propertyModificationAllowedCheck.setWhiteList(list);
         assertTrue(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check for empty property in after list with whitelist
-     */
+    /** Test modification check for empty property in after list with whitelist */
     @Test
-    public void testNullValueInAfterListWithAllowedProperty()
-    {
+    public void testNullValueInAfterListWithAllowedProperty() {
         list.add(qName);
         after.put(qName, null);
         propertyModificationAllowedCheck.setWhiteList(list);
         assertTrue(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test modification check for empty property in both maps
-     */
+    /** Test modification check for empty property in both maps */
     @Test
-    public void testNullValueInBoth()
-    {
+    public void testNullValueInBoth() {
         before.put(qName, null);
         after.put(qName, null);
         assertTrue(propertyModificationAllowedCheck.check(before, after));
     }
 
-    /**
-     * Test update of a property from the model URI for which properties can be updated
-     */
+    /** Test update of a property from the model URI for which properties can be updated */
     @Test
-    public void testUpdatePropertyFromAllowedModelURI()
-    {
+    public void testUpdatePropertyFromAllowedModelURI() {
         editableURIs.add("foo");
         propertyModificationAllowedCheck.setEditableURIs(editableURIs);
         assertTrue(propertyModificationAllowedCheck.check(before, after));
@@ -252,8 +205,7 @@ public class PropertyModificationAllowedCheckUnitTest
      * Test update of a property that is not in the model URI for which properties can be updated
      */
     @Test
-    public void testUpdatePropertyFromNotAllowedModelURI()
-    {
+    public void testUpdatePropertyFromNotAllowedModelURI() {
         editableURIs.add("bar");
         propertyModificationAllowedCheck.setEditableURIs(editableURIs);
         assertFalse(propertyModificationAllowedCheck.check(before, after));

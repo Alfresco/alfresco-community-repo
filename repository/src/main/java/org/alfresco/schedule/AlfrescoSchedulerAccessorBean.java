@@ -25,9 +25,6 @@
  */
 package org.alfresco.schedule;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
@@ -35,49 +32,45 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.lang.Nullable;
 import org.springframework.scheduling.quartz.SchedulerAccessorBean;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * The class is designed to add <code>enabled</code> check to switch on/off the triggers scheduling.
  * The default is <code>true</code>.
  *
  * @since 6.0
- *
  * @author amukha
  */
-public class AlfrescoSchedulerAccessorBean extends SchedulerAccessorBean implements DisposableBean
-{
-    @Nullable
-    private List<TriggerKey> triggerKeys;
+public class AlfrescoSchedulerAccessorBean extends SchedulerAccessorBean implements DisposableBean {
+    @Nullable private List<TriggerKey> triggerKeys;
     private boolean enabled = true;
 
-    public boolean isEnabled()
-    {
+    public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
     @Override
-    public void setTriggers(Trigger... triggers)
-    {
+    public void setTriggers(Trigger... triggers) {
         super.setTriggers(triggers);
-        this.triggerKeys = Arrays.stream(triggers).map(Trigger::getKey).collect(Collectors.toList());
+        this.triggerKeys =
+                Arrays.stream(triggers).map(Trigger::getKey).collect(Collectors.toList());
     }
 
     @Override
-    public void afterPropertiesSet() throws SchedulerException
-    {
-        if (isEnabled())
-        {
+    public void afterPropertiesSet() throws SchedulerException {
+        if (isEnabled()) {
             super.afterPropertiesSet();
         }
     }
 
     @Override
-    public void destroy() throws Exception
-    {
+    public void destroy() throws Exception {
         getScheduler().unscheduleJobs(triggerKeys);
     }
 }

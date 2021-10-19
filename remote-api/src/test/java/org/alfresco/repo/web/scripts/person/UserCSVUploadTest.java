@@ -38,19 +38,19 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Tests the processing of different types of files (csv, xls, xlsx) used for bulk upload of users, see {@link UserCSVUploadPost}.
+ * Tests the processing of different types of files (csv, xls, xlsx) used for bulk upload of users,
+ * see {@link UserCSVUploadPost}.
+ *
  * @author Ancuta Morarasu
  */
-public class UserCSVUploadTest extends BaseWebScriptTest
-{
+public class UserCSVUploadTest extends BaseWebScriptTest {
     private static final String RESOURCE_PREFIX = "org/alfresco/repo/web/scripts/uploadcsv/";
 
     private DictionaryService dictionaryService;
     private UserCSVUploadPost uploadWebscript;
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         super.setUp();
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         this.dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
@@ -59,46 +59,44 @@ public class UserCSVUploadTest extends BaseWebScriptTest
         this.uploadWebscript.setDictionaryService(dictionaryService);
     }
 
-    private InputStream getResourceAsStream(String fileName)
-    {
-        InputStream csvStream = UserCSVUploadTest.class.getClassLoader().getResourceAsStream(RESOURCE_PREFIX + fileName);
+    private InputStream getResourceAsStream(String fileName) {
+        InputStream csvStream =
+                UserCSVUploadTest.class
+                        .getClassLoader()
+                        .getResourceAsStream(RESOURCE_PREFIX + fileName);
         assertNotNull(csvStream);
         return csvStream;
     }
 
-    public void testProcessCVSUserTemplate() throws Exception
-    {
-        List<Map<QName,String>> users = new ArrayList<>();
+    public void testProcessCVSUserTemplate() throws Exception {
+        List<Map<QName, String>> users = new ArrayList<>();
         this.uploadWebscript.processCSVUpload(getResourceAsStream("userCSV.csv"), users);
         assertEquals(2, users.size());
     }
 
-    public void testProcessCVSWithHeaderUserTemplate() throws Exception
-    {
-        List<Map<QName,String>> users = new ArrayList<>();
+    public void testProcessCVSWithHeaderUserTemplate() throws Exception {
+        List<Map<QName, String>> users = new ArrayList<>();
         this.uploadWebscript.processCSVUpload(getResourceAsStream("userCSV_header.csv"), users);
         assertEquals(2, users.size());
     }
 
-    public void testProcessXLSUserTemplate() throws Exception
-    {
-        List<Map<QName,String>> users = new ArrayList<>();
+    public void testProcessXLSUserTemplate() throws Exception {
+        List<Map<QName, String>> users = new ArrayList<>();
         this.uploadWebscript.processXLSUpload(getResourceAsStream("userCSV.xls"), users);
         assertEquals(2, users.size());
     }
 
-    public void testProcessXLSXUserTemplate() throws Exception
-    {
-        List<Map<QName,String>> users = new ArrayList<>();
+    public void testProcessXLSXUserTemplate() throws Exception {
+        List<Map<QName, String>> users = new ArrayList<>();
         this.uploadWebscript.processXLSXUpload(getResourceAsStream("userCSV.xlsx"), users);
         assertEquals(2, users.size());
     }
 
-    public void testProcessOtherUserTemplate() throws Exception
-    {
-        List<Map<QName,String>> users = new ArrayList<>();
-        //should be processed as csv
-        this.uploadWebscript.processUpload(getResourceAsStream("userCSV.csv1"), "userCSV.csv1", users);
+    public void testProcessOtherUserTemplate() throws Exception {
+        List<Map<QName, String>> users = new ArrayList<>();
+        // should be processed as csv
+        this.uploadWebscript.processUpload(
+                getResourceAsStream("userCSV.csv1"), "userCSV.csv1", users);
         assertEquals(2, users.size());
     }
 }

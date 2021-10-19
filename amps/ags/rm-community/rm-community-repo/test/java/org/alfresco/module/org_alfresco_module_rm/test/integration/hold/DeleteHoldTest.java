@@ -29,9 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
 import static org.alfresco.util.GUID.generate;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeDeleteHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnDeleteHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -42,16 +39,20 @@ import org.alfresco.repo.policy.ClassBehaviourBinding;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Hold service integration test.
  *
  * @author Roy Wetherall
  * @since 2.2
  */
-public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPolicy, OnDeleteHoldPolicy
-{
+public class DeleteHoldTest extends BaseRMTestCase
+        implements BeforeDeleteHoldPolicy, OnDeleteHoldPolicy {
     /** Constants for the holds */
     protected static final String HOLD1_NAME = "hold one";
+
     protected static final String HOLD2_NAME = "hold two";
     protected static final String HOLD1_REASON = "I have my reasons";
     protected static final String HOLD2_REASON = "secrets are everything";
@@ -62,14 +63,12 @@ public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPo
     private boolean onDeleteHoldFlag = false;
 
     @Override
-    protected boolean isRecordTest()
-    {
+    protected boolean isRecordTest() {
         return true;
     }
 
     @Override
-    protected boolean isUserTest()
-    {
+    protected boolean isUserTest() {
         return true;
     }
 
@@ -78,8 +77,7 @@ public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPo
      *
      * @return {@link NodeRef} Node reference of the hold.
      */
-    protected NodeRef createAndCheckHold()
-    {
+    protected NodeRef createAndCheckHold() {
         NodeRef hold = holdService.createHold(filePlan, HOLD1_NAME, HOLD1_REASON, HOLD1_DESC);
         assertNotNull(hold);
         return hold;
@@ -90,8 +88,7 @@ public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPo
      *
      * @return List of {@link NodeRef}s of the holds.
      */
-    protected List<NodeRef> createAndCheckHolds()
-    {
+    protected List<NodeRef> createAndCheckHolds() {
         List<NodeRef> holds = new ArrayList<>(2);
         holds.add(createAndCheckHold());
         NodeRef hold2 = holdService.createHold(filePlan, HOLD2_NAME, HOLD2_REASON, HOLD2_DESC);
@@ -101,219 +98,217 @@ public class DeleteHoldTest extends BaseRMTestCase implements BeforeDeleteHoldPo
         return holds;
     }
 
-    public void testDeleteHoldBehaviourForRecordFolder()
-    {
-        NodeRef hold1 = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run() throws Exception
-            {
-                // create test holds
-                NodeRef newHold = createAndCheckHold();
-                // add the record folder to hold1
-                holdService.addToHold(newHold, rmFolder);
+    public void testDeleteHoldBehaviourForRecordFolder() {
+        NodeRef hold1 =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() throws Exception {
+                                // create test holds
+                                NodeRef newHold = createAndCheckHold();
+                                // add the record folder to hold1
+                                holdService.addToHold(newHold, rmFolder);
 
-                return newHold;
-            }
-        });
-        //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                // assert that the folder and records are frozen
-                assertTrue(freezeService.isFrozen(rmFolder));
-                assertTrue(freezeService.isFrozen(recordOne));
-                assertTrue(freezeService.isFrozen(recordDeclaredOne));
+                                return newHold;
+                            }
+                        });
+        // Splitting transaction to fix onCreateNodePolicy issue where there was a node not found
+        // exception
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        // assert that the folder and records are frozen
+                        assertTrue(freezeService.isFrozen(rmFolder));
+                        assertTrue(freezeService.isFrozen(recordOne));
+                        assertTrue(freezeService.isFrozen(recordDeclaredOne));
 
-                // check the contents of the hold
-                List<NodeRef> frozenNodes = holdService.getHeld(hold1);
-                assertNotNull(frozenNodes);
-                assertEquals(1, frozenNodes.size());
-                assertEquals(rmFolder, frozenNodes.get(0));
+                        // check the contents of the hold
+                        List<NodeRef> frozenNodes = holdService.getHeld(hold1);
+                        assertNotNull(frozenNodes);
+                        assertEquals(1, frozenNodes.size());
+                        assertEquals(rmFolder, frozenNodes.get(0));
 
-                // delete the hold
-                holdService.deleteHold(hold1);
+                        // delete the hold
+                        holdService.deleteHold(hold1);
 
-                // assert that the folder and records no longer frozen
-                assertFalse(freezeService.isFrozen(rmFolder));
-                assertFalse(freezeService.isFrozen(recordOne));
-                assertFalse(freezeService.isFrozen(recordDeclaredOne));
+                        // assert that the folder and records no longer frozen
+                        assertFalse(freezeService.isFrozen(rmFolder));
+                        assertFalse(freezeService.isFrozen(recordOne));
+                        assertFalse(freezeService.isFrozen(recordDeclaredOne));
 
-                // confirm the hold has been deleted
-                assertNull(holdService.getHold(filePlan, "hold one"));
+                        // confirm the hold has been deleted
+                        assertNull(holdService.getHold(filePlan, "hold one"));
 
-                return null;
-            }
-        });
+                        return null;
+                    }
+                });
     }
 
-    public void testDeleteHoldBehaviourForMultipleHolds()
-    {
-        List<NodeRef> holds = doTestInTransaction(new Test<List<NodeRef>>()
-        {
-            @Override
-            public List<NodeRef> run() throws Exception
-            {
-                // create test holds
-                return createAndCheckHolds();
-            }
-        });
-        //Splitting transaction to fix onCreateNodePolicy issue where there was a node not found exception
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                NodeRef hold1 = holds.get(0);
-                NodeRef hold2 = holds.get(1);
+    public void testDeleteHoldBehaviourForMultipleHolds() {
+        List<NodeRef> holds =
+                doTestInTransaction(
+                        new Test<List<NodeRef>>() {
+                            @Override
+                            public List<NodeRef> run() throws Exception {
+                                // create test holds
+                                return createAndCheckHolds();
+                            }
+                        });
+        // Splitting transaction to fix onCreateNodePolicy issue where there was a node not found
+        // exception
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        NodeRef hold1 = holds.get(0);
+                        NodeRef hold2 = holds.get(1);
 
-                // add the record folder to hold1
-                holdService.addToHold(hold1, rmFolder);
+                        // add the record folder to hold1
+                        holdService.addToHold(hold1, rmFolder);
 
-                // assert that the folder and records are frozen
-                assertTrue(freezeService.isFrozen(rmFolder));
-                assertTrue(freezeService.isFrozen(recordOne));
-                assertTrue(freezeService.isFrozen(recordDeclaredOne));
+                        // assert that the folder and records are frozen
+                        assertTrue(freezeService.isFrozen(rmFolder));
+                        assertTrue(freezeService.isFrozen(recordOne));
+                        assertTrue(freezeService.isFrozen(recordDeclaredOne));
 
-                // check the contents of the hold
-                List<NodeRef> frozenNodes = holdService.getHeld(hold1);
-                assertNotNull(frozenNodes);
-                assertEquals(1, frozenNodes.size());
-                assertEquals(rmFolder, frozenNodes.get(0));
+                        // check the contents of the hold
+                        List<NodeRef> frozenNodes = holdService.getHeld(hold1);
+                        assertNotNull(frozenNodes);
+                        assertEquals(1, frozenNodes.size());
+                        assertEquals(rmFolder, frozenNodes.get(0));
 
-                holdService.addToHold(hold2, recordOne);
+                        holdService.addToHold(hold2, recordOne);
 
-                // assert that the folder and records are frozen
-                assertTrue(freezeService.isFrozen(rmFolder));
-                assertTrue(freezeService.isFrozen(recordOne));
-                assertTrue(freezeService.isFrozen(recordDeclaredOne));
+                        // assert that the folder and records are frozen
+                        assertTrue(freezeService.isFrozen(rmFolder));
+                        assertTrue(freezeService.isFrozen(recordOne));
+                        assertTrue(freezeService.isFrozen(recordDeclaredOne));
 
-                return null;
-            }
-        });
+                        return null;
+                    }
+                });
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                NodeRef hold1 = holds.get(0);
-                NodeRef hold2 = holds.get(1);
-               // delete the hold
-               holdService.deleteHold(hold1);
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        NodeRef hold1 = holds.get(0);
+                        NodeRef hold2 = holds.get(1);
+                        // delete the hold
+                        holdService.deleteHold(hold1);
 
-               // assert that the folder and records no longer frozen
-               assertFalse(freezeService.isFrozen(rmFolder));
-               assertTrue(freezeService.isFrozen(recordOne));
-               assertFalse(freezeService.isFrozen(recordDeclaredOne));
+                        // assert that the folder and records no longer frozen
+                        assertFalse(freezeService.isFrozen(rmFolder));
+                        assertTrue(freezeService.isFrozen(recordOne));
+                        assertFalse(freezeService.isFrozen(recordDeclaredOne));
 
-               // confirm the hold has been deleted
-               assertNull(holdService.getHold(filePlan, "hold one"));
+                        // confirm the hold has been deleted
+                        assertNull(holdService.getHold(filePlan, "hold one"));
 
-               // delete the hold
-               holdService.deleteHold(hold2);
+                        // delete the hold
+                        holdService.deleteHold(hold2);
 
-               // assert that the folder and records no longer frozen
-               assertFalse(freezeService.isFrozen(rmFolder));
-               assertFalse(freezeService.isFrozen(recordOne));
-               assertFalse(freezeService.isFrozen(recordDeclaredOne));
+                        // assert that the folder and records no longer frozen
+                        assertFalse(freezeService.isFrozen(rmFolder));
+                        assertFalse(freezeService.isFrozen(recordOne));
+                        assertFalse(freezeService.isFrozen(recordDeclaredOne));
 
-               // confirm the hold has been deleted
-               assertNull(holdService.getHold(filePlan, "hold two"));
+                        // confirm the hold has been deleted
+                        assertNull(holdService.getHold(filePlan, "hold two"));
 
-               return null;
-           }
-        });
+                        return null;
+                    }
+                });
     }
 
-    public void testHeldByNothing()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-           @Override
-           public Void run() throws Exception
-           {
-               // Create the test holds
-               createAndCheckHolds();
+    public void testHeldByNothing() {
+        doTestInTransaction(
+                new Test<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        // Create the test holds
+                        createAndCheckHolds();
 
-               // Check that the record folder isn't held by anything
-               List<NodeRef> holds = new ArrayList<>();
-               holds.addAll(holdService.heldBy(rmFolder, true));
-               assertTrue(holds.isEmpty());
-               holds.clear();
-               holds.addAll(holdService.heldBy(rmFolder, false));
-               assertEquals(2, holds.size());
+                        // Check that the record folder isn't held by anything
+                        List<NodeRef> holds = new ArrayList<>();
+                        holds.addAll(holdService.heldBy(rmFolder, true));
+                        assertTrue(holds.isEmpty());
+                        holds.clear();
+                        holds.addAll(holdService.heldBy(rmFolder, false));
+                        assertEquals(2, holds.size());
 
-               // Check that record isn't held by anything (recordOne is a child of the rmFolder)
-               holds.clear();
-               holds.addAll(holdService.heldBy(recordOne, true));
-               assertTrue(holds.isEmpty());
-               holds.clear();
-               holds.addAll(holdService.heldBy(recordOne, false));
-               assertEquals(2, holds.size());
+                        // Check that record isn't held by anything (recordOne is a child of the
+                        // rmFolder)
+                        holds.clear();
+                        holds.addAll(holdService.heldBy(recordOne, true));
+                        assertTrue(holds.isEmpty());
+                        holds.clear();
+                        holds.addAll(holdService.heldBy(recordOne, false));
+                        assertEquals(2, holds.size());
 
-               return null;
-           }
-        });
+                        return null;
+                    }
+                });
     }
 
-    public void testPolicyNotificationForDeleteHold() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            BehaviourDefinition<ClassBehaviourBinding> beforeDeleteHoldBehaviour;
-            BehaviourDefinition<ClassBehaviourBinding> onDeleteHoldBehaviour;
-            NodeRef hold;
+    public void testPolicyNotificationForDeleteHold() throws Exception {
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest() {
+                    BehaviourDefinition<ClassBehaviourBinding> beforeDeleteHoldBehaviour;
+                    BehaviourDefinition<ClassBehaviourBinding> onDeleteHoldBehaviour;
+                    NodeRef hold;
 
-            public void given()
-            {
-                beforeDeleteHoldBehaviour = policyComponent.bindClassBehaviour(BeforeDeleteHoldPolicy.QNAME,
-                            RecordsManagementModel.TYPE_HOLD,
-                            new JavaBehaviour(DeleteHoldTest.this, "beforeDeleteHold", NotificationFrequency.EVERY_EVENT));
+                    public void given() {
+                        beforeDeleteHoldBehaviour =
+                                policyComponent.bindClassBehaviour(
+                                        BeforeDeleteHoldPolicy.QNAME,
+                                        RecordsManagementModel.TYPE_HOLD,
+                                        new JavaBehaviour(
+                                                DeleteHoldTest.this,
+                                                "beforeDeleteHold",
+                                                NotificationFrequency.EVERY_EVENT));
 
-                onDeleteHoldBehaviour = policyComponent.bindClassBehaviour(OnDeleteHoldPolicy.QNAME, RecordsManagementModel.TYPE_HOLD,
-                            new JavaBehaviour(DeleteHoldTest.this, "onDeleteHold", NotificationFrequency.EVERY_EVENT));
+                        onDeleteHoldBehaviour =
+                                policyComponent.bindClassBehaviour(
+                                        OnDeleteHoldPolicy.QNAME,
+                                        RecordsManagementModel.TYPE_HOLD,
+                                        new JavaBehaviour(
+                                                DeleteHoldTest.this,
+                                                "onDeleteHold",
+                                                NotificationFrequency.EVERY_EVENT));
 
-                // Create a hold
-                hold = holdService.createHold(filePlan, generate(), generate(), generate());
+                        // Create a hold
+                        hold = holdService.createHold(filePlan, generate(), generate(), generate());
 
-                assertFalse(beforeDeleteHoldFlag);
-                assertFalse(beforeDeleteHoldFlag);
-            }
+                        assertFalse(beforeDeleteHoldFlag);
+                        assertFalse(beforeDeleteHoldFlag);
+                    }
 
-            public void when()
-            {
-                // Delete the hold
-                holdService.deleteHold(hold);
+                    public void when() {
+                        // Delete the hold
+                        holdService.deleteHold(hold);
+                    }
 
-            }
+                    public void then() {
+                        assertTrue(beforeDeleteHoldFlag);
+                        assertTrue(onDeleteHoldFlag);
+                    }
 
-            public void then()
-            {
-                assertTrue(beforeDeleteHoldFlag);
-                assertTrue(onDeleteHoldFlag);
-            }
-
-            public void after()
-            {
-                policyComponent.removeClassDefinition(beforeDeleteHoldBehaviour);
-                policyComponent.removeClassDefinition(onDeleteHoldBehaviour);
-            }
-        });
-
+                    public void after() {
+                        policyComponent.removeClassDefinition(beforeDeleteHoldBehaviour);
+                        policyComponent.removeClassDefinition(onDeleteHoldBehaviour);
+                    }
+                });
     }
 
     @Override
-    public void beforeDeleteHold(NodeRef hold)
-    {
+    public void beforeDeleteHold(NodeRef hold) {
         beforeDeleteHoldFlag = true;
     }
 
     @Override
-    public void onDeleteHold(String holdName)
-    {
+    public void onDeleteHold(String holdName) {
         onDeleteHoldFlag = true;
     }
 }

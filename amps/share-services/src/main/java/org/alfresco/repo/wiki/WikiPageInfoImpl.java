@@ -20,12 +20,12 @@
  */
 package org.alfresco.repo.wiki;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.wiki.WikiPageInfo;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.wiki.WikiPageInfo;
 
 /**
  * An implementation of {@link WikiPageInfo}
@@ -33,130 +33,105 @@ import org.alfresco.service.cmr.wiki.WikiPageInfo;
  * @author Nick Burch (based on existing webscript controllers in the REST API)
  * @since 4.0
  */
-public class WikiPageInfoImpl implements WikiPageInfo 
-{
-   private NodeRef nodeRef;
-   private NodeRef containerNodeRef;
-   private String systemName;
-   private String title;
-   private String contents;
-   private String creator;
-   private String modifier;
-   private Date createdAt;
-   private Date modifiedAt;
-   private List<String> tags = new ArrayList<String>();
+public class WikiPageInfoImpl implements WikiPageInfo {
+    private NodeRef nodeRef;
+    private NodeRef containerNodeRef;
+    private String systemName;
+    private String title;
+    private String contents;
+    private String creator;
+    private String modifier;
+    private Date createdAt;
+    private Date modifiedAt;
+    private List<String> tags = new ArrayList<String>();
 
-   /**
-    * Creates a new, empty WikiPageInfo
-    */
-   public WikiPageInfoImpl()
-   {
-   }
-   
-   /**
-    * Create a WikiPageInfo object from an existing node
-    */
-   public WikiPageInfoImpl(NodeRef nodeRef, NodeRef containerNodeRef, String systemName)
-   {
-      this.nodeRef = nodeRef;
-      this.containerNodeRef = containerNodeRef;
-      this.systemName = systemName;
-   }
+    /** Creates a new, empty WikiPageInfo */
+    public WikiPageInfoImpl() {}
 
-   @Override
-   public NodeRef getContainerNodeRef() 
-   {
-      return containerNodeRef;
-   }
+    /** Create a WikiPageInfo object from an existing node */
+    public WikiPageInfoImpl(NodeRef nodeRef, NodeRef containerNodeRef, String systemName) {
+        this.nodeRef = nodeRef;
+        this.containerNodeRef = containerNodeRef;
+        this.systemName = systemName;
+    }
 
-   @Override
-   public NodeRef getNodeRef() 
-   {
-      return nodeRef;
-   }
-   
-   @Override
-   public String getSystemName() 
-   {
-      return systemName;
-   }
+    @Override
+    public NodeRef getContainerNodeRef() {
+        return containerNodeRef;
+    }
 
-   @Override
-   public String getTitle() 
-   {
-      return title;
-   }
+    @Override
+    public NodeRef getNodeRef() {
+        return nodeRef;
+    }
 
-   @Override
-   public String getContents() 
-   {
-      return contents;
-   }
+    @Override
+    public String getSystemName() {
+        return systemName;
+    }
 
-   @Override
-   public String getCreator() 
-   {
-      return creator;
-   }
+    @Override
+    public String getTitle() {
+        return title;
+    }
 
-   @Override
-   public String getModifier() 
-   {
-      return modifier;
-   }
+    @Override
+    public String getContents() {
+        return contents;
+    }
 
-   @Override
-   public Date getCreatedAt() 
-   {
-      return createdAt;
-   }
+    @Override
+    public String getCreator() {
+        return creator;
+    }
 
-   @Override
-   public Date getModifiedAt() 
-   {
-      return modifiedAt;
-   }
+    @Override
+    public String getModifier() {
+        return modifier;
+    }
 
-   @Override
-   public List<String> getTags() 
-   {
-      return tags;
-   }
+    @Override
+    public Date getCreatedAt() {
+        return createdAt;
+    }
 
-   @Override
-   public void setTitle(String title) 
-   {
-      this.title = title;
-   }
+    @Override
+    public Date getModifiedAt() {
+        return modifiedAt;
+    }
 
-   @Override
-   public void setContents(String contents) 
-   {
-      this.contents = contents;
-   }
+    @Override
+    public List<String> getTags() {
+        return tags;
+    }
 
-   public void setCreator(String creator) 
-   {
-      this.creator = creator;
-   }
+    @Override
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-   public void setModifier(String modifier) 
-   {
-      this.modifier = modifier;
-   }
+    @Override
+    public void setContents(String contents) {
+        this.contents = contents;
+    }
 
-   public void setCreatedAt(Date createdAt) 
-   {
-      this.createdAt = createdAt;
-   }
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
 
-   public void setModifiedAt(Date modifiedAt) 
-   {
-      this.modifiedAt = modifiedAt;
-   }
+    public void setModifier(String modifier) {
+        this.modifier = modifier;
+    }
 
-   public void setTags(List<String> tags)
-   {
-      this.tags = tags;
-   }
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setModifiedAt(Date modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
 }

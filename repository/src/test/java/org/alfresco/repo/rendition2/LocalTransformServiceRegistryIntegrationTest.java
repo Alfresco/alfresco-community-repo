@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IMAGE_JPEG;
+import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IWORK_PAGES;
+
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.transform.client.registry.SupportedTransform;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
@@ -39,118 +42,132 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IMAGE_JPEG;
-import static org.alfresco.transform.client.model.Mimetype.MIMETYPE_IWORK_PAGES;
-
-/**
- * Integration tests for {@link LocalTransformServiceRegistry}
- */
-public class LocalTransformServiceRegistryIntegrationTest extends AbstractRenditionIntegrationTest
-{
+/** Integration tests for {@link LocalTransformServiceRegistry} */
+public class LocalTransformServiceRegistryIntegrationTest extends AbstractRenditionIntegrationTest {
     private static final String RENDITION_NAME = "pdf";
     protected String targetMimetype = "rubbish";
 
-    @Autowired
-    private LocalTransformServiceRegistry localTransformServiceRegistry;
+    @Autowired private LocalTransformServiceRegistry localTransformServiceRegistry;
 
     protected TransformServiceRegistry transformServiceRegistry;
 
     private Map<String, String> options;
 
     @BeforeClass
-    public static void before()
-    {
+    public static void before() {
         AbstractRenditionIntegrationTest.before();
         local();
     }
 
     @AfterClass
-    public static void after()
-    {
+    public static void after() {
         AbstractRenditionIntegrationTest.after();
     }
 
     @Override
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         super.setUp();
         transformServiceRegistry = localTransformServiceRegistry;
 
-        RenditionDefinition2 definition2 = renditionDefinitionRegistry2.getRenditionDefinition(RENDITION_NAME);
+        RenditionDefinition2 definition2 =
+                renditionDefinitionRegistry2.getRenditionDefinition(RENDITION_NAME);
         options = definition2.getTransformOptions();
     }
 
-    protected void setEnabled(boolean enabled) throws Exception
-    {
+    protected void setEnabled(boolean enabled) throws Exception {
         localTransformServiceRegistry.setEnabled(enabled);
         localTransformServiceRegistry.afterPropertiesSet();
     }
 
-    protected boolean isEnabled()
-    {
+    protected boolean isEnabled() {
         return localTransformServiceRegistry.isEnabled();
     }
 
     @Test
-    public void testIsSupported()
-    {
+    public void testIsSupported() {
         // Need to make sure we don't fall back to a transformer without limits.
-        List<SupportedTransform> transformers = localTransformServiceRegistry.findTransformers(MIMETYPE_IWORK_PAGES, targetMimetype, options, RENDITION_NAME);
+        List<SupportedTransform> transformers =
+                localTransformServiceRegistry.findTransformers(
+                        MIMETYPE_IWORK_PAGES, targetMimetype, options, RENDITION_NAME);
         assertEquals(1, transformers.size());
 
         // +ve
         // No props
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
+        Assert.assertTrue(
+                transformServiceRegistry.isSupported(
+                        MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
 
         // -ve
         // Bad Source
-        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, targetMimetype, options, RENDITION_NAME));
+        Assert.assertFalse(
+                transformServiceRegistry.isSupported(
+                        "docxBad", 1234, targetMimetype, options, RENDITION_NAME));
         // Bad Target
-        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, "pdfBad", options, "pdfBad"));
+        Assert.assertFalse(
+                transformServiceRegistry.isSupported(
+                        MIMETYPE_IWORK_PAGES, 1234, "pdfBad", options, "pdfBad"));
 
         // Good MaxSize docx max size is 768K
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 768L*1024, targetMimetype, options, RENDITION_NAME));
+        Assert.assertTrue(
+                transformServiceRegistry.isSupported(
+                        MIMETYPE_IWORK_PAGES,
+                        768L * 1024,
+                        targetMimetype,
+                        options,
+                        RENDITION_NAME));
 
         // -ve
         // Bad MaxSize docx max size is 768K
-        Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 768L*1024+1, targetMimetype, options, RENDITION_NAME));
+        Assert.assertFalse(
+                transformServiceRegistry.isSupported(
+                        MIMETYPE_IWORK_PAGES,
+                        768L * 1024 + 1,
+                        targetMimetype,
+                        options,
+                        RENDITION_NAME));
     }
 
     @Test
-    public void testNoOptions()
-    {
-        // The options for "pdf" are empty once "timeout" has been removed. As a result the converter just creates a
-        // basic TransformationOption object for a custom transformer and rendition without any options.
-        Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, MIMETYPE_IMAGE_JPEG, options, "custom"));
+    public void testNoOptions() {
+        // The options for "pdf" are empty once "timeout" has been removed. As a result the
+        // converter just creates a
+        // basic TransformationOption object for a custom transformer and rendition without any
+        // options.
+        Assert.assertTrue(
+                transformServiceRegistry.isSupported(
+                        MIMETYPE_IWORK_PAGES, 1234, MIMETYPE_IMAGE_JPEG, options, "custom"));
     }
 
     @Test
-    public void testBadOptions()
-    {
+    public void testBadOptions() {
         // Source, Target and Props are in dictionary.properties
         Map<String, String> options = new HashMap<>();
         options.put("timeout", "true");
         options.put("unknown", "optionValue");
-        Assert.assertFalse(transformServiceRegistry.isSupported("docxBad", 1234, MIMETYPE_IMAGE_JPEG, options, ""));
+        Assert.assertFalse(
+                transformServiceRegistry.isSupported(
+                        "docxBad", 1234, MIMETYPE_IMAGE_JPEG, options, ""));
     }
 
     @Test
-    public void testEnabledDisabled() throws Exception
-    {
+    public void testEnabledDisabled() throws Exception {
         boolean origEnabled = isEnabled(); // should be true
-        try
-        {
-            Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
+        try {
+            Assert.assertTrue(
+                    transformServiceRegistry.isSupported(
+                            MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
 
             setEnabled(false);
-            Assert.assertFalse(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
+            Assert.assertFalse(
+                    transformServiceRegistry.isSupported(
+                            MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
 
             setEnabled(true);
-            Assert.assertTrue(transformServiceRegistry.isSupported(MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
-        }
-        finally
-        {
+            Assert.assertTrue(
+                    transformServiceRegistry.isSupported(
+                            MIMETYPE_IWORK_PAGES, 1234, targetMimetype, options, RENDITION_NAME));
+        } finally {
             setEnabled(origEnabled);
         }
     }

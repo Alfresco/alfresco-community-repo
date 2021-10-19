@@ -28,14 +28,14 @@ package org.alfresco.rest.rm.community.model.recordfolder;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import org.alfresco.rest.core.RestModels;
-import org.alfresco.rest.rm.community.model.record.Record;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.rest.core.RestModels;
+import org.alfresco.rest.rm.community.model.record.Record;
 
 /**
  * POJO for record folder entry
@@ -48,8 +48,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecordFolderEntry extends RestModels<RecordFolder, RecordFolderEntry>
-{
-    @JsonProperty
-    private Record entry;
+public class RecordFolderEntry extends RestModels<RecordFolder, RecordFolderEntry> {
+    @JsonProperty private Record entry;
 }

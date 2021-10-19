@@ -33,65 +33,54 @@ import java.time.ZonedDateTime;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class EventInfo
-{
+public class EventInfo {
     private String id;
     private String txnId;
     private String principal;
     private ZonedDateTime timestamp;
     private URI source;
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public EventInfo setId(String id)
-    {
+    public EventInfo setId(String id) {
         this.id = id;
         return this;
     }
 
-    public String getTxnId()
-    {
+    public String getTxnId() {
         return txnId;
     }
 
-    public EventInfo setTxnId(String txnId)
-    {
+    public EventInfo setTxnId(String txnId) {
         this.txnId = txnId;
         return this;
     }
 
-    public String getPrincipal()
-    {
+    public String getPrincipal() {
         return principal;
     }
 
-    public EventInfo setPrincipal(String principal)
-    {
+    public EventInfo setPrincipal(String principal) {
         this.principal = principal;
         return this;
     }
 
-    public ZonedDateTime getTimestamp()
-    {
+    public ZonedDateTime getTimestamp() {
         return timestamp;
     }
 
-    public EventInfo setTimestamp(ZonedDateTime timestamp)
-    {
+    public EventInfo setTimestamp(ZonedDateTime timestamp) {
         this.timestamp = timestamp;
         return this;
     }
 
-    public URI getSource()
-    {
+    public URI getSource() {
         return source;
     }
 
-    public EventInfo setSource(URI source)
-    {
+    public EventInfo setSource(URI source) {
         this.source = source;
         return this;
     }

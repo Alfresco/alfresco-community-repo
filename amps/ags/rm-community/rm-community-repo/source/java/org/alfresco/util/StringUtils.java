@@ -32,18 +32,16 @@ package org.alfresco.util;
  * @author Tom Page
  * @since 2.6
  */
-public class StringUtils
-{
+public class StringUtils {
     /** Private constructor for the helper class. */
     private StringUtils() {}
 
     /**
-     * Convert the given object to string with each line indented by 4 spaces (except the first line).
+     * Convert the given object to string with each line indented by 4 spaces (except the first
+     * line).
      */
-    public static String toIndentedString(Object o)
-    {
-        if (o == null)
-        {
+    public static String toIndentedString(Object o) {
+        if (o == null) {
             return "null";
         }
         return o.toString().replace("\n", "\n    ");

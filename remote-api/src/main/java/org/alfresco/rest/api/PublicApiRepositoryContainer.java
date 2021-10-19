@@ -4,28 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.api;
-
-import java.io.IOException;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
@@ -38,71 +36,73 @@ import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import java.io.IOException;
+
 /**
  * Repository (server-tier) container for public api
- * 
+ *
  * @author steveglover
  * @author davidc
  */
-public class PublicApiRepositoryContainer extends TenantRepositoryContainer
-{
+public class PublicApiRepositoryContainer extends TenantRepositoryContainer {
     protected static final Log logger = LogFactory.getLog(PublicApiRepositoryContainer.class);
 
     @Override
-    public void executeScript(final WebScriptRequest scriptReq, final WebScriptResponse scriptRes, final Authenticator auth)
-        throws IOException
-    {
-        String tenant = ((PublicApiTenantWebScriptServletRequest)scriptReq).getTenant();
-        if (tenant != null)
-        {
+    public void executeScript(
+            final WebScriptRequest scriptReq,
+            final WebScriptResponse scriptRes,
+            final Authenticator auth)
+            throws IOException {
+        String tenant = ((PublicApiTenantWebScriptServletRequest) scriptReq).getTenant();
+        if (tenant != null) {
             // handle special tenant keys
             // -super-    => run as system tenant
             // -default-  => run as user's default tenant
             String user = null;
-            if (tenant.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT))
-            {
+            if (tenant.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT)) {
                 // switch from default to super tenant, if not authenticated
                 user = AuthenticationUtil.getFullyAuthenticatedUser();
-                if (user == null)
-                {
+                if (user == null) {
                     tenant = TenantUtil.SYSTEM_TENANT;
                 }
             }
-            
+
             // run as super tenant
-            if (tenant.equalsIgnoreCase(TenantUtil.SYSTEM_TENANT))
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("executeScript (-system-): ["+user+","+tenant+"] "+scriptReq.getServicePath());
+            if (tenant.equalsIgnoreCase(TenantUtil.SYSTEM_TENANT)) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "executeScript (-system-): ["
+                                    + user
+                                    + ","
+                                    + tenant
+                                    + "] "
+                                    + scriptReq.getServicePath());
                 }
 
-                TenantUtil.runAsTenant(new TenantRunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {
-                        PublicApiRepositoryContainer.super.executeScript(scriptReq, scriptRes, auth);
-                        return null;
-                        
-                    }
-                }, TenantService.DEFAULT_DOMAIN);
-            }
-            else
-            {
-                if (tenant.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT))
-                {
+                TenantUtil.runAsTenant(
+                        new TenantRunAsWork<Object>() {
+                            public Object doWork() throws Exception {
+                                PublicApiRepositoryContainer.super.executeScript(
+                                        scriptReq, scriptRes, auth);
+                                return null;
+                            }
+                        },
+                        TenantService.DEFAULT_DOMAIN);
+            } else {
+                if (tenant.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT)) {
                     tenant = tenantAdminService.getUserDomain(user);
                 }
 
                 // run as explicit tenant
-                TenantUtil.runAsTenant(new TenantRunAsWork<Object>()
-                {
-                    public Object doWork() throws Exception
-                    {
-                        PublicApiRepositoryContainer.super.executeScript(scriptReq, scriptRes, auth);
-                        return null;
-                    }
-                }, tenant);
+                TenantUtil.runAsTenant(
+                        new TenantRunAsWork<Object>() {
+                            public Object doWork() throws Exception {
+                                PublicApiRepositoryContainer.super.executeScript(
+                                        scriptReq, scriptRes, auth);
+                                return null;
+                            }
+                        },
+                        tenant);
             }
         }
     }

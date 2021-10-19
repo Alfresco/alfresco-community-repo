@@ -19,11 +19,9 @@
 package org.alfresco.util.testing.category;
 
 /**
- * Category marker for tests that intermittently fail, but not that frequently. Still included in the build. If the
- * instability increases or we have time to investigate, an issue should be raised to investigate and possibly
- * be switch to {@link FrequentlyFailingTests}. Use by developers to aid in working out if the build job should just be
- * retried.
+ * Category marker for tests that intermittently fail, but not that frequently. Still included in
+ * the build. If the instability increases or we have time to investigate, an issue should be raised
+ * to investigate and possibly be switch to {@link FrequentlyFailingTests}. Use by developers to aid
+ * in working out if the build job should just be retried.
  */
-public interface IntermittentlyFailingTests
-{
-}
+public interface IntermittentlyFailingTests {}

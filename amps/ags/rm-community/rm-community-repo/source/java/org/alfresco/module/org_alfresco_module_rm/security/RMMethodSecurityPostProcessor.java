@@ -27,15 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.security;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.PropertyValue;
@@ -44,17 +36,23 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.TypedStringValue;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
 /**
  * Records management method security post processor.
- * <p>
- * Combines RM method security configuration with that of the core server before the security
+ *
+ * <p>Combines RM method security configuration with that of the core server before the security
  * bean is instantiated.
  *
  * @author Roy Wetherall
  */
-public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
-{
-    private static final Logger LOGGER = LoggerFactory.getLogger(RMMethodSecurityPostProcessor.class);
+public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor {
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(RMMethodSecurityPostProcessor.class);
 
     public static final String PROP_OBJECT_DEFINITION_SOURCE = "objectDefinitionSource";
     public static final String PROPERTY_PREFIX = "rm.methodsecurity.";
@@ -62,6 +60,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
 
     /** Security bean names */
     private Set<String> securityBeanNames;
+
     private Set<String> securityBeanNameCache;
 
     /** Configuration properties */
@@ -69,43 +68,41 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
 
     /**
      * Set of security beans to apply RM configuration to.
-     * <p>
-     * Used in the case where the security bean does not follow the standard naming convention.
+     *
+     * <p>Used in the case where the security bean does not follow the standard naming convention.
      *
      * @param securityBeanNames security bean names
      */
-    public void setSecurityBeanNames(Set<String> securityBeanNames)
-    {
+    public void setSecurityBeanNames(Set<String> securityBeanNames) {
         this.securityBeanNames = securityBeanNames;
     }
 
-    /**
-     * @param properties    configuration properties
-     */
-    public void setProperties(Properties properties)
-    {
+    /** @param properties configuration properties */
+    public void setProperties(Properties properties) {
         this.properties = properties;
     }
 
     /**
-     * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
+     * @see
+     *     org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
      */
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-    {
-        for (String bean : getSecurityBeanNames(beanFactory))
-        {
-            if (beanFactory.containsBeanDefinition(bean))
-            {
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+        for (String bean : getSecurityBeanNames(beanFactory)) {
+            if (beanFactory.containsBeanDefinition(bean)) {
                 LOGGER.debug("Adding RM method security definitions for {}", bean);
 
                 BeanDefinition beanDef = beanFactory.getBeanDefinition(bean);
-                PropertyValue beanValue = beanDef.getPropertyValues().getPropertyValue(PROP_OBJECT_DEFINITION_SOURCE);
-                if (beanValue != null)
-                {
-                    String beanStringValue = (String)((TypedStringValue)beanValue.getValue()).getValue();
+                PropertyValue beanValue =
+                        beanDef.getPropertyValues().getPropertyValue(PROP_OBJECT_DEFINITION_SOURCE);
+                if (beanValue != null) {
+                    String beanStringValue =
+                            (String) ((TypedStringValue) beanValue.getValue()).getValue();
                     String mergedStringValue = merge(beanStringValue);
-                    beanDef.getPropertyValues().addPropertyValue(PROP_OBJECT_DEFINITION_SOURCE, new TypedStringValue(mergedStringValue));
+                    beanDef.getPropertyValues()
+                            .addPropertyValue(
+                                    PROP_OBJECT_DEFINITION_SOURCE,
+                                    new TypedStringValue(mergedStringValue));
                 }
             }
         }
@@ -117,23 +114,19 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
      * @param beanFactory
      * @return
      */
-    private Set<String> getSecurityBeanNames(ConfigurableListableBeanFactory beanFactory)
-    {
-        if (securityBeanNameCache == null)
-        {
+    private Set<String> getSecurityBeanNames(ConfigurableListableBeanFactory beanFactory) {
+        if (securityBeanNameCache == null) {
             securityBeanNameCache = new HashSet<>(21);
-            if (securityBeanNames != null)
-            {
+            if (securityBeanNames != null) {
                 securityBeanNameCache.addAll(securityBeanNames);
             }
 
-            for (Object key : properties.keySet())
-            {
-                String[] split = ((String)key).split("\\.");
+            for (Object key : properties.keySet()) {
+                String[] split = ((String) key).split("\\.");
                 int index = split.length - 2;
                 String securityBeanName = split[index] + SECURITY_BEAN_POSTFIX;
-                if (!securityBeanNameCache.contains(securityBeanName) && beanFactory.containsBean(securityBeanName))
-                {
+                if (!securityBeanNameCache.contains(securityBeanName)
+                        && beanFactory.containsBean(securityBeanName)) {
                     LOGGER.debug("Adding {} to list from properties.", securityBeanName);
 
                     securityBeanNameCache.add(securityBeanName);
@@ -149,20 +142,15 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
      * @param rmBeanStringValue
      * @return
      */
-    private String merge(String beanStringValue)
-    {
+    private String merge(String beanStringValue) {
         Map<String, String> map = convertToMap(beanStringValue);
 
-        for (Map.Entry<String, String> entry : map.entrySet())
-        {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
             String key = entry.getKey();
             String propKey = PROPERTY_PREFIX + key;
-            if (properties.containsKey(propKey))
-            {
+            if (properties.containsKey(propKey)) {
                 map.put(key, entry.getValue() + "," + properties.getProperty(propKey));
-            }
-            else
-            {
+            } else {
                 LOGGER.warn("Missing RM security definition for method {}", key);
             }
         }
@@ -177,20 +165,16 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
      * @return The resulting map.
      * @throws AlfrescoRuntimeException If a non-blank line does not contain an "=" sign.
      */
-    protected Map<String, String> convertToMap(String stringValue)
-    {
+    protected Map<String, String> convertToMap(String stringValue) {
         String[] values = stringValue.trim().split("\n");
         Map<String, String> map = new HashMap<>(values.length);
-        for (String value : values)
-        {
+        for (String value : values) {
             String trimmed = value.trim();
-            if (trimmed.isEmpty())
-            {
+            if (trimmed.isEmpty()) {
                 continue;
             }
             String[] pair = trimmed.split("=", 2);
-            if (pair.length != 2)
-            {
+            if (pair.length != 2) {
                 throw new AlfrescoRuntimeException("Could not convert string to map " + trimmed);
             }
             map.put(pair[0], pair[1]);
@@ -202,11 +186,9 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
      * @param map
      * @return
      */
-    private String convertToString(Map<String, String> map)
-    {
+    private String convertToString(Map<String, String> map) {
         StringBuilder buffer = new StringBuilder(256);
-        for (Map.Entry<String, String> entry : map.entrySet())
-        {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
             buffer.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");
         }
 

@@ -27,12 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -47,68 +41,59 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * RM search properties GET web script
  *
  * @author Roy Wetherall
  */
-public class RMSearchPropertiesGet extends DeclarativeWebScript
-{
+public class RMSearchPropertiesGet extends DeclarativeWebScript {
     /** Services */
     private RecordsManagementAdminService adminService;
+
     private RecordService recordService;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private FilePlanService filePlanService;
 
-    /**
-     * @param adminService  records management admin service
-     */
-    public void setAdminService(RecordsManagementAdminService adminService)
-    {
+    /** @param adminService records management admin service */
+    public void setAdminService(RecordsManagementAdminService adminService) {
         this.adminService = adminService;
     }
 
-    /**
-     * @param recordService     record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
+    /** @param recordService record service */
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    /** @param dictionaryService dictionary service */
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    /**
-     * @param namespaceService  namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    /** @param namespaceService namespace service */
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         Map<String, Object> model = new HashMap<>(13);
 
         List<Group> groups = new ArrayList<>(5);
@@ -119,31 +104,32 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
 
         // get the record metadata aspects
         Set<QName> aspects = recordService.getRecordMetadataAspects(filePlan);
-        for (QName aspect : aspects)
-        {
+        for (QName aspect : aspects) {
             Map<QName, PropertyDefinition> properties = dictionaryService.getPropertyDefs(aspect);
             Property[] propObjs = new Property[properties.size()];
             int index = 0;
-            for (PropertyDefinition propertyDefinition : properties.values())
-            {
+            for (PropertyDefinition propertyDefinition : properties.values()) {
                 Property propObj = new Property(propertyDefinition);
                 propObjs[index] = propObj;
-                index ++;
+                index++;
             }
 
             AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
-            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(dictionaryService), propObjs);
+            Group group =
+                    new Group(
+                            aspect.getLocalName(),
+                            aspectDefinition.getTitle(dictionaryService),
+                            propObjs);
             groups.add(group);
         }
 
         Map<QName, PropertyDefinition> customProps = adminService.getCustomPropertyDefinitions();
         Property[] propObjs = new Property[customProps.size()];
         int index = 0;
-        for (PropertyDefinition propertyDefinition : customProps.values())
-        {
+        for (PropertyDefinition propertyDefinition : customProps.values()) {
             Property propObj = new Property(propertyDefinition);
             propObjs[index] = propObj;
-            index ++;
+            index++;
         }
 
         Group group = new Group("rmcustom", "Custom", propObjs);
@@ -153,44 +139,37 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
         return model;
     }
 
-    public class Group
-    {
+    public class Group {
         private String id;
         private String label;
         private Property[] properties;
 
-        public Group(String id, String label, Property[] properties)
-        {
+        public Group(String id, String label, Property[] properties) {
             this.id = id;
             this.label = label;
             this.properties = properties.clone();
         }
 
-        public String getId()
-        {
+        public String getId() {
             return id;
         }
 
-        public String getLabel()
-        {
+        public String getLabel() {
             return label;
         }
 
-        public Property[] getProperties()
-        {
+        public Property[] getProperties() {
             return properties;
         }
     }
 
-    public class Property
-    {
+    public class Property {
         private String prefix;
         private String shortName;
         private String label;
         private String type;
 
-        public Property(PropertyDefinition propertyDefinition)
-        {
+        public Property(PropertyDefinition propertyDefinition) {
             QName qName = propertyDefinition.getName().getPrefixedQName(namespaceService);
             this.prefix = QName.splitPrefixedQName(qName.toPrefixString())[0];
             this.shortName = qName.getLocalName();
@@ -198,23 +177,19 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
             this.type = propertyDefinition.getDataType().getName().getLocalName();
         }
 
-        public String getPrefix()
-        {
+        public String getPrefix() {
             return prefix;
         }
 
-        public String getShortName()
-        {
+        public String getShortName() {
             return shortName;
         }
 
-        public String getLabel()
-        {
+        public String getLabel() {
             return label;
         }
 
-        public String getType()
-        {
+        public String getType() {
             return type;
         }
     }

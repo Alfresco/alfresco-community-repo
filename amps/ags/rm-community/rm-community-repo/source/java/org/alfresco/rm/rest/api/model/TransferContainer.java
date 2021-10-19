@@ -27,23 +27,21 @@
 
 package org.alfresco.rm.rest.api.model;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
- *
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class TransferContainer
-{
+public class TransferContainer {
     protected NodeRef nodeRef;
     protected NodeRef parentNodeRef;
     protected String name;
@@ -58,120 +56,97 @@ public class TransferContainer
     protected Map<String, Object> properties;
     protected List<String> allowableOperations;
 
-    public TransferContainer()
-    {
-        //Default constructor
+    public TransferContainer() {
+        // Default constructor
     }
 
-    @JsonProperty ("id")
+    @JsonProperty("id")
     @UniqueId
-    public NodeRef getNodeRef()
-    {
+    public NodeRef getNodeRef() {
         return nodeRef;
     }
 
-    public void setNodeRef(NodeRef nodeRef)
-    {
+    public void setNodeRef(NodeRef nodeRef) {
         this.nodeRef = nodeRef;
     }
 
-    public NodeRef getParentId()
-    {
+    public NodeRef getParentId() {
         return parentNodeRef;
     }
 
-    public void setParentId(NodeRef parentNodeRef)
-    {
+    public void setParentId(NodeRef parentNodeRef) {
         this.parentNodeRef = parentNodeRef;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public String getNodeType()
-    {
+    public String getNodeType() {
         return nodeType;
     }
 
-    public void setNodeType(String nodeType)
-    {
+    public void setNodeType(String nodeType) {
         this.nodeType = nodeType;
     }
 
-    public Date getCreatedAt()
-    {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt)
-    {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getModifiedAt()
-    {
+    public Date getModifiedAt() {
         return modifiedAt;
     }
 
-    public void setModifiedAt(Date modifiedAt)
-    {
+    public void setModifiedAt(Date modifiedAt) {
         this.modifiedAt = modifiedAt;
     }
 
-    public UserInfo getCreatedByUser()
-    {
+    public UserInfo getCreatedByUser() {
         return createdByUser;
     }
 
-    public void setCreatedByUser(UserInfo createdByUser)
-    {
+    public void setCreatedByUser(UserInfo createdByUser) {
         this.createdByUser = createdByUser;
     }
 
-    public UserInfo getModifiedByUser()
-    {
+    public UserInfo getModifiedByUser() {
         return modifiedByUser;
     }
 
-    public void setModifiedByUser(UserInfo modifiedByUser)
-    {
+    public void setModifiedByUser(UserInfo modifiedByUser) {
         this.modifiedByUser = modifiedByUser;
     }
 
-    public List<String> getAspectNames()
-    {
+    public List<String> getAspectNames() {
         return aspectNames;
     }
 
-    public void setAspectNames(List<String> aspectNames)
-    {
+    public void setAspectNames(List<String> aspectNames) {
         this.aspectNames = aspectNames;
     }
 
-    public Map<String, Object> getProperties()
-    {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
-    public void setProperties(Map<String, Object> properties)
-    {
+    public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
 
-    public List<String> getAllowableOperations()
-    {
+    public List<String> getAllowableOperations() {
         return allowableOperations;
     }
 
-    public void setAllowableOperations(List<String> allowableOperations)
-    {
+    public void setAllowableOperations(List<String> allowableOperations) {
         this.allowableOperations = allowableOperations;
     }
 }

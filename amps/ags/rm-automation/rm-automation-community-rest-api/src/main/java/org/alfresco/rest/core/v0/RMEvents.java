@@ -26,8 +26,7 @@
  */
 package org.alfresco.rest.core.v0;
 
-public enum RMEvents
-{
+public enum RMEvents {
     ABOLISHED("abolished"),
     ALL_ALLOWANCES_GRANTED_ARE_TERMINATED("all_allowances_granted_are_terminated"),
     CASE_CLOSED("case_closed"),
@@ -37,13 +36,11 @@ public enum RMEvents
     STUDY_COMPLETE("study_complete");
     private String eventName;
 
-    RMEvents(String eventName)
-    {
+    RMEvents(String eventName) {
         this.eventName = eventName;
     }
 
-    public String getEventName()
-    {
+    public String getEventName() {
         return eventName;
     }
 }

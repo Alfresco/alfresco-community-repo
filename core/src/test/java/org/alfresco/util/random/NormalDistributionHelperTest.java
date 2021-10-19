@@ -18,51 +18,42 @@
  */
 package org.alfresco.util.random;
 
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.Test;
+
 /**
  * @see NormalDistributionHelper
- * 
  * @author Derek Hulley
  * @since 5.1
  */
-public class NormalDistributionHelperTest
-{
+public class NormalDistributionHelperTest {
     private NormalDistributionHelper normalDistribution = new NormalDistributionHelper();
-    
+
     @Test
-    public void testGetValue_Fail()
-    {
-        try
-        {
+    public void testGetValue_Fail() {
+        try {
             normalDistribution.getValue(5L, -5L);
             fail("Min-max relation not detected.");
-        }
-        catch (IllegalArgumentException e)
-        {
+        } catch (IllegalArgumentException e) {
             // Expected
         }
     }
 
     @Test
-    public void testGetValue_Precise()
-    {
+    public void testGetValue_Precise() {
         assertEquals(10L, normalDistribution.getValue(10L, 10L));
         assertEquals(0L, normalDistribution.getValue(0L, 0L));
         assertEquals(-10L, normalDistribution.getValue(-10L, -10L));
     }
 
     @Test
-    public void testGetValue_Repeated()
-    {
-        for (int i = 0; i < 1000; i++)
-        {
-            long value = normalDistribution.getValue(-1*i, i);
-            assertTrue("Min not respected", value >= -1*i);
+    public void testGetValue_Repeated() {
+        for (int i = 0; i < 1000; i++) {
+            long value = normalDistribution.getValue(-1 * i, i);
+            assertTrue("Min not respected", value >= -1 * i);
             assertTrue("Max not respected", value <= i);
         }
     }

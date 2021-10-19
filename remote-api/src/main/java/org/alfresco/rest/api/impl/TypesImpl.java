@@ -50,147 +50,132 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class TypesImpl extends AbstractClassImpl<Type> implements Types
-{
+public class TypesImpl extends AbstractClassImpl<Type> implements Types {
     private DictionaryService dictionaryService;
     private NamespacePrefixResolver namespaceService;
     private ClassDefinitionMapper classDefinitionMapper;
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    public void setNamespaceService(NamespacePrefixResolver namespaceService)
-    {
+    public void setNamespaceService(NamespacePrefixResolver namespaceService) {
         this.namespaceService = namespaceService;
     }
 
-    public void setClassDefinitionMapper(ClassDefinitionMapper classDefinitionMapper)
-    {
+    public void setClassDefinitionMapper(ClassDefinitionMapper classDefinitionMapper) {
         this.classDefinitionMapper = classDefinitionMapper;
     }
 
-    public void init()
-    {
+    public void init() {
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "namespaceService", namespaceService);
         PropertyCheck.mandatory(this, "classDefinitionMapper", classDefinitionMapper);
     }
 
-    TypesImpl(DictionaryService dictionaryService, NamespacePrefixResolver namespaceService, ClassDefinitionMapper classDefinitionMapper)
-    {
+    TypesImpl(
+            DictionaryService dictionaryService,
+            NamespacePrefixResolver namespaceService,
+            ClassDefinitionMapper classDefinitionMapper) {
         super(dictionaryService, namespaceService, classDefinitionMapper);
     }
 
     @Override
-    public CollectionWithPagingInfo<Type> listTypes(Parameters params)
-    {
+    public CollectionWithPagingInfo<Type> listTypes(Parameters params) {
         Paging paging = params.getPaging();
         ModelApiFilter query = getQuery(params.getQuery());
         Stream<QName> typeStream = null;
 
-        if (query != null && query.getModelIds() != null)
-        {
+        if (query != null && query.getModelIds() != null) {
             validateListParam(query.getModelIds(), PARAM_MODEL_IDS);
-            Set<Pair<QName, Boolean>> modelsFilter = parseModelIds(query.getModelIds(), PARAM_INCLUDE_SUBTYPES);
+            Set<Pair<QName, Boolean>> modelsFilter =
+                    parseModelIds(query.getModelIds(), PARAM_INCLUDE_SUBTYPES);
             typeStream = modelsFilter.stream().map(this::getModelTypes).flatMap(Collection::stream);
-        }
-        else if (query != null && query.getParentIds() != null)
-        {
+        } else if (query != null && query.getParentIds() != null) {
             validateListParam(query.getParentIds(), PARAM_PARENT_IDS);
-            typeStream = query.getParentIds().stream().map(this::getChildTypes).flatMap(Collection::stream);
-        }
-        else
-        {
+            typeStream =
+                    query.getParentIds().stream()
+                            .map(this::getChildTypes)
+                            .flatMap(Collection::stream);
+        } else {
             typeStream = this.dictionaryService.getAllTypes().stream();
         }
 
-        List<Type> allTypes = typeStream
-                .filter((qName) -> filterByNamespace(query, qName))
-                .filter(distinctByKey(QName::getPrefixString))
-                .map((qName) -> this.convertToType(dictionaryService.getType(qName), params.getInclude()))
-                .collect(Collectors.toList());
+        List<Type> allTypes =
+                typeStream
+                        .filter((qName) -> filterByNamespace(query, qName))
+                        .filter(distinctByKey(QName::getPrefixString))
+                        .map(
+                                (qName) ->
+                                        this.convertToType(
+                                                dictionaryService.getType(qName),
+                                                params.getInclude()))
+                        .collect(Collectors.toList());
 
         return createPagedResult(allTypes, paging);
     }
 
     @Override
-    public Type getType(String typeId)
-    {
+    public Type getType(String typeId) {
         if (typeId == null)
             throw new InvalidArgumentException("Invalid parameter: unknown scheme specified");
 
         TypeDefinition typeDefinition = null;
 
-        try
-        {
-           typeDefinition = dictionaryService.getType(QName.createQName(typeId, this.namespaceService));
-        }
-        catch (NamespaceException exception)
-        {
+        try {
+            typeDefinition =
+                    dictionaryService.getType(QName.createQName(typeId, this.namespaceService));
+        } catch (NamespaceException exception) {
             throw new EntityNotFoundException(typeId);
         }
 
-        if (typeDefinition == null)
-            throw new EntityNotFoundException(typeId);
+        if (typeDefinition == null) throw new EntityNotFoundException(typeId);
 
         return this.convertToType(typeDefinition, ALL_PROPERTIES);
     }
 
-    public Type convertToType(TypeDefinition typeDefinition, List<String> includes)
-    {
-        try
-        {
+    public Type convertToType(TypeDefinition typeDefinition, List<String> includes) {
+        try {
             Type type = new Type(typeDefinition, dictionaryService);
             constructFromFilters(type, typeDefinition, includes);
             return type;
-        }
-        catch (Exception ex)
-        {
-            throw new AlfrescoRuntimeException("Failed to parse Type: " + typeDefinition.getName() + " . " + ex.getMessage());
+        } catch (Exception ex) {
+            throw new AlfrescoRuntimeException(
+                    "Failed to parse Type: " + typeDefinition.getName() + " . " + ex.getMessage());
         }
     }
 
-    private Collection<QName> getModelTypes(Pair<QName,Boolean> model)
-    {
-        ModelDefinition modelDefinition =  null;
+    private Collection<QName> getModelTypes(Pair<QName, Boolean> model) {
+        ModelDefinition modelDefinition = null;
 
-        try
-        {
-            modelDefinition =  this.dictionaryService.getModel(model.getFirst());
-        }
-        catch (Exception exception)
-        {
+        try {
+            modelDefinition = this.dictionaryService.getModel(model.getFirst());
+        } catch (Exception exception) {
             throw new InvalidArgumentException(exception.getMessage());
         }
 
-        if (modelDefinition == null)
-            throw new EntityNotFoundException("model");
+        if (modelDefinition == null) throw new EntityNotFoundException("model");
 
         Collection<QName> aspects = this.dictionaryService.getTypes(modelDefinition.getName());
 
-        if (!model.getSecond()) //look for model types alone
-            return aspects;
+        if (!model.getSecond()) // look for model types alone
+        return aspects;
 
         Stream<QName> aspectStream = aspects.stream();
-        Stream<QName> childrenStream = aspects.stream()
-                .map(aspect -> this.dictionaryService.getSubTypes(aspect, false))
-                .flatMap(Collection::stream);
+        Stream<QName> childrenStream =
+                aspects.stream()
+                        .map(aspect -> this.dictionaryService.getSubTypes(aspect, false))
+                        .flatMap(Collection::stream);
 
         return Stream.concat(aspectStream, childrenStream).collect(Collectors.toList());
     }
 
-    private Collection<QName> getChildTypes(String typeId)
-    {
+    private Collection<QName> getChildTypes(String typeId) {
         Collection<QName> subTypes = null;
-        try
-        {
+        try {
             QName parentType = QName.createQName(typeId, this.namespaceService);
             subTypes = this.dictionaryService.getSubTypes(parentType, true);
-        }
-        catch (NamespaceException exception)
-        {
+        } catch (NamespaceException exception) {
             throw new InvalidArgumentException(exception.getMessage());
         }
 

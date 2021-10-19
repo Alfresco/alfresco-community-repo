@@ -27,12 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -46,6 +40,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Records management service implementation.
  *
@@ -53,10 +53,8 @@ import org.alfresco.service.namespace.QName;
  * @deprecated as of 2.2
  */
 public class RecordsManagementServiceImpl extends ServiceBaseImpl
-                                          implements RecordsManagementService,
-                                                     RecordsManagementModel 
-{
-   /** Store that the RM roots are contained within */
+        implements RecordsManagementService, RecordsManagementModel {
+    /** Store that the RM roots are contained within */
     @SuppressWarnings("unused")
     @Deprecated
     private StoreRef defaultStoreRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
@@ -67,10 +65,10 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
     /**
      * Set the service registry service
      *
-     * @param serviceRegistry   service registry
+     * @param serviceRegistry service registry
      */
-    public void setRecordsManagementServiceRegistry(RecordsManagementServiceRegistry serviceRegistry)
-    {
+    public void setRecordsManagementServiceRegistry(
+            RecordsManagementServiceRegistry serviceRegistry) {
         // Internal ops use the unprotected services from the voter (e.g. nodeService)
         this.serviceRegistry = serviceRegistry;
         this.dictionaryService = serviceRegistry.getDictionaryService();
@@ -78,77 +76,53 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
 
     /**
      * Sets the default RM store reference
-     * @param defaultStoreRef    store reference
+     *
+     * @param defaultStoreRef store reference
      */
     @Deprecated
-    public void setDefaultStoreRef(StoreRef defaultStoreRef)
-    {
+    public void setDefaultStoreRef(StoreRef defaultStoreRef) {
         this.defaultStoreRef = defaultStoreRef;
     }
 
-    /**
-     * @return File plan service
-     */
-    private FilePlanService getFilePlanService()
-    {
-    	return serviceRegistry.getFilePlanService();
+    /** @return File plan service */
+    private FilePlanService getFilePlanService() {
+        return serviceRegistry.getFilePlanService();
     }
 
-    /**
-     * @return Record Folder Service
-     */
-    private RecordFolderService getRecordFolderService()
-    {
+    /** @return Record Folder Service */
+    private RecordFolderService getRecordFolderService() {
         return serviceRegistry.getRecordFolderService();
     }
 
-    /**
-     * @return Record Service
-     */
-    private RecordService getRecordService()
-    {
+    /** @return Record Service */
+    private RecordService getRecordService() {
         return serviceRegistry.getRecordService();
     }
 
-    /**
-     * @return Freeze Service
-     */
-    private FreezeService getFreezeService()
-    {
+    /** @return Freeze Service */
+    private FreezeService getFreezeService() {
         return serviceRegistry.getFreezeService();
     }
 
-    /**
-     * @return Disposition Service
-     */
-    private DispositionService getDispositionService()
-    {
+    /** @return Disposition Service */
+    private DispositionService getDispositionService() {
         return serviceRegistry.getDispositionService();
     }
 
-    /**
-     * @return Transfer service
-     */
-    private TransferService getTransferService()
-    {
+    /** @return Transfer service */
+    private TransferService getTransferService() {
         return serviceRegistry.getTransferService();
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#isFilePlanComponent(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#isFilePlanComponent(NodeRef)} */
     @Override
-    public boolean isFilePlanComponent(NodeRef nodeRef)
-    {
+    public boolean isFilePlanComponent(NodeRef nodeRef) {
         return getFilePlanService().isFilePlanComponent(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlanComponentKind(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getFilePlanComponentKind(NodeRef)} */
     @Override
-    public FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef)
-    {
+    public FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef) {
         return getFilePlanService().getFilePlanComponentKind(nodeRef);
     }
 
@@ -156,259 +130,202 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
      * @deprecated As of 2.1, see {@link FilePlanService#getFilePlanComponentKindFromType(QName)}
      */
     @Override
-    public FilePlanComponentKind getFilePlanComponentKindFromType(QName type)
-    {
+    public FilePlanComponentKind getFilePlanComponentKindFromType(QName type) {
         return getFilePlanService().getFilePlanComponentKindFromType(type);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#isFilePlanContainer(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#isFilePlanContainer(NodeRef)} */
     @Override
-    public boolean isRecordsManagementContainer(NodeRef nodeRef)
-    {
+    public boolean isRecordsManagementContainer(NodeRef nodeRef) {
         return getFilePlanService().isFilePlanContainer(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)} */
     @Override
-    public boolean isFilePlan(NodeRef nodeRef)
-    {
+    public boolean isFilePlan(NodeRef nodeRef) {
         return getFilePlanService().isFilePlan(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#isRecordCategory(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#isRecordCategory(NodeRef)} */
     @Override
-    public boolean isRecordCategory(NodeRef nodeRef)
-    {
+    public boolean isRecordCategory(NodeRef nodeRef) {
         return getFilePlanService().isRecordCategory(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolder(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolder(NodeRef)} */
     @Override
-    public boolean isRecordFolder(NodeRef nodeRef)
-    {
+    public boolean isRecordFolder(NodeRef nodeRef) {
         return getRecordFolderService().isRecordFolder(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.2, see {@link TransferService#isTransfer(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link TransferService#isTransfer(NodeRef)} */
     @Override
-    public boolean isTransfer(NodeRef nodeRef)
-    {
+    public boolean isTransfer(NodeRef nodeRef) {
         return getTransferService().isTransfer(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordService#isMetadataStub(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordService#isMetadataStub(NodeRef)} */
     @Override
-    public boolean isMetadataStub(NodeRef nodeRef)
-    {
+    public boolean isMetadataStub(NodeRef nodeRef) {
         return getRecordService().isMetadataStub(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.2, see {@link DispositionService#isDisposableItemCutoff(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link DispositionService#isDisposableItemCutoff(NodeRef)} */
     @Override
-    public boolean isCutoff(NodeRef nodeRef)
-    {
+    public boolean isCutoff(NodeRef nodeRef) {
         return getDispositionService().isDisposableItemCutoff(nodeRef);
     }
 
-    /**
-     * @deprecated as of 2.1, see {@link FilePlanService#getNodeRefPath(NodeRef)}
-     */
+    /** @deprecated as of 2.1, see {@link FilePlanService#getNodeRefPath(NodeRef)} */
     @Override
-    public List<NodeRef> getNodeRefPath(NodeRef nodeRef)
-    {
+    public List<NodeRef> getNodeRefPath(NodeRef nodeRef) {
         return getFilePlanService().getNodeRefPath(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlan(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getFilePlan(NodeRef)} */
     @Override
-    public NodeRef getFilePlan(NodeRef nodeRef)
-    {
+    public NodeRef getFilePlan(NodeRef nodeRef) {
         return getFilePlanService().getFilePlan(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlans()}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getFilePlans()} */
     @Override
-    public List<NodeRef> getFilePlans()
-    {
+    public List<NodeRef> getFilePlans() {
         return new ArrayList<>(getFilePlanService().getFilePlans());
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName)} */
     @Override
-    public NodeRef createFilePlan(NodeRef parent, String name, QName type)
-    {
+    public NodeRef createFilePlan(NodeRef parent, String name, QName type) {
         return getFilePlanService().createFilePlan(parent, name, type);
     }
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName, Map)}
+     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName,
+     *     Map)}
      */
     @Override
-    public NodeRef createFilePlan(NodeRef parent, String name, QName type, Map<QName, Serializable> properties)
-    {
+    public NodeRef createFilePlan(
+            NodeRef parent, String name, QName type, Map<QName, Serializable> properties) {
         return getFilePlanService().createFilePlan(parent, name, type, properties);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String)} */
     @Override
-    public NodeRef createFilePlan(NodeRef parent, String name)
-    {
+    public NodeRef createFilePlan(NodeRef parent, String name) {
         return getFilePlanService().createFilePlan(parent, name);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, Map)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, Map)} */
     @Override
-    public NodeRef createFilePlan(NodeRef parent, String name, Map<QName, Serializable> properties)
-    {
+    public NodeRef createFilePlan(
+            NodeRef parent, String name, Map<QName, Serializable> properties) {
         return getFilePlanService().createFilePlan(parent, name, properties);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getAllContained(NodeRef, boolean)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getAllContained(NodeRef, boolean)} */
     @Override
-    public List<NodeRef> getAllContained(NodeRef container, boolean deep)
-    {
+    public List<NodeRef> getAllContained(NodeRef container, boolean deep) {
         return getFilePlanService().getAllContained(container, deep);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getAllContained(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getAllContained(NodeRef)} */
     @Override
-    public List<NodeRef> getAllContained(NodeRef container)
-    {
+    public List<NodeRef> getAllContained(NodeRef container) {
         return getFilePlanService().getAllContained(container);
     }
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef, boolean)}
+     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef,
+     *     boolean)}
      */
     @Override
-    public List<NodeRef> getContainedRecordCategories(NodeRef container, boolean deep)
-    {
+    public List<NodeRef> getContainedRecordCategories(NodeRef container, boolean deep) {
         return getFilePlanService().getContainedRecordCategories(container, deep);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef)} */
     @Override
-    public List<NodeRef> getContainedRecordCategories(NodeRef container)
-    {
+    public List<NodeRef> getContainedRecordCategories(NodeRef container) {
         return getFilePlanService().getContainedRecordCategories(container);
     }
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordFolders(NodeRef, boolean)}
+     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordFolders(NodeRef,
+     *     boolean)}
      */
     @Override
-    public List<NodeRef> getContainedRecordFolders(NodeRef container, boolean deep)
-    {
+    public List<NodeRef> getContainedRecordFolders(NodeRef container, boolean deep) {
         return getFilePlanService().getContainedRecordFolders(container, deep);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordFolders(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordFolders(NodeRef)} */
     @Override
-    public List<NodeRef> getContainedRecordFolders(NodeRef container)
-    {
+    public List<NodeRef> getContainedRecordFolders(NodeRef container) {
         return getFilePlanService().getContainedRecordFolders(container);
     }
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String, QName)}
+     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String,
+     *     QName)}
      */
     @Override
-    public NodeRef createRecordCategory(NodeRef parent, String name, QName type)
-    {
+    public NodeRef createRecordCategory(NodeRef parent, String name, QName type) {
         return getFilePlanService().createRecordCategory(parent, name, type);
     }
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String, QName, Map)}
+     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String,
+     *     QName, Map)}
      */
     @Override
-    public NodeRef createRecordCategory(NodeRef parent, String name, QName type, Map<QName, Serializable> properties)
-    {
+    public NodeRef createRecordCategory(
+            NodeRef parent, String name, QName type, Map<QName, Serializable> properties) {
         return getFilePlanService().createRecordCategory(parent, name, type, properties);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String)} */
     @Override
-    public NodeRef createRecordCategory(NodeRef parent, String name)
-    {
+    public NodeRef createRecordCategory(NodeRef parent, String name) {
         return getFilePlanService().createRecordCategory(parent, name);
     }
 
     /**
      * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String, Map)}
      */
-    public NodeRef createRecordCategory(NodeRef parent, String name, Map<QName, Serializable> properties)
-    {
+    public NodeRef createRecordCategory(
+            NodeRef parent, String name, Map<QName, Serializable> properties) {
         return getFilePlanService().createRecordCategory(parent, name, properties);
     }
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolderDeclared(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolderDeclared(NodeRef)} */
     @Override
-    public boolean isRecordFolderDeclared(NodeRef recordFolder)
-    {
+    public boolean isRecordFolderDeclared(NodeRef recordFolder) {
         return getRecordFolderService().isRecordFolderDeclared(recordFolder);
     }
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolderClosed(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolderClosed(NodeRef)} */
     @Override
-    public boolean isRecordFolderClosed(NodeRef nodeRef)
-    {
+    public boolean isRecordFolderClosed(NodeRef nodeRef) {
         return getRecordFolderService().isRecordFolderClosed(nodeRef);
     }
 
     /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String, QName)}
+     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String,
+     *     QName)}
      */
     @Override
-    public NodeRef createRecordFolder(NodeRef parent, String name, QName type)
-    {
+    public NodeRef createRecordFolder(NodeRef parent, String name, QName type) {
         return getRecordFolderService().createRecordFolder(parent, name, type);
     }
 
     /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String, QName, Map)}
+     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String,
+     *     QName, Map)}
      */
     @Override
-    public NodeRef createRecordFolder(NodeRef rmContainer, String name, QName type, Map<QName, Serializable> properties)
-    {
+    public NodeRef createRecordFolder(
+            NodeRef rmContainer, String name, QName type, Map<QName, Serializable> properties) {
         return getRecordFolderService().createRecordFolder(rmContainer, name, type, properties);
     }
 
@@ -416,89 +333,65 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
      * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String)}
      */
     @Override
-    public NodeRef createRecordFolder(NodeRef rmContrainer, String name)
-    {
+    public NodeRef createRecordFolder(NodeRef rmContrainer, String name) {
         return getRecordFolderService().createRecordFolder(rmContrainer, name);
     }
 
     /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String, Map)}
+     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String,
+     *     Map)}
      */
     @Override
-    public NodeRef createRecordFolder(NodeRef parent, String name,  Map<QName, Serializable> properties)
-    {
+    public NodeRef createRecordFolder(
+            NodeRef parent, String name, Map<QName, Serializable> properties) {
         return getRecordFolderService().createRecordFolder(parent, name, properties);
     }
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordService#getRecords(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordService#getRecords(NodeRef)} */
     @Override
-    public List<NodeRef> getRecords(NodeRef recordFolder)
-    {
+    public List<NodeRef> getRecords(NodeRef recordFolder) {
         return getRecordService().getRecords(recordFolder);
     }
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#getRecordFolders(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordFolderService#getRecordFolders(NodeRef)} */
     @Override
-    public List<NodeRef> getRecordFolders(NodeRef record)
-    {
+    public List<NodeRef> getRecordFolders(NodeRef record) {
         return getRecordFolderService().getRecordFolders(record);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link RecordService#getRecordMetaDataAspects()}
-     */
+    /** @deprecated As of 2.1, see {@link RecordService#getRecordMetaDataAspects()} */
     @Override
-    public Set<QName> getRecordMetaDataAspects()
-    {
+    public Set<QName> getRecordMetaDataAspects() {
         return getRecordService().getRecordMetaDataAspects();
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link RecordService#isDeclared(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link RecordService#isDeclared(NodeRef)} */
     @Override
-    public boolean isRecordDeclared(NodeRef nodeRef)
-    {
+    public boolean isRecordDeclared(NodeRef nodeRef) {
         return getRecordService().isDeclared(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FreezeService#isHold(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FreezeService#isHold(NodeRef)} */
     @Override
-    public boolean isHold(NodeRef nodeRef)
-    {
+    public boolean isHold(NodeRef nodeRef) {
         return getFreezeService().isHold(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FreezeService#isFrozen(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FreezeService#isFrozen(NodeRef)} */
     @Override
-    public boolean isFrozen(NodeRef nodeRef)
-    {
+    public boolean isFrozen(NodeRef nodeRef) {
         return getFreezeService().isFrozen(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link FreezeService#hasFrozenChildren(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FreezeService#hasFrozenChildren(NodeRef)} */
     @Override
-    public boolean hasFrozenChildren(NodeRef nodeRef)
-    {
+    public boolean hasFrozenChildren(NodeRef nodeRef) {
         return getFreezeService().hasFrozenChildren(nodeRef);
     }
 
-    /**
-     * @deprecated As of 2.1, see {@link RecordService#isRecord(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link RecordService#isRecord(NodeRef)} */
     @Override
-    public boolean isRecord(NodeRef nodeRef)
-    {
+    public boolean isRecord(NodeRef nodeRef) {
         return getRecordService().isRecord(nodeRef);
     }
 }

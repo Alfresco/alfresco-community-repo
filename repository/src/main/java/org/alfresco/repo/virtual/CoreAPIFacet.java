@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -35,14 +35,13 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 
 /**
- * Implementation of the {@link AlfrescoAPIFacet} interface that provides access
- * to "core" Alfresco services, i.e. services in a lower abstraction layer than
- * the ones provided in the Java API, by the {@link ServiceRegistry}.
+ * Implementation of the {@link AlfrescoAPIFacet} interface that provides access to "core" Alfresco
+ * services, i.e. services in a lower abstraction layer than the ones provided in the Java API, by
+ * the {@link ServiceRegistry}.
  *
  * @author Bogdan Horje
  */
-public class CoreAPIFacet implements AlfrescoAPIFacet
-{
+public class CoreAPIFacet implements AlfrescoAPIFacet {
 
     private ScriptService scriptService;
 
@@ -58,81 +57,66 @@ public class CoreAPIFacet implements AlfrescoAPIFacet
 
     private PermissionService permissionService;
 
-    public void setScriptService(ScriptService scriptService)
-    {
+    public void setScriptService(ScriptService scriptService) {
         this.scriptService = scriptService;
     }
 
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public void setContentService(ContentService contentService)
-    {
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
 
-    public void setSearchService(SearchService searchService)
-    {
+    public void setSearchService(SearchService searchService) {
         this.searchService = searchService;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
-    public void setPermissionService(PermissionService permissionService)
-    {
+    public void setPermissionService(PermissionService permissionService) {
         this.permissionService = permissionService;
     }
 
     @Override
-    public ScriptService getScriptService()
-    {
+    public ScriptService getScriptService() {
         return scriptService;
     }
 
     @Override
-    public NodeService getNodeService()
-    {
+    public NodeService getNodeService() {
         return nodeService;
     }
 
     @Override
-    public ContentService getContentService()
-    {
+    public ContentService getContentService() {
         return contentService;
     }
 
     @Override
-    public SearchService getSearchService()
-    {
+    public SearchService getSearchService() {
         return searchService;
     }
 
     @Override
-    public DictionaryService getDictionaryService()
-    {
+    public DictionaryService getDictionaryService() {
         return dictionaryService;
     }
 
     @Override
-    public FileFolderService getFileFolderService()
-    {
+    public FileFolderService getFileFolderService() {
         return fileFolderService;
     }
 
     @Override
-    public PermissionService getPermissionService()
-    {
+    public PermissionService getPermissionService() {
         return permissionService;
     }
-
 }

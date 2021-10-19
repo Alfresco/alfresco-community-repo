@@ -17,231 +17,368 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class UpdateTaskVariableTestsBulk3 extends RestTest
-{
+public class UpdateTaskVariableTestsBulk3 extends RestTest {
     private SiteModel siteModel;
     private FileModel fileModel;
     private TaskModel taskModel;
     private UserModel userModel;
-    private RestVariableModel taskVariable, updatedTaskVariable;  
+    private RestVariableModel taskVariable, updatedTaskVariable;
 
-    @BeforeClass(alwaysRun=true)
-    public void dataPreparation() throws Exception
-    {
+    @BeforeClass(alwaysRun = true)
+    public void dataPreparation() throws Exception {
         userModel = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
-        fileModel = dataContent.usingUser(userModel).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        taskModel = dataWorkflow.usingUser(userModel).usingSite(siteModel).usingResource(fileModel).createNewTaskAndAssignTo(userModel);
-    }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithInvalidVariableName() throws Exception
-    {
-        taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel)
-                .withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{\"scope\": \"local\",\"names\": \"varName\",\"value\": \"test\","
-                + "\"type\": \"d:text\"}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
-        restClient.processModel(RestVariableModel.class, request);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unrecognized field " + "\"names\"")); 
-    }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithInvalidVariableValue() throws Exception
-    {
-        taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel)
-                .withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{\"scope\": \"local\",\"name\": \"varName\",\"values\": \"test\","
-                + "\"type\": \"d:text\"}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
-        restClient.processModel(RestVariableModel.class, request);
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unrecognized field " + "\"values\"")); 
-    }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithEmptyVariableName() throws Exception
-    {
-        taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel)
-                .withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{\"scope\": \"local\",\"\": \"varName\",\"value\": \"test\","
-                + "\"type\": \"d:text\"}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
-        restClient.processModel(RestVariableModel.class, request);     
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unrecognized field " + "\"\"")); 
+        fileModel =
+                dataContent
+                        .usingUser(userModel)
+                        .usingSite(siteModel)
+                        .createContent(DocumentType.TEXT_PLAIN);
+        taskModel =
+                dataWorkflow
+                        .usingUser(userModel)
+                        .usingSite(siteModel)
+                        .usingResource(fileModel)
+                        .createNewTaskAndAssignTo(userModel);
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
-            description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithEmptyName() throws Exception
-    {
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
+            description = "Update task variable with invalid name - PUT call")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithInvalidVariableName() throws Exception {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        taskVariable.setName("");        
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{\"scope\": \"local\",\"names\": \"varName\",\"value\": \"test\","
+                                + "\"type\": \"d:text\"}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
+        restClient.processModel(RestVariableModel.class, request);
+        restClient
+                .assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError()
+                .containsSummary(
+                        String.format(
+                                RestErrorModel.NO_CONTENT, "Unrecognized field " + "\"names\""));
+    }
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
+            description = "Update task variable with invalid name - PUT call")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithInvalidVariableValue() throws Exception {
+        taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{\"scope\": \"local\",\"name\": \"varName\",\"values\": \"test\","
+                                + "\"type\": \"d:text\"}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
+        restClient.processModel(RestVariableModel.class, request);
+        restClient
+                .assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError()
+                .containsSummary(
+                        String.format(
+                                RestErrorModel.NO_CONTENT, "Unrecognized field " + "\"values\""));
+    }
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
+            description = "Update task variable with invalid name - PUT call")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithEmptyVariableName() throws Exception {
+        taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{\"scope\": \"local\",\"\": \"varName\",\"value\": \"test\","
+                                + "\"type\": \"d:text\"}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
+        restClient.processModel(RestVariableModel.class, request);
+        restClient
+                .assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError()
+                .containsSummary(
+                        String.format(RestErrorModel.NO_CONTENT, "Unrecognized field " + "\"\""));
+    }
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
+            description = "Update task variable with empty name - PUT call")
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithEmptyName() throws Exception {
+        taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
+        restClient.assertStatusCodeIs(HttpStatus.CREATED);
+
+        taskVariable.setName("");
         restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(taskVariable);
-        restClient.assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
-                  .assertLastError().containsErrorKey(RestErrorModel.PUT_EMPTY_ARGUMENT)
-                  .containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
+        restClient
+                .assertStatusCodeIs(HttpStatus.METHOD_NOT_ALLOWED)
+                .assertLastError()
+                .containsErrorKey(RestErrorModel.PUT_EMPTY_ARGUMENT)
+                .containsSummary(RestErrorModel.PUT_EMPTY_ARGUMENT)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithInvalidName() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithInvalidName() throws Exception {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{\"scope\": \"local\",\"name\": ',\"value\": \"test\","
-                + "\"type\": \"d:text\"}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
-        restClient.processModel(RestVariableModel.class, request); 
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unexpected character " + "('''")); 
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{\"scope\": \"local\",\"name\": ',\"value\": \"test\","
+                                + "\"type\": \"d:text\"}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
+        restClient.processModel(RestVariableModel.class, request);
+        restClient
+                .assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError()
+                .containsSummary(
+                        String.format(RestErrorModel.NO_CONTENT, "Unexpected character " + "('''"));
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithInvalidValue() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithInvalidValue() throws Exception {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{\"scope\": \"local\",\"name\": \"varName\",\"value\"::,"
-                + "\"type\": \"d:text\"}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
-        restClient.processModel(RestVariableModel.class, request); 
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unexpected character " + "(':'"));      
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{\"scope\": \"local\",\"name\": \"varName\",\"value\"::,"
+                                + "\"type\": \"d:text\"}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
+        restClient.processModel(RestVariableModel.class, request);
+        restClient
+                .assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError()
+                .containsSummary(
+                        String.format(RestErrorModel.NO_CONTENT, "Unexpected character " + "(':'"));
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithMissingType() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithMissingType() throws Exception {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel)
-                .withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{\"scope\": \"local\",\"name\": \"varName\",\"value\": \"test\"}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{\"scope\": \"local\",\"name\": \"varName\",\"value\": \"test\"}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
         restClient.processModel(RestVariableModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        taskVariable.assertThat().field("scope").is(taskVariable.getScope())
-                    .and().field("name").is(taskVariable.getName())
-                    .and().field("type").is("d:text")
-                    .and().field("value").is(taskVariable.getValue());   
+        taskVariable
+                .assertThat()
+                .field("scope")
+                .is(taskVariable.getScope())
+                .and()
+                .field("name")
+                .is(taskVariable.getName())
+                .and()
+                .field("type")
+                .is("d:text")
+                .and()
+                .field("value")
+                .is(taskVariable.getValue());
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithMissingTypeAndValue() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithMissingTypeAndValue() throws Exception {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel)
-                .withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{\"scope\": \"local\",\"name\": \"varName\"}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{\"scope\": \"local\",\"name\": \"varName\"}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
         updatedTaskVariable = restClient.processModel(RestVariableModel.class, request);
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        updatedTaskVariable.assertThat().field("scope").is(updatedTaskVariable.getScope())
-                    .and().field("name").is(updatedTaskVariable.getName())
-                    .and().field("type").is("d:any");                   
+        updatedTaskVariable
+                .assertThat()
+                .field("scope")
+                .is(updatedTaskVariable.getScope())
+                .and()
+                .field("name")
+                .is(updatedTaskVariable.getName())
+                .and()
+                .field("type")
+                .is("d:any");
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithEmptyBody() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithEmptyBody() throws Exception {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel)
-                .withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
-        restClient.processModel(RestVariableModel.class, request);        
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError().containsErrorKey(RestErrorModel.VARIABLE_NAME_REQUIRED)
-                  .containsSummary(RestErrorModel.VARIABLE_NAME_REQUIRED)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
+        restClient.processModel(RestVariableModel.class, request);
+        restClient
+                .assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError()
+                .containsErrorKey(RestErrorModel.VARIABLE_NAME_REQUIRED)
+                .containsSummary(RestErrorModel.VARIABLE_NAME_REQUIRED)
+                .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
+                .stackTraceIs(RestErrorModel.STACKTRACE);
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
             description = "Update task variable with invalid name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTaskVariableWithInvalidBody() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTaskVariableWithInvalidBody() throws Exception {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel)
-                .withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, "{\"scope\": \"local\",\"name\": \"varName\",\"value\": \"test\","
-                + "\"type\": \"d:text\", \"errorKey\": \"invalidBody\"}",
-                              "tasks/{taskId}/variables/{variableName}", taskModel.getId(), taskVariable.getName());
-        restClient.processModel(RestVariableModel.class, request);        
-        restClient.assertStatusCodeIs(HttpStatus.BAD_REQUEST)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.NO_CONTENT,"Unrecognized field " + "\"errorKey\"")); 
+
+        RestRequest request =
+                RestRequest.requestWithBody(
+                        HttpMethod.PUT,
+                        "{\"scope\": \"local\",\"name\": \"varName\",\"value\": \"test\","
+                                + "\"type\": \"d:text\", \"errorKey\": \"invalidBody\"}",
+                        "tasks/{taskId}/variables/{variableName}",
+                        taskModel.getId(),
+                        taskVariable.getName());
+        restClient.processModel(RestVariableModel.class, request);
+        restClient
+                .assertStatusCodeIs(HttpStatus.BAD_REQUEST)
+                .assertLastError()
+                .containsSummary(
+                        String.format(
+                                RestErrorModel.NO_CONTENT, "Unrecognized field " + "\"errorKey\""));
     }
-    
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS }, executionType = ExecutionType.REGRESSION,
+
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS},
+            executionType = ExecutionType.REGRESSION,
             description = "Update task variable with empty name - PUT call")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION })
-    public void updateTwiceInARowSameTaskVariable() throws Exception
-    {
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.TASKS, TestGroup.REGRESSION})
+    public void updateTwiceInARowSameTaskVariable() throws Exception {
         taskVariable = RestVariableModel.getRandomTaskVariableModel("local", "d:text");
-        restClient.authenticateUser(userModel).withWorkflowAPI().usingTask(taskModel).addTaskVariable(taskVariable);
+        restClient
+                .authenticateUser(userModel)
+                .withWorkflowAPI()
+                .usingTask(taskModel)
+                .addTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        
-        taskVariable.setName("newName");    
+
+        taskVariable.setName("newName");
         taskVariable.setScope("global");
-        updatedTaskVariable = restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(taskVariable);
+        updatedTaskVariable =
+                restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedTaskVariable.assertThat().field("scope").is("global");
         updatedTaskVariable.assertThat().field("name").is("newName");
-        
-        updatedTaskVariable = restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(taskVariable);
+
+        updatedTaskVariable =
+                restClient.withWorkflowAPI().usingTask(taskModel).updateTaskVariable(taskVariable);
         restClient.assertStatusCodeIs(HttpStatus.OK);
         updatedTaskVariable.assertThat().field("scope").is("global");
-        updatedTaskVariable.assertThat().field("name").is("newName");        
+        updatedTaskVariable.assertThat().field("name").is("newName");
     }
 }

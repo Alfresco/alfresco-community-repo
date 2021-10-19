@@ -28,65 +28,54 @@ package org.alfresco.module.org_alfresco_module_rm.test.util.bdt;
 
 import static org.junit.Assert.fail;
 
+import org.alfresco.module.org_alfresco_module_rm.test.util.bdt.BehaviourTest.Work;
+
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.bdt.BehaviourTest.Work;
-
 /**
  * Expected failure.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.5
  */
-public class ExpectedFailure
-{
+public class ExpectedFailure {
     private static final String MESSAGE = "Expected failure \"{0}\" was not observed.";
-    
+
     private BehaviourTest test;
     private Set<Class<? extends Exception>> exceptionClasses;
     private Work work;
-    
+
     @SafeVarargs
-    public ExpectedFailure(BehaviourTest test, Class<? extends Exception> ...exceptionClasses)
-    {
+    public ExpectedFailure(BehaviourTest test, Class<? extends Exception>... exceptionClasses) {
         this.test = test;
         this.exceptionClasses = Arrays.stream(exceptionClasses).collect(Collectors.toSet());
     }
-    
-    public ExpectedFailure from(Work work)
-    {
+
+    public ExpectedFailure from(Work work) {
         this.work = work;
         return this;
     }
-    
-    public BehaviourTest because(String message)
-    {
-        try
-        {
+
+    public BehaviourTest because(String message) {
+        try {
             test.perform(work);
-        }
-        catch(Exception actualException)
-        {
+        } catch (Exception actualException) {
             boolean found = false;
-            
-            for (Class<? extends Exception> exceptionClass : exceptionClasses)
-            {   
-                if (exceptionClass.isAssignableFrom(actualException.getClass()))
-                {
+
+            for (Class<? extends Exception> exceptionClass : exceptionClasses) {
+                if (exceptionClass.isAssignableFrom(actualException.getClass())) {
                     found = true;
                 }
             }
-            
-            if (!found)
-            {
+
+            if (!found) {
                 fail(MessageFormat.format(MESSAGE, message));
             }
         }
-        
+
         return test;
     }
-    
 }

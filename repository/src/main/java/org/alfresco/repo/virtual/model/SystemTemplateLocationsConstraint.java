@@ -4,37 +4,27 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
 package org.alfresco.repo.virtual.model;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
@@ -52,19 +42,28 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 /**
- * A system paths string values constraint to be used in conjunction with
- * {@link SystemVirtualizationMethod}s to provide available system paths by
- * exploring a predefined location in the java classpath ad a predefined
- * repository location.
+ * A system paths string values constraint to be used in conjunction with {@link
+ * SystemVirtualizationMethod}s to provide available system paths by exploring a predefined location
+ * in the java classpath ad a predefined repository location.
  *
  * @author Silviu Dinuta
  */
-public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
-{
+public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint {
     public static final String NULL_SYSTEM_TEMPLATE = "nullSystemTemplate";
 
-    public static final String NULL_SYSTEM_TEMPLATE_MESSAGE = "smf_smartFolder.nullSystemTemplate.message";
+    public static final String NULL_SYSTEM_TEMPLATE_MESSAGE =
+            "smf_smartFolder.nullSystemTemplate.message";
 
     private NodeService nodeService;
 
@@ -76,64 +75,49 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
 
     private String repositoryTemplateTypeName;
 
-    public SystemTemplateLocationsConstraint()
-    {
+    public SystemTemplateLocationsConstraint() {
         super();
     }
 
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public void setTemplatesParentClasspath(String templatesParentClasspath)
-    {
+    public void setTemplatesParentClasspath(String templatesParentClasspath) {
         this.templatesParentClasspath = templatesParentClasspath;
     }
 
-    public String getTemplatesParentClasspath()
-    {
+    public String getTemplatesParentClasspath() {
         return this.templatesParentClasspath;
     }
 
-    public NodeRefExpression getTemplatesParentRepositoryPath()
-    {
+    public NodeRefExpression getTemplatesParentRepositoryPath() {
         return this.templatesParentRepositoryPath;
     }
 
-    public void setTemplatesParentRepositoryPath(NodeRefExpression templatesParentRepositoryPath)
-    {
+    public void setTemplatesParentRepositoryPath(NodeRefExpression templatesParentRepositoryPath) {
         this.templatesParentRepositoryPath = templatesParentRepositoryPath;
     }
 
-    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
-    {
+    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver) {
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
-    public void setRepositoryTemplateTypeName(String repositoryTemplateTypeName)
-    {
+    public void setRepositoryTemplateTypeName(String repositoryTemplateTypeName) {
         this.repositoryTemplateTypeName = repositoryTemplateTypeName;
     }
 
     @Override
-    public List<String> getRawAllowedValues()
-    {
+    public List<String> getRawAllowedValues() {
         List<String> result = null;
-        try
-        {
-            result = loadClasspathTemplates(templatesParentClasspath,
-                                            "json");
-        }
-        catch (IOException e)
-        {
-            throw new ConstraintException("ListTemplateTypesConstraints",
-                                          e);
+        try {
+            result = loadClasspathTemplates(templatesParentClasspath, "json");
+        } catch (IOException e) {
+            throw new ConstraintException("ListTemplateTypesConstraints", e);
         }
         List<String> repositoryTemplates = loadRepositoryTemplates(templatesParentRepositoryPath);
         result.addAll(repositoryTemplates);
-        if (result.size() == 0)
-        {
+        if (result.size() == 0) {
             result.add(NULL_SYSTEM_TEMPLATE);
         }
         super.setAllowedValues(result);
@@ -141,85 +125,71 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
     }
 
     @Override
-    public List<String> getAllowedValues()
-    {
-        if (sorted == true)
-        {
+    public List<String> getAllowedValues() {
+        if (sorted == true) {
             List<String> rawValues = getRawAllowedValues();
             List<String> values = new ArrayList<String>(rawValues);
-            Collections.sort(values,
-                             new LabelComparator());
+            Collections.sort(values, new LabelComparator());
             return values;
-        }
-        else
-        {
+        } else {
             return super.getAllowedValues();
         }
     }
 
     @Override
-    public String getDisplayLabel(String constraintAllowableValue, MessageLookup messageLookup)
-    {
-        if (constraintAllowableValue.startsWith("N"))
-        {
-            Serializable nameProperty = nodeService.getProperty(new NodeRef(constraintAllowableValue.substring(1)),
-                                                                ContentModel.PROP_NAME);
+    public String getDisplayLabel(String constraintAllowableValue, MessageLookup messageLookup) {
+        if (constraintAllowableValue.startsWith("N")) {
+            Serializable nameProperty =
+                    nodeService.getProperty(
+                            new NodeRef(constraintAllowableValue.substring(1)),
+                            ContentModel.PROP_NAME);
             return nameProperty.toString();
-        }
-        else if (constraintAllowableValue.equals(SystemTemplateLocationsConstraint.NULL_SYSTEM_TEMPLATE))
-        {
-            String message = messageLookup.getMessage(SystemTemplateLocationsConstraint.NULL_SYSTEM_TEMPLATE_MESSAGE,
-                                                      I18NUtil.getLocale());
+        } else if (constraintAllowableValue.equals(
+                SystemTemplateLocationsConstraint.NULL_SYSTEM_TEMPLATE)) {
+            String message =
+                    messageLookup.getMessage(
+                            SystemTemplateLocationsConstraint.NULL_SYSTEM_TEMPLATE_MESSAGE,
+                            I18NUtil.getLocale());
             return message == null ? constraintAllowableValue : message;
-        }
-        else
-        {
-            return constraintAllowableValue.substring(constraintAllowableValue.lastIndexOf("/") + 1);
+        } else {
+            return constraintAllowableValue.substring(
+                    constraintAllowableValue.lastIndexOf("/") + 1);
         }
     }
 
     @Override
-    protected void evaluateSingleValue(Object value)
-    {
+    protected void evaluateSingleValue(Object value) {
         super.setAllowedValues(getAllowedValues());
         super.evaluateSingleValue(value);
     }
 
-    private List<String> loadClasspathTemplates(String templatesParentClasspath, String... extensions)
-                throws IOException
-    {
+    private List<String> loadClasspathTemplates(
+            String templatesParentClasspath, String... extensions) throws IOException {
         List<String> result = new ArrayList<String>(5);
         List<String> files = new ArrayList<String>(5);
 
         ClassLoader cl = this.getClass().getClassLoader();
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
-        Resource[] resources = resolver.getResources("classpath*:" + templatesParentClasspath + "/*");
-        for (Resource resource : resources)
-        {
+        Resource[] resources =
+                resolver.getResources("classpath*:" + templatesParentClasspath + "/*");
+        for (Resource resource : resources) {
             files.add(resource.getFilename());
         }
 
-        if (extensions != null && extensions.length > 0)
-        {
+        if (extensions != null && extensions.length > 0) {
 
             String extensionStr = "";
-            for (int i = 0; i < extensions.length; i++)
-            {
-                if (i == extensions.length - 1)
-                {
+            for (int i = 0; i < extensions.length; i++) {
+                if (i == extensions.length - 1) {
                     extensionStr += extensions[i];
-                }
-                else
-                {
+                } else {
                     extensionStr += extensions[i] + "|";
                 }
             }
             String fileExtensions = "(?i).*\\.(" + extensionStr + ")$";
             Pattern pattern = Pattern.compile(fileExtensions);
-            for (String file : files)
-            {
-                if (pattern.matcher(file).matches())
-                {
+            for (String file : files) {
+                if (pattern.matcher(file).matches()) {
                     result.add("C" + templatesParentClasspath + "/" + file);
                 }
             }
@@ -227,26 +197,22 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
         return result;
     }
 
-    private List<String> loadRepositoryTemplates(NodeRefExpression templatesParentRepositoryPath)
-    {
+    private List<String> loadRepositoryTemplates(NodeRefExpression templatesParentRepositoryPath) {
         List<String> result = new ArrayList<String>();
         NodeRef findNodeRef = templatesParentRepositoryPath.resolve();
 
-        if (findNodeRef != null)
-        {
-            final QName repositoryTemplateTypeQName = QName.createQName(repositoryTemplateTypeName,
-                                                                        namespacePrefixResolver);
+        if (findNodeRef != null) {
+            final QName repositoryTemplateTypeQName =
+                    QName.createQName(repositoryTemplateTypeName, namespacePrefixResolver);
             Set<QName> searchTypeQNames = new HashSet<QName>();
             searchTypeQNames.add(repositoryTemplateTypeQName);
 
-            List<ChildAssociationRef> children = nodeService.getChildAssocs(findNodeRef,
-                                                                            searchTypeQNames);
-            for (ChildAssociationRef childAssociationRef : children)
-            {
+            List<ChildAssociationRef> children =
+                    nodeService.getChildAssocs(findNodeRef, searchTypeQNames);
+            for (ChildAssociationRef childAssociationRef : children) {
                 NodeRef childNodeRef = childAssociationRef.getChildRef();
                 QName childType = nodeService.getType(childNodeRef);
-                if (searchTypeQNames.contains(childType))
-                {
+                if (searchTypeQNames.contains(childType)) {
                     result.add("N" + childNodeRef.toString());
                 }
             }
@@ -254,15 +220,11 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
         return result;
     }
 
-    private class LabelComparator implements Comparator<String>
-    {
+    private class LabelComparator implements Comparator<String> {
 
         @Override
-        public int compare(String o1, String o2)
-        {
-            return getDisplayLabel(o1,
-                                   null).compareTo(getDisplayLabel(o2,
-                                                                   null));
+        public int compare(String o1, String o2) {
+            return getDisplayLabel(o1, null).compareTo(getDisplayLabel(o2, null));
         }
     }
 }

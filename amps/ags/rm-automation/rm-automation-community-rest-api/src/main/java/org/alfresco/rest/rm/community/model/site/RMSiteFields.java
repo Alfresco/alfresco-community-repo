@@ -27,26 +27,20 @@
 package org.alfresco.rest.rm.community.model.site;
 
 /**
- *RM Site properties from the RM Model Schema
- *"entry": {
- *      "id": "string",
- *      "guid": "string",
- *      "title": "string",
- *      "description": "string",
- *      "visibility": "{@link org.springframework.social.alfresco.api.entities.Site.Visibility}",
- *      "compliance": "{@link RMSiteCompliance}",
- *      "role": "{@link org.alfresco.utility.constants.UserRole}"
- *}
+ * RM Site properties from the RM Model Schema "entry": { "id": "string", "guid": "string", "title":
+ * "string", "description": "string", "visibility": "{@link
+ * org.springframework.social.alfresco.api.entities.Site.Visibility}", "compliance": "{@link
+ * RMSiteCompliance}", "role": "{@link org.alfresco.utility.constants.UserRole}" }
+ *
  * @author Tuna Aksoy
  * @author Rodica Sutu
  * @since 2.6
  */
-public class RMSiteFields
-{
+public class RMSiteFields {
     public static final String ID = "id";
     public static final String COMPLIANCE = "compliance";
     public static final String TITLE = "title";
     public static final String DESCRIPTION = "description";
-    public static final String VISIBILITY ="visibility";
+    public static final String VISIBILITY = "visibility";
     public static final String ROLE = "role";
 }

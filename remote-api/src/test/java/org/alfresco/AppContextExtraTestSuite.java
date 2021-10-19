@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -59,10 +59,12 @@ import org.junit.runners.Suite;
     org.alfresco.rest.framework.tests.core.WhereTests.class,
     org.alfresco.rest.framework.tests.core.WithResponseTest.class,
     org.alfresco.rest.framework.tools.RecognizedParamsExtractorTest.class,
-        // add applicationContext_02_part2 as it is compatible with the rest of the tests in this test suite
-        // and because it balances the load of the build jobs
-    
-    // [classpath:alfresco/application-context.xml, classpath:alfresco/web-scripts-application-context-test.xml,
+    // add applicationContext_02_part2 as it is compatible with the rest of the tests in this test
+    // suite
+    // and because it balances the load of the build jobs
+
+    // [classpath:alfresco/application-context.xml,
+    // classpath:alfresco/web-scripts-application-context-test.xml,
     // classpath:alfresco/web-scripts-application-context.xml]
     // this uses the same context set as applicationContext_02
     // this does not want to run at the beginning or the end of the applicationContext_02
@@ -76,7 +78,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.WebDAVHelperIntegrationTest.class,
     org.alfresco.repo.web.scripts.person.UserCSVUploadTest.class,
 
-    // [classpath:alfresco/application-context.xml, classpath:alfresco/web-scripts-application-context.xml,
+    // [classpath:alfresco/application-context.xml,
+    // classpath:alfresco/web-scripts-application-context.xml,
     // classpath:alfresco/web-scripts-application-context-test.xml,
     // classpath:alfresco/declarative-spreadsheet-webscript-application-context.xml]
     org.alfresco.repo.web.scripts.DeclarativeSpreadsheetWebScriptTest.class,
@@ -85,7 +88,8 @@ import org.junit.runners.Suite;
     // classpath:alfresco/web-scripts-application-context.xml]
     org.alfresco.rest.test.workflow.api.impl.ProcessesImplTest.class,
 
-    // [classpath:alfresco/application-context.xml, classpath:alfresco/web-scripts-application-context.xml,
+    // [classpath:alfresco/application-context.xml,
+    // classpath:alfresco/web-scripts-application-context.xml,
     // classpath:alfresco/remote-api-context.xml]
     org.alfresco.repo.webdav.DeleteMethodTest.class,
     org.alfresco.repo.webdav.LockMethodTest.class,
@@ -102,6 +106,4 @@ import org.junit.runners.Suite;
     org.alfresco.rest.framework.tests.core.SerializeTests.class,
     org.alfresco.rest.framework.tests.metadata.WriterTests.class,
 })
-public class AppContextExtraTestSuite
-{
-}
+public class AppContextExtraTestSuite {}

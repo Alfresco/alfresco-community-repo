@@ -19,41 +19,34 @@
 
 package org.alfresco.util.collections;
 
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.json.JSONArray;
-
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
-public class JsonUtils
-{
-    
+public class JsonUtils {
+
     @SuppressWarnings("unchecked")
-    public static <F, T> List<T> transform(JSONArray values, Function<F, ? extends T> transformer)
-    {
-        if(values == null || values.length()<1)
-        {
-           return Collections.emptyList(); 
+    public static <F, T> List<T> transform(JSONArray values, Function<F, ? extends T> transformer) {
+        if (values == null || values.length() < 1) {
+            return Collections.emptyList();
         }
         ArrayList<T> results = new ArrayList<T>(values.length());
-        for (int i = 0; i < values.length(); i++)
-        {
-            T result = transformer.apply((F)values.opt(i));
-            if(result != null)
-            {
+        for (int i = 0; i < values.length(); i++) {
+            T result = transformer.apply((F) values.opt(i));
+            if (result != null) {
                 results.add(result);
             }
         }
         return results;
     }
 
-    public static List<String> toListOfStrings(JSONArray values)
-    {
+    public static List<String> toListOfStrings(JSONArray values) {
         return transform(values, CollectionUtils.TO_STRING_TRANSFORMER);
     }
 }

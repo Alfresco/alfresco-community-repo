@@ -26,23 +26,22 @@
 package org.alfresco.ibatis;
 
 /**
- * Interface for DAOs that offer batching.  This should be provided as an optimization
- * and DAO implementations that can't supply batching should just do nothing.
+ * Interface for DAOs that offer batching. This should be provided as an optimization and DAO
+ * implementations that can't supply batching should just do nothing.
  *
  * @author Derek Hulley
  * @since 3.2.1
  */
-public interface BatchingDAO
-{
+public interface BatchingDAO {
     /**
      * Start a batch of insert or update commands
-     * 
+     *
      * @throws RuntimeException wrapping a SQLException
      */
     void startBatch();
     /**
      * Write a batch of insert or update commands
-     * 
+     *
      * @throws RuntimeException wrapping a SQLException
      */
     void executeBatch();

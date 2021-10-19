@@ -18,10 +18,7 @@
  */
 package org.alfresco.scripts;
 
-/**
- * @author Kevin Roast
- */
-public interface ScriptResourceLoader
-{
-   public String loadScriptResource(String resource);
+/** @author Kevin Roast */
+public interface ScriptResourceLoader {
+    public String loadScriptResource(String resource);
 }

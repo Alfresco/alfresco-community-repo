@@ -27,13 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.security;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Protected model artifact class.
@@ -42,8 +42,7 @@ import org.alfresco.service.namespace.QName;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public abstract class ProtectedModelArtifact
-{
+public abstract class ProtectedModelArtifact {
     /** Model security service */
     private ModelSecurityService modelSecurityService;
 
@@ -59,72 +58,46 @@ public abstract class ProtectedModelArtifact
     /** Capability names */
     private Set<String> capabilityNames;
 
-    /**
-     * @param namespaceService  namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    /** @param namespaceService namespace service */
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
-    /**
-     * @param modelSecurityService  model security service
-     */
-    public void setModelSecurityService(ModelSecurityService modelSecurityService)
-    {
+    /** @param modelSecurityService model security service */
+    public void setModelSecurityService(ModelSecurityService modelSecurityService) {
         this.modelSecurityService = modelSecurityService;
     }
 
-    /**
-     * Init method
-     */
-    public void init()
-    {
+    /** Init method */
+    public void init() {
         modelSecurityService.register(this);
     }
 
-    /**
-     * @param name  artifact name (in cm:content form)
-     */
-    public void setName(String name)
-    {
+    /** @param name artifact name (in cm:content form) */
+    public void setName(String name) {
         this.name = QName.createQName(name, namespaceService);
     }
 
-    /**
-     * @return  artifact QName
-     */
-    public QName getQName()
-    {
+    /** @return artifact QName */
+    public QName getQName() {
         return name;
     }
 
-    /**
-     * @param capabilities  capabilities
-     */
-    public void setCapabilities(Set<Capability> capabilities)
-    {
+    /** @param capabilities capabilities */
+    public void setCapabilities(Set<Capability> capabilities) {
         this.capabilities = capabilities;
     }
 
-    /**
-     * @return  capabilities
-     */
-    public Set<Capability> getCapabilities()
-    {
+    /** @return capabilities */
+    public Set<Capability> getCapabilities() {
         return capabilities;
     }
 
-    /**
-     * @return  capability names
-     */
-    public Set<String> getCapilityNames()
-    {
-        if (capabilityNames == null && capabilities != null)
-        {
+    /** @return capability names */
+    public Set<String> getCapilityNames() {
+        if (capabilityNames == null && capabilities != null) {
             capabilityNames = new HashSet<>(capabilities.size());
-            for (Capability capability : capabilities)
-            {
+            for (Capability capability : capabilities) {
                 capabilityNames.add(capability.getName());
             }
         }

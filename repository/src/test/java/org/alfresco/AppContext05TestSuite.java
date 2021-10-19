@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,9 +32,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * Repository project tests using the main context alfresco/application-context.xml.
- * To balance test jobs tests using this context have been split into multiple test suites.
- * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ * Repository project tests using the main context alfresco/application-context.xml. To balance test
+ * jobs tests using this context have been split into multiple test suites. Tests marked as DBTests
+ * are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
@@ -58,9 +58,12 @@ import org.junit.runners.Suite;
     org.alfresco.repo.security.person.HomeFolderProviderSynchronizerTest.class,
     org.alfresco.repo.domain.permissions.FixedAclUpdaterTest.class,
     org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapperTest.class,
-    org.alfresco.repo.security.authentication.identityservice.IdentityServiceAuthenticationComponentTest.class,
-    org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapperTest.class,
-    org.alfresco.repo.security.authentication.subsystems.SubsystemChainingFtpAuthenticatorTest.class,
+    org.alfresco.repo.security.authentication.identityservice
+            .IdentityServiceAuthenticationComponentTest.class,
+    org.alfresco.repo.security.authentication.identityservice.IdentityServiceRemoteUserMapperTest
+            .class,
+    org.alfresco.repo.security.authentication.subsystems.SubsystemChainingFtpAuthenticatorTest
+            .class,
     org.alfresco.repo.security.authentication.external.LocalAuthenticationServiceTest.class,
     org.alfresco.repo.domain.contentdata.ContentDataDAOTest.class,
     org.alfresco.repo.domain.encoding.EncodingDAOTest.class,
@@ -78,13 +81,12 @@ import org.junit.runners.Suite;
     // REPO-1012 : run AuditDAOTest and PropertyValueCleanupTest near the end
     // because their failure can cause other tests to fail on MS SQL
     // AuditDAOTest fails if it runs after CannedQueryDAOTest so this order is a compromise
-    // CannedQueryDAOTest will fail on MS SQL if either AuditDAOTest or PropertyValueCleanupTest fail
+    // CannedQueryDAOTest will fail on MS SQL if either AuditDAOTest or PropertyValueCleanupTest
+    // fail
     org.alfresco.repo.domain.propval.PropertyValueCleanupTest.class,
     org.alfresco.repo.domain.audit.AuditDAOTest.class,
     org.alfresco.repo.model.ModelTestSuite.class,
     org.alfresco.repo.tenant.MultiTNodeServiceInterceptorTest.class,
     org.alfresco.repo.transfer.RepoTransferReceiverImplTest.class,
 })
-public class AppContext05TestSuite
-{
-}
+public class AppContext05TestSuite {}

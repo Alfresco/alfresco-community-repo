@@ -27,10 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.report.generator.transfer;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+
 import java.io.Serializable;
 import java.util.Map;
-
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Transfer node class
@@ -38,8 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class TransferNode
-{
+public class TransferNode {
     /** Transfer node reference */
     private NodeRef nodeRef;
 
@@ -50,25 +49,18 @@ public class TransferNode
      * @param nodeRef
      * @param properties
      */
-    public TransferNode(NodeRef nodeRef, Map<String, Serializable> properties)
-    {
+    public TransferNode(NodeRef nodeRef, Map<String, Serializable> properties) {
         this.nodeRef = nodeRef;
         this.properties = properties;
     }
 
-    /**
-     * @return transfer node reference
-     */
-    public NodeRef getNodeRef()
-    {
+    /** @return transfer node reference */
+    public NodeRef getNodeRef() {
         return this.nodeRef;
     }
 
-    /**
-     * @return transfer node properties
-     */
-    public Map<String, Serializable> getProperties()
-    {
+    /** @return transfer node properties */
+    public Map<String, Serializable> getProperties() {
         return this.properties;
     }
 }

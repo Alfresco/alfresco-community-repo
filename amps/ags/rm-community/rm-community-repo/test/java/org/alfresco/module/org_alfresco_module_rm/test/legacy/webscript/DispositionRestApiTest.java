@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
-import java.text.MessageFormat;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
@@ -45,26 +43,30 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
+import java.text.MessageFormat;
+
 /**
  * This class tests the Rest API for disposition related operations
  *
  * @author Gavin Cornwell
  */
-public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements RecordsManagementModel
-{
-    protected static StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+public class DispositionRestApiTest extends BaseRMWebScriptTestCase
+        implements RecordsManagementModel {
+    protected static StoreRef SPACES_STORE =
+            new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
     protected static final String GET_SCHEDULE_URL_FORMAT = "/api/node/{0}/dispositionschedule";
     protected static final String GET_LIFECYCLE_URL_FORMAT = "/api/node/{0}/nextdispositionaction";
-    protected static final String POST_ACTIONDEF_URL_FORMAT = "/api/node/{0}/dispositionschedule/dispositionactiondefinitions";
-    protected static final String DELETE_ACTIONDEF_URL_FORMAT = "/api/node/{0}/dispositionschedule/dispositionactiondefinitions/{1}";
-    protected static final String PUT_ACTIONDEF_URL_FORMAT = "/api/node/{0}/dispositionschedule/dispositionactiondefinitions/{1}";
+    protected static final String POST_ACTIONDEF_URL_FORMAT =
+            "/api/node/{0}/dispositionschedule/dispositionactiondefinitions";
+    protected static final String DELETE_ACTIONDEF_URL_FORMAT =
+            "/api/node/{0}/dispositionschedule/dispositionactiondefinitions/{1}";
+    protected static final String PUT_ACTIONDEF_URL_FORMAT =
+            "/api/node/{0}/dispositionschedule/dispositionactiondefinitions/{1}";
     protected static final String GET_LIST_URL = "/api/rma/admin/listofvalues";
     protected static final String SERVICE_URL_PREFIX = "/alfresco/service";
     protected static final String APPLICATION_JSON = "application/json";
 
-
-    public void testGetDispositionSchedule() throws Exception
-    {
+    public void testGetDispositionSchedule() throws Exception {
         // Test 404 status for non existent node
         int expectedStatus = 404;
         String nonExistentNode = "workspace/SpacesStore/09ca1e02-1c87-4a53-97e7-xxxxxxxxxxxx";
@@ -91,7 +93,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         // check JSON data
         JSONObject dataObj = jsonParsedObject.getJSONObject("data");
         assertNotNull(dataObj);
-        JSONObject rootDataObject = (JSONObject)dataObj;
+        JSONObject rootDataObject = (JSONObject) dataObj;
         assertEquals(10, rootDataObject.length());
 
         // check individual data items
@@ -117,7 +119,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         JSONArray actions = rootDataObject.getJSONArray("actions");
         assertNotNull(actions);
         assertEquals(2, actions.length());
-        JSONObject action1 = (JSONObject)actions.get(0);
+        JSONObject action1 = (JSONObject) actions.get(0);
         assertEquals(9, action1.length());
         assertNotNull(action1.get("id"));
         assertNotNull(action1.get("url"));
@@ -125,7 +127,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         assertEquals("cutoff", action1.getString("name"));
         assertTrue(action1.getBoolean("eligibleOnFirstCompleteEvent"));
 
-        JSONObject action2 = (JSONObject)actions.get(1);
+        JSONObject action2 = (JSONObject) actions.get(1);
         assertEquals(8, action2.length());
 
         // make sure the disposition schedule node ref is present and valid
@@ -135,12 +137,13 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
 
         // create a new recordCategory node in the recordSeries and then get
         // the disposition schedule
-        NodeRef newRecordCategory = filePlanService.createRecordCategory(recordSeries, GUID.generate());
+        NodeRef newRecordCategory =
+                filePlanService.createRecordCategory(recordSeries, GUID.generate());
         dispositionService.createDispositionSchedule(newRecordCategory, null);
 
         categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
         requestUrl = MessageFormat.format(GET_SCHEDULE_URL_FORMAT, categoryNodeUrl);
-        //System.out.println("GET response: " + rsp.getContentAsString());
+        // System.out.println("GET response: " + rsp.getContentAsString());
         rsp = sendRequest(new GetRequest(requestUrl), expectedStatus);
 
         // get response as JSON
@@ -151,18 +154,18 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         // check JSON data
         dataObj = jsonParsedObject.getJSONObject("data");
         assertNotNull(dataObj);
-        rootDataObject = (JSONObject)dataObj;
+        rootDataObject = (JSONObject) dataObj;
         assertEquals(8, rootDataObject.length());
         actions = rootDataObject.getJSONArray("actions");
         assertNotNull(actions);
         assertEquals(0, actions.length());
     }
 
-    public void testPostDispositionAction() throws Exception
-    {
+    public void testPostDispositionAction() throws Exception {
         // create a new recordCategory node in the recordSeries and then get
         // the disposition schedule
-        NodeRef newRecordCategory = filePlanService.createRecordCategory(recordSeries, GUID.generate());
+        NodeRef newRecordCategory =
+                filePlanService.createRecordCategory(recordSeries, GUID.generate());
         dispositionService.createDispositionSchedule(newRecordCategory, null);
 
         String categoryNodeUrl = newRecordCategory.toString().replace("://", "/");
@@ -189,12 +192,13 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
 
         // Submit the JSON request.
         String jsonPostString = jsonPostData.toString();
-        Response rsp = sendRequest(new PostRequest(requestUrl, jsonPostString, APPLICATION_JSON), 200);
+        Response rsp =
+                sendRequest(new PostRequest(requestUrl, jsonPostString, APPLICATION_JSON), 200);
 
         // check the returned data is what was expected
         JSONObject jsonResponse = new JSONObject(new JSONTokener(rsp.getContentAsString()));
         JSONObject dataObj = jsonResponse.getJSONObject("data");
-        JSONObject rootDataObject = (JSONObject)dataObj;
+        JSONObject rootDataObject = (JSONObject) dataObj;
         assertNotNull(rootDataObject.getString("id"));
         assertNotNull(rootDataObject.getString("url"));
         assertEquals(0, rootDataObject.getInt("index"));
@@ -238,9 +242,9 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         sendRequest(new PostRequest(requestUrl, jsonPostString, APPLICATION_JSON), 400);
     }
 
-    public void testPutDispositionAction() throws Exception
-    {
-        NodeRef newRecordCategory = filePlanService.createRecordCategory(recordSeries, GUID.generate());
+    public void testPutDispositionAction() throws Exception {
+        NodeRef newRecordCategory =
+                filePlanService.createRecordCategory(recordSeries, GUID.generate());
         dispositionService.createDispositionSchedule(newRecordCategory, null);
 
         // create an action definition to then update
@@ -284,11 +288,13 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         jsonPostString = jsonPostData.toString();
 
         // try and update a non existent action definition to check for 404
-        String putRequestUrl = MessageFormat.format(PUT_ACTIONDEF_URL_FORMAT, categoryNodeUrl, "xyz");
+        String putRequestUrl =
+                MessageFormat.format(PUT_ACTIONDEF_URL_FORMAT, categoryNodeUrl, "xyz");
         rsp = sendRequest(new PutRequest(putRequestUrl, jsonPostString, APPLICATION_JSON), 404);
 
         // update the action definition
-        putRequestUrl = MessageFormat.format(PUT_ACTIONDEF_URL_FORMAT, categoryNodeUrl, actionDefId);
+        putRequestUrl =
+                MessageFormat.format(PUT_ACTIONDEF_URL_FORMAT, categoryNodeUrl, actionDefId);
         rsp = sendRequest(new PutRequest(putRequestUrl, jsonPostString, APPLICATION_JSON), 200);
 
         // check the update happened correctly
@@ -306,9 +312,9 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         assertEquals("no_longer_needed", actionDef.getJSONArray("events").getString(1));
     }
 
-    public void testDeleteDispositionAction() throws Exception
-    {
-        NodeRef newRecordCategory = filePlanService.createRecordCategory(recordSeries, GUID.generate());
+    public void testDeleteDispositionAction() throws Exception {
+        NodeRef newRecordCategory =
+                filePlanService.createRecordCategory(recordSeries, GUID.generate());
         dispositionService.createDispositionSchedule(newRecordCategory, null);
 
         // create an action definition to then delete
@@ -323,14 +329,17 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         String getRequestUrl = MessageFormat.format(GET_SCHEDULE_URL_FORMAT, categoryNodeUrl);
         Response rsp = sendRequest(new GetRequest(getRequestUrl), 200);
         JSONObject json = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-        String actionDefId = json.getJSONObject("data").getJSONArray("actions").getJSONObject(0).getString("id");
+        String actionDefId =
+                json.getJSONObject("data").getJSONArray("actions").getJSONObject(0).getString("id");
 
         // try and delete a non existent action definition to check for 404
-        String deleteRequestUrl = MessageFormat.format(DELETE_ACTIONDEF_URL_FORMAT, categoryNodeUrl, "xyz");
+        String deleteRequestUrl =
+                MessageFormat.format(DELETE_ACTIONDEF_URL_FORMAT, categoryNodeUrl, "xyz");
         rsp = sendRequest(new DeleteRequest(deleteRequestUrl), 404);
 
         // now delete the action defintion created above
-        deleteRequestUrl = MessageFormat.format(DELETE_ACTIONDEF_URL_FORMAT, categoryNodeUrl, actionDefId);
+        deleteRequestUrl =
+                MessageFormat.format(DELETE_ACTIONDEF_URL_FORMAT, categoryNodeUrl, actionDefId);
         rsp = sendRequest(new DeleteRequest(deleteRequestUrl), 200);
 
         // verify it got deleted
@@ -341,8 +350,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         assertEquals(0, actions.length());
     }
 
-    public void testGetDispositionLifecycle() throws Exception
-    {
+    public void testGetDispositionLifecycle() throws Exception {
         // Test 404 for disposition lifecycle request on incorrect node
         String categoryUrl = recordCategory.toString().replace("://", "/");
         String requestUrl = MessageFormat.format(GET_LIFECYCLE_URL_FORMAT, categoryUrl);
@@ -351,11 +359,13 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         JSONObject notFound = new JSONObject(new JSONTokener(rsp.getContentAsString()));
         assertEquals(true, notFound.getJSONObject("data").getBoolean("notFound"));
 
-        NodeRef newRecordFolder = recordFolderService.createRecordFolder(recordCategory, "recordFolder");
-
+        NodeRef newRecordFolder =
+                recordFolderService.createRecordFolder(recordCategory, "recordFolder");
 
         // there should now be a disposition lifecycle for the record
-        requestUrl = MessageFormat.format(GET_LIFECYCLE_URL_FORMAT, newRecordFolder.toString().replace("://", "/"));
+        requestUrl =
+                MessageFormat.format(
+                        GET_LIFECYCLE_URL_FORMAT, newRecordFolder.toString().replace("://", "/"));
         rsp = sendRequest(new GetRequest(requestUrl), 200);
         System.out.println("GET : " + rsp.getContentAsString());
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
@@ -388,8 +398,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         assertFalse(event1.has("completedBy"));
     }
 
-    public void testGetListOfValues() throws Exception
-    {
+    public void testGetListOfValues() throws Exception {
         // call the list service
         Response rsp = sendRequest(new GetRequest(GET_LIST_URL), 200);
         assertEquals("application/json;charset=UTF-8", rsp.getContentType());
@@ -401,7 +410,9 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
 
         // check dispostion actions
         JSONObject actions = data.getJSONObject("dispositionActions");
-        assertEquals(SERVICE_URL_PREFIX + GET_LIST_URL + "/dispositionactions", actions.getString("url"));
+        assertEquals(
+                SERVICE_URL_PREFIX + GET_LIST_URL + "/dispositionactions",
+                actions.getString("url"));
         JSONArray items = actions.getJSONArray("items");
         assertEquals(actionService.getDispositionActions().size(), items.length());
         assertTrue(items.length() > 0);
@@ -424,9 +435,10 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
 
         // check period types
         JSONObject periodTypes = data.getJSONObject("periodTypes");
-        assertEquals(SERVICE_URL_PREFIX + GET_LIST_URL + "/periodtypes", periodTypes.getString("url"));
+        assertEquals(
+                SERVICE_URL_PREFIX + GET_LIST_URL + "/periodtypes", periodTypes.getString("url"));
         items = periodTypes.getJSONArray("items");
-        assertEquals(Period.getProviderNames().size()-1, items.length());
+        assertEquals(Period.getProviderNames().size() - 1, items.length());
         assertTrue(items.length() > 0);
         item = items.getJSONObject(0);
         assertTrue(item.length() == 2);
@@ -435,7 +447,9 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
 
         // check period properties
         JSONObject periodProperties = data.getJSONObject("periodProperties");
-        assertEquals(SERVICE_URL_PREFIX + GET_LIST_URL + "/periodproperties", periodProperties.getString("url"));
+        assertEquals(
+                SERVICE_URL_PREFIX + GET_LIST_URL + "/periodproperties",
+                periodProperties.getString("url"));
         items = periodProperties.getJSONArray("items");
         assertEquals(5, items.length());
         assertTrue(items.length() > 0);

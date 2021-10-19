@@ -39,54 +39,46 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
-public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBase
-{
+public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBase {
     /** I18N */
     private static final String MSG_NODE_NOT_RECORD_CATEGORY = "rm.action.node-not-record-category";
 
     /** file plan service */
     private FilePlanService filePlanService;
 
-    /**
-     * @param filePlanService	file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-		this.filePlanService = filePlanService;
-	}
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (eligibleForAction(actionedUponNodeRef))
-        {
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+        if (eligibleForAction(actionedUponNodeRef)) {
             // Create the disposition schedule
             getDispositionService().createDispositionSchedule(actionedUponNodeRef, null);
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NODE_NOT_RECORD_CATEGORY, actionedUponNodeRef));
+        } else {
+            throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_NODE_NOT_RECORD_CATEGORY, actionedUponNodeRef));
         }
     }
 
     /**
-     * Helper method to check the actioned upon node reference to decide to execute the action
-     * The preconditions are:
-     *  - The node must exist
-     *  - The node must not be a record category
+     * Helper method to check the actioned upon node reference to decide to execute the action The
+     * preconditions are: - The node must exist - The node must not be a record category
      *
      * @param actionedUponNodeRef node reference
-     * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
+     * @return Return true if the node reference passes all the preconditions for executing the
+     *     action, false otherwise
      */
-    private boolean eligibleForAction(NodeRef actionedUponNodeRef)
-    {
+    private boolean eligibleForAction(NodeRef actionedUponNodeRef) {
         boolean result = false;
-        if (getNodeService().exists(actionedUponNodeRef) &&
-                filePlanService.isRecordCategory(actionedUponNodeRef))
-        {
+        if (getNodeService().exists(actionedUponNodeRef)
+                && filePlanService.isRecordCategory(actionedUponNodeRef)) {
             result = true;
         }
         return result;

@@ -56,50 +56,49 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @EntityResource(name = "unfiled-containers", title = "Unfiled containers")
 public class UnfiledContainerEntityResource
-        implements EntityResourceAction.ReadById<UnfiledContainer>, EntityResourceAction.Update<UnfiledContainer>, InitializingBean
-{
+        implements EntityResourceAction.ReadById<UnfiledContainer>,
+                EntityResourceAction.Update<UnfiledContainer>,
+                InitializingBean {
 
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
         this.apiUtils = apiUtils;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
         this.nodesModelFactory = nodesModelFactory;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         mandatory("apiUtils", apiUtils);
         mandatory("fileFolderService", fileFolderService);
         mandatory("apiNodesModelFactory", nodesModelFactory);
     }
 
-    @WebApiDescription(title = "Get unfiled container information", description = "Gets information for a unfiled container with id 'unfiledContainerId'")
+    @WebApiDescription(
+            title = "Get unfiled container information",
+            description = "Gets information for a unfiled container with id 'unfiledContainerId'")
     @WebApiParam(name = "unfiledContainerId", title = "The unfiled container id")
-    public UnfiledContainer readById(String unfiledContainerId, Parameters parameters)
-    {
+    public UnfiledContainer readById(String unfiledContainerId, Parameters parameters) {
         checkNotBlank("unfiledContainerId", unfiledContainerId);
         mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
 
@@ -107,33 +106,40 @@ public class UnfiledContainerEntityResource
     }
 
     @Override
-    @WebApiDescription(title = "Update unfiled record container", description = "Updates an unfiled record container with id 'unfiledContainerId'")
-    public UnfiledContainer update(String unfiledContainerId, UnfiledContainer unfiledContainerInfo, Parameters parameters)
-    {
+    @WebApiDescription(
+            title = "Update unfiled record container",
+            description = "Updates an unfiled record container with id 'unfiledContainerId'")
+    public UnfiledContainer update(
+            String unfiledContainerId,
+            UnfiledContainer unfiledContainerInfo,
+            Parameters parameters) {
         checkNotBlank("unfiledContainerId", unfiledContainerId);
         mandatory("unfiledContainerInfo", unfiledContainerInfo);
         mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateNode(nodeRef, unfiledContainerInfo, parameters);
-                return null;
-            }
-        };
+        RetryingTransactionCallback<Void> callback =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() {
+                        apiUtils.updateNode(nodeRef, unfiledContainerInfo, parameters);
+                        return null;
+                    }
+                };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+        RetryingTransactionCallback<FileInfo> readCallback =
+                new RetryingTransactionCallback<FileInfo>() {
+                    public FileInfo execute() {
+                        return fileFolderService.getFileInfo(nodeRef);
+                    }
+                };
+        FileInfo info =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(readCallback, false, true);
 
         apiUtils.postActivity(info, unfiledContainerInfo.getParentId(), ActivityType.FILE_UPDATED);
         return nodesModelFactory.createUnfiledContainer(info, parameters, null, false);

@@ -25,23 +25,21 @@
  */
 package org.alfresco.repo.events;
 
-import java.util.Map;
-import java.util.Set;
-
-import org.alfresco.sync.events.types.Property;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.sync.events.types.Property;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Event generation service.
- * 
- * @author steveglover
  *
+ * @author steveglover
  */
-public interface EventsService
-{
+public interface EventsService {
     /**
      * Generate a node moved event.
      *
@@ -50,10 +48,7 @@ public interface EventsService
      */
     void nodeMoved(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef);
 
-    /**
-     * Generate a node renamed event.
-     *
-     */
+    /** Generate a node renamed event. */
     void nodeRenamed(NodeRef nodeRef, String oldName, String newName);
 
     /**
@@ -80,9 +75,13 @@ public interface EventsService
      * @param aspectsAdded
      * @param aspectsRemoved
      */
-    void nodeUpdated(NodeRef nodeRef, Map<String, Property> propertiesAdded,
-            final Set<String> propertiesRemoved, Map<String, Property> propertiesChanged,
-            Set<String> aspectsAdded, Set<String> aspectsRemoved);
+    void nodeUpdated(
+            NodeRef nodeRef,
+            Map<String, Property> propertiesAdded,
+            final Set<String> propertiesRemoved,
+            Map<String, Property> propertiesChanged,
+            Set<String> aspectsAdded,
+            Set<String> aspectsRemoved);
 
     /**
      * Generate a node tag added event.
@@ -108,6 +107,7 @@ public interface EventsService
 
     /**
      * Generate a node unliked event.
+     *
      * @param nodeRef
      */
     void nodeUnLiked(NodeRef nodeRef);
@@ -155,7 +155,7 @@ public interface EventsService
 
     /**
      * Generate an authority removed from group event
-     * 
+     *
      * @param parentGroup the group the authority is removed from
      * @param childAuthority the authority which leaves a certain group
      */
@@ -163,7 +163,7 @@ public interface EventsService
 
     /**
      * Generate an authority added to a group
-     * 
+     *
      * @param parentGroup the group the authority is added to
      * @param childAuthority the authority which is added to the group
      */
@@ -171,14 +171,14 @@ public interface EventsService
 
     /**
      * Generate an inherit permissions enabled event
-     * 
+     *
      * @param nodeRef the node which has the permission inheritance enabled
      */
     void inheritPermissionsEnabled(NodeRef nodeRef);
 
-    /** 
+    /**
      * Generate an inherit permissions disabled event
-     * 
+     *
      * @param nodeRef the node which has the permission inheritance disabled
      * @param async whether the disabling is done asynchronously or not
      */
@@ -186,7 +186,7 @@ public interface EventsService
 
     /**
      * Generate a revoke local permission event
-     * 
+     *
      * @param nodeRef the node on which certain local permissions are revoked
      * @param authority the authority which has the permissions revoked
      * @param permission the permissions which are revoked
@@ -195,7 +195,7 @@ public interface EventsService
 
     /**
      * Generate a grant local permission event
-     * 
+     *
      * @param nodeRef the node to which certain local permissions are granted
      * @param authority the authority which has the permissions granted
      * @param permission the permissions which are granted
@@ -204,7 +204,7 @@ public interface EventsService
 
     /**
      * Generate a group deleted event
-     * 
+     *
      * @param groupName the group being deleted
      * @param cascade whether it's a cascading delete or not
      */
@@ -212,43 +212,42 @@ public interface EventsService
 
     /**
      * Generated a node created event for a secondary child
-     * 
+     *
      * @param secAssociation the child association being created
      */
     void secondaryAssociationCreated(ChildAssociationRef secAssociation);
 
     /**
      * Generate a delete event for a secondary child
-     * 
+     *
      * @param secAssociation the child association being deleted
      */
     void secondaryAssociationDeleted(ChildAssociationRef secAssociation);
 
     /**
      * Generate an event when a file is unclassified
-     * 
+     *
      * @param nodeRef the node from which the security mark is removed
      */
     void fileUnclassified(NodeRef nodeRef);
-    
+
     /**
      * Generate an event when a file is classified
-     * 
+     *
      * @param nodeRef the node on which a security mark is applied
      */
     void fileClassified(NodeRef nodeRef);
 
     /**
      * Generate an event when a record is rejected
-     * 
+     *
      * @param nodeRef the node which becomes a regular file again after the record is rejected
      */
     void recordRejected(NodeRef nodeRef);
-    
 
     /**
      * Generate an event when a record is created
-     * 
+     *
      * @param nodeRef the node being declared as a record
      */
     void recordCreated(NodeRef nodeRef);

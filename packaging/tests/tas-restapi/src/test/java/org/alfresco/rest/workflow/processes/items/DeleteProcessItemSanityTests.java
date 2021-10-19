@@ -14,11 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-/**
- * @author iulia.cojocea
- */
-public class DeleteProcessItemSanityTests extends RestTest
-{
+/** @author iulia.cojocea */
+public class DeleteProcessItemSanityTests extends RestTest {
     private FileModel document, document2;
     private SiteModel siteModel;
     private UserModel userWhoStartsTask, assignee, adminUser;
@@ -26,39 +23,71 @@ public class DeleteProcessItemSanityTests extends RestTest
     private RestItemModel processItem;
 
     @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
-    {
+    public void dataPreparation() throws Exception {
         adminUser = dataUser.getAdminUser();
         userWhoStartsTask = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
         siteModel = dataSite.usingUser(adminUser).createPublicRandomSite();
-        document = dataContent.usingUser(adminUser).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
+        document =
+                dataContent
+                        .usingUser(adminUser)
+                        .usingSite(siteModel)
+                        .createContent(DocumentType.TEXT_PLAIN);
+        dataWorkflow
+                .usingUser(userWhoStartsTask)
+                .usingSite(siteModel)
+                .usingResource(document)
+                .createNewTaskAndAssignTo(assignee);
     }
 
-    @TestRail(section = {TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES},
+            executionType = ExecutionType.SANITY,
             description = "Delete existing process item")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void deleteProcessItem() throws Exception
-    {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.MSWORD);
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
+    public void deleteProcessItem() throws Exception {
+        processModel =
+                restClient
+                        .authenticateUser(adminUser)
+                        .withWorkflowAPI()
+                        .getProcesses()
+                        .getOneRandomEntry()
+                        .onModel();
+        document2 =
+                dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.MSWORD);
+        processItem =
+                restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessItem(processItem);
         restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withWorkflowAPI().usingProcess(processModel).getProcessItems()
-                .assertThat().entriesListDoesNotContain("id", processItem.getId());
+        restClient
+                .withWorkflowAPI()
+                .usingProcess(processModel)
+                .getProcessItems()
+                .assertThat()
+                .entriesListDoesNotContain("id", processItem.getId());
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(
+            section = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES},
+            executionType = ExecutionType.SANITY,
             description = "Try to delete existing process item using invalid processId")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void deleteProcessItemUsingInvalidProcessId() throws Exception
-    {
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        document2 = dataContent.usingAdmin().usingSite(siteModel).createContent(DocumentType.MSPOWERPOINT);
-        processItem = restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
+    @Test(groups = {TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY})
+    public void deleteProcessItemUsingInvalidProcessId() throws Exception {
+        processModel =
+                restClient
+                        .authenticateUser(adminUser)
+                        .withWorkflowAPI()
+                        .getProcesses()
+                        .getOneRandomEntry()
+                        .onModel();
+        document2 =
+                dataContent
+                        .usingAdmin()
+                        .usingSite(siteModel)
+                        .createContent(DocumentType.MSPOWERPOINT);
+        processItem =
+                restClient.withWorkflowAPI().usingProcess(processModel).addProcessItem(document2);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         processModel.setId("incorrectProcessId");
         restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessItem(processItem);

@@ -46,15 +46,13 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RMSiteAPI extends RMModelRequest
-{
+public class RMSiteAPI extends RMModelRequest {
     /**
      * Constructor
      *
      * @param rmRestWrapper RM REST Wrapper
      */
-    public RMSiteAPI(RMRestWrapper rmRestWrapper)
-    {
+    public RMSiteAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
@@ -63,19 +61,16 @@ public class RMSiteAPI extends RMModelRequest
      *
      * @return The {@link RMSite} for the given file plan component id
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM site</li>
-     *  <li>Api Response code 401 If authentication failed</li>
-     *  <li>Api Response code 409 If RM Site does not exist</li>
-     *  <li>Api Response code default Unexpected error</li>
-     * </ul>
+     *     <ul>
+     *       <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM
+     *           site
+     *       <li>Api Response code 401 If authentication failed
+     *       <li>Api Response code 409 If RM Site does not exist
+     *       <li>Api Response code default Unexpected error
+     *     </ul>
      */
-    public RMSite getSite()
-    {
-        return getRmRestWrapper().processModel(RMSite.class, simpleRequest(
-                GET,
-                "gs-sites/rm"
-        ));
+    public RMSite getSite() {
+        return getRmRestWrapper().processModel(RMSite.class, simpleRequest(GET, "gs-sites/rm"));
     }
 
     /**
@@ -84,41 +79,37 @@ public class RMSiteAPI extends RMModelRequest
      * @param rmSiteModel The properties of the rm site to be created
      * @return The {@link RMSite} with the given properties
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>Api Response code 400 Invalid parameter: title, or description exceed the maximum length; or siteBodyCreate invalid</li>
-     *  <li>Api Response code 401 If authentication failed</
-     *  <li>Api Response code 409 RM Site already exists</li>
-     *  <li>Api Response code default Unexpected error</li>
-     * </ul>
+     *     <ul>
+     *       <li>Api Response code 400 Invalid parameter: title, or description exceed the maximum
+     *           length; or siteBodyCreate invalid
+     *       <li>Api Response code 401 If authentication failed</
+     *       <li>Api Response code 409 RM Site already exists
+     *       <li>Api Response code default Unexpected error
+     *     </ul>
      */
-    public RMSite createRMSite(RMSite rmSiteModel)
-    {
+    public RMSite createRMSite(RMSite rmSiteModel) {
         mandatoryObject("rmSiteModel", rmSiteModel);
 
-        return getRmRestWrapper().processModel(RMSite.class, requestWithBody(
-                POST,
-                toJson(rmSiteModel),
-                "gs-sites"
-        ));
+        return getRmRestWrapper()
+                .processModel(RMSite.class, requestWithBody(POST, toJson(rmSiteModel), "gs-sites"));
     }
 
     /**
      * Delete RM site
+     *
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>Api Response code 400 Invalid parameter: DELETE request is supported only for the RM site</li>
-     *  <li>Api Response code 401 If authentication failed</
-     *  <li>Api Response code 403 Current user does not have permission to delete the site that is visible to them.</li>
-     *  <li>Api Response code 404 RM site does not exist</li>
-     *  <li>Api Response code default Unexpected error</li>
-     * </ul>
+     *     <ul>
+     *       <li>Api Response code 400 Invalid parameter: DELETE request is supported only for the
+     *           RM site
+     *       <li>Api Response code 401 If authentication failed</
+     *       <li>Api Response code 403 Current user does not have permission to delete the site that
+     *           is visible to them.
+     *       <li>Api Response code 404 RM site does not exist
+     *       <li>Api Response code default Unexpected error
+     *     </ul>
      */
-    public void deleteRMSite()
-    {
-        getRmRestWrapper().processEmptyModel(simpleRequest(
-                DELETE,
-                "gs-sites/rm"
-        ));
+    public void deleteRMSite() {
+        getRmRestWrapper().processEmptyModel(simpleRequest(DELETE, "gs-sites/rm"));
     }
 
     /**
@@ -127,23 +118,20 @@ public class RMSiteAPI extends RMModelRequest
      * @param rmSiteModel The properties to be updated
      * @return The updated {@link RMSite}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>Api Response code 400 the update request is invalid {@code rmSiteModel} is invalid</li>
-     *  <li>Api Response code 401 If authentication fails</li>
-     *  <li>Api Response code 403 does not have permission to update {@code RMSite}</li>
-     *  <li>Api Response code 404 {@code RMSiteModel} does not exist</li>
-     *  <li>Api Response code default Unexpected error,model integrity exception</li>
-     * </ul>
+     *     <ul>
+     *       <li>Api Response code 400 the update request is invalid {@code rmSiteModel} is invalid
+     *       <li>Api Response code 401 If authentication fails
+     *       <li>Api Response code 403 does not have permission to update {@code RMSite}
+     *       <li>Api Response code 404 {@code RMSiteModel} does not exist
+     *       <li>Api Response code default Unexpected error,model integrity exception
+     *     </ul>
      */
-    public RMSite updateRMSite(RMSite rmSiteModel)
-    {
+    public RMSite updateRMSite(RMSite rmSiteModel) {
         mandatoryObject("rmSiteProperties", rmSiteModel);
 
-        return getRmRestWrapper().processModel(RMSite.class, requestWithBody(
-                PUT,
-                toJson(rmSiteModel),
-                "gs-sites/rm"
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        RMSite.class, requestWithBody(PUT, toJson(rmSiteModel), "gs-sites/rm"));
     }
 
     /**
@@ -151,15 +139,15 @@ public class RMSiteAPI extends RMModelRequest
      *
      * @return <code>true</code> if the RM site exists, <code>false</code> otherwise
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM site</li>
-     *  <li>Api Response code 401 If authentication failed</li>
-     *  <li>Api Response code 409 If RM Site does not exist</li>
-     *  <li>Api Response code default Unexpected error</li>
-     * </ul>
+     *     <ul>
+     *       <li>Api Response code 400 Invalid parameter: GET request is supported only for the RM
+     *           site
+     *       <li>Api Response code 401 If authentication failed
+     *       <li>Api Response code 409 If RM Site does not exist
+     *       <li>Api Response code default Unexpected error
+     *     </ul>
      */
-    public boolean existsRMSite()
-    {
+    public boolean existsRMSite() {
         getSite();
         return getRmRestWrapper().getStatusCode().equals(String.valueOf(OK.value()));
     }

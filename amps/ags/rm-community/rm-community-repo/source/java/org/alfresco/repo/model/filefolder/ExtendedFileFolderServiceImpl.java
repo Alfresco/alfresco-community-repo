@@ -32,39 +32,29 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-/**
- * @author Roy Wetherall
- */
-public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
-{
+/** @author Roy Wetherall */
+public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl {
     protected RecordService recordService;
 
-    public void setRecordService(RecordService recordService)
-    {
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
     @Override
-    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName)
-    {
+    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) {
         return create(parentNodeRef, name, typeQName, null);
     }
 
     @Override
-    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName)
-    {
+    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) {
         FileInfo result = null;
 
         recordService.disablePropertyEditableCheck();
-        try
-        {
+        try {
             result = super.create(parentNodeRef, name, typeQName, assocQName);
-        }
-        finally
-        {
+        } finally {
             recordService.enablePropertyEditableCheck();
-            if (result != null)
-            {
+            if (result != null) {
                 recordService.disablePropertyEditableCheck(result.getNodeRef());
             }
         }

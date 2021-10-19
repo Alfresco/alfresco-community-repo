@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditQueryParameters;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.ReportFormat;
@@ -49,13 +44,17 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Map;
+
 /**
  * Base class for all audit retrieval webscripts.
  *
  * @author Gavin Cornwell
  */
-public class BaseAuditRetrievalWebScript extends StreamContent
-{
+public class BaseAuditRetrievalWebScript extends StreamContent {
     /** Logger */
     private static Log logger = LogFactory.getLog(BaseAuditRetrievalWebScript.class);
 
@@ -75,8 +74,7 @@ public class BaseAuditRetrievalWebScript extends StreamContent
      *
      * @param rmAuditService The RecordsManagementAuditService instance
      */
-    public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService)
-    {
+    public void setRecordsManagementAuditService(RecordsManagementAuditService rmAuditService) {
         this.rmAuditService = rmAuditService;
     }
 
@@ -85,20 +83,18 @@ public class BaseAuditRetrievalWebScript extends StreamContent
      *
      * @param namespaceService The NamespaceService instance
      */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
     /**
-     * Parses the given request and builds an instance of
-     * RecordsManagementAuditQueryParameters to retrieve the relevant audit entries
+     * Parses the given request and builds an instance of RecordsManagementAuditQueryParameters to
+     * retrieve the relevant audit entries
      *
      * @param req The request
      * @return RecordsManagementAuditQueryParameters instance
      */
-    protected RecordsManagementAuditQueryParameters parseQueryParameters(WebScriptRequest req)
-    {
+    protected RecordsManagementAuditQueryParameters parseQueryParameters(WebScriptRequest req) {
         // create parameters for audit trail retrieval
         RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
 
@@ -108,8 +104,7 @@ public class BaseAuditRetrievalWebScript extends StreamContent
         NodeRef nodeRef = null;
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String storeType = templateVars.get("store_type");
-        if (storeType != null && storeType.length() > 0)
-        {
+        if (storeType != null && storeType.length() > 0) {
             // there is a store_type so all other params are likely to be present
             String storeId = templateVars.get("store_id");
             String nodeId = templateVars.get("id");
@@ -127,55 +122,41 @@ public class BaseAuditRetrievalWebScript extends StreamContent
         String to = null;
         String property = null;
 
-        if (MimetypeMap.MIMETYPE_JSON.equals(req.getContentType()))
-        {
-            try
-            {
+        if (MimetypeMap.MIMETYPE_JSON.equals(req.getContentType())) {
+            try {
                 JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-                if (json.has(PARAM_SIZE))
-                {
+                if (json.has(PARAM_SIZE)) {
                     size = json.getString(PARAM_SIZE);
                 }
-                if (json.has(PARAM_USER))
-                {
+                if (json.has(PARAM_USER)) {
                     user = json.getString(PARAM_USER);
                 }
-                if (json.has(PARAM_EVENT))
-                {
+                if (json.has(PARAM_EVENT)) {
                     event = json.getString(PARAM_EVENT);
                 }
-                if (json.has(PARAM_FROM))
-                {
+                if (json.has(PARAM_FROM)) {
                     from = json.getString(PARAM_FROM);
                 }
-                if (json.has(PARAM_TO))
-                {
+                if (json.has(PARAM_TO)) {
                     to = json.getString(PARAM_TO);
                 }
-                if (json.has(PARAM_PROPERTY))
-                {
+                if (json.has(PARAM_PROPERTY)) {
                     property = json.getString(PARAM_PROPERTY);
                 }
-            }
-            catch (IOException ioe)
-            {
+            } catch (IOException ioe) {
                 // log a warning
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn("Failed to parse JSON parameters for audit query: " + ioe.getMessage());
+                if (logger.isWarnEnabled()) {
+                    logger.warn(
+                            "Failed to parse JSON parameters for audit query: " + ioe.getMessage());
+                }
+            } catch (JSONException je) {
+                // log a warning
+                if (logger.isWarnEnabled()) {
+                    logger.warn(
+                            "Failed to parse JSON parameters for audit query: " + je.getMessage());
                 }
             }
-            catch (JSONException je)
-            {
-                // log a warning
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn("Failed to parse JSON parameters for audit query: " + je.getMessage());
-                }
-            }
-        }
-        else
-        {
+        } else {
             size = req.getParameter(PARAM_SIZE);
             user = req.getParameter(PARAM_USER);
             event = req.getParameter(PARAM_EVENT);
@@ -189,64 +170,55 @@ public class BaseAuditRetrievalWebScript extends StreamContent
         params.setUser(user);
         params.setEvent(event);
 
-        if (size != null && size.length() > 0)
-        {
-            try
-            {
+        if (size != null && size.length() > 0) {
+            try {
                 params.setMaxEntries(Integer.parseInt(size));
-            }
-            catch (NumberFormatException nfe)
-            {
-                if (logger.isWarnEnabled())
-                {
+            } catch (NumberFormatException nfe) {
+                if (logger.isWarnEnabled()) {
                     logger.warn("Ignoring size parameter as '" + size + "' is not a number!");
                 }
             }
         }
 
-        if (from != null && from.length() > 0)
-        {
-            try
-            {
+        if (from != null && from.length() > 0) {
+            try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
                 params.setDateFrom(dateFormat.parse(from));
-            }
-            catch (ParseException pe)
-            {
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn("Ignoring from parameter as '" + from + "' does not conform to the date pattern: " + DATE_PATTERN);
+            } catch (ParseException pe) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(
+                            "Ignoring from parameter as '"
+                                    + from
+                                    + "' does not conform to the date pattern: "
+                                    + DATE_PATTERN);
                 }
             }
         }
 
-        if (to != null && to.length() > 0)
-        {
-            try
-            {
+        if (to != null && to.length() > 0) {
+            try {
                 SimpleDateFormat dateFormat = new SimpleDateFormat(DATE_PATTERN);
                 params.setDateTo(dateFormat.parse(to));
-            }
-            catch (ParseException pe)
-            {
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn("Ignoring to parameter as '" + to + "' does not conform to the date pattern: " + DATE_PATTERN);
+            } catch (ParseException pe) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(
+                            "Ignoring to parameter as '"
+                                    + to
+                                    + "' does not conform to the date pattern: "
+                                    + DATE_PATTERN);
                 }
             }
         }
 
-        if (property != null && property.length() > 0)
-        {
-            try
-            {
+        if (property != null && property.length() > 0) {
+            try {
                 params.setProperty(QName.createQName(property, namespaceService));
-            }
-            catch (InvalidQNameException iqe)
-            {
-                if (logger.isWarnEnabled())
-                {
-                    logger.warn("Ignoring property parameter as '" + property + "' is an invalid QName");
+            } catch (InvalidQNameException iqe) {
+                if (logger.isWarnEnabled()) {
+                    logger.warn(
+                            "Ignoring property parameter as '"
+                                    + property
+                                    + "' is an invalid QName");
                 }
             }
         }
@@ -255,24 +227,18 @@ public class BaseAuditRetrievalWebScript extends StreamContent
     }
 
     /**
-     * Parses the given request for the format the audit report
-     * should be returned in
+     * Parses the given request for the format the audit report should be returned in
      *
      * @param req The request
      * @return The format for the report
      */
-    protected ReportFormat parseReportFormat(WebScriptRequest req)
-    {
+    protected ReportFormat parseReportFormat(WebScriptRequest req) {
         String format = req.getFormat();
 
-        if (format != null)
-        {
-            if (format.equalsIgnoreCase("json"))
-            {
+        if (format != null) {
+            if (format.equalsIgnoreCase("json")) {
                 return ReportFormat.JSON;
-            }
-            else if (format.equalsIgnoreCase("html"))
-            {
+            } else if (format.equalsIgnoreCase("html")) {
                 return ReportFormat.HTML;
             }
         }

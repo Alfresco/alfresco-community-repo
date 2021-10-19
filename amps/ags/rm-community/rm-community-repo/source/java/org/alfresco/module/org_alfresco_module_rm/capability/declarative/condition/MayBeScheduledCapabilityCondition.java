@@ -37,34 +37,29 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class MayBeScheduledCapabilityCondition extends AbstractCapabilityCondition
-{
+public class MayBeScheduledCapabilityCondition extends AbstractCapabilityCondition {
     /** Disposition action */
     private String dispositionAction;
 
-    /**
-     * @param dispositionAction     disposition action
-     */
-    public void setDispositionAction(String dispositionAction)
-    {
+    /** @param dispositionAction disposition action */
+    public void setDispositionAction(String dispositionAction) {
         this.dispositionAction = dispositionAction;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
+    public boolean evaluateImpl(NodeRef nodeRef) {
         boolean result = false;
 
-        DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(nodeRef);
-        if (dispositionSchedule != null && checkDispositionLevel(nodeRef, dispositionSchedule))
-        {
-            for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions())
-            {
-                if (dispositionActionDefinition.getName().equals(dispositionAction))
-                {
+        DispositionSchedule dispositionSchedule =
+                dispositionService.getDispositionSchedule(nodeRef);
+        if (dispositionSchedule != null && checkDispositionLevel(nodeRef, dispositionSchedule)) {
+            for (DispositionActionDefinition dispositionActionDefinition :
+                    dispositionSchedule.getDispositionActionDefinitions()) {
+                if (dispositionActionDefinition.getName().equals(dispositionAction)) {
                     result = true;
                     break;
                 }
@@ -80,10 +75,10 @@ public class MayBeScheduledCapabilityCondition extends AbstractCapabilityConditi
      * @param dispositionSchedule
      * @return
      */
-    private boolean checkDispositionLevel(NodeRef nodeRef, DispositionSchedule dispositionSchedule)
-    {
+    private boolean checkDispositionLevel(
+            NodeRef nodeRef, DispositionSchedule dispositionSchedule) {
         boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
         return (recordService.isRecord(nodeRef) && isRecordLevelDisposition)
-                    || (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition);
+                || (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition);
     }
 }

@@ -26,8 +26,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit;
 
-import static java.util.Collections.emptyList;
-
 import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.ReportFormat.JSON;
 import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.DOD5015_AUDIT_APPLICATION_NAME;
 import static org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditServiceImpl.RM_AUDIT_APPLICATION_NAME;
@@ -45,15 +43,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import static java.util.Collections.emptyList;
 
 import com.google.common.collect.Sets;
 
@@ -72,14 +62,23 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * Unit tests for {@link RecordsManagementAuditServiceImpl}.
  *
  * @author Tom Page
  * @since 2.7
  */
-public class RecordsManagementAuditServiceImplUnitTest
-{
+public class RecordsManagementAuditServiceImplUnitTest {
     /** The maximum entries to return in the audit query. */
     private static final int MAX_ENTRIES = 10;
     /** A node representing the file plan root. */
@@ -87,32 +86,24 @@ public class RecordsManagementAuditServiceImplUnitTest
     /** A node representing the RM site. */
     private static final NodeRef RM_SITE_NODE = new NodeRef("rm://site/node");
     /** The class under test. */
-    @InjectMocks
-    private RecordsManagementAuditServiceImpl recordsManagementAuditServiceImpl;
-    @Mock
-    private NodeService mockNodeService;
-    @Mock
-    private SiteService mockSiteService;
-    @Mock
-    private AuditService mockAuditService;
-    @Mock
-    private FilePlanService mockFilePlanService;
-    @Mock
-    AuditComponent mockAuditComponent;
-    @Mock
-    private Writer mockWriter;
-    @Mock
-    private SiteInfo mockSiteInfo;
-    @Captor
-    private ArgumentCaptor<AuditQueryParameters> queryParamsCaptor;
+    @InjectMocks private RecordsManagementAuditServiceImpl recordsManagementAuditServiceImpl;
+
+    @Mock private NodeService mockNodeService;
+    @Mock private SiteService mockSiteService;
+    @Mock private AuditService mockAuditService;
+    @Mock private FilePlanService mockFilePlanService;
+    @Mock AuditComponent mockAuditComponent;
+    @Mock private Writer mockWriter;
+    @Mock private SiteInfo mockSiteInfo;
+    @Captor private ArgumentCaptor<AuditQueryParameters> queryParamsCaptor;
 
     /** Set up the mocks. */
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         initMocks(this);
 
-        when(mockFilePlanService.getFilePlanBySiteId(DEFAULT_RM_SITE_ID)).thenReturn(FILE_PLAN_NODE);
+        when(mockFilePlanService.getFilePlanBySiteId(DEFAULT_RM_SITE_ID))
+                .thenReturn(FILE_PLAN_NODE);
         when(mockSiteService.getSite(DEFAULT_SITE_NAME)).thenReturn(mockSiteInfo);
         when(mockSiteInfo.getNodeRef()).thenReturn(RM_SITE_NODE);
 
@@ -120,13 +111,13 @@ public class RecordsManagementAuditServiceImplUnitTest
     }
 
     /**
-     * Check that if the RM site is not a DOD site then the audit trail doesn't make a query for DOD events.
+     * Check that if the RM site is not a DOD site then the audit trail doesn't make a query for DOD
+     * events.
      *
      * @throws IOException Unexpected.
      */
     @Test
-    public void testAuditWithoutDOD() throws IOException
-    {
+    public void testAuditWithoutDOD() throws IOException {
         RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
         params.setMaxEntries(MAX_ENTRIES);
         List<RecordsManagementAuditEntry> results = new ArrayList<>();
@@ -138,23 +129,28 @@ public class RecordsManagementAuditServiceImplUnitTest
 
         // Check that exactly one audit query was performed.
         verify(mockAuditService, times(1))
-                    .auditQuery(any(AuditService.AuditQueryCallback.class), queryParamsCaptor.capture(),
-                                eq(MAX_ENTRIES));
-        // We always need to make the standard query - regardless of the type of RM site (to get events like RM site created).
-        assertEquals("The application name should be the standard RM application", RM_AUDIT_APPLICATION_NAME,
-                    queryParamsCaptor.getValue().getApplicationName());
+                .auditQuery(
+                        any(AuditService.AuditQueryCallback.class),
+                        queryParamsCaptor.capture(),
+                        eq(MAX_ENTRIES));
+        // We always need to make the standard query - regardless of the type of RM site (to get
+        // events like RM site created).
+        assertEquals(
+                "The application name should be the standard RM application",
+                RM_AUDIT_APPLICATION_NAME,
+                queryParamsCaptor.getValue().getApplicationName());
         // Check that the event of viewing the audit log was itself audited.
         verify(mockAuditComponent).recordAuditValues(eq(RM_AUDIT_PATH_ROOT), any(Map.class));
     }
 
     /**
-     * Check that if the RM site is a DOD site then the audit trail makes a query for DOD events and the standard events.
+     * Check that if the RM site is a DOD site then the audit trail makes a query for DOD events and
+     * the standard events.
      *
      * @throws IOException Unexpected.
      */
     @Test
-    public void testAuditWithDOD() throws IOException
-    {
+    public void testAuditWithDOD() throws IOException {
         RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
         params.setMaxEntries(MAX_ENTRIES);
         List<RecordsManagementAuditEntry> results = new ArrayList<>();
@@ -164,37 +160,44 @@ public class RecordsManagementAuditServiceImplUnitTest
         // Call the method under test.
         recordsManagementAuditServiceImpl.getAuditTrailImpl(params, results, mockWriter, JSON);
 
-        // Check that two audit queries were performed (one for DOD events and one for standard events).
+        // Check that two audit queries were performed (one for DOD events and one for standard
+        // events).
         verify(mockAuditService, times(2))
-                    .auditQuery(any(AuditService.AuditQueryCallback.class), queryParamsCaptor.capture(),
-                                eq(MAX_ENTRIES));
-        Set<String> apps = queryParamsCaptor.getAllValues().stream().map(AuditQueryParameters::getApplicationName)
-                    .collect(Collectors.toSet());
-        // We always need to make the standard query - regardless of the type of RM site (to get events like RM site created).
-        assertEquals("Expected the standard audit query and the DOD audit query.",
-                    Sets.newHashSet(RM_AUDIT_APPLICATION_NAME, DOD5015_AUDIT_APPLICATION_NAME), apps);
+                .auditQuery(
+                        any(AuditService.AuditQueryCallback.class),
+                        queryParamsCaptor.capture(),
+                        eq(MAX_ENTRIES));
+        Set<String> apps =
+                queryParamsCaptor.getAllValues().stream()
+                        .map(AuditQueryParameters::getApplicationName)
+                        .collect(Collectors.toSet());
+        // We always need to make the standard query - regardless of the type of RM site (to get
+        // events like RM site created).
+        assertEquals(
+                "Expected the standard audit query and the DOD audit query.",
+                Sets.newHashSet(RM_AUDIT_APPLICATION_NAME, DOD5015_AUDIT_APPLICATION_NAME),
+                apps);
         // Check that the event of viewing the audit log was itself audited.
         verify(mockAuditComponent).recordAuditValues(eq(RM_AUDIT_PATH_ROOT), any(Map.class));
     }
 
     /** Check that passing null to getStartOfDay doesn't result in null being returned. */
     @Test
-    public void testGetStartOfDay_null()
-    {
+    public void testGetStartOfDay_null() {
         Date startOfDay = recordsManagementAuditServiceImpl.getStartOfDay(null);
         assertNotNull("Expected date to be created by method.", startOfDay);
     }
 
     /** Check that any time component passed to getStartOfDay is not included in the response. */
     @Test
-    public void testGetStartOfDay_timeDiscarded() throws Exception
-    {
+    public void testGetStartOfDay_timeDiscarded() throws Exception {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
         Date date = format.parse("2001-02-03 04:05:06.789");
 
         // Call the method under test.
         Date startOfDay = recordsManagementAuditServiceImpl.getStartOfDay(date);
 
-        assertEquals("Unexpected date truncation.", format.parse("2001-02-03 00:00:00.000"), startOfDay);
+        assertEquals(
+                "Unexpected date truncation.", format.parse("2001-02-03 00:00:00.000"), startOfDay);
     }
 }

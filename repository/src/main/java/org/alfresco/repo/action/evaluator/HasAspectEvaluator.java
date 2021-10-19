@@ -4,28 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.action.evaluator;
-
-import java.util.List;
 
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -35,59 +33,64 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
+import java.util.List;
+
 /**
  * Has aspect evaluator
- * 
+ *
  * @author Roy Wetherall
  */
-public class HasAspectEvaluator extends ActionConditionEvaluatorAbstractBase
-{
-    /**
-     * Evaluator constants
-     */
+public class HasAspectEvaluator extends ActionConditionEvaluatorAbstractBase {
+    /** Evaluator constants */
     public static final String NAME = "has-aspect";
+
     public static final String PARAM_ASPECT = "aspect";
-    
-    /**
-     * The node service
-     */
+
+    /** The node service */
     private NodeService nodeService;
-    
+
     /**
      * Set node service
-     * 
-     * @param nodeService  the node service
+     *
+     * @param nodeService the node service
      */
-    public void setNodeService(NodeService nodeService) 
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
-    
+
     /**
-     * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(org.alfresco.service.cmr.action.ActionCondition,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
-    public boolean evaluateImpl(ActionCondition ruleCondition, NodeRef actionedUponNodeRef)
-    {
+    public boolean evaluateImpl(ActionCondition ruleCondition, NodeRef actionedUponNodeRef) {
         boolean result = false;
-        
-        if (this.nodeService.exists(actionedUponNodeRef) == true)
-        {
-            if (this.nodeService.hasAspect(actionedUponNodeRef, (QName)ruleCondition.getParameterValue(PARAM_ASPECT)) == true)
-            {
+
+        if (this.nodeService.exists(actionedUponNodeRef) == true) {
+            if (this.nodeService.hasAspect(
+                            actionedUponNodeRef,
+                            (QName) ruleCondition.getParameterValue(PARAM_ASPECT))
+                    == true) {
                 result = true;
             }
         }
-        
+
         return result;
     }
 
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+     * @see
+     *     org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-    {
-        paramList.add(new ParameterDefinitionImpl(PARAM_ASPECT, DataTypeDefinition.QNAME, true, getParamDisplayLabel(PARAM_ASPECT), false, "ac-aspects"));
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_ASPECT,
+                        DataTypeDefinition.QNAME,
+                        true,
+                        getParamDisplayLabel(PARAM_ASPECT),
+                        false,
+                        "ac-aspects"));
     }
-
 }

@@ -32,12 +32,12 @@ import java.util.Set;
  *
  * @author adavis
  */
-public interface RenditionDefinitionRegistry2
-{
+public interface RenditionDefinitionRegistry2 {
     Set<String> getRenditionNames();
 
     /**
      * Obtains the names of renditions that are possible from a given source mimetype.
+     *
      * @param sourceMimetype the mimetype of the source.
      * @param size the size of the source. May be {@code -1} if the size should be ignored.
      */

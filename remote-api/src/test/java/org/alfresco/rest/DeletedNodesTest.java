@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -33,16 +33,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.google.common.collect.Ordering;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.rest.api.Nodes;
@@ -64,59 +55,65 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.webscripts.Status;
 
-import com.google.common.collect.Ordering;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * V1 REST API tests for managing the user's Trashcan (ie. "deleted nodes")
- * 
- * Tests Deleting nodes and recovering
+ *
+ * <p>Tests Deleting nodes and recovering
  *
  * @author gethin
  */
-public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
-{
+public class DeletedNodesTest extends AbstractSingleNetworkSiteTest {
 
     protected static final String URL_DELETED_NODES = "deleted-nodes";
     private static final String URL_RENDITIONS = "renditions";
-    
+
     @Override
-    public void setup() throws Exception
-    {
+    public void setup() throws Exception {
         super.setup();
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
-    
+
     /**
      * Tests getting deleted nodes
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/}
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
+     *
+     * <p>GET: {@literal
+     * <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/} {@literal
+     * <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
      */
     @Test
-    public void testCreateAndDelete() throws Exception
-    {
+    public void testCreateAndDelete() throws Exception {
         setRequestContext(user1);
-        
+
         Date now = new Date();
         String folder1 = "folder-testCreateAndDelete-" + now.getTime() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
         String f1Id = createdFolder.getId();
 
-        //Create a folder outside a site
+        // Create a folder outside a site
         Folder createdFolderNonSite = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolderNonSite);
 
         Document document = createEmptyTextFile(f1Id, "d1.txt");
 
         PublicApiClient.Paging paging = getPaging(0, 100);
-        
-        //First get any deleted nodes
+
+        // First get any deleted nodes
         HttpResponse response = getAll(URL_DELETED_NODES, paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertNotNull(nodes);
@@ -129,9 +126,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         response = getAll(URL_DELETED_NODES, paging, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertNotNull(nodes);
-        assertEquals(numOfNodes+3,nodes.size());
+        assertEquals(numOfNodes + 3, nodes.size());
 
-        //The list is ordered with the most recently deleted node first
+        // The list is ordered with the most recently deleted node first
         checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
 
         // sanity check paging
@@ -140,8 +137,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertNotNull(nodes);
         assertEquals(1, nodes.size());
-        PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
-        assertEquals(numOfNodes+3, expectedPaging.getTotalItems().intValue());
+        PublicApiClient.ExpectedPaging expectedPaging =
+                RestApiUtil.parsePaging(response.getJsonResponse());
+        assertEquals(numOfNodes + 3, expectedPaging.getTotalItems().intValue());
         assertEquals(1, expectedPaging.getCount().intValue());
         assertEquals(1, expectedPaging.getSkipCount().intValue());
         assertEquals(1, expectedPaging.getMaxItems().intValue());
@@ -154,8 +152,8 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals(user1, node.getArchivedByUser().getId());
         assertTrue(node.getArchivedAt().after(now));
         PathInfo path = node.getPath();
-        assertNull("Path should be null because its parent has been deleted",path);
-        assertNull("We don't show the parent id for a deleted node",node.getParentId());
+        assertNull("Path should be null because its parent has been deleted", path);
+        assertNull("We don't show the parent id for a deleted node", node.getParentId());
 
         response = getSingle(URL_DELETED_NODES, createdFolder.getId(), params, 200);
         Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
@@ -164,9 +162,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(fNode.getArchivedAt().after(now));
         path = fNode.getPath();
         assertNotNull(path);
-        assertEquals("/Company Home/Sites/"+tSiteId+"/documentLibrary", path.getName());
+        assertEquals("/Company Home/Sites/" + tSiteId + "/documentLibrary", path.getName());
         assertTrue(path.getIsComplete());
-        assertNull("We don't show the parent id for a deleted node",fNode.getParentId());
+        assertNull("We don't show the parent id for a deleted node", fNode.getParentId());
 
         response = getSingle(URL_DELETED_NODES, createdFolderNonSite.getId(), params, 200);
         fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
@@ -175,22 +173,29 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(fNode.getArchivedAt().after(now));
         path = fNode.getPath();
         assertNotNull(path);
-        assertEquals("/Company Home/User Homes/"+user1, path.getName());
+        assertEquals("/Company Home/User Homes/" + user1, path.getName());
         assertTrue(path.getIsComplete());
 
-        //User 2 can't get it but user 1 can.
+        // User 2 can't get it but user 1 can.
         setRequestContext(user2);
         getSingle(URL_DELETED_NODES, createdFolderNonSite.getId(), Status.STATUS_FORBIDDEN);
 
         setRequestContext(user1);
-        
-        //Invalid node ref
+
+        // Invalid node ref
         getSingle(URL_DELETED_NODES, "iddontexist", 404);
 
-        //Now as admin
+        // Now as admin
         setRequestContext(networkAdmin);
         paging = getPaging(0, 100);
-        response = publicApiClient.get(getScope(), URL_DELETED_NODES, null, null, null, createParams(paging, null));
+        response =
+                publicApiClient.get(
+                        getScope(),
+                        URL_DELETED_NODES,
+                        null,
+                        null,
+                        null,
+                        createParams(paging, null));
         checkStatus(200, response.getStatusCode());
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertNotNull(nodes);
@@ -199,12 +204,12 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests restoring deleted nodes
-     * <p>post:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/restore}
+     *
+     * <p>post: {@literal
+     * <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/restore}
      */
     @Test
-    public void testCreateAndRestore() throws Exception
-    {
+    public void testCreateAndRestore() throws Exception {
         setRequestContext(user1);
 
         Date now = new Date();
@@ -224,7 +229,11 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         Document documentSameName = createEmptyTextFile(f1Id, "restoreme.txt");
 
         // Can't restore a node of the same name
-        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", null, null, Status.STATUS_CONFLICT);
+        post(
+                URL_DELETED_NODES + "/" + document.getId() + "/restore",
+                null,
+                null,
+                Status.STATUS_CONFLICT);
 
         deleteNode(documentSameName.getId());
 
@@ -239,22 +248,38 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         nodeTargetAssoc.setAssocType(ASSOC_TYPE_CM_CONTAINS);
 
         // restore to new location
-        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 200);
+        post(
+                URL_DELETED_NODES + "/" + document.getId() + "/restore",
+                toJsonAsStringNonNull(nodeTargetAssoc),
+                null,
+                200);
 
         deleteNode(document.getId());
         // restore to nonexistent nodeId as the new location
         nodeTargetAssoc.setTargetParentId("nonexistentTargetNode");
-        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 404);
+        post(
+                URL_DELETED_NODES + "/" + document.getId() + "/restore",
+                toJsonAsStringNonNull(nodeTargetAssoc),
+                null,
+                404);
 
         // restore to new location and using an invalid assocType
         nodeTargetAssoc.setTargetParentId(f1Id);
         nodeTargetAssoc.setAssocType("invalidAssociationType");
-        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 400);
+        post(
+                URL_DELETED_NODES + "/" + document.getId() + "/restore",
+                toJsonAsStringNonNull(nodeTargetAssoc),
+                null,
+                400);
 
         // restore to new location without adding an association type
         nodeTargetAssoc.setTargetParentId(f1Id);
         nodeTargetAssoc.setAssocType(null);
-        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 400);
+        post(
+                URL_DELETED_NODES + "/" + document.getId() + "/restore",
+                toJsonAsStringNonNull(nodeTargetAssoc),
+                null,
+                400);
 
         // create an folder as an admin
         setRequestContext(networkAdmin);
@@ -269,32 +294,44 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
         nodeTargetAssoc.setTargetParentId(adminf1Id);
         nodeTargetAssoc.setAssocType(ASSOC_TYPE_CM_CONTAINS);
-        post(URL_DELETED_NODES + "/" + document.getId() + "/restore", toJsonAsStringNonNull(nodeTargetAssoc), null, 403);
-        
+        post(
+                URL_DELETED_NODES + "/" + document.getId() + "/restore",
+                toJsonAsStringNonNull(nodeTargetAssoc),
+                null,
+                403);
+
         deleteNode(createdFolder.getId());
 
         // We deleted the parent folder so lets see if we can restore a child
         // doc, hopefully not.
-        post(URL_DELETED_NODES + "/" + documentSameName.getId() + "/restore", null, null, Status.STATUS_NOT_FOUND);
+        post(
+                URL_DELETED_NODES + "/" + documentSameName.getId() + "/restore",
+                null,
+                null,
+                Status.STATUS_NOT_FOUND);
 
         // Can't delete "nonsense" noderef
         post("deleted-nodes/nonsense/restore", null, null, Status.STATUS_NOT_FOUND);
 
         // User 2 can't restore it but user 1 can.
         setRequestContext(user2);
-        post(URL_DELETED_NODES + "/" + createdFolder.getId() + "/restore", null, null, Status.STATUS_FORBIDDEN);
+        post(
+                URL_DELETED_NODES + "/" + createdFolder.getId() + "/restore",
+                null,
+                null,
+                Status.STATUS_FORBIDDEN);
         setRequestContext(user1);
         post(URL_DELETED_NODES + "/" + createdFolder.getId() + "/restore", null, null, 200);
     }
 
     /**
      * Tests purging a deleted node
-     * <p>delete:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
+     *
+     * <p>delete: {@literal
+     * <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
      */
     @Test
-    public void testCreateAndPurge() throws Exception
-    {
+    public void testCreateAndPurge() throws Exception {
         setRequestContext(user1);
 
         Date now = new Date();
@@ -308,43 +345,52 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
         assertNotNull(fNode);
 
-        //try purging "nonsense"
+        // try purging "nonsense"
         delete(URL_DELETED_NODES, "nonsense", 404);
 
-        //User 2 can't do it
+        // User 2 can't do it
         setRequestContext(user2);
         delete(URL_DELETED_NODES, createdFolder.getId(), Status.STATUS_FORBIDDEN);
 
         setRequestContext(user1);
 
-        //Now purge the folder
+        // Now purge the folder
         delete(URL_DELETED_NODES, createdFolder.getId(), 204);
 
-        //This time we can't find it.
+        // This time we can't find it.
         getSingle(URL_DELETED_NODES, createdFolder.getId(), 404);
     }
 
     /**
      * Tests download of file/content.
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/content}
+     *
+     * <p>GET: {@literal
+     * <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/content}
      */
     @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
-    public void testDownloadFileContent() throws Exception
-    {
+    public void testDownloadFileContent() throws Exception {
         setRequestContext(user1);
 
         // Use existing test file
         String fileName = "quick-1.txt";
         File file = getResourceFile(fileName);
 
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder multiPartBuilder =
+                MultiPartBuilder.create()
+                        .setFileData(new MultiPartBuilder.FileData(fileName, file));
         MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload text content
-        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        HttpResponse response =
+                post(
+                        getNodeChildrenUrl(Nodes.PATH_MY),
+                        reqBody.getBody(),
+                        null,
+                        reqBody.getContentType(),
+                        201);
+        Document document =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         String contentNodeId = document.getId();
 
@@ -364,7 +410,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
         Map<String, String> responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals("attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt", responseHeaders.get("Content-Disposition"));
+        assertEquals(
+                "attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt",
+                responseHeaders.get("Content-Disposition"));
         String cacheControl = responseHeaders.get("Cache-Control");
         assertNotNull(cacheControl);
         assertTrue(cacheControl.contains("must-revalidate"));
@@ -372,7 +420,8 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(responseHeaders.get("Expires"));
         String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
         assertNotNull(lastModifiedHeader);
-        Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        Map<String, String> headers =
+                Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
         // Test 304 response
         getSingle(URL_DELETED_NODES + "/" + contentNodeId + "/content", null, null, headers, 304);
 
@@ -381,11 +430,19 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         file = getResourceFile(fileName);
         byte[] originalBytes = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
 
-        multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        multiPartBuilder =
+                MultiPartBuilder.create()
+                        .setFileData(new MultiPartBuilder.FileData(fileName, file));
         reqBody = multiPartBuilder.build();
 
         // Upload binary content
-        response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        response =
+                post(
+                        getNodeChildrenUrl(Nodes.PATH_MY),
+                        reqBody.getBody(),
+                        null,
+                        reqBody.getContentType(),
+                        201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         // move the node to Trashcan
@@ -419,7 +476,11 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         getSingle(URL_DELETED_NODES + "/" + contentNodeId + "/content", null, null, headers, 304);
 
         // -ve - nodeId in the path parameter does not exist
-        getSingle(TrashcanEntityResource.class, UUID.randomUUID().toString() + "/content", params, 404);
+        getSingle(
+                TrashcanEntityResource.class,
+                UUID.randomUUID().toString() + "/content",
+                params,
+                404);
 
         // -ve test - Authentication failed
         setRequestContext(null);
@@ -432,13 +493,14 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Test retrieve renditions for deleted nodes
-     * <p>post:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions}
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/rendition/<renditionId>}
+     *
+     * <p>post: {@literal
+     * <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions}
+     * {@literal
+     * <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/rendition/<renditionId>}
      */
     @Test
-    public void testListRenditions() throws Exception
-    {
+    public void testListRenditions() throws Exception {
         setRequestContext(user1);
 
         Date now = new Date();
@@ -450,12 +512,21 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // Create multipart request
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder multiPartBuilder =
+                MultiPartBuilder.create()
+                        .setFileData(new MultiPartBuilder.FileData(fileName, file));
         MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into the folder previously created
-        HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        HttpResponse response =
+                post(
+                        getNodeChildrenUrl(f1Id),
+                        reqBody.getBody(),
+                        null,
+                        reqBody.getContentType(),
+                        201);
+        Document document =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
         // create doclib rendition and move node to trashcan
@@ -465,12 +536,14 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // List all renditions and check for results
         PublicApiClient.Paging paging = getPaging(0, 50);
         response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, 200);
-        List<Rendition> renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        List<Rendition> renditions =
+                RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
         assertTrue(renditions.size() >= 3);
 
         // +ve test - get previously created 'doclib' rendition
         response = getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib", 200);
-        Rendition doclibRendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+        Rendition doclibRendition =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
 
         assertNotNull(doclibRendition);
         assertEquals(Rendition.RenditionStatus.CREATED, doclibRendition.getStatus());
@@ -500,7 +573,8 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, 200);
         renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
         assertEquals(2, renditions.size());
-        PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+        PublicApiClient.ExpectedPaging expectedPaging =
+                RestApiUtil.parsePaging(response.getJsonResponse());
         assertEquals(2, expectedPaging.getCount().intValue());
         assertEquals(0, expectedPaging.getSkipCount().intValue());
         assertEquals(2, expectedPaging.getMaxItems().intValue());
@@ -527,7 +601,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         response = getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 200);
         renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
         assertTrue(Ordering.natural().isOrdered(renditions));
-        
+
         // -ve - nodeId in the path parameter does not exist
         getAll(getDeletedNodeRenditionsUrl(UUID.randomUUID().toString()), paging, params, 404);
 
@@ -538,7 +612,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // -ve - nodeId in the path parameter does not represent a file
         deleteNode(f1Id);
         getAll(getDeletedNodeRenditionsUrl(f1Id), paging, params, 400);
-        
+
         // -ve - Invalid status value
         params.put("where", "(status='WRONG')");
         getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 400);
@@ -554,14 +628,17 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // -ve - Current user does not have permission for nodeId
         setRequestContext(user2);
         getAll(getDeletedNodeRenditionsUrl(contentNodeId), paging, params, 403);
-        
+
         // Test get single node rendition
         setRequestContext(user1);
         // -ve - nodeId in the path parameter does not exist
         getSingle(getDeletedNodeRenditionsUrl(UUID.randomUUID().toString()), "doclib", 404);
 
         // -ve - renditionId in the path parameter is not registered/available
-        getSingle(getNodeRenditionsUrl(contentNodeId), ("renditionId" + System.currentTimeMillis()), 404);
+        getSingle(
+                getNodeRenditionsUrl(contentNodeId),
+                ("renditionId" + System.currentTimeMillis()),
+                404);
 
         // -ve - nodeId in the path parameter does not represent a file
         getSingle(getDeletedNodeRenditionsUrl(f1Id), "doclib", 400);
@@ -577,12 +654,12 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     /**
      * Tests download rendition.
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions/<renditionId>/content}
+     *
+     * <p>GET: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/deleted-nodes/<nodeId>/renditions/<renditionId>/content}
      */
     @Test
-    public void testDownloadRendition() throws Exception
-    {
+    public void testDownloadRendition() throws Exception {
         setRequestContext(user1);
 
         // Create a folder within the site document's library
@@ -595,14 +672,23 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // Create multipart request using an existing file
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder multiPartBuilder =
+                MultiPartBuilder.create()
+                        .setFileData(new MultiPartBuilder.FileData(fileName, file));
         MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
-        HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        HttpResponse response =
+                post(
+                        getNodeChildrenUrl(f1Id),
+                        reqBody.getBody(),
+                        null,
+                        reqBody.getContentType(),
+                        201);
+        Document document =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
-        
+
         Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
@@ -624,7 +710,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // (attachment=false)
         Map<String, String> params = new HashMap<>();
         params = Collections.singletonMap("attachment", "false");
-        response = getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, 200);
+        response =
+                getSingle(
+                        getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, 200);
         assertNotNull(response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
@@ -636,7 +724,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // Download rendition - with Content-Disposition header
         // (attachment=true) same as default
         params = Collections.singletonMap("attachment", "true");
-        response = getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, 200);
+        response =
+                getSingle(
+                        getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, 200);
         assertNotNull(response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
@@ -654,8 +744,10 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // Test 304 response - doclib rendition (attachment=true)
         String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
         assertNotNull(lastModifiedHeader);
-        Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
-        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, headers, 304);
+        Map<String, String> headers =
+                Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        getSingle(
+                getDeletedNodeRenditionsUrl(contentNodeId), "doclib/content", params, headers, 304);
 
         // -ve tests
         // nodeId in the path parameter does not represent a file
@@ -666,45 +758,58 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         getSingle(getDeletedNodeRenditionsUrl(UUID.randomUUID().toString()), "doclib/content", 404);
 
         // renditionId in the path parameter is not registered/available
-        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), ("renditionId" + System.currentTimeMillis() + "/content"), 404);
+        getSingle(
+                getDeletedNodeRenditionsUrl(contentNodeId),
+                ("renditionId" + System.currentTimeMillis() + "/content"),
+                404);
 
         // The rendition does not exist, a placeholder is not available and the
         // placeholder parameter has a value of "true"
         params = Collections.singletonMap("placeholder", "true");
-        getSingle(getDeletedNodeRenditionsUrl(contentNodeId), ("renditionId" + System.currentTimeMillis() + "/content"), params, 404);
+        getSingle(
+                getDeletedNodeRenditionsUrl(contentNodeId),
+                ("renditionId" + System.currentTimeMillis() + "/content"),
+                params,
+                404);
     }
 
-    /**
-     *  Checks the deleted nodes are in the correct order.
-     */
-    protected void checkDeletedNodes(Date now, Folder createdFolder, Folder createdFolderNonSite, Document document, List<Node> nodes)
-    {
+    /** Checks the deleted nodes are in the correct order. */
+    protected void checkDeletedNodes(
+            Date now,
+            Folder createdFolder,
+            Folder createdFolderNonSite,
+            Document document,
+            List<Node> nodes) {
         Node aNode = (Node) nodes.get(0);
         assertNotNull(aNode);
-        assertEquals("This folder was deleted most recently", createdFolderNonSite.getId(), aNode.getId());
+        assertEquals(
+                "This folder was deleted most recently",
+                createdFolderNonSite.getId(),
+                aNode.getId());
         assertEquals(user1, aNode.getArchivedByUser().getId());
         assertTrue(aNode.getArchivedAt().after(now));
-        assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
+        assertNull("We don't show the parent id for a deleted node", aNode.getParentId());
 
         Node folderNode = (Node) nodes.get(1);
         assertNotNull(folderNode);
         assertEquals(createdFolder.getId(), folderNode.getId());
         assertEquals(user1, folderNode.getArchivedByUser().getId());
         assertTrue(folderNode.getArchivedAt().after(now));
-        assertTrue("This folder was deleted before the non-site folder", folderNode.getArchivedAt().before(aNode.getArchivedAt()));
-        assertNull("We don't show the parent id for a deleted node",folderNode.getParentId());
+        assertTrue(
+                "This folder was deleted before the non-site folder",
+                folderNode.getArchivedAt().before(aNode.getArchivedAt()));
+        assertNull("We don't show the parent id for a deleted node", folderNode.getParentId());
 
         aNode = (Node) nodes.get(2);
         assertNotNull(aNode);
         assertEquals(document.getId(), aNode.getId());
         assertEquals(user1, aNode.getArchivedByUser().getId());
         assertTrue(aNode.getArchivedAt().after(now));
-        assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
+        assertNull("We don't show the parent id for a deleted node", aNode.getParentId());
     }
 
     @Test
-    public void testRequestArchivedContentDirectUrl() throws Exception
-    {
+    public void testRequestArchivedContentDirectUrl() throws Exception {
         setRequestContext(user1);
 
         String myNodeId = getMyNodeId();
@@ -715,8 +820,13 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         testDocumentToArchive.setNodeType(TYPE_CM_CONTENT);
 
         // create *empty* text file
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(testDocumentToArchive), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        HttpResponse response =
+                post(
+                        getNodeChildrenUrl(myNodeId),
+                        toJsonAsStringNonNull(testDocumentToArchive),
+                        201);
+        Document document =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         final String contentNodeId = document.getId();
         deleteNode(contentNodeId);
@@ -727,12 +837,18 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
-        HttpResponse dauResponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 501);
+        HttpResponse dauResponse =
+                post(
+                        getRequestArchivedContentDirectUrl(contentNodeId),
+                        null,
+                        null,
+                        null,
+                        null,
+                        501);
     }
 
     @Test
-    public void testRequestArchivedRenditionDirectUrl() throws Exception
-    {
+    public void testRequestArchivedRenditionDirectUrl() throws Exception {
         setRequestContext(user1);
 
         // Create a folder within the site document's library
@@ -745,12 +861,21 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         // Create multipart request using an existing file
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder multiPartBuilder =
+                MultiPartBuilder.create()
+                        .setFileData(new MultiPartBuilder.FileData(fileName, file));
         MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
-        HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        HttpResponse response =
+                post(
+                        getNodeChildrenUrl(f1Id),
+                        reqBody.getBody(),
+                        null,
+                        reqBody.getContentType(),
+                        201);
+        Document document =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
         Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
@@ -760,18 +885,23 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         deleteNode(contentNodeId);
 
-        HttpResponse dauResponse = post(getRequestArchivedRenditonContentDirectUrl(contentNodeId, renditionID), null, null, null, null, 501);
+        HttpResponse dauResponse =
+                post(
+                        getRequestArchivedRenditonContentDirectUrl(contentNodeId, renditionID),
+                        null,
+                        null,
+                        null,
+                        null,
+                        501);
     }
 
-    private String addToDocumentLibrary(String name, String nodeType, String userId) throws Exception
-    {
+    private String addToDocumentLibrary(String name, String nodeType, String userId)
+            throws Exception {
         String parentId = getSiteContainerNodeId(Nodes.PATH_MY, "documentLibrary");
         return createNode(parentId, name, nodeType, null).getId();
     }
 
-    private String getDeletedNodeRenditionsUrl(String nodeId)
-    {
+    private String getDeletedNodeRenditionsUrl(String nodeId) {
         return URL_DELETED_NODES + "/" + nodeId + "/" + URL_RENDITIONS;
     }
-
 }

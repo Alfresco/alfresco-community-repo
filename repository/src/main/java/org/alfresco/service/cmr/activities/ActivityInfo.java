@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -34,8 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Gethin James
  */
-public class ActivityInfo
-{
+public class ActivityInfo {
     private final NodeRef nodeRef;
     private final String parentPath;
     private final NodeRef parentNodeRef;
@@ -44,9 +43,13 @@ public class ActivityInfo
     private final boolean isFolder;
     private final FileInfo fileInfo;
 
-    public ActivityInfo(NodeRef nodeRef, String parentPath, NodeRef parentNodeRef,
-                        String siteId, String fileName, boolean isFolder)
-    {
+    public ActivityInfo(
+            NodeRef nodeRef,
+            String parentPath,
+            NodeRef parentNodeRef,
+            String siteId,
+            String fileName,
+            boolean isFolder) {
         super();
         this.nodeRef = nodeRef;
         this.parentPath = parentPath;
@@ -57,8 +60,8 @@ public class ActivityInfo
         this.fileInfo = null;
     }
 
-    public ActivityInfo(String parentPath, NodeRef parentNodeRef, String siteId, FileInfo fileInfo)
-    {
+    public ActivityInfo(
+            String parentPath, NodeRef parentNodeRef, String siteId, FileInfo fileInfo) {
         super();
         this.nodeRef = fileInfo.getNodeRef();
         this.parentPath = parentPath;
@@ -69,38 +72,31 @@ public class ActivityInfo
         this.fileInfo = fileInfo;
     }
 
-    public FileInfo getFileInfo()
-    {
+    public FileInfo getFileInfo() {
         return fileInfo;
     }
 
-    public NodeRef getNodeRef()
-    {
+    public NodeRef getNodeRef() {
         return nodeRef;
     }
 
-    public String getParentPath()
-    {
+    public String getParentPath() {
         return parentPath;
     }
 
-    public NodeRef getParentNodeRef()
-    {
+    public NodeRef getParentNodeRef() {
         return parentNodeRef;
     }
 
-    public String getSiteId()
-    {
+    public String getSiteId() {
         return siteId;
     }
 
-    public String getFileName()
-    {
+    public String getFileName() {
         return fileName;
     }
 
-    public boolean isFolder()
-    {
+    public boolean isFolder() {
         return isFolder;
     }
 }

@@ -27,8 +27,7 @@ package org.alfresco.repo.rawevents.types;
 
 import java.util.UUID;
 
-public class EventImpl implements Event
-{
+public class EventImpl implements Event {
 
     private String id;
     private String type;
@@ -37,80 +36,65 @@ public class EventImpl implements Event
     private Long timestamp;
     private int schema;
 
-    public EventImpl()
-    {
-    }
+    public EventImpl() {}
 
-    public EventImpl(String type, long timestamp)
-    {
+    public EventImpl(String type, long timestamp) {
         this.id = UUID.randomUUID().toString();
         this.type = type;
         this.timestamp = timestamp;
     }
 
     @Override
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
     @Override
-    public String getType()
-    {
+    public String getType() {
         return type;
     }
 
-    public void setType(String type)
-    {
+    public void setType(String type) {
         this.type = type;
     }
 
     @Override
-    public String getAuthenticatedUser()
-    {
+    public String getAuthenticatedUser() {
         return authenticatedUser;
     }
 
-    public void setAuthenticatedUser(String authenticatedUser)
-    {
+    public void setAuthenticatedUser(String authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
     }
 
     @Override
-    public String getExecutingUser()
-    {
+    public String getExecutingUser() {
         return executingUser;
     }
 
-    public void setExecutingUser(String executingUser)
-    {
+    public void setExecutingUser(String executingUser) {
         this.executingUser = executingUser;
     }
 
     @Override
-    public Long getTimestamp()
-    {
+    public Long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Long timestamp)
-    {
+    public void setTimestamp(Long timestamp) {
         this.timestamp = timestamp;
     }
 
     @Override
-    public int getSchema()
-    {
+    public int getSchema() {
         return schema;
     }
 
-    public void setSchema(int schema)
-    {
+    public void setSchema(int schema) {
         this.schema = schema;
     }
 }

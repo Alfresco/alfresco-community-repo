@@ -38,21 +38,23 @@ import org.springframework.beans.factory.InitializingBean;
 import java.util.*;
 
 /**
- * A collector of data related authorities. The AuthorityService encapsulates authorities granted to users.
+ * A collector of data related authorities. The AuthorityService encapsulates authorities granted to
+ * users.
+ *
  * <ul>
- *  <li>Collector ID: <b>acs.repository.usage.authorities</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>numUsers:</b> Integer - The total number of users in the system. {@link AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}</li>
- *          <li><b>numGroups:</b> Integer - The total number of groups in the system. {@link AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}</li>
- *      </ul>
- *  </li>
+ *   <li>Collector ID: <b>acs.repository.usage.authorities</b>
+ *   <li>Data:
+ *       <ul>
+ *         <li><b>numUsers:</b> Integer - The total number of users in the system. {@link
+ *             AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}
+ *         <li><b>numGroups:</b> Integer - The total number of groups in the system. {@link
+ *             AuthorityService#getAllAuthoritiesInZone(String, AuthorityType)}
+ *       </ul>
  * </ul>
  *
  * @author eknizat
  */
-public class AuthoritiesDataCollector extends HBBaseDataCollector implements InitializingBean
-{
+public class AuthoritiesDataCollector extends HBBaseDataCollector implements InitializingBean {
 
     /** The logger. */
     private static final Log logger = LogFactory.getLog(AuthoritiesDataCollector.class);
@@ -63,45 +65,54 @@ public class AuthoritiesDataCollector extends HBBaseDataCollector implements Ini
     /** The authority service. */
     private AuthorityService authorityService;
 
-    public AuthoritiesDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                    HeartBeatJobScheduler hbJobScheduler)
-    {
+    public AuthoritiesDataCollector(
+            String collectorId,
+            String collectorVersion,
+            String cronExpression,
+            HeartBeatJobScheduler hbJobScheduler) {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
+    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO) {
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setAuthorityService(AuthorityService authorityService)
-    {
+    public void setAuthorityService(AuthorityService authorityService) {
         this.authorityService = authorityService;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
     }
 
     @Override
-    public List<HBData> collectData()
-    {
+    public List<HBData> collectData() {
         this.logger.debug("Preparing repository usage (authorities) data...");
 
         Map<String, Object> authoritiesUsageValues = new HashMap<>();
-        authoritiesUsageValues.put("numUsers", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER).size()));
-        authoritiesUsageValues.put("numGroups", new Integer(this.authorityService.getAllAuthoritiesInZone(
-                AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP).size()));
-        HBData authoritiesUsageData = new HBData(
-                this.currentRepoDescriptorDAO.getDescriptor().getId(),
-                this.getCollectorId(),
-                this.getCollectorVersion(),
-                new Date(),
-                authoritiesUsageValues);
+        authoritiesUsageValues.put(
+                "numUsers",
+                new Integer(
+                        this.authorityService
+                                .getAllAuthoritiesInZone(
+                                        AuthorityService.ZONE_APP_DEFAULT, AuthorityType.USER)
+                                .size()));
+        authoritiesUsageValues.put(
+                "numGroups",
+                new Integer(
+                        this.authorityService
+                                .getAllAuthoritiesInZone(
+                                        AuthorityService.ZONE_APP_DEFAULT, AuthorityType.GROUP)
+                                .size()));
+        HBData authoritiesUsageData =
+                new HBData(
+                        this.currentRepoDescriptorDAO.getDescriptor().getId(),
+                        this.getCollectorId(),
+                        this.getCollectorVersion(),
+                        new Date(),
+                        authoritiesUsageValues);
 
         return Arrays.asList(authoritiesUsageData);
     }

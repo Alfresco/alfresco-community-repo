@@ -27,70 +27,60 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 
-import java.io.Serializable;
-import java.util.Objects;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
+import java.io.Serializable;
+import java.util.Objects;
+
 /**
- * An extractor that gets a node's {@link RecordsManagementModel#PROP_IDENTIFIER identifier} property.
- * This will only extract data if the node is a
- * {@link RecordsManagementModel#ASPECT_RECORD_COMPONENT_ID Record component identifier}.
+ * An extractor that gets a node's {@link RecordsManagementModel#PROP_IDENTIFIER identifier}
+ * property. This will only extract data if the node is a {@link
+ * RecordsManagementModel#ASPECT_RECORD_COMPONENT_ID Record component identifier}.
  *
  * @author Derek Hulley
  * @since 3.2
  */
-public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
-{
+public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor {
     private NodeService nodeService;
 
-    /**
-     * Used to check that the node in the context is a fileplan component
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** Used to check that the node in the context is a fileplan component */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /**
-     * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
-     *                      a fileplan component
+     * @return Returns <tt>true</tt> if the data is a NodeRef and it represents a fileplan component
      */
-    public boolean isSupported(Serializable data)
-    {
-        if (!(data instanceof NodeRef))
-        {
+    public boolean isSupported(Serializable data) {
+        if (!(data instanceof NodeRef)) {
             return false;
         }
-        return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID);
+        return nodeService.hasAspect(
+                (NodeRef) data, RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID);
     }
 
-    public Serializable extractData(Serializable value)
-    {
+    public Serializable extractData(Serializable value) {
         NodeRef nodeRef = (NodeRef) value;
 
-        String identifier = (String) nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_IDENTIFIER);
+        String identifier =
+                (String) nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_IDENTIFIER);
 
         // Done
         return identifier;
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass())
-        {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o))
-        {
+        if (!super.equals(o)) {
             return false;
         }
         FilePlanIdentifierDataExtractor that = (FilePlanIdentifierDataExtractor) o;
@@ -98,8 +88,7 @@ public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(nodeService);
     }
 }

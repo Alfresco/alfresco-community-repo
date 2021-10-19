@@ -33,35 +33,30 @@ import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
 
 /**
- * Listens to ApplicationEvents to provide a simple {@link #isShuttingDown()} method, so callers don't need to be
- * Spring beans or listen to these events themselves. Intended for use by code that wishes to avoid ERROR log messages
- * on shutdown.
+ * Listens to ApplicationEvents to provide a simple {@link #isShuttingDown()} method, so callers
+ * don't need to be Spring beans or listen to these events themselves. Intended for use by code that
+ * wishes to avoid ERROR log messages on shutdown.
  *
  * @author adavis
  */
-public class ShutdownIndicator implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>
-{
+public class ShutdownIndicator
+        implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
     private boolean shuttingDown;
     private ApplicationContext applicationContext;
 
-    public synchronized boolean isShuttingDown()
-    {
+    public synchronized boolean isShuttingDown() {
         return shuttingDown;
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 
     @Override
-    public void onApplicationEvent(ApplicationContextEvent event)
-    {
-        if (event instanceof ContextClosedEvent && event.getSource() == applicationContext)
-        {
-            synchronized (this)
-            {
+    public void onApplicationEvent(ApplicationContextEvent event) {
+        if (event instanceof ContextClosedEvent && event.getSource() == applicationContext) {
+            synchronized (this) {
                 shuttingDown = true;
             }
         }

@@ -30,8 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-
 import com.google.common.collect.Sets;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
@@ -51,37 +49,30 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
+
 /**
  * Unit test for RmSiteType
  *
  * @author Silviu Dinuta
  * @since 2.6
- *
  */
-public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
-{
-    @Mock
-    private AuthenticationUtil mockAuthenticationUtil;
+public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model {
+    @Mock private AuthenticationUtil mockAuthenticationUtil;
 
-    @Mock
-    private SiteService mockedSiteService;
+    @Mock private SiteService mockedSiteService;
 
     private @InjectMocks RmSiteType rmSiteType;
 
     @Before
-    public void setup()
-    {
+    public void setup() {
         MockitoAnnotations.initMocks(this);
         MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
     }
 
-    /**
-     * Given that we try to add non allowed type to rm site,
-     * Then IntegrityException is thrown.
-     */
+    /** Given that we try to add non allowed type to rm site, Then IntegrityException is thrown. */
     @Test(expected = IntegrityException.class)
-    public void testAddNonAcceptedTypeToRmSite()
-    {
+    public void testAddNonAcceptedTypeToRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
 
         QName type = AlfMock.generateQName();
@@ -96,13 +87,9 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
-    /**
-     * Given that we try to add one cm:folder to rm site,
-     * Then operation is successful.
-     */
+    /** Given that we try to add one cm:folder to rm site, Then operation is successful. */
     @Test
-    public void testAddOneFolderTypeToRmSite()
-    {
+    public void testAddOneFolderTypeToRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
         ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
@@ -113,18 +100,15 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER)))
+                .thenReturn(assocs);
 
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
-    /**
-     * Given that we try to add two cm:folder to rm site,
-     * Then operation is successful.
-     */
+    /** Given that we try to add two cm:folder to rm site, Then operation is successful. */
     @Test
-    public void testAddTwoFolderTypeToRmSite()
-    {
+    public void testAddTwoFolderTypeToRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
         ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
@@ -132,65 +116,66 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
 
-        //create first folder
+        // create first folder
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER)))
+                .thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
 
-        //create second cm:folder
+        // create second cm:folder
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER)))
+                .thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
     /**
-     * Given that we try to add more than two cm:folder to rm site,
-     * Then IntegrityException is thrown.
+     * Given that we try to add more than two cm:folder to rm site, Then IntegrityException is
+     * thrown.
      */
     @Test
-    public void testAddMoreThanTwhoFolderTypeToRmSite()
-    {
+    public void testAddMoreThanTwhoFolderTypeToRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
         ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(new ArrayList<>());
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER)))
+                .thenReturn(new ArrayList<>());
 
-        //create first folder
+        // create first folder
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER)))
+                .thenReturn(assocs);
 
-        //create second cm:folder
+        // create second cm:folder
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER)))
+                .thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
 
-        //create third cm:folder
+        // create third cm:folder
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FOLDER);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FOLDER)))
+                .thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
-    /**
-     * Given that we try to add one rma:filePlan to rm site,
-     * Then operation is successful.
-     */
+    /** Given that we try to add one rma:filePlan to rm site, Then operation is successful. */
     @Test
-    public void testAddOneFilePlanTypeToRmSite()
-    {
+    public void testAddOneFilePlanTypeToRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
         ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
@@ -201,18 +186,18 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FILE_PLAN);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FILE_PLAN))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FILE_PLAN)))
+                .thenReturn(assocs);
 
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
     /**
-     * Given that we try to add one dod:filePlan to standard rm site,
-     * Then IntegrityException is thrown.
+     * Given that we try to add one dod:filePlan to standard rm site, Then IntegrityException is
+     * thrown.
      */
     @Test(expected = IntegrityException.class)
-    public void testAddDODFilePlanTypeToStandardRmSite()
-    {
+    public void testAddDODFilePlanTypeToStandardRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
@@ -224,12 +209,11 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
     }
 
     /**
-     * Given that we try to add more than one rma:filePlan to rm site,
-     * Then IntegrityException is thrown.
+     * Given that we try to add more than one rma:filePlan to rm site, Then IntegrityException is
+     * thrown.
      */
     @Test(expected = IntegrityException.class)
-    public void testAddMoreThanOneFilePlanTypeToRmSite()
-    {
+    public void testAddMoreThanOneFilePlanTypeToRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_RM_SITE, true);
         ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
@@ -237,28 +221,26 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedSiteService.getSite(rmSiteNodeRef)).thenReturn(mockedSiteInfo);
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
 
-        //first file plan creation
+        // first file plan creation
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FILE_PLAN);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FILE_PLAN))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FILE_PLAN)))
+                .thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
 
-        //second filePlan creation
+        // second filePlan creation
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FILE_PLAN);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FILE_PLAN))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_FILE_PLAN)))
+                .thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
-    /**
-     * Given that we try to add one dod:filePlan to rm site,
-     * Then operation is successful.
-     */
+    /** Given that we try to add one dod:filePlan to rm site, Then operation is successful. */
     @Test
-    public void testAddOneDODFilePlanTypeToRmSite()
-    {
+    public void testAddOneDODFilePlanTypeToRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_DOD_5015_SITE, true);
         ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
@@ -268,24 +250,26 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
 
         when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_SITE, TYPE_RM_SITE)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_FILE_PLAN, TYPE_FILE_PLAN)).thenReturn(true);
+        when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_FILE_PLAN, TYPE_FILE_PLAN))
+                .thenReturn(true);
         rmSiteType.registerFilePlanType(TYPE_DOD_5015_SITE, TYPE_DOD_5015_FILE_PLAN);
 
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_DOD_5015_FILE_PLAN);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_DOD_5015_FILE_PLAN))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(
+                        rmSiteNodeRef, Sets.newHashSet(TYPE_DOD_5015_FILE_PLAN)))
+                .thenReturn(assocs);
 
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
     /**
-     * Given that we try to add more than one dod:filePlan to rm site,
-     * Then IntegrityException is thrown.
+     * Given that we try to add more than one dod:filePlan to rm site, Then IntegrityException is
+     * thrown.
      */
     @Test(expected = IntegrityException.class)
-    public void testAddMoreThanOneDODFilePlanTypeToRmSite()
-    {
+    public void testAddMoreThanOneDODFilePlanTypeToRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_DOD_5015_SITE, true);
         ArrayList<ChildAssociationRef> assocs = new ArrayList<>();
 
@@ -295,31 +279,34 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
 
         when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_SITE, TYPE_RM_SITE)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_FILE_PLAN, TYPE_FILE_PLAN)).thenReturn(true);
+        when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_FILE_PLAN, TYPE_FILE_PLAN))
+                .thenReturn(true);
         rmSiteType.registerFilePlanType(TYPE_DOD_5015_SITE, TYPE_DOD_5015_FILE_PLAN);
 
-        //first dod:filePlan creation
+        // first dod:filePlan creation
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_DOD_5015_FILE_PLAN);
         ChildAssociationRef mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_DOD_5015_FILE_PLAN))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(
+                        rmSiteNodeRef, Sets.newHashSet(TYPE_DOD_5015_FILE_PLAN)))
+                .thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
 
-        //second dod:filePlan creation
+        // second dod:filePlan creation
         nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_DOD_5015_FILE_PLAN);
         mockedChildAssoc = generateChildAssociationRef(rmSiteNodeRef, nodeRef);
         assocs.add(mockedChildAssoc);
-        when(mockedNodeService.getChildAssocs(rmSiteNodeRef, Sets.newHashSet(TYPE_DOD_5015_FILE_PLAN))).thenReturn(assocs);
+        when(mockedNodeService.getChildAssocs(
+                        rmSiteNodeRef, Sets.newHashSet(TYPE_DOD_5015_FILE_PLAN)))
+                .thenReturn(assocs);
         rmSiteType.onCreateChildAssociation(mockedChildAssoc, true);
     }
 
     /**
-     * Given that we try to add one rma:filePlan to DOD rm site,
-     * Then IntegrityException is thrown.
+     * Given that we try to add one rma:filePlan to DOD rm site, Then IntegrityException is thrown.
      */
     @Test(expected = IntegrityException.class)
-    public void testAddStandardFilePlanTypeToDODRmSite()
-    {
+    public void testAddStandardFilePlanTypeToDODRmSite() {
         NodeRef rmSiteNodeRef = generateNodeRef(TYPE_DOD_5015_SITE, true);
 
         SiteInfo mockedSiteInfo = mock(SiteInfo.class);
@@ -328,7 +315,8 @@ public class RmSiteTypeUnitTest extends BaseUnitTest implements DOD5015Model
         when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
 
         when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_SITE, TYPE_RM_SITE)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_FILE_PLAN, TYPE_FILE_PLAN)).thenReturn(true);
+        when(mockedDictionaryService.isSubClass(TYPE_DOD_5015_FILE_PLAN, TYPE_FILE_PLAN))
+                .thenReturn(true);
         rmSiteType.registerFilePlanType(TYPE_DOD_5015_SITE, TYPE_DOD_5015_FILE_PLAN);
 
         NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_FILE_PLAN);

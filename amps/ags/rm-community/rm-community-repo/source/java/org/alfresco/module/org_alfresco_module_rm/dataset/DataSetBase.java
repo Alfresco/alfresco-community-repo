@@ -30,8 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.dataset;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-public class DataSetBase implements DataSet
-{
+public class DataSetBase implements DataSet {
 
     /** Data set service */
     private DataSetService dataSetService;
@@ -50,23 +49,17 @@ public class DataSetBase implements DataSet
      *
      * @param dataSetService the data set service
      */
-    public void setDataSetService(DataSetService dataSetService)
-    {
+    public void setDataSetService(DataSetService dataSetService) {
         this.dataSetService = dataSetService;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSet#getLabel()
-     */
-    public String getLabel()
-    {
+    /** @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSet#getLabel() */
+    public String getLabel() {
         String label = this.label;
-        if (StringUtils.isBlank(label))
-        {
+        if (StringUtils.isBlank(label)) {
             String propertyKey = "dataset." + getId() + ".label";
             label = I18NUtil.getMessage(propertyKey);
-            if (StringUtils.isBlank(label))
-            {
+            if (StringUtils.isBlank(label)) {
                 label = propertyKey;
             }
         }
@@ -78,16 +71,12 @@ public class DataSetBase implements DataSet
      *
      * @param label the label
      */
-    public void setLabel(String label)
-    {
+    public void setLabel(String label) {
         this.label = label;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSet#getId()
-     */
-    public String getId()
-    {
+    /** @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSet#getId() */
+    public String getId() {
         return this.id;
     }
 
@@ -96,16 +85,12 @@ public class DataSetBase implements DataSet
      *
      * @param id the id
      */
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSet#getPath()
-     */
-    public String getPath()
-    {
+    /** @see org.alfresco.module.org_alfresco_module_rm.dataset.DataSet#getPath() */
+    public String getPath() {
         return this.path;
     }
 
@@ -114,17 +99,12 @@ public class DataSetBase implements DataSet
      *
      * @param path the path
      */
-    public void setPath(String path)
-    {
+    public void setPath(String path) {
         this.path = path;
     }
 
-    /**
-     * Registers the data set implementation with the data set service.
-     */
-    public void register()
-    {
+    /** Registers the data set implementation with the data set service. */
+    public void register() {
         this.dataSetService.register(this);
     }
-
 }

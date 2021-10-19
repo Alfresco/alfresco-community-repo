@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
@@ -45,44 +43,34 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 
+import java.util.Set;
+
 /**
  * rmv:versionRecord behaviour bean
  *
  * @author Roy Wetherall
  * @since 2.3.1
  */
-@BehaviourBean
-(
-   defaultType = "rmv:versionRecord"
-)
-public class VersionRecordAspect extends    BaseBehaviourBean
-                                 implements NodeServicePolicies.BeforeAddAspectPolicy,
-                                            NodeServicePolicies.BeforeDeleteNodePolicy
-{
+@BehaviourBean(defaultType = "rmv:versionRecord")
+public class VersionRecordAspect extends BaseBehaviourBean
+        implements NodeServicePolicies.BeforeAddAspectPolicy,
+                NodeServicePolicies.BeforeDeleteNodePolicy {
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
-    
+
     /** relationship service */
     private RelationshipService relationshipService;
 
-    /**
-     * Utility class for duplicating content
-     */
+    /** Utility class for duplicating content */
     private ContentBinDuplicationUtility contentBinDuplicationUtility;
 
-    /**
-     * @param recordableVersionService  recordable version service
-     */
-    public void setRecordableVersionService(RecordableVersionService recordableVersionService)
-    {
+    /** @param recordableVersionService recordable version service */
+    public void setRecordableVersionService(RecordableVersionService recordableVersionService) {
         this.recordableVersionService = recordableVersionService;
-    }    
-    
-    /**
-     * @param relationshipService relationship service
-     */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
+    }
+
+    /** @param relationshipService relationship service */
+    public void setRelationshipService(RelationshipService relationshipService) {
         this.relationshipService = relationshipService;
     }
 
@@ -91,79 +79,82 @@ public class VersionRecordAspect extends    BaseBehaviourBean
      *
      * @param contentBinDuplicationUtility ContentBinDuplicationUtility
      */
-    public void setContentBinDuplicationUtility(ContentBinDuplicationUtility contentBinDuplicationUtility)
-    {
+    public void setContentBinDuplicationUtility(
+            ContentBinDuplicationUtility contentBinDuplicationUtility) {
         this.contentBinDuplicationUtility = contentBinDuplicationUtility;
     }
 
     /**
      * If the record is a version record then delete the associated version entry
-     * 
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     *
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour (kind = BehaviourKind.CLASS)
-    public void beforeDeleteNode(final NodeRef nodeRef)
-    {
+    @Behaviour(kind = BehaviourKind.CLASS)
+    public void beforeDeleteNode(final NodeRef nodeRef) {
         final Version version = recordableVersionService.getRecordedVersion(nodeRef);
-        if (version != null)
-        {
-            authenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
-                @Override
-                public Void doWork()
-                {
-                    behaviourFilter.disableBehaviour();
-                    try
-                    {
-                        // mark the associated version as destroyed
-                        recordableVersionService.destroyRecordedVersion(version);
-                                                            
-                        // re-organise the versions relationships ...
-                        // if there is only one "to" reference since a version can only have one predecessor
-                        Set<Relationship> tos = relationshipService.getRelationshipsTo(nodeRef, RelationshipService.RELATIONSHIP_VERSIONS);
-                        if (!tos.isEmpty() && tos.size() == 1)
-                        {
-                            // if there is some "from" references
-                            Set<Relationship> froms = relationshipService.getRelationshipsFrom(nodeRef, RelationshipService.RELATIONSHIP_VERSIONS);
-                            if (!froms.isEmpty())
-                            {
-                                // get predecessor version relationship
-                                Relationship to = tos.iterator().next();
-                                
-                                for (Relationship from : froms)
-                                {
-                                    // point the "to" the all the "from's"
-                                    relationshipService.addRelationship(RelationshipService.RELATIONSHIP_VERSIONS, to.getSource(), from.getTarget());
-                                }
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        behaviourFilter.enableBehaviour();
-                    }
+        if (version != null) {
+            authenticationUtil.runAsSystem(
+                    new RunAsWork<Void>() {
+                        @Override
+                        public Void doWork() {
+                            behaviourFilter.disableBehaviour();
+                            try {
+                                // mark the associated version as destroyed
+                                recordableVersionService.destroyRecordedVersion(version);
 
-                    return null;
-                }
-            });
-        }         
+                                // re-organise the versions relationships ...
+                                // if there is only one "to" reference since a version can only have
+                                // one predecessor
+                                Set<Relationship> tos =
+                                        relationshipService.getRelationshipsTo(
+                                                nodeRef, RelationshipService.RELATIONSHIP_VERSIONS);
+                                if (!tos.isEmpty() && tos.size() == 1) {
+                                    // if there is some "from" references
+                                    Set<Relationship> froms =
+                                            relationshipService.getRelationshipsFrom(
+                                                    nodeRef,
+                                                    RelationshipService.RELATIONSHIP_VERSIONS);
+                                    if (!froms.isEmpty()) {
+                                        // get predecessor version relationship
+                                        Relationship to = tos.iterator().next();
+
+                                        for (Relationship from : froms) {
+                                            // point the "to" the all the "from's"
+                                            relationshipService.addRelationship(
+                                                    RelationshipService.RELATIONSHIP_VERSIONS,
+                                                    to.getSource(),
+                                                    from.getTarget());
+                                        }
+                                    }
+                                }
+                            } finally {
+                                behaviourFilter.enableBehaviour();
+                            }
+
+                            return null;
+                        }
+                    });
+        }
     }
 
     /**
      * Behaviour to duplicate the bin before declaring a version record
      *
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
-     *      org.alfresco.service.namespace.QName)
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.BeforeAddAspectPolicy#beforeAddAspect(org.alfresco.service.cmr.repository.NodeRef,
+     *     org.alfresco.service.namespace.QName)
      */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
-    public void beforeAddAspect(NodeRef nodeRef, QName qName)
-    {
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
+    public void beforeAddAspect(NodeRef nodeRef, QName qName) {
         // if the node is the originating one the behaviour shouldn't be triggered
-        if (!nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD_ORIGINATING_DETAILS))
-        {
-            //create a new content URL for the version record
+        if (!nodeService.hasAspect(
+                nodeRef, RecordsManagementModel.ASPECT_RECORD_ORIGINATING_DETAILS)) {
+            // create a new content URL for the version record
             contentBinDuplicationUtility.duplicate(nodeRef);
         }
     }

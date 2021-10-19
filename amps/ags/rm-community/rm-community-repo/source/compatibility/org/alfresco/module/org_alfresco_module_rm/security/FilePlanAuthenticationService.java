@@ -37,11 +37,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
  * @since 2.1
  * @deprecated as of 2.2, use {@link AuthenticationUtil}.
  */
-public interface FilePlanAuthenticationService
-{
+public interface FilePlanAuthenticationService {
     /**
-     * @return  rm admin user name
-     *
+     * @return rm admin user name
      * @deprecated as of 2.2, use {@link AuthenticationUtil#getAdminUserName()}
      */
     String getRmAdminUserName();
@@ -49,14 +47,11 @@ public interface FilePlanAuthenticationService
     /**
      * Run provided work as the global rm admin user.
      *
-     * @param <R>       return type
+     * @param <R> return type
      * @param runAsWork work to execute as the rm admin user
-     * @return R        result of work execution
-     *
+     * @return R result of work execution
      * @deprecated as of 2.2, use
-     *
-     *
-     * {@link AuthenticationUtil#runAs(RunAsWork, String)}
+     *     <p>{@link AuthenticationUtil#runAs(RunAsWork, String)}
      */
     <R> R runAsRmAdmin(RunAsWork<R> runAsWork);
 }

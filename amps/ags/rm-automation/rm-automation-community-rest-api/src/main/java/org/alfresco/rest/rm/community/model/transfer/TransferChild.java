@@ -27,19 +27,19 @@
 
 package org.alfresco.rest.rm.community.model.transfer;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.model.RestByUserModel;
-import org.alfresco.rest.rm.community.model.common.Path;
-import org.alfresco.utility.model.TestModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.rest.model.RestByUserModel;
+import org.alfresco.rest.rm.community.model.common.Path;
+import org.alfresco.utility.model.TestModel;
+
+import java.util.List;
 
 /**
  * POJO for transfer child
@@ -52,59 +52,50 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransferChild extends TestModel
-{
+public class TransferChild extends TestModel {
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String createdAt;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private RestByUserModel createdByUser;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String modifiedAt;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private RestByUserModel modifiedByUser;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String id;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String nodeType;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String parentId;
 
     /************************/
     /** Optional parameters */
     /************************/
-    @JsonProperty
-    private TransferChildProperties properties;
+    @JsonProperty private TransferChildProperties properties;
 
-    @JsonProperty
-    private Boolean isRecord;
+    @JsonProperty private Boolean isRecord;
 
-    @JsonProperty
-    private Boolean isRecordFolder;
+    @JsonProperty private Boolean isRecordFolder;
 
-    @JsonProperty
-    private List<String> aspectNames;
+    @JsonProperty private List<String> aspectNames;
 
-    @JsonProperty
-    private Boolean isCompleted;
+    @JsonProperty private Boolean isCompleted;
 
-    @JsonProperty
-    private Boolean isClosed;
+    @JsonProperty private Boolean isClosed;
 
-    @JsonProperty
-    private List<String> allowableOperations;
+    @JsonProperty private List<String> allowableOperations;
 
-    @JsonProperty
-    private Path path;
+    @JsonProperty private Path path;
 }

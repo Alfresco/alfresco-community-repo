@@ -26,8 +26,6 @@
  */
 package org.alfresco.rm.rest.api.util;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -36,39 +34,38 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.io.IOException;
 
 /**
- * Custom Local Date deserializer converting a string to org.joda.time.LocalDate when the time is optional;
+ * Custom Local Date deserializer converting a string to org.joda.time.LocalDate when the time is
+ * optional;
  *
  * @author Rodica Sutu
  * @since 3.0
  */
-public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate>
-{
-    /** Date time format with time optional  */
-    private final static DateTimeFormatter LOCAL_DATE_OPTIONAL_TIME_PARSER = ISODateTimeFormat.localDateOptionalTimeParser();
+public class CustomLocalDateDeserializer extends StdDeserializer<LocalDate> {
+    /** Date time format with time optional */
+    private static final DateTimeFormatter LOCAL_DATE_OPTIONAL_TIME_PARSER =
+            ISODateTimeFormat.localDateOptionalTimeParser();
 
-    public CustomLocalDateDeserializer()
-    {
+    public CustomLocalDateDeserializer() {
         super(LocalDate.class);
     }
 
     /**
-     * Custom deserialize method to convert string to the org.joda.time.LocalDate type with LOCAL_DATE_OPTIONAL_TIME_PARSER
+     * Custom deserialize method to convert string to the org.joda.time.LocalDate type with
+     * LOCAL_DATE_OPTIONAL_TIME_PARSER
      *
-     * @param jp    local date value
+     * @param jp local date value
      * @param ctxt
      * @throws IOException
      */
     @Override
-    public LocalDate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException
-    {
+    public LocalDate deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
         String str = jp.getText().trim();
-        if (str.length() == 0)
-        {
+        if (str.length() == 0) {
             return null;
         }
-       return  LOCAL_DATE_OPTIONAL_TIME_PARSER.parseLocalDate(str);
+        return LOCAL_DATE_OPTIONAL_TIME_PARSER.parseLocalDate(str);
     }
 }
-

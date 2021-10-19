@@ -34,33 +34,29 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public class CachingDateFormatTest
-{
-    private final LocalDateTime REFERENCE_DATE_TIME = LocalDateTime.of(2018, 4, 1, 10, 0); //2018-04-01 at 10:00am
+public class CachingDateFormatTest {
+    private final LocalDateTime REFERENCE_DATE_TIME =
+            LocalDateTime.of(2018, 4, 1, 10, 0); // 2018-04-01 at 10:00am
     private final Locale defaultLocale = Locale.getDefault();
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         CachingDateFormat.S_LOCAL_SOLR_DATETIME.remove();
     }
 
     @Test
-    public void solrDatetimeFormat_shouldFormatTheMinDate()
-    {
+    public void solrDatetimeFormat_shouldFormatTheMinDate() {
         Date shanghaiDate = testDate("Asia/Shanghai");
         SimpleDateFormat solrDatetimeFormat = CachingDateFormat.getSolrDatetimeFormatWithoutMsecs();
 
         String formattedDate = solrDatetimeFormat.format(shanghaiDate);
 
-        assertThat(formattedDate,is("2018-04-01T02:00:00Z"));
+        assertThat(formattedDate, is("2018-04-01T02:00:00Z"));
     }
 
     @Test
-    public void solrDatetimeFormat_allLocales_shouldReturnISO8601DateString()
-    {
-        for(Locale currentLocale:Locale.getAvailableLocales())
-        {
+    public void solrDatetimeFormat_allLocales_shouldReturnISO8601DateString() {
+        for (Locale currentLocale : Locale.getAvailableLocales()) {
             CachingDateFormat.S_LOCAL_SOLR_DATETIME.remove();
             Locale.setDefault(currentLocale);
 
@@ -74,8 +70,7 @@ public class CachingDateFormatTest
     }
 
     @Test
-    public void onlyDateFormatReturnsOnlyTheDatePart()
-    {
+    public void onlyDateFormatReturnsOnlyTheDatePart() {
         Date utcDate = testDate("UTC");
 
         SimpleDateFormat formatter = CachingDateFormat.getDateOnlyFormat();
@@ -85,8 +80,7 @@ public class CachingDateFormatTest
     }
 
     @Test
-    public void onlyTimeFormatShouldReturnOnlyTheTimePart()
-    {
+    public void onlyTimeFormatShouldReturnOnlyTheTimePart() {
         Date utcDate = testDate("UTC");
 
         SimpleDateFormat formatter = CachingDateFormat.getTimeOnlyFormat();
@@ -96,8 +90,7 @@ public class CachingDateFormatTest
     }
 
     @Test
-    public void dateTimeFormatShouldReturnDateAndTime()
-    {
+    public void dateTimeFormatShouldReturnDateAndTime() {
         Date utcDate = testDate("UTC");
 
         SimpleDateFormat formatter = CachingDateFormat.getDateFormat();
@@ -107,8 +100,7 @@ public class CachingDateFormatTest
     }
 
     @Test
-    public void utcWithoutMsecsDatetimeFormat_shouldReturnStringsWithoutMsecs()
-    {
+    public void utcWithoutMsecsDatetimeFormat_shouldReturnStringsWithoutMsecs() {
         Date utcDate = testDate("UTC");
 
         SimpleDateFormat formatter = CachingDateFormat.getSolrDatetimeFormatWithoutMsecs();
@@ -116,10 +108,9 @@ public class CachingDateFormatTest
         assertEquals("2018-04-01T10:00:00Z", formatter.format(utcDate));
     }
 
-    @After 
-    public void tearDown()
-    {
-       Locale.setDefault(defaultLocale); 
+    @After
+    public void tearDown() {
+        Locale.setDefault(defaultLocale);
     }
 
     /**
@@ -128,8 +119,7 @@ public class CachingDateFormatTest
      * @param zoneId the timezone id.
      * @return a test date using the given timezone id.
      */
-    private Date testDate(String zoneId)
-    {
+    private Date testDate(String zoneId) {
         Instant utcInstant = REFERENCE_DATE_TIME.atZone(ZoneId.of(zoneId)).toInstant();
         return Date.from(utcInstant);
     }

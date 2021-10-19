@@ -26,11 +26,6 @@
 
 package org.alfresco.repo.event2;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
@@ -45,18 +40,18 @@ import org.alfresco.util.PropertyMap;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-/**
- * @author Iulian Aftene
- */
-public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
-{
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.List;
 
-    @Autowired
-    private NodeDAO nodeDAO;
+/** @author Iulian Aftene */
+public class CreateRepoEventIT extends AbstractContextAwareRepoEvent {
+
+    @Autowired private NodeDAO nodeDAO;
 
     @Test
-    public void testCreateEvent()
-    {
+    public void testCreateEvent() {
         // Create a node without content
         final String name = "TestFile-" + System.currentTimeMillis() + ".txt";
         String localName = GUID.generate();
@@ -67,21 +62,29 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
 
         final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
         // Repo event attributes
-        assertEquals("Repo event type", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
+        assertEquals(
+                "Repo event type", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
         assertNotNull("Repo event ID is not available. ", resultRepoEvent.getId());
         assertNotNull(resultRepoEvent.getSource());
-        assertEquals("Repo event source is not available. ",
-            "/" + descriptorService.getCurrentRepositoryDescriptor().getId(),
-            resultRepoEvent.getSource().toString());
+        assertEquals(
+                "Repo event source is not available. ",
+                "/" + descriptorService.getCurrentRepositoryDescriptor().getId(),
+                resultRepoEvent.getSource().toString());
         assertNotNull("Repo event creation time is not available. ", resultRepoEvent.getTime());
-        assertEquals("Repo event datacontenttype", "application/json", resultRepoEvent.getDatacontenttype());
+        assertEquals(
+                "Repo event datacontenttype",
+                "application/json",
+                resultRepoEvent.getDatacontenttype());
         assertNotNull(resultRepoEvent.getDataschema());
         assertEquals(EventJSONSchema.NODE_CREATED_V1.getSchema(), resultRepoEvent.getDataschema());
 
         final EventData<NodeResource> nodeResourceEventData = getEventData(resultRepoEvent);
         // EventData attributes
-        assertNotNull("Event data group ID is not available. ", nodeResourceEventData.getEventGroupId());
-        assertNull("resourceBefore property is not available", nodeResourceEventData.getResourceBefore());
+        assertNotNull(
+                "Event data group ID is not available. ", nodeResourceEventData.getEventGroupId());
+        assertNull(
+                "resourceBefore property is not available",
+                nodeResourceEventData.getResourceBefore());
         final NodeResource nodeResource = getNodeResource(resultRepoEvent);
 
         // NodeResource attributes
@@ -95,21 +98,27 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
 
         assertNotNull("Missing createdByUser property.", nodeResource.getCreatedByUser());
         assertEquals("Wrong node creator id.", "admin", nodeResource.getCreatedByUser().getId());
-        assertEquals("Wrong node creator display name.", "Administrator",
-            nodeResource.getCreatedByUser().getDisplayName());
+        assertEquals(
+                "Wrong node creator display name.",
+                "Administrator",
+                nodeResource.getCreatedByUser().getDisplayName());
         assertNotNull("Missing createdAt property.", nodeResource.getCreatedAt());
 
         assertNotNull("Missing modifiedByUser property.", nodeResource.getModifiedByUser());
         assertEquals("Wrong node modifier id.", "admin", nodeResource.getModifiedByUser().getId());
-        assertEquals("Wrong node modifier display name.", "Administrator",
-            nodeResource.getModifiedByUser().getDisplayName());
+        assertEquals(
+                "Wrong node modifier display name.",
+                "Administrator",
+                nodeResource.getModifiedByUser().getDisplayName());
         assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
-        assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, nodeResource.getPrimaryAssocQName());
+        assertEquals(
+                "Wrong primaryAssocQName prefix.",
+                "ce:" + localName,
+                nodeResource.getPrimaryAssocQName());
     }
 
     @Test
-    public void testCreateContentInFolderStructure()
-    {
+    public void testCreateContentInFolderStructure() {
         final NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER);
         final NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
         createNode(ContentModel.TYPE_CONTENT, parent);
@@ -123,8 +132,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testCreateNodeWithId()
-    {
+    public void testCreateNodeWithId() {
         final String uuid = GUID.generate();
         PropertyMap properties = new PropertyMap();
         properties.put(ContentModel.PROP_NODE_UUID, uuid);
@@ -138,8 +146,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testFolderNodeType()
-    {
+    public void testFolderNodeType() {
         createNode(ContentModel.TYPE_FOLDER);
 
         final NodeResource resource = getNodeResource(1);
@@ -150,8 +157,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
     }
 
     @Test
-    public void testFileNodeType()
-    {
+    public void testFileNodeType() {
         createNode(ContentModel.TYPE_CONTENT);
 
         final NodeResource resource = getNodeResource(1);
@@ -160,56 +166,62 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertTrue("isFile flag should be TRUE for nodeType=cm:content. ", resource.isFile());
         assertFalse("isFolder flag should be FALSE for nodeType=cm:content. ", resource.isFolder());
     }
-    
+
     @Test
-    public void testEventTimestampEqualsToTransactionCommitTime()
-    {
+    public void testEventTimestampEqualsToTransactionCommitTime() {
         String name = "TestFile-" + System.currentTimeMillis() + ".txt";
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_NAME, name);
-        
-        //create a node and return the transaction id required later
-        Long transactionId = retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                    QName.createQName(TEST_NAMESPACE, GUID.generate()), ContentModel.TYPE_CONTENT, propertyMap).getChildRef();
-            return nodeDAO.getCurrentTransactionId(false);
-        });
+
+        // create a node and return the transaction id required later
+        Long transactionId =
+                retryingTransactionHelper.doInTransaction(
+                        () -> {
+                            nodeService
+                                    .createNode(
+                                            rootNodeRef,
+                                            ContentModel.ASSOC_CHILDREN,
+                                            QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                                            ContentModel.TYPE_CONTENT,
+                                            propertyMap)
+                                    .getChildRef();
+                            return nodeDAO.getCurrentTransactionId(false);
+                        });
 
         RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
 
         Transaction transaction = nodeDAO.getTxnById(transactionId);
         Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
         ZonedDateTime timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
-        
+
         assertEquals(timestamp, resultRepoEvent.getTime());
     }
 
     @Test
-    public void testCreateMultipleNodesInTheSameTransaction()
-    {
-        retryingTransactionHelper.doInTransaction(() -> {
-            for (int i = 0; i < 3; i++)
-            {
-                nodeService.createNode(
-                    rootNodeRef,
-                    ContentModel.ASSOC_CHILDREN,
-                    QName.createQName(TEST_NAMESPACE, GUID.generate()),
-                    ContentModel.TYPE_CONTENT);
-            }
-            return null;
-        });
+    public void testCreateMultipleNodesInTheSameTransaction() {
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    for (int i = 0; i < 3; i++) {
+                        nodeService.createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName(TEST_NAMESPACE, GUID.generate()),
+                                ContentModel.TYPE_CONTENT);
+                    }
+                    return null;
+                });
 
         checkNumOfEvents(3);
 
         RepoEventContainer repoEventsContainer = getRepoEventsContainer();
         final String eventGroupId1 =
-            getEventData(repoEventsContainer.getEvent(1)).getEventGroupId();
+                getEventData(repoEventsContainer.getEvent(1)).getEventGroupId();
         final String eventGroupId2 =
-            getEventData(repoEventsContainer.getEvent(2)).getEventGroupId();
+                getEventData(repoEventsContainer.getEvent(2)).getEventGroupId();
         final String eventGroupId3 =
-            getEventData(repoEventsContainer.getEvent(3)).getEventGroupId();
+                getEventData(repoEventsContainer.getEvent(3)).getEventGroupId();
 
-        //All events in the transaction should have the same eventGroupId
+        // All events in the transaction should have the same eventGroupId
         assertTrue(eventGroupId1.equals(eventGroupId2) && eventGroupId2.equals(eventGroupId3));
     }
 }

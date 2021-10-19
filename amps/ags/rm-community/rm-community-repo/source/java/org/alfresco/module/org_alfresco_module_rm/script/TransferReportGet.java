@@ -27,15 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.Date;
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -55,14 +46,22 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.Date;
+import java.util.List;
+
 /**
  * Returns a JSON representation of a transfer report.
  *
  * @author Gavin Cornwell
  */
 @Deprecated
-public class TransferReportGet extends BaseTransferWebScript
-{
+public class TransferReportGet extends BaseTransferWebScript {
     /** Logger */
     private static Log logger = LogFactory.getLog(TransferReportGet.class);
 
@@ -78,34 +77,32 @@ public class TransferReportGet extends BaseTransferWebScript
      *
      * @param ddService The DictionaryService instance
      */
-    public void setDictionaryService(DictionaryService ddService)
-    {
+    public void setDictionaryService(DictionaryService ddService) {
         this.ddService = ddService;
     }
 
     /**
      * Sets the disposition service
      *
-     * @param dispositionService    the disposition service
+     * @param dispositionService the disposition service
      */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
-    /**
-     * @param contentStreamer
-     */
-    public void setContentStreamer(ContentStreamer contentStreamer)
-    {
+    /** @param contentStreamer */
+    public void setContentStreamer(ContentStreamer contentStreamer) {
         this.contentStreamer = contentStreamer;
     }
 
     @Override
-    protected File executeTransfer(NodeRef transferNode,
-                WebScriptRequest req, WebScriptResponse res,
-                Status status, Cache cache) throws IOException
-    {
+    protected File executeTransfer(
+            NodeRef transferNode,
+            WebScriptRequest req,
+            WebScriptResponse res,
+            Status status,
+            Cache cache)
+            throws IOException {
         // generate the report (will be in JSON format)
         File report = generateJSONTransferReport(transferNode);
 
@@ -123,31 +120,31 @@ public class TransferReportGet extends BaseTransferWebScript
      * @return File containing JSON representation of a transfer report
      * @throws IOException
      */
-    File generateJSONTransferReport(NodeRef transferNode) throws IOException
-    {
+    File generateJSONTransferReport(NodeRef transferNode) throws IOException {
         File report = TempFileProvider.createTempFile(REPORT_FILE_PREFIX, REPORT_FILE_SUFFIX);
 
         // create the writer
         try (FileOutputStream fileOutputStream = new FileOutputStream(report);
-            Writer writer = new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8")))
-        {
+                Writer writer =
+                        new OutputStreamWriter(fileOutputStream, Charset.forName("UTF-8"))) {
             // get all 'transferred' nodes
             NodeRef[] itemsToTransfer = getTransferNodes(transferNode);
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Generating JSON transfer report for " + itemsToTransfer.length +
-                            " items into file: " + report.getAbsolutePath());
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Generating JSON transfer report for "
+                                + itemsToTransfer.length
+                                + " items into file: "
+                                + report.getAbsolutePath());
             }
 
             // use RMService to get disposition authority
             String dispositionAuthority = null;
-            if (itemsToTransfer.length > 0)
-            {
+            if (itemsToTransfer.length > 0) {
                 // use the first transfer item to get to disposition schedule
-                DispositionSchedule ds = dispositionService.getDispositionSchedule(itemsToTransfer[0]);
-                if (ds != null)
-                {
+                DispositionSchedule ds =
+                        dispositionService.getDispositionSchedule(itemsToTransfer[0]);
+                if (ds != null) {
                     dispositionAuthority = ds.getDispositionAuthority();
                 }
             }
@@ -155,8 +152,11 @@ public class TransferReportGet extends BaseTransferWebScript
             // write the JSON header
             writer.write("{\n\t\"data\":\n\t{");
             writer.write("\n\t\t\"transferDate\": \"");
-            writer.write(ISO8601DateFormat.format(
-                        (Date)this.nodeService.getProperty(transferNode, ContentModel.PROP_CREATED)));
+            writer.write(
+                    ISO8601DateFormat.format(
+                            (Date)
+                                    this.nodeService.getProperty(
+                                            transferNode, ContentModel.PROP_CREATED)));
             writer.write("\",\n\t\t\"transferPerformedBy\": \"");
             writer.write(AuthenticationUtil.getRunAsUser());
             writer.write("\",\n\t\t\"dispositionAuthority\": \"");
@@ -181,26 +181,18 @@ public class TransferReportGet extends BaseTransferWebScript
      * @throws IOException
      */
     protected void generateTransferItemsJSON(Writer writer, NodeRef[] itemsToTransfer)
-        throws IOException
-    {
+            throws IOException {
         boolean first = true;
-        for (NodeRef item : itemsToTransfer)
-        {
-            if (first)
-            {
+        for (NodeRef item : itemsToTransfer) {
+            if (first) {
                 first = false;
-            }
-            else
-            {
+            } else {
                 writer.write(",");
             }
 
-            if (ddService.isSubClass(nodeService.getType(item), ContentModel.TYPE_FOLDER))
-            {
+            if (ddService.isSubClass(nodeService.getType(item), ContentModel.TYPE_FOLDER)) {
                 generateTransferFolderJSON(writer, item);
-            }
-            else
-            {
+            } else {
                 generateTransferRecordJSON(writer, item);
             }
         }
@@ -214,40 +206,36 @@ public class TransferReportGet extends BaseTransferWebScript
      * @throws IOException
      */
     protected void generateTransferFolderJSON(Writer writer, NodeRef folderNode)
-        throws IOException
-    {
+            throws IOException {
         // TODO: Add identation
 
         writer.write("\n{\n\"type\":\"folder\",\n");
         writer.write("\"name\":\"");
-        writer.write((String)nodeService.getProperty(folderNode, ContentModel.PROP_NAME));
+        writer.write((String) nodeService.getProperty(folderNode, ContentModel.PROP_NAME));
         writer.write("\",\n\"nodeRef\":\"");
         writer.write(folderNode.toString());
         writer.write("\",\n\"id\":\"");
-        writer.write((String)nodeService.getProperty(folderNode, RecordsManagementModel.PROP_IDENTIFIER));
+        writer.write(
+                (String)
+                        nodeService.getProperty(
+                                folderNode, RecordsManagementModel.PROP_IDENTIFIER));
         writer.write("\",\n\"children\":\n[");
 
         boolean first = true;
-        List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(folderNode,
-                    ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-        for (ChildAssociationRef child : assocs)
-        {
-            if (first)
-            {
+        List<ChildAssociationRef> assocs =
+                this.nodeService.getChildAssocs(
+                        folderNode, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        for (ChildAssociationRef child : assocs) {
+            if (first) {
                 first = false;
-            }
-            else
-            {
+            } else {
                 writer.write(",");
             }
 
             NodeRef childRef = child.getChildRef();
-            if (ddService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER))
-            {
+            if (ddService.isSubClass(nodeService.getType(childRef), ContentModel.TYPE_FOLDER)) {
                 generateTransferFolderJSON(writer, childRef);
-            }
-            else
-            {
+            } else {
                 generateTransferRecordJSON(writer, childRef);
             }
         }
@@ -263,24 +251,31 @@ public class TransferReportGet extends BaseTransferWebScript
      * @throws IOException
      */
     protected void generateTransferRecordJSON(Writer writer, NodeRef recordNode)
-        throws IOException
-    {
+            throws IOException {
         writer.write("\n{\n\"type\":\"record\",\n");
         writer.write("\"name\":\"");
-        writer.write((String)nodeService.getProperty(recordNode, ContentModel.PROP_NAME));
+        writer.write((String) nodeService.getProperty(recordNode, ContentModel.PROP_NAME));
         writer.write("\",\n\"nodeRef\":\"");
         writer.write(recordNode.toString());
         writer.write("\",\n\"id\":\"");
-        writer.write((String)nodeService.getProperty(recordNode, RecordsManagementModel.PROP_IDENTIFIER));
+        writer.write(
+                (String)
+                        nodeService.getProperty(
+                                recordNode, RecordsManagementModel.PROP_IDENTIFIER));
         writer.write("\"");
 
-        if (this.nodeService.hasAspect(recordNode, RecordsManagementModel.ASPECT_DECLARED_RECORD))
-        {
+        if (this.nodeService.hasAspect(recordNode, RecordsManagementModel.ASPECT_DECLARED_RECORD)) {
             writer.write(",\n\"declaredBy\":\"");
-            writer.write((String)nodeService.getProperty(recordNode, RecordsManagementModel.PROP_DECLARED_BY));
+            writer.write(
+                    (String)
+                            nodeService.getProperty(
+                                    recordNode, RecordsManagementModel.PROP_DECLARED_BY));
             writer.write("\",\n\"declaredAt\":\"");
-            writer.write(ISO8601DateFormat.format(
-                        (Date)this.nodeService.getProperty(recordNode, RecordsManagementModel.PROP_DECLARED_AT)));
+            writer.write(
+                    ISO8601DateFormat.format(
+                            (Date)
+                                    this.nodeService.getProperty(
+                                            recordNode, RecordsManagementModel.PROP_DECLARED_AT)));
             writer.write("\"");
         }
 

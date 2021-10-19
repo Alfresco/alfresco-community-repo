@@ -38,39 +38,32 @@ import org.springframework.context.ApplicationContext;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class RetryingTransactionHelperBaseTest extends RetryingTransactionHelperTestCase
-{
+public class RetryingTransactionHelperBaseTest extends RetryingTransactionHelperTestCase {
     /** Application context */
-    protected static final String[] CONFIG_LOCATIONS = new String[]
-    {
-        "classpath:alfresco/application-context.xml",
-        "classpath:test-context.xml"
-    };
+    protected static final String[] CONFIG_LOCATIONS =
+            new String[] {
+                "classpath:alfresco/application-context.xml", "classpath:test-context.xml"
+            };
+
     protected ApplicationContext applicationContext;
-    
+
     /** retrying transaction helper */
     protected RetryingTransactionHelper retryingTransactionHelper;
 
-    /**
-     * @see org.alfresco.util.RetryingTransactionHelperTestCase#getRetryingTransactionHelper()
-     */
+    /** @see org.alfresco.util.RetryingTransactionHelperTestCase#getRetryingTransactionHelper() */
     @Override
-    public RetryingTransactionHelper getRetryingTransactionHelper()
-    {
+    public RetryingTransactionHelper getRetryingTransactionHelper() {
         return retryingTransactionHelper;
     }
-    
-    /**
-     * @see junit.framework.TestCase#setUp()
-     */
+
+    /** @see junit.framework.TestCase#setUp() */
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         // Get the application context
         applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
-        
-        // get the retrying transaction helper
-        retryingTransactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
-    }
 
+        // get the retrying transaction helper
+        retryingTransactionHelper =
+                (RetryingTransactionHelper) applicationContext.getBean("retryingTransactionHelper");
+    }
 }

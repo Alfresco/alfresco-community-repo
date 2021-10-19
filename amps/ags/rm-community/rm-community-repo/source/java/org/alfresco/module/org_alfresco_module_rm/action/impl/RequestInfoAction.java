@@ -27,12 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -49,19 +43,25 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Request info action for starting a workflow to request more information for an undeclared record
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RequestInfoAction extends RMActionExecuterAbstractBase
-{
+public class RequestInfoAction extends RMActionExecuterAbstractBase {
     /** Logger */
     private static Log logger = LogFactory.getLog(RequestInfoAction.class);
 
     /** Parameter names */
     public static final String PARAM_REQUESTED_INFO = "requestedInfo";
+
     public static final String PARAM_ASSIGNEES = "assignees";
     public static final String PARAM_RULE_CREATOR = "ruleCreator";
 
@@ -69,55 +69,75 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     public static final String NAME = "requestInfo";
 
     /** Workflow definition name */
-    private static final String REQUEST_INFO_WORKFLOW_DEFINITION_NAME = "activiti$activitiRequestForInformation";
+    private static final String REQUEST_INFO_WORKFLOW_DEFINITION_NAME =
+            "activiti$activitiRequestForInformation";
 
     /** Workflow service */
     private WorkflowService workflowService;
 
-    /**
-     * @param workflowService   workflow service
-     */
-    public void setWorkflowService(WorkflowService workflowService)
-    {
+    /** @param workflowService workflow service */
+    public void setWorkflowService(WorkflowService workflowService) {
         this.workflowService = workflowService;
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (getNodeService().exists(actionedUponNodeRef) &&
-            !getNodeService().hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
-            getRecordService().isRecord(actionedUponNodeRef) &&
-            !getRecordService().isDeclared(actionedUponNodeRef))
-        {
-            String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+        if (getNodeService().exists(actionedUponNodeRef)
+                && !getNodeService()
+                        .hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE)
+                && getRecordService().isRecord(actionedUponNodeRef)
+                && !getRecordService().isDeclared(actionedUponNodeRef)) {
+            String workflowDefinitionId =
+                    workflowService
+                            .getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME)
+                            .getId();
             Map<QName, Serializable> parameters = new HashMap<>();
 
-            parameters.put(WorkflowModel.ASSOC_PACKAGE, getWorkflowPackage(action, actionedUponNodeRef));
+            parameters.put(
+                    WorkflowModel.ASSOC_PACKAGE, getWorkflowPackage(action, actionedUponNodeRef));
             parameters.put(RMWorkflowModel.RM_MIXED_ASSIGNEES, getAssignees(action));
-            parameters.put(RMWorkflowModel.RM_REQUESTED_INFORMATION, getRequestedInformation(action));
+            parameters.put(
+                    RMWorkflowModel.RM_REQUESTED_INFORMATION, getRequestedInformation(action));
             parameters.put(RMWorkflowModel.RM_RULE_CREATOR, getRuleCreator(action));
 
             workflowService.startWorkflow(workflowDefinitionId, parameters);
-        }
-        else
-        {
-            logger.info("Can't start the request information workflow for node '" + actionedUponNodeRef.toString() + "'.");
+        } else {
+            logger.info(
+                    "Can't start the request information workflow for node '"
+                            + actionedUponNodeRef.toString()
+                            + "'.");
         }
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
-        paramList.add(new ParameterDefinitionImpl(PARAM_REQUESTED_INFO, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_REQUESTED_INFO)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_ASSIGNEES, DataTypeDefinition.ANY, true, getParamDisplayLabel(PARAM_ASSIGNEES)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_RULE_CREATOR, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_RULE_CREATOR)));
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_REQUESTED_INFO,
+                        DataTypeDefinition.TEXT,
+                        true,
+                        getParamDisplayLabel(PARAM_REQUESTED_INFO)));
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_ASSIGNEES,
+                        DataTypeDefinition.ANY,
+                        true,
+                        getParamDisplayLabel(PARAM_ASSIGNEES)));
+        paramList.add(
+                new ParameterDefinitionImpl(
+                        PARAM_RULE_CREATOR,
+                        DataTypeDefinition.TEXT,
+                        true,
+                        getParamDisplayLabel(PARAM_RULE_CREATOR)));
     }
 
     /**
@@ -127,12 +147,19 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
      * @param actionedUponNodeRef The actioned upon nodeRef
      * @return Returns a workflow package containing the actioned upon nodeRef
      */
-    private NodeRef getWorkflowPackage(Action action, NodeRef actionedUponNodeRef)
-    {
-        NodeRef workflowPackage = (NodeRef) action.getParameterValue(WorkflowModel.ASSOC_PACKAGE.toPrefixString(getNamespaceService()));
+    private NodeRef getWorkflowPackage(Action action, NodeRef actionedUponNodeRef) {
+        NodeRef workflowPackage =
+                (NodeRef)
+                        action.getParameterValue(
+                                WorkflowModel.ASSOC_PACKAGE.toPrefixString(getNamespaceService()));
         workflowPackage = workflowService.createPackage(workflowPackage);
         ChildAssociationRef childAssoc = getNodeService().getPrimaryParent(actionedUponNodeRef);
-        getNodeService().addChild(workflowPackage, actionedUponNodeRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS, childAssoc.getQName());
+        getNodeService()
+                .addChild(
+                        workflowPackage,
+                        actionedUponNodeRef,
+                        WorkflowModel.ASSOC_PACKAGE_CONTAINS,
+                        childAssoc.getQName());
         return workflowPackage;
     }
 
@@ -142,13 +169,11 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
      * @param action The request info action
      * @return Returns a list of {@link NodeRef}s each representing the assignee
      */
-    private Serializable getAssignees(Action action)
-    {
+    private Serializable getAssignees(Action action) {
         List<NodeRef> assigneesList = new ArrayList<>();
         String assigneesAsString = (String) action.getParameterValue(PARAM_ASSIGNEES);
         String[] assignees = StringUtils.split(assigneesAsString, ',');
-        for (String assignee : assignees)
-        {
+        for (String assignee : assignees) {
             assigneesList.add(new NodeRef(assignee));
         }
         return (Serializable) assigneesList;
@@ -160,8 +185,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
      * @param action The request info action
      * @return Returns the requested information
      */
-    private Serializable getRequestedInformation(Action action)
-    {
+    private Serializable getRequestedInformation(Action action) {
         return action.getParameterValue(PARAM_REQUESTED_INFO);
     }
 
@@ -171,9 +195,7 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
      * @param action The request info action
      * @return Returns the rule creator
      */
-    private Serializable getRuleCreator(Action action)
-    {
+    private Serializable getRuleCreator(Action action) {
         return action.getParameterValue(PARAM_RULE_CREATOR);
     }
-
 }

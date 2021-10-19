@@ -36,8 +36,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public interface RecordsManagementModel extends RecordsManagementCustomModel
-{
+public interface RecordsManagementModel extends RecordsManagementCustomModel {
     // Namespace details
     String RM_URI = "http://www.alfresco.org/model/recordsmanagement/1.0";
     String RM_PREFIX = "rma";
@@ -60,7 +59,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName ASSOC_EMAIL_CONFIG = QName.createQName(RM_URI, "emailConfigAssoc");
 
     // Records management container
-    QName TYPE_RECORDS_MANAGEMENT_CONTAINER = QName.createQName(RM_URI, "recordsManagementContainer");
+    QName TYPE_RECORDS_MANAGEMENT_CONTAINER =
+            QName.createQName(RM_URI, "recordsManagementContainer");
 
     // Record Category
     QName TYPE_RECORD_CATEGORY = QName.createQName(RM_URI, "recordCategory");
@@ -89,19 +89,24 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_DISPOSITION_AUTHORITY = QName.createQName(RM_URI, "dispositionAuthority");
     QName PROP_DISPOSITION_INSTRUCTIONS = QName.createQName(RM_URI, "dispositionInstructions");
     QName PROP_RECORD_LEVEL_DISPOSITION = QName.createQName(RM_URI, "recordLevelDisposition");
-    QName ASSOC_DISPOSITION_ACTION_DEFINITIONS = QName.createQName(RM_URI, "dispositionActionDefinitions");
+    QName ASSOC_DISPOSITION_ACTION_DEFINITIONS =
+            QName.createQName(RM_URI, "dispositionActionDefinitions");
 
     // Disposition action type
-    QName TYPE_DISPOSITION_ACTION_DEFINITION = QName.createQName(RM_URI, "dispositionActionDefinition");
+    QName TYPE_DISPOSITION_ACTION_DEFINITION =
+            QName.createQName(RM_URI, "dispositionActionDefinition");
     QName PROP_DISPOSITION_ACTION_NAME = QName.createQName(RM_URI, "dispositionActionName");
     QName PROP_DISPOSITION_DESCRIPTION = QName.createQName(RM_URI, "dispositionDescription");
     QName PROP_DISPOSITION_PERIOD = QName.createQName(RM_URI, "dispositionPeriod");
     QName PROP_DISPOSITION_PERIOD_PROPERTY = QName.createQName(RM_URI, "dispositionPeriodProperty");
     QName PROP_DISPOSITION_EVENT = QName.createQName(RM_URI, "dispositionEvent");
-    QName PROP_DISPOSITION_EVENT_COMBINATION = QName.createQName(RM_URI, "dispositionEventCombination");
-    QName PROP_COMBINE_DISPOSITION_STEP_CONDITIONS = QName.createQName(RM_URI, "combineDispositionStepConditions");
+    QName PROP_DISPOSITION_EVENT_COMBINATION =
+            QName.createQName(RM_URI, "dispositionEventCombination");
+    QName PROP_COMBINE_DISPOSITION_STEP_CONDITIONS =
+            QName.createQName(RM_URI, "combineDispositionStepConditions");
     QName PROP_DISPOSITION_LOCATION = QName.createQName(RM_URI, "dispositionLocation");
-    QName PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY = QName.createQName(RM_URI, "dispositionActionGhostOnDestroy");
+    QName PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY =
+            QName.createQName(RM_URI, "dispositionActionGhostOnDestroy");
 
     // Records folder
     QName TYPE_RECORD_FOLDER = QName.createQName(RM_URI, "recordFolder");
@@ -161,13 +166,21 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_DISPOSITION_ACTION_ID = QName.createQName(RM_URI, "dispositionActionId");
     QName PROP_DISPOSITION_ACTION = QName.createQName(RM_URI, "dispositionAction");
     QName PROP_DISPOSITION_AS_OF = QName.createQName(RM_URI, "dispositionAsOf");
-    /** A flag indicating that the "disposition as of" date has been manually set and shouldn't be changed. */
+    /**
+     * A flag indicating that the "disposition as of" date has been manually set and shouldn't be
+     * changed.
+     */
     QName PROP_MANUALLY_SET_AS_OF = QName.createQName(RM_URI, "manuallySetAsOf");
+
     QName PROP_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "dispositionEventsEligible");
-    QName PROP_DISPOSITION_ACTION_STARTED_AT = QName.createQName(RM_URI, "dispositionActionStartedAt");
-    QName PROP_DISPOSITION_ACTION_STARTED_BY = QName.createQName(RM_URI, "dispositionActionStartedBy");
-    QName PROP_DISPOSITION_ACTION_COMPLETED_AT = QName.createQName(RM_URI, "dispositionActionCompletedAt");
-    QName PROP_DISPOSITION_ACTION_COMPLETED_BY = QName.createQName(RM_URI, "dispositionActionCompletedBy");
+    QName PROP_DISPOSITION_ACTION_STARTED_AT =
+            QName.createQName(RM_URI, "dispositionActionStartedAt");
+    QName PROP_DISPOSITION_ACTION_STARTED_BY =
+            QName.createQName(RM_URI, "dispositionActionStartedBy");
+    QName PROP_DISPOSITION_ACTION_COMPLETED_AT =
+            QName.createQName(RM_URI, "dispositionActionCompletedAt");
+    QName PROP_DISPOSITION_ACTION_COMPLETED_BY =
+            QName.createQName(RM_URI, "dispositionActionCompletedBy");
     QName ASSOC_EVENT_EXECUTIONS = QName.createQName(RM_URI, "eventExecutions");
 
     // Event execution type
@@ -175,8 +188,10 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_EVENT_EXECUTION_NAME = QName.createQName(RM_URI, "eventExecutionName");
     QName PROP_EVENT_EXECUTION_AUTOMATIC = QName.createQName(RM_URI, "eventExecutionAutomatic");
     QName PROP_EVENT_EXECUTION_COMPLETE = QName.createQName(RM_URI, "eventExecutionComplete");
-    QName PROP_EVENT_EXECUTION_COMPLETED_BY = QName.createQName(RM_URI, "eventExecutionCompletedBy");
-    QName PROP_EVENT_EXECUTION_COMPLETED_AT = QName.createQName(RM_URI, "eventExecutionCompletedAt");
+    QName PROP_EVENT_EXECUTION_COMPLETED_BY =
+            QName.createQName(RM_URI, "eventExecutionCompletedBy");
+    QName PROP_EVENT_EXECUTION_COMPLETED_AT =
+            QName.createQName(RM_URI, "eventExecutionCompletedAt");
 
     // Custom RM data aspect
     QName ASPECT_CUSTOM_RM_DATA = QName.createQName(RM_URI, "customRMData");
@@ -191,18 +206,15 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Records management root aspect
     QName ASPECT_RECORDS_MANAGEMENT_ROOT = QName.createQName(RM_URI, "recordsManagementRoot");
     // since 2.1
-    @Deprecated
-    QName ASSOC_HOLDS = QName.createQName(RM_URI, "holds");
+    @Deprecated QName ASSOC_HOLDS = QName.createQName(RM_URI, "holds");
     // since 2.1
-    @Deprecated
-    QName ASSOC_TRANSFERS = QName.createQName(RM_URI, "transfers");
+    @Deprecated QName ASSOC_TRANSFERS = QName.createQName(RM_URI, "transfers");
 
     // Hold type
     QName TYPE_HOLD = QName.createQName(RM_URI, "hold");
     QName PROP_HOLD_REASON = QName.createQName(RM_URI, "holdReason");
-    //since 3.2
-    @Deprecated
-    QName ASSOC_FROZEN_RECORDS = QName.createQName(RM_URI, "frozenRecords");
+    // since 3.2
+    @Deprecated QName ASSOC_FROZEN_RECORDS = QName.createQName(RM_URI, "frozenRecords");
     QName ASSOC_FROZEN_CONTENT = QName.createQName(RM_URI, "frozenContent");
 
     // Record meta data aspect
@@ -215,7 +227,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 
     // Transfer aspect
     QName TYPE_TRANSFER = QName.createQName(RM_URI, "transfer");
-    QName PROP_TRANSFER_ACCESSION_INDICATOR = QName.createQName(RM_URI, "transferAccessionIndicator");
+    QName PROP_TRANSFER_ACCESSION_INDICATOR =
+            QName.createQName(RM_URI, "transferAccessionIndicator");
     QName PROP_TRANSFER_PDF_INDICATOR = QName.createQName(RM_URI, "transferPDFIndicator");
     QName PROP_TRANSFER_LOCATION = QName.createQName(RM_URI, "transferLocation");
     QName ASSOC_TRANSFERRED = QName.createQName(RM_URI, "transferred");
@@ -239,22 +252,32 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 
     // Search rollup aspect
     QName ASPECT_RM_SEARCH = QName.createQName(RM_URI, "recordSearch");
-    QName PROP_RS_DISPOSITION_ACTION_NAME = QName.createQName(RM_URI, "recordSearchDispositionActionName");
-    QName PROP_RS_DISPOSITION_ACTION_AS_OF = QName.createQName(RM_URI, "recordSearchDispositionActionAsOf");
-    QName PROP_RS_DISPOSITION_EVENTS_ELIGIBLE = QName.createQName(RM_URI, "recordSearchDispositionEventsEligible");
+    QName PROP_RS_DISPOSITION_ACTION_NAME =
+            QName.createQName(RM_URI, "recordSearchDispositionActionName");
+    QName PROP_RS_DISPOSITION_ACTION_AS_OF =
+            QName.createQName(RM_URI, "recordSearchDispositionActionAsOf");
+    QName PROP_RS_DISPOSITION_EVENTS_ELIGIBLE =
+            QName.createQName(RM_URI, "recordSearchDispositionEventsEligible");
     QName PROP_RS_DISPOSITION_EVENTS = QName.createQName(RM_URI, "recordSearchDispositionEvents");
-    QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriod");
-    QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION = QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriodExpression");
+    QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD =
+            QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriod");
+    QName PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION =
+            QName.createQName(RM_URI, "recordSearchVitalRecordReviewPeriodExpression");
     QName PROP_RS_DISPOSITION_PERIOD = QName.createQName(RM_URI, "recordSearchDispositionPeriod");
-    QName PROP_RS_DISPOSITION_PERIOD_EXPRESSION = QName.createQName(RM_URI, "recordSearchDispositionPeriodExpression");
-    QName PROP_RS_HAS_DISPOITION_SCHEDULE = QName.createQName(RM_URI, "recordSearchHasDispositionSchedule");
-    QName PROP_RS_DISPOITION_INSTRUCTIONS = QName.createQName(RM_URI, "recordSearchDispositionInstructions");
-    QName PROP_RS_DISPOITION_AUTHORITY = QName.createQName(RM_URI, "recordSearchDispositionAuthority");
-    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT = QName.createQName(RM_URI, "declassificationReviewCompletedAt");
-    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY = QName.createQName(RM_URI, "declassificationReviewCompletedBy");
+    QName PROP_RS_DISPOSITION_PERIOD_EXPRESSION =
+            QName.createQName(RM_URI, "recordSearchDispositionPeriodExpression");
+    QName PROP_RS_HAS_DISPOITION_SCHEDULE =
+            QName.createQName(RM_URI, "recordSearchHasDispositionSchedule");
+    QName PROP_RS_DISPOITION_INSTRUCTIONS =
+            QName.createQName(RM_URI, "recordSearchDispositionInstructions");
+    QName PROP_RS_DISPOITION_AUTHORITY =
+            QName.createQName(RM_URI, "recordSearchDispositionAuthority");
+    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_AT =
+            QName.createQName(RM_URI, "declassificationReviewCompletedAt");
+    QName PROP_RS_DECLASSIFICATION_REVIEW_COMPLETED_BY =
+            QName.createQName(RM_URI, "declassificationReviewCompletedBy");
     /** @depreacted as of 2.2, because disposable items can now be in multiple holds */
-    @Deprecated
-    QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");
+    @Deprecated QName PROP_RS_HOLD_REASON = QName.createQName(RM_URI, "recordSearchHoldReason");
 
     // Loaded Data Set Ids
     QName ASPECT_LOADED_DATA_SET_ID = QName.createQName(RM_URI, "loadedDataSetId");
@@ -269,7 +292,8 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // Originating details of a record
     QName ASPECT_RECORD_ORIGINATING_DETAILS = QName.createQName(RM_URI, "recordOriginatingDetails");
     QName PROP_RECORD_ORIGINATING_USER_ID = QName.createQName(RM_URI, "recordOriginatingUserId");
-    QName PROP_RECORD_ORIGINATING_CREATION_DATE = QName.createQName(RM_URI, "recordOriginatingCreationDate");
+    QName PROP_RECORD_ORIGINATING_CREATION_DATE =
+            QName.createQName(RM_URI, "recordOriginatingCreationDate");
     QName PROP_RECORD_ORIGINATING_LOCATION = QName.createQName(RM_URI, "recordOriginatingLocation");
 
     // Rejection details of a record
@@ -288,7 +312,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName PROP_COUNT = QName.createQName(RM_URI, "count");
 
     QName ASPECT_SAVED_SEARCH = QName.createQName(RM_URI, "savedSearch");
-    //Workaround for RM-6788
+    // Workaround for RM-6788
     String GL_URI = "http://www.alfresco.org/model/glacier/1.0";
     QName ASPECT_ARCHIVED = QName.createQName(GL_URI, "archived");
 

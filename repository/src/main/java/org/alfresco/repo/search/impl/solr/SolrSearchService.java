@@ -4,42 +4,33 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.search.impl.solr;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.repo.search.CannedQueryDef;
 import org.alfresco.repo.search.QueryRegisterComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.NodeSearcher;
-import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.QueryParameterisationException;
+import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -58,68 +49,64 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.SearchLanguageConversion;
 
-/**
- * @author Andy
- */
-public class SolrSearchService implements SearchService
-{
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
+
+/** @author Andy */
+public class SolrSearchService implements SearchService {
     private NodeService nodeService;
-    
+
     private NamespacePrefixResolver namespacePrefixResolver;
-    
+
     private DictionaryService dictionaryService;
-    
+
     private Map<String, LuceneQueryLanguageSPI> queryLanguages;
-    
+
     private QueryRegisterComponent queryRegister;
-        
-    public NodeService getNodeService()
-    {
+
+    public NodeService getNodeService() {
         return nodeService;
     }
 
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public NamespacePrefixResolver getNamespacePrefixResolver()
-    {
+    public NamespacePrefixResolver getNamespacePrefixResolver() {
         return namespacePrefixResolver;
     }
 
-    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
-    {
+    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver) {
         this.namespacePrefixResolver = namespacePrefixResolver;
     }
 
-    public DictionaryService getDictionaryService()
-    {
+    public DictionaryService getDictionaryService() {
         return dictionaryService;
     }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    public Map<String, LuceneQueryLanguageSPI> getQueryLanguages()
-    {
+    public Map<String, LuceneQueryLanguageSPI> getQueryLanguages() {
         return queryLanguages;
     }
 
-    public void setQueryLanguages(Map<String, LuceneQueryLanguageSPI> queryLanguages)
-    {
+    public void setQueryLanguages(Map<String, LuceneQueryLanguageSPI> queryLanguages) {
         this.queryLanguages = queryLanguages;
     }
 
-    public QueryRegisterComponent getQueryRegister()
-    {
+    public QueryRegisterComponent getQueryRegister() {
         return queryRegister;
     }
 
-    public void setQueryRegister(QueryRegisterComponent queryRegister)
-    {
+    public void setQueryRegister(QueryRegisterComponent queryRegister) {
         this.queryRegister = queryRegister;
     }
 
@@ -129,8 +116,7 @@ public class SolrSearchService implements SearchService
      * java.lang.String, java.lang.String)
      */
     @Override
-    public ResultSet query(StoreRef store, String language, String query)
-    {
+    public ResultSet query(StoreRef store, String language, String query) {
         return query(store, language, query, null);
     }
 
@@ -140,32 +126,32 @@ public class SolrSearchService implements SearchService
      * java.lang.String, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[])
      */
     @Override
-    public ResultSet query(StoreRef store, String language, String query, QueryParameterDefinition[] queryParameterDefinitions)
-    {
+    public ResultSet query(
+            StoreRef store,
+            String language,
+            String query,
+            QueryParameterDefinition[] queryParameterDefinitions) {
         SearchParameters sp = new SearchParameters();
         sp.addStore(store);
         sp.setLanguage(language);
         sp.setQuery(query);
-        if (queryParameterDefinitions != null)
-        {
-            for (QueryParameterDefinition qpd : queryParameterDefinitions)
-            {
+        if (queryParameterDefinitions != null) {
+            for (QueryParameterDefinition qpd : queryParameterDefinitions) {
                 sp.addQueryParameterDefinition(qpd);
             }
         }
         sp.excludeDataInTheCurrentTransaction(true);
-        
+
         return query(sp);
     }
-    
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.repository.StoreRef,
      * org.alfresco.service.namespace.QName, org.alfresco.service.cmr.search.QueryParameter[])
      */
     @Override
-    public ResultSet query(StoreRef store, QName queryId, QueryParameter[] queryParameters)
-    {
+    public ResultSet query(StoreRef store, QName queryId, QueryParameter[] queryParameters) {
         CannedQueryDef definition = queryRegister.getQueryDefinition(queryId);
 
         // Do parameter replacement
@@ -180,48 +166,47 @@ public class SolrSearchService implements SearchService
 
         checkParameters(definition, queryParameters);
 
-        String queryString = parameterise(definition.getQuery(), definition.getQueryParameterMap(), queryParameters, definition.getNamespacePrefixResolver());
+        String queryString =
+                parameterise(
+                        definition.getQuery(),
+                        definition.getQueryParameterMap(),
+                        queryParameters,
+                        definition.getNamespacePrefixResolver());
 
         return query(store, definition.getLanguage(), queryString, null);
     }
 
     /**
-     * The definitions must provide a default value, or of not there must be a parameter to provide the value
-     * 
+     * The definitions must provide a default value, or of not there must be a parameter to provide
+     * the value
+     *
      * @param definition CannedQueryDef
      * @param queryParameters QueryParameter[]
      * @throws QueryParameterisationException
      */
-    private void checkParameters(CannedQueryDef definition, QueryParameter[] queryParameters) throws QueryParameterisationException
-    {
+    private void checkParameters(CannedQueryDef definition, QueryParameter[] queryParameters)
+            throws QueryParameterisationException {
         List<QName> missing = new ArrayList<QName>();
 
         Set<QName> parameterQNameSet = new HashSet<QName>();
-        if (queryParameters != null)
-        {
-            for (QueryParameter parameter : queryParameters)
-            {
+        if (queryParameters != null) {
+            for (QueryParameter parameter : queryParameters) {
                 parameterQNameSet.add(parameter.getQName());
             }
         }
 
-        for (QueryParameterDefinition parameterDefinition : definition.getQueryParameterDefs())
-        {
-            if (!parameterDefinition.hasDefaultValue())
-            {
-                if (!parameterQNameSet.contains(parameterDefinition.getQName()))
-                {
+        for (QueryParameterDefinition parameterDefinition : definition.getQueryParameterDefs()) {
+            if (!parameterDefinition.hasDefaultValue()) {
+                if (!parameterQNameSet.contains(parameterDefinition.getQName())) {
                     missing.add(parameterDefinition.getQName());
                 }
             }
         }
 
-        if (missing.size() > 0)
-        {
+        if (missing.size() > 0) {
             StringBuilder buffer = new StringBuilder(128);
             buffer.append("The query is missing values for the following parameters: ");
-            for (QName qName : missing)
-            {
+            for (QName qName : missing) {
                 buffer.append(qName);
                 buffer.append(", ");
             }
@@ -237,19 +222,19 @@ public class SolrSearchService implements SearchService
      * better to provide the parameters and work out what to do TODO: conditional query escapement - may be we should
      * have a parameter type that is not escaped
      */
-    private String parameterise(String unparameterised, Map<QName, QueryParameterDefinition> map, QueryParameter[] queryParameters, NamespacePrefixResolver nspr)
-            throws QueryParameterisationException
-    {
+    private String parameterise(
+            String unparameterised,
+            Map<QName, QueryParameterDefinition> map,
+            QueryParameter[] queryParameters,
+            NamespacePrefixResolver nspr)
+            throws QueryParameterisationException {
 
         Map<QName, List<Serializable>> valueMap = new HashMap<QName, List<Serializable>>();
 
-        if (queryParameters != null)
-        {
-            for (QueryParameter parameter : queryParameters)
-            {
+        if (queryParameters != null) {
+            for (QueryParameter parameter : queryParameters) {
                 List<Serializable> list = valueMap.get(parameter.getQName());
-                if (list == null)
-                {
+                if (list == null) {
                     list = new ArrayList<Serializable>();
                     valueMap.put(parameter.getQName(), list);
                 }
@@ -257,55 +242,44 @@ public class SolrSearchService implements SearchService
             }
         }
 
-        Map<QName, ListIterator<Serializable>> iteratorMap = new HashMap<QName, ListIterator<Serializable>>();
+        Map<QName, ListIterator<Serializable>> iteratorMap =
+                new HashMap<QName, ListIterator<Serializable>>();
 
         List<QName> missing = new ArrayList<QName>(1);
         StringBuilder buffer = new StringBuilder(unparameterised);
         int index = 0;
-        while ((index = buffer.indexOf("${", index)) != -1)
-        {
+        while ((index = buffer.indexOf("${", index)) != -1) {
             int endIndex = buffer.indexOf("}", index);
             String qNameString = buffer.substring(index + 2, endIndex);
             QName key = QName.createQName(qNameString, nspr);
             QueryParameterDefinition parameterDefinition = map.get(key);
-            if (parameterDefinition == null)
-            {
+            if (parameterDefinition == null) {
                 missing.add(key);
                 buffer.replace(index, endIndex + 1, "");
-            }
-            else
-            {
+            } else {
                 ListIterator<Serializable> it = iteratorMap.get(key);
-                if ((it == null) || (!it.hasNext()))
-                {
+                if ((it == null) || (!it.hasNext())) {
                     List<Serializable> list = valueMap.get(key);
-                    if ((list != null) && (list.size() > 0))
-                    {
+                    if ((list != null) && (list.size() > 0)) {
                         it = list.listIterator();
                     }
-                    if (it != null)
-                    {
+                    if (it != null) {
                         iteratorMap.put(key, it);
                     }
                 }
                 String value;
-                if (it == null)
-                {
+                if (it == null) {
                     value = parameterDefinition.getDefault();
-                }
-                else
-                {
+                } else {
                     value = DefaultTypeConverter.INSTANCE.convert(String.class, it.next());
                 }
                 buffer.replace(index, endIndex + 1, value);
             }
         }
-        if (missing.size() > 0)
-        {
+        if (missing.size() > 0) {
             StringBuilder error = new StringBuilder();
             error.append("The query uses the following parameters which are not defined: ");
-            for (QName qName : missing)
-            {
+            for (QName qName : missing) {
                 error.append(qName);
                 error.append(", ");
             }
@@ -321,101 +295,152 @@ public class SolrSearchService implements SearchService
      * @see org.alfresco.service.cmr.search.SearchService#query(org.alfresco.service.cmr.search.SearchParameters)
      */
     @Override
-    public ResultSet query(SearchParameters searchParameters)
-    {
-        if(searchParameters.getStores().size() == 0)
-        {
+    public ResultSet query(SearchParameters searchParameters) {
+        if (searchParameters.getStores().size() == 0) {
             throw new IllegalStateException("At least one store must be defined to search");
         }
-        
-        String parameterisedQueryString;
-        if (searchParameters.getQueryParameterDefinitions().size() > 0)
-        {
-            Map<QName, QueryParameterDefinition> map = new HashMap<QName, QueryParameterDefinition>();
 
-            for (QueryParameterDefinition qpd : searchParameters.getQueryParameterDefinitions())
-            {
+        String parameterisedQueryString;
+        if (searchParameters.getQueryParameterDefinitions().size() > 0) {
+            Map<QName, QueryParameterDefinition> map =
+                    new HashMap<QName, QueryParameterDefinition>();
+
+            for (QueryParameterDefinition qpd : searchParameters.getQueryParameterDefinitions()) {
                 map.put(qpd.getQName(), qpd);
             }
 
-            parameterisedQueryString = parameterise(searchParameters.getQuery(), map, null, namespacePrefixResolver);
-        }
-        else
-        {
+            parameterisedQueryString =
+                    parameterise(searchParameters.getQuery(), map, null, namespacePrefixResolver);
+        } else {
             parameterisedQueryString = searchParameters.getQuery();
         }
         // TODO: add another property so the set query is not changed ...
         // May be good to return the query as run ??
         searchParameters.setQuery(parameterisedQueryString);
 
-        LuceneQueryLanguageSPI language = queryLanguages.get(searchParameters.getLanguage().toLowerCase());
-        if (language != null)
-        {
+        LuceneQueryLanguageSPI language =
+                queryLanguages.get(searchParameters.getLanguage().toLowerCase());
+        if (language != null) {
             return language.executeQuery(searchParameters);
+        } else {
+            throw new SearcherException(
+                    "Unknown query language: " + searchParameters.getLanguage());
         }
-        else
-        {
-            throw new SearcherException("Unknown query language: " + searchParameters.getLanguage());
-        }
     }
 
     @Override
-    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-            boolean followAllParentLinks) throws InvalidNodeRefException, XPathException
-    {
-        return selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, SearchService.LANGUAGE_XPATH);
+    public List<NodeRef> selectNodes(
+            NodeRef contextNodeRef,
+            String xpath,
+            QueryParameterDefinition[] parameters,
+            NamespacePrefixResolver namespacePrefixResolver,
+            boolean followAllParentLinks)
+            throws InvalidNodeRefException, XPathException {
+        return selectNodes(
+                contextNodeRef,
+                xpath,
+                parameters,
+                namespacePrefixResolver,
+                followAllParentLinks,
+                SearchService.LANGUAGE_XPATH);
     }
 
     @Override
-    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-            boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
-    {
+    public List<NodeRef> selectNodes(
+            NodeRef contextNodeRef,
+            String xpath,
+            QueryParameterDefinition[] parameters,
+            NamespacePrefixResolver namespacePrefixResolver,
+            boolean followAllParentLinks,
+            String language)
+            throws InvalidNodeRefException, XPathException {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
-        return nodeSearcher.selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
-
+        return nodeSearcher.selectNodes(
+                contextNodeRef,
+                xpath,
+                parameters,
+                namespacePrefixResolver,
+                followAllParentLinks,
+                language);
     }
 
     @Override
-    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-            boolean followAllParentLinks) throws InvalidNodeRefException, XPathException
-    {
-        return selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, SearchService.LANGUAGE_XPATH);
-
+    public List<Serializable> selectProperties(
+            NodeRef contextNodeRef,
+            String xpath,
+            QueryParameterDefinition[] parameters,
+            NamespacePrefixResolver namespacePrefixResolver,
+            boolean followAllParentLinks)
+            throws InvalidNodeRefException, XPathException {
+        return selectProperties(
+                contextNodeRef,
+                xpath,
+                parameters,
+                namespacePrefixResolver,
+                followAllParentLinks,
+                SearchService.LANGUAGE_XPATH);
     }
 
     @Override
-    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-            boolean followAllParentLinks, String language) throws InvalidNodeRefException, XPathException
-    {
+    public List<Serializable> selectProperties(
+            NodeRef contextNodeRef,
+            String xpath,
+            QueryParameterDefinition[] parameters,
+            NamespacePrefixResolver namespacePrefixResolver,
+            boolean followAllParentLinks,
+            String language)
+            throws InvalidNodeRefException, XPathException {
         NodeSearcher nodeSearcher = new NodeSearcher(nodeService, dictionaryService, this);
-        return nodeSearcher.selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks, language);
+        return nodeSearcher.selectProperties(
+                contextNodeRef,
+                xpath,
+                parameters,
+                namespacePrefixResolver,
+                followAllParentLinks,
+                language);
     }
 
     @Override
-    public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern) throws InvalidNodeRefException
-    {
+    public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern)
+            throws InvalidNodeRefException {
         return contains(nodeRef, propertyQName, googleLikePattern, SearchParameters.Operator.OR);
     }
 
     @Override
-    public boolean contains(NodeRef nodeRef, QName propertyQName, String googleLikePattern, Operator defaultOperator) throws InvalidNodeRefException
-    {
+    public boolean contains(
+            NodeRef nodeRef,
+            QName propertyQName,
+            String googleLikePattern,
+            Operator defaultOperator)
+            throws InvalidNodeRefException {
         ResultSet resultSet = null;
-        try
-        {
+        try {
             // build Lucene search string specific to the node
             StringBuilder sb = new StringBuilder();
-            sb.append("+ID:\"").append(nodeRef.toString()).append("\" +(TEXT:(").append(googleLikePattern.toLowerCase()).append(") ");
-            if (propertyQName != null)
-            {
-                sb.append(" OR @").append(SearchLanguageConversion.escapeLuceneQuery(QName.createQName(propertyQName.getNamespaceURI(), ISO9075.encode(propertyQName.getLocalName())).toString()));
+            sb.append("+ID:\"")
+                    .append(nodeRef.toString())
+                    .append("\" +(TEXT:(")
+                    .append(googleLikePattern.toLowerCase())
+                    .append(") ");
+            if (propertyQName != null) {
+                sb.append(" OR @")
+                        .append(
+                                SearchLanguageConversion.escapeLuceneQuery(
+                                        QName.createQName(
+                                                        propertyQName.getNamespaceURI(),
+                                                        ISO9075.encode(
+                                                                propertyQName.getLocalName()))
+                                                .toString()));
                 sb.append(":(").append(googleLikePattern.toLowerCase()).append(")");
-            }
-            else
-            {
-                for (QName key : nodeService.getProperties(nodeRef).keySet())
-                {
-                    sb.append(" OR @").append(SearchLanguageConversion.escapeLuceneQuery(QName.createQName(key.getNamespaceURI(), ISO9075.encode(key.getLocalName())).toString()));
+            } else {
+                for (QName key : nodeService.getProperties(nodeRef).keySet()) {
+                    sb.append(" OR @")
+                            .append(
+                                    SearchLanguageConversion.escapeLuceneQuery(
+                                            QName.createQName(
+                                                            key.getNamespaceURI(),
+                                                            ISO9075.encode(key.getLocalName()))
+                                                    .toString()));
                     sb.append(":(").append(googleLikePattern.toLowerCase()).append(")");
                 }
             }
@@ -430,74 +455,73 @@ public class SolrSearchService implements SearchService
             resultSet = this.query(sp);
             boolean answer = resultSet.length() > 0;
             return answer;
-        }
-        finally
-        {
-            if (resultSet != null)
-            {
+        } finally {
+            if (resultSet != null) {
                 resultSet.close();
             }
         }
     }
 
     @Override
-    public boolean like(NodeRef nodeRef, QName propertyQName, String sqlLikePattern, boolean includeFTS) throws InvalidNodeRefException
-    {
-        if (propertyQName == null)
-        {
-            throw new IllegalArgumentException("Property QName is mandatory for the like expression");
+    public boolean like(
+            NodeRef nodeRef, QName propertyQName, String sqlLikePattern, boolean includeFTS)
+            throws InvalidNodeRefException {
+        if (propertyQName == null) {
+            throw new IllegalArgumentException(
+                    "Property QName is mandatory for the like expression");
         }
 
         StringBuilder sb = new StringBuilder(sqlLikePattern.length() * 3);
 
-        if (includeFTS)
-        {
+        if (includeFTS) {
             // convert the SQL-like pattern into a Lucene-compatible string
-            String pattern = SearchLanguageConversion.convertXPathLikeToLucene(sqlLikePattern.toLowerCase());
+            String pattern =
+                    SearchLanguageConversion.convertXPathLikeToLucene(sqlLikePattern.toLowerCase());
 
             // build Lucene search string specific to the node
             sb = new StringBuilder();
             sb.append("+ID:\"").append(nodeRef.toString()).append("\" +(");
             // FTS or attribute matches
-            if (includeFTS)
-            {
+            if (includeFTS) {
                 sb.append("TEXT:(").append(pattern).append(") ");
             }
-            if (propertyQName != null)
-            {
-                sb.append(" @").append(SearchLanguageConversion.escapeLuceneQuery(QName.createQName(propertyQName.getNamespaceURI(), ISO9075.encode(propertyQName.getLocalName())).toString()))
-                        .append(":(").append(pattern).append(")");
+            if (propertyQName != null) {
+                sb.append(" @")
+                        .append(
+                                SearchLanguageConversion.escapeLuceneQuery(
+                                        QName.createQName(
+                                                        propertyQName.getNamespaceURI(),
+                                                        ISO9075.encode(
+                                                                propertyQName.getLocalName()))
+                                                .toString()))
+                        .append(":(")
+                        .append(pattern)
+                        .append(")");
             }
             sb.append(")");
 
             ResultSet resultSet = null;
-            try
-            {
+            try {
                 resultSet = this.query(nodeRef.getStoreRef(), "lucene", sb.toString());
                 boolean answer = resultSet.length() > 0;
                 return answer;
-            }
-            finally
-            {
-                if (resultSet != null)
-                {
+            } finally {
+                if (resultSet != null) {
                     resultSet.close();
                 }
             }
-        }
-        else
-        {
+        } else {
             // convert the SQL-like pattern into a Lucene-compatible string
-            String pattern = SearchLanguageConversion.convertXPathLikeToRegex(sqlLikePattern.toLowerCase());
+            String pattern =
+                    SearchLanguageConversion.convertXPathLikeToRegex(sqlLikePattern.toLowerCase());
 
             Serializable property = nodeService.getProperty(nodeRef, propertyQName);
-            if (property == null)
-            {
+            if (property == null) {
                 return false;
-            }
-            else
-            {
-                String propertyString = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(nodeRef, propertyQName));
+            } else {
+                String propertyString =
+                        DefaultTypeConverter.INSTANCE.convert(
+                                String.class, nodeService.getProperty(nodeRef, propertyQName));
                 return propertyString.toLowerCase().matches(pattern);
             }
         }

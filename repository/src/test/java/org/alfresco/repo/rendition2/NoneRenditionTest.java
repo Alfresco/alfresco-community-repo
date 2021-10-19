@@ -34,58 +34,50 @@ import org.junit.experimental.categories.Category;
 import java.util.Collections;
 
 /**
- * Repeats quick file rendition tests with local transforms disabled.
- * The Transform Service does not exist for the Community edition.
+ * Repeats quick file rendition tests with local transforms disabled. The Transform Service does not
+ * exist for the Community edition.
  *
  * @author adavis
  */
-public class NoneRenditionTest extends AbstractRenditionTest
-{
+public class NoneRenditionTest extends AbstractRenditionTest {
     @BeforeClass
-    public static void before()
-    {
+    public static void before() {
         AbstractRenditionIntegrationTest.before();
         none();
     }
 
     @AfterClass
-    public static void after()
-    {
+    public static void after() {
         AbstractRenditionIntegrationTest.after();
     }
 
     @Test
     @Override
-    public void testTasRestApiRenditions() throws Exception
-    {
+    public void testTasRestApiRenditions() throws Exception {
         internalTestTasRestApiRenditions(0, 0);
     }
 
     @Category(DebugTests.class)
     @Test
     @Override
-    public void testAllSourceExtensions() throws Exception
-    {
+    public void testAllSourceExtensions() throws Exception {
         internalTestAllSourceExtensions(0, 0, Collections.emptyList());
     }
 
     @Test
     @Override
-    public void testGifRenditions() throws Exception
-    {
+    public void testGifRenditions() throws Exception {
         internalTestGifRenditions(0, 0);
     }
 
     @Test
     @Override
-    public void testSelectedMetadataExtracts() throws Exception
-    {
+    public void testSelectedMetadataExtracts() throws Exception {
         internalTestSelectedMetadataExtracts(7, 7);
     }
 
     @Test
-    public void testAllTransformServiceConfigRenditions() throws Exception
-    {
+    public void testAllTransformServiceConfigRenditions() throws Exception {
         internalTestTasRestApiRenditions(0, 0);
     }
 }

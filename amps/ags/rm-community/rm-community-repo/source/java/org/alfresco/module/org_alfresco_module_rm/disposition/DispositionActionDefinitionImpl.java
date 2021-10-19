@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
@@ -41,13 +37,17 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.QName;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Disposition action implementation
  *
  * @author Roy Wetherall
  */
-public class DispositionActionDefinitionImpl implements DispositionActionDefinition, RecordsManagementModel
-{
+public class DispositionActionDefinitionImpl
+        implements DispositionActionDefinition, RecordsManagementModel {
     /** Name */
     private String name;
 
@@ -78,14 +78,18 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     /**
      * Constructor
      *
-     * @param recordsManagementEventService  records management event service
+     * @param recordsManagementEventService records management event service
      * @param recordsManagementActionService records management action service
-     * @param nodeService  node service
-     * @param nodeRef   disposition action node reference
-     * @param index     index of disposition action
+     * @param nodeService node service
+     * @param nodeRef disposition action node reference
+     * @param index index of disposition action
      */
-    public DispositionActionDefinitionImpl(RecordsManagementEventService recordsManagementEventService, RecordsManagementActionService recordsManagementActionService, NodeService nodeService, NodeRef nodeRef, int index)
-    {
+    public DispositionActionDefinitionImpl(
+            RecordsManagementEventService recordsManagementEventService,
+            RecordsManagementActionService recordsManagementActionService,
+            NodeService nodeService,
+            NodeRef nodeRef,
+            int index) {
         this.recordsManagementEventService = recordsManagementEventService;
         this.recordsManagementActionService = recordsManagementActionService;
         this.nodeService = nodeService;
@@ -94,73 +98,76 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getNodeRef()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getNodeRef()
      */
     @Override
-    public NodeRef getNodeRef()
-    {
+    public NodeRef getNodeRef() {
         return this.dispositionActionNodeRef;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getIndex()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getIndex()
      */
     @Override
-    public int getIndex()
-    {
+    public int getIndex() {
         return this.index;
     }
 
     /**
-     *  @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getId()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getId()
      */
     @Override
-    public String getId()
-    {
+    public String getId() {
         return this.dispositionActionNodeRef.getId();
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getDescription()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getDescription()
      */
     @Override
-    public String getDescription()
-    {
-        if (description == null)
-        {
-            description = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_DESCRIPTION);
+    public String getDescription() {
+        if (description == null) {
+            description =
+                    (String)
+                            nodeService.getProperty(
+                                    this.dispositionActionNodeRef, PROP_DISPOSITION_DESCRIPTION);
         }
         return description;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getName()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getName()
      */
     @Override
-    public String getName()
-    {
-        if (name == null)
-        {
-            name = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_ACTION_NAME);
+    public String getName() {
+        if (name == null) {
+            name =
+                    (String)
+                            nodeService.getProperty(
+                                    this.dispositionActionNodeRef, PROP_DISPOSITION_ACTION_NAME);
         }
         return name;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getLabel()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getLabel()
      */
     @Override
-    public String getLabel()
-    {
-        if (label == null)
-        {
+    public String getLabel() {
+        if (label == null) {
             String name = getName();
             label = name;
 
             // get the disposition action from the RM action service
-            RecordsManagementAction action = recordsManagementActionService.getDispositionAction(name);
-            if (action != null)
-            {
+            RecordsManagementAction action =
+                    recordsManagementActionService.getDispositionAction(name);
+            if (action != null) {
                 label = action.getLabel();
             }
         }
@@ -169,88 +176,95 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getPeriod()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getPeriod()
      */
     @Override
-    public Period getPeriod()
-    {
-        return (Period)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD);
+    public Period getPeriod() {
+        return (Period)
+                nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getPeriodProperty()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getPeriodProperty()
      */
     @Override
-    public QName getPeriodProperty()
-    {
+    public QName getPeriodProperty() {
         QName result = null;
-        String value = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD_PROPERTY);
-        if (value != null)
-        {
+        String value =
+                (String)
+                        nodeService.getProperty(
+                                this.dispositionActionNodeRef, PROP_DISPOSITION_PERIOD_PROPERTY);
+        if (value != null) {
             result = QName.createQName(value);
         }
         return result;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getEvents()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getEvents()
      */
     @Override
     @SuppressWarnings("unchecked")
-    public List<RecordsManagementEvent> getEvents()
-    {
+    public List<RecordsManagementEvent> getEvents() {
         List<RecordsManagementEvent> events = null;
-        Collection<String> eventNames = (Collection<String>)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT);
-        if (eventNames != null)
-        {
+        Collection<String> eventNames =
+                (Collection<String>)
+                        nodeService.getProperty(
+                                this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT);
+        if (eventNames != null) {
             events = new ArrayList<>(eventNames.size());
-            for (String eventName : eventNames)
-            {
+            for (String eventName : eventNames) {
                 RecordsManagementEvent event = recordsManagementEventService.getEvent(eventName);
                 events.add(event);
             }
-        }
-        else
-        {
+        } else {
             events = java.util.Collections.EMPTY_LIST;
         }
         return events;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#eligibleOnFirstCompleteEvent()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#eligibleOnFirstCompleteEvent()
      */
     @Override
-    public boolean eligibleOnFirstCompleteEvent()
-    {
+    public boolean eligibleOnFirstCompleteEvent() {
         boolean result = true;
-        String value = (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT_COMBINATION);
-        if (value != null && value.equals("and"))
-        {
+        String value =
+                (String)
+                        nodeService.getProperty(
+                                this.dispositionActionNodeRef, PROP_DISPOSITION_EVENT_COMBINATION);
+        if (value != null && value.equals("and")) {
             result = false;
         }
         return result;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getLocation()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getLocation()
      */
     @Override
-    public String getLocation()
-    {
-        return (String)nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_LOCATION);
+    public String getLocation() {
+        return (String)
+                nodeService.getProperty(this.dispositionActionNodeRef, PROP_DISPOSITION_LOCATION);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getGhostOnDestroy()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition#getGhostOnDestroy()
      */
     @Override
-    public String getGhostOnDestroy()
-    {
-        if (ghostOnDestroy == null)
-        {
-            ghostOnDestroy = (String) nodeService.getProperty(this.dispositionActionNodeRef,
-                    PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY);
+    public String getGhostOnDestroy() {
+        if (ghostOnDestroy == null) {
+            ghostOnDestroy =
+                    (String)
+                            nodeService.getProperty(
+                                    this.dispositionActionNodeRef,
+                                    PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY);
         }
         return ghostOnDestroy;
     }

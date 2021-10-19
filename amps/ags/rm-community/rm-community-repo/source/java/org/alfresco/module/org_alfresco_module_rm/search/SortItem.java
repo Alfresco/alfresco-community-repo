@@ -31,14 +31,12 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 @AlfrescoPublicApi
-/*package*/ class SortItem
-{
+/*package*/ class SortItem {
     public QName property = null;
     public boolean assc = true;
-    public SortItem(QName property, boolean assc)
-    {
+
+    public SortItem(QName property, boolean assc) {
         this.property = property;
         this.assc = assc;
     }
-
 }

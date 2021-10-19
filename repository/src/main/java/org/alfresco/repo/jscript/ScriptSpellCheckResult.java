@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -33,8 +33,7 @@ import java.util.List;
  * @author Jamal Kaabi-Mofrad
  * @since 5.0
  */
-public class ScriptSpellCheckResult implements Serializable
-{
+public class ScriptSpellCheckResult implements Serializable {
     private static final long serialVersionUID = -5947320933438147267L;
 
     private final String originalSearchTerm;
@@ -43,9 +42,12 @@ public class ScriptSpellCheckResult implements Serializable
     private final boolean searchedFor;
     private final boolean spellCheckExist;
 
-    public ScriptSpellCheckResult(String originalSearchTerm, String resultName, boolean searchedFor,
-                List<String> results, boolean spellCheckExist)
-    {
+    public ScriptSpellCheckResult(
+            String originalSearchTerm,
+            String resultName,
+            boolean searchedFor,
+            List<String> results,
+            boolean spellCheckExist) {
         this.originalSearchTerm = originalSearchTerm;
         this.resultName = resultName;
         this.results = results;
@@ -53,43 +55,28 @@ public class ScriptSpellCheckResult implements Serializable
         this.spellCheckExist = spellCheckExist;
     }
 
-    /**
-     * @return the originalSearchTerm
-     */
-    public String getOriginalSearchTerm()
-    {
+    /** @return the originalSearchTerm */
+    public String getOriginalSearchTerm() {
         return this.originalSearchTerm;
     }
 
-    /**
-     * @return the resultName
-     */
-    public String getResultName()
-    {
+    /** @return the resultName */
+    public String getResultName() {
         return this.resultName;
     }
 
-    /**
-     * @return the results
-     */
-    public List<String> getResults()
-    {
+    /** @return the results */
+    public List<String> getResults() {
         return this.results;
     }
 
-    /**
-     * @return the searchedFor
-     */
-    public boolean isSearchedFor()
-    {
+    /** @return the searchedFor */
+    public boolean isSearchedFor() {
         return this.searchedFor;
     }
 
-    /**
-     * @return the spellCheckExist
-     */
-    public boolean isSpellCheckExist()
-    {
+    /** @return the spellCheckExist */
+    public boolean isSpellCheckExist() {
         return this.spellCheckExist;
     }
 }

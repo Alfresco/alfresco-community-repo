@@ -25,32 +25,6 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions;
-import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
-import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
-import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
-import org.alfresco.service.cmr.repository.CropSourceOptions;
-import org.alfresco.service.cmr.repository.PagedSourceOptions;
-import org.alfresco.service.cmr.repository.TemporalSourceOptions;
-import org.alfresco.service.cmr.repository.TransformationOptionLimits;
-import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.repository.TransformationSourceOptions;
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
-
 import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_PDF;
 import static org.alfresco.repo.content.transform.magick.ImageTransformationOptions.OPT_COMMAND_OPTIONS;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.ALLOW_ENLARGEMENT;
@@ -82,41 +56,70 @@ import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.WIDTH;
 import static org.springframework.util.CollectionUtils.containsAny;
 
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.RuntimeExecutableContentTransformerOptions;
+import org.alfresco.repo.content.transform.magick.ImageResizeOptions;
+import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
+import org.alfresco.repo.content.transform.swf.SWFTransformationOptions;
+import org.alfresco.service.cmr.repository.CropSourceOptions;
+import org.alfresco.service.cmr.repository.PagedSourceOptions;
+import org.alfresco.service.cmr.repository.TemporalSourceOptions;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
+import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.TransformationSourceOptions;
+import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringJoiner;
+
 /**
- * @deprecated converts the new flat name value pair transformer options to the deprecated TransformationOptions.
- *
+ * @deprecated converts the new flat name value pair transformer options to the deprecated
+ *     TransformationOptions.
  * @author adavis
  */
 @Deprecated
-public class TransformationOptionsConverter implements InitializingBean
-{
+public class TransformationOptionsConverter implements InitializingBean {
     public static final String FALSE_STRING = Boolean.FALSE.toString();
-    private static Set<String> PAGED_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    PAGE, START_PAGE, END_PAGE
-            }));
+    private static Set<String> PAGED_OPTIONS =
+            new HashSet<>(Arrays.asList(new String[] {PAGE, START_PAGE, END_PAGE}));
 
-    private static Set<String> CROP_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    CROP_GRAVITY, CROP_WIDTH, CROP_HEIGHT, CROP_PERCENTAGE, CROP_X_OFFSET, CROP_Y_OFFSET
-            }));
+    private static Set<String> CROP_OPTIONS =
+            new HashSet<>(
+                    Arrays.asList(
+                            new String[] {
+                                CROP_GRAVITY,
+                                CROP_WIDTH,
+                                CROP_HEIGHT,
+                                CROP_PERCENTAGE,
+                                CROP_X_OFFSET,
+                                CROP_Y_OFFSET
+                            }));
 
-    private static Set<String> TEMPORAL_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    OFFSET, DURATION
-            }));
+    private static Set<String> TEMPORAL_OPTIONS =
+            new HashSet<>(Arrays.asList(new String[] {OFFSET, DURATION}));
 
-    private static Set<String> RESIZE_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO,
-
-                    THUMBNAIL, RESIZE_WIDTH, RESIZE_HEIGHT, RESIZE_PERCENTAGE,
-                    ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
-            }));
+    private static Set<String> RESIZE_OPTIONS =
+            new HashSet<>(
+                    Arrays.asList(
+                            new String[] {
+                                WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO,
+                                THUMBNAIL, RESIZE_WIDTH, RESIZE_HEIGHT, RESIZE_PERCENTAGE,
+                                ALLOW_ENLARGEMENT, MAINTAIN_ASPECT_RATIO
+                            }));
 
     protected static Set<String> IMAGE_OPTIONS = new HashSet<>();
-    static
-    {
+
+    static {
         IMAGE_OPTIONS.addAll(PAGED_OPTIONS);
         IMAGE_OPTIONS.addAll(CROP_OPTIONS);
         IMAGE_OPTIONS.addAll(TEMPORAL_OPTIONS);
@@ -126,23 +129,24 @@ public class TransformationOptionsConverter implements InitializingBean
         IMAGE_OPTIONS.add(OPT_COMMAND_OPTIONS);
     }
 
-    private static Set<String> PDF_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    PAGE, WIDTH, HEIGHT, ALLOW_PDF_ENLARGEMENT, MAINTAIN_PDF_ASPECT_RATIO
-            }));
+    private static Set<String> PDF_OPTIONS =
+            new HashSet<>(
+                    Arrays.asList(
+                            new String[] {
+                                PAGE,
+                                WIDTH,
+                                HEIGHT,
+                                ALLOW_PDF_ENLARGEMENT,
+                                MAINTAIN_PDF_ASPECT_RATIO
+                            }));
 
-    private static Set<String> FLASH_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    FLASH_VERSION
-            }));
+    private static Set<String> FLASH_OPTIONS =
+            new HashSet<>(Arrays.asList(new String[] {FLASH_VERSION}));
 
-    private static Set<String> LIMIT_OPTIONS = new HashSet<>(Arrays.asList(new String[]
-            {
-                    TIMEOUT, MAX_SOURCE_SIZE_K_BYTES
-            }));
+    private static Set<String> LIMIT_OPTIONS =
+            new HashSet<>(Arrays.asList(new String[] {TIMEOUT, MAX_SOURCE_SIZE_K_BYTES}));
 
-    private interface Setter
-    {
+    private interface Setter {
         void set(String s);
     }
 
@@ -155,34 +159,29 @@ public class TransformationOptionsConverter implements InitializingBean
     private int pageLimit;
     private int maxPages;
 
-    public void setMaxSourceSizeKBytes(String maxSourceSizeKBytes)
-    {
-        this.maxSourceSizeKBytes = Long.parseLong(maxSourceSizeKBytes);;
+    public void setMaxSourceSizeKBytes(String maxSourceSizeKBytes) {
+        this.maxSourceSizeKBytes = Long.parseLong(maxSourceSizeKBytes);
+        ;
     }
 
-    public void setReadLimitTimeMs(String readLimitTimeMs)
-    {
+    public void setReadLimitTimeMs(String readLimitTimeMs) {
         this.readLimitTimeMs = Long.parseLong(readLimitTimeMs);
     }
 
-    public void setReadLimitKBytes(String readLimitKBytes)
-    {
+    public void setReadLimitKBytes(String readLimitKBytes) {
         this.readLimitKBytes = Long.parseLong(readLimitKBytes);
     }
 
-    public void setPageLimit(String pageLimit)
-    {
+    public void setPageLimit(String pageLimit) {
         this.pageLimit = Integer.parseInt(pageLimit);
     }
 
-    public void setMaxPages(String maxPages)
-    {
+    public void setMaxPages(String maxPages) {
         this.maxPages = Integer.parseInt(maxPages);
     }
 
     @Override
-    public void afterPropertiesSet()
-    {
+    public void afterPropertiesSet() {
         PropertyCheck.mandatory(this, "maxSourceSizeKBytes", maxSourceSizeKBytes);
         PropertyCheck.mandatory(this, "readLimitTimeMs", readLimitTimeMs);
         PropertyCheck.mandatory(this, "readLimitKBytes", readLimitKBytes);
@@ -191,16 +190,17 @@ public class TransformationOptionsConverter implements InitializingBean
     }
 
     /**
-     * @deprecated as we do not plan to use TransformationOptions moving forwards as local transformations will also
-     * use the same options as the Transform Service.
+     * @deprecated as we do not plan to use TransformationOptions moving forwards as local
+     *     transformations will also use the same options as the Transform Service.
      */
     @Deprecated
-    TransformationOptions getTransformationOptions(String renditionName, Map<String, String> options)
-    {
+    TransformationOptions getTransformationOptions(
+            String renditionName, Map<String, String> options) {
         TransformationOptions transformationOptions = null;
         Set<String> optionNames = options.keySet();
 
-        // The "pdf" rendition is special as it was incorrectly set up as an SWFTransformationOptions in 6.0
+        // The "pdf" rendition is special as it was incorrectly set up as an
+        // SWFTransformationOptions in 6.0
         // It should have been simply a TransformationOptions.
         boolean isPdfRendition = "pdf".equals(renditionName);
 
@@ -208,77 +208,132 @@ public class TransformationOptionsConverter implements InitializingBean
         subclassOptionNames.removeAll(LIMIT_OPTIONS);
         subclassOptionNames.remove(INCLUDE_CONTENTS);
         boolean hasOptions = !subclassOptionNames.isEmpty();
-        if (isPdfRendition || hasOptions)
-        {
+        if (isPdfRendition || hasOptions) {
             // The "pdf" rendition used the wrong TransformationOptions subclass.
-            if (isPdfRendition || FLASH_OPTIONS.containsAll(subclassOptionNames))
-            {
+            if (isPdfRendition || FLASH_OPTIONS.containsAll(subclassOptionNames)) {
                 SWFTransformationOptions opts = new SWFTransformationOptions();
                 transformationOptions = opts;
                 opts.setFlashVersion(isPdfRendition ? "9" : options.get(FLASH_VERSION));
             }
-            // Even though the only standard rendition to use the pdf-renderer is "pdf" there may be custom renditions
+            // Even though the only standard rendition to use the pdf-renderer is "pdf" there may be
+            // custom renditions
             // that use ImageTransformOptions to specify width, height etc.
-            else if (IMAGE_OPTIONS.containsAll(subclassOptionNames) || PDF_OPTIONS.containsAll(subclassOptionNames))
-            {
+            else if (IMAGE_OPTIONS.containsAll(subclassOptionNames)
+                    || PDF_OPTIONS.containsAll(subclassOptionNames)) {
                 ImageTransformationOptions opts = new ImageTransformationOptions();
                 transformationOptions = opts;
 
-                if (containsAny(subclassOptionNames, RESIZE_OPTIONS))
-                {
+                if (containsAny(subclassOptionNames, RESIZE_OPTIONS)) {
                     ImageResizeOptions imageResizeOptions = new ImageResizeOptions();
                     opts.setResizeOptions(imageResizeOptions);
                     // PDF
                     ifSet(options, WIDTH, (v) -> imageResizeOptions.setWidth(Integer.parseInt(v)));
-                    ifSet(options, HEIGHT, (v) -> imageResizeOptions.setHeight(Integer.parseInt(v)));
+                    ifSet(
+                            options,
+                            HEIGHT,
+                            (v) -> imageResizeOptions.setHeight(Integer.parseInt(v)));
                     // ImageMagick
-                    ifSet(options, RESIZE_WIDTH, (v) -> imageResizeOptions.setWidth(Integer.parseInt(v)));
-                    ifSet(options, RESIZE_HEIGHT, (v) -> imageResizeOptions.setHeight(Integer.parseInt(v)));
-                    ifSet(options, THUMBNAIL, (v) ->imageResizeOptions.setResizeToThumbnail(Boolean.parseBoolean(v)));
-                    ifSet(options, RESIZE_PERCENTAGE, (v) ->imageResizeOptions.setPercentResize(Boolean.parseBoolean(v)));
-                    set(options, ALLOW_ENLARGEMENT, (v) ->imageResizeOptions.setAllowEnlargement(Boolean.parseBoolean(v == null ? "true" : v)));
-                    set(options, MAINTAIN_ASPECT_RATIO, (v) ->imageResizeOptions.setMaintainAspectRatio(Boolean.parseBoolean(v == null ? "true" : v)));
+                    ifSet(
+                            options,
+                            RESIZE_WIDTH,
+                            (v) -> imageResizeOptions.setWidth(Integer.parseInt(v)));
+                    ifSet(
+                            options,
+                            RESIZE_HEIGHT,
+                            (v) -> imageResizeOptions.setHeight(Integer.parseInt(v)));
+                    ifSet(
+                            options,
+                            THUMBNAIL,
+                            (v) ->
+                                    imageResizeOptions.setResizeToThumbnail(
+                                            Boolean.parseBoolean(v)));
+                    ifSet(
+                            options,
+                            RESIZE_PERCENTAGE,
+                            (v) -> imageResizeOptions.setPercentResize(Boolean.parseBoolean(v)));
+                    set(
+                            options,
+                            ALLOW_ENLARGEMENT,
+                            (v) ->
+                                    imageResizeOptions.setAllowEnlargement(
+                                            Boolean.parseBoolean(v == null ? "true" : v)));
+                    set(
+                            options,
+                            MAINTAIN_ASPECT_RATIO,
+                            (v) ->
+                                    imageResizeOptions.setMaintainAspectRatio(
+                                            Boolean.parseBoolean(v == null ? "true" : v)));
                 }
 
-                // ALPHA_REMOVE can be ignored as it is automatically added in the legacy code if the sourceMimetype is jpeg
-                set(options, AUTO_ORIENT, (v) ->opts.setAutoOrient(Boolean.parseBoolean(v == null ? "true" : v)));
+                // ALPHA_REMOVE can be ignored as it is automatically added in the legacy code if
+                // the sourceMimetype is jpeg
+                set(
+                        options,
+                        AUTO_ORIENT,
+                        (v) -> opts.setAutoOrient(Boolean.parseBoolean(v == null ? "true" : v)));
 
                 boolean containsPaged = containsAny(subclassOptionNames, PAGED_OPTIONS);
                 boolean containsCrop = containsAny(subclassOptionNames, CROP_OPTIONS);
                 boolean containsTemporal = containsAny(subclassOptionNames, TEMPORAL_OPTIONS);
-                if (containsPaged || containsCrop || containsTemporal)
-                {
+                if (containsPaged || containsCrop || containsTemporal) {
                     List<TransformationSourceOptions> sourceOptionsList = new ArrayList<>();
-                    if (containsPaged)
-                    {
-                        // The legacy transformer options start at page 1, where as image magick and the local
+                    if (containsPaged) {
+                        // The legacy transformer options start at page 1, where as image magick and
+                        // the local
                         // transforms start at 0;
                         PagedSourceOptions pagedSourceOptions = new PagedSourceOptions();
                         sourceOptionsList.add(pagedSourceOptions);
-                        ifSet(options, START_PAGE, (v) -> pagedSourceOptions.setStartPageNumber(Integer.parseInt(v) + 1));
-                        ifSet(options, END_PAGE, (v) -> pagedSourceOptions.setEndPageNumber(Integer.parseInt(v) + 1));
-                        ifSet(options, PAGE, (v) ->
-                        {
-                            int i = Integer.parseInt(v) + 1;
-                            pagedSourceOptions.setStartPageNumber(i);
-                            pagedSourceOptions.setEndPageNumber(i);
-                        });
+                        ifSet(
+                                options,
+                                START_PAGE,
+                                (v) ->
+                                        pagedSourceOptions.setStartPageNumber(
+                                                Integer.parseInt(v) + 1));
+                        ifSet(
+                                options,
+                                END_PAGE,
+                                (v) ->
+                                        pagedSourceOptions.setEndPageNumber(
+                                                Integer.parseInt(v) + 1));
+                        ifSet(
+                                options,
+                                PAGE,
+                                (v) -> {
+                                    int i = Integer.parseInt(v) + 1;
+                                    pagedSourceOptions.setStartPageNumber(i);
+                                    pagedSourceOptions.setEndPageNumber(i);
+                                });
                     }
 
-                    if (containsCrop)
-                    {
+                    if (containsCrop) {
                         CropSourceOptions cropSourceOptions = new CropSourceOptions();
                         sourceOptionsList.add(cropSourceOptions);
                         ifSet(options, CROP_GRAVITY, (v) -> cropSourceOptions.setGravity(v));
-                        ifSet(options, CROP_PERCENTAGE, (v) -> cropSourceOptions.setPercentageCrop(Boolean.parseBoolean(v)));
-                        ifSet(options, CROP_WIDTH, (v) -> cropSourceOptions.setWidth(Integer.parseInt(v)));
-                        ifSet(options, CROP_HEIGHT, (v) -> cropSourceOptions.setHeight(Integer.parseInt(v)));
-                        ifSet(options, CROP_X_OFFSET, (v) -> cropSourceOptions.setXOffset(Integer.parseInt(v)));
-                        ifSet(options, CROP_Y_OFFSET, (v) -> cropSourceOptions.setYOffset(Integer.parseInt(v)));
+                        ifSet(
+                                options,
+                                CROP_PERCENTAGE,
+                                (v) ->
+                                        cropSourceOptions.setPercentageCrop(
+                                                Boolean.parseBoolean(v)));
+                        ifSet(
+                                options,
+                                CROP_WIDTH,
+                                (v) -> cropSourceOptions.setWidth(Integer.parseInt(v)));
+                        ifSet(
+                                options,
+                                CROP_HEIGHT,
+                                (v) -> cropSourceOptions.setHeight(Integer.parseInt(v)));
+                        ifSet(
+                                options,
+                                CROP_X_OFFSET,
+                                (v) -> cropSourceOptions.setXOffset(Integer.parseInt(v)));
+                        ifSet(
+                                options,
+                                CROP_Y_OFFSET,
+                                (v) -> cropSourceOptions.setYOffset(Integer.parseInt(v)));
                     }
 
-                    if (containsTemporal)
-                    {
+                    if (containsTemporal) {
                         TemporalSourceOptions temporalSourceOptions = new TemporalSourceOptions();
                         sourceOptionsList.add(temporalSourceOptions);
                         ifSet(options, DURATION, (v) -> temporalSourceOptions.setDuration(v));
@@ -289,20 +344,21 @@ public class TransformationOptionsConverter implements InitializingBean
 
                 ifSet(options, OPT_COMMAND_OPTIONS, (v) -> opts.setCommandOptions(v));
             }
-        }
-        else
-        {
-            // This what the "pdf" rendition should have used in 6.0 and it is not unreasonable for a custom transformer
+        } else {
+            // This what the "pdf" rendition should have used in 6.0 and it is not unreasonable for
+            // a custom transformer
             // and rendition to do the same.
             transformationOptions = new TransformationOptions();
         }
 
-        if (transformationOptions == null)
-        {
+        if (transformationOptions == null) {
             StringJoiner sj = new StringJoiner("\n    ");
-            sj.add("The RenditionDefinition2 "+renditionName +
-                    " contains options that cannot be mapped to TransformationOptions used by local transformers. "+
-                    " The TransformOptionConverter may need to be sub classed to support this conversion.");
+            sj.add(
+                    "The RenditionDefinition2 "
+                            + renditionName
+                            + " contains options that cannot be mapped to TransformationOptions"
+                            + " used by local transformers.  The TransformOptionConverter may need"
+                            + " to be sub classed to support this conversion.");
             HashSet<String> otherNames = new HashSet<>(optionNames);
             otherNames.removeAll(FLASH_OPTIONS);
             otherNames.removeAll(IMAGE_OPTIONS);
@@ -315,10 +371,9 @@ public class TransformationOptionsConverter implements InitializingBean
         }
 
         final TransformationOptions opts = transformationOptions;
-        ifSet(options, INCLUDE_CONTENTS, (v) ->opts.setIncludeEmbedded(Boolean.parseBoolean(v)));
+        ifSet(options, INCLUDE_CONTENTS, (v) -> opts.setIncludeEmbedded(Boolean.parseBoolean(v)));
 
-        if (containsAny(optionNames, LIMIT_OPTIONS))
-        {
+        if (containsAny(optionNames, LIMIT_OPTIONS)) {
             TransformationOptionLimits limits = new TransformationOptionLimits();
             transformationOptions.setLimits(limits);
             ifSet(options, TIMEOUT, (v) -> limits.setTimeoutMs(Long.parseLong(v)));
@@ -333,87 +388,94 @@ public class TransformationOptionsConverter implements InitializingBean
         return transformationOptions;
     }
 
-    protected <T> void set(Map<String, String> options, String key, TransformationOptionsConverter.Setter setter)
-    {
+    protected <T> void set(
+            Map<String, String> options, String key, TransformationOptionsConverter.Setter setter) {
         String value = options.get(key);
         setter.set(value);
     }
 
-    protected <T> void ifSet(Map<String, String> options, String key, TransformationOptionsConverter.Setter setter)
-    {
+    protected <T> void ifSet(
+            Map<String, String> options, String key, TransformationOptionsConverter.Setter setter) {
         String value = options.get(key);
-        if (value != null)
-        {
+        if (value != null) {
             setter.set(value);
         }
     }
 
     @Deprecated
-    public Map<String, String> getOptions(TransformationOptions options)
-    {
+    public Map<String, String> getOptions(TransformationOptions options) {
         return getOptions(options, null, null);
     }
 
-    public Map<String, String> getOptions(TransformationOptions options, String sourceMimetype, String targetMimetype)
-    {
+    public Map<String, String> getOptions(
+            TransformationOptions options, String sourceMimetype, String targetMimetype) {
         boolean sourceIsPdf = MIMETYPE_PDF.equals(sourceMimetype);
         Map<String, String> map = new HashMap<>();
         map.put(TIMEOUT, "-1");
-        if (options != null)
-        {
-            if (options instanceof ImageTransformationOptions)
-            {
+        if (options != null) {
+            if (options instanceof ImageTransformationOptions) {
                 ImageTransformationOptions opts = (ImageTransformationOptions) options;
 
-                // From a security viewpoint it would be better not to support the option of passing anything to
-                // ImageMagick. It might be possible to extract some of the well know values and add them to the
+                // From a security viewpoint it would be better not to support the option of passing
+                // anything to
+                // ImageMagick. It might be possible to extract some of the well know values and add
+                // them to the
                 // T-Engine engine_config.
                 String commandOptions = opts.getCommandOptions();
-                ifSet(commandOptions != null && !commandOptions.isBlank(), map, OPT_COMMAND_OPTIONS, commandOptions);
+                ifSet(
+                        commandOptions != null && !commandOptions.isBlank(),
+                        map,
+                        OPT_COMMAND_OPTIONS,
+                        commandOptions);
 
                 ImageResizeOptions imageResizeOptions = opts.getResizeOptions();
-                if (imageResizeOptions != null)
-                {
+                if (imageResizeOptions != null) {
                     int width = imageResizeOptions.getWidth();
                     int height = imageResizeOptions.getHeight();
                     ifSet(width != -1, map, RESIZE_WIDTH, width);
                     ifSet(height != -1, map, RESIZE_HEIGHT, height);
                     ifSet(imageResizeOptions.isResizeToThumbnail(), map, THUMBNAIL, true);
                     ifSet(imageResizeOptions.isPercentResize(), map, RESIZE_PERCENTAGE, true);
-                    map.put(ALLOW_ENLARGEMENT, Boolean.toString(imageResizeOptions.getAllowEnlargement()));
-                    map.put(MAINTAIN_ASPECT_RATIO, Boolean.toString(imageResizeOptions.isMaintainAspectRatio()));
+                    map.put(
+                            ALLOW_ENLARGEMENT,
+                            Boolean.toString(imageResizeOptions.getAllowEnlargement()));
+                    map.put(
+                            MAINTAIN_ASPECT_RATIO,
+                            Boolean.toString(imageResizeOptions.isMaintainAspectRatio()));
                 }
 
-                ifSet(MimetypeMap.MIMETYPE_IMAGE_JPEG.equalsIgnoreCase(targetMimetype), map, ALPHA_REMOVE, true);
+                ifSet(
+                        MimetypeMap.MIMETYPE_IMAGE_JPEG.equalsIgnoreCase(targetMimetype),
+                        map,
+                        ALPHA_REMOVE,
+                        true);
                 map.put(AUTO_ORIENT, Boolean.toString(opts.isAutoOrient()));
 
-                Collection<TransformationSourceOptions> sourceOptionsList = opts.getSourceOptionsList();
-                if (sourceOptionsList != null)
-                {
-                    for (TransformationSourceOptions transformationSourceOptions : sourceOptionsList)
-                    {
-                        if (transformationSourceOptions instanceof PagedSourceOptions)
-                        {
-                            PagedSourceOptions pagedSourceOptions = (PagedSourceOptions) transformationSourceOptions;
+                Collection<TransformationSourceOptions> sourceOptionsList =
+                        opts.getSourceOptionsList();
+                if (sourceOptionsList != null) {
+                    for (TransformationSourceOptions transformationSourceOptions :
+                            sourceOptionsList) {
+                        if (transformationSourceOptions instanceof PagedSourceOptions) {
+                            PagedSourceOptions pagedSourceOptions =
+                                    (PagedSourceOptions) transformationSourceOptions;
 
-                            // The legacy transformer options start at page 1, where as image magick and the local
+                            // The legacy transformer options start at page 1, where as image magick
+                            // and the local
                             // transforms start at 0;
                             Integer startPageNumber = pagedSourceOptions.getStartPageNumber() - 1;
                             Integer endPageNumber = pagedSourceOptions.getEndPageNumber() - 1;
-                            // PAGE is not an imagemagick option, but pdfRederer was incorrectly created initially using these options
-                            if (startPageNumber == endPageNumber && sourceIsPdf)
-                            {
+                            // PAGE is not an imagemagick option, but pdfRederer was incorrectly
+                            // created initially using these options
+                            if (startPageNumber == endPageNumber && sourceIsPdf) {
                                 map.put(PAGE, Integer.toString(startPageNumber));
-                            }
-                            else
-                            {
+                            } else {
                                 map.put(START_PAGE, Integer.toString(startPageNumber));
                                 map.put(END_PAGE, Integer.toString(endPageNumber));
                             }
-                        }
-                        else if (transformationSourceOptions instanceof CropSourceOptions)
-                        {
-                            CropSourceOptions cropSourceOptions = (CropSourceOptions) transformationSourceOptions;
+                        } else if (transformationSourceOptions instanceof CropSourceOptions) {
+                            CropSourceOptions cropSourceOptions =
+                                    (CropSourceOptions) transformationSourceOptions;
                             String gravity = cropSourceOptions.getGravity();
                             boolean percentageCrop = cropSourceOptions.isPercentageCrop();
                             int height = cropSourceOptions.getHeight();
@@ -426,49 +488,44 @@ public class TransformationOptionsConverter implements InitializingBean
                             ifSet(height != -1, map, CROP_HEIGHT, height);
                             map.put(CROP_X_OFFSET, Integer.toString(xOffset));
                             map.put(CROP_Y_OFFSET, Integer.toString(yOffset));
-                        }
-                        else if (transformationSourceOptions instanceof TemporalSourceOptions)
-                        {
-                            TemporalSourceOptions temporalSourceOptions = (TemporalSourceOptions) transformationSourceOptions;
+                        } else if (transformationSourceOptions instanceof TemporalSourceOptions) {
+                            TemporalSourceOptions temporalSourceOptions =
+                                    (TemporalSourceOptions) transformationSourceOptions;
                             String duration = temporalSourceOptions.getDuration();
                             String offset = temporalSourceOptions.getOffset();
                             ifSet(duration != null, map, DURATION, duration);
                             ifSet(offset != null, map, OFFSET, offset);
-                        }
-                        else
-                        {
-                            logger.error("TransformationOption sourceOptionsList contained a " +
-                                    transformationSourceOptions.getClass().getName() +
-                                    ". It is not know how to convert this into newer transform options.");
+                        } else {
+                            logger.error(
+                                    "TransformationOption sourceOptionsList contained a "
+                                            + transformationSourceOptions.getClass().getName()
+                                            + ". It is not know how to convert this into newer"
+                                            + " transform options.");
                         }
                     }
                 }
-            }
-            else if (options instanceof SWFTransformationOptions)
-            {
+            } else if (options instanceof SWFTransformationOptions) {
                 SWFTransformationOptions opts = (SWFTransformationOptions) options;
                 map.put(FLASH_VERSION, opts.getFlashVersion());
-            }
-            else if (options instanceof RuntimeExecutableContentTransformerOptions)
-            {
-                RuntimeExecutableContentTransformerOptions opts = (RuntimeExecutableContentTransformerOptions) options;
+            } else if (options instanceof RuntimeExecutableContentTransformerOptions) {
+                RuntimeExecutableContentTransformerOptions opts =
+                        (RuntimeExecutableContentTransformerOptions) options;
                 map.putAll(opts.getPropertyValues());
-            }
-            else if (!options.getClass().equals(TransformationOptions.class))
-            {
-                throw new IllegalArgumentException("Unable to convert " +
-                        options.getClass().getSimpleName() + " to new transform options held in a Map<String,String>.\n" +
-                        "The TransformOptionConverter may need to be sub classed to support this conversion.");
+            } else if (!options.getClass().equals(TransformationOptions.class)) {
+                throw new IllegalArgumentException(
+                        "Unable to convert "
+                                + options.getClass().getSimpleName()
+                                + " to new transform options held in a Map<String,String>.\n"
+                                + "The TransformOptionConverter may need to be sub classed to"
+                                + " support this conversion.");
             }
         }
 
         return map;
     }
 
-    protected void ifSet(boolean condition, Map<String, String> options, String key, Object value)
-    {
-        if (condition)
-        {
+    protected void ifSet(boolean condition, Map<String, String> options, String key, Object value) {
+        if (condition) {
             options.put(key, value.toString());
         }
     }

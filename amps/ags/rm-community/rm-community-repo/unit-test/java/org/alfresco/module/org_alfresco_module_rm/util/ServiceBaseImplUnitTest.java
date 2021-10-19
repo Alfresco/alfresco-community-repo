@@ -31,8 +31,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,59 +42,57 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
 
+import java.util.Map;
+
 /**
  * Service Base unit test.
  *
  * @author Roxana Lucanu
  * @since 2.4
  */
-public class ServiceBaseImplUnitTest
-{
+public class ServiceBaseImplUnitTest {
     @InjectMocks private ServiceBaseImpl serviceBase;
 
-    @Mock (name = "nodeService")
+    @Mock(name = "nodeService")
     private NodeService mockedNodeService;
-    @Mock (name = "transactionalResourceHelper")
+
+    @Mock(name = "transactionalResourceHelper")
     private TransactionalResourceHelper mockedTransactionalResourceHelper;
-    @Mock (name = "applicationContext")
+
+    @Mock(name = "applicationContext")
     protected ApplicationContext mockedApplicationContext;
-    @Mock (name = "nodeTypeUtility")
+
+    @Mock(name = "nodeTypeUtility")
     protected NodeTypeUtility mockedNodeTypeUtility;
+
     @Mock private Map<Object, Object> mockedCache;
 
-    /**
-     * Test method setup
-     */
+    /** Test method setup */
     @Before
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         MockitoAnnotations.initMocks(this);
         // setup application context
         doReturn(mockedNodeService).when(mockedApplicationContext).getBean("dbNodeService");
-        
     }
-    
+
     /**
-     * Given a node that is not a record
-     * When retrieving the file plan for it
-     * Then never put null in cache
+     * Given a node that is not a record When retrieving the file plan for it Then never put null in
+     * cache
      */
     @Test
-    public void getFilePlan()
-    {
+    public void getFilePlan() {
         NodeRef nodeRef = new NodeRef("test://node/");
 
-        when(mockedNodeService.getType(nodeRef))
-            .thenReturn(ContentModel.TYPE_CONTENT);
-        when(mockedNodeTypeUtility.instanceOf(ContentModel.TYPE_CONTENT, RecordsManagementModel.TYPE_FILE_PLAN))
-            .thenReturn(false);
+        when(mockedNodeService.getType(nodeRef)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockedNodeTypeUtility.instanceOf(
+                        ContentModel.TYPE_CONTENT, RecordsManagementModel.TYPE_FILE_PLAN))
+                .thenReturn(false);
         when(mockedTransactionalResourceHelper.getMap("rm.servicebase.getFilePlan"))
-            .thenReturn(mockedCache);
+                .thenReturn(mockedCache);
         when(mockedCache.containsKey(nodeRef)).thenReturn(false);
 
         serviceBase.getFilePlan(nodeRef);
 
         verify(mockedCache, never()).put(nodeRef, null);
     }
-
 }

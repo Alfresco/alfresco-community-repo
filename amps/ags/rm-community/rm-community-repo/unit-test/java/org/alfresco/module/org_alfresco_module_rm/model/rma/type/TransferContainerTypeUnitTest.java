@@ -44,18 +44,13 @@ import org.mockito.InjectMocks;
  * @author Mihai Cozma
  * @since 2.4
  */
-public class TransferContainerTypeUnitTest extends BaseUnitTest
-{
+public class TransferContainerTypeUnitTest extends BaseUnitTest {
     /** test object */
     private @InjectMocks TransferContainerType transferContainerType;
 
-    /**
-     * Given that we try to add to transfer container,
-     * Then IntegrityException is thrown.
-     */
+    /** Given that we try to add to transfer container, Then IntegrityException is thrown. */
     @Test(expected = IntegrityException.class)
-    public void testAddToTransferContainerTest()
-    {
+    public void testAddToTransferContainerTest() {
         NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
 
         QName type = AlfMock.generateQName();

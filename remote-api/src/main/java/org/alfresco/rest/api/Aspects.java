@@ -30,13 +30,11 @@ import org.alfresco.rest.api.model.Aspect;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
-/**
- * Aspect API
- */
-public interface Aspects
-{
+/** Aspect API */
+public interface Aspects {
     /**
      * Lists aspects
+     *
      * @param params
      * @return Collection of aspects
      */
@@ -44,6 +42,7 @@ public interface Aspects
 
     /**
      * Gets an aspect by id
+     *
      * @param aspectId
      * @return an aspect
      */

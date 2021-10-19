@@ -38,11 +38,8 @@ import org.alfresco.service.namespace.QName;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public interface ReportGenerator
-{
-    /**
-     * @return {@link QName} report type
-     */
+public interface ReportGenerator {
+    /** @return {@link QName} report type */
     QName getReportType();
 
     /**

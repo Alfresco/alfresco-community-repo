@@ -1,6 +1,5 @@
 package org.alfresco.rest.tags;
 
-import java.util.Date;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestTagModel;
@@ -18,8 +17,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 @Test(groups = {TestGroup.REQUIRE_SOLR})
-public class TagsDataPrep extends RestTest
-{
+public class TagsDataPrep extends RestTest {
 
     protected static UserModel adminUserModel;
     protected static UserModel userModel;
@@ -32,13 +30,23 @@ public class TagsDataPrep extends RestTest
     protected static RestTagModelsCollection returnedCollection;
 
     @BeforeClass
-    public void init() throws Exception
-    {
+    public void init() throws Exception {
         adminUserModel = dataUser.getAdminUser();
-        //Create public site
+        // Create public site
         siteModel = dataSite.usingUser(adminUserModel).createPublicRandomSite();
-        usersWithRoles = dataUser.usingAdmin().addUsersWithRolesToSite(siteModel, UserRole.SiteManager, UserRole.SiteCollaborator, UserRole.SiteConsumer, UserRole.SiteContributor);
-        document = dataContent.usingUser(adminUserModel).usingSite(siteModel).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        usersWithRoles =
+                dataUser.usingAdmin()
+                        .addUsersWithRolesToSite(
+                                siteModel,
+                                UserRole.SiteManager,
+                                UserRole.SiteCollaborator,
+                                UserRole.SiteConsumer,
+                                UserRole.SiteContributor);
+        document =
+                dataContent
+                        .usingUser(adminUserModel)
+                        .usingSite(siteModel)
+                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         folder = dataContent.usingUser(adminUserModel).usingSite(siteModel).createFolder();
 
         documentTagValue = RandomData.getRandomName("tag");
@@ -51,13 +59,19 @@ public class TagsDataPrep extends RestTest
         folderTag = restClient.withCoreAPI().usingResource(folder).addTag(folderTagValue);
 
         // Allow indexing to complete.
-        Utility.sleep(500, 60000, () ->
-            {
-                returnedCollection = restClient.withParams("maxItems=10000").withCoreAPI().getTags();
-                returnedCollection.assertThat().entriesListContains("tag", documentTagValue.toLowerCase())
-                                  .and().entriesListContains("tag", documentTagValue2.toLowerCase())
-                                  .and().entriesListContains("tag", folderTagValue.toLowerCase());
-            });
-
+        Utility.sleep(
+                500,
+                60000,
+                () -> {
+                    returnedCollection =
+                            restClient.withParams("maxItems=10000").withCoreAPI().getTags();
+                    returnedCollection
+                            .assertThat()
+                            .entriesListContains("tag", documentTagValue.toLowerCase())
+                            .and()
+                            .entriesListContains("tag", documentTagValue2.toLowerCase())
+                            .and()
+                            .entriesListContains("tag", folderTagValue.toLowerCase());
+                });
     }
 }

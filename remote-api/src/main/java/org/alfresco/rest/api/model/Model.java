@@ -26,20 +26,21 @@
 
 package org.alfresco.rest.api.model;
 
-public class Model implements Comparable<Model>
-{
-    private String  id;
-    private String  author;
-    private String  description;
-    private String  namespaceUri;
-    private String  namespacePrefix;
+public class Model implements Comparable<Model> {
+    private String id;
+    private String author;
+    private String description;
+    private String namespaceUri;
+    private String namespacePrefix;
 
-    public Model()
-    {
-    }
+    public Model() {}
 
-    public Model(String name, String author, String description, String namespaceUri, String namespacePrefix)
-    {
+    public Model(
+            String name,
+            String author,
+            String description,
+            String namespaceUri,
+            String namespacePrefix) {
         this.id = name;
         this.author = author;
         this.description = description;
@@ -47,59 +48,48 @@ public class Model implements Comparable<Model>
         this.namespacePrefix = namespacePrefix;
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getAuthor()
-    {
+    public String getAuthor() {
         return author;
     }
 
-    public void setAuthor(String author)
-    {
+    public void setAuthor(String author) {
         this.author = author;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public String getNamespaceUri()
-    {
+    public String getNamespaceUri() {
         return namespaceUri;
     }
 
-    public void setNamespaceUri(String namespaceUri)
-    {
+    public void setNamespaceUri(String namespaceUri) {
         this.namespaceUri = namespaceUri;
     }
 
-    public String getNamespacePrefix()
-    {
+    public String getNamespacePrefix() {
         return namespacePrefix;
     }
 
-    public void setNamespacePrefix(String namespacePrefix)
-    {
+    public void setNamespacePrefix(String namespacePrefix) {
         this.namespacePrefix = namespacePrefix;
     }
 
     @Override
-    public int compareTo(Model model)
-    {
+    public int compareTo(Model model) {
         return this.id.compareTo(model.getId());
     }
 }

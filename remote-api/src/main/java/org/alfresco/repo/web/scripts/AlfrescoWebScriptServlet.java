@@ -28,22 +28,19 @@ package org.alfresco.repo.web.scripts;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.springframework.extensions.webscripts.servlet.WebScriptServlet;
 
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
-public class AlfrescoWebScriptServlet extends WebScriptServlet
-{
+public class AlfrescoWebScriptServlet extends WebScriptServlet {
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
-    {
-        try
-        {
+    protected void service(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        try {
             super.service(req, res);
-        }
-        finally
-        {
+        } finally {
             AuthenticationUtil.clearCurrentSecurityContext();
         }
     }

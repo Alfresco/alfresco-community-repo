@@ -28,11 +28,8 @@ package org.alfresco.rest.rm.community.model.rules;
 
 import java.util.List;
 
-/**
- * A class describing the rule
- */
-public class RuleDefinition
-{
+/** A class describing the rule */
+public class RuleDefinition {
     private String id = "";
     private String title;
     private String description = "";
@@ -52,152 +49,124 @@ public class RuleDefinition
      *
      * @return the object
      */
-    public static RuleDefinition createNewRule()
-    {
+    public static RuleDefinition createNewRule() {
         return new RuleDefinition();
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public RuleDefinition id(String id)
-    {
+    public RuleDefinition id(String id) {
         this.id = id;
         return this;
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
 
-    public RuleDefinition title(String title)
-    {
+    public RuleDefinition title(String title) {
         this.title = title;
         return this;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public RuleDefinition description(String description)
-    {
+    public RuleDefinition description(String description) {
         this.description = description;
         return this;
     }
 
-    public boolean isDisabled()
-    {
+    public boolean isDisabled() {
         return disabled;
     }
 
-    public RuleDefinition disabled(boolean disabled)
-    {
+    public RuleDefinition disabled(boolean disabled) {
         this.disabled = disabled;
         return this;
     }
 
-    public boolean isApplyToChildren()
-    {
+    public boolean isApplyToChildren() {
         return applyToChildren;
     }
 
-    public RuleDefinition applyToChildren(boolean applyToChildren)
-    {
+    public RuleDefinition applyToChildren(boolean applyToChildren) {
         this.applyToChildren = applyToChildren;
         return this;
     }
 
-    public boolean getRunInBackground()
-    {
+    public boolean getRunInBackground() {
         return runInBackground;
     }
 
-    public RuleDefinition runInBackground(boolean runInBackground)
-    {
+    public RuleDefinition runInBackground(boolean runInBackground) {
         this.runInBackground = runInBackground;
         return this;
     }
 
-    public String getRuleType()
-    {
+    public String getRuleType() {
         return ruleType;
     }
 
-    public RuleDefinition ruleType(String ruleType)
-    {
+    public RuleDefinition ruleType(String ruleType) {
         this.ruleType = ruleType;
         return this;
     }
 
-    public String getPath()
-    {
+    public String getPath() {
         return path;
     }
 
-    public RuleDefinition path(String path)
-    {
+    public RuleDefinition path(String path) {
         this.path = path;
         return this;
     }
 
-    public Boolean getCreateRecordPath()
-    {
+    public Boolean getCreateRecordPath() {
         return createRecordPath;
     }
 
-    public RuleDefinition createRecordPath(boolean createRecordPath)
-    {
+    public RuleDefinition createRecordPath(boolean createRecordPath) {
         this.createRecordPath = createRecordPath;
         return this;
     }
 
-    public String getContentTitle()
-    {
+    public String getContentTitle() {
         return contentTitle;
     }
 
-    public RuleDefinition contentTitle(String contentTitle)
-    {
+    public RuleDefinition contentTitle(String contentTitle) {
         this.contentTitle = contentTitle;
         return this;
     }
 
-    public String getContentDescription()
-    {
+    public String getContentDescription() {
         return contentDescription;
     }
 
-    public RuleDefinition contentDescription(String contentDescription)
-    {
+    public RuleDefinition contentDescription(String contentDescription) {
         this.contentDescription = contentDescription;
         return this;
     }
 
-    public String getRejectReason()
-    {
+    public String getRejectReason() {
         return rejectReason;
     }
 
-    public RuleDefinition rejectReason(String rejectReason)
-    {
+    public RuleDefinition rejectReason(String rejectReason) {
         this.rejectReason = rejectReason;
         return this;
     }
 
-    public List<String> getActions()
-    {
+    public List<String> getActions() {
         return actions;
     }
 
-    public RuleDefinition actions(List<String> actions)
-    {
+    public RuleDefinition actions(List<String> actions) {
         this.actions = actions;
         return this;
     }
 }
-

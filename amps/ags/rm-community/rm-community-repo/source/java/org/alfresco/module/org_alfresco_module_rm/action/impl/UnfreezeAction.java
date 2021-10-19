@@ -36,15 +36,15 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class UnfreezeAction extends RMActionExecuterAbstractBase
-{
-   /**
-    * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-    */
-   @SuppressWarnings("deprecation")
-   @Override
-   protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-   {
-       getFreezeService().unFreeze(actionedUponNodeRef);
-   }
+public class UnfreezeAction extends RMActionExecuterAbstractBase {
+    /**
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @SuppressWarnings("deprecation")
+    @Override
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+        getFreezeService().unFreeze(actionedUponNodeRef);
+    }
 }

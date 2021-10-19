@@ -23,50 +23,50 @@ import java.util.concurrent.locks.Lock;
 
 /**
  * Helper to make trying for read-write locks simpler
- * 
+ *
  * @author Derek Hulley
  * @since 4.1.7
  */
-public class LockHelper
-{
+public class LockHelper {
     /**
      * Exception generated when a lock try is unsuccessful
-     * 
+     *
      * @author Derek Hulley
      * @since 4.1.7
      */
-    public static class LockTryException extends RuntimeException
-    {
+    public static class LockTryException extends RuntimeException {
         private static final long serialVersionUID = -3629889029591630609L;
 
-        public LockTryException(String msg)
-        {
+        public LockTryException(String msg) {
             super(msg);
         }
     }
-    
+
     /**
      * Try to get a lock in the given number of milliseconds or get an exception
-     * 
-     * @param lock                          the lock to try
-     * @param timeoutMs                     the number of milliseconds to try
-     * @param useCase                       {@link String} value which specifies description of use case when lock is needed
-     * @throws LockTryException    the exception if the time is exceeded or the thread is interrupted
+     *
+     * @param lock the lock to try
+     * @param timeoutMs the number of milliseconds to try
+     * @param useCase {@link String} value which specifies description of use case when lock is
+     *     needed
+     * @throws LockTryException the exception if the time is exceeded or the thread is interrupted
      */
-    public static void tryLock(Lock lock, long timeoutMs, String useCase) throws LockTryException
-    {
+    public static void tryLock(Lock lock, long timeoutMs, String useCase) throws LockTryException {
         boolean gotLock = false;
-        try
-        {
+        try {
             gotLock = lock.tryLock(timeoutMs, TimeUnit.MILLISECONDS);
-        }
-        catch (InterruptedException e)
-        {
+        } catch (InterruptedException e) {
             // Handled
         }
-        if (!gotLock)
-        {
-            throw new LockTryException("Failed to get lock " + lock.getClass().getSimpleName() + " for " + useCase + " in " + timeoutMs + "ms.");
+        if (!gotLock) {
+            throw new LockTryException(
+                    "Failed to get lock "
+                            + lock.getClass().getSimpleName()
+                            + " for "
+                            + useCase
+                            + " in "
+                            + timeoutMs
+                            + "ms.");
         }
     }
 }

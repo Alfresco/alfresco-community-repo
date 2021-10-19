@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -30,26 +30,28 @@ import org.alfresco.repo.query.NodeBackedEntity;
 
 /**
  * ArchivedNodes Entity - used by GetArchivedNodes CQ
- * 
+ *
  * @author Jamal Kaabi-Mofrad
  * @since 4.2
  */
-public class ArchivedNodeEntity extends NodeBackedEntity
-{
+public class ArchivedNodeEntity extends NodeBackedEntity {
 
     private String filter;
     private Long assocTypeQNameId;
     private Boolean sortOrderAscending;
     private Boolean filterIgnoreCase;
 
-    public ArchivedNodeEntity()
-    {
+    public ArchivedNodeEntity() {
         super();
     }
 
-    public ArchivedNodeEntity(Long parentNodeId, Long nameQNameId, String filter,
-                Long assocTypeQNameId, Boolean sortOrderAscending, Boolean filterIgnoreCase)
-    {
+    public ArchivedNodeEntity(
+            Long parentNodeId,
+            Long nameQNameId,
+            String filter,
+            Long assocTypeQNameId,
+            Boolean sortOrderAscending,
+            Boolean filterIgnoreCase) {
         super(parentNodeId, nameQNameId, null);
         setFilter(filter);
         setSortOrderAscending(sortOrderAscending);
@@ -57,27 +59,23 @@ public class ArchivedNodeEntity extends NodeBackedEntity
         this.assocTypeQNameId = assocTypeQNameId;
     }
 
-    public String getFilter()
-    {
+    public String getFilter() {
         return this.filter;
     }
 
-    public Boolean getSortOrderAscending()
-    {
+    public Boolean getSortOrderAscending() {
         return this.sortOrderAscending;
     }
 
-    public void setSortOrderAscending(Boolean sortOrderAscending)
-    {
+    public void setSortOrderAscending(Boolean sortOrderAscending) {
         // set this.sortOrderAscending to false when sortOrderAscending is null.
         this.sortOrderAscending = Boolean.TRUE.equals(sortOrderAscending);
     }
 
-    public void setFilter(String filter)
-    {
-        if (filter != null)
-        {
-            // escape the '%' character with '\' (standard SQL escape character). e.g. 'test%' will be 'test\%'
+    public void setFilter(String filter) {
+        if (filter != null) {
+            // escape the '%' character with '\' (standard SQL escape character). e.g. 'test%' will
+            // be 'test\%'
             // note: you have to write 4 backslashes each time you want one '\' in a regex.
             filter = filter.replaceAll("%", "\\\\%");
 
@@ -86,35 +84,35 @@ public class ArchivedNodeEntity extends NodeBackedEntity
         }
     }
 
-    public Long getAssocTypeQNameId()
-    {
+    public Long getAssocTypeQNameId() {
         return this.assocTypeQNameId;
     }
 
-    public void setAssocTypeQNameId(Long assocTypeQNameId)
-    {
+    public void setAssocTypeQNameId(Long assocTypeQNameId) {
         this.assocTypeQNameId = assocTypeQNameId;
     }
 
-    public Boolean getFilterIgnoreCase()
-    {
+    public Boolean getFilterIgnoreCase() {
         return this.filterIgnoreCase;
     }
 
-    public void setFilterIgnoreCase(Boolean filterIgnoreCase)
-    {
+    public void setFilterIgnoreCase(Boolean filterIgnoreCase) {
         // set this.filterIgnoreCase to false when filterIgnoreCase is null.
         this.filterIgnoreCase = Boolean.TRUE.equals(filterIgnoreCase);
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder builder = new StringBuilder(300);
-        builder.append("ArchivedNodeEntity [filter=").append(this.filter)
-                    .append(", assocTypeQNameId=").append(this.assocTypeQNameId)
-                    .append(", sortOrderAscending=").append(this.sortOrderAscending)
-                    .append(", filterIgnoreCase=").append(this.filterIgnoreCase).append("]");
+        builder.append("ArchivedNodeEntity [filter=")
+                .append(this.filter)
+                .append(", assocTypeQNameId=")
+                .append(this.assocTypeQNameId)
+                .append(", sortOrderAscending=")
+                .append(this.sortOrderAscending)
+                .append(", filterIgnoreCase=")
+                .append(this.filterIgnoreCase)
+                .append("]");
         return builder.toString();
     }
 }

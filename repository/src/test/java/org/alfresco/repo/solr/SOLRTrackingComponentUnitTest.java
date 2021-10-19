@@ -25,15 +25,12 @@
  */
 package org.alfresco.repo.solr;
 
-import static java.util.Collections.emptyMap;
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.Serializable;
-import java.util.Map;
+import static java.util.Collections.emptyMap;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -44,34 +41,34 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.io.Serializable;
+import java.util.Map;
+
 /** Unit tests for {@link org.alfresco.repo.solr.SOLRTrackingComponent}. */
-public class SOLRTrackingComponentUnitTest
-{
+public class SOLRTrackingComponentUnitTest {
     /** A pair of QNames for use in the tests. */
     private static final QName FIRST_PROPERTY = QName.createQName("the://first/property");
+
     private static final QName SECOND_PROPERTY = QName.createQName("the://second/property");
     /** A node id for use in the tests. */
     private static final long NODE_ID = 123L;
 
     /** The class under test. */
-    @InjectMocks
-    private SOLRTrackingComponentImpl solrTrackingComponent;
-    @Mock
-    private NodeDAO nodeDAO;
-    @Mock
-    private DictionaryService dictionaryService;
+    @InjectMocks private SOLRTrackingComponentImpl solrTrackingComponent;
+
+    @Mock private NodeDAO nodeDAO;
+    @Mock private DictionaryService dictionaryService;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         initMocks(this);
     }
 
     /** Check that properties of different types can be returned. */
     @Test
-    public void testGetProperties_indexedPropertiesPassedThrough()
-    {
-        Map<QName, Serializable> propertiesFromDB = Map.of(FIRST_PROPERTY, "value1", SECOND_PROPERTY, 2);
+    public void testGetProperties_indexedPropertiesPassedThrough() {
+        Map<QName, Serializable> propertiesFromDB =
+                Map.of(FIRST_PROPERTY, "value1", SECOND_PROPERTY, 2);
         when(nodeDAO.getNodeProperties(NODE_ID)).thenReturn(propertiesFromDB);
         PropertyDefinition firstDefinition = mock(PropertyDefinition.class);
         when(firstDefinition.isIndexed()).thenReturn(true);
@@ -87,8 +84,7 @@ public class SOLRTrackingComponentUnitTest
 
     /** Check that a property is not indexed if it is not registered in the dictionary service. */
     @Test
-    public void testGetProperties_propertyWithoutModelIsNotIndexed()
-    {
+    public void testGetProperties_propertyWithoutModelIsNotIndexed() {
         Map<QName, Serializable> propertiesFromDB = Map.of(FIRST_PROPERTY, "value1");
         when(nodeDAO.getNodeProperties(NODE_ID)).thenReturn(propertiesFromDB);
         when(dictionaryService.getProperty(FIRST_PROPERTY)).thenReturn(null);
@@ -100,8 +96,7 @@ public class SOLRTrackingComponentUnitTest
 
     /** Check that a property is not indexed if the model contains <index enabled="false"/> */
     @Test
-    public void testGetProperties_propertySkippedIfIndexFalseSet()
-    {
+    public void testGetProperties_propertySkippedIfIndexFalseSet() {
         Map<QName, Serializable> propertiesFromDB = Map.of(FIRST_PROPERTY, "value1");
         when(nodeDAO.getNodeProperties(NODE_ID)).thenReturn(propertiesFromDB);
         PropertyDefinition firstDefinition = mock(PropertyDefinition.class);
@@ -110,6 +105,7 @@ public class SOLRTrackingComponentUnitTest
 
         Map<QName, Serializable> properties = solrTrackingComponent.getProperties(NODE_ID);
 
-        assertEquals("Unexpected property when index enabled set to false.", emptyMap(), properties);
+        assertEquals(
+                "Unexpected property when index enabled set to false.", emptyMap(), properties);
     }
 }

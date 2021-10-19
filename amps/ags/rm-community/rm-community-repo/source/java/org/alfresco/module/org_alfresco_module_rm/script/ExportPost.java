@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -53,14 +48,17 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 /**
- * Creates an RM specific ACP file of nodes to export then streams it back
- * to the client.
+ * Creates an RM specific ACP file of nodes to export then streams it back to the client.
  *
  * @author Gavin Cornwell
  */
-public class ExportPost extends StreamACP
-{
+public class ExportPost extends StreamACP {
     /** Logger */
     private static Log logger = LogFactory.getLog(ExportPost.class);
 
@@ -69,49 +67,40 @@ public class ExportPost extends StreamACP
     /** Content Streamer */
     private ContentStreamer contentStreamer;
 
-    /**
-     * @param contentStreamer
-     */
-    public void setContentStreamer(ContentStreamer contentStreamer)
-    {
+    /** @param contentStreamer */
+    public void setContentStreamer(ContentStreamer contentStreamer) {
         this.contentStreamer = contentStreamer;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @SuppressWarnings("deprecation")
     @Override
-    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
-    {
+    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException {
         File tempACPFile = null;
-        try
-        {
+        try {
             NodeRef[] nodeRefs = null;
             boolean transferFormat = false;
             String contentType = req.getContentType();
-            if (MULTIPART_FORMDATA.equals(contentType))
-            {
+            if (MULTIPART_FORMDATA.equals(contentType)) {
                 // get nodeRefs parameter from form
                 nodeRefs = getNodeRefs(req.getParameter(PARAM_NODE_REFS));
 
                 // look for the transfer format
                 String transferFormatParam = req.getParameter(PARAM_TRANSFER_FORMAT);
-                if (transferFormatParam != null && transferFormatParam.length() > 0)
-                {
+                if (transferFormatParam != null && transferFormatParam.length() > 0) {
                     transferFormat = Boolean.parseBoolean(transferFormatParam);
                 }
-            }
-            else
-            {
+            } else {
                 // presume the request is a JSON request so get nodeRefs from JSON body
                 JSONObject json = new JSONObject(new JSONTokener(req.getContent().getContent()));
                 nodeRefs = getNodeRefs(json);
 
-                if (json.has(PARAM_TRANSFER_FORMAT))
-                {
+                if (json.has(PARAM_TRANSFER_FORMAT)) {
                     transferFormat = json.getBoolean(PARAM_TRANSFER_FORMAT);
                 }
             }
@@ -123,65 +112,59 @@ public class ExportPost extends StreamACP
             params.setExportFrom(new Location(nodeRefs));
 
             // if transfer format has been requested we need to exclude certain aspects
-            if (transferFormat)
-            {
+            if (transferFormat) {
                 // restrict specific aspects from being returned
-                QName[] excludedAspects = new QName[] {
+                QName[] excludedAspects =
+                        new QName[] {
                             RenditionModel.ASPECT_RENDITIONED,
                             ContentModel.ASPECT_THUMBNAILED,
                             RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
                             RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH,
-                            RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
+                            RecordsManagementModel.ASPECT_EXTENDED_SECURITY
+                        };
                 params.setExcludeAspects(excludedAspects);
-            }
-            else
-            {
+            } else {
                 // restrict specific aspects from being returned
-                QName[] excludedAspects = new QName[] {RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
+                QName[] excludedAspects =
+                        new QName[] {RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
                 params.setExcludeAspects(excludedAspects);
             }
 
             // create an ACP of the nodes
-            tempACPFile = createACP(params,
-                        transferFormat ? ZIP_EXTENSION : ACPExportPackageHandler.ACP_EXTENSION,
-                        transferFormat);
+            tempACPFile =
+                    createACP(
+                            params,
+                            transferFormat ? ZIP_EXTENSION : ACPExportPackageHandler.ACP_EXTENSION,
+                            transferFormat);
 
             // stream the ACP back to the client as an attachment (forcing save as)
-            contentStreamer.streamContent(req, res, tempACPFile, null, true, tempACPFile.getName(), null);
-        }
-        catch (IOException ioe)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", ioe);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
-        }
-        catch(Exception e)
-        {
-            if (logger.isDebugEnabled())
-            {
+            contentStreamer.streamContent(
+                    req, res, tempACPFile, null, true, tempACPFile.getName(), null);
+        } catch (IOException ioe) {
+            throw new WebScriptException(
+                    Status.STATUS_BAD_REQUEST, "Could not read content from req.", ioe);
+        } catch (JSONException je) {
+            throw new WebScriptException(
+                    Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", je);
+        } catch (Exception e) {
+            if (logger.isDebugEnabled()) {
                 StringWriter stack = new StringWriter();
                 e.printStackTrace(new PrintWriter(stack));
-                logger.debug("Caught exception; decorating with appropriate status template : " + stack.toString());
+                logger.debug(
+                        "Caught exception; decorating with appropriate status template : "
+                                + stack.toString());
             }
 
             throw createStatusException(e, req, res);
-        }
-        finally
-        {
-           // try and delete the temporary file
-           if (tempACPFile != null)
-           {
-               if (logger.isDebugEnabled())
-               {
-                   logger.debug("Deleting temporary archive: " + tempACPFile.getAbsolutePath());
-               }
+        } finally {
+            // try and delete the temporary file
+            if (tempACPFile != null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Deleting temporary archive: " + tempACPFile.getAbsolutePath());
+                }
 
-               tempACPFile.delete();
-           }
+                tempACPFile.delete();
+            }
         }
     }
 }

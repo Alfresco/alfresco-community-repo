@@ -27,9 +27,6 @@
 
 package org.alfresco.rest.rm.community.model.transfer;
 
-import org.alfresco.rest.core.RestModels;
-import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AllArgsConstructor;
@@ -37,6 +34,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.rest.core.RestModels;
+import org.alfresco.rest.rm.community.model.transfercontainer.TransferContainer;
 
 /**
  * POJO for transfer entry
@@ -49,8 +49,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransferEntry extends RestModels<TransferContainer, TransferEntry>
-{
-    @JsonProperty
-    private Transfer entry;
+public class TransferEntry extends RestModels<TransferContainer, TransferEntry> {
+    @JsonProperty private Transfer entry;
 }

@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.job;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
@@ -43,15 +41,16 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Base records management job implementation.
- * <p>
- * Delegates job execution and ensures locking is enforced.
+ *
+ * <p>Delegates job execution and ensures locking is enforced.
  *
  * @author Roy Wetherall
  */
-public class RecordsManagementJob implements Job
-{
+public class RecordsManagementJob implements Job {
     private static Log logger = LogFactory.getLog(RecordsManagementJob.class);
 
     /** which user should be used to log audit */
@@ -65,24 +64,20 @@ public class RecordsManagementJob implements Job
 
     private String jobName;
 
-    private QName getLockQName()
-    {
+    private QName getLockQName() {
         return QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, jobName);
     }
 
-    private class LockCallback implements JobLockRefreshCallback
-    {
+    private class LockCallback implements JobLockRefreshCallback {
         final AtomicBoolean running = new AtomicBoolean(true);
 
         @Override
-        public boolean isActive()
-        {
+        public boolean isActive() {
             return running.get();
         }
 
         @Override
-        public void lockReleased()
-        {
+        public void lockReleased() {
             running.set(false);
         }
     }
@@ -92,112 +87,107 @@ public class RecordsManagementJob implements Job
      *
      * @return Returns the lock token or <tt>null</tt>
      */
-    private String getLock()
-    {
-        try
-        {
+    private String getLock() {
+        try {
             return jobLockService.getLock(getLockQName(), DEFAULT_TIME);
-        }
-        catch (LockAcquisitionException e)
-        {
+        } catch (LockAcquisitionException e) {
             return null;
         }
     }
 
-    /**
-     * @see org.quartz.Job#execute(org.quartz.JobExecutionContext)
-     */
-    public void execute(JobExecutionContext context) throws JobExecutionException
-    {
+    /** @see org.quartz.Job#execute(org.quartz.JobExecutionContext) */
+    public void execute(JobExecutionContext context) throws JobExecutionException {
 
         // get the job lock service
-        jobLockService = (JobLockService) context.getJobDetail().getJobDataMap().get("jobLockService");
-        if (jobLockService == null) { throw new AlfrescoRuntimeException("Job lock service has not been specified."); }
+        jobLockService =
+                (JobLockService) context.getJobDetail().getJobDataMap().get("jobLockService");
+        if (jobLockService == null) {
+            throw new AlfrescoRuntimeException("Job lock service has not been specified.");
+        }
 
         // get the job executer
-        jobExecuter = (RecordsManagementJobExecuter) context.getJobDetail().getJobDataMap().get("jobExecuter");
-        if (jobExecuter == null) { throw new AlfrescoRuntimeException("Job executer has not been specified."); }
+        jobExecuter =
+                (RecordsManagementJobExecuter)
+                        context.getJobDetail().getJobDataMap().get("jobExecuter");
+        if (jobExecuter == null) {
+            throw new AlfrescoRuntimeException("Job executer has not been specified.");
+        }
 
         // get the job name
         jobName = (String) context.getJobDetail().getJobDataMap().get("jobName");
 
-        if (jobName == null) { throw new AlfrescoRuntimeException("Job name has not been specified."); }
+        if (jobName == null) {
+            throw new AlfrescoRuntimeException("Job name has not been specified.");
+        }
 
-        if (jobName.compareTo("dispositionLifecycle") == 0)
-        {
-            //RM-3293 - set user for audit
-            if (jobExecuter instanceof DispositionLifecycleJobExecuter)
-            {
-                String auditUser = (String) context.getJobDetail().getJobDataMap().get("runAuditAs");
-                if (((DispositionLifecycleJobExecuter) jobExecuter).getPersonService().getPersonOrNull(auditUser) != null)
-                {
+        if (jobName.compareTo("dispositionLifecycle") == 0) {
+            // RM-3293 - set user for audit
+            if (jobExecuter instanceof DispositionLifecycleJobExecuter) {
+                String auditUser =
+                        (String) context.getJobDetail().getJobDataMap().get("runAuditAs");
+                if (((DispositionLifecycleJobExecuter) jobExecuter)
+                                .getPersonService()
+                                .getPersonOrNull(auditUser)
+                        != null) {
                     setRunAuditAs(auditUser);
-                }
-                else
-                {
+                } else {
                     setRunAuditAs(AuthenticationUtil.getSystemUserName());
                 }
-
             }
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("DispositionLifecycleJobExecuter() logged audit history with user: " + getRunAuditAs());
-
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "DispositionLifecycleJobExecuter() logged audit history with user: "
+                                + getRunAuditAs());
             }
-
         }
 
         final LockCallback lockCallback = new LockCallback();
 
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            public Void doWork()
-            {
-                // try and get the lock
-                String lockToken = getLock();
-                if (lockToken != null)
-                {
-                    try
-                    {
-                        jobLockService.refreshLock(lockToken, getLockQName(), DEFAULT_TIME, lockCallback);
-                        // do work
-                        jobExecuter.execute();
-                    }
-                    finally
-                    {
-                        try
-                        {
-                            lockCallback.running.set(false);
-                            jobLockService.releaseLock(lockToken, getLockQName());
-                        }
-                        catch (LockAcquisitionException e)
-                        {
-                            // Ignore
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Lock release failed: " + getLockQName() + ": " + lockToken + "("
-                                            + e.getMessage() + ")");
+        AuthenticationUtil.runAs(
+                new RunAsWork<Void>() {
+                    public Void doWork() {
+                        // try and get the lock
+                        String lockToken = getLock();
+                        if (lockToken != null) {
+                            try {
+                                jobLockService.refreshLock(
+                                        lockToken, getLockQName(), DEFAULT_TIME, lockCallback);
+                                // do work
+                                jobExecuter.execute();
+                            } finally {
+                                try {
+                                    lockCallback.running.set(false);
+                                    jobLockService.releaseLock(lockToken, getLockQName());
+                                } catch (LockAcquisitionException e) {
+                                    // Ignore
+                                    if (logger.isDebugEnabled()) {
+                                        logger.debug(
+                                                "Lock release failed: "
+                                                        + getLockQName()
+                                                        + ": "
+                                                        + lockToken
+                                                        + "("
+                                                        + e.getMessage()
+                                                        + ")");
+                                    }
+                                }
                             }
                         }
-                    }
-                }
 
-                // return
-                return null;
-            }
-        }, getRunAuditAs());
+                        // return
+                        return null;
+                    }
+                },
+                getRunAuditAs());
     }
 
-    public String getRunAuditAs()
-    {
+    public String getRunAuditAs() {
         return runAuditAs;
     }
 
-    public void setRunAuditAs(String runAuditAs)
-    {
+    public void setRunAuditAs(String runAuditAs) {
 
         this.runAuditAs = runAuditAs;
     }
-
 }

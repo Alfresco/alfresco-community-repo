@@ -27,10 +27,13 @@ package org.alfresco.web.app.servlet;
 
 import net.sf.acegisecurity.context.Context;
 import net.sf.acegisecurity.context.ContextHolder;
+
 import org.alfresco.repo.security.authentication.AlfrescoSecureContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -39,55 +42,46 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
-public class ClearSecurityContextFilter implements Filter
-{
+public class ClearSecurityContextFilter implements Filter {
     private Log logger = LogFactory.getLog(getClass());
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain) throws IOException, ServletException
-    {
-        try
-        {
+    public void doFilter(
+            ServletRequest servletRequest, ServletResponse servletResponse, FilterChain chain)
+            throws IOException, ServletException {
+        try {
             chain.doFilter(servletRequest, servletResponse);
-        }
-        finally
-        {
+        } finally {
             logClearContextInfo(servletRequest);
             AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
 
-    private void logClearContextInfo(ServletRequest servletRequest)
-    {
-        if (!logger.isDebugEnabled())
-        {
+    private void logClearContextInfo(ServletRequest servletRequest) {
+        if (!logger.isDebugEnabled()) {
             return;
         }
 
-        try
-        {
+        try {
             // print information about the request and leaked context
             String identifiedUserName = null;
             final String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
             final Context context = ContextHolder.getContext();
 
-            if (context instanceof AlfrescoSecureContext)
-            {
+            if (context instanceof AlfrescoSecureContext) {
                 AlfrescoSecureContext sc = (AlfrescoSecureContext) context;
-                identifiedUserName = AuthenticationUtil.getMaskedUsername(sc.getRealAuthentication());
+                identifiedUserName =
+                        AuthenticationUtil.getMaskedUsername(sc.getRealAuthentication());
             }
-            if (context == null && fullyAuthenticatedUser == null)
-            {
+            if (context == null && fullyAuthenticatedUser == null) {
                 // nothing unusual to log
                 return;
             }
 
             final String newLine = System.lineSeparator();
             String url = null;
-            if (servletRequest instanceof HttpServletRequest)
-            {
+            if (servletRequest instanceof HttpServletRequest) {
                 url = ((HttpServletRequest) servletRequest).getRequestURL().toString();
             }
 
@@ -96,48 +90,46 @@ public class ClearSecurityContextFilter implements Filter
             sb.append(url);
             sb.append(newLine);
 
-            sb.append("There was some information still present in the security context for this thread: ");
+            sb.append(
+                    "There was some information still present in the security context for this"
+                            + " thread: ");
             sb.append(Thread.currentThread().getName());
             sb.append(newLine);
 
-            if (context != null)
-            {
-                if (identifiedUserName != null)
-                {
-                    sb.append("Real authenticated user found: " + AuthenticationUtil.maskUsername(identifiedUserName));
+            if (context != null) {
+                if (identifiedUserName != null) {
+                    sb.append(
+                            "Real authenticated user found: "
+                                    + AuthenticationUtil.maskUsername(identifiedUserName));
                     sb.append(newLine);
-                }
-                else
-                {
+                } else {
                     sb.append("ContextHolder was not null");
                     sb.append(newLine);
                 }
             }
-            if (fullyAuthenticatedUser != null)
-            {
-                sb.append("Fully authenticated user found: " + AuthenticationUtil.maskUsername(fullyAuthenticatedUser));
+            if (fullyAuthenticatedUser != null) {
+                sb.append(
+                        "Fully authenticated user found: "
+                                + AuthenticationUtil.maskUsername(fullyAuthenticatedUser));
                 sb.append(newLine);
             }
-            sb.append("Other information about leaking ticket and tenant information may follow in the log, "
-                + "if org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl "
-                + "and org.alfresco.repo.tenant.TenantContextHolder loggers are set to 'trace'");
+            sb.append(
+                    "Other information about leaking ticket and tenant information may follow in"
+                        + " the log, if"
+                        + " org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl"
+                        + " and org.alfresco.repo.tenant.TenantContextHolder loggers are set to"
+                        + " 'trace'");
             sb.append(newLine);
 
             logger.debug(sb.toString());
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.debug("Error building proper logging message:" + e.getMessage(), e);
         }
     }
 
     @Override
-    public void init(FilterConfig config) throws ServletException
-    {
-    }
+    public void init(FilterConfig config) throws ServletException {}
 
     @Override
-    public void destroy()
-    {
-    }
+    public void destroy() {}
 }

@@ -27,13 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v22;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -47,15 +40,21 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
- * Sets the ghost on destroy property for existing destroy disposition actions
- * to the value specified in the global properties file
+ * Sets the ghost on destroy property for existing destroy disposition actions to the value
+ * specified in the global properties file
  *
  * @author Mark Hibbins
  * @since 2.2
  */
-public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePatch
-{
+public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePatch {
     /** Disposition service */
     private DispositionService dispositionService;
 
@@ -68,48 +67,31 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
     /** Ghost on destroy setting */
     private boolean ghostingEnabled;
 
-    /**
-     * @param dispositionService disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    /** @param dispositionService disposition service */
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
-    /**
-     * @param filePlanService file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
-    /**
-     * @param nodeService file plan service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService file plan service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param ghostingEnabled Ghost on destroy setting from
-     *            alfresco-global.properties
-     */
-    public void setGhostingEnabled(boolean ghostingEnabled)
-    {
+    /** @param ghostingEnabled Ghost on destroy setting from alfresco-global.properties */
+    public void setGhostingEnabled(boolean ghostingEnabled) {
         this.ghostingEnabled = ghostingEnabled;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal() */
     @Override
-    public void applyInternal()
-    {
+    public void applyInternal() {
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
-        for (NodeRef filePlan : filePlans)
-        {
+        for (NodeRef filePlan : filePlans) {
             processFilePlan(filePlan);
         }
     }
@@ -119,69 +101,72 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
      *
      * @param filePlan
      */
-    private void processFilePlan(NodeRef filePlan)
-    {
+    private void processFilePlan(NodeRef filePlan) {
         Set<DispositionSchedule> dispositionSchedules = new HashSet<>();
         getDispositionSchedules(filePlan, dispositionSchedules);
-        for (DispositionSchedule dispositionSchedule : dispositionSchedules)
-        {
+        for (DispositionSchedule dispositionSchedule : dispositionSchedules) {
             processDispositionSchedule(dispositionSchedule);
         }
     }
 
     /**
-     * Add the disposition schedule associated with the node ref to the passed
-     * set of disposition schedule then call this method recursively for this
-     * node's children
+     * Add the disposition schedule associated with the node ref to the passed set of disposition
+     * schedule then call this method recursively for this node's children
      *
      * @param nodeRef
      * @param dispositionSchedules
      */
-    private void getDispositionSchedules(NodeRef nodeRef, Set<DispositionSchedule> dispositionSchedules)
-    {
-        if (filePlanService.isRecordCategory(nodeRef))
-        {
-            DispositionSchedule dispositionSchedule = this.dispositionService.getDispositionSchedule(nodeRef);
-            if (dispositionSchedule != null)
-            {
+    private void getDispositionSchedules(
+            NodeRef nodeRef, Set<DispositionSchedule> dispositionSchedules) {
+        if (filePlanService.isRecordCategory(nodeRef)) {
+            DispositionSchedule dispositionSchedule =
+                    this.dispositionService.getDispositionSchedule(nodeRef);
+            if (dispositionSchedule != null) {
                 dispositionSchedules.add(dispositionSchedule);
             }
 
-            List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef childAssoc : children)
-            {
+            List<ChildAssociationRef> children =
+                    nodeService.getChildAssocs(
+                            nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef childAssoc : children) {
                 getDispositionSchedules(childAssoc.getChildRef(), dispositionSchedules);
             }
         }
     }
 
     /**
-     * Patch the specified disposition schedule. To do this add the host on
-     * destroy to any action definition that doesn't already have it defined and
-     * set the value to the value set in the global properties file. Leave any
-     * action definitions that have this property already defined untouched.
+     * Patch the specified disposition schedule. To do this add the host on destroy to any action
+     * definition that doesn't already have it defined and set the value to the value set in the
+     * global properties file. Leave any action definitions that have this property already defined
+     * untouched.
      *
      * @param dispositionSchedule
      */
-    private void processDispositionSchedule(DispositionSchedule dispositionSchedule)
-    {
-        List<DispositionActionDefinition> actionDefinitions = dispositionSchedule.getDispositionActionDefinitions();
-        for(DispositionActionDefinition actionDefinition : actionDefinitions)
-        {
-            String actionName = (String) nodeService.getProperty(actionDefinition.getNodeRef(),
-                    RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME);
-            if ("destroy".equals(actionName))
-            {
+    private void processDispositionSchedule(DispositionSchedule dispositionSchedule) {
+        List<DispositionActionDefinition> actionDefinitions =
+                dispositionSchedule.getDispositionActionDefinitions();
+        for (DispositionActionDefinition actionDefinition : actionDefinitions) {
+            String actionName =
+                    (String)
+                            nodeService.getProperty(
+                                    actionDefinition.getNodeRef(),
+                                    RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME);
+            if ("destroy".equals(actionName)) {
                 // we only want to add the ghost on destroy property to action
                 // definitions that do not already have it defined
-                String ghostOnDestroyValue = (String) nodeService.getProperty(actionDefinition.getNodeRef(),
-                        RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY);
-                if (ghostOnDestroyValue == null)
-                {
+                String ghostOnDestroyValue =
+                        (String)
+                                nodeService.getProperty(
+                                        actionDefinition.getNodeRef(),
+                                        RecordsManagementModel
+                                                .PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY);
+                if (ghostOnDestroyValue == null) {
                     Map<QName, Serializable> props = new HashMap<>(1);
-                    props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY,
+                    props.put(
+                            RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY,
                             this.ghostingEnabled ? "ghost" : "destroy");
-                    this.dispositionService.updateDispositionActionDefinition(actionDefinition, props);
+                    this.dispositionService.updateDispositionActionDefinition(
+                            actionDefinition, props);
                 }
             }
         }

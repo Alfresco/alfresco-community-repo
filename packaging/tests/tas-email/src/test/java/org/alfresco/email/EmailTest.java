@@ -1,7 +1,5 @@
 package org.alfresco.email;
 
-import java.lang.reflect.Method;
-
 import org.alfresco.email.dsl.ServerConfiguration;
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.data.*;
@@ -14,46 +12,35 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.*;
 
+import java.lang.reflect.Method;
+
 @ContextConfiguration("classpath:alfresco-email-context.xml")
-public abstract class EmailTest extends AbstractTestNGSpringContextTests
-{
+public abstract class EmailTest extends AbstractTestNGSpringContextTests {
     private static Logger LOG = LogFactory.getLogger();
 
-    @Autowired
-    protected EmailProperties emailProperties;
+    @Autowired protected EmailProperties emailProperties;
 
-    @Autowired
-    ServerHealth serverHealth;
+    @Autowired ServerHealth serverHealth;
 
-    @Autowired
-    protected ImapWrapper imapProtocol;
-    
-    @Autowired
-    protected SmtpWrapper smtpProtocol;
+    @Autowired protected ImapWrapper imapProtocol;
 
-    @Autowired
-    public DataUser dataUser;
-    
-    @Autowired
-    public DataGroup dataGroup;
+    @Autowired protected SmtpWrapper smtpProtocol;
 
-    @Autowired
-    public DataSite dataSite;
+    @Autowired public DataUser dataUser;
 
-    @Autowired
-    public DataContent dataContent;
+    @Autowired public DataGroup dataGroup;
 
-    @Autowired
-    public DataLink dataLink;
+    @Autowired public DataSite dataSite;
 
-    @Autowired
-    public DataCalendarEvent dataCalendarEvent;
+    @Autowired public DataContent dataContent;
 
-    @Autowired
-    public DataWiki dataWiki;
+    @Autowired public DataLink dataLink;
 
-    @Autowired
-    public TenantConsole tenantConsole;
+    @Autowired public DataCalendarEvent dataCalendarEvent;
+
+    @Autowired public DataWiki dataWiki;
+
+    @Autowired public TenantConsole tenantConsole;
 
     protected UserModel adminUser;
     protected UserModel testUser;
@@ -64,39 +51,36 @@ public abstract class EmailTest extends AbstractTestNGSpringContextTests
     protected ContentModel contentModel;
 
     @BeforeSuite(alwaysRun = true)
-    public void checkServerHealth() throws Exception
-    {
+    public void checkServerHealth() throws Exception {
         super.springTestContextPrepareTestInstance();
         serverHealth.assertServerIsOnline();
 
         UserModel anonymousUser = new UserModel("anonymous", DataUser.PASSWORD);
-        if (!dataUser.isUserInRepo(anonymousUser.getUsername()))
-        {
+        if (!dataUser.isUserInRepo(anonymousUser.getUsername())) {
             dataUser.createUser(anonymousUser);
-            dataGroup.usingUser(anonymousUser).addUserToGroup(GroupModel.getEmailContributorsGroup());
+            dataGroup
+                    .usingUser(anonymousUser)
+                    .addUserToGroup(GroupModel.getEmailContributorsGroup());
         }
 
-        if (emailProperties.getUseJolokiaAgent())
-        {
+        if (emailProperties.getUseJolokiaAgent()) {
             imapProtocol.assertThat().protocolIsEnabled();
             smtpProtocol.assertThat().protocolIsEnabled();
             ServerConfiguration.save(smtpProtocol.withJMX(), smtpProtocol.emailProperties);
-        }
-        else
-        {
-            LOG.warn("*** Jolokia is not used! To use jolokia, please add next system property when running the tests: jmx.useJolokiaAgent=true ***");
+        } else {
+            LOG.warn(
+                    "*** Jolokia is not used! To use jolokia, please add next system property when"
+                            + " running the tests: jmx.useJolokiaAgent=true ***");
         }
     }
 
-    @BeforeMethod(alwaysRun=true)
-    public void showStartTestInfo(Method method)
-    {      
-      LOG.info(String.format("*** STARTING Test: [%s] ***",method.getName()));      
+    @BeforeMethod(alwaysRun = true)
+    public void showStartTestInfo(Method method) {
+        LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
     }
-    
-    @AfterMethod(alwaysRun=true)
-    public void showEndTestInfo(Method method)
-    {      
-      LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
+
+    @AfterMethod(alwaysRun = true)
+    public void showEndTestInfo(Method method) {
+        LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
 }

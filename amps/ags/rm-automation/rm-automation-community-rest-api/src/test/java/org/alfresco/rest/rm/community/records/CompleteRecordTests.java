@@ -45,42 +45,36 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 /**
- * This class contains the tests for
- * Complete Record Action REST API
+ * This class contains the tests for Complete Record Action REST API
  *
  * @author Sara Aspery
  * @since 2.6
  */
-public class CompleteRecordTests extends BaseRMRestTest
-{
+public class CompleteRecordTests extends BaseRMRestTest {
     private static final Boolean COMPLETE = true;
     private static final Boolean INCOMPLETE = false;
     private static final String PARAMETERS = "include=isCompleted";
 
-    /**
-     * Incomplete records with mandatory meta-data missing
-     */
-    @DataProvider (name = "IncompleteRecordsMandatoryMetadataMissing")
-    public Object[][] getIncompleteRecordsMandatoryMetadataMissing()
-    {
-        //create RM site
+    /** Incomplete records with mandatory meta-data missing */
+    @DataProvider(name = "IncompleteRecordsMandatoryMetadataMissing")
+    public Object[][] getIncompleteRecordsMandatoryMetadataMissing() {
+        // create RM site
         createRMSite(createDOD5015RMSiteModel());
 
         // create electronic and non-electronic records
         return createAndVerifyRecordsInFolder();
     }
 
-    /**
-     * Incomplete records with mandatory meta-data present
-     */
-    @DataProvider (name = "IncompleteRecordsMandatoryMetadataPresent")
-    public Object[][] getIncompleteRecordsMandatoryMetadataPresent()
-    {
+    /** Incomplete records with mandatory meta-data present */
+    @DataProvider(name = "IncompleteRecordsMandatoryMetadataPresent")
+    public Object[][] getIncompleteRecordsMandatoryMetadataPresent() {
         // create electronic and non-electronic records
         return createAndVerifyRecordsInFolder();
     }
 
     /**
+     *
+     *
      * <pre>
      * Given the repository is configured to check mandatory data before completing a record
      * And an incomplete record with its mandatory meta-data missing
@@ -89,15 +83,14 @@ public class CompleteRecordTests extends BaseRMRestTest
      * because some of the mandatory meta-data of the record is missing
      * </pre>
      */
-    @Test
-        (
+    @Test(
             dataProvider = "IncompleteRecordsMandatoryMetadataMissing",
-            description = "Cannot complete electronic and non-electronic records with mandatory metadata missing",
-            priority = 1
-        )
-    @AlfrescoTest (jira = "RM-4431")
-    public void completeRecordWithMandatoryMetadataMissing(Record record)
-    {
+            description =
+                    "Cannot complete electronic and non-electronic records with mandatory metadata"
+                            + " missing",
+            priority = 1)
+    @AlfrescoTest(jira = "RM-4431")
+    public void completeRecordWithMandatoryMetadataMissing(Record record) {
         verifyRecordCompletionStatus(record, INCOMPLETE);
 
         // Complete record
@@ -108,6 +101,8 @@ public class CompleteRecordTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given the repository is configured to check mandatory data before completing a record
      * And an incomplete record with all mandatory meta-data present
@@ -115,14 +110,13 @@ public class CompleteRecordTests extends BaseRMRestTest
      * Then the record is successfully completed
      * </pre>
      */
-    @Test
-        (
+    @Test(
             dataProvider = "IncompleteRecordsMandatoryMetadataPresent",
-            description = "Can complete electronic and non-electronic records with mandatory metadata present"
-        )
-    @AlfrescoTest (jira = "RM-4431")
-    public void completeRecordWithMandatoryMetadataPresent(Record record)
-    {
+            description =
+                    "Can complete electronic and non-electronic records with mandatory metadata"
+                            + " present")
+    @AlfrescoTest(jira = "RM-4431")
+    public void completeRecordWithMandatoryMetadataPresent(Record record) {
         verifyRecordCompletionStatus(record, INCOMPLETE);
 
         // Complete record
@@ -133,37 +127,38 @@ public class CompleteRecordTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given a document that is not a record or any non-document node
      * When I complete the item
      * Then I receive an unsupported operation error
      * </pre>
      */
-    @Test (description = "Cannot complete a document that is not a record")
-    @AlfrescoTest (jira = "RM-4431")
-    public void completeNonRecord()
-    {
+    @Test(description = "Cannot complete a document that is not a record")
+    @AlfrescoTest(jira = "RM-4431")
+    public void completeNonRecord() {
         // Get the recordsAPI
-        getRestAPIFactory().getRecordsAPI()
-                           .completeRecord(createCategoryFolderInFilePlan().getId(), PARAMETERS);
+        getRestAPIFactory()
+                .getRecordsAPI()
+                .completeRecord(createCategoryFolderInFilePlan().getId(), PARAMETERS);
         assertStatusCode(BAD_REQUEST);
     }
 
     /**
+     *
+     *
      * <pre>
      * Given a record that is already completed
      * When I complete the record
      * Then I receive an error indicating that I can't complete the operation, because the record is already complete
      * </pre>
      */
-    @Test
-        (
+    @Test(
             dataProvider = "IncompleteRecordsMandatoryMetadataPresent",
-            description = "Cannot complete a record that is already completed"
-        )
-    @AlfrescoTest (jira = "RM-4431")
-    public void completeAlreadyCompletedRecord(Record record)
-    {
+            description = "Cannot complete a record that is already completed")
+    @AlfrescoTest(jira = "RM-4431")
+    public void completeAlreadyCompletedRecord(Record record) {
         verifyRecordCompletionStatus(record, INCOMPLETE);
 
         // Complete record
@@ -177,46 +172,36 @@ public class CompleteRecordTests extends BaseRMRestTest
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
-    /**
-     * Helper method to create records and and assert successful creation
-     */
-    private Record[][] createAndVerifyRecordsInFolder()
-    {
+    /** Helper method to create records and and assert successful creation */
+    private Record[][] createAndVerifyRecordsInFolder() {
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
 
         // create record folder
         String recordFolderId = createCategoryFolderInFilePlan().getId();
 
         // create electronic record in record folder
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolderId, getFile(IMAGE_FILE));
+        Record electronicRecord =
+                recordFolderAPI.createRecord(
+                        createElectronicRecordModel(), recordFolderId, getFile(IMAGE_FILE));
         assertStatusCode(CREATED);
 
         // create non-electronic record in record folder
-        Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
+        Record nonElectronicRecord =
+                recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolderId);
         assertStatusCode(CREATED);
 
-        return new Record[][]
-        {
-            { electronicRecord },
-            { nonElectronicRecord }
-        };
+        return new Record[][] {{electronicRecord}, {nonElectronicRecord}};
     }
 
-    /**
-     * Helper method to verify record is complete or incomplete
-     */
-    private void verifyRecordCompletionStatus(Record record, Boolean completionStatus)
-    {
+    /** Helper method to verify record is complete or incomplete */
+    private void verifyRecordCompletionStatus(Record record, Boolean completionStatus) {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
         Record recordModel = recordsAPI.getRecord(record.getId(), PARAMETERS);
         assertEquals(recordModel.getIsCompleted(), completionStatus);
     }
 
-    /**
-     * Helper method to complete a record
-     */
-    private void completeRecord(Record record)
-    {
+    /** Helper method to complete a record */
+    private void completeRecord(Record record) {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
         recordsAPI.completeRecord(record.getId(), PARAMETERS);
     }

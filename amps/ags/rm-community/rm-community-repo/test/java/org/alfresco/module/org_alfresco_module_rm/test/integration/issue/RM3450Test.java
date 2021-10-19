@@ -39,32 +39,34 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roxana Lucanu
  * @since 2.4.1
  */
-public class RM3450Test extends BaseRMTestCase
-{
+public class RM3450Test extends BaseRMTestCase {
 
     private static final String MSG_CANNOT_CAST_TO_RM_TYPE = "rm.action.cast-to-rm-type";
 
-    public void testRM3450() throws Exception
-    {
-        doTestInTransaction(new FailureTest
-                (
-                        I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE),
-                        IntegrityException.class
-                )
-        {
-            @Override
-            public void run() throws Exception
-            {
-                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
-                {
-                    public Object execute() throws Exception
-                    {
-                        fileFolderService.create(unfiledContainer, GUID.generate(), TestModel.NOT_RM_FOLDER_TYPE).getNodeRef();
-                        return null;
+    public void testRM3450() throws Exception {
+        doTestInTransaction(
+                new FailureTest(
+                        I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE), IntegrityException.class) {
+                    @Override
+                    public void run() throws Exception {
+                        transactionService
+                                .getRetryingTransactionHelper()
+                                .doInTransaction(
+                                        new RetryingTransactionCallback<Object>() {
+                                            public Object execute() throws Exception {
+                                                fileFolderService
+                                                        .create(
+                                                                unfiledContainer,
+                                                                GUID.generate(),
+                                                                TestModel.NOT_RM_FOLDER_TYPE)
+                                                        .getNodeRef();
+                                                return null;
+                                            }
+                                        },
+                                        false,
+                                        true);
                     }
-                }, false, true);
-            }
-        }, ADMIN_USER);
+                },
+                ADMIN_USER);
     }
-
 }

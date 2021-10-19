@@ -40,8 +40,6 @@ import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import java.io.File;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -63,24 +61,30 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.File;
+
 /**
- * API tests for declaring a document version as record and filing to a record folder location within the file plan
+ * API tests for declaring a document version as record and filing to a record folder location
+ * within the file plan
  *
  * @author Rodica Sutu
  * @since 3.4
  */
-@AlfrescoTest (jira = "APPS-35")
-public class FileVersionAsRecordTests extends BaseRMRestTest
-{
-    private final static String DESTINATION_PATH_NOT_FOUND_EXC = "Unable to execute declare-version-record action, " +
-            "because the destination path could not be found.";
-    private final static String INVALID_DESTINATION_PATH_EXC = "Unable to execute declare-version-record action, " +
-            "because the destination path is invalid.";
-    private final static String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC = "Unable to execute declare-version-record " +
-            "action, because the destination path is not a record folder.";
-    private final static String ACCESS_DENIED_EXC = "Access Denied.  You do not have the appropriate " +
-            "permissions to perform this operation.";
-      private final static String HOLD_NAME = getRandomName("holdName");
+@AlfrescoTest(jira = "APPS-35")
+public class FileVersionAsRecordTests extends BaseRMRestTest {
+    private static final String DESTINATION_PATH_NOT_FOUND_EXC =
+            "Unable to execute declare-version-record action, "
+                    + "because the destination path could not be found.";
+    private static final String INVALID_DESTINATION_PATH_EXC =
+            "Unable to execute declare-version-record action, "
+                    + "because the destination path is invalid.";
+    private static final String DESTINATION_PATH_NOT_RECORD_FOLDER_EXC =
+            "Unable to execute declare-version-record "
+                    + "action, because the destination path is not a record folder.";
+    private static final String ACCESS_DENIED_EXC =
+            "Access Denied.  You do not have the appropriate "
+                    + "permissions to perform this operation.";
+    private static final String HOLD_NAME = getRandomName("holdName");
 
     private UserModel userFillingPermission, userReadOnlyPermission;
     private SiteModel publicSite;
@@ -91,16 +95,12 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     private UnfiledContainerChild unfiledContainerFolder;
     private String holdNodeRef;
 
-    @Autowired
-    private RoleService roleService;
-    @Autowired
-    private DockerHelper dockerHelper;
-    @Autowired
-    private HoldsAPI holdsAPI;
+    @Autowired private RoleService roleService;
+    @Autowired private DockerHelper dockerHelper;
+    @Autowired private HoldsAPI holdsAPI;
 
-    @BeforeClass (alwaysRun = true)
-    public void declareAndFileVersionAsRecordSetup()
-    {
+    @BeforeClass(alwaysRun = true)
+    public void declareAndFileVersionAsRecordSetup() {
         STEP("Create test collaboration site to store documents in.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
 
@@ -110,106 +110,123 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         STEP("Create record categories and record folders");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
         recordFolder = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
-        closedRecordFolder = createFolder(recordCategory.getId(), getRandomName("closedRecordFolder"));
+        closedRecordFolder =
+                createFolder(recordCategory.getId(), getRandomName("closedRecordFolder"));
         closeFolder(closedRecordFolder.getId());
-        unfiledContainerFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS,
-                "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE);
+        unfiledContainerFolder =
+                createUnfiledContainerChild(
+                        UNFILED_RECORDS_CONTAINER_ALIAS,
+                        "Unfiled Folder " + getRandomAlphanumeric(),
+                        UNFILED_RECORD_FOLDER_TYPE);
         heldRecordFolder = createFolder(recordCategory.getId(), getRandomName("heldRecordFolder"));
-        holdNodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD_NAME, HOLD_REASON, HOLD_DESCRIPTION);
-        holdsAPI.addItemToHold(getAdminUser().getUsername(), getAdminUser().getPassword(), heldRecordFolder.getId(),
+        holdNodeRef =
+                holdsAPI.createHoldAndGetNodeRef(
+                        getAdminUser().getUsername(),
+                        getAdminUser().getPassword(),
+                        HOLD_NAME,
+                        HOLD_REASON,
+                        HOLD_DESCRIPTION);
+        holdsAPI.addItemToHold(
+                getAdminUser().getUsername(),
+                getAdminUser().getPassword(),
+                heldRecordFolder.getId(),
                 HOLD_NAME);
 
         STEP("Create rm users with different permissions on the record category");
-        userFillingPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory,
-                ROLE_RM_POWER_USER, PERMISSION_FILING);
-        userReadOnlyPermission = roleService.createCollaboratorWithRMRoleAndPermission(publicSite, recordCategory,
-                ROLE_RM_POWER_USER, PERMISSION_READ_RECORDS);
+        userFillingPermission =
+                roleService.createCollaboratorWithRMRoleAndPermission(
+                        publicSite, recordCategory, ROLE_RM_POWER_USER, PERMISSION_FILING);
+        userReadOnlyPermission =
+                roleService.createCollaboratorWithRMRoleAndPermission(
+                        publicSite, recordCategory, ROLE_RM_POWER_USER, PERMISSION_READ_RECORDS);
     }
 
-    @BeforeMethod (alwaysRun = true)
-    public void createDocument()
-    {
+    @BeforeMethod(alwaysRun = true)
+    public void createDocument() {
         STEP("Create a document in the collaboration site");
-        testFile = dataContent.usingSite(publicSite)
-                              .usingAdmin()
-                              .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        testFile =
+                dataContent
+                        .usingSite(publicSite)
+                        .usingAdmin()
+                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
     /**
-     * Given I am calling the "declare version as record" action
-     * And I am not providing a location parameter value
-     * When I execute the action
-     * Then the document is declared as a version record
+     * Given I am calling the "declare version as record" action And I am not providing a location
+     * parameter value When I execute the action Then the document is declared as a version record
      * And is placed in the Unfiled Records location
      */
     @Test
-    public void declareVersionAndFileNoLocationUsingActionsAPI() throws Exception
-    {
-        STEP("Declare document version as record without providing a location parameter value using v1 actions api");
+    public void declareVersionAndFileNoLocationUsingActionsAPI() throws Exception {
+        STEP(
+                "Declare document version as record without providing a location parameter value"
+                        + " using v1 actions api");
         getRestAPIFactory().getActionsAPI(userReadOnlyPermission).declareVersionAsRecord(testFile);
 
-        STEP("Verify the declared version record is placed in the Unfiled Records folder and is a record version");
-        assertTrue(isRecordVersionInUnfiledRecords(testFile, "1.0"), "Version record should be filed to Unfiled " +
-                "Records folder");
+        STEP(
+                "Verify the declared version record is placed in the Unfiled Records folder and is"
+                        + " a record version");
+        assertTrue(
+                isRecordVersionInUnfiledRecords(testFile, "1.0"),
+                "Version record should be filed to Unfiled " + "Records folder");
     }
 
     /**
-     * Given I am calling the "declare version as record" action
-     * And I provide a valid record folder in the location parameter
-     * When I execute the action
-     * Then the document is declared as a version record
-     * And is filed to the record folder specified
+     * Given I am calling the "declare version as record" action And I provide a valid record folder
+     * in the location parameter When I execute the action Then the document is declared as a
+     * version record And is filed to the record folder specified
      */
     @Test
-    public void fileVersionAsRecordToValidLocationUsingActionsAPI() throws Exception
-    {
+    public void fileVersionAsRecordToValidLocationUsingActionsAPI() throws Exception {
         STEP("Declare document version as record with a location parameter value");
-        getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFileVersionAsRecord(testFile,
-                Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
+        getRestAPIFactory()
+                .getActionsAPI(userFillingPermission)
+                .declareAndFileVersionAsRecord(
+                        testFile,
+                        Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 
         STEP("Verify the declared version record is placed in the record folder");
-        assertTrue(isRecordVersionInRecordFolder(testFile, recordFolder, "1.0"), "Record version should be filed to " +
-                "record folder");
+        assertTrue(
+                isRecordVersionInRecordFolder(testFile, recordFolder, "1.0"),
+                "Record version should be filed to " + "record folder");
+    }
+
+    /** Invalid destination paths where version records can't be filed */
+    @DataProvider(name = "invalidDestinationPaths")
+    public Object[][] getInvalidDestinationPaths() {
+        return new String[][] {
+            {"/", DESTINATION_PATH_NOT_FOUND_EXC},
+            {"Unfiled Records", INVALID_DESTINATION_PATH_EXC},
+            {"Transfers", INVALID_DESTINATION_PATH_EXC},
+            {"Holds", INVALID_DESTINATION_PATH_EXC},
+            {"rm/documentlibrary", DESTINATION_PATH_NOT_FOUND_EXC},
+            {recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC},
+            // a closed record folder
+            {
+                Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()),
+                ACCESS_DENIED_EXC
+            },
+            // a frozen record folder
+            {
+                Utility.buildPath(recordCategory.getName(), heldRecordFolder.getName()),
+                ACCESS_DENIED_EXC
+            },
+            // an arbitrary unfiled records folder
+            {"Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC},
+            // a collaboration site folder
+            {testFolder.getCmisLocation(), DESTINATION_PATH_NOT_FOUND_EXC}
+        };
     }
 
     /**
-     * Invalid destination paths where version records can't be filed
+     * Given I am calling the "declare version as record" action And I provide an invalid record
+     * folder in the path parameter When I execute the action Then I receive an error indicating
+     * that I have attempted to file version as record a document into an invalid record folder And
+     * the document is not declared as a version record
      */
-    @DataProvider (name = "invalidDestinationPaths")
-    public Object[][] getInvalidDestinationPaths()
-    {
-        return new String[][]
-                {
-                        { "/", DESTINATION_PATH_NOT_FOUND_EXC },
-                        { "Unfiled Records", INVALID_DESTINATION_PATH_EXC },
-                        { "Transfers", INVALID_DESTINATION_PATH_EXC },
-                        { "Holds", INVALID_DESTINATION_PATH_EXC },
-                        { "rm/documentlibrary", DESTINATION_PATH_NOT_FOUND_EXC },
-                        { recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC },
-                        // a closed record folder
-                        { Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()),
-                                ACCESS_DENIED_EXC },
-                         // a frozen record folder
-                        { Utility.buildPath(recordCategory.getName(), heldRecordFolder.getName()),
-                                ACCESS_DENIED_EXC },
-                        // an arbitrary unfiled records folder
-                        { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
-                        // a collaboration site folder
-                        { testFolder.getCmisLocation(), DESTINATION_PATH_NOT_FOUND_EXC }
-                };
-    }
-
-    /**
-     * Given I am calling the "declare version as record" action
-     * And I provide an invalid record folder in the path parameter
-     * When I execute the action
-     * Then I receive an error indicating that I have attempted to file version as record a document into an invalid
-     * record folder
-     * And the document is not declared as a version record
-     */
-    @Test (dataProvider = "invalidDestinationPaths")
-    public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
-    {
+    @Test(dataProvider = "invalidDestinationPaths")
+    public void declareVersionAndFileToInvalidLocationUsingActionsAPI(
+            String containerPath, String expectedException) throws Exception {
         STEP("Declare document as record version with an invalid location parameter value");
         getRestAPIFactory().getActionsAPI().declareAndFileVersionAsRecord(testFile, containerPath);
         assertStatusCode(ACCEPTED);
@@ -219,79 +236,99 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     }
 
     /**
-     * Given I am an user with read only permissions on a record folder
-     * When I declare and file a version record to the record folder
-     * Then I receive an error indicating that the access is denied
-     * And the document is not declared as a record
+     * Given I am an user with read only permissions on a record folder When I declare and file a
+     * version record to the record folder Then I receive an error indicating that the access is
+     * denied And the document is not declared as a record
      */
     @Test
-    public void declareAndFileByUserWithReadOnlyPermission() throws Exception
-    {
+    public void declareAndFileByUserWithReadOnlyPermission() throws Exception {
         STEP("Declare document as record with a record folder as location parameter");
-        getRestAPIFactory().getActionsAPI(userReadOnlyPermission).declareAndFileVersionAsRecord(testFile,
-                Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
+        getRestAPIFactory()
+                .getActionsAPI(userReadOnlyPermission)
+                .declareAndFileVersionAsRecord(
+                        testFile,
+                        Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 
         STEP("Check that the record version is not added to the record folder");
-        assertFalse(isRecordVersionInRecordFolder(testFile, recordFolder, "1.0"), "Record version is filed to " +
-                "record folder where the user doesn't have filling permission");
+        assertFalse(
+                isRecordVersionInRecordFolder(testFile, recordFolder, "1.0"),
+                "Record version is filed to "
+                        + "record folder where the user doesn't have filling permission");
     }
 
     /**
-     * Given I am calling the "declare version as record" action for a minor document version
-     * And I am not providing a path parameter value
-     * When I execute the action
-     * Then the document version is declared as a version record
-     * And is placed in the Unfiled Records location
+     * Given I am calling the "declare version as record" action for a minor document version And I
+     * am not providing a path parameter value When I execute the action Then the document version
+     * is declared as a version record And is placed in the Unfiled Records location
      */
     @Test
-    public void declareVersionAsRecordMinorVersionUsingActionsAPI() throws Exception
-    {
+    public void declareVersionAsRecordMinorVersionUsingActionsAPI() throws Exception {
         STEP("Update document in the collaboration site");
-        dataContent.usingSite(publicSite).usingAdmin().usingResource(testFile).updateContent("This is the new content" +
-               "for " + testFile.getName());
+        dataContent
+                .usingSite(publicSite)
+                .usingAdmin()
+                .usingResource(testFile)
+                .updateContent("This is the new content" + "for " + testFile.getName());
 
-        STEP("Declare document version as record with providing a location parameter value using v1 actions api");
-        getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFileVersionAsRecord(testFile,
-                Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
+        STEP(
+                "Declare document version as record with providing a location parameter value using"
+                        + " v1 actions api");
+        getRestAPIFactory()
+                .getActionsAPI(userFillingPermission)
+                .declareAndFileVersionAsRecord(
+                        testFile,
+                        Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 
-        STEP("Verify the declared version record is placed in the record folder and is a record version");
-        assertTrue(isRecordVersionInRecordFolder(testFile, recordFolder, "1.1"), "Record should be filed to fileplan " +
-                "location");
+        STEP(
+                "Verify the declared version record is placed in the record folder and is a record"
+                        + " version");
+        assertTrue(
+                isRecordVersionInRecordFolder(testFile, recordFolder, "1.1"),
+                "Record should be filed to fileplan " + "location");
     }
 
     /**
-     * Given I am calling the "declare version as record" action for a major document version
-     * And I am not providing a path parameter value
-     * When I execute the action
-     * Then the document version is declared as a version record version
-     * And is placed in the Unfiled Records location
+     * Given I am calling the "declare version as record" action for a major document version And I
+     * am not providing a path parameter value When I execute the action Then the document version
+     * is declared as a version record version And is placed in the Unfiled Records location
      */
     @Test
-    public void declareVersionAsRecordMajorVersionUsingActionsAPI() throws Exception
-    {
+    public void declareVersionAsRecordMajorVersionUsingActionsAPI() throws Exception {
         STEP("Update document in the collaboration site");
         File sampleFile = Utility.getResourceTestDataFile("SampleTextFile_10kb.txt");
-        restClient.authenticateUser(getAdminUser()).withCoreAPI().usingParams("majorVersion=true").usingNode(testFile).updateNodeContent(sampleFile);
+        restClient
+                .authenticateUser(getAdminUser())
+                .withCoreAPI()
+                .usingParams("majorVersion=true")
+                .usingNode(testFile)
+                .updateNodeContent(sampleFile);
 
-        STEP("Declare document version as record with providing a location parameter value using v1 actions api");
-        getRestAPIFactory().getActionsAPI(userFillingPermission).declareAndFileVersionAsRecord(testFile,
-                Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
+        STEP(
+                "Declare document version as record with providing a location parameter value using"
+                        + " v1 actions api");
+        getRestAPIFactory()
+                .getActionsAPI(userFillingPermission)
+                .declareAndFileVersionAsRecord(
+                        testFile,
+                        Utility.buildPath(recordCategory.getName(), recordFolder.getName()));
 
-        STEP("Verify the declared version record is placed in the record folder and is a record version");
-        assertTrue(isRecordVersionInRecordFolder(testFile, recordFolder, "2.0"), "Version record should be filed to " +
-                "the record folder");
+        STEP(
+                "Verify the declared version record is placed in the record folder and is a record"
+                        + " version");
+        assertTrue(
+                isRecordVersionInRecordFolder(testFile, recordFolder, "2.0"),
+                "Version record should be filed to " + "the record folder");
     }
 
-    @AfterClass (alwaysRun = true)
-    public void declareAndFileVersionAsRecordCleanUp()
-    {
+    @AfterClass(alwaysRun = true)
+    public void declareAndFileVersionAsRecordCleanUp() {
         holdsAPI.deleteHold(getAdminUser(), holdNodeRef);
         deleteRecordCategory(recordCategory.getId());
 
-        //delete created collaboration site
+        // delete created collaboration site
         dataSite.deleteSite(publicSite);
 
-        //delete users
+        // delete users
         getDataUser().deleteUser(userFillingPermission);
         getDataUser().deleteUser(userReadOnlyPermission);
     }

@@ -21,39 +21,32 @@ package org.alfresco.encryption;
 import java.security.Key;
 
 /**
- * 
  * Represents a loaded, cached encryption key. The key can be <tt>null</tt>.
- * 
- * @since 4.0
  *
+ * @since 4.0
  */
-public class CachedKey
-{
+public class CachedKey {
     public static CachedKey NULL = new CachedKey(null, null);
 
     private Key key;
     private long timestamp;
 
-    CachedKey(Key key, Long timestamp)
-    {
+    CachedKey(Key key, Long timestamp) {
         this.key = key;
         this.timestamp = (timestamp != null ? timestamp.longValue() : -1);
     }
 
-    public CachedKey(Key key)
-    {
+    public CachedKey(Key key) {
         super();
         this.key = key;
         this.timestamp = System.currentTimeMillis();
     }
 
-    public Key getKey()
-    {
+    public Key getKey() {
         return key;
     }
 
-    public long getTimestamp()
-    {
+    public long getTimestamp() {
         return timestamp;
     }
 }

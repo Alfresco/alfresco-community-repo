@@ -18,175 +18,138 @@
  */
 package org.alfresco.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Static Helper methods for instantiating objects from reflection.
- * 
+ *
  * @author muzquiano
  */
-public class ReflectionHelper
-{
+public class ReflectionHelper {
     private static Log logger = LogFactory.getLog(ReflectionHelper.class);
-    
-    private ReflectionHelper()
-    {
-    }
+
+    private ReflectionHelper() {}
 
     /**
-     * Constructs a new object for the given class name.
-     * The construction takes no arguments.
-     * 
-     * If an exception occurs during construction, null is returned.
-     * 
-     * All exceptions are written to the Log instance for this class.
-     * 
+     * Constructs a new object for the given class name. The construction takes no arguments.
+     *
+     * <p>If an exception occurs during construction, null is returned.
+     *
+     * <p>All exceptions are written to the Log instance for this class.
+     *
      * @param className String
      * @return Object
      */
-    public static Object newObject(String className)
-    {
+    public static Object newObject(String className) {
         Object o = null;
 
-        try
-        {
+        try {
             Class clazz = Class.forName(className);
             o = clazz.newInstance();
-        }
-        catch (ClassNotFoundException cnfe)
-        {
+        } catch (ClassNotFoundException cnfe) {
             logger.debug(cnfe);
-        }
-        catch (InstantiationException ie)
-        {
+        } catch (InstantiationException ie) {
             logger.debug(ie);
-        }
-        catch (IllegalAccessException iae)
-        {
+        } catch (IllegalAccessException iae) {
             logger.debug(iae);
         }
         return o;
     }
 
     /**
-     * Constructs a new object for the given class name and with the given
-     * arguments.  The arguments must be specified in terms of their Class[]
-     * types and their Object[] values.
-     * 
-     * Example:
-     * 
-     *   String s = newObject("java.lang.String", new Class[] { String.class},
-     *              new String[] { "test"});
-     *              
-     * is equivalent to:
-     * 
-     *   String s = new String("test");
-     * 
-     * If an exception occurs during construction, null is returned.
-     * 
-     * All exceptions are written to the Log instance for this class.
-
+     * Constructs a new object for the given class name and with the given arguments. The arguments
+     * must be specified in terms of their Class[] types and their Object[] values.
+     *
+     * <p>Example:
+     *
+     * <p>String s = newObject("java.lang.String", new Class[] { String.class}, new String[] {
+     * "test"});
+     *
+     * <p>is equivalent to:
+     *
+     * <p>String s = new String("test");
+     *
+     * <p>If an exception occurs during construction, null is returned.
+     *
+     * <p>All exceptions are written to the Log instance for this class.
+     *
      * @param className String
      * @param argTypes Class[]
      * @param args Object[]
      * @return Object
      */
-    public static Object newObject(String className, Class[] argTypes, Object[] args)
-    {
+    public static Object newObject(String className, Class[] argTypes, Object[] args) {
         /**
-         * We have some mercy here - if they called and did not pass in any
-         * arguments, then we will call through to the pure newObject() method.
+         * We have some mercy here - if they called and did not pass in any arguments, then we will
+         * call through to the pure newObject() method.
          */
-        if (args == null || args.length == 0)
-        {
+        if (args == null || args.length == 0) {
             return newObject(className);
         }
 
         /**
          * Try to build the object
-         * 
-         * If an exception occurs, we log it and return null.
+         *
+         * <p>If an exception occurs, we log it and return null.
          */
         Object o = null;
-        try
-        {
+        try {
             // base class
             Class clazz = Class.forName(className);
 
             Constructor c = clazz.getDeclaredConstructor(argTypes);
             o = c.newInstance(args);
-        }
-        catch (ClassNotFoundException cnfe)
-        {
+        } catch (ClassNotFoundException cnfe) {
             logger.debug(cnfe);
-        }
-        catch (InstantiationException ie)
-        {
+        } catch (InstantiationException ie) {
             logger.debug(ie);
-        }
-        catch (IllegalAccessException iae)
-        {
+        } catch (IllegalAccessException iae) {
             logger.debug(iae);
-        }
-        catch (NoSuchMethodException nsme)
-        {
+        } catch (NoSuchMethodException nsme) {
             logger.debug(nsme);
-        }
-        catch (InvocationTargetException ite)
-        {
+        } catch (InvocationTargetException ite) {
             logger.debug(ite);
         }
         return o;
     }
 
     /**
-     * Invokes a method on the given object by passing the given arguments
-     * into the method.
-     * 
+     * Invokes a method on the given object by passing the given arguments into the method.
+     *
      * @param obj Object
      * @param method String
      * @param argTypes Class[]
      * @param args Object[]
      * @return Object
      */
-    public static Object invoke(Object obj, String method, Class[] argTypes, Object[] args)
-    {
-        if (obj == null || method == null)
-        {
+    public static Object invoke(Object obj, String method, Class[] argTypes, Object[] args) {
+        if (obj == null || method == null) {
             throw new IllegalArgumentException("Object and Method must be supplied.");
         }
-        
+
         /**
          * Try to invoke the method.
-         * 
-         * If the method is unable to be invoked, we log and return null.
+         *
+         * <p>If the method is unable to be invoked, we log and return null.
          */
-        try
-        {
+        try {
             Method m = obj.getClass().getMethod(method, argTypes);
-            if(m != null)
-            {
+            if (m != null) {
                 return m.invoke(obj, args);
             }
-        }
-        catch(NoSuchMethodException nsme)
-        {
+        } catch (NoSuchMethodException nsme) {
             logger.debug(nsme);
-        }
-        catch(IllegalAccessException iae)
-        {
+        } catch (IllegalAccessException iae) {
             logger.debug(iae);
-        }
-        catch(InvocationTargetException ite)
-        {
+        } catch (InvocationTargetException ite) {
             logger.debug(ite);
         }
-        
+
         return null;
     }
 }

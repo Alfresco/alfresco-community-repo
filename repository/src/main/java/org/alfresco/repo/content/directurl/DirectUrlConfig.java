@@ -33,9 +33,10 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author Sara Aspery
  */
 @AlfrescoPublicApi
-public interface DirectUrlConfig
-{
+public interface DirectUrlConfig {
     Boolean isEnabled();
+
     Long getDefaultExpiryTimeInSec();
+
     void validate();
 }

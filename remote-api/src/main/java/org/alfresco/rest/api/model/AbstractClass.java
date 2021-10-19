@@ -34,8 +34,7 @@ import org.alfresco.service.namespace.QName;
 import java.util.List;
 import java.util.Objects;
 
-public abstract class AbstractClass extends ClassDefinition implements Comparable<AbstractClass>
-{
+public abstract class AbstractClass extends ClassDefinition implements Comparable<AbstractClass> {
     protected String id;
     protected String title;
     protected String description;
@@ -47,151 +46,143 @@ public abstract class AbstractClass extends ClassDefinition implements Comparabl
     protected List<Association> associations = null;
     protected Model model;
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return this.title;
     }
 
-    public void setTitle(String title)
-    {
+    public void setTitle(String title) {
         this.title = title;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return this.description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public String getParentId()
-    {
+    public String getParentId() {
         return parentId;
     }
 
-    public void setParentId(String parentId)
-    {
+    public void setParentId(String parentId) {
         this.parentId = parentId;
     }
 
-    public Model getModel()
-    {
+    public Model getModel() {
         return model;
     }
 
-    public void setModel(Model model)
-    {
+    public void setModel(Model model) {
         this.model = model;
     }
 
-    public Boolean getIsContainer()
-    {
+    public Boolean getIsContainer() {
         return isContainer;
     }
 
-    public void setIsContainer(Boolean isContainer)
-    {
+    public void setIsContainer(Boolean isContainer) {
         this.isContainer = isContainer;
     }
 
-    public Boolean getIsArchive()
-    {
+    public Boolean getIsArchive() {
         return isArchive;
     }
 
-    public void setIsArchive(Boolean isArchive)
-    {
+    public void setIsArchive(Boolean isArchive) {
         this.isArchive = isArchive;
     }
 
-    public Boolean getIncludedInSupertypeQuery()
-    {
+    public Boolean getIncludedInSupertypeQuery() {
         return includedInSupertypeQuery;
     }
 
-    public void setIncludedInSupertypeQuery(Boolean includedInSupertypeQuery)
-    {
+    public void setIncludedInSupertypeQuery(Boolean includedInSupertypeQuery) {
         this.includedInSupertypeQuery = includedInSupertypeQuery;
     }
 
-    public List<String> getMandatoryAspects()
-    {
+    public List<String> getMandatoryAspects() {
         return mandatoryAspects;
     }
 
-    public void setMandatoryAspects(List<String> mandatoryAspects)
-    {
+    public void setMandatoryAspects(List<String> mandatoryAspects) {
         this.mandatoryAspects = mandatoryAspects;
     }
 
-    public List<Association> getAssociations()
-    {
+    public List<Association> getAssociations() {
         return associations;
     }
 
-    public void setAssociations(List<Association> associations)
-    {
+    public void setAssociations(List<Association> associations) {
         this.associations = associations;
     }
 
-    String getParentNameAsString(QName parentQName)
-    {
-        if (parentQName != null)
-        {
+    String getParentNameAsString(QName parentQName) {
+        if (parentQName != null) {
             return parentQName.toPrefixString();
         }
         return null;
     }
 
-    Model getModelInfo(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup)
-    {
-        final ModelDefinition modelDefinition  = classDefinition.getModel();
+    Model getModelInfo(
+            org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition,
+            MessageLookup messageLookup) {
+        final ModelDefinition modelDefinition = classDefinition.getModel();
         final String prefix = classDefinition.getName().toPrefixString().split(":")[0];
 
-        final NamespaceDefinition namespaceDefinition = modelDefinition.getNamespaces().stream()
-                .filter(definition -> definition.getPrefix().equals(prefix))
-                .findFirst()
-                .get();
+        final NamespaceDefinition namespaceDefinition =
+                modelDefinition.getNamespaces().stream()
+                        .filter(definition -> definition.getPrefix().equals(prefix))
+                        .findFirst()
+                        .get();
 
         final String modelId = modelDefinition.getName().toPrefixString();
         final String author = modelDefinition.getAuthor();
         final String description = modelDefinition.getDescription(messageLookup);
 
-        return new Model(modelId, author, description, namespaceDefinition.getUri(), namespaceDefinition.getPrefix());
+        return new Model(
+                modelId,
+                author,
+                description,
+                namespaceDefinition.getUri(),
+                namespaceDefinition.getPrefix());
     }
 
     @Override
-    public int hashCode()
-    {
-        return Objects.hash(id, title, description, parentId, properties, isContainer, isArchive, includedInSupertypeQuery, mandatoryAspects, associations, model);
+    public int hashCode() {
+        return Objects.hash(
+                id,
+                title,
+                description,
+                parentId,
+                properties,
+                isContainer,
+                isArchive,
+                includedInSupertypeQuery,
+                mandatoryAspects,
+                associations,
+                model);
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
         return super.equals(obj);
     }
 
     @Override
-    public int compareTo(AbstractClass other)
-    {
+    public int compareTo(AbstractClass other) {
         return this.id.compareTo(other.getId());
     }
 }

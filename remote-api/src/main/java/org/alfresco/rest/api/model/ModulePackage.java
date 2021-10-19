@@ -4,41 +4,38 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.api.model;
 
-import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
-import org.alfresco.util.VersionNumber;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
 
 import java.util.Date;
 
 /**
  * POJO representation of Module Details for Serialization as JSON.
+ *
  * @author Gethin James.
  */
-public class ModulePackage
-{
+public class ModulePackage {
     private String id;
     private String title;
     private String description;
@@ -48,12 +45,9 @@ public class ModulePackage
     private String versionMin;
     private String versionMax;
 
-    public ModulePackage()
-    {
-    }
+    public ModulePackage() {}
 
-    private ModulePackage(ModuleDetails moduleDetails)
-    {
+    private ModulePackage(ModuleDetails moduleDetails) {
         this.id = moduleDetails.getId();
         this.title = moduleDetails.getTitle();
         this.description = moduleDetails.getDescription();
@@ -64,64 +58,51 @@ public class ModulePackage
         this.versionMax = moduleDetails.getRepoVersionMax().toString();
     }
 
-    public static ModulePackage fromModuleDetails(ModuleDetails moduleDetails)
-    {
-        try
-        {
+    public static ModulePackage fromModuleDetails(ModuleDetails moduleDetails) {
+        try {
             return new ModulePackage(moduleDetails);
-        }
-        catch (NullPointerException npe)
-        {
-            //Something went wrong with the definition of the Module.
-            //These are just POJO properties, I am unable to represent
-            //the data so will return null
+        } catch (NullPointerException npe) {
+            // Something went wrong with the definition of the Module.
+            // These are just POJO properties, I am unable to represent
+            // the data so will return null
             return null;
         }
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public String getVersion()
-    {
+    public String getVersion() {
         return version;
     }
 
-    public Date getInstallDate()
-    {
+    public Date getInstallDate() {
         return installDate;
     }
 
-    public ModuleInstallState getInstallState()
-    {
+    public ModuleInstallState getInstallState() {
         return installState;
     }
 
-    public String getVersionMin()
-    {
+    public String getVersionMin() {
         return versionMin;
     }
 
-    public String getVersionMax()
-    {
+    public String getVersionMax() {
         return versionMax;
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         final StringBuilder sb = new StringBuilder("ModulePackage{");
         sb.append("id='").append(id).append('\'');
         sb.append(", title='").append(title).append('\'');
@@ -135,5 +116,3 @@ public class ModulePackage
         return sb.toString();
     }
 }
-
-

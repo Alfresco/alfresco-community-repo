@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,11 +32,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,6 +47,10 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Bean extender unit test.
  *
@@ -59,8 +58,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  * @since 5.0
  */
 @RunWith(MockitoJUnitRunner.class)
-public class BeanExtenderUnitTest
-{
+public class BeanExtenderUnitTest {
     private static final String BEAN_NAME = GUID.generate();
     private static final String EXTENDING_BEAN_NAME = GUID.generate();
 
@@ -73,29 +71,23 @@ public class BeanExtenderUnitTest
     @InjectMocks private BeanExtender beanExtender;
 
     /** expected exception rule */
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
+    @Rule public ExpectedException exception = ExpectedException.none();
 
-    /**
-     * Test method setup
-     */
+    /** Test method setup */
     @Before
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         MockitoAnnotations.initMocks(this);
 
         // setup common interactions
         doReturn(mockedPropertyValuesBean).when(mockedBeanDefinition).getPropertyValues();
-        doReturn(mockedPropertyValuesExtendingBean).when(mockedExtendingBeanDefinition).getPropertyValues();
+        doReturn(mockedPropertyValuesExtendingBean)
+                .when(mockedExtendingBeanDefinition)
+                .getPropertyValues();
     }
 
-    /**
-     * given that the bean name is not set, ensure that an Illegal Argument
-     * exception is thrown.
-     */
+    /** given that the bean name is not set, ensure that an Illegal Argument exception is thrown. */
     @Test
-    public void beanNameNotSet()
-    {
+    public void beanNameNotSet() {
         // === given ===
 
         // set the extending bean name
@@ -109,12 +101,11 @@ public class BeanExtenderUnitTest
     }
 
     /**
-     * given that the extending bean name is not set, ensure that an illegal
-     * argument exception is thrown.
+     * given that the extending bean name is not set, ensure that an illegal argument exception is
+     * thrown.
      */
     @Test
-    public void extendingBeanNameNotSet()
-    {
+    public void extendingBeanNameNotSet() {
         // === given ===
 
         // set the extending bean name
@@ -127,12 +118,9 @@ public class BeanExtenderUnitTest
         beanExtender.postProcessBeanFactory(mockedBeanFactory);
     }
 
-    /**
-     * given that the bean does not exist ensure that an exception is thrown
-     */
+    /** given that the bean does not exist ensure that an exception is thrown */
     @Test
-    public void beanDoesNotExist()
-    {
+    public void beanDoesNotExist() {
         // === given ===
 
         // set the bean names
@@ -148,12 +136,9 @@ public class BeanExtenderUnitTest
         beanExtender.postProcessBeanFactory(mockedBeanFactory);
     }
 
-    /**
-     * given that the extending bean does not exist ensure that an exception is thrown
-     */
+    /** given that the extending bean does not exist ensure that an exception is thrown */
     @Test
-    public void extendingBeanDoesNotExist()
-    {
+    public void extendingBeanDoesNotExist() {
         // === given ===
 
         // set the bean names
@@ -170,12 +155,11 @@ public class BeanExtenderUnitTest
     }
 
     /**
-     * given that a different class name has been set on the extending bean ensure it is
-     * set correctly on the origional bean
+     * given that a different class name has been set on the extending bean ensure it is set
+     * correctly on the origional bean
      */
     @Test
-    public void beanClassNameSet()
-    {
+    public void beanClassNameSet() {
         // === given ===
 
         // set the bean names
@@ -188,14 +172,18 @@ public class BeanExtenderUnitTest
 
         // return the mocked bean definitions
         doReturn(mockedBeanDefinition).when(mockedBeanFactory).getBeanDefinition(BEAN_NAME);
-        doReturn(mockedExtendingBeanDefinition).when(mockedBeanFactory).getBeanDefinition(EXTENDING_BEAN_NAME);
+        doReturn(mockedExtendingBeanDefinition)
+                .when(mockedBeanFactory)
+                .getBeanDefinition(EXTENDING_BEAN_NAME);
 
         // bean class names
         doReturn("a").when(mockedBeanDefinition).getBeanClassName();
         doReturn("b").when(mockedExtendingBeanDefinition).getBeanClassName();
 
         // no properties have been defined
-        doReturn(Collections.EMPTY_LIST).when(mockedPropertyValuesExtendingBean).getPropertyValueList();
+        doReturn(Collections.EMPTY_LIST)
+                .when(mockedPropertyValuesExtendingBean)
+                .getPropertyValueList();
 
         // === when ===
         beanExtender.postProcessBeanFactory(mockedBeanFactory);
@@ -205,16 +193,14 @@ public class BeanExtenderUnitTest
         // expect the class name to be set on the bean
         verify(mockedBeanDefinition, times(1)).setBeanClassName("b");
         verify(mockedPropertyValuesBean, never()).add(anyString(), anyString());
-
     }
 
     /**
-     * given that new property values have been set on the extending bean ensure that they
-     * are correctly set on the original bean.
+     * given that new property values have been set on the extending bean ensure that they are
+     * correctly set on the original bean.
      */
     @Test
-    public void beanPropertyValuesSet()
-    {
+    public void beanPropertyValuesSet() {
         // === given ===
 
         // set the bean names
@@ -227,7 +213,9 @@ public class BeanExtenderUnitTest
 
         // return the mocked bean definitions
         doReturn(mockedBeanDefinition).when(mockedBeanFactory).getBeanDefinition(BEAN_NAME);
-        doReturn(mockedExtendingBeanDefinition).when(mockedBeanFactory).getBeanDefinition(EXTENDING_BEAN_NAME);
+        doReturn(mockedExtendingBeanDefinition)
+                .when(mockedBeanFactory)
+                .getBeanDefinition(EXTENDING_BEAN_NAME);
 
         // bean class names
         doReturn("a").when(mockedBeanDefinition).getBeanClassName();
@@ -251,11 +239,8 @@ public class BeanExtenderUnitTest
         verify(mockedPropertyValuesBean, times(1)).add("two", "2");
     }
 
-    /**
-     * Helper method to generate a mocked property value
-     */
-    private PropertyValue generateMockedPropertyValue(String name, String value)
-    {
+    /** Helper method to generate a mocked property value */
+    private PropertyValue generateMockedPropertyValue(String name, String value) {
         PropertyValue result = mock(PropertyValue.class);
         doReturn(name).when(result).getName();
         doReturn(value).when(result).getValue();

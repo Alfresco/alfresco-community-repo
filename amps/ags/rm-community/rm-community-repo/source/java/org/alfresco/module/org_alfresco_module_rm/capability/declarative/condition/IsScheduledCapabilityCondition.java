@@ -36,35 +36,30 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition
-{
+public class IsScheduledCapabilityCondition extends AbstractCapabilityCondition {
     /** Disposition action */
     private String dispositionAction;
 
-    /**
-     * @param dispositionAction     disposition action
-     */
-    public void setDispositionAction(String dispositionAction)
-    {
+    /** @param dispositionAction disposition action */
+    public void setDispositionAction(String dispositionAction) {
         this.dispositionAction = dispositionAction;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
+    public boolean evaluateImpl(NodeRef nodeRef) {
         boolean result = false;
 
-        DispositionAction nextDispositionAction = dispositionService.getNextDispositionAction(nodeRef);
-        if (nextDispositionAction != null)
-        {
+        DispositionAction nextDispositionAction =
+                dispositionService.getNextDispositionAction(nodeRef);
+        if (nextDispositionAction != null) {
             // Get the disposition actions name
             String actionName = nextDispositionAction.getName();
-            if (actionName.equals(dispositionAction) &&
-                dispositionService.isNextDispositionActionEligible(nodeRef))
-            {
+            if (actionName.equals(dispositionAction)
+                    && dispositionService.isNextDispositionActionEligible(nodeRef)) {
                 result = true;
             }
         }

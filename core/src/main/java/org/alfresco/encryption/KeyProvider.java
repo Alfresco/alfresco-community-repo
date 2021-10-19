@@ -22,27 +22,22 @@ import java.security.Key;
 
 /**
  * A key provider returns the secret keys for different use cases.
- * 
+ *
  * @since 4.0
  */
-public interface KeyProvider
-{
+public interface KeyProvider {
     // TODO: Allow the aliases to be configured i.e. include an alias mapper
-    /**
-     * Constant representing the keystore alias for keys to encrypt/decrypt node metadata
-     */
+    /** Constant representing the keystore alias for keys to encrypt/decrypt node metadata */
     public static final String ALIAS_METADATA = "metadata";
 
-    /**
-     * Constant representing the keystore alias for keys to encrypt/decrypt SOLR transfer data
-     */
+    /** Constant representing the keystore alias for keys to encrypt/decrypt SOLR transfer data */
     public static final String ALIAS_SOLR = "solr";
-    
+
     /**
      * Get an encryption key if available.
-     * 
-     * @param keyAlias          the key alias
-     * @return                  the encryption key and a timestamp of when it was last changed
+     *
+     * @param keyAlias the key alias
+     * @return the encryption key and a timestamp of when it was last changed
      */
     public Key getKey(String keyAlias);
 }

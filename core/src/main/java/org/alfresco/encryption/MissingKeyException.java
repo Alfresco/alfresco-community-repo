@@ -18,36 +18,27 @@
  */
 package org.alfresco.encryption;
 
-/**
- * 
- * @since 4.0
- *
- */
-public class MissingKeyException extends Exception
-{
+/** @since 4.0 */
+public class MissingKeyException extends Exception {
     private static final long serialVersionUID = -7843412242954504581L;
 
     private String keyAlias;
     private String keyStoreLocation;
 
-    public MissingKeyException(String message)
-    {
+    public MissingKeyException(String message) {
         super(message);
     }
 
-    public MissingKeyException(String keyAlias, String keyStoreLocation)
-    {
+    public MissingKeyException(String keyAlias, String keyStoreLocation) {
         // TODO i18n
         super("Key " + keyAlias + " is missing from keystore " + keyStoreLocation);
     }
-    
-    public String getKeyAlias()
-    {
+
+    public String getKeyAlias() {
         return keyAlias;
     }
 
-    public String getKeyStoreLocation()
-    {
+    public String getKeyStoreLocation() {
         return keyStoreLocation;
     }
 }

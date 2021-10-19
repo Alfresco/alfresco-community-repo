@@ -32,7 +32,8 @@ import org.alfresco.service.cmr.i18n.MessageLookup;
  *
  * @author gfertuso
  */
-public interface ClassDefinitionMapper
-{
-    org.alfresco.rest.api.model.ClassDefinition fromDictionaryClassDefinition(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup);
+public interface ClassDefinitionMapper {
+    org.alfresco.rest.api.model.ClassDefinition fromDictionaryClassDefinition(
+            org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition,
+            MessageLookup messageLookup);
 }

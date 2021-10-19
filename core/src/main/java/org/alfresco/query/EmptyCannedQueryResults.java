@@ -21,46 +21,43 @@ package org.alfresco.query;
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.util.Pair;
-
 /**
- * An always empty {@link CannedQueryResults}, used when you know
- *  you can short circuit a query when no results are found.
- * 
+ * An always empty {@link CannedQueryResults}, used when you know you can short circuit a query when
+ * no results are found.
+ *
  * @author Nick Burch
  * @since 4.0
  */
-public class EmptyCannedQueryResults<R> extends EmptyPagingResults<R> implements CannedQueryResults<R>
-{
-   private CannedQuery<R> query;
-   
-   public EmptyCannedQueryResults(CannedQuery<R> query)
-   {
-      this.query = query;
-   }
+public class EmptyCannedQueryResults<R> extends EmptyPagingResults<R>
+        implements CannedQueryResults<R> {
+    private CannedQuery<R> query;
 
-   @Override
-   public CannedQuery<R> getOriginatingQuery() {
-      return query;
-   }
+    public EmptyCannedQueryResults(CannedQuery<R> query) {
+        this.query = query;
+    }
 
-   @Override
-   public int getPageCount() {
-      return 0;
-   }
+    @Override
+    public CannedQuery<R> getOriginatingQuery() {
+        return query;
+    }
 
-   @Override
-   public int getPagedResultCount() {
-      return 0;
-   }
+    @Override
+    public int getPageCount() {
+        return 0;
+    }
 
-   @Override
-   public List<List<R>> getPages() {
-      return Collections.emptyList();
-   }
+    @Override
+    public int getPagedResultCount() {
+        return 0;
+    }
 
-   @Override
-   public R getSingleResult() {
-      return null; 
-   }
+    @Override
+    public List<List<R>> getPages() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public R getSingleResult() {
+        return null;
+    }
 }

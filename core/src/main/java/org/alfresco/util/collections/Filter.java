@@ -22,9 +22,7 @@ package org.alfresco.util.collections;
 /**
  * @author Nick Smith
  * @since 4.0
- *
  */
-public interface Filter<F> extends Function<F, Boolean>
-{
-    //NOOP
+public interface Filter<F> extends Function<F, Boolean> {
+    // NOOP
 }

@@ -39,112 +39,113 @@ import org.alfresco.service.cmr.security.AccessStatus;
  *
  * @author Roy Wetherall
  */
-public class CreateRecordActionTest extends BaseRMTestCase
-{
+public class CreateRecordActionTest extends BaseRMTestCase {
     @Override
-    protected boolean isUserTest()
-    {
+    protected boolean isUserTest() {
         return true;
     }
 
     @Override
-    protected boolean isCollaborationSiteTest()
-    {
+    protected boolean isCollaborationSiteTest() {
         return true;
     }
 
     /**
      * Test create record action
      *
-     * Given a collaboration site document
-     * When the create record action is executed for that document
-     * Then a record is created for it
+     * <p>Given a collaboration site document When the create record action is executed for that
+     * document Then a record is created for it
      */
-    public void testCreateRecordAction()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
+    public void testCreateRecordAction() {
+        doTestInTransaction(
+                new Test<Void>() {
+                    public Void run() {
+                        assertEquals(
+                                AccessStatus.DENIED,
+                                permissionService.hasPermission(
+                                        dmDocument, RMPermissionModel.READ_RECORDS));
+                        assertEquals(
+                                AccessStatus.DENIED,
+                                permissionService.hasPermission(
+                                        filePlan, RMPermissionModel.VIEW_RECORDS));
 
-                Action action = actionService.createAction(CreateRecordAction.NAME);
-                action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
-                action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
-                actionService.executeAction(action, dmDocument);
+                        Action action = actionService.createAction(CreateRecordAction.NAME);
+                        action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
+                        action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
+                        actionService.executeAction(action, dmDocument);
 
-                return null;
-            }
+                        return null;
+                    }
 
-            public void test(Void result) throws Exception
-            {
-                assertTrue(recordService.isRecord(dmDocument));
+                    public void test(Void result) throws Exception {
+                        assertTrue(recordService.isRecord(dmDocument));
 
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(dmDocument, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
-            }
-        },
-        dmCollaborator);
+                        assertEquals(
+                                AccessStatus.ALLOWED,
+                                permissionService.hasPermission(
+                                        dmDocument, RMPermissionModel.READ_RECORDS));
+                        assertEquals(
+                                AccessStatus.ALLOWED,
+                                permissionService.hasPermission(
+                                        filePlan, RMPermissionModel.VIEW_RECORDS));
+                    }
+                },
+                dmCollaborator);
     }
 
-    public void testCreateRecordActionWithLocation()
-    {
-        doTestInTransaction(new Test<Void>()
-                            {
-                                public Void run()
-                                {
-                                    assertFalse(recordService.isRecord(dmDocument1));
+    public void testCreateRecordActionWithLocation() {
+        doTestInTransaction(
+                new Test<Void>() {
+                    public Void run() {
+                        assertFalse(recordService.isRecord(dmDocument1));
 
-                                    Action action = actionService.createAction(CreateRecordAction.NAME);
-                                    action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
-                                    action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
-                                    action.setParameterValue(CreateRecordAction.PARAM_PATH, "rmContainer/rmFolder");
-                                    actionService.executeAction(action, dmDocument1);
+                        Action action = actionService.createAction(CreateRecordAction.NAME);
+                        action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
+                        action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
+                        action.setParameterValue(
+                                CreateRecordAction.PARAM_PATH, "rmContainer/rmFolder");
+                        actionService.executeAction(action, dmDocument1);
 
-                                    return null;
-                                }
+                        return null;
+                    }
 
-                                public void test(Void result) throws Exception
-                                {
-                                    assertTrue(recordService.isRecord(dmDocument1));
-                                    assertTrue(recordService.isFiled(dmDocument1));
+                    public void test(Void result) throws Exception {
+                        assertTrue(recordService.isRecord(dmDocument1));
+                        assertTrue(recordService.isFiled(dmDocument1));
 
-                                    // is the record folder the primary parent of the filed record
-                                    NodeRef parent = nodeService.getPrimaryParent(dmDocument1).getParentRef();
-                                    assertEquals(rmFolder, parent);
-                                }
-                            },
+                        // is the record folder the primary parent of the filed record
+                        NodeRef parent = nodeService.getPrimaryParent(dmDocument1).getParentRef();
+                        assertEquals(rmFolder, parent);
+                    }
+                },
                 ADMIN_USER);
     }
 
-    public void testCreateRecordActionWithLocationWithSpaces()
-    {
-        doTestInTransaction(new Test<Void>()
-                            {
-                                public Void run()
-                                {
-                                    assertFalse(recordService.isRecord(dmDocument1));
+    public void testCreateRecordActionWithLocationWithSpaces() {
+        doTestInTransaction(
+                new Test<Void>() {
+                    public Void run() {
+                        assertFalse(recordService.isRecord(dmDocument1));
 
-                                    Action action = actionService.createAction(CreateRecordAction.NAME);
-                                    action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
-                                    action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
-                                    action.setParameterValue(CreateRecordAction.PARAM_PATH, "rm Container/rm Folder");
-                                    actionService.executeAction(action, dmDocument1);
+                        Action action = actionService.createAction(CreateRecordAction.NAME);
+                        action.setParameterValue(CreateRecordAction.PARAM_HIDE_RECORD, false);
+                        action.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
+                        action.setParameterValue(
+                                CreateRecordAction.PARAM_PATH, "rm Container/rm Folder");
+                        actionService.executeAction(action, dmDocument1);
 
-                                    return null;
-                                }
+                        return null;
+                    }
 
-                                public void test(Void result) throws Exception
-                                {
-                                    assertTrue(recordService.isRecord(dmDocument1));
-                                    assertTrue(recordService.isFiled(dmDocument1));
+                    public void test(Void result) throws Exception {
+                        assertTrue(recordService.isRecord(dmDocument1));
+                        assertTrue(recordService.isFiled(dmDocument1));
 
-                                    // is the record folder the primary parent of the filed record
-                                    NodeRef parent = nodeService.getPrimaryParent(dmDocument1).getParentRef();
-                                    assertEquals(rm_Folder, parent);
-                                }
-                            },
+                        // is the record folder the primary parent of the filed record
+                        NodeRef parent = nodeService.getPrimaryParent(dmDocument1).getParentRef();
+                        assertEquals(rm_Folder, parent);
+                    }
+                },
                 ADMIN_USER);
     }
 }

@@ -25,11 +25,12 @@
  */
 package org.alfresco.repo.search;
 
-import java.util.Calendar;
-import java.util.Date;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Unit tests for {@link org.alfresco.repo.search.LuceneUtils}.
@@ -37,10 +38,9 @@ import static org.junit.Assert.assertEquals;
  * @author Neil Mc Erlean
  * @since 4.0
  */
-public class LuceneUtilsTest
-{
-    @Test public void convertSimpleDate() throws Exception
-    {
+public class LuceneUtilsTest {
+    @Test
+    public void convertSimpleDate() throws Exception {
         Calendar cal = Calendar.getInstance();
 
         // November 12th, 1955. 10:04 pm exactly. :)

@@ -4,309 +4,259 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.service.cmr.rule;
 
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.repository.NodeRef;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.repository.NodeRef;
-
 /**
  * Rule class.
- * <p>
- * Encapsulates all the information about a rule.  Can be creted or editied and
- * then passed to the rule service to create/update a rule instance.
- * 
+ *
+ * <p>Encapsulates all the information about a rule. Can be creted or editied and then passed to the
+ * rule service to create/update a rule instance.
+ *
  * @author Roy Wetherall
  */
-public class Rule implements Serializable
-{
-	/**
-	 * Serial version UID
-	 */
-	private static final long serialVersionUID = 3544385898889097524L;
+public class Rule implements Serializable {
+    /** Serial version UID */
+    private static final long serialVersionUID = 3544385898889097524L;
 
-    /**
-     * The rule node reference
-     */
+    /** The rule node reference */
     private NodeRef nodeRef;
-    
-    /**
-     * The title of the rule
-     */
+
+    /** The title of the rule */
     private String title;
-    
-    /**
-     * The description of the rule
-     */
+
+    /** The description of the rule */
     private String description;
-    
-    /**
-	 * The rule types
-	 */
-	private List<String> ruleTypes;
-    
-    /**
-     * The associated action
-     */
-    private Action action;  
-    
-    /**
-     * Indicates whether the rule should execute the action asynchronously or not
-     */
+
+    /** The rule types */
+    private List<String> ruleTypes;
+
+    /** The associated action */
+    private Action action;
+
+    /** Indicates whether the rule should execute the action asynchronously or not */
     private boolean executeAsynchronously = false;
-    
+
     /** Indicates wehther the rule is marked as disabled or not */
     private boolean ruleDisabled = false;
-    
+
     /**
-     * Indicates whether the rule is applied to all the children of the associated node
-     * rather than just the node itself.
+     * Indicates whether the rule is applied to all the children of the associated node rather than
+     * just the node itself.
      */
     private boolean isAppliedToChildren = false;
-    
-    /**
-     * Constructor
-     */
-    public Rule()
-    {
-    }
-    
+
+    /** Constructor */
+    public Rule() {}
+
     /**
      * Constructor.
-     * 
-     * @param nodeRef  the rule node reference
+     *
+     * @param nodeRef the rule node reference
      */
-    public Rule(NodeRef nodeRef)
-    {
+    public Rule(NodeRef nodeRef) {
         this.nodeRef = nodeRef;
     }
-    
+
     /**
      * Set the action
-     * 
-     * @param action    the action
+     *
+     * @param action the action
      */
-    public void setAction(Action action)
-    {
+    public void setAction(Action action) {
         this.action = action;
     }
-    
+
     /**
      * Gets the action associatied with the rule
-     * 
-     * @return  the action
+     *
+     * @return the action
      */
-    public Action getAction()
-    {
+    public Action getAction() {
         return action;
     }
-    
+
     /**
      * Set the node reference of the rule
-     * 
-     * @param nodeRef   the rule node reference
+     *
+     * @param nodeRef the rule node reference
      */
-    public void setNodeRef(NodeRef nodeRef)
-    {
+    public void setNodeRef(NodeRef nodeRef) {
         this.nodeRef = nodeRef;
     }
-    
+
     /**
      * Get the node reference of the rule
-     * 
-     * @return  the rule node reference
+     *
+     * @return the rule node reference
      */
-    public NodeRef getNodeRef()
-    {
+    public NodeRef getNodeRef() {
         return nodeRef;
     }
-    
+
     /**
      * Set the title of the rule
-     * 
-     * @param title the title 
+     *
+     * @param title the title
      */
-    public void setTitle(String title)
-    {
+    public void setTitle(String title) {
         this.title = title;
     }
-    
+
     /**
      * Get the title of the rule
-     * 
-     * @return  the title
+     *
+     * @return the title
      */
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
-    
+
     /**
-     * Set the description of the rule 
-     * 
-     * @param description   the description
+     * Set the description of the rule
+     *
+     * @param description the description
      */
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
-    
+
     /**
      * Get the description of the rule
-     * 
-     * @return  the description
+     *
+     * @return the description
      */
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
-    
+
     /**
-     *  Indicates wehther this rule should be applied to the children of 
-     *  the owning space.
-     * 
-     * @return  true if the rule is to be applied to children, false otherwise   
+     * Indicates wehther this rule should be applied to the children of the owning space.
+     *
+     * @return true if the rule is to be applied to children, false otherwise
      */
-    public boolean isAppliedToChildren()
-    {
+    public boolean isAppliedToChildren() {
         return this.isAppliedToChildren;
     }
-    
+
     /**
-     * Sets the values that indicates whether this rule should be applied to the children
-     * of the owning space.
-     * 
-     * @param isAppliedToChildren   true if the rule is to be applied to children, false otherwise
+     * Sets the values that indicates whether this rule should be applied to the children of the
+     * owning space.
+     *
+     * @param isAppliedToChildren true if the rule is to be applied to children, false otherwise
      */
-    
-    public void applyToChildren(boolean isAppliedToChildren)
-    {
+    public void applyToChildren(boolean isAppliedToChildren) {
         this.isAppliedToChildren = isAppliedToChildren;
     }
-    
+
     /**
      * Helper method to set one rule type on the rule.
-     * 
-     * @param ruleType  the rule type
+     *
+     * @param ruleType the rule type
      */
-    public void setRuleType(String ruleType)
-    {
+    public void setRuleType(String ruleType) {
         List<String> ruleTypes = new ArrayList<String>(1);
         ruleTypes.add(ruleType);
         this.ruleTypes = ruleTypes;
     }
-    
+
     /**
      * Set the rules rule types.
-     * 
+     *
      * @param ruleTypes list of rule types
      */
-    public void setRuleTypes(List<String> ruleTypes)
-    {
+    public void setRuleTypes(List<String> ruleTypes) {
         this.ruleTypes = ruleTypes;
     }
-    
+
     /**
      * Get the rules rule types.
-     * 
-     * @return  a list of rule types
+     *
+     * @return a list of rule types
      */
-    public List<String> getRuleTypes()
-    {
+    public List<String> getRuleTypes() {
         return ruleTypes;
     }
-    
+
     /**
-     * Sets the value that indicates whether this associated action should be executed
-     * asynchrously or not
-     * 
+     * Sets the value that indicates whether this associated action should be executed asynchrously
+     * or not
+     *
      * @param executeAsynchronously true to execute action async, false otherwise
      */
-    public void setExecuteAsynchronously(boolean executeAsynchronously)
-    {
+    public void setExecuteAsynchronously(boolean executeAsynchronously) {
         this.executeAsynchronously = executeAsynchronously;
     }
-    
+
     /**
      * Indicates whether the associated action should be executed async or not
-     * 
-     * @return  true to execute async, false otherwise
+     *
+     * @return true to execute async, false otherwise
      */
-    public boolean getExecuteAsynchronously()
-    {
+    public boolean getExecuteAsynchronously() {
         return this.executeAsynchronously;
     }
-    
+
     /**
      * Indicates wehther this rule has been disabled or not
-     * 
-     * @return  true if the rule has been disabled, false otherwise
+     *
+     * @return true if the rule has been disabled, false otherwise
      */
-    public boolean getRuleDisabled()
-    {
+    public boolean getRuleDisabled() {
         return this.ruleDisabled;
     }
-    
+
     /**
      * Set the value that indicates wehther this rule has been disabled or not
-     * 
-     * @param ruleDisabled  true id the rule has been disabled, false otherwise
+     *
+     * @param ruleDisabled true id the rule has been disabled, false otherwise
      */
-    public void setRuleDisabled(boolean ruleDisabled)
-    {
+    public void setRuleDisabled(boolean ruleDisabled) {
         this.ruleDisabled = ruleDisabled;
     }
-    
-    /**
-     * Hash code implementation
-     */
+
+    /** Hash code implementation */
     @Override
-    public int hashCode()
-    {
-        return (this.nodeRef == null) ? 0 : this.nodeRef.hashCode(); 
+    public int hashCode() {
+        return (this.nodeRef == null) ? 0 : this.nodeRef.hashCode();
     }
-    
-    /**
-     * Equals implementation
-     */
+
+    /** Equals implementation */
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
+    public boolean equals(Object obj) {
+        if (this == obj) {
             return true;
         }
-        if (obj instanceof Rule)
-        {
+        if (obj instanceof Rule) {
             Rule that = (Rule) obj;
             return (this.nodeRef.equals(that.nodeRef));
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
 }
-

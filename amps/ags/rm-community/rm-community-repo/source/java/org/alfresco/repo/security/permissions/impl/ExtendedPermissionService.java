@@ -27,11 +27,11 @@
 
 package org.alfresco.repo.security.permissions.impl;
 
-import java.util.Set;
-
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
+
+import java.util.Set;
 
 /**
  * Extended Permission Service Interface used in RM.
@@ -39,26 +39,24 @@ import org.alfresco.util.Pair;
  * @author Roy Wetherall
  * @since 2.1
  */
-public interface ExtendedPermissionService extends PermissionService
-{
-	/**
-	 * Get a set of all the authorities that have write access.
-	 * 
-	 * @param  aclId							acl id
-	 * @return {@link Set}&lt;{@link String}&gt; 		set of authorities with write access
-	 */
+public interface ExtendedPermissionService extends PermissionService {
+    /**
+     * Get a set of all the authorities that have write access.
+     *
+     * @param aclId acl id
+     * @return {@link Set}&lt;{@link String}&gt; set of authorities with write access
+     */
     Set<String> getWriters(Long aclId);
-    
+
     /**
      * Get the readers and writers for a given node.
-     * <p>
-     * The writers list includes the owner for the node.
-     * 
-     * @param nodeRef                           node reference
-     * @return Pair&lt;Set&lt;String&gt;, Set&lt;String&gt;&gt;   first is a set containing all the authorities that have read permission on the
-     *                                          document and second is a set containing all the authorities that have write
-     *                                          permission on the document, including the owner.
-     *                                          
+     *
+     * <p>The writers list includes the owner for the node.
+     *
+     * @param nodeRef node reference
+     * @return Pair&lt;Set&lt;String&gt;, Set&lt;String&gt;&gt; first is a set containing all the
+     *     authorities that have read permission on the document and second is a set containing all
+     *     the authorities that have write permission on the document, including the owner.
      * @since 2.5
      */
     Pair<Set<String>, Set<String>> getReadersAndWriters(NodeRef nodeRef);

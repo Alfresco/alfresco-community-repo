@@ -26,65 +26,58 @@ import org.springframework.beans.factory.InitializingBean;
 
 /**
  * Basic services for {@link CannedQueryFactory} implementations.
- * 
+ *
  * @author Derek Hulley
  * @since 4.0
  */
-public abstract class AbstractCannedQueryFactory<R> implements CannedQueryFactory<R>, InitializingBean, BeanNameAware
-{
+public abstract class AbstractCannedQueryFactory<R>
+        implements CannedQueryFactory<R>, InitializingBean, BeanNameAware {
     private String name;
+
     @SuppressWarnings("rawtypes")
     private NamedObjectRegistry<CannedQueryFactory> registry;
 
     /**
      * Set the name with which to {@link #setRegistry(NamedObjectRegistry) register}
-     * @param name          the name of the bean
+     *
+     * @param name the name of the bean
      */
-    public void setBeanName(String name)
-    {
+    public void setBeanName(String name) {
         this.name = name;
     }
 
-    /**
-     * Set the registry with which to register
-     */
+    /** Set the registry with which to register */
     @SuppressWarnings("rawtypes")
-    public void setRegistry(NamedObjectRegistry<CannedQueryFactory> registry)
-    {
+    public void setRegistry(NamedObjectRegistry<CannedQueryFactory> registry) {
         this.registry = registry;
     }
 
-    /**
-     * Registers the instance
-     */
-    public void afterPropertiesSet() throws Exception
-    {
+    /** Registers the instance */
+    public void afterPropertiesSet() throws Exception {
         PropertyCheck.mandatory(this, "name", name);
         PropertyCheck.mandatory(this, "registry", registry);
 
         registry.register(name, this);
     }
-    
+
     /**
-     * Helper method to construct a unique query execution ID based on the
-     * instance of the factory and the parameters provided.
-     * 
-     * @param parameters                the query parameters
-     * @return                          a unique query instance ID
+     * Helper method to construct a unique query execution ID based on the instance of the factory
+     * and the parameters provided.
+     *
+     * @param parameters the query parameters
+     * @return a unique query instance ID
      */
-    protected String getQueryExecutionId(CannedQueryParameters parameters)
-    {
+    protected String getQueryExecutionId(CannedQueryParameters parameters) {
         // Create a GUID
         String uuid = name + "-" + GUID.generate();
         return uuid;
     }
-    
-    /** 
-     * {@inheritDoc}
-     */
+
+    /** {@inheritDoc} */
     @Override
-    public CannedQuery<R> getCannedQuery(Object parameterBean, int skipResults, int pageSize, String queryExecutionId)
-    {
-        return getCannedQuery(new CannedQueryParameters(parameterBean, skipResults, pageSize, queryExecutionId));
+    public CannedQuery<R> getCannedQuery(
+            Object parameterBean, int skipResults, int pageSize, String queryExecutionId) {
+        return getCannedQuery(
+                new CannedQueryParameters(parameterBean, skipResults, pageSize, queryExecutionId));
     }
 }

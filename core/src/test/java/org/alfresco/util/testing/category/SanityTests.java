@@ -19,9 +19,7 @@
 package org.alfresco.util.testing.category;
 
 /**
- * Category marker for tests that should quickly validate (about 20% of) the functionality very fast. The reviewer
- * should really question any tests added to this category.
+ * Category marker for tests that should quickly validate (about 20% of) the functionality very
+ * fast. The reviewer should really question any tests added to this category.
  */
-public interface SanityTests
-{
-}
+public interface SanityTests {}

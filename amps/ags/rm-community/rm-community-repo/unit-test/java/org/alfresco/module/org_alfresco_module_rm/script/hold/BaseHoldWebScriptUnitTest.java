@@ -29,15 +29,15 @@ package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Base hold web script unit test.
@@ -45,10 +45,10 @@ import org.alfresco.service.cmr.security.PermissionService;
  * @author Roy Wetherall
  * @since 2.2
  */
-public abstract class BaseHoldWebScriptUnitTest extends BaseWebScriptUnitTest
-{
+public abstract class BaseHoldWebScriptUnitTest extends BaseWebScriptUnitTest {
     /** test holds */
     protected NodeRef hold1NodeRef;
+
     protected NodeRef hold2NodeRef;
     protected NodeRef dmNodeRef;
     protected List<NodeRef> holds;
@@ -57,12 +57,9 @@ public abstract class BaseHoldWebScriptUnitTest extends BaseWebScriptUnitTest
     protected List<NodeRef> filePlanComponents;
     protected List<NodeRef> activeContents;
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before() */
     @Override
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         super.before();
 
         // generate test holds
@@ -71,8 +68,11 @@ public abstract class BaseHoldWebScriptUnitTest extends BaseWebScriptUnitTest
 
         // generate active content
         dmNodeRef = generateNodeRef(TYPE_CONTENT);
-        when(mockedExtendedPermissionService.hasPermission(dmNodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(dmNodeRef), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockedExtendedPermissionService.hasPermission(dmNodeRef, PermissionService.WRITE))
+                .thenReturn(AccessStatus.ALLOWED);
+        when(mockedDictionaryService.isSubClass(
+                        mockedNodeService.getType(dmNodeRef), ContentModel.TYPE_CONTENT))
+                .thenReturn(true);
 
         // list of active contents
         activeContents = Collections.singletonList(dmNodeRef);

@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.tests;
 
+import static org.junit.Assert.*;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
@@ -46,35 +48,35 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-
-public class TestSiteGroups extends AbstractBaseApiTest
-{
+public class TestSiteGroups extends AbstractBaseApiTest {
     protected AuthorityService authorityService;
     private String groupName = null;
     private PublicApiClient.Paging paging = getPaging(0, 10);
     private PublicApiClient.ListResponse<SiteMember> siteMembers = null;
 
     @Before
-    public void setup() throws Exception
-    {
+    public void setup() throws Exception {
         super.setup();
         authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
     }
 
     @Test
-    public void shouldCrudSiteGroups() throws Exception
-    {
+    public void shouldCrudSiteGroups() throws Exception {
         Sites sitesProxy = publicApiClient.sites();
-        try
-        {
+        try {
             groupName = createAuthorityContext(user1);
             setRequestContext(networkOne.getId(), DEFAULT_ADMIN, DEFAULT_ADMIN_PWD);
 
-            TestSite site = TenantUtil.runAsUserTenant(() -> networkOne.createSite(SiteVisibility.PRIVATE), DEFAULT_ADMIN, networkOne.getId());
+            TestSite site =
+                    TenantUtil.runAsUserTenant(
+                            () -> networkOne.createSite(SiteVisibility.PRIVATE),
+                            DEFAULT_ADMIN,
+                            networkOne.getId());
 
-
-            SiteGroup response = sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
+            SiteGroup response =
+                    sitesProxy.addGroup(
+                            site.getSiteId(),
+                            new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
             assertEquals(response.getGroup().getId(), groupName);
             assertEquals(response.getRole(), SiteRole.SiteCollaborator.name());
 
@@ -96,11 +98,15 @@ public class TestSiteGroups extends AbstractBaseApiTest
             siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, params));
             assertEquals(siteMembers.getList().size(), 3);
 
-            PublicApiClient.ListResponse<SiteGroup> groups = sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
+            PublicApiClient.ListResponse<SiteGroup> groups =
+                    sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
             assertEquals(groups.getList().size(), 1);
             assertEquals(groups.getList().get(0).getRole(), SiteRole.SiteCollaborator.name());
 
-            response = sitesProxy.updateGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteContributor.name()));
+            response =
+                    sitesProxy.updateGroup(
+                            site.getSiteId(),
+                            new SiteGroup(groupName, SiteRole.SiteContributor.name()));
             groups = sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
             assertEquals(groups.getList().size(), 1);
             assertEquals(groups.getList().get(0).getRole(), SiteRole.SiteContributor.name());
@@ -111,88 +117,95 @@ public class TestSiteGroups extends AbstractBaseApiTest
 
             siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
             assertEquals(siteMembers.getList().size(), 1);
-        }
-        finally
-        {
+        } finally {
             clearAuthorityContext(groupName);
         }
     }
 
     @Test
-    public void shouldAddGroup()  throws Exception
-    {
+    public void shouldAddGroup() throws Exception {
         Sites sitesProxy = publicApiClient.sites();
-        try
-        {
+        try {
             groupName = createAuthorityContext(user1);
             setRequestContext(networkOne.getId(), DEFAULT_ADMIN, DEFAULT_ADMIN_PWD);
 
-            TestSite site = TenantUtil.runAsUserTenant(() -> networkOne.createSite(SiteVisibility.PRIVATE), DEFAULT_ADMIN, networkOne.getId());
+            TestSite site =
+                    TenantUtil.runAsUserTenant(
+                            () -> networkOne.createSite(SiteVisibility.PRIVATE),
+                            DEFAULT_ADMIN,
+                            networkOne.getId());
 
             // Should throw 404 error
-            try
-            {
-                sitesProxy.addGroup(site.getSiteId(), new SiteGroup(GUID.generate(), SiteRole.SiteCollaborator.name()));
-            }
-            catch (PublicApiException e)
-            {
+            try {
+                sitesProxy.addGroup(
+                        site.getSiteId(),
+                        new SiteGroup(GUID.generate(), SiteRole.SiteCollaborator.name()));
+            } catch (PublicApiException e) {
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
 
-            SiteGroup response = sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
+            SiteGroup response =
+                    sitesProxy.addGroup(
+                            site.getSiteId(),
+                            new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
             assertEquals(response.getGroup().getId(), groupName);
             assertEquals(response.getRole(), SiteRole.SiteCollaborator.name());
 
             // Should throw 409 error
-            try
-            {
-                sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
-            }
-            catch (PublicApiException e)
-            {
+            try {
+                sitesProxy.addGroup(
+                        site.getSiteId(),
+                        new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
+            } catch (PublicApiException e) {
                 assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
             }
 
             siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
             assertEquals(siteMembers.getList().size(), 3);
 
-            PublicApiClient.ListResponse<SiteGroup> groups = sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
+            PublicApiClient.ListResponse<SiteGroup> groups =
+                    sitesProxy.getGroups(site.getSiteId(), createParams(paging, null));
             assertEquals(groups.getList().size(), 1);
             assertEquals(groups.getList().get(0).getRole(), SiteRole.SiteCollaborator.name());
 
-        }
-        finally
-        {
+        } finally {
             clearAuthorityContext(groupName);
         }
     }
 
     @Test
-    public void shouldUpdateGroup() throws Exception
-    {
+    public void shouldUpdateGroup() throws Exception {
         Sites sitesProxy = publicApiClient.sites();
-        try
-        {
+        try {
             groupName = createAuthorityContext(user1);
             setRequestContext(networkOne.getId(), DEFAULT_ADMIN, DEFAULT_ADMIN_PWD);
 
-            TestSite site = TenantUtil.runAsUserTenant(() -> networkOne.createSite(SiteVisibility.PRIVATE), DEFAULT_ADMIN, networkOne.getId());
+            TestSite site =
+                    TenantUtil.runAsUserTenant(
+                            () -> networkOne.createSite(SiteVisibility.PRIVATE),
+                            DEFAULT_ADMIN,
+                            networkOne.getId());
 
             // Should throw 400 error
-            try
-            {
-                sitesProxy.updateGroup(site.getSiteId(), new SiteGroup(GUID.generate(), SiteRole.SiteCollaborator.name()));
-            }
-            catch (PublicApiException e)
-            {
+            try {
+                sitesProxy.updateGroup(
+                        site.getSiteId(),
+                        new SiteGroup(GUID.generate(), SiteRole.SiteCollaborator.name()));
+            } catch (PublicApiException e) {
                 assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
             }
 
-            SiteGroup response = sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
+            SiteGroup response =
+                    sitesProxy.addGroup(
+                            site.getSiteId(),
+                            new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
             assertEquals(response.getGroup().getId(), groupName);
             assertEquals(response.getRole(), SiteRole.SiteCollaborator.name());
 
-            response = sitesProxy.updateGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteContributor.name()));
+            response =
+                    sitesProxy.updateGroup(
+                            site.getSiteId(),
+                            new SiteGroup(groupName, SiteRole.SiteContributor.name()));
             assertEquals(response.getGroup().getId(), groupName);
             assertEquals(response.getRole(), SiteRole.SiteContributor.name());
 
@@ -201,35 +214,37 @@ public class TestSiteGroups extends AbstractBaseApiTest
             assertEquals(siteMembers.getList().get(1).getRole(), SiteRole.SiteContributor.name());
             assertEquals(siteMembers.getList().get(2).getRole(), SiteRole.SiteContributor.name());
 
-        }
-        finally
-        {
+        } finally {
             clearAuthorityContext(groupName);
         }
     }
 
     @Test
-    public void shouldDeleteGroup() throws Exception
-    {
+    public void shouldDeleteGroup() throws Exception {
         Sites sitesProxy = publicApiClient.sites();
-        try
-        {
+        try {
             groupName = createAuthorityContext(user1);
             setRequestContext(networkOne.getId(), DEFAULT_ADMIN, DEFAULT_ADMIN_PWD);
 
-            TestSite site = TenantUtil.runAsUserTenant(() -> networkOne.createSite(SiteVisibility.PRIVATE), DEFAULT_ADMIN, networkOne.getId());
+            TestSite site =
+                    TenantUtil.runAsUserTenant(
+                            () -> networkOne.createSite(SiteVisibility.PRIVATE),
+                            DEFAULT_ADMIN,
+                            networkOne.getId());
 
             // Should throw 400 error
-            try
-            {
-                sitesProxy.updateGroup(site.getSiteId(), new SiteGroup(GUID.generate(), SiteRole.SiteCollaborator.name()));
-            }
-            catch (PublicApiException e)
-            {
+            try {
+                sitesProxy.updateGroup(
+                        site.getSiteId(),
+                        new SiteGroup(GUID.generate(), SiteRole.SiteCollaborator.name()));
+            } catch (PublicApiException e) {
                 assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
             }
 
-            SiteGroup response = sitesProxy.addGroup(site.getSiteId(), new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
+            SiteGroup response =
+                    sitesProxy.addGroup(
+                            site.getSiteId(),
+                            new SiteGroup(groupName, SiteRole.SiteCollaborator.name()));
             assertEquals(response.getGroup().getId(), groupName);
             assertEquals(response.getRole(), SiteRole.SiteCollaborator.name());
 
@@ -240,28 +255,23 @@ public class TestSiteGroups extends AbstractBaseApiTest
 
             siteMembers = sitesProxy.getSiteMembers(site.getSiteId(), createParams(paging, null));
             assertEquals(siteMembers.getList().size(), 1);
-        }
-        finally
-        {
+        } finally {
             clearAuthorityContext(groupName);
         }
     }
 
-    private String createAuthorityContext(String userName) throws PublicApiException
-    {
+    private String createAuthorityContext(String userName) throws PublicApiException {
         String groupName = "Test_GroupA" + GUID.generate();
         AuthenticationUtil.setRunAsUser(userName);
 
         groupName = authorityService.getName(AuthorityType.GROUP, groupName);
 
-        if (!authorityService.authorityExists(groupName))
-        {
+        if (!authorityService.authorityExists(groupName)) {
             AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
             groupName = authorityService.createAuthority(AuthorityType.GROUP, groupName);
             authorityService.setAuthorityDisplayName(groupName, "Test Group A");
         }
-
 
         authorityService.addAuthority(groupName, user1);
         authorityService.addAuthority(groupName, user2);
@@ -269,18 +279,15 @@ public class TestSiteGroups extends AbstractBaseApiTest
         return groupName;
     }
 
-    private void clearAuthorityContext(String groupName)
-    {
-        if (groupName != null && authorityService.authorityExists(groupName))
-        {
+    private void clearAuthorityContext(String groupName) {
+        if (groupName != null && authorityService.authorityExists(groupName)) {
             AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
             authorityService.deleteAuthority(groupName, true);
         }
     }
 
     @Override
-    public String getScope()
-    {
+    public String getScope() {
         return "public";
     }
 }

@@ -27,6 +27,9 @@ package org.alfresco.repo.rendition2;
 
 import static org.mockito.Mockito.doThrow;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,38 +50,31 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.springframework.context.ApplicationContext;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Provides a base set of tests for {@link RenditionEventProcessor}
  *
  * @author Cristian Turlica
  */
 @Category(NeverRunsTests.class)
-public class RenditionEventProcessorTest
-{
+public class RenditionEventProcessorTest {
     private RenditionEventProcessor renditionEventProcessor;
     private CamelContext camelContext;
     private ObjectMapper messagingObjectMapper;
 
-    @Mock
-    private RenditionService2Impl renditionService2;
+    @Mock private RenditionService2Impl renditionService2;
 
-    @Rule
-    public TestName name = new TestName();
+    @Rule public TestName name = new TestName();
 
-    @Rule
-    public MockitoRule mockitoRule = MockitoJUnit.rule();
+    @Rule public MockitoRule mockitoRule = MockitoJUnit.rule();
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
         camelContext = (CamelContext) ctx.getBean("alfrescoCamelContext");
         messagingObjectMapper = (ObjectMapper) ctx.getBean("alfrescoEventObjectMapper");
-        TransactionService transactionService = (TransactionService) ctx.getBean("transactionService");
+        TransactionService transactionService =
+                (TransactionService) ctx.getBean("transactionService");
 
         renditionEventProcessor = new RenditionEventProcessor();
         renditionEventProcessor.setMessagingObjectMapper(messagingObjectMapper);
@@ -87,28 +83,24 @@ public class RenditionEventProcessorTest
     }
 
     @Test
-    public void processEmptyExchange() throws Exception
-    {
+    public void processEmptyExchange() throws Exception {
         renditionEventProcessor.process(createExchange());
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void processMissingNodeRef() throws Exception
-    {
+    public void processMissingNodeRef() throws Exception {
         Exchange exchange = createExchange(new OnContentUpdatePolicyEvent());
         renditionEventProcessor.process(exchange);
     }
 
     @Test(expected = AlfrescoRuntimeException.class)
-    public void processInvalidExchange() throws Exception
-    {
+    public void processInvalidExchange() throws Exception {
         Exchange exchange = createExchange("invalidContent");
         renditionEventProcessor.process(exchange);
     }
 
     @Test
-    public void process() throws Exception
-    {
+    public void process() throws Exception {
         NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
 
         OnContentUpdatePolicyEvent policyEvent = new OnContentUpdatePolicyEvent();
@@ -120,8 +112,7 @@ public class RenditionEventProcessorTest
     }
 
     @Test(expected = AlfrescoRuntimeException.class)
-    public void processException() throws Exception
-    {
+    public void processException() throws Exception {
         NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
 
         OnContentUpdatePolicyEvent policyEvent = new OnContentUpdatePolicyEvent();
@@ -130,22 +121,21 @@ public class RenditionEventProcessorTest
 
         Exchange exchange = createExchange(policyEvent);
 
-        doThrow(new AlfrescoRuntimeException("any")).when(renditionService2).onContentUpdate(nodeRef, true);
+        doThrow(new AlfrescoRuntimeException("any"))
+                .when(renditionService2)
+                .onContentUpdate(nodeRef, true);
         renditionEventProcessor.process(exchange);
     }
 
-    private Exchange createExchange()
-    {
+    private Exchange createExchange() {
         return new DefaultExchange(camelContext);
     }
 
-    private Exchange createExchange(Object event) throws JsonProcessingException
-    {
+    private Exchange createExchange(Object event) throws JsonProcessingException {
         Exchange exchange = createExchange();
 
         Message in = exchange.getIn();
-        if (!(event instanceof String))
-        {
+        if (!(event instanceof String)) {
             event = messagingObjectMapper.writeValueAsString(event);
         }
 

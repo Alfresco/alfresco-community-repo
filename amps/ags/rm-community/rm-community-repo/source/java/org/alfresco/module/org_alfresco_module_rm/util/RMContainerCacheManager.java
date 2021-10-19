@@ -26,9 +26,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -36,35 +33,29 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Provides operations to manipulate the records management root cache
  *
  * @author Tiago Salvado
- *
  * @see RecordsManagementModel
  */
-public class RMContainerCacheManager implements RecordsManagementModel
-{
+public class RMContainerCacheManager implements RecordsManagementModel {
     /** node service */
     private NodeService nodeService;
 
     /** root records management cache */
     private SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> cache;
 
-    /**
-     * @param nodeService
-     *            node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param cache
-     */
-    public void setCache(SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> cache)
-    {
+    /** @param cache */
+    public void setCache(SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> cache) {
         this.cache = cache;
     }
 
@@ -74,13 +65,11 @@ public class RMContainerCacheManager implements RecordsManagementModel
      * @param storeRef
      * @return true if there are cached nodes, false otherwise
      */
-    public boolean isCached(StoreRef storeRef)
-    {
+    public boolean isCached(StoreRef storeRef) {
         Pair<StoreRef, String> key = getKey(storeRef);
         Set<NodeRef> values = cache.get(key);
         boolean isCached = (values != null && !values.isEmpty());
-        if (!isCached)
-        {
+        if (!isCached) {
             cache.remove(key);
         }
         return isCached;
@@ -92,8 +81,7 @@ public class RMContainerCacheManager implements RecordsManagementModel
      * @param storeRef
      * @return a set containing the cached nodes
      */
-    public Set<NodeRef> get(StoreRef storeRef)
-    {
+    public Set<NodeRef> get(StoreRef storeRef) {
         return cache.get(getKey(storeRef));
     }
 
@@ -102,29 +90,22 @@ public class RMContainerCacheManager implements RecordsManagementModel
      *
      * @param nodeRef
      */
-    public void add(NodeRef nodeRef)
-    {
-        if (nodeRef != null && nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT))
-        {
+    public void add(NodeRef nodeRef) {
+        if (nodeRef != null && nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT)) {
             Set<NodeRef> entries;
             Pair<StoreRef, String> key = getKey(nodeRef.getStoreRef());
 
-            if (cache.contains(key))
-            {
+            if (cache.contains(key)) {
                 entries = this.cache.get(key);
-            }
-            else
-            {
+            } else {
                 entries = new HashSet<>();
             }
 
-            if (!entries.contains(nodeRef))
-            {
+            if (!entries.contains(nodeRef)) {
                 entries.add(nodeRef);
             }
 
-            if (entries.size() > 0)
-            {
+            if (entries.size() > 0) {
                 cache.put(key, entries);
             }
         }
@@ -135,18 +116,13 @@ public class RMContainerCacheManager implements RecordsManagementModel
      *
      * @param nodeRef
      */
-    public void remove(NodeRef nodeRef)
-    {
-        if (nodeRef != null)
-        {
-            if (nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT))
-            {
+    public void remove(NodeRef nodeRef) {
+        if (nodeRef != null) {
+            if (nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT)) {
                 Pair<StoreRef, String> key = getKey(nodeRef.getStoreRef());
-                if (cache.contains(key))
-                {
+                if (cache.contains(key)) {
                     cache.get(key).remove(nodeRef);
-                    if (cache.get(key).size() == 0)
-                    {
+                    if (cache.get(key).size() == 0) {
                         cache.remove(key);
                     }
                 }
@@ -154,11 +130,8 @@ public class RMContainerCacheManager implements RecordsManagementModel
         }
     }
 
-    /**
-     * Resets the cache entries
-     */
-    public void reset()
-    {
+    /** Resets the cache entries */
+    public void reset() {
         this.cache.clear();
     }
 
@@ -168,8 +141,7 @@ public class RMContainerCacheManager implements RecordsManagementModel
      * @param storeRef
      * @return a pair corresponding to the cache key
      */
-    private Pair<StoreRef, String> getKey(StoreRef storeRef)
-    {
+    private Pair<StoreRef, String> getKey(StoreRef storeRef) {
         return new Pair<StoreRef, String>(storeRef, ASPECT_RECORDS_MANAGEMENT_ROOT.toString());
     }
 }

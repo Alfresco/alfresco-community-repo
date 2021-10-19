@@ -4,28 +4,28 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.search;
 
-import javax.transaction.UserTransaction;
+import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.search.impl.solr.DisabledFeatureException;
@@ -53,11 +53,10 @@ import org.alfresco.util.testing.category.LuceneTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
-import junit.framework.TestCase;
+import javax.transaction.UserTransaction;
 
 @Category({OwnJVMTestsCategory.class, LuceneTests.class})
-public class SearchServiceTest extends TestCase
-{
+public class SearchServiceTest extends TestCase {
     private ApplicationContext ctx;
 
     private AuthenticationComponent authenticationComponent;
@@ -78,13 +77,11 @@ public class SearchServiceTest extends TestCase
 
     private PermissionService pubPermissionService;
 
-    public SearchServiceTest()
-    {
+    public SearchServiceTest() {
         super();
     }
 
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         ctx = ApplicationContextHelper.getApplicationContext();
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
@@ -95,87 +92,138 @@ public class SearchServiceTest extends TestCase
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
 
-        TransactionService transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE
-                .getLocalName());
+        TransactionService transactionService =
+                (TransactionService)
+                        ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
         tx = transactionService.getUserTransaction();
         tx.begin();
 
-        if (!authenticationDAO.userExists("andy"))
-        {
+        if (!authenticationDAO.userExists("andy")) {
             authenticationService.createAuthentication("andy", "andy".toCharArray());
         }
 
-        if (!authenticationDAO.userExists(AuthenticationUtil.getAdminUserName()))
-        {
-            authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
+        if (!authenticationDAO.userExists(AuthenticationUtil.getAdminUserName())) {
+            authenticationService.createAuthentication(
+                    AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
         }
 
-        if (!authenticationDAO.userExists("administrator"))
-        {
-            authenticationService.createAuthentication("administrator", "administrator".toCharArray());
+        if (!authenticationDAO.userExists("administrator")) {
+            authenticationService.createAuthentication(
+                    "administrator", "administrator".toCharArray());
         }
 
-        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        StoreRef storeRef =
+                nodeService.createStore(
+                        StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         rootNodeRef = nodeService.getRootNode(storeRef);
 
-        n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}01"),
-                ContentModel.TYPE_FOLDER).getChildRef();
+        n1 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}01"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
         pubPermissionService.setPermission(n1, "andy", "Read", true);
-        n2 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}02"),
-                ContentModel.TYPE_FOLDER).getChildRef();
+        n2 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}02"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
         pubPermissionService.setPermission(n2, "andy", "Read", true);
-        n3 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}03"),
-                ContentModel.TYPE_FOLDER).getChildRef();
+        n3 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}03"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
         pubPermissionService.setPermission(n3, "andy", "Read", true);
-        n4 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}04"),
-                ContentModel.TYPE_FOLDER).getChildRef();
+        n4 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}04"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
         pubPermissionService.setPermission(n4, "andy", "Read", true);
-        n5 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}05"),
-                ContentModel.TYPE_FOLDER).getChildRef();
+        n5 =
+                nodeService
+                        .createNode(
+                                rootNodeRef,
+                                ContentModel.ASSOC_CHILDREN,
+                                QName.createQName("{test}05"),
+                                ContentModel.TYPE_FOLDER)
+                        .getChildRef();
         pubPermissionService.setPermission(n5, "andy", "Read", true);
-        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}06"),
-                ContentModel.TYPE_FOLDER).getChildRef();
-        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}07"),
-                ContentModel.TYPE_FOLDER).getChildRef();
-        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}08"),
-                ContentModel.TYPE_FOLDER).getChildRef();
-        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}09"),
-                ContentModel.TYPE_FOLDER).getChildRef();
-        nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}10"),
-                ContentModel.TYPE_FOLDER).getChildRef();
+        nodeService
+                .createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}06"),
+                        ContentModel.TYPE_FOLDER)
+                .getChildRef();
+        nodeService
+                .createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}07"),
+                        ContentModel.TYPE_FOLDER)
+                .getChildRef();
+        nodeService
+                .createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}08"),
+                        ContentModel.TYPE_FOLDER)
+                .getChildRef();
+        nodeService
+                .createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}09"),
+                        ContentModel.TYPE_FOLDER)
+                .getChildRef();
+        nodeService
+                .createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}10"),
+                        ContentModel.TYPE_FOLDER)
+                .getChildRef();
     }
 
     @Override
-    protected void tearDown() throws Exception
-    {
+    protected void tearDown() throws Exception {
         authenticationComponent.clearCurrentSecurityContext();
         tx.rollback();
         super.tearDown();
     }
 
-    public void testHybridDisabledByDefault()
-    {
-        try
-        {
+    public void testHybridDisabledByDefault() {
+        try {
             authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
             SearchParameters sp = new SearchParameters();
             sp.setQueryConsistency(QueryConsistency.HYBRID);
             sp.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
             sp.setQuery("select * from cmis:document where cmis:name like '%alfresco%'");
             sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-            
+
             pubSearchService.query(sp);
-            
+
             fail("Hybrid search should be disabled.");
-        }
-        catch (DisabledFeatureException e)
-        {
+        } catch (DisabledFeatureException e) {
             // Got here, good.
         }
     }
-    
-    public void testAndyCMIS()
-    {
+
+    public void testAndyCMIS() {
         authenticationComponent.setCurrentUser("andy");
         SearchParameters sp = new SearchParameters();
         sp.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
@@ -185,13 +233,14 @@ public class SearchServiceTest extends TestCase
         assertEquals(results.length(), 5);
         assertNotNull(results.getResultSetMetaData());
         assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
-        assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
+        assertEquals(
+                results.getResultSetMetaData().getPermissionEvaluationMode(),
+                PermissionEvaluationMode.EAGER);
         results.close();
     }
 
     // MNT-13713: row.getValue() returns null when indexing with lucene and sort is applied
-    public void testSearchWithSort()
-    {
+    public void testSearchWithSort() {
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
 
         // Output with sort
@@ -203,17 +252,13 @@ public class SearchServiceTest extends TestCase
         sp.setQuery("TYPE:\"cm:content\"");
 
         ResultSet rs = pubSearchService.query(sp);
-        
-        try
-        {
-        	for (ResultSetRow row : rs)
-            {
-            	assertFalse(null == row.getValue(ContentModel.PROP_NAME));
+
+        try {
+            for (ResultSetRow row : rs) {
+                assertFalse(null == row.getValue(ContentModel.PROP_NAME));
             }
-        }
-        finally
-        {
-        	rs.close();
+        } finally {
+            rs.close();
         }
 
         // Output without sort
@@ -225,16 +270,12 @@ public class SearchServiceTest extends TestCase
 
         rs = pubSearchService.query(sp);
 
-        try
-        {
-        	for (ResultSetRow row : rs)
-            {
-            	assertFalse(null == row.getValue(ContentModel.PROP_NAME));
+        try {
+            for (ResultSetRow row : rs) {
+                assertFalse(null == row.getValue(ContentModel.PROP_NAME));
             }
-        }
-        finally
-        {
-        	rs.close();
+        } finally {
+            rs.close();
         }
     }
 }

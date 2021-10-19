@@ -28,11 +28,6 @@ package org.alfresco.rest.v0;
 
 import static org.testng.Assert.assertTrue;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.MessageFormat;
-import java.util.List;
-
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.util.PojoUtility;
@@ -42,6 +37,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.text.MessageFormat;
+import java.util.List;
+
 /**
  * The v0 REST API for rm audit logs
  *
@@ -49,37 +49,42 @@ import org.springframework.stereotype.Component;
  * @since 2.7
  */
 @Component
-public class RMAuditAPI extends BaseAPI
-{
+public class RMAuditAPI extends BaseAPI {
     /** Logger for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(RMAuditAPI.class);
 
     /** The URI for the audit API. */
     private static final String RM_AUDIT_API = "{0}rma/admin/rmauditlog";
+
     private static final String RM_AUDIT_LOG_API = RM_AUDIT_API + "?{1}";
 
     /**
      * Returns a list of rm audit entries .
      *
-     * @param user     The username of the user to use.
+     * @param user The username of the user to use.
      * @param password The password of the user.
-     * @param size     Maximum number of log entries to return
-     * @param event    The name of audit event to be retrieved
+     * @param size Maximum number of log entries to return
+     * @param event The name of audit event to be retrieved
      * @return return Only return log entries matching this event
      */
-    public List<AuditEntry> getRMAuditLog(String user, String password, final int size, final String event)
-    {
+    public List<AuditEntry> getRMAuditLog(
+            String user, String password, final int size, final String event) {
         String parameters = null;
-        try
-        {
-            parameters = "size=" + size + (event != null ? "&event=" + URLEncoder.encode(event, "UTF-8"):"");
-        }
-        catch (UnsupportedEncodingException e)
-        {
+        try {
+            parameters =
+                    "size="
+                            + size
+                            + (event != null ? "&event=" + URLEncoder.encode(event, "UTF-8") : "");
+        } catch (UnsupportedEncodingException e) {
             LOGGER.error("Unable to encode the event name {}", e.getMessage());
         }
-        JSONArray auditEntries =  doGetRequest(user, password,
-                MessageFormat.format(RM_AUDIT_LOG_API,"{0}", parameters)).getJSONObject("data").getJSONArray("entries");
+        JSONArray auditEntries =
+                doGetRequest(
+                                user,
+                                password,
+                                MessageFormat.format(RM_AUDIT_LOG_API, "{0}", parameters))
+                        .getJSONObject("data")
+                        .getJSONArray("entries");
 
         return PojoUtility.jsonToObject(auditEntries, AuditEntry.class);
     }
@@ -91,14 +96,12 @@ public class RMAuditAPI extends BaseAPI
      * @param password The password of the user.
      * @throws AssertionError If the API call didn't clear the audit log.
      */
-    public void clearAuditLog(String username, String password)
-    {
+    public void clearAuditLog(String username, String password) {
         JSONObject deleteStatus = doDeleteRequest(username, password, RM_AUDIT_API);
 
-        assertTrue(deleteStatus != null
-                //audit clear and login events are returned
-                && getRMAuditLog(username, password, 100, null).size() == 2);
+        assertTrue(
+                deleteStatus != null
+                        // audit clear and login events are returned
+                        && getRMAuditLog(username, password, 100, null).size() == 2);
     }
-
-
 }

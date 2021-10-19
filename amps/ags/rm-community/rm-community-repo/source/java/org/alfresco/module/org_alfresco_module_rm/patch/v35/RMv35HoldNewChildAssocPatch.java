@@ -30,8 +30,6 @@ import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel.RM_CUSTOM_URI;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
 
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -43,31 +41,27 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
+import java.util.List;
+
 /**
  * Patch to create new hold child association to link the record to the hold
- * <p>
- * See: https://alfresco.atlassian.net/browse/APPS-659
+ *
+ * <p>See: https://alfresco.atlassian.net/browse/APPS-659
  *
  * @since 3.5
  */
-public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
-{
+public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch {
     /** A name for the associations created by this patch. */
-    protected static final QName PATCH_ASSOC_NAME = QName.createQName(RM_CUSTOM_URI, RMv35HoldNewChildAssocPatch.class.getSimpleName());
+    protected static final QName PATCH_ASSOC_NAME =
+            QName.createQName(RM_CUSTOM_URI, RMv35HoldNewChildAssocPatch.class.getSimpleName());
 
-    /**
-     * File plan service interface
-     */
+    /** File plan service interface */
     private FilePlanService filePlanService;
 
-    /**
-     * Hold service interface.
-     */
+    /** Hold service interface. */
     private HoldService holdService;
 
-    /**
-     * Interface for public and internal node and store operations.
-     */
+    /** Interface for public and internal node and store operations. */
     private NodeService nodeService;
 
     private BehaviourFilter behaviourFilter;
@@ -77,8 +71,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
      *
      * @param filePlanService File plan service interface
      */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
@@ -87,8 +80,7 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
      *
      * @param holdService Hold service interface.
      */
-    public void setHoldService(HoldService holdService)
-    {
+    public void setHoldService(HoldService holdService) {
         this.holdService = holdService;
     }
 
@@ -97,51 +89,52 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
      *
      * @param nodeService Interface for public and internal node and store operations.
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    public BehaviourFilter getBehaviourFilter()
-    {
+    public BehaviourFilter getBehaviourFilter() {
         return behaviourFilter;
     }
 
-    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
-    {
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter) {
         this.behaviourFilter = behaviourFilter;
     }
 
     @Override
-    public void applyInternal()
-    {
+    public void applyInternal() {
         behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
         behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-        try
-        {
-            for (NodeRef filePlan : filePlanService.getFilePlans())
-            {
-                for (NodeRef hold : holdService.getHolds(filePlan))
-                {
-                    List<ChildAssociationRef> frozenAssoc = nodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
-                    for (ChildAssociationRef ref : frozenAssoc)
-                    {
+        try {
+            for (NodeRef filePlan : filePlanService.getFilePlans()) {
+                for (NodeRef hold : holdService.getHolds(filePlan)) {
+                    List<ChildAssociationRef> frozenAssoc =
+                            nodeService.getChildAssocs(
+                                    hold, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL);
+                    for (ChildAssociationRef ref : frozenAssoc) {
                         NodeRef childNodeRef = ref.getChildRef();
-                        // In testing we found that this was returning more than just "contains" associations.
-                        // Possibly this is due to the code in Node2ServiceImpl.getParentAssocs not using the second parameter.
-                        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(childNodeRef, ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+                        // In testing we found that this was returning more than just "contains"
+                        // associations.
+                        // Possibly this is due to the code in Node2ServiceImpl.getParentAssocs not
+                        // using the second parameter.
+                        List<ChildAssociationRef> parentAssocs =
+                                nodeService.getParentAssocs(
+                                        childNodeRef, ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                         boolean childContainedByHold =
-                                parentAssocs.stream().anyMatch(entry -> entry.getParentRef().equals(hold) && entry.getTypeQName().equals(ASSOC_CONTAINS));
-                        if (!childContainedByHold)
-                        {
-                            nodeService.addChild(hold, childNodeRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
+                                parentAssocs.stream()
+                                        .anyMatch(
+                                                entry ->
+                                                        entry.getParentRef().equals(hold)
+                                                                && entry.getTypeQName()
+                                                                        .equals(ASSOC_CONTAINS));
+                        if (!childContainedByHold) {
+                            nodeService.addChild(
+                                    hold, childNodeRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
                         }
                     }
                 }
             }
-        }
-        finally
-        {
+        } finally {
             behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
             behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
         }

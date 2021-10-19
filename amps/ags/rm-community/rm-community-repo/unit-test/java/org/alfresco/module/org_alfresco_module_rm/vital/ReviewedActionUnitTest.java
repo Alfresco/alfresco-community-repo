@@ -26,20 +26,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.vital;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.dictionary.types.period.Days;
 import org.alfresco.repo.dictionary.types.period.Immediately;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Date;
-
-import static org.mockito.Mockito.verify;
-
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.Before;
@@ -49,14 +45,15 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.extensions.webscripts.GUID;
 
+import java.util.Date;
+
 /**
  * Unit test for {@link ReviewedAction} class
- * 
+ *
  * @author Ana Bozianu
  * @sincev 2.6
  */
-public class ReviewedActionUnitTest implements RecordsManagementModel
-{
+public class ReviewedActionUnitTest implements RecordsManagementModel {
     private @Mock VitalRecordService mockedVitalRecordService;
     private @Mock RecordService mockedRecordService;
     private @Mock NodeService mockedNodeService;
@@ -64,28 +61,27 @@ public class ReviewedActionUnitTest implements RecordsManagementModel
     private @InjectMocks ReviewedAction reviewedAction;
 
     @Before
-    public void testSetup()
-    {
+    public void testSetup() {
         MockitoAnnotations.initMocks(this);
     }
 
     /**
-     * Given a record having the vital record definition of immediately 
-     * When I mark the record as reviewed 
-     * Then review as of date is removed from the record
+     * Given a record having the vital record definition of immediately When I mark the record as
+     * reviewed Then review as of date is removed from the record
      */
     @Test
-    public void testReviewRecordWithAdHocReviewPeriod()
-    {
+    public void testReviewRecordWithAdHocReviewPeriod() {
         /*
          * Given
          */
-        NodeRef mockedRecord = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+        NodeRef mockedRecord =
+                new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
         when(mockedRecordService.isRecord(mockedRecord)).thenReturn(true);
 
         VitalRecordDefinition mockedVRDef = mock(VitalRecordDefinition.class);
         when(mockedVRDef.isEnabled()).thenReturn(true);
-        when(mockedVitalRecordService.getVitalRecordDefinition(mockedRecord)).thenReturn(mockedVRDef);
+        when(mockedVitalRecordService.getVitalRecordDefinition(mockedRecord))
+                .thenReturn(mockedVRDef);
 
         Period mockedReviewPeriod = mock(Period.class);
         when(mockedReviewPeriod.getPeriodType()).thenReturn(Immediately.PERIOD_TYPE);
@@ -103,22 +99,23 @@ public class ReviewedActionUnitTest implements RecordsManagementModel
     }
 
     /**
-     * Given a record having a recurent vital record definition 
-     * When I mark the record as reviewed 
-     * Then the review as of date is updated according to the next review period computed by the vital record definition
+     * Given a record having a recurent vital record definition When I mark the record as reviewed
+     * Then the review as of date is updated according to the next review period computed by the
+     * vital record definition
      */
     @Test
-    public void testReviewRecordWithRecurentReviewPeriod()
-    {
+    public void testReviewRecordWithRecurentReviewPeriod() {
         /*
          * Given
          */
-        NodeRef mockedRecord = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+        NodeRef mockedRecord =
+                new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
         when(mockedRecordService.isRecord(mockedRecord)).thenReturn(true);
 
         VitalRecordDefinition mockedVRDef = mock(VitalRecordDefinition.class);
         when(mockedVRDef.isEnabled()).thenReturn(true);
-        when(mockedVitalRecordService.getVitalRecordDefinition(mockedRecord)).thenReturn(mockedVRDef);
+        when(mockedVitalRecordService.getVitalRecordDefinition(mockedRecord))
+                .thenReturn(mockedVRDef);
 
         Date mockedNextReviewDate = mock(Date.class);
         when(mockedVRDef.getNextReviewDate()).thenReturn(mockedNextReviewDate);
@@ -135,6 +132,7 @@ public class ReviewedActionUnitTest implements RecordsManagementModel
         /*
          * Then
          */
-        verify(mockedNodeService).setProperty(mockedRecord, PROP_REVIEW_AS_OF, mockedNextReviewDate);
+        verify(mockedNodeService)
+                .setProperty(mockedRecord, PROP_REVIEW_AS_OF, mockedNextReviewDate);
     }
 }

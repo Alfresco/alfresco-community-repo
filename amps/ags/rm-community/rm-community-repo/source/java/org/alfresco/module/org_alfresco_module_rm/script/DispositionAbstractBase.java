@@ -29,13 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
@@ -44,48 +37,50 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Abstract base class for all disposition related java backed webscripts.
  *
  * @author Gavin Cornwell
  */
-public class DispositionAbstractBase extends AbstractRmWebScript
-{
+public class DispositionAbstractBase extends AbstractRmWebScript {
 
-    public final static String COMBINE_DISPOSITION_STEP_CONDITIONS =  "combineDispositionStepConditions";
+    public static final String COMBINE_DISPOSITION_STEP_CONDITIONS =
+            "combineDispositionStepConditions";
     /**
      * Parses the request and providing it's valid returns the DispositionSchedule object.
      *
      * @param req The webscript request
      * @return The DispositionSchedule object the request is aimed at
      */
-    protected DispositionSchedule parseRequestForSchedule(WebScriptRequest req)
-    {
+    protected DispositionSchedule parseRequestForSchedule(WebScriptRequest req) {
         // get the NodeRef from the request
         NodeRef nodeRef = parseRequestForNodeRef(req);
 
         // Determine whether we are getting the inherited disposition schedule or not
         boolean inherited = true;
         String inheritedString = req.getParameter("inherited");
-        if (inheritedString != null)
-        {
+        if (inheritedString != null) {
             inherited = Boolean.parseBoolean(inheritedString);
         }
 
         // make sure the node passed in has a disposition schedule attached
         DispositionSchedule schedule = null;
-        if (inherited)
-        {
+        if (inherited) {
             schedule = getDispositionService().getDispositionSchedule(nodeRef);
-        }
-        else
-        {
+        } else {
             schedule = getDispositionService().getAssociatedDispositionSchedule(nodeRef);
         }
-        if (schedule == null)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Node " +
-                        nodeRef.toString() + " does not have a disposition schedule");
+        if (schedule == null) {
+            throw new WebScriptException(
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "Node " + nodeRef.toString() + " does not have a disposition schedule");
         }
 
         return schedule;
@@ -98,17 +93,19 @@ public class DispositionAbstractBase extends AbstractRmWebScript
      * @param schedule The disposition schedule
      * @return The DispositionActionDefinition object the request is aimed at
      */
-    protected DispositionActionDefinition parseRequestForActionDefinition(WebScriptRequest req,
-              DispositionSchedule schedule)
-    {
+    protected DispositionActionDefinition parseRequestForActionDefinition(
+            WebScriptRequest req, DispositionSchedule schedule) {
         // make sure the requested action definition exists
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String actionDefId = templateVars.get("action_def_id");
-        DispositionActionDefinition actionDef = schedule.getDispositionActionDefinition(actionDefId);
-        if (actionDef == null)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND,
-                        "Requested disposition action definition (id:" + actionDefId + ") does not exist");
+        DispositionActionDefinition actionDef =
+                schedule.getDispositionActionDefinition(actionDefId);
+        if (actionDef == null) {
+            throw new WebScriptException(
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "Requested disposition action definition (id:"
+                            + actionDefId
+                            + ") does not exist");
         }
 
         return actionDef;
@@ -121,9 +118,8 @@ public class DispositionAbstractBase extends AbstractRmWebScript
      * @param url The URL for the DispositionActionDefinition
      * @return Map representing the model
      */
-    protected Map<String, Object> createActionDefModel(DispositionActionDefinition actionDef,
-                String url)
-    {
+    protected Map<String, Object> createActionDefModel(
+            DispositionActionDefinition actionDef, String url) {
         Map<String, Object> model = new HashMap<>(8);
 
         model.put("id", actionDef.getId());
@@ -133,45 +129,47 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         model.put("label", actionDef.getLabel());
         model.put("eligibleOnFirstCompleteEvent", actionDef.eligibleOnFirstCompleteEvent());
 
-        if (actionDef.getDescription() != null)
-        {
+        if (actionDef.getDescription() != null) {
             model.put("description", actionDef.getDescription());
         }
 
-        if (actionDef.getPeriod() != null)
-        {
+        if (actionDef.getPeriod() != null) {
             model.put("period", actionDef.getPeriod().toString());
         }
 
-        if (actionDef.getPeriodProperty() != null)
-        {
-            model.put("periodProperty", actionDef.getPeriodProperty().toPrefixString(getNamespaceService()));
+        if (actionDef.getPeriodProperty() != null) {
+            model.put(
+                    "periodProperty",
+                    actionDef.getPeriodProperty().toPrefixString(getNamespaceService()));
         }
 
-        if (actionDef.getLocation() != null)
-        {
+        if (actionDef.getLocation() != null) {
             model.put("location", actionDef.getLocation());
         }
 
-        if (actionDef.getGhostOnDestroy() != null)
-        {
+        if (actionDef.getGhostOnDestroy() != null) {
             model.put("ghostOnDestroy", actionDef.getGhostOnDestroy());
         }
 
         List<RecordsManagementEvent> events = actionDef.getEvents();
-        if (events != null && events.size() > 0)
-        {
+        if (events != null && events.size() > 0) {
             List<String> eventNames = new ArrayList<>(events.size());
-            for (RecordsManagementEvent event : events)
-            {
+            for (RecordsManagementEvent event : events) {
                 eventNames.add(event.getName());
             }
             model.put("events", eventNames);
         }
 
-        if(getNodeService().getProperty(actionDef.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS) != null)
-        {
-            model.put("combineDispositionStepConditions", getNodeService().getProperty(actionDef.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+        if (getNodeService()
+                        .getProperty(
+                                actionDef.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS)
+                != null) {
+            model.put(
+                    "combineDispositionStepConditions",
+                    getNodeService()
+                            .getProperty(
+                                    actionDef.getNodeRef(),
+                                    PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
         }
 
         return model;
@@ -183,8 +181,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
      * @param req The webscript request
      * @return Map representing the model
      */
-    protected Map<String, Object> getDispositionScheduleModel(WebScriptRequest req)
-    {
+    protected Map<String, Object> getDispositionScheduleModel(WebScriptRequest req) {
         // parse the request to retrieve the schedule object
         DispositionSchedule schedule = parseRequestForSchedule(req);
 
@@ -198,16 +195,14 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         scheduleModel.put("actionsUrl", actionsUrl);
         scheduleModel.put("nodeRef", schedule.getNodeRef().toString());
         scheduleModel.put("recordLevelDisposition", schedule.isRecordLevelDisposition());
-        scheduleModel.put("canStepsBeRemoved",
-                    !getDispositionService().hasDisposableItems(schedule));
+        scheduleModel.put(
+                "canStepsBeRemoved", !getDispositionService().hasDisposableItems(schedule));
 
-        if (schedule.getDispositionAuthority() != null)
-        {
+        if (schedule.getDispositionAuthority() != null) {
             scheduleModel.put("authority", schedule.getDispositionAuthority());
         }
 
-        if (schedule.getDispositionInstructions() != null)
-        {
+        if (schedule.getDispositionInstructions() != null) {
             scheduleModel.put("instructions", schedule.getDispositionInstructions());
         }
 
@@ -215,13 +210,20 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         boolean publishInProgress = false;
 
         List<Map<String, Object>> actions = new ArrayList<>();
-        for (DispositionActionDefinition actionDef : schedule.getDispositionActionDefinitions())
-        {
+        for (DispositionActionDefinition actionDef : schedule.getDispositionActionDefinitions()) {
             NodeRef actionDefNodeRef = actionDef.getNodeRef();
-            if (getNodeService().hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE))
-            {
+            if (getNodeService()
+                    .hasAspect(
+                            actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE)) {
                 unpublishedUpdates = true;
-                publishInProgress = ((Boolean) getNodeService().getProperty(actionDefNodeRef, RecordsManagementModel.PROP_PUBLISH_IN_PROGRESS)).booleanValue();
+                publishInProgress =
+                        ((Boolean)
+                                        getNodeService()
+                                                .getProperty(
+                                                        actionDefNodeRef,
+                                                        RecordsManagementModel
+                                                                .PROP_PUBLISH_IN_PROGRESS))
+                                .booleanValue();
             }
 
             actions.add(createActionDefModel(actionDef, actionsUrl + "/" + actionDef.getId()));

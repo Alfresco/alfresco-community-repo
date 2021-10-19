@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
@@ -39,17 +37,18 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.List;
+
 /**
  * Hides a record within a collaboration site.
  *
- * Note: This is a 'normal' dm action, rather than a records management action.
+ * <p>Note: This is a 'normal' dm action, rather than a records management action.
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
 public class HideRecordAction extends AuditableActionExecuterAbstractBase
-                              implements RecordsManagementModel
-{
+        implements RecordsManagementModel {
 
     /** Logger */
     private static Log logger = LogFactory.getLog(HideRecordAction.class);
@@ -63,49 +62,43 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     /** Inplace record service */
     private InplaceRecordService inplaceRecordService;
 
-    /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param inplaceRecordService inplace record service
-     */
-    public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
-    {
+    /** @param inplaceRecordService inplace record service */
+    public void setInplaceRecordService(InplaceRecordService inplaceRecordService) {
         this.inplaceRecordService = inplaceRecordService;
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        if (!nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD))
-        {
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+        if (!nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD)) {
             // we cannot hide a document which is not a record
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Cannot hide the document, because '" + actionedUponNodeRef.toString() + "' is not a record.");
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Cannot hide the document, because '"
+                                + actionedUponNodeRef.toString()
+                                + "' is not a record.");
             }
-        }
-        else
-        {
+        } else {
             // hide the record from the collaboration site
             inplaceRecordService.hideRecord(actionedUponNodeRef);
         }
     }
 
     /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+     * @see
+     *     org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-    {
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
         // Intentionally empty
     }
 }

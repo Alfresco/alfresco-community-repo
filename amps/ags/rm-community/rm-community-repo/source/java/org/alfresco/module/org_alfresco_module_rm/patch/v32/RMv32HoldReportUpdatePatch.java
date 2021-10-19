@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v32;
 
-import java.io.InputStream;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.repo.version.VersionModel;
@@ -44,76 +39,58 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 
+import java.io.InputStream;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Patch to update the template for generating the hold report
- * See: https://issues.alfresco.com/jira/browse/RM-7003
+ * Patch to update the template for generating the hold report See:
+ * https://issues.alfresco.com/jira/browse/RM-7003
  *
  * @author Ramona Popa
  * @since 3.2
  */
-public class RMv32HoldReportUpdatePatch extends AbstractModulePatch
-{
-    /**
-     * Hold report template path
-     */
-    private static final String HOLD_REPORT_TEMPLATE_PATH = "alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_holdReport.html.ftl";
+public class RMv32HoldReportUpdatePatch extends AbstractModulePatch {
+    /** Hold report template path */
+    private static final String HOLD_REPORT_TEMPLATE_PATH =
+            "alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_holdReport.html.ftl";
 
-    /**
-     * Hold report template config node IDs
-     */
-    private static final NodeRef HOLD_REPORT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rmr_holdReport");
+    /** Hold report template config node IDs */
+    private static final NodeRef HOLD_REPORT =
+            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rmr_holdReport");
 
-    /**
-     * Node service
-     */
+    /** Node service */
     private NodeService nodeService;
 
-    /**
-     * Content service
-     */
+    /** Content service */
     private ContentService contentService;
 
-    /**
-     * Version service
-     */
+    /** Version service */
     private VersionService versionService;
 
-    /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param contentService content service
-     */
-    public void setContentService(ContentService contentService)
-    {
+    /** @param contentService content service */
+    public void setContentService(ContentService contentService) {
         this.contentService = contentService;
     }
 
-    /**
-     * @param versionService version service
-     */
-    public void setVersionService(VersionService versionService)
-    {
+    /** @param versionService version service */
+    public void setVersionService(VersionService versionService) {
         this.versionService = versionService;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal() */
     @Override
-    public void applyInternal()
-    {
-        if (nodeService.exists(HOLD_REPORT))
-        {
+    public void applyInternal() {
+        if (nodeService.exists(HOLD_REPORT)) {
 
             // Make sure the template is versionable
-            if (!nodeService.hasAspect(HOLD_REPORT, ContentModel.ASPECT_VERSIONABLE))
-            {
+            if (!nodeService.hasAspect(HOLD_REPORT, ContentModel.ASPECT_VERSIONABLE)) {
                 nodeService.addAspect(HOLD_REPORT, ContentModel.ASPECT_VERSIONABLE, null);
 
                 // Create version (before template is updated)
@@ -124,11 +101,11 @@ public class RMv32HoldReportUpdatePatch extends AbstractModulePatch
             }
 
             // Update the content of the template
-            InputStream is = getClass().getClassLoader().getResourceAsStream(HOLD_REPORT_TEMPLATE_PATH);
-            ContentWriter writer = contentService.getWriter(HOLD_REPORT, ContentModel.PROP_CONTENT, true);
+            InputStream is =
+                    getClass().getClassLoader().getResourceAsStream(HOLD_REPORT_TEMPLATE_PATH);
+            ContentWriter writer =
+                    contentService.getWriter(HOLD_REPORT, ContentModel.PROP_CONTENT, true);
             writer.putContent(is);
-
         }
     }
-
 }

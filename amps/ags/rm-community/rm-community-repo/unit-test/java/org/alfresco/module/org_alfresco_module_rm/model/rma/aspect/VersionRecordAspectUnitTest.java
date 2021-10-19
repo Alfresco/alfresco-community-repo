@@ -45,55 +45,47 @@ import org.mockito.Mock;
 
 /**
  * Version record aspect unit tests
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3.1
  */
-public class VersionRecordAspectUnitTest extends BaseUnitTest
-{
+public class VersionRecordAspectUnitTest extends BaseUnitTest {
     /** service mocks */
     private @Mock VersionHistory mockedVersionHistory;
-    private @Mock Version mockedVersion;    
+
+    private @Mock Version mockedVersion;
     private @Mock VersionService mockedVersionService;
     private @Mock RelationshipService mockedRelationshipService;
-    
+
     /** test object */
     private @InjectMocks VersionRecordAspect versionRecordAspect;
-    
-    /**
-     * given that there is no recorded version
-     * before delete of record
-     * then nothing happens
-     */
+
+    /** given that there is no recorded version before delete of record then nothing happens */
     @Test
-    public void beforeDeleteNoVersionNodeRef()
-    {
+    public void beforeDeleteNoVersionNodeRef() {
         NodeRef nodeRef = generateNodeRef();
-        
-        when(mockedRecordableVersionService.getRecordedVersion(nodeRef))
-            .thenReturn(null);
-        
+
+        when(mockedRecordableVersionService.getRecordedVersion(nodeRef)).thenReturn(null);
+
         versionRecordAspect.beforeDeleteNode(nodeRef);
-        
-        verify(mockedNodeService, never()).getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL);        
-        verify(mockedRecordableVersionService, never()).destroyRecordedVersion(any(Version.class));        
+
+        verify(mockedNodeService, never())
+                .getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL);
+        verify(mockedRecordableVersionService, never()).destroyRecordedVersion(any(Version.class));
     }
-     
+
     /**
-     * given that there is a recorded version
-     * before delete of record
-     * then the version is marked as destroyed
+     * given that there is a recorded version before delete of record then the version is marked as
+     * destroyed
      */
     @Test
-    public void beforeDeleteMarkVersionDestroyed()
-    {
+    public void beforeDeleteMarkVersionDestroyed() {
         NodeRef nodeRef = generateNodeRef();
-        
-        when(mockedRecordableVersionService.getRecordedVersion(nodeRef))
-            .thenReturn(mockedVersion);
-        
+
+        when(mockedRecordableVersionService.getRecordedVersion(nodeRef)).thenReturn(mockedVersion);
+
         versionRecordAspect.beforeDeleteNode(nodeRef);
-           
-        verify(mockedRecordableVersionService).destroyRecordedVersion(mockedVersion); 
+
+        verify(mockedRecordableVersionService).destroyRecordedVersion(mockedVersion);
     }
 }

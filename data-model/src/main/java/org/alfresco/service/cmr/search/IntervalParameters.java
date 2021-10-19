@@ -25,48 +25,38 @@
  */
 package org.alfresco.service.cmr.search;
 
-import java.util.List;
-import java.util.Set;
-
-import org.alfresco.api.AlfrescoPublicApi;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-/**
- * Parameters used for search Intervals.
- */
+import org.alfresco.api.AlfrescoPublicApi;
+
+import java.util.List;
+import java.util.Set;
+
+/** Parameters used for search Intervals. */
 @AlfrescoPublicApi
-public class IntervalParameters
-{
+public class IntervalParameters {
     private final Set<IntervalSet> sets;
     private final List<Interval> intervals;
 
     @JsonCreator
     public IntervalParameters(
-                @JsonProperty("sets") Set<IntervalSet> sets,
-                @JsonProperty("intervals") List<Interval> intervals)
-    {
+            @JsonProperty("sets") Set<IntervalSet> sets,
+            @JsonProperty("intervals") List<Interval> intervals) {
         this.sets = sets;
         this.intervals = intervals;
     }
 
-    public Set<IntervalSet> getSets()
-    {
+    public Set<IntervalSet> getSets() {
         return sets;
     }
 
-    public List<Interval> getIntervals()
-    {
+    public List<Interval> getIntervals() {
         return intervals;
     }
 
     @Override
-    public String toString()
-    {
-        return "IntervalParameters{" +
-                    "sets=" + sets +
-                    ", intervals=" + intervals +
-                    '}';
+    public String toString() {
+        return "IntervalParameters{" + "sets=" + sets + ", intervals=" + intervals + '}';
     }
 }

@@ -38,8 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class TransferAction extends RMDispositionActionExecuterAbstractBase
-{
+public class TransferAction extends RMDispositionActionExecuterAbstractBase {
     /** Action name */
     public static final String NAME = "transfer";
 
@@ -54,8 +53,7 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
      *
      * @param isAccession Is the transfer an accession or not
      */
-    public void setIsAccession(boolean isAccession)
-    {
+    public void setIsAccession(boolean isAccession) {
         this.isAccession = isAccession;
     }
 
@@ -64,37 +62,38 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
      *
      * @param transferService transfer service
      */
-    public void setTransferService(TransferService transferService)
-    {
+    public void setTransferService(TransferService transferService) {
         this.transferService = transferService;
     }
 
     /**
      * Do not set the transfer action to auto-complete
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#getSetDispositionActionComplete()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#getSetDispositionActionComplete()
      */
     @Override
-    public boolean getSetDispositionActionComplete()
-    {
+    public boolean getSetDispositionActionComplete() {
         return false;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#executeRecordFolderLevelDisposition(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#executeRecordFolderLevelDisposition(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
-    {
+    protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder) {
         doTransfer(action, recordFolder);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#executeRecordLevelDisposition(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#executeRecordLevelDisposition(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeRecordLevelDisposition(Action action, NodeRef record)
-    {
+    protected void executeRecordLevelDisposition(Action action, NodeRef record) {
         doTransfer(action, record);
     }
 
@@ -104,16 +103,15 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
      * @param action action
      * @param dispositionLifeCycleNodeRef disposition lifecycle node
      */
-    private void doTransfer(Action action, NodeRef dispositionLifeCycleNodeRef)
-    {
-        NodeRef transferNodeRef = transferService.transfer(dispositionLifeCycleNodeRef, isAccession);
+    private void doTransfer(Action action, NodeRef dispositionLifeCycleNodeRef) {
+        NodeRef transferNodeRef =
+                transferService.transfer(dispositionLifeCycleNodeRef, isAccession);
 
         // Set the return value of the action
         action.setParameterValue(ActionExecuter.PARAM_RESULT, transferNodeRef);
 
         // Cut off the disposable item if it's not cut off already
-        if (!getDispositionService().isDisposableItemCutoff(dispositionLifeCycleNodeRef))
-        {
+        if (!getDispositionService().isDisposableItemCutoff(dispositionLifeCycleNodeRef)) {
             getDispositionService().cutoffDisposableItem(dispositionLifeCycleNodeRef);
         }
     }

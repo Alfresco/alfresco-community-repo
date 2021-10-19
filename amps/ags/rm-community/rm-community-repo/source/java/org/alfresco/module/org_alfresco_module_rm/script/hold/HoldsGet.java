@@ -27,13 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -50,14 +43,20 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Implementation for Java backed webscript to return the list of holds in the hold container.
  *
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class HoldsGet extends DeclarativeWebScript
-{
+public class HoldsGet extends DeclarativeWebScript {
     /** File Plan Service */
     private FilePlanService filePlanService;
 
@@ -66,7 +65,7 @@ public class HoldsGet extends DeclarativeWebScript
 
     /** Hold Service */
     private HoldService holdService;
-    
+
     /** permission service */
     private PermissionService permissionService;
 
@@ -75,8 +74,7 @@ public class HoldsGet extends DeclarativeWebScript
      *
      * @param filePlanService the file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
@@ -85,8 +83,7 @@ public class HoldsGet extends DeclarativeWebScript
      *
      * @param nodeService the node service
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -95,49 +92,47 @@ public class HoldsGet extends DeclarativeWebScript
      *
      * @param holdService the hold service
      */
-    public void setHoldService(HoldService holdService)
-    {
+    public void setHoldService(HoldService holdService) {
         this.holdService = holdService;
     }
-    
+
     /**
      * Set the permission service
-     * 
-     * @param permissionService     the permission service
+     *
+     * @param permissionService the permission service
      */
-    public void setPermissionService(PermissionService permissionService)
-    {
+    public void setPermissionService(PermissionService permissionService) {
         this.permissionService = permissionService;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         final boolean fileOnly = getFileOnly(req);
         final NodeRef itemNodeRef = getItemNodeRef(req);
         final List<NodeRef> holds = new ArrayList<>();
 
-        if (itemNodeRef == null)
-        {
+        if (itemNodeRef == null) {
             final NodeRef filePlan = getFilePlan(req);
             holds.addAll(holdService.getHolds(filePlan));
-        }
-        else
-        {
+        } else {
             final boolean includedInHold = getIncludedInHold(req);
             holds.addAll(holdService.heldBy(itemNodeRef, includedInHold));
         }
 
         final List<Hold> holdObjects = new ArrayList<>(holds.size());
-        for (NodeRef nodeRef : holds)
-        {
+        for (NodeRef nodeRef : holds) {
             // only add if user has filling permission on the hold
-            if (!fileOnly || permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED)
-            {
-                final String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            if (!fileOnly
+                    || permissionService.hasPermission(nodeRef, RMPermissionModel.FILING)
+                            == AccessStatus.ALLOWED) {
+                final String name =
+                        (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 holdObjects.add(new Hold(name, nodeRef));
             }
         }
@@ -155,8 +150,7 @@ public class HoldsGet extends DeclarativeWebScript
      * @param req The webscript request
      * @return The {@link NodeRef} of the file plan
      */
-    private NodeRef getFilePlan(WebScriptRequest req)
-    {
+    private NodeRef getFilePlan(WebScriptRequest req) {
         NodeRef filePlan = null;
 
         final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
@@ -164,22 +158,21 @@ public class HoldsGet extends DeclarativeWebScript
         final String storeId = templateVars.get("store_id");
         final String id = templateVars.get("id");
 
-        if (StringUtils.isNotBlank(storeType) && StringUtils.isNotBlank(storeId) && StringUtils.isNotBlank(id))
-        {
+        if (StringUtils.isNotBlank(storeType)
+                && StringUtils.isNotBlank(storeId)
+                && StringUtils.isNotBlank(id)) {
             filePlan = new NodeRef(new StoreRef(storeType, storeId), id);
-            
+
             // check that this node is actually a file plan
-            if (!nodeService.exists(filePlan) || !filePlanService.isFilePlan(filePlan))
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "The file plan provided could not be found.");
+            if (!nodeService.exists(filePlan) || !filePlanService.isFilePlan(filePlan)) {
+                throw new WebScriptException(
+                        Status.STATUS_NOT_FOUND, "The file plan provided could not be found.");
             }
-        }
-        else
-        {
+        } else {
             filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            if (filePlan == null)
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "The default file plan node could not be found.");
+            if (filePlan == null) {
+                throw new WebScriptException(
+                        Status.STATUS_NOT_FOUND, "The default file plan node could not be found.");
             }
         }
 
@@ -190,14 +183,13 @@ public class HoldsGet extends DeclarativeWebScript
      * Helper method to get the item node reference from the request
      *
      * @param req The webscript request
-     * @return The {@link NodeRef} of the item (record / record folder) or null if the parameter has not been passed
+     * @return The {@link NodeRef} of the item (record / record folder) or null if the parameter has
+     *     not been passed
      */
-    private NodeRef getItemNodeRef(WebScriptRequest req)
-    {
+    private NodeRef getItemNodeRef(WebScriptRequest req) {
         final String nodeRef = req.getParameter("itemNodeRef");
         NodeRef itemNodeRef = null;
-        if (StringUtils.isNotBlank(nodeRef))
-        {
+        if (StringUtils.isNotBlank(nodeRef)) {
             itemNodeRef = new NodeRef(nodeRef);
         }
         return itemNodeRef;
@@ -209,23 +201,19 @@ public class HoldsGet extends DeclarativeWebScript
      * @param req The webscript request
      * @return The value of the includeInHold parameter
      */
-    private boolean getIncludedInHold(WebScriptRequest req)
-    {
+    private boolean getIncludedInHold(WebScriptRequest req) {
         boolean result = true;
         final String includedInHold = req.getParameter("includedInHold");
-        if (StringUtils.isNotBlank(includedInHold))
-        {
+        if (StringUtils.isNotBlank(includedInHold)) {
             result = Boolean.parseBoolean(includedInHold);
         }
         return result;
     }
-    
-    private boolean getFileOnly(WebScriptRequest req)
-    {
+
+    private boolean getFileOnly(WebScriptRequest req) {
         boolean result = false;
         final String fillingOnly = req.getParameter("fileOnly");
-        if (StringUtils.isNotBlank(fillingOnly))
-        {
+        if (StringUtils.isNotBlank(fillingOnly)) {
             result = Boolean.parseBoolean(fillingOnly);
         }
         return result;
@@ -236,15 +224,14 @@ public class HoldsGet extends DeclarativeWebScript
      *
      * @param holds List of holds to sort
      */
-    private void sortHoldByName(List<Hold> holds)
-    {
-        Collections.sort(holds, new Comparator<Hold>()
-        {
-            @Override
-            public int compare(Hold h1, Hold h2)
-            {
-                return h1.getName().toLowerCase().compareTo(h2.getName().toLowerCase());
-            }
-        });
+    private void sortHoldByName(List<Hold> holds) {
+        Collections.sort(
+                holds,
+                new Comparator<Hold>() {
+                    @Override
+                    public int compare(Hold h1, Hold h2) {
+                        return h1.getName().toLowerCase().compareTo(h2.getName().toLowerCase());
+                    }
+                });
     }
 }

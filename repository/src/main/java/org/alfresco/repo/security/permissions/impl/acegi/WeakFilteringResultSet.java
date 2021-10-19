@@ -30,10 +30,10 @@ import org.alfresco.service.cmr.search.ResultSet;
 import java.util.BitSet;
 
 /**
- * WeakFilteringResultSet allows to add a filter to results without hiding the numberOfFound before filter is applied.
+ * WeakFilteringResultSet allows to add a filter to results without hiding the numberOfFound before
+ * filter is applied.
  *
  * @author eliaporciani
- *
  */
 public class WeakFilteringResultSet extends FilteringResultSet {
     public WeakFilteringResultSet(ResultSet unfiltered) {
@@ -44,12 +44,9 @@ public class WeakFilteringResultSet extends FilteringResultSet {
         super(unfiltered, inclusionMask);
     }
 
-    /**
-     * returns the total number of results found before the filter is applied.
-     */
+    /** returns the total number of results found before the filter is applied. */
     @Override
-    public long getNumberFound()
-    {
+    public long getNumberFound() {
         return getUnFilteredResultSet().getNumberFound();
     }
 }

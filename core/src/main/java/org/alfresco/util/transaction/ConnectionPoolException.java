@@ -21,32 +21,28 @@ package org.alfresco.util.transaction;
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Exception wraps {@link java.util.NoSuchElementException} from {@link org.apache.commons.dbcp.BasicDataSource}
- * 
+ * Exception wraps {@link java.util.NoSuchElementException} from {@link
+ * org.apache.commons.dbcp.BasicDataSource}
+ *
  * @author alex.mukha
  * @since 4.1.9
  */
-public class ConnectionPoolException extends AlfrescoRuntimeException
-{
+public class ConnectionPoolException extends AlfrescoRuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public ConnectionPoolException(String msgId, Object[] msgParams, Throwable cause)
-    {
+    public ConnectionPoolException(String msgId, Object[] msgParams, Throwable cause) {
         super(msgId, msgParams, cause);
     }
 
-    public ConnectionPoolException(String msgId, Object[] msgParams)
-    {
+    public ConnectionPoolException(String msgId, Object[] msgParams) {
         super(msgId, msgParams);
     }
 
-    public ConnectionPoolException(String msgId, Throwable cause)
-    {
+    public ConnectionPoolException(String msgId, Throwable cause) {
         super(msgId, cause);
     }
 
-    public ConnectionPoolException(String msgId)
-    {
+    public ConnectionPoolException(String msgId) {
         super(msgId);
     }
 }

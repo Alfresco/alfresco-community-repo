@@ -40,8 +40,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RMEventBase extends DeclarativeWebScript
-{
+public class RMEventBase extends DeclarativeWebScript {
     /**
      * Helper method for getting the value for a key from a JSON object
      *
@@ -50,11 +49,9 @@ public class RMEventBase extends DeclarativeWebScript
      * @return String The value for the provided key if the key exists, null otherwise
      * @throws JSONException If there is no string value for the key
      */
-    protected String getValue(JSONObject json, String key) throws JSONException
-    {
+    protected String getValue(JSONObject json, String key) throws JSONException {
         String result = null;
-        if (json.has(key))
-        {
+        if (json.has(key)) {
             result = json.getString(key);
         }
         return result;
@@ -66,10 +63,8 @@ public class RMEventBase extends DeclarativeWebScript
      * @param key String The key which will be checked
      * @param msg String The error message to throw if the key doesn't have a value
      */
-    protected void doCheck(String key, String msg)
-    {
-        if (StringUtils.isBlank(key))
-        {
+    protected void doCheck(String key, String msg) {
+        if (StringUtils.isBlank(key)) {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, msg);
         }
     }

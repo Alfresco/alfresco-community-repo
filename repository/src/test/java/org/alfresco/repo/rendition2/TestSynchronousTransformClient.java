@@ -34,13 +34,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 import java.util.Map;
 
-/**
- * @author adavis
- */
-public class TestSynchronousTransformClient<T> implements SynchronousTransformClient
-{
-    public static final String TEST_FAILING_MIME_TYPE = "application/vnd.alfresco.test.transientfailure";
-    public static final String TEST_LONG_RUNNING_MIME_TYPE = "application/vnd.alfresco.test.longrunning";
+/** @author adavis */
+public class TestSynchronousTransformClient<T> implements SynchronousTransformClient {
+    public static final String TEST_FAILING_MIME_TYPE =
+            "application/vnd.alfresco.test.transientfailure";
+    public static final String TEST_LONG_RUNNING_MIME_TYPE =
+            "application/vnd.alfresco.test.longrunning";
     public static final String TEST_USER_MIME_TYPE = "image/alfresco.test.user";
 
     public static final long TEST_LONG_RUNNING_TRANSFORM_TIME = 5000;
@@ -49,85 +48,89 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
 
     private SynchronousTransformClient delegate;
 
-    public TestSynchronousTransformClient(SynchronousTransformClient delegate)
-    {
+    public TestSynchronousTransformClient(SynchronousTransformClient delegate) {
         this.delegate = delegate;
     }
 
     @Override
-    public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
-                               Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
-    {
+    public boolean isSupported(
+            String sourceMimetype,
+            long sourceSizeInBytes,
+            String contentUrl,
+            String targetMimetype,
+            Map<String, String> actualOptions,
+            String transformName,
+            NodeRef sourceNodeRef) {
         boolean supported = true;
-        if (!isATest(sourceMimetype, targetMimetype))
-        {
-            supported = delegate.isSupported(sourceMimetype, sourceSizeInBytes, contentUrl, targetMimetype, actualOptions,
-                    transformName, sourceNodeRef);
+        if (!isATest(sourceMimetype, targetMimetype)) {
+            supported =
+                    delegate.isSupported(
+                            sourceMimetype,
+                            sourceSizeInBytes,
+                            contentUrl,
+                            targetMimetype,
+                            actualOptions,
+                            transformName,
+                            sourceNodeRef);
         }
         return supported;
     }
 
     @Override
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
-    {
+    public void transform(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, String> actualOptions,
+            String transformName,
+            NodeRef sourceNodeRef) {
         String sourceMimetype = reader.getMimetype();
         String targetMimetype = writer.getMimetype();
-        if (isATest(sourceMimetype, targetMimetype))
-        {
+        if (isATest(sourceMimetype, targetMimetype)) {
             doTest(sourceMimetype, targetMimetype, writer, new TestTransformClientCallback());
-        }
-        else
-        {
+        } else {
             delegate.transform(reader, writer, actualOptions, transformName, sourceNodeRef);
         }
     }
 
-    static boolean isATest(String sourceMimetype, String targetMimetype)
-    {
-        return  isFailingTest(sourceMimetype, targetMimetype) ||
-                isLongRunningTest(sourceMimetype, targetMimetype) ||
-                isUserTest(sourceMimetype, targetMimetype);
+    static boolean isATest(String sourceMimetype, String targetMimetype) {
+        return isFailingTest(sourceMimetype, targetMimetype)
+                || isLongRunningTest(sourceMimetype, targetMimetype)
+                || isUserTest(sourceMimetype, targetMimetype);
     }
 
-    static boolean isFailingTest(String sourceMimetype, String targetMimetype)
-    {
-        return sourceMimetype.equals(TEST_FAILING_MIME_TYPE) || targetMimetype.equals(TEST_FAILING_MIME_TYPE);
+    static boolean isFailingTest(String sourceMimetype, String targetMimetype) {
+        return sourceMimetype.equals(TEST_FAILING_MIME_TYPE)
+                || targetMimetype.equals(TEST_FAILING_MIME_TYPE);
     }
 
-    static boolean isLongRunningTest(String sourceMimetype, String targetMimetype)
-    {
-        return sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE) || targetMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE);
+    static boolean isLongRunningTest(String sourceMimetype, String targetMimetype) {
+        return sourceMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE)
+                || targetMimetype.equals(TEST_LONG_RUNNING_MIME_TYPE);
     }
 
-    static boolean isUserTest(String sourceMimetype, String targetMimetype)
-    {
-        return sourceMimetype.equals(TEST_USER_MIME_TYPE) || targetMimetype.equals(TEST_USER_MIME_TYPE);
+    static boolean isUserTest(String sourceMimetype, String targetMimetype) {
+        return sourceMimetype.equals(TEST_USER_MIME_TYPE)
+                || targetMimetype.equals(TEST_USER_MIME_TYPE);
     }
 
-    static void doTest(String sourceMimetype, String targetMimetype, ContentWriter writer,
-                       TestTransformClientCallback callback)
-    {
-        if (isFailingTest(sourceMimetype, targetMimetype))
-        {
-            throw new ContentServiceTransientException("Transformation intentionally failed for test purposes.");
-        }
-        else if (isLongRunningTest(sourceMimetype, targetMimetype))
-        {
-            try
-            {
+    static void doTest(
+            String sourceMimetype,
+            String targetMimetype,
+            ContentWriter writer,
+            TestTransformClientCallback callback) {
+        if (isFailingTest(sourceMimetype, targetMimetype)) {
+            throw new ContentServiceTransientException(
+                    "Transformation intentionally failed for test purposes.");
+        } else if (isLongRunningTest(sourceMimetype, targetMimetype)) {
+            try {
                 Thread.sleep(TEST_LONG_RUNNING_TRANSFORM_TIME);
-            }
-            catch (InterruptedException e)
-            {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             callback.successfulTransform(writer);
-        }
-        else if (isUserTest(sourceMimetype, targetMimetype))
-        {
+        } else if (isUserTest(sourceMimetype, targetMimetype)) {
             String username = AuthenticationUtil.getFullyAuthenticatedUser();
-            if (!EXPECTED_USER.equals(username))
-            {
+            if (!EXPECTED_USER.equals(username)) {
                 throw new ContentIOException(
                         "Expected username '" + EXPECTED_USER + "' but found '" + username + "'");
             }
@@ -136,15 +139,12 @@ public class TestSynchronousTransformClient<T> implements SynchronousTransformCl
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return delegate.getName();
     }
 
-    static class TestTransformClientCallback
-    {
-        public void successfulTransform(ContentWriter writer)
-        {
+    static class TestTransformClientCallback {
+        public void successfulTransform(ContentWriter writer) {
             writer.putContent("SUCCESS");
         }
     }

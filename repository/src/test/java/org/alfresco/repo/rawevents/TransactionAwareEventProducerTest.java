@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.rawevents;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.alfresco.repo.rawevents.types.EventType;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -34,8 +36,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
@@ -43,21 +43,17 @@ import org.springframework.beans.factory.annotation.Qualifier;
  *
  * @author Cristian Turlica
  */
-public class TransactionAwareEventProducerTest extends BaseSpringTest
-{
-    @Autowired
-    private RetryingTransactionHelper retryingTransactionHelper;
-    @Autowired
-    private CamelContext camelContext;
-    @Autowired
-    private TransactionAwareEventProducer eventProducer;
+public class TransactionAwareEventProducerTest extends BaseSpringTest {
+    @Autowired private RetryingTransactionHelper retryingTransactionHelper;
+    @Autowired private CamelContext camelContext;
+    @Autowired private TransactionAwareEventProducer eventProducer;
+
     @Autowired
     @Qualifier("alfrescoEventObjectMapper")
     private ObjectMapper messagingObjectMapper;
 
     @Test
-    public void send() throws Exception
-    {
+    public void send() throws Exception {
         String endpointUri = getMockEndpointUri();
 
         MockEndpoint mockEndpoint = camelContext.getEndpoint(endpointUri, MockEndpoint.class);
@@ -69,23 +65,24 @@ public class TransactionAwareEventProducerTest extends BaseSpringTest
         objectMessage.setType(EventType.CONTENT_UPDATED.toString());
         objectMessage.setTimestamp(System.currentTimeMillis());
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            eventProducer.send(endpointUri, stringMessage);
+        retryingTransactionHelper.doInTransaction(
+                () -> {
+                    eventProducer.send(endpointUri, stringMessage);
 
-            // Assert that the endpoint didn't receive any message
-            // Event is sent only on transaction commit.
-            mockEndpoint.setExpectedCount(0);
-            mockEndpoint.assertIsSatisfied();
+                    // Assert that the endpoint didn't receive any message
+                    // Event is sent only on transaction commit.
+                    mockEndpoint.setExpectedCount(0);
+                    mockEndpoint.assertIsSatisfied();
 
-            eventProducer.send(endpointUri, objectMessage);
+                    eventProducer.send(endpointUri, objectMessage);
 
-            // Assert that the endpoint didn't receive any message
-            // Event is sent only on transaction commit.
-            mockEndpoint.setExpectedCount(0);
-            mockEndpoint.assertIsSatisfied();
+                    // Assert that the endpoint didn't receive any message
+                    // Event is sent only on transaction commit.
+                    mockEndpoint.setExpectedCount(0);
+                    mockEndpoint.assertIsSatisfied();
 
-            return null;
-        });
+                    return null;
+                });
 
         // Assert that the endpoint received 2 messages
         mockEndpoint.setExpectedCount(2);
@@ -101,7 +98,8 @@ public class TransactionAwareEventProducerTest extends BaseSpringTest
         String jsonMessageSent = (String) mockEndpoint.getExchanges().get(1).getIn().getBody();
         assertNotNull(jsonMessageSent);
 
-        OnContentUpdatePolicyEvent objectMessageSent = messagingObjectMapper.readValue(jsonMessageSent, OnContentUpdatePolicyEvent.class);
+        OnContentUpdatePolicyEvent objectMessageSent =
+                messagingObjectMapper.readValue(jsonMessageSent, OnContentUpdatePolicyEvent.class);
 
         assertNotNull(objectMessageSent);
         assertEquals(objectMessage.getId(), objectMessageSent.getId());
@@ -109,8 +107,7 @@ public class TransactionAwareEventProducerTest extends BaseSpringTest
         assertEquals(objectMessage.getTimestamp(), objectMessageSent.getTimestamp());
     }
 
-    private String getMockEndpointUri()
-    {
+    private String getMockEndpointUri() {
         return "mock:" + this.getClass().getSimpleName() + "_" + GUID.generate();
     }
 }

@@ -38,10 +38,6 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,6 +51,10 @@ import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChi
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
 import org.alfresco.rest.rm.community.util.UnfiledContainerChildMixin;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+
 /**
  * Unfiled Container REST API Wrapper
  *
@@ -62,21 +62,14 @@ import org.alfresco.rest.rm.community.util.UnfiledContainerChildMixin;
  * @author Ana Bozianu
  * @since 2.6
  */
-public class UnfiledContainerAPI extends RMModelRequest
-{
-    /**
-     * @param rmRestWrapper RM REST Wrapper
-     */
-    public UnfiledContainerAPI(RMRestWrapper rmRestWrapper)
-    {
+public class UnfiledContainerAPI extends RMModelRequest {
+    /** @param rmRestWrapper RM REST Wrapper */
+    public UnfiledContainerAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
-    /**
-     * see {@link #getUnfiledContainer(String, String)}
-     */
-    public UnfiledContainer getUnfiledContainer(String unfiledContainerId)
-    {
+    /** see {@link #getUnfiledContainer(String, String)} */
+    public UnfiledContainer getUnfiledContainer(String unfiledContainerId) {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
         return getUnfiledContainer(unfiledContainerId, EMPTY);
@@ -89,30 +82,28 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The {@link UnfiledContainer} for the given {@code unfiledContainerId}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code unfiledContainerId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code unfiledContainerId}</li>
-     *  <li>{@code unfiledContainerId} does not exist</li>
-     * </ul>
+     *     <ul>
+     *       <li>{@code unfiledContainerId} is not a valid format
+     *       <li>authentication fails
+     *       <li>current user does not have permission to read {@code unfiledContainerId}
+     *       <li>{@code unfiledContainerId} does not exist
+     *     </ul>
      */
-    public UnfiledContainer getUnfiledContainer(String unfiledContainerId, String parameters)
-    {
+    public UnfiledContainer getUnfiledContainer(String unfiledContainerId, String parameters) {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return getRmRestWrapper().processModel(UnfiledContainer.class, simpleRequest(
-                GET,
-                "unfiled-containers/{unfiledContainerId}?{parameters}",
-                unfiledContainerId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        UnfiledContainer.class,
+                        simpleRequest(
+                                GET,
+                                "unfiled-containers/{unfiledContainerId}?{parameters}",
+                                unfiledContainerId,
+                                parameters));
     }
 
-    /**
-     * see {@link #getUnfiledContainerChildren(String)} (String, String)}
-     */
-    public UnfiledContainerChildCollection getUnfiledContainerChildren(String unfiledContainerId)
-    {
+    /** see {@link #getUnfiledContainerChildren(String)} (String, String)} */
+    public UnfiledContainerChildCollection getUnfiledContainerChildren(String unfiledContainerId) {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
         return getUnfiledContainerChildren(unfiledContainerId, EMPTY);
@@ -125,29 +116,29 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The {@link UnfiledContainerChildCollection} for the given {@code unfiledContainerId}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code unfiledContainerId}</li>
-     *  <li>{@code unfiledContainerId} does not exist</li>
-     *</ul>
+     *     <ul>
+     *       <li>authentication fails
+     *       <li>current user does not have permission to read {@code unfiledContainerId}
+     *       <li>{@code unfiledContainerId} does not exist
+     *     </ul>
      */
-    public UnfiledContainerChildCollection getUnfiledContainerChildren(String unfiledContainerId, String parameters)
-    {
+    public UnfiledContainerChildCollection getUnfiledContainerChildren(
+            String unfiledContainerId, String parameters) {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return getRmRestWrapper().processModels(UnfiledContainerChildCollection.class, simpleRequest(
-            GET,
-            "unfiled-containers/{unfiledContainerId}/children?{parameters}",
-            unfiledContainerId,
-            parameters
-        ));
+        return getRmRestWrapper()
+                .processModels(
+                        UnfiledContainerChildCollection.class,
+                        simpleRequest(
+                                GET,
+                                "unfiled-containers/{unfiledContainerId}/children?{parameters}",
+                                unfiledContainerId,
+                                parameters));
     }
 
-    /**
-     * see {@link #createUnfiledContainerChild(UnfiledContainerChild, String, String)}
-     */
-    public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId)
-    {
+    /** see {@link #createUnfiledContainerChild(UnfiledContainerChild, String, String)} */
+    public UnfiledContainerChild createUnfiledContainerChild(
+            UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId) {
         mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
@@ -157,51 +148,60 @@ public class UnfiledContainerAPI extends RMModelRequest
     /**
      * Creates an unfiled container child. Can be a record or an unfiled record folder.
      *
-     * @param unfiledContainerChildModel The unfiled container child model which holds the information
+     * @param unfiledContainerChildModel The unfiled container child model which holds the
+     *     information
      * @param unfiledContainerId The identifier of an unfiled container
      * @param parameters The URL parameters to add
      * @return The created {@link UnfiledContainerChild}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code unfiledContainerId} is not a valid format or {@code unfiledContainerChildModel} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to add children to {@code unfiledContainerId}</li>
-     *  <li>{@code unfiledContainerId} does not exist</li>
-     *  <li>new name clashes with an existing node in the current parent container</li>
-     *  <li>model integrity exception, including node name with invalid characters</li>
-     * </ul>
+     *     <ul>
+     *       <li>{@code unfiledContainerId} is not a valid format or {@code
+     *           unfiledContainerChildModel} is invalid
+     *       <li>authentication fails
+     *       <li>current user does not have permission to add children to {@code unfiledContainerId}
+     *       <li>{@code unfiledContainerId} does not exist
+     *       <li>new name clashes with an existing node in the current parent container
+     *       <li>model integrity exception, including node name with invalid characters
+     *     </ul>
      */
-    public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, String parameters)
-    {
+    public UnfiledContainerChild createUnfiledContainerChild(
+            UnfiledContainerChild unfiledContainerChildModel,
+            String unfiledContainerId,
+            String parameters) {
         mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return getRmRestWrapper().processModel(UnfiledContainerChild.class, requestWithBody(
-                POST,
-                toJson(unfiledContainerChildModel),
-                "unfiled-containers/{unfiledContainerId}/children?{parameters}",
-                unfiledContainerId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        UnfiledContainerChild.class,
+                        requestWithBody(
+                                POST,
+                                toJson(unfiledContainerChildModel),
+                                "unfiled-containers/{unfiledContainerId}/children?{parameters}",
+                                unfiledContainerId,
+                                parameters));
     }
 
     /**
      * Create a record from file resource
      *
-     * @param unfiledContainerChildModel {@link UnfiledContainerChild} for electronic record to be created
-     * @param unfiledContainerChildContent {@link File} pointing to the content of the electronic record to be created
+     * @param unfiledContainerChildModel {@link UnfiledContainerChild} for electronic record to be
+     *     created
+     * @param unfiledContainerChildContent {@link File} pointing to the content of the electronic
+     *     record to be created
      * @param unfiledContainerId The identifier of a unfiled container
      * @return newly created {@link UnfiledContainerChild}
      * @throws RuntimeException for invalid recordModel JSON strings
      */
-    public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, File unfiledContainerChildContent)
-    {
+    public UnfiledContainerChild uploadRecord(
+            UnfiledContainerChild unfiledContainerChildModel,
+            String unfiledContainerId,
+            File unfiledContainerChildContent) {
         mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
         mandatoryObject("unfiledContainerChildContent", unfiledContainerChildContent);
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        if (!unfiledContainerChildModel.getNodeType().equals(CONTENT_TYPE))
-        {
+        if (!unfiledContainerChildModel.getNodeType().equals(CONTENT_TYPE)) {
             fail("Only electronic records are supported");
         }
 
@@ -211,18 +211,20 @@ public class UnfiledContainerAPI extends RMModelRequest
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
         JsonNode root;
-        try
-        {
-            root = new ObjectMapper().readTree(toJson(unfiledContainerChildModel, UnfiledContainerChild.class, UnfiledContainerChildMixin.class));
-        }
-        catch (IOException e)
-        {
+        try {
+            root =
+                    new ObjectMapper()
+                            .readTree(
+                                    toJson(
+                                            unfiledContainerChildModel,
+                                            UnfiledContainerChild.class,
+                                            UnfiledContainerChildMixin.class));
+        } catch (IOException e) {
             throw new RuntimeException("Failed to convert model to JSON.", e);
         }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
-        while (fieldNames.hasNext())
-        {
+        while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
             builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
         }
@@ -235,8 +237,8 @@ public class UnfiledContainerAPI extends RMModelRequest
     /**
      * see {@link #updateUnfiledContainer(UnfiledContainer, String, String)
      */
-    public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId)
-    {
+    public UnfiledContainer updateUnfiledContainer(
+            UnfiledContainer unfiledContainerModel, String unfiledContainerId) {
         mandatoryObject("unfiledContainerModel", unfiledContainerModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
@@ -251,27 +253,30 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @param returns The updated {@link UnfiledContainer}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>the update request is invalid or {@code unfiledContainerId} is not a valid format or {@code unfiledContainerModel} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to update {@code unfiledContainerId}</li>
-     *  <li>{@code unfiledContainerId} does not exist</li>
-     *  <li>the updated name clashes with an existing root category of special container in the current fileplan</li>
-     *  <li>model integrity exception, including file name with invalid characters</li>
-     * </ul>
+     *     <ul>
+     *       <li>the update request is invalid or {@code unfiledContainerId} is not a valid format
+     *           or {@code unfiledContainerModel} is invalid
+     *       <li>authentication fails
+     *       <li>current user does not have permission to update {@code unfiledContainerId}
+     *       <li>{@code unfiledContainerId} does not exist
+     *       <li>the updated name clashes with an existing root category of special container in the
+     *           current fileplan
+     *       <li>model integrity exception, including file name with invalid characters
+     *     </ul>
      */
-    public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId, String parameters)
-    {
+    public UnfiledContainer updateUnfiledContainer(
+            UnfiledContainer unfiledContainerModel, String unfiledContainerId, String parameters) {
         mandatoryObject("unfiledContainerModel", unfiledContainerModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return getRmRestWrapper().processModel(UnfiledContainer.class, requestWithBody(
-                PUT,
-                toJson(unfiledContainerModel),
-                "unfiled-containers/{unfiledContainerId}?{parameters}",
-                unfiledContainerId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        UnfiledContainer.class,
+                        requestWithBody(
+                                PUT,
+                                toJson(unfiledContainerModel),
+                                "unfiled-containers/{unfiledContainerId}?{parameters}",
+                                unfiledContainerId,
+                                parameters));
     }
-
 }

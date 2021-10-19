@@ -27,12 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -49,16 +43,22 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Implementation for Java backed webscript to get RM custom references for a node.
  *
  * @author Neil McErlean
  * @author Tuna Aksoy
  */
-public class CustomRefsGet extends AbstractRmWebScript
-{
+public class CustomRefsGet extends AbstractRmWebScript {
     /** Constants */
     private static final String REFERENCE_TYPE = "referenceType";
+
     private static final String REF_ID = "refId";
     private static final String LABEL = "label";
     private static final String SOURCE = "source";
@@ -83,8 +83,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      *
      * @return The relationship service instance
      */
-    protected RelationshipService getRelationshipService()
-    {
+    protected RelationshipService getRelationshipService() {
         return this.relationshipService;
     }
 
@@ -93,8 +92,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      *
      * @param relationshipService The relationship service instance
      */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
+    public void setRelationshipService(RelationshipService relationshipService) {
         this.relationshipService = relationshipService;
     }
 
@@ -103,8 +101,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      *
      * @return The capability service instance
      */
-    protected CapabilityService getCapabilityService()
-    {
+    protected CapabilityService getCapabilityService() {
         return this.capabilityService;
     }
 
@@ -113,19 +110,18 @@ public class CustomRefsGet extends AbstractRmWebScript
      *
      * @param capabilityService Capability service instance
      */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
+    public void setCapabilityService(CapabilityService capabilityService) {
         this.capabilityService = capabilityService;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         Map<String, Object> model = new HashMap<>(4);
         NodeRef nodeRef = parseRequestForNodeRef(req);
         model.put(NODE_NAME, getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME));
@@ -141,8 +137,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      * @param nodeRef Node reference
      * @return All the references that come 'out' from this node
      */
-    private List<Map<String, String>> getOutwardReferences(NodeRef nodeRef)
-    {
+    private List<Map<String, String>> getOutwardReferences(NodeRef nodeRef) {
         List<Map<String, String>> outwardReferenceData = new ArrayList<>();
         Set<Relationship> relationships = getRelationshipService().getRelationshipsFrom(nodeRef);
         outwardReferenceData.addAll(getRelationshipData(relationships));
@@ -155,8 +150,7 @@ public class CustomRefsGet extends AbstractRmWebScript
      * @param nodeRef Node reference
      * @return All the references that come 'in' to this node
      */
-    private List<Map<String, String>> getInwardReferenceData(NodeRef nodeRef)
-    {
+    private List<Map<String, String>> getInwardReferenceData(NodeRef nodeRef) {
         List<Map<String, String>> inwardReferenceData = new ArrayList<>();
         Set<Relationship> relationships = getRelationshipService().getRelationshipsTo(nodeRef);
         inwardReferenceData.addAll(getRelationshipData(relationships));
@@ -169,44 +163,35 @@ public class CustomRefsGet extends AbstractRmWebScript
      * @param relationships The relationships
      * @return The relationship data
      */
-    private List<Map<String, String>> getRelationshipData(Set<Relationship> relationships)
-    {
+    private List<Map<String, String>> getRelationshipData(Set<Relationship> relationships) {
         List<Map<String, String>> relationshipData = new ArrayList<>();
 
-        for (Relationship relationship : relationships)
-        {
+        for (Relationship relationship : relationships) {
             String uniqueName = relationship.getUniqueName();
-            RelationshipDefinition relationshipDefinition = getRelationshipService().getRelationshipDefinition(uniqueName);
+            RelationshipDefinition relationshipDefinition =
+                    getRelationshipService().getRelationshipDefinition(uniqueName);
 
             NodeRef source = relationship.getSource();
             NodeRef target = relationship.getTarget();
 
-            if (relationshipDefinition != null && hasView(source) && hasView(target))
-            {
+            if (relationshipDefinition != null && hasView(source) && hasView(target)) {
                 Map<String, String> data = new HashMap<>();
 
                 RelationshipType type = relationshipDefinition.getType();
                 RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
 
-                if (RelationshipType.BIDIRECTIONAL.equals(type))
-                {
+                if (RelationshipType.BIDIRECTIONAL.equals(type)) {
                     data.put(LABEL, displayName.getSourceText());
                     data.put(SOURCE_REF, source.toString());
                     data.put(TARGET_REF, target.toString());
-                }
-                else if (RelationshipType.PARENTCHILD.equals(type))
-                {
+                } else if (RelationshipType.PARENTCHILD.equals(type)) {
                     data.put(SOURCE, displayName.getSourceText());
                     data.put(TARGET, displayName.getTargetText());
                     data.put(PARENT_REF, source.toString());
                     data.put(CHILD_REF, target.toString());
-                }
-                else
-                {
+                } else {
                     StringBuilder sb = new StringBuilder();
-                    sb.append("Unsupported relationship type '")
-                        .append(type)
-                        .append("'.");
+                    sb.append("Unsupported relationship type '").append(type).append("'.");
 
                     throw new WebScriptException(Status.STATUS_BAD_REQUEST, sb.toString());
                 }
@@ -216,7 +201,6 @@ public class CustomRefsGet extends AbstractRmWebScript
 
                 relationshipData.add(data);
             }
-
         }
 
         return relationshipData;
@@ -225,16 +209,16 @@ public class CustomRefsGet extends AbstractRmWebScript
     /**
      * Determines whether the current user has view capabilities on the given node.
      *
-     * @param  nodeRef Node reference
-     * @return boolean <code>true</code> if current user has view capability, <code>false</code> otherwise
+     * @param nodeRef Node reference
+     * @return boolean <code>true</code> if current user has view capability, <code>false</code>
+     *     otherwise
      */
-    private boolean hasView(NodeRef nodeRef)
-    {
+    private boolean hasView(NodeRef nodeRef) {
         boolean result = false;
 
-        Capability viewRecordCapability = getCapabilityService().getCapability(ViewRecordsCapability.NAME);
-        if (AccessStatus.ALLOWED.equals(viewRecordCapability.hasPermission(nodeRef)))
-        {
+        Capability viewRecordCapability =
+                getCapabilityService().getCapability(ViewRecordsCapability.NAME);
+        if (AccessStatus.ALLOWED.equals(viewRecordCapability.hasPermission(nodeRef))) {
             result = true;
         }
 

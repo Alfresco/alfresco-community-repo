@@ -34,75 +34,64 @@ import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
 
 import java.sql.Connection;
 
-public class AlfrescoDefaultSqlSessionFactory extends DefaultSqlSessionFactory
-{
+public class AlfrescoDefaultSqlSessionFactory extends DefaultSqlSessionFactory {
     private final DBMetricsReporter dbMetricsReporter;
 
-    public AlfrescoDefaultSqlSessionFactory(Configuration configuration, DBMetricsReporter dbMetricsReporter)
-    {
+    public AlfrescoDefaultSqlSessionFactory(
+            Configuration configuration, DBMetricsReporter dbMetricsReporter) {
         super(configuration);
         this.dbMetricsReporter = dbMetricsReporter;
     }
 
     @Override
-    public SqlSession openSession()
-    {
+    public SqlSession openSession() {
         SqlSession sqlSession = super.openSession();
         return buildSqlSessionMetricsWrapper(sqlSession);
     }
 
     @Override
-    public SqlSession openSession(boolean autoCommit)
-    {
+    public SqlSession openSession(boolean autoCommit) {
         SqlSession sqlSession = super.openSession(autoCommit);
         return buildSqlSessionMetricsWrapper(sqlSession);
     }
 
     @Override
-    public SqlSession openSession(ExecutorType execType)
-    {
+    public SqlSession openSession(ExecutorType execType) {
         SqlSession sqlSession = super.openSession(execType);
         return buildSqlSessionMetricsWrapper(sqlSession);
     }
 
     @Override
-    public SqlSession openSession(TransactionIsolationLevel level)
-    {
+    public SqlSession openSession(TransactionIsolationLevel level) {
         SqlSession sqlSession = super.openSession(level);
         return buildSqlSessionMetricsWrapper(sqlSession);
     }
 
     @Override
-    public SqlSession openSession(ExecutorType execType, TransactionIsolationLevel level)
-    {
+    public SqlSession openSession(ExecutorType execType, TransactionIsolationLevel level) {
         SqlSession sqlSession = super.openSession(execType, level);
         return buildSqlSessionMetricsWrapper(sqlSession);
     }
 
     @Override
-    public SqlSession openSession(ExecutorType execType, boolean autoCommit)
-    {
+    public SqlSession openSession(ExecutorType execType, boolean autoCommit) {
         SqlSession sqlSession = super.openSession(execType, autoCommit);
         return buildSqlSessionMetricsWrapper(sqlSession);
     }
 
     @Override
-    public SqlSession openSession(Connection connection)
-    {
+    public SqlSession openSession(Connection connection) {
         SqlSession sqlSession = super.openSession(connection);
         return buildSqlSessionMetricsWrapper(sqlSession);
     }
 
     @Override
-    public SqlSession openSession(ExecutorType execType, Connection connection)
-    {
+    public SqlSession openSession(ExecutorType execType, Connection connection) {
         SqlSession sqlSession = super.openSession(execType, connection);
         return buildSqlSessionMetricsWrapper(sqlSession);
     }
 
-    private SqlSession buildSqlSessionMetricsWrapper(SqlSession sqlSession)
-    {
+    private SqlSession buildSqlSessionMetricsWrapper(SqlSession sqlSession) {
         return new SqlSessionMetricsWrapper(sqlSession, dbMetricsReporter);
     }
-
 }

@@ -29,9 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.EVERY_EVENT;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -41,6 +38,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.Map;
+
 /**
  * Add to hold audit event.
  *
@@ -48,11 +48,9 @@ import org.alfresco.service.namespace.QName;
  * @since 3.3
  */
 @BehaviourBean
-public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolicies.OnAddToHoldPolicy
-{
-    /**
-     * Node Service
-     */
+public class AddToHoldAuditEvent extends AuditEvent
+        implements HoldServicePolicies.OnAddToHoldPolicy {
+    /** Node Service */
     private NodeService nodeService;
 
     /**
@@ -60,26 +58,25 @@ public class AddToHoldAuditEvent extends AuditEvent implements HoldServicePolici
      *
      * @param nodeService nodeService to set
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnAddToHoldPolicy#onAddToHold(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnAddToHoldPolicy#onAddToHold(org.alfresco.service.cmr.repository.NodeRef,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    type = "rma:hold",
-                    notificationFrequency = EVERY_EVENT
-            )
-    public void onAddToHold(NodeRef holdNodeRef, NodeRef contentNodeRef)
-    {
-        Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
-        auditProperties.put(ContentModel.PROP_NAME, nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME));
+    @Behaviour(kind = BehaviourKind.CLASS, type = "rma:hold", notificationFrequency = EVERY_EVENT)
+    public void onAddToHold(NodeRef holdNodeRef, NodeRef contentNodeRef) {
+        Map<QName, Serializable> auditProperties =
+                HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
+        auditProperties.put(
+                ContentModel.PROP_NAME,
+                nodeService.getProperty(contentNodeRef, ContentModel.PROP_NAME));
 
-        recordsManagementAuditService.auditEvent(contentNodeRef, getName(), null, auditProperties, true, false);
+        recordsManagementAuditService.auditEvent(
+                contentNodeRef, getName(), null, auditProperties, true, false);
     }
 }

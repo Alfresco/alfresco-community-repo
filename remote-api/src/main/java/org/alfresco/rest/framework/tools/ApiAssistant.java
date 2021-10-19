@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,7 +31,6 @@ import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
 import org.alfresco.rest.framework.core.exceptions.ExceptionResolver;
-import org.alfresco.rest.framework.core.exceptions.QueryParserExceptionResolver;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,39 +56,33 @@ public class ApiAssistant {
 
     /**
      * Determines the api being used from the templateVars
+     *
      * @param templateVars
      * @return Api
      */
-    public static Api determineApi(Map<String, String> templateVars)
-    {
+    public static Api determineApi(Map<String, String> templateVars) {
         String apiScope = templateVars.get("apiScope");
         String apiVersion = templateVars.get("apiVersion");
         String apiName = templateVars.get("apiName");
-        return Api.valueOf(apiName,apiScope,apiVersion);
+        return Api.valueOf(apiName, apiScope, apiVersion);
     }
 
     /**
      * Resolves an exception as a json error.
+     *
      * @param exception
      * @return ErrorResponse
      */
-    public ErrorResponse resolveException(Exception ex)
-    {
+    public ErrorResponse resolveException(Exception ex) {
         ErrorResponse error = null;
-        if (ex instanceof WebScriptException)
-        {
+        if (ex instanceof WebScriptException) {
             error = webScriptExceptionResolver.resolveException((WebScriptException) ex);
-        }
-        else if (ex instanceof QueryParserException)
-        {
+        } else if (ex instanceof QueryParserException) {
             error = queryParserExceptionResolver.resolveException((QueryParserException) ex);
-        }
-        else
-        {
+        } else {
             error = resolver.resolveException(ex);
         }
-        if (error == null)
-        {
+        if (error == null) {
             error = defaultResolver.resolveException(ex);
         }
         return error;
@@ -103,12 +96,13 @@ public class ApiAssistant {
         this.defaultResolver = defaultResolver;
     }
 
-    public void setWebScriptExceptionResolver(ExceptionResolver<WebScriptException> webScriptExceptionResolver) {
+    public void setWebScriptExceptionResolver(
+            ExceptionResolver<WebScriptException> webScriptExceptionResolver) {
         this.webScriptExceptionResolver = webScriptExceptionResolver;
     }
 
-    public void setQueryParserExceptionResolver(ExceptionResolver<QueryParserException> queryParserExceptionResolver)
-    {
+    public void setQueryParserExceptionResolver(
+            ExceptionResolver<QueryParserException> queryParserExceptionResolver) {
         this.queryParserExceptionResolver = queryParserExceptionResolver;
     }
 
@@ -120,16 +114,12 @@ public class ApiAssistant {
         this.jsonHelper = jsonHelper;
     }
 
-    /**
-     * @return null if the code is run in community mode
-     */
-    public RestMetricsReporter getRestMetricsReporter()
-    {
+    /** @return null if the code is run in community mode */
+    public RestMetricsReporter getRestMetricsReporter() {
         return restMetricsReporter;
     }
 
-    public void setRestMetricsReporter(RestMetricsReporter restMetricsReporterImpl)
-    {
+    public void setRestMetricsReporter(RestMetricsReporter restMetricsReporterImpl) {
         this.restMetricsReporter = restMetricsReporterImpl;
     }
 }

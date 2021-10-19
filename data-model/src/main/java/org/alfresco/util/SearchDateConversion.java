@@ -33,35 +33,25 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-/**
- * Moved from Solr4QueryParser
- */
-public class SearchDateConversion
-{
+/** Moved from Solr4QueryParser */
+public class SearchDateConversion {
 
     public static final TimeZone UTC_TIMEZONE = TimeZone.getTimeZone("UTC");
     /**
-     *
      * @param dateString
      * @return Pair<Date, Integer>
      */
-    public static Pair<Date, Integer> parseDateString(String dateString)
-    {
-        try
-        {
+    public static Pair<Date, Integer> parseDateString(String dateString) {
+        try {
             Pair<Date, Integer> result = CachingDateFormat.lenientParse(dateString, Calendar.YEAR);
             return result;
-        } catch (java.text.ParseException e)
-        {
+        } catch (java.text.ParseException e) {
             SimpleDateFormat oldDf = CachingDateFormat.getDateFormat();
-            try
-            {
+            try {
                 Date date = oldDf.parse(dateString);
                 return new Pair<Date, Integer>(date, Calendar.SECOND);
-            } catch (java.text.ParseException ee)
-            {
-                if (dateString.equalsIgnoreCase("min"))
-                {
+            } catch (java.text.ParseException ee) {
+                if (dateString.equalsIgnoreCase("min")) {
                     Calendar cal = Calendar.getInstance(I18NUtil.getLocale());
                     cal.set(Calendar.YEAR, cal.getMinimum(Calendar.YEAR));
                     cal.set(Calendar.DAY_OF_YEAR, cal.getMinimum(Calendar.DAY_OF_YEAR));
@@ -70,11 +60,9 @@ public class SearchDateConversion
                     cal.set(Calendar.SECOND, cal.getMinimum(Calendar.SECOND));
                     cal.set(Calendar.MILLISECOND, cal.getMinimum(Calendar.MILLISECOND));
                     return new Pair<Date, Integer>(cal.getTime(), Calendar.MILLISECOND);
-                } else if (dateString.equalsIgnoreCase("now"))
-                {
+                } else if (dateString.equalsIgnoreCase("now")) {
                     return new Pair<Date, Integer>(new Date(), Calendar.MILLISECOND);
-                } else if (dateString.equalsIgnoreCase("today"))
-                {
+                } else if (dateString.equalsIgnoreCase("today")) {
                     Calendar cal = Calendar.getInstance(I18NUtil.getLocale());
                     cal.setTime(new Date());
                     cal.set(Calendar.HOUR_OF_DAY, cal.getMinimum(Calendar.HOUR_OF_DAY));
@@ -82,8 +70,7 @@ public class SearchDateConversion
                     cal.set(Calendar.SECOND, cal.getMinimum(Calendar.SECOND));
                     cal.set(Calendar.MILLISECOND, cal.getMinimum(Calendar.MILLISECOND));
                     return new Pair<Date, Integer>(cal.getTime(), Calendar.DAY_OF_MONTH);
-                } else if (dateString.equalsIgnoreCase("max"))
-                {
+                } else if (dateString.equalsIgnoreCase("max")) {
                     Calendar cal = Calendar.getInstance(I18NUtil.getLocale());
                     cal.set(Calendar.YEAR, cal.getMaximum(Calendar.YEAR));
                     cal.set(Calendar.DAY_OF_YEAR, cal.getMaximum(Calendar.DAY_OF_YEAR));
@@ -92,8 +79,7 @@ public class SearchDateConversion
                     cal.set(Calendar.SECOND, cal.getMaximum(Calendar.SECOND));
                     cal.set(Calendar.MILLISECOND, cal.getMaximum(Calendar.MILLISECOND));
                     return new Pair<Date, Integer>(cal.getTime(), Calendar.MILLISECOND);
-                } else
-                {
+                } else {
                     return null; // delegate to SOLR date parsing
                 }
             }
@@ -104,12 +90,10 @@ public class SearchDateConversion
      * @param dateAndResolution
      * @return String date
      */
-    public static String getDateEnd(Pair<Date, Integer> dateAndResolution)
-    {
+    public static String getDateEnd(Pair<Date, Integer> dateAndResolution) {
         Calendar cal = Calendar.getInstance(I18NUtil.getLocale());
         cal.setTime(dateAndResolution.getFirst());
-        switch (dateAndResolution.getSecond())
-        {
+        switch (dateAndResolution.getSecond()) {
             case Calendar.YEAR:
                 cal.set(Calendar.MONTH, cal.getActualMaximum(Calendar.MONTH));
             case Calendar.MONTH:
@@ -134,12 +118,10 @@ public class SearchDateConversion
      * @param dateAndResolution
      * @return String date
      */
-    public static String getDateStart(Pair<Date, Integer> dateAndResolution)
-    {
+    public static String getDateStart(Pair<Date, Integer> dateAndResolution) {
         Calendar cal = Calendar.getInstance(I18NUtil.getLocale());
         cal.setTime(dateAndResolution.getFirst());
-        switch (dateAndResolution.getSecond())
-        {
+        switch (dateAndResolution.getSecond()) {
             case Calendar.YEAR:
                 cal.set(Calendar.MONTH, cal.getActualMinimum(Calendar.MONTH));
             case Calendar.MONTH:
@@ -160,18 +142,28 @@ public class SearchDateConversion
         return formatter.format(cal.getTime());
     }
 
-    public static IntervalSet parseDateInterval(IntervalSet theSet, boolean isDate)
-    {
-        if (isDate)
-        {
+    public static IntervalSet parseDateInterval(IntervalSet theSet, boolean isDate) {
+        if (isDate) {
             Pair<Date, Integer> dateAndResolution1 = parseDateString(theSet.getStart());
             Pair<Date, Integer> dateAndResolution2 = parseDateString(theSet.getEnd());
-            String start = dateAndResolution1 == null ? theSet.getStart()
-                        : (theSet.isStartInclusive() ? getDateStart(dateAndResolution1) : getDateEnd(dateAndResolution1));
-            String end = dateAndResolution2 == null ?  theSet.getEnd()
-                        : (theSet.isEndInclusive() ? getDateEnd(dateAndResolution2) : getDateStart(dateAndResolution2));
-            return new IntervalSet(start, end, theSet.getLabel(), theSet.isStartInclusive(), theSet.isEndInclusive());
-
+            String start =
+                    dateAndResolution1 == null
+                            ? theSet.getStart()
+                            : (theSet.isStartInclusive()
+                                    ? getDateStart(dateAndResolution1)
+                                    : getDateEnd(dateAndResolution1));
+            String end =
+                    dateAndResolution2 == null
+                            ? theSet.getEnd()
+                            : (theSet.isEndInclusive()
+                                    ? getDateEnd(dateAndResolution2)
+                                    : getDateStart(dateAndResolution2));
+            return new IntervalSet(
+                    start,
+                    end,
+                    theSet.getLabel(),
+                    theSet.isStartInclusive(),
+                    theSet.isEndInclusive());
         }
         return theSet;
     }

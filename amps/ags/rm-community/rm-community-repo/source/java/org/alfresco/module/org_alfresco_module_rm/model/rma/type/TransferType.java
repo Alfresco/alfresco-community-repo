@@ -27,9 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.integrity.IntegrityException;
@@ -41,6 +38,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import java.io.Serializable;
+import java.util.Map;
+
 /**
  * rma:transfer behaviour bean
  *
@@ -48,61 +48,46 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.6
  */
 @BehaviourBean(defaultType = "rma:transfer")
-public class TransferType extends BaseBehaviourBean 
-                          implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                     NodeServicePolicies.OnUpdatePropertiesPolicy
-{
-    private final static String MSG_ERROR_ADD_CHILD_TO_TRANSFER = "rm.action.create.transfer.child-error-message";
-    private final static String MSG_ERROR_EDIT_TRANSFER_PROPERTIES = "rm.action.transfer-non-editable";
+public class TransferType extends BaseBehaviourBean
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                NodeServicePolicies.OnUpdatePropertiesPolicy {
+    private static final String MSG_ERROR_ADD_CHILD_TO_TRANSFER =
+            "rm.action.create.transfer.child-error-message";
+    private static final String MSG_ERROR_EDIT_TRANSFER_PROPERTIES =
+            "rm.action.transfer-non-editable";
 
     private static final String CREATE_CHILD_BEHAVIOUR_NAME = "onCreateChildAssocsForTransferType";
     private static final String EDIT_PROPERTIES_BEHAVIOUR_NAME = "onEditTransferProperties";
 
-    /**
-     * Disable the behaviours for this transaction
-     *
-     */
-    public void disable()
-    {
+    /** Disable the behaviours for this transaction */
+    public void disable() {
         getBehaviour(CREATE_CHILD_BEHAVIOUR_NAME).disable();
         getBehaviour(EDIT_PROPERTIES_BEHAVIOUR_NAME).disable();
     }
 
-    /**
-     * Enable behaviours for this transaction
-     *
-     */
-    public void enable()
-    {
+    /** Enable behaviours for this transaction */
+    public void enable() {
         getBehaviour(CREATE_CHILD_BEHAVIOUR_NAME).enable();
         getBehaviour(EDIT_PROPERTIES_BEHAVIOUR_NAME).enable();
     }
 
     /**
-     * Prevent creating a node inside transfer folder, this will be possible only through internal services in a controlled manner.
+     * Prevent creating a node inside transfer folder, this will be possible only through internal
+     * services in a controlled manner.
      */
     @Override
-    @Behaviour
-    (
-                kind = BehaviourKind.ASSOCIATION,
-                name = CREATE_CHILD_BEHAVIOUR_NAME
-    )
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
-    {
+    @Behaviour(kind = BehaviourKind.ASSOCIATION, name = CREATE_CHILD_BEHAVIOUR_NAME)
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode) {
         throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_ADD_CHILD_TO_TRANSFER), null);
     }
 
     @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS, 
-            name = EDIT_PROPERTIES_BEHAVIOUR_NAME
-    )
-    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {
-        if(!authenticationUtil.isRunAsUserTheSystemUser())
-        {
-            throw new IntegrityException(I18NUtil.getMessage(MSG_ERROR_EDIT_TRANSFER_PROPERTIES), null);
+    @Behaviour(kind = BehaviourKind.CLASS, name = EDIT_PROPERTIES_BEHAVIOUR_NAME)
+    public void onUpdateProperties(
+            NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after) {
+        if (!authenticationUtil.isRunAsUserTheSystemUser()) {
+            throw new IntegrityException(
+                    I18NUtil.getMessage(MSG_ERROR_EDIT_TRANSFER_PROPERTIES), null);
         }
     }
 }

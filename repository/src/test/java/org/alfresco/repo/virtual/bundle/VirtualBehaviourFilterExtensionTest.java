@@ -26,6 +26,9 @@
 
 package org.alfresco.repo.virtual.bundle;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -37,65 +40,59 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-public class VirtualBehaviourFilterExtensionTest extends VirtualizationIntegrationTest
-{
+public class VirtualBehaviourFilterExtensionTest extends VirtualizationIntegrationTest {
 
     NodeRef virtualNodeRef;
     BehaviourFilter behaviourFilter;
     VirtualStoreImpl smartStore;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         super.setUp();
 
         behaviourFilter = ctx.getBean("policyBehaviourFilter", BehaviourFilter.class);
         smartStore = ctx.getBean("smartStore", VirtualStoreImpl.class);
 
-        NodeRef nodeRef = nodeService.getChildByName(
-                virtualFolder1NodeRef,
-                ContentModel.ASSOC_CONTAINS,
-                "Node1");
+        NodeRef nodeRef =
+                nodeService.getChildByName(
+                        virtualFolder1NodeRef, ContentModel.ASSOC_CONTAINS, "Node1");
 
-        virtualNodeRef = createContent(
-                nodeRef,
-                "actualContentName",
-                "0",
-                MimetypeMap.MIMETYPE_TEXT_PLAIN,
-                "UTF-8").getChildRef();
+        virtualNodeRef =
+                createContent(
+                                nodeRef,
+                                "actualContentName",
+                                "0",
+                                MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                                "UTF-8")
+                        .getChildRef();
     }
 
     @After
-    public void tearDown() throws Exception
-    {
+    public void tearDown() throws Exception {
         super.tearDown();
     }
 
-    /**
-     * Checks the aspect auditable is enabled when asking for both actual and virtual nodes
-     */
+    /** Checks the aspect auditable is enabled when asking for both actual and virtual nodes */
     @Test
-    public void auditableAspectOfActualNodesShouldBeEnableByDefault()
-    {
+    public void auditableAspectOfActualNodesShouldBeEnableByDefault() {
         NodeRef actualNodeRef = smartStore.materialize(Reference.fromNodeRef(virtualNodeRef));
 
-        assertTrue("The auditable aspect for the actual node must be enabled by default",
+        assertTrue(
+                "The auditable aspect for the actual node must be enabled by default",
                 behaviourFilter.isEnabled(actualNodeRef, ContentModel.ASPECT_AUDITABLE));
 
-        assertTrue("The auditable aspect must be enabled by default even when the virtual node is used",
+        assertTrue(
+                "The auditable aspect must be enabled by default even when the virtual node is"
+                        + " used",
                 behaviourFilter.isEnabled(virtualNodeRef, ContentModel.ASPECT_AUDITABLE));
     }
 
-    /**
-     * Checks the disabling for a specific aspect
-     */
+    /** Checks the disabling for a specific aspect */
     @Test
-    public void shouldDisbaleAuditableAspectForTheActualNode()
-    {
-        assertTrue("The auditable aspect must be enabled by default even when the virtual node is used, since it hasn't been disabled yet",
+    public void shouldDisbaleAuditableAspectForTheActualNode() {
+        assertTrue(
+                "The auditable aspect must be enabled by default even when the virtual node is"
+                        + " used, since it hasn't been disabled yet",
                 behaviourFilter.isEnabled(virtualNodeRef, ContentModel.ASPECT_AUDITABLE));
 
         NodeRef actualNodeRef = smartStore.materialize(Reference.fromNodeRef(virtualNodeRef));
@@ -103,27 +100,30 @@ public class VirtualBehaviourFilterExtensionTest extends VirtualizationIntegrati
         // Disable the aspect auditable using the virtual node
         behaviourFilter.disableBehaviour(virtualNodeRef, ContentModel.ASPECT_AUDITABLE);
 
-        assertFalse("The auditable aspect for the actual node must not be enable since it has been disabled",
+        assertFalse(
+                "The auditable aspect for the actual node must not be enable since it has been"
+                        + " disabled",
                 behaviourFilter.isEnabled(actualNodeRef, ContentModel.ASPECT_AUDITABLE));
     }
 
-    /**
-     * Checks the disabling for the entire node
-     */
+    /** Checks the disabling for the entire node */
     @Test
-    public void shouldDisableTheActualNode()
-    {
-        assertTrue("The node must be enabled by default even when the virtual node is used, since it hasn't been disabled yet",
+    public void shouldDisableTheActualNode() {
+        assertTrue(
+                "The node must be enabled by default even when the virtual node is used, since it"
+                        + " hasn't been disabled yet",
                 behaviourFilter.isEnabled(virtualNodeRef));
 
         NodeRef actualNodeRef = smartStore.materialize(Reference.fromNodeRef(virtualNodeRef));
-        assertTrue("The actual node must be enable since it hasn't been disabled yet",
+        assertTrue(
+                "The actual node must be enable since it hasn't been disabled yet",
                 behaviourFilter.isEnabled(actualNodeRef));
 
         // Disabling the aspect auditable for the virtual node
         behaviourFilter.disableBehaviour(virtualNodeRef);
 
-        assertFalse("The actual node must not be enable since it has been disabled",
+        assertFalse(
+                "The actual node must not be enable since it has been disabled",
                 behaviourFilter.isEnabled(actualNodeRef));
     }
 }

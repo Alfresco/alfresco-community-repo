@@ -40,10 +40,10 @@ import org.json.JSONObject;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class CustomReferenceDefinitionBase extends AbstractRmWebScript
-{
+public class CustomReferenceDefinitionBase extends AbstractRmWebScript {
     /** Constants for the custom reference definition classes */
     protected static final String REFERENCE_TYPE = "referenceType";
+
     protected static final String REF_ID = "refId";
     protected static final String LABEL = "label";
     protected static final String SOURCE = "source";
@@ -59,8 +59,7 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
      *
      * @return The relationship service instance
      */
-    protected RelationshipService getRelationshipService()
-    {
+    protected RelationshipService getRelationshipService() {
         return this.relationshipService;
     }
 
@@ -69,8 +68,7 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
      *
      * @param relationshipService The relationship service instance
      */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
+    public void setRelationshipService(RelationshipService relationshipService) {
         this.relationshipService = relationshipService;
     }
 
@@ -80,20 +78,16 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
      * @param requestContent The request content as json object
      * @return The relationship display name
      */
-    protected RelationshipDisplayName createDisplayName(JSONObject requestContent)
-    {
+    protected RelationshipDisplayName createDisplayName(JSONObject requestContent) {
         String sourceText;
         String targetText;
 
         String labelText = getStringValueFromJSONObject(requestContent, LABEL, false, false);
 
-        if (isBlank(labelText))
-        {
+        if (isBlank(labelText)) {
             sourceText = getStringValueFromJSONObject(requestContent, SOURCE);
             targetText = getStringValueFromJSONObject(requestContent, TARGET);
-        }
-        else
-        {
+        } else {
             sourceText = labelText;
             targetText = labelText;
         }

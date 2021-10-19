@@ -37,16 +37,15 @@ import org.aopalliance.intercept.MethodInvocation;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ReadPolicy extends AbstractBasePolicy
-{
+public class ReadPolicy extends AbstractBasePolicy {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate(
-            MethodInvocation invocation,
-            Class[] params,
-            ConfigAttributeDefinition cad)
-    {
-        NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return getCapabilityService().getCapability(ViewRecordsCapability.NAME).evaluate(testNodeRef);
+    public int evaluate(
+            MethodInvocation invocation, Class[] params, ConfigAttributeDefinition cad) {
+        NodeRef testNodeRef =
+                getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
+        return getCapabilityService()
+                .getCapability(ViewRecordsCapability.NAME)
+                .evaluate(testNodeRef);
     }
 }

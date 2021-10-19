@@ -53,54 +53,52 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Silviu Dinuta
  * @since 2.6
  */
-@EntityResource(name="transfer-containers", title = "Transfer Containers")
-public class TransferContainerEntityResource implements
-        EntityResourceAction.ReadById<TransferContainer>,
-        EntityResourceAction.Update<TransferContainer>,
-        InitializingBean
-{
+@EntityResource(name = "transfer-containers", title = "Transfer Containers")
+public class TransferContainerEntityResource
+        implements EntityResourceAction.ReadById<TransferContainer>,
+                EntityResourceAction.Update<TransferContainer>,
+                InitializingBean {
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
         this.apiUtils = apiUtils;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
         this.nodesModelFactory = nodesModelFactory;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         mandatory("apiUtils", apiUtils);
         mandatory("fileFolderService", fileFolderService);
         mandatory("apiNodesModelFactory", nodesModelFactory);
     }
 
-    @WebApiDescription(title = "Get transfer container information", description = "Gets information for a transfer container with id 'transferContainerId'")
+    @WebApiDescription(
+            title = "Get transfer container information",
+            description = "Gets information for a transfer container with id 'transferContainerId'")
     @WebApiParam(name = "transferContainerId", title = "The transfer container id")
     @Override
-    public TransferContainer readById(String transferContainerId, Parameters parameters) throws EntityNotFoundException
-    {
+    public TransferContainer readById(String transferContainerId, Parameters parameters)
+            throws EntityNotFoundException {
         checkNotBlank("transferContainerId", transferContainerId);
         mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
 
@@ -108,34 +106,42 @@ public class TransferContainerEntityResource implements
     }
 
     @Override
-    @WebApiDescription(title="Update transfer container", description = "Updates a transfer container with id 'transferContainerId'")
-    public TransferContainer update(String transferContainerId, TransferContainer transferContainerInfo, Parameters parameters)
-    {
+    @WebApiDescription(
+            title = "Update transfer container",
+            description = "Updates a transfer container with id 'transferContainerId'")
+    public TransferContainer update(
+            String transferContainerId,
+            TransferContainer transferContainerInfo,
+            Parameters parameters) {
         checkNotBlank("transferContainerId", transferContainerId);
         mandatory("transferContainerInfo", transferContainerInfo);
         mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
 
         // update info
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateTransferContainer(nodeRef, transferContainerInfo, parameters);
-                return null;
-            }
-        };
+        RetryingTransactionCallback<Void> callback =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() {
+                        apiUtils.updateTransferContainer(
+                                nodeRef, transferContainerInfo, parameters);
+                        return null;
+                    }
+                };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+        RetryingTransactionCallback<FileInfo> readCallback =
+                new RetryingTransactionCallback<FileInfo>() {
+                    public FileInfo execute() {
+                        return fileFolderService.getFileInfo(nodeRef);
+                    }
+                };
+        FileInfo info =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(readCallback, false, true);
 
         return nodesModelFactory.createTransferContainer(info, parameters, null, false);
     }

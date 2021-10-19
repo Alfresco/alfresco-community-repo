@@ -31,246 +31,220 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 
 /**
  * Helper class that provides an simple way to write behaviour integration tests.
- * <p>
- * Note that initBehaviourTest() must be called before given() is called.
- * 
+ *
+ * <p>Note that initBehaviourTest() must be called before given() is called.
+ *
  * @author Roy Wetherall
  * @since 2.5
  */
-public class BehaviourTest
-{
+public class BehaviourTest {
     /** retrying transaction helper */
     private static RetryingTransactionHelper retryingTransactionHelper;
-    
+
     /** current execution user */
     private String asUser = AuthenticationUtil.getAdminUserName();
-    
+
     /**
      * Initialise behaviour tests for execution with retrying transaction helper
-     * 
+     *
      * @param retryingTransactionHelper retrying transaction helper
      */
-    public static void initBehaviourTests(RetryingTransactionHelper retryingTransactionHelper)
-    {
+    public static void initBehaviourTests(RetryingTransactionHelper retryingTransactionHelper) {
         BehaviourTest.retryingTransactionHelper = retryingTransactionHelper;
     }
 
     /**
      * Start a test
-     * 
-     * @return  BehaviourTest   new test instance
+     *
+     * @return BehaviourTest new test instance
      */
-    public static BehaviourTest test()
-    {
+    public static BehaviourTest test() {
         return new BehaviourTest();
     }
-    
+
     /**
      * Helper method to get the retrying transaction helper
-     * 
-     * @return  RetryingTransactionHelper   retrying transaction helper
+     *
+     * @return RetryingTransactionHelper retrying transaction helper
      */
-    /*package*/ RetryingTransactionHelper getRetryingTransactionHelper()
-    {
+    /*package*/ RetryingTransactionHelper getRetryingTransactionHelper() {
         return retryingTransactionHelper;
     }
-    
+
     /**
      * Helper method to get the execution user
-     * 
-     * @return  String  execution user
+     *
+     * @return String execution user
      */
-    /* package*/ String getAsUser()
-    {
+    /* package*/ String getAsUser() {
         return asUser;
     }
-    
+
     /**
      * Helper method to switch the current execution user to admin.
-     * 
-     * @return  BehaviourTest   test instance
+     *
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest asAdmin()
-    {
+    public BehaviourTest asAdmin() {
         return as(AuthenticationUtil.getAdminUserName());
     }
-    
+
     /**
      * Set execution user
-     * 
-     * @param asUser            execution user
-     * @return BehaviourTest    test instance
+     *
+     * @param asUser execution user
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest as(String asUser)
-    {
+    public BehaviourTest as(String asUser) {
         this.asUser = asUser;
         return this;
     }
-    
+
     /**
      * Given.
-     * <p>
-     * Used to group together given conditions.
-     * 
-     * @return  BehaviourTest   test instance  
+     *
+     * <p>Used to group together given conditions.
+     *
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest given()
-    {
+    public BehaviourTest given() {
         return this;
     }
-    
+
     /**
      * Given.
-     * <p>
-     * Performs work.
-     * 
-     * @param given             work to do
-     * @return BehaviourTest    test instance
+     *
+     * <p>Performs work.
+     *
+     * @param given work to do
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest given(Work given)
-    {
+    public BehaviourTest given(Work given) {
         return perform(given);
     }
-    
+
     /**
      * When.
-     * <p>
-     * Used to group together when actions.
-     * 
-     * @return BehaviourTest    test instance
+     *
+     * <p>Used to group together when actions.
+     *
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest when()
-    {
+    public BehaviourTest when() {
         return this;
     }
-    
+
     /**
      * When.
-     * <p>
-     * Performs work.
-     * 
-     * @param when              work to do
-     * @return BehaviourTest    test instance
+     *
+     * <p>Performs work.
+     *
+     * @param when work to do
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest when(Work when) 
-    {
+    public BehaviourTest when(Work when) {
         return perform(when);
     }
-    
+
     /**
      * Then.
-     * <p>
-     * Used to group together then actions.
-     * 
-     * @return BehaviourTest    test instance
+     *
+     * <p>Used to group together then actions.
+     *
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest then()
-    {
+    public BehaviourTest then() {
         return this;
     }
-    
+
     /**
      * Then.
-     * <p>
-     * Performs work.
-     * 
-     * @param then              work to do
-     * @return BehaviourTest    test instance
+     *
+     * <p>Performs work.
+     *
+     * @param then work to do
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest then(Work then)
-    {
-        return perform(then);        
+    public BehaviourTest then(Work then) {
+        return perform(then);
     }
 
     /**
      * Expect a value.
-     * 
-     * @param value             value
-     * @return ExpectedValue    expected value evaluator
+     *
+     * @param value value
+     * @return ExpectedValue expected value evaluator
      */
-    public ExpectedValue<Boolean> expect(boolean value)
-    {
-        return new ExpectedValue<>(this, value);
-    }
-    
-    /**
-     * Expect a value.
-     * 
-     * @param value             value
-     * @return ExpectedValue    expected value evaluator
-     */
-    public ExpectedValue<String> expect(String value)
-    {
-        return new ExpectedValue<>(this, value);
-    }
-    
-    /**
-     * Expect a value.
-     * 
-     * @param value             value
-     * @return ExpectedValue    expected value evaluator
-     */
-    public ExpectedValue<Object> expect(Object value)
-    {
+    public ExpectedValue<Boolean> expect(boolean value) {
         return new ExpectedValue<>(this, value);
     }
 
-    
+    /**
+     * Expect a value.
+     *
+     * @param value value
+     * @return ExpectedValue expected value evaluator
+     */
+    public ExpectedValue<String> expect(String value) {
+        return new ExpectedValue<>(this, value);
+    }
+
+    /**
+     * Expect a value.
+     *
+     * @param value value
+     * @return ExpectedValue expected value evaluator
+     */
+    public ExpectedValue<Object> expect(Object value) {
+        return new ExpectedValue<>(this, value);
+    }
+
     /**
      * Expect a failure.
-     * 
-     * @param exceptionClass    expected exception
-     * @return ExpectedFailure  expected failure evaluator
+     *
+     * @param exceptionClass expected exception
+     * @return ExpectedFailure expected failure evaluator
      */
-    public ExpectedFailure expectException(Class<? extends Exception> exceptionClass)
-    {
+    public ExpectedFailure expectException(Class<? extends Exception> exceptionClass) {
         return new ExpectedFailure(this, exceptionClass);
     }
-    
+
     /**
      * Perform work a number of times
-     * 
-     * @param count           number of times to perform the work
-     * @param work            work to perform
-     * @return BehaviourTest  test instance  
+     *
+     * @param count number of times to perform the work
+     * @param work work to perform
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest perform(int count, Work work)
-    {
-        for (int i = 0; i < count; i++)
-        {
+    public BehaviourTest perform(int count, Work work) {
+        for (int i = 0; i < count; i++) {
             perform(work);
         }
-        
+
         return this;
     }
-    
+
     /**
      * Perform work
-     * 
-     * @param work            work to perform
-     * @return BehaviourTest  test instance  
+     *
+     * @param work work to perform
+     * @return BehaviourTest test instance
      */
-    public BehaviourTest perform(Work work)
-    {
-        return AuthenticationUtil.runAs(() -> 
-        {
-            return retryingTransactionHelper.doInTransaction(() -> 
-            {
-                work.doIt();                
-                return this;
-            });
-        },
-        this.asUser);  
+    public BehaviourTest perform(Work work) {
+        return AuthenticationUtil.runAs(
+                () -> {
+                    return retryingTransactionHelper.doInTransaction(
+                            () -> {
+                                work.doIt();
+                                return this;
+                            });
+                },
+                this.asUser);
     }
-    
-    /**
-     * Work Interface
-     */
-    public interface Work
-    {
-        /**
-         * Do the work.
-         */
+
+    /** Work Interface */
+    public interface Work {
+        /** Do the work. */
         void doIt() throws Exception;
     }
 }

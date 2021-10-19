@@ -4,35 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.search.impl.solr;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.util.HashMap;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.repo.search.QueryParserException;
@@ -53,151 +44,129 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-/**
- * @author Andy
- */
-public class SolrAdminHTTPClient
-{
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+
+import javax.servlet.http.HttpServletResponse;
+
+/** @author Andy */
+public class SolrAdminHTTPClient {
     static Log s_logger = LogFactory.getLog(SolrAdminHTTPClient.class);
 
     private String adminUrl;
-    
+
     private String baseUrl;
 
     private HttpClient httpClient;
-	private HttpClientFactory httpClientFactory;
-	
-    public SolrAdminHTTPClient()
-    {
-    }
+    private HttpClientFactory httpClientFactory;
 
-    
-    public void setBaseUrl(String baseUrl)
-    {
+    public SolrAdminHTTPClient() {}
+
+    public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
     }
 
-    public void init()
-    {
+    public void init() {
         ParameterCheck.mandatory("baseUrl", baseUrl);
-        
-    	StringBuilder sb = new StringBuilder();
-    	sb.append(baseUrl + "/admin/cores");
-    	this.adminUrl = sb.toString();
 
-    	httpClient = httpClientFactory.getHttpClient();
-    	HttpClientParams params = httpClient.getParams();
-    	params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
-    	httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
+        StringBuilder sb = new StringBuilder();
+        sb.append(baseUrl + "/admin/cores");
+        this.adminUrl = sb.toString();
+
+        httpClient = httpClientFactory.getHttpClient();
+        HttpClientParams params = httpClient.getParams();
+        params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
+        httpClient
+                .getState()
+                .setCredentials(
+                        new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT),
+                        new UsernamePasswordCredentials("admin", "admin"));
     }
 
-    public void setHttpClientFactory(HttpClientFactory httpClientFactory)
-	{
-		this.httpClientFactory = httpClientFactory;
-	}
+    public void setHttpClientFactory(HttpClientFactory httpClientFactory) {
+        this.httpClientFactory = httpClientFactory;
+    }
 
-    public JSONObject execute(HashMap<String, String> args)
-    {
+    public JSONObject execute(HashMap<String, String> args) {
         return execute(adminUrl, args);
     }
 
-    public JSONObject execute(String relativeHandlerPath, HashMap<String, String> args)
-    {
+    public JSONObject execute(String relativeHandlerPath, HashMap<String, String> args) {
         ParameterCheck.mandatory("relativeHandlerPath", relativeHandlerPath);
         ParameterCheck.mandatory("args", args);
 
         String path = getPath(relativeHandlerPath);
-        try
-        {
+        try {
             URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
 
-            for (String key : args.keySet())
-            {
+            for (String key : args.keySet()) {
                 String value = args.get(key);
-                if (url.length() == 0)
-                {
+                if (url.length() == 0) {
                     url.append(path);
                     url.append("?");
                     url.append(encoder.encode(key, "UTF-8"));
                     url.append("=");
                     url.append(encoder.encode(value, "UTF-8"));
-                }
-                else
-                {
+                } else {
                     url.append("&");
                     url.append(encoder.encode(key, "UTF-8"));
                     url.append("=");
                     url.append(encoder.encode(value, "UTF-8"));
                 }
-
             }
 
             // PostMethod post = new PostMethod(url.toString());
             GetMethod get = new GetMethod(url.toString());
 
-            try
-            {
+            try {
                 httpClient.executeMethod(get);
 
-                if (get.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || get.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
-                {
+                if (get.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY
+                        || get.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY) {
                     Header locationHeader = get.getResponseHeader("location");
-                    if (locationHeader != null)
-                    {
+                    if (locationHeader != null) {
                         String redirectLocation = locationHeader.getValue();
                         get.setURI(new URI(redirectLocation, true));
                         httpClient.executeMethod(get);
                     }
                 }
 
-                if (get.getStatusCode() != HttpServletResponse.SC_OK)
-                {
-                    throw new QueryParserException("Request failed " + get.getStatusCode() + " " + url.toString());
+                if (get.getStatusCode() != HttpServletResponse.SC_OK) {
+                    throw new QueryParserException(
+                            "Request failed " + get.getStatusCode() + " " + url.toString());
                 }
 
-                Reader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream()));
+                Reader reader =
+                        new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream()));
                 // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
                 JSONObject json = new JSONObject(new JSONTokener(reader));
                 return json;
-            }
-            finally
-            {
+            } finally {
                 get.releaseConnection();
             }
-        }
-        catch (UnsupportedEncodingException e)
-        {
+        } catch (UnsupportedEncodingException e) {
             throw new QueryParserException("", e);
-        }
-        catch (HttpException e)
-        {
+        } catch (HttpException e) {
             throw new QueryParserException("", e);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             throw new QueryParserException("", e);
-        }
-        catch (JSONException e)
-        {
+        } catch (JSONException e) {
             throw new QueryParserException("", e);
         }
     }
 
-    private String getPath(String path)
-    {
-        if (path.startsWith(baseUrl))
-        {
+    private String getPath(String path) {
+        if (path.startsWith(baseUrl)) {
             return path;
-        }
-        else if (path.startsWith("/"))
-        {
+        } else if (path.startsWith("/")) {
             return baseUrl + path;
-        }
-        else
-        {
+        } else {
             return baseUrl + '/' + path;
         }
     }
-
 }

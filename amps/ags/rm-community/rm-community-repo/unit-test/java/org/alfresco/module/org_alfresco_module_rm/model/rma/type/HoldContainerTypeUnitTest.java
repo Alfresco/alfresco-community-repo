@@ -44,21 +44,19 @@ import org.mockito.InjectMocks;
  * @author Mihai Cozma
  * @since 2.4
  */
-public class HoldContainerTypeUnitTest extends BaseUnitTest
-{
+public class HoldContainerTypeUnitTest extends BaseUnitTest {
     /** test object */
     private @InjectMocks HoldContainerType holdContainerType;
 
     /**
-     * Given that we try to add a non "rma:hold" type to hold container,
-     * Then IntegrityException is thrown.
+     * Given that we try to add a non "rma:hold" type to hold container, Then IntegrityException is
+     * thrown.
      */
-    @Test (expected = IntegrityException.class)
-    public void testAddNonHoldTypeToHoldContainer()
-    {
+    @Test(expected = IntegrityException.class)
+    public void testAddNonHoldTypeToHoldContainer() {
         QName type = AlfMock.generateQName();
         when(mockedNodeTypeUtility.instanceOf(type, TYPE_HOLD)).thenReturn(false);
-        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
@@ -68,15 +66,13 @@ public class HoldContainerTypeUnitTest extends BaseUnitTest
     }
 
     /**
-     * Given that we try to add "rma:hold" type to hold container,
-     * Then the operation is successful.
+     * Given that we try to add "rma:hold" type to hold container, Then the operation is successful.
      */
     @Test
-    public void testAddHoldTypeToHoldContainer()
-    {
+    public void testAddHoldTypeToHoldContainer() {
         QName type = AlfMock.generateQName();
         when(mockedNodeTypeUtility.instanceOf(type, TYPE_HOLD)).thenReturn(true);
-        NodeRef holdFolder= AlfMock.generateNodeRef(mockedNodeService, type);
+        NodeRef holdFolder = AlfMock.generateNodeRef(mockedNodeService, type);
 
         NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
         ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);

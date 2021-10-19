@@ -33,11 +33,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forum.CommentService;
 import org.alfresco.rest.api.Nodes;
@@ -53,13 +48,17 @@ import org.alfresco.util.TypeConstraint;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Unit tests for {@link CommentsImpl} class.
  *
  * @author Chris Shields
  */
-public class CommentsImplUnitTest
-{
+public class CommentsImplUnitTest {
     private CommentsImpl commentsImpl;
     private Nodes nodes;
     private TypeConstraint typeConstraint;
@@ -67,9 +66,9 @@ public class CommentsImplUnitTest
     private NodeService nodeService;
     private ContentService contentService;
     private People people;
-    
+
     @Before
-    public void setUp(){
+    public void setUp() {
         commentsImpl = new CommentsImpl();
         nodes = mock(Nodes.class);
         typeConstraint = mock(TypeConstraint.class);
@@ -87,8 +86,7 @@ public class CommentsImplUnitTest
     }
 
     @Test
-    public void createComment()
-    {
+    public void createComment() {
         String nodeId = "node-id";
         Comment comment = new Comment();
         NodeRef nodeRef = new NodeRef("protocol", "identifier", "id");
@@ -100,7 +98,7 @@ public class CommentsImplUnitTest
         Map<QName, Serializable> nodeProps = new HashMap<>();
         nodeProps.put(ContentModel.PROP_CREATOR, "user1");
         nodeProps.put(ContentModel.PROP_MODIFIER, "user2");
-        
+
         Person person1 = new Person();
         person1.setUserName("user1");
         person1.setEmail("user1@alfresco.com");
@@ -110,9 +108,11 @@ public class CommentsImplUnitTest
 
         when(nodes.validateNode(nodeId)).thenReturn(nodeRef);
         when(typeConstraint.matches(nodeRef)).thenReturn(true);
-        when(commentService.createComment(nodeRef, comment.getTitle(), comment.getContent(), false)).thenReturn(commentNode);
+        when(commentService.createComment(nodeRef, comment.getTitle(), comment.getContent(), false))
+                .thenReturn(commentNode);
         when(nodeService.getProperties(commentNode)).thenReturn(nodeProps);
-        when(commentService.getCommentPermissions(any(NodeRef.class), any(NodeRef.class))).thenReturn(map);
+        when(commentService.getCommentPermissions(any(NodeRef.class), any(NodeRef.class)))
+                .thenReturn(map);
         when(people.getPerson(eq("user1"), any(List.class))).thenReturn(person1);
         when(people.getPerson(eq("user2"), any(List.class))).thenReturn(person2);
 
@@ -128,8 +128,8 @@ public class CommentsImplUnitTest
     }
 
     @Test
-    public void testCreateCommentForDeletedUser(){
-        
+    public void testCreateCommentForDeletedUser() {
+
         String nodeId = "node-id";
         Comment comment = new Comment();
         NodeRef nodeRef = new NodeRef("protocol", "identifier", "id");
@@ -137,21 +137,25 @@ public class CommentsImplUnitTest
         Map<String, Boolean> map = new HashMap<>();
         map.put(CommentService.CAN_EDIT, true);
         map.put(CommentService.CAN_DELETE, true);
-        
+
         Map<QName, Serializable> nodeProps = new HashMap<>();
         nodeProps.put(ContentModel.PROP_CREATOR, "user1");
         nodeProps.put(ContentModel.PROP_MODIFIER, "user2");
 
         when(nodes.validateNode(nodeId)).thenReturn(nodeRef);
         when(typeConstraint.matches(nodeRef)).thenReturn(true);
-        when(commentService.createComment(nodeRef, comment.getTitle(), comment.getContent(), false)).thenReturn(commentNode);
+        when(commentService.createComment(nodeRef, comment.getTitle(), comment.getContent(), false))
+                .thenReturn(commentNode);
         when(nodeService.getProperties(commentNode)).thenReturn(nodeProps);
-        when(commentService.getCommentPermissions(any(NodeRef.class), any(NodeRef.class))).thenReturn(map);
-        when(people.getPerson(eq("user1"), any(List.class))).thenThrow(EntityNotFoundException.class);
-        when(people.getPerson(eq("user2"), any(List.class))).thenThrow(EntityNotFoundException.class);
+        when(commentService.getCommentPermissions(any(NodeRef.class), any(NodeRef.class)))
+                .thenReturn(map);
+        when(people.getPerson(eq("user1"), any(List.class)))
+                .thenThrow(EntityNotFoundException.class);
+        when(people.getPerson(eq("user2"), any(List.class)))
+                .thenThrow(EntityNotFoundException.class);
 
         Comment resultComment = commentsImpl.createComment(nodeId, comment);
-        
+
         assertNotNull(resultComment);
         assertNotNull(resultComment.getCreatedBy());
         assertEquals("user1", resultComment.getCreatedBy().getUserName());

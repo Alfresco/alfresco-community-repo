@@ -18,57 +18,50 @@
  */
 package org.alfresco.config;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.util.DefaultPropertiesPersister;
+import org.springframework.util.StringUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.util.DefaultPropertiesPersister;
-import org.springframework.util.StringUtils;
-
 /**
- * Simple extension to the{@link DefaultPropertiesPersister} to strip trailing whitespace 
- * from incoming properties. 
- * 
+ * Simple extension to the{@link DefaultPropertiesPersister} to strip trailing whitespace from
+ * incoming properties.
+ *
  * @author shane frensley
  * @see org.springframework.util.DefaultPropertiesPersister
  */
-public class AlfrescoPropertiesPersister extends DefaultPropertiesPersister 
-{
-    
+public class AlfrescoPropertiesPersister extends DefaultPropertiesPersister {
+
     private static Log logger = LogFactory.getLog(AlfrescoPropertiesPersister.class);
 
     @Override
-    public void load(Properties props, InputStream is) throws IOException 
-    {
+    public void load(Properties props, InputStream is) throws IOException {
         super.load(props, is);
         strip(props);
     }
-    
+
     @Override
-    public void load(Properties props, Reader reader) throws IOException 
-    {
+    public void load(Properties props, Reader reader) throws IOException {
         super.load(props, reader);
         strip(props);
     }
-    
-    public void loadFromXml(Properties props, InputStream is) throws IOException 
-    {
+
+    public void loadFromXml(Properties props, InputStream is) throws IOException {
         super.loadFromXml(props, is);
         strip(props);
     }
-    
-    private void strip(Properties props) 
-    {
-        for (Enumeration<Object> keys = props.keys(); keys.hasMoreElements();) 
-        {
+
+    private void strip(Properties props) {
+        for (Enumeration<Object> keys = props.keys(); keys.hasMoreElements(); ) {
             String key = (String) keys.nextElement();
             String val = StringUtils.trimTrailingWhitespace(props.getProperty(key));
-            if (logger.isTraceEnabled()) 
-            {
+            if (logger.isTraceEnabled()) {
                 logger.trace("Trimmed trailing whitespace for property " + key + " = " + val);
             }
             props.setProperty(key, val);

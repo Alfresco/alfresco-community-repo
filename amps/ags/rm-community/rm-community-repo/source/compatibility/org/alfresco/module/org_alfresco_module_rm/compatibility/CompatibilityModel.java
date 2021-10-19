@@ -35,8 +35,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Roy Wetherall
  */
-public interface CompatibilityModel extends DOD5015Model
-{
+public interface CompatibilityModel extends DOD5015Model {
     // Record series DOD type
     QName TYPE_RECORD_SERIES = QName.createQName(DOD_URI, "recordSeries");
 

@@ -42,8 +42,7 @@ import org.alfresco.service.cmr.repository.NodeService;
  * @since 2.1
  */
 @BehaviourBean
-public class LinkToAuditEvent extends AuditEvent implements OnCreateChildAssociationPolicy
-{
+public class LinkToAuditEvent extends AuditEvent implements OnCreateChildAssociationPolicy {
     /** Node Service */
     private NodeService nodeService;
 
@@ -52,30 +51,24 @@ public class LinkToAuditEvent extends AuditEvent implements OnCreateChildAssocia
      *
      * @param nodeService nodeService to set
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef,
+     *     boolean)
      */
     @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.ASSOCIATION,
-            type = "rma:filePlanComponent"
-    )
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
-    {
+    @Behaviour(kind = BehaviourKind.ASSOCIATION, type = "rma:filePlanComponent")
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode) {
         final NodeRef parentRef = childAssocRef.getParentRef();
         // only care about linking child associations
-        if (!childAssocRef.isPrimary() && !nodeService.getType(parentRef).equals(TYPE_HOLD))
-        {
+        if (!childAssocRef.isPrimary() && !nodeService.getType(parentRef).equals(TYPE_HOLD)) {
             // TODO
             // add some dummy properties to indicate the details of the link?
             recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName());
         }
     }
-
 }

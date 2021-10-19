@@ -34,30 +34,18 @@ package org.alfresco.rm.rest.api.model;
  * @author Ramona Popa
  * @since 2.6
  */
-public class SecurityControlSetting
-{
-    /**
-     * Setting key
-     */
+public class SecurityControlSetting {
+    /** Setting key */
     private String key = null;
 
-    /**
-     * Setting value
-     */
+    /** Setting value */
     private Object value = null;
 
-    /**
-     * Empty constructor needed for the REST API
-     */
-    public SecurityControlSetting()
-    {
-    }
+    /** Empty constructor needed for the REST API */
+    public SecurityControlSetting() {}
 
-    /**
-     * Constructor
-     */
-    public SecurityControlSetting(String key, Object value)
-    {
+    /** Constructor */
+    public SecurityControlSetting(String key, Object value) {
         this.key = key;
         this.value = value;
     }
@@ -67,8 +55,7 @@ public class SecurityControlSetting
      *
      * @return The property key
      */
-    public String getKey()
-    {
+    public String getKey() {
         return key;
     }
 
@@ -77,8 +64,7 @@ public class SecurityControlSetting
      *
      * @param key The property key to set
      */
-    public void setKey(String key)
-    {
+    public void setKey(String key) {
         this.key = key;
     }
 
@@ -87,8 +73,7 @@ public class SecurityControlSetting
      *
      * @return The property value
      */
-    public Object getValue()
-    {
+    public Object getValue() {
         return value;
     }
 
@@ -97,51 +82,38 @@ public class SecurityControlSetting
      *
      * @param value The setting value
      */
-    public void setValue(Object value)
-    {
+    public void setValue(Object value) {
         this.value = value;
     }
 
-    /**
-     * Equals implementation for the property
-     */
+    /** Equals implementation for the property */
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass())
-        {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
         SecurityControlSetting setting = (SecurityControlSetting) o;
 
-        if (!key.equals(setting.key))
-        {
+        if (!key.equals(setting.key)) {
             return false;
         }
         return value.equals(setting.value);
     }
 
-    /**
-     * hashCode implementation for the property
-     */
+    /** hashCode implementation for the property */
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = key.hashCode();
         result = 31 * result + value.hashCode();
         return result;
     }
-    /**
-     * toString implementation for the property
-     */
+    /** toString implementation for the property */
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "Setting{" + "key='" + key + '\'' + ", value=" + value + '}';
     }
 }

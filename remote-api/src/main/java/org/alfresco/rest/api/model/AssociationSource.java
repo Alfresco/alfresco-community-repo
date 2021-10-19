@@ -35,12 +35,14 @@ public class AssociationSource {
     private Boolean isMandatory = null;
     private Boolean isMandatoryEnforced = null;
 
-    public AssociationSource()
-    {
-    }
+    public AssociationSource() {}
 
-    public AssociationSource(String role, String cls, Boolean isMany, Boolean isMandatory, Boolean isMandatoryEnforced)
-    {
+    public AssociationSource(
+            String role,
+            String cls,
+            Boolean isMany,
+            Boolean isMandatory,
+            Boolean isMandatoryEnforced) {
         this.role = role;
         this.cls = cls;
         this.isMany = isMany;
@@ -48,81 +50,72 @@ public class AssociationSource {
         this.isMandatoryEnforced = isMandatoryEnforced;
     }
 
-    public String getRole()
-    {
+    public String getRole() {
         return role;
     }
 
-    public void setRole(String role)
-    {
+    public void setRole(String role) {
         this.role = role;
     }
 
-    public String getCls()
-    {
+    public String getCls() {
         return cls;
     }
 
-    public void setCls(String cls)
-    {
+    public void setCls(String cls) {
         this.cls = cls;
     }
 
-    public Boolean getIsMany()
-    {
+    public Boolean getIsMany() {
         return isMany;
     }
 
-    public void setIsMany(Boolean isMany)
-    {
+    public void setIsMany(Boolean isMany) {
         this.isMany = isMany;
     }
 
-    public Boolean getIsMandatory()
-    {
+    public Boolean getIsMandatory() {
         return isMandatory;
     }
 
-    public void setIsMandatory(Boolean isMandatory)
-    {
+    public void setIsMandatory(Boolean isMandatory) {
         this.isMandatory = isMandatory;
     }
 
-    public Boolean getIsMandatoryEnforced()
-    {
+    public Boolean getIsMandatoryEnforced() {
         return isMandatoryEnforced;
     }
 
-    public void setIsMandatoryEnforced(Boolean isMandatoryEnforced)
-    {
+    public void setIsMandatoryEnforced(Boolean isMandatoryEnforced) {
         this.isMandatoryEnforced = isMandatoryEnforced;
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         AssociationSource other = (AssociationSource) obj;
-        return Objects.equals(role, other.getRole()) &&
-                        Objects.equals(cls, other.getCls()) &&
-                        Objects.equals(isMany, other.getIsMany()) &&
-                        Objects.equals(isMandatory, other.getIsMandatory()) &&
-                        Objects.equals(isMandatoryEnforced, other.getIsMandatoryEnforced());
+        return Objects.equals(role, other.getRole())
+                && Objects.equals(cls, other.getCls())
+                && Objects.equals(isMany, other.getIsMany())
+                && Objects.equals(isMandatory, other.getIsMandatory())
+                && Objects.equals(isMandatoryEnforced, other.getIsMandatoryEnforced());
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(512);
-        builder.append("AssociationSource [role=").append(this.role)
-                .append(", cls=").append(this.cls)
-                .append(", isMany=").append(this.isMany)
-                .append(", isMandatory=").append(isMandatory)
-                .append(", isMandatoryEnforced=").append(isMandatoryEnforced)
+        builder.append("AssociationSource [role=")
+                .append(this.role)
+                .append(", cls=")
+                .append(this.cls)
+                .append(", isMany=")
+                .append(this.isMany)
+                .append(", isMandatory=")
+                .append(isMandatory)
+                .append(", isMandatoryEnforced=")
+                .append(isMandatoryEnforced)
                 .append(']');
         return builder.toString();
     }

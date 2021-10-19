@@ -27,50 +27,41 @@ package org.alfresco.rest.api.model;
 
 import java.util.Map;
 
-public class Action
-{
+public class Action {
     private String id;
     private String actionDefinitionId;
     private String targetId;
     Map<String, String> params;
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getActionDefinitionId()
-    {
+    public String getActionDefinitionId() {
         return actionDefinitionId;
     }
 
-    public void setActionDefinitionId(String actionDefinitionId)
-    {
+    public void setActionDefinitionId(String actionDefinitionId) {
         this.actionDefinitionId = actionDefinitionId;
     }
 
-    public String getTargetId()
-    {
+    public String getTargetId() {
         return targetId;
     }
 
-    public void setTargetId(String targetId)
-    {
+    public void setTargetId(String targetId) {
         this.targetId = targetId;
     }
 
-    public Map<String, String> getParams()
-    {
+    public Map<String, String> getParams() {
         return params;
     }
 
-    public void setParams(Map<String, String> params)
-    {
+    public void setParams(Map<String, String> params) {
         this.params = params;
     }
 }

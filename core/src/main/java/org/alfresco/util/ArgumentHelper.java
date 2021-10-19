@@ -23,23 +23,19 @@ import java.util.Map;
 
 /**
  * Utility class to assist in extracting program arguments.
- * 
+ *
  * @author Derek Hulley
  * @since V2.1-A
  */
-public class ArgumentHelper
-{
+public class ArgumentHelper {
     private String usage;
     private Map<String, String> args;
-    
-    public static Map<String, String> ripArgs(String ... args)
-    {
+
+    public static Map<String, String> ripArgs(String... args) {
         Map<String, String> argsMap = new HashMap<String, String>(5);
-        for (String arg : args)
-        {
+        for (String arg : args) {
             int index = arg.indexOf('=');
-            if (!arg.startsWith("--") || index < 0 || index == arg.length() - 1)
-            {
+            if (!arg.startsWith("--") || index < 0 || index == arg.length() - 1) {
                 // Ignore it
                 continue;
             }
@@ -49,66 +45,56 @@ public class ArgumentHelper
         }
         return argsMap;
     }
-    
-    public ArgumentHelper(String usage, String[] args)
-    {
+
+    public ArgumentHelper(String usage, String[] args) {
         this.usage = usage;
         this.args = ArgumentHelper.ripArgs(args);
     }
-    
-    /**
-     * @throws IllegalArgumentException if the argument doesn't match the requirements.
-     */
-    public String getStringValue(String arg, boolean mandatory, boolean nonEmpty)
-    {
+
+    /** @throws IllegalArgumentException if the argument doesn't match the requirements. */
+    public String getStringValue(String arg, boolean mandatory, boolean nonEmpty) {
         String value = args.get(arg);
-        if (value == null && mandatory)
-        {
+        if (value == null && mandatory) {
             throw new IllegalArgumentException("Argument '" + arg + "' is required.");
-        }
-        else if (value != null && value.length() == 0 && nonEmpty)
-        {
+        } else if (value != null && value.length() == 0 && nonEmpty) {
             throw new IllegalArgumentException("Argument '" + arg + "' may not be empty.");
         }
         return value;
     }
-    
+
     /**
-     * @return          Returns the value assigned or the minimum value if the parameter was not present
+     * @return Returns the value assigned or the minimum value if the parameter was not present
      * @throws IllegalArgumentException if the argument doesn't match the requirements.
      */
-    public int getIntegerValue(String arg, boolean mandatory, int minValue, int maxValue)
-    {
+    public int getIntegerValue(String arg, boolean mandatory, int minValue, int maxValue) {
         String valueStr = args.get(arg);
-        if (valueStr == null)
-        {
-            if (mandatory)
-            {
+        if (valueStr == null) {
+            if (mandatory) {
                 throw new IllegalArgumentException("Argument '" + arg + "' is required.");
-            }
-            else
-            {
+            } else {
                 return minValue;
             }
         }
         // Now convert
-        try
-        {
+        try {
             int value = Integer.parseInt(valueStr);
-            if (value < minValue || value > maxValue)
-            {
-                throw new IllegalArgumentException("Argument '" + arg + "' must be in range " + minValue + " to " + maxValue + ".");
+            if (value < minValue || value > maxValue) {
+                throw new IllegalArgumentException(
+                        "Argument '"
+                                + arg
+                                + "' must be in range "
+                                + minValue
+                                + " to "
+                                + maxValue
+                                + ".");
             }
             return value;
-        }
-        catch (NumberFormatException e)
-        {
+        } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Argument '" + arg + "' must be a valid integer.");
         }
     }
-    
-    public void printUsage()
-    {
+
+    public void printUsage() {
         System.out.println(usage);
     }
 }

@@ -36,8 +36,7 @@ import org.alfresco.service.namespace.QName;
  * @author Gavin Cornwell
  */
 @AlfrescoPublicApi
-public interface RecordsManagementCustomModel
-{
+public interface RecordsManagementCustomModel {
     // Namespace details
     String RM_CUSTOM_URI = "http://www.alfresco.org/model/rmcustom/1.0";
     String RM_CUSTOM_PREFIX = "rmc";
@@ -49,19 +48,27 @@ public interface RecordsManagementCustomModel
     QName CONSTRAINT_CUSTOM_SMLIST = QName.createQName(RM_CUSTOM_URI, "smList");
 
     // Custom property for for Supplemental Marking List
-    QName PROP_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "supplementalMarkingList");
+    QName PROP_SUPPLEMENTAL_MARKING_LIST =
+            QName.createQName(RM_CUSTOM_URI, "supplementalMarkingList");
 
     // Supplemental Marking List aspect
-    QName ASPECT_SUPPLEMENTAL_MARKING_LIST = QName.createQName(RM_CUSTOM_URI, "customSupplementalMarkingList");
+    QName ASPECT_SUPPLEMENTAL_MARKING_LIST =
+            QName.createQName(RM_CUSTOM_URI, "customSupplementalMarkingList");
 
     // Custom associations aspect
     QName ASPECT_CUSTOM_ASSOCIATIONS = QName.createQName(RM_CUSTOM_URI, "customAssocs");
 
     // Some Custom references which are present on system startup.
-    QName CUSTOM_REF_VERSIONS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions");
-    QName CUSTOM_REF_SUPERSEDES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supersedes");
-    QName CUSTOM_REF_OBSOLETES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "obsoletes");
-    QName CUSTOM_REF_SUPPORTS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supports");
-    QName CUSTOM_REF_CROSSREFERENCE = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "crossreference");
-    QName CUSTOM_REF_RENDITION = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "rendition");
+    QName CUSTOM_REF_VERSIONS =
+            QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions");
+    QName CUSTOM_REF_SUPERSEDES =
+            QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supersedes");
+    QName CUSTOM_REF_OBSOLETES =
+            QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "obsoletes");
+    QName CUSTOM_REF_SUPPORTS =
+            QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supports");
+    QName CUSTOM_REF_CROSSREFERENCE =
+            QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "crossreference");
+    QName CUSTOM_REF_RENDITION =
+            QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "rendition");
 }

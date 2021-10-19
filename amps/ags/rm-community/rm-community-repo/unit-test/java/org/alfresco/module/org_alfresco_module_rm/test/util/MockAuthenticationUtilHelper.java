@@ -43,61 +43,59 @@ import org.mockito.stubbing.Answer;
  *
  * @author tpage
  */
-public class MockAuthenticationUtilHelper
-{
+public class MockAuthenticationUtilHelper {
     public static final String SYSTEM_USER = "system";
     public static final String ADMIN_USER = "admin";
     public static final String GUEST_USER = "guest";
 
     /**
-     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
-     * permissions. If the mock is asked for details about the user then it assumes the currently authenticated user is
-     * "admin".
+     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods
+     * assuming the user has permissions. If the mock is asked for details about the user then it
+     * assumes the currently authenticated user is "admin".
      *
      * @param mockAuthenticationUtil The mock to initialise.
      */
-    public static void setup(AuthenticationUtil mockAuthenticationUtil)
-    {
+    public static void setup(AuthenticationUtil mockAuthenticationUtil) {
         setup(mockAuthenticationUtil, "admin");
     }
 
     /**
-     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
-     * permissions.
+     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods
+     * assuming the user has permissions.
      *
      * @param mockAuthenticationUtil The mock to initialise.
      * @param fullyAuthenticatedUser The name of the user that last authenticated.
      */
     @SuppressWarnings("unchecked")
-    public static void setup(AuthenticationUtil mockAuthenticationUtil, String fullyAuthenticatedUser)
-    {
+    public static void setup(
+            AuthenticationUtil mockAuthenticationUtil, String fullyAuthenticatedUser) {
         reset(mockAuthenticationUtil);
 
         // just do the work
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork) invocation.getArguments()[0];
-                return work.doWork();
-            }
-
-        }).when(mockAuthenticationUtil).<Object> runAsSystem(any(RunAsWork.class));
+        doAnswer(
+                        new Answer<Object>() {
+                            @SuppressWarnings("rawtypes")
+                            @Override
+                            public Object answer(InvocationOnMock invocation) throws Throwable {
+                                RunAsWork work = (RunAsWork) invocation.getArguments()[0];
+                                return work.doWork();
+                            }
+                        })
+                .when(mockAuthenticationUtil)
+                .<Object>runAsSystem(any(RunAsWork.class));
 
         // just do the work
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork) invocation.getArguments()[0];
-                return work.doWork();
-            }
-
-        }).when(mockAuthenticationUtil).<Object> runAs(any(RunAsWork.class), anyString());
+        doAnswer(
+                        new Answer<Object>() {
+                            @SuppressWarnings("rawtypes")
+                            @Override
+                            public Object answer(InvocationOnMock invocation) throws Throwable {
+                                RunAsWork work = (RunAsWork) invocation.getArguments()[0];
+                                return work.doWork();
+                            }
+                        })
+                .when(mockAuthenticationUtil)
+                .<Object>runAs(any(RunAsWork.class), anyString());
 
         when(mockAuthenticationUtil.getAdminUserName()).thenReturn(ADMIN_USER);
         when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(fullyAuthenticatedUser);

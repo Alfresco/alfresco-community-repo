@@ -27,10 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Objects;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
@@ -38,66 +34,55 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Objects;
+
 /**
- * An extractor that extracts the NodeRef path from the RM root down to
- * - and including - the node itself.  This will only extract data if the
- * node is a {@link RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component}.
+ * An extractor that extracts the NodeRef path from the RM root down to - and including - the node
+ * itself. This will only extract data if the node is a {@link
+ * RecordsManagementModel#ASPECT_FILE_PLAN_COMPONENT fileplan component}.
  *
  * @see FilePlanService#getNodeRefPath(NodeRef)
- *
  * @author Derek Hulley
  * @since 1.0
  */
-public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtractor
-{
+public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtractor {
     private NodeService nodeService;
     private FilePlanService filePlanService;
     private RuleService ruleService;
 
-    /**
-     * Used to check that the node in the context is a fileplan component
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** Used to check that the node in the context is a fileplan component */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-		this.filePlanService = filePlanService;
-	}
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
+        this.filePlanService = filePlanService;
+    }
 
-    /**
-     * @param ruleService the ruleService to set
-     */
-    public void setRuleService(RuleService ruleService)
-    {
+    /** @param ruleService the ruleService to set */
+    public void setRuleService(RuleService ruleService) {
         this.ruleService = ruleService;
     }
 
     /**
-     * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
-     *                      a fileplan component
+     * @return Returns <tt>true</tt> if the data is a NodeRef and it represents a fileplan component
      */
-    public boolean isSupported(Serializable data)
-    {
-        if (!(data instanceof NodeRef))
-        {
+    public boolean isSupported(Serializable data) {
+        if (!(data instanceof NodeRef)) {
             return false;
         }
-        return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
+        return nodeService.hasAspect(
+                (NodeRef) data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
     }
 
-    public Serializable extractData(Serializable value)
-    {
+    public Serializable extractData(Serializable value) {
         Serializable extractedData = null;
 
         ruleService.disableRules();
-        try
-        {
+        try {
             NodeRef nodeRef = (NodeRef) value;
 
             // Get path from the RM root
@@ -105,9 +90,7 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
 
             // Done
             extractedData = (Serializable) nodeRefPath;
-        }
-        finally
-        {
+        } finally {
             ruleService.enableRules();
         }
 
@@ -115,28 +98,24 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
+    public boolean equals(Object o) {
+        if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass())
-        {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        if (!super.equals(o))
-        {
+        if (!super.equals(o)) {
             return false;
         }
         FilePlanNodeRefPathDataExtractor that = (FilePlanNodeRefPathDataExtractor) o;
-        return Objects.equals(nodeService, that.nodeService) && Objects.equals(filePlanService, that.filePlanService)
-            && Objects.equals(ruleService, that.ruleService);
+        return Objects.equals(nodeService, that.nodeService)
+                && Objects.equals(filePlanService, that.filePlanService)
+                && Objects.equals(ruleService, that.ruleService);
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         return Objects.hash(nodeService, filePlanService, ruleService);
     }
 }

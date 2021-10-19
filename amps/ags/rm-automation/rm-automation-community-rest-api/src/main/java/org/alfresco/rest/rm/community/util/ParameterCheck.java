@@ -34,10 +34,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class ParameterCheck
-{
-    private ParameterCheck()
-    {
+public class ParameterCheck {
+    private ParameterCheck() {
         // Intentionally blank
     }
 
@@ -48,11 +46,10 @@ public class ParameterCheck
      * @param paramValue The value of the parameter to check
      * @throws IllegalArgumentException Throws an exception if the given value is blank
      */
-    public static void mandatoryString(final String paramName, final String paramValue) throws IllegalArgumentException
-    {
-        if (isBlank(paramValue))
-        {
-            throw new IllegalArgumentException("'" + paramName  + "' is a mandatory parameter.");
+    public static void mandatoryString(final String paramName, final String paramValue)
+            throws IllegalArgumentException {
+        if (isBlank(paramValue)) {
+            throw new IllegalArgumentException("'" + paramName + "' is a mandatory parameter.");
         }
     }
 
@@ -63,11 +60,10 @@ public class ParameterCheck
      * @param object The value of the parameter to check
      * @throws IllegalArgumentException Throws an exception if the given value is null
      */
-    public static void mandatoryObject(final String paramName, final Object object) throws IllegalArgumentException
-    {
-        if (object == null)
-        {
-            throw new IllegalArgumentException("'" + paramName  + "' is a mandatory parameter.");
+    public static void mandatoryObject(final String paramName, final Object object)
+            throws IllegalArgumentException {
+        if (object == null) {
+            throw new IllegalArgumentException("'" + paramName + "' is a mandatory parameter.");
         }
     }
 }

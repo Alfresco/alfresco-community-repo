@@ -35,10 +35,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
@@ -60,25 +56,32 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.extensions.webscripts.GUID;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Extended versionable aspect unit test.
  *
  * @author Roy Wetherall
  * @since 2.3.1
  */
-public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
-{
+public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel {
     /** Transaction resource key */
     private static final String KEY_VERSIONED_NODEREFS = "versioned_noderefs";
 
     /** test data */
-    private NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-    private NodeRef anotherNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+    private NodeRef nodeRef =
+            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+
+    private NodeRef anotherNodeRef =
+            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
     private QName oldType = QName.createQName(RM_URI, GUID.generate());
     private QName newType = QName.createQName(RM_URI, GUID.generate());
 
     /** service mocks */
     private @Mock NodeService mockedNodeService;
+
     private @Mock VersionService mockedVersionService;
     private @Mock LockService mockedLockService;
     private @Mock AlfrescoTransactionSupport mockedAlfrescoTransactionSupport;
@@ -89,33 +92,30 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
 
     @SuppressWarnings("unchecked")
     @Before
-    public void testSetup()
-    {
+    public void testSetup() {
         MockitoAnnotations.initMocks(this);
 
         // just do the work
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
-                return work.doWork();
-            }
-
-        }).when(mockedAuthenticationUtil).runAsSystem((RunAsWork<Object>) any(RunAsWork.class));
+        doAnswer(
+                        new Answer<Object>() {
+                            @SuppressWarnings("rawtypes")
+                            @Override
+                            public Object answer(InvocationOnMock invocation) throws Throwable {
+                                RunAsWork work = (RunAsWork) invocation.getArguments()[0];
+                                return work.doWork();
+                            }
+                        })
+                .when(mockedAuthenticationUtil)
+                .runAsSystem((RunAsWork<Object>) any(RunAsWork.class));
     }
 
     /**
-     * given that autoversion on type change is configured off
-     * when the type set behvaiour is executed
-     * then a new version is not created
+     * given that autoversion on type change is configured off when the type set behvaiour is
+     * executed then a new version is not created
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void autoVersionOff()
-    {
+    public void autoVersionOff() {
         // auto version off
         extendedVersionableAspect.setAutoVersionOnTypeChange(false);
 
@@ -127,20 +127,17 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
     }
 
     /**
-     * given the node doesn't exist
-     * when the type set behaviour is executed
-     * then a new version is not created
+     * given the node doesn't exist when the type set behaviour is executed then a new version is
+     * not created
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeDoesNotExist()
-    {
+    public void nodeDoesNotExist() {
         // auto version on
         extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
         // node does not exist
-        when(mockedNodeService.exists(nodeRef))
-            .thenReturn(false);
+        when(mockedNodeService.exists(nodeRef)).thenReturn(false);
 
         // execute behaviour
         extendedVersionableAspect.onSetNodeType(nodeRef, oldType, newType);
@@ -150,24 +147,20 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
     }
 
     /**
-     * given that the node is locked
-     * when the type set behaviour is executed
-     * then a new version is not created
+     * given that the node is locked when the type set behaviour is executed then a new version is
+     * not created
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeLocked()
-    {
+    public void nodeLocked() {
         // auto version on
         extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
         // node does exists
-        when(mockedNodeService.exists(nodeRef))
-            .thenReturn(true);
+        when(mockedNodeService.exists(nodeRef)).thenReturn(true);
 
         // node is locked
-        when(mockedLockService.getLockStatus(nodeRef))
-            .thenReturn(LockStatus.LOCKED);
+        when(mockedLockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCKED);
 
         // execute behaviour
         extendedVersionableAspect.onSetNodeType(nodeRef, oldType, newType);
@@ -180,28 +173,24 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
     }
 
     /**
-     * given that the node does not have the versionable aspect
-     * when the type set behaviour is executed
-     * then a new version is not created
+     * given that the node does not have the versionable aspect when the type set behaviour is
+     * executed then a new version is not created
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeIsNotVersionable()
-    {
+    public void nodeIsNotVersionable() {
         // auto version on
         extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
         // node does exists
-        when(mockedNodeService.exists(nodeRef))
-            .thenReturn(true);
+        when(mockedNodeService.exists(nodeRef)).thenReturn(true);
 
         // node is not locked
-        when(mockedLockService.getLockStatus(nodeRef))
-            .thenReturn(LockStatus.NO_LOCK);
+        when(mockedLockService.getLockStatus(nodeRef)).thenReturn(LockStatus.NO_LOCK);
 
         // node does not have the versionable aspect
         when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
-            .thenReturn(false);
+                .thenReturn(false);
 
         // execute behaviour
         extendedVersionableAspect.onSetNodeType(nodeRef, oldType, newType);
@@ -215,32 +204,27 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
     }
 
     /**
-     * given that the node has the temporary aspect
-     * when the type set behaviour is executed
-     * then a new version is not created
+     * given that the node has the temporary aspect when the type set behaviour is executed then a
+     * new version is not created
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeIsTemporary()
-    {
+    public void nodeIsTemporary() {
         // auto version on
         extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
         // node does exists
-        when(mockedNodeService.exists(nodeRef))
-            .thenReturn(true);
+        when(mockedNodeService.exists(nodeRef)).thenReturn(true);
 
         // node is not locked
-        when(mockedLockService.getLockStatus(nodeRef))
-            .thenReturn(LockStatus.NO_LOCK);
+        when(mockedLockService.getLockStatus(nodeRef)).thenReturn(LockStatus.NO_LOCK);
 
         // node has the versionable aspect
         when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
-            .thenReturn(true);
+                .thenReturn(true);
 
         // node has the temporary aspect
-        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY))
-            .thenReturn(true);
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY)).thenReturn(true);
 
         // execute behaviour
         extendedVersionableAspect.onSetNodeType(nodeRef, oldType, newType);
@@ -255,36 +239,31 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
     }
 
     /**
-     * given that the node is already being versioned
-     * when the type set behvaiour is executed
-     * then a new version is not created
+     * given that the node is already being versioned when the type set behvaiour is executed then a
+     * new version is not created
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void nodeIsBeingVersioned()
-    {
+    public void nodeIsBeingVersioned() {
         // auto version on
         extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
         // node does exists
-        when(mockedNodeService.exists(nodeRef))
-            .thenReturn(true);
+        when(mockedNodeService.exists(nodeRef)).thenReturn(true);
 
         // node is not locked
-        when(mockedLockService.getLockStatus(nodeRef))
-            .thenReturn(LockStatus.NO_LOCK);
+        when(mockedLockService.getLockStatus(nodeRef)).thenReturn(LockStatus.NO_LOCK);
 
         // node has the versionable aspect
         when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
-            .thenReturn(true);
+                .thenReturn(true);
 
         // node does not have the temporary aspect
-        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY))
-            .thenReturn(false);
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY)).thenReturn(false);
 
         // node is currently being processed for versioning
         when(mockedAlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS))
-            .thenReturn(Collections.singletonMap(nodeRef, nodeRef));
+                .thenReturn(Collections.singletonMap(nodeRef, nodeRef));
 
         // execute behaviour
         extendedVersionableAspect.onSetNodeType(nodeRef, oldType, newType);
@@ -300,40 +279,35 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
     }
 
     /**
-     * given that the node has the auto version property set to false
-     * when the type set behaviour is executed
-     * then a new version is not created
+     * given that the node has the auto version property set to false when the type set behaviour is
+     * executed then a new version is not created
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void autoVersionFalse()
-    {
+    public void autoVersionFalse() {
         // auto version on
         extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
         // node does exists
-        when(mockedNodeService.exists(nodeRef))
-            .thenReturn(true);
+        when(mockedNodeService.exists(nodeRef)).thenReturn(true);
 
         // node is not locked
-        when(mockedLockService.getLockStatus(nodeRef))
-            .thenReturn(LockStatus.NO_LOCK);
+        when(mockedLockService.getLockStatus(nodeRef)).thenReturn(LockStatus.NO_LOCK);
 
         // node has the versionable aspect
         when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
-            .thenReturn(true);
+                .thenReturn(true);
 
         // node does not have the temporary aspect
-        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY))
-            .thenReturn(false);
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY)).thenReturn(false);
 
         // node is not being processed for versioning
         when(mockedAlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS))
-            .thenReturn(Collections.singletonMap(anotherNodeRef, anotherNodeRef));
+                .thenReturn(Collections.singletonMap(anotherNodeRef, anotherNodeRef));
 
         // auto version false
         when(mockedNodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION))
-            .thenReturn(Boolean.FALSE);
+                .thenReturn(Boolean.FALSE);
 
         // execute behaviour
         extendedVersionableAspect.onSetNodeType(nodeRef, oldType, newType);
@@ -350,46 +324,38 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
     }
 
     /**
-     * given that autoversion on type change is configured on
-     * and the node exists
-     * and the node is not locked
-     * and the node has the versionable aspect
-     * and the node doesn't have the temporary aspect
-     * and the node isn't already being versioned
-     * and the auto version property is true
-     * when the type set behavour is executed
-     * then a new version is created
+     * given that autoversion on type change is configured on and the node exists and the node is
+     * not locked and the node has the versionable aspect and the node doesn't have the temporary
+     * aspect and the node isn't already being versioned and the auto version property is true when
+     * the type set behavour is executed then a new version is created
      */
     @SuppressWarnings("unchecked")
     @Test
-    public void createVersion()
-    {
+    public void createVersion() {
         // auto version on
         extendedVersionableAspect.setAutoVersionOnTypeChange(true);
 
         // node does exists
-        when(mockedNodeService.exists(nodeRef))
-            .thenReturn(true);
+        when(mockedNodeService.exists(nodeRef)).thenReturn(true);
 
         // node is not locked
-        when(mockedLockService.getLockStatus(nodeRef))
-            .thenReturn(LockStatus.NO_LOCK);
+        when(mockedLockService.getLockStatus(nodeRef)).thenReturn(LockStatus.NO_LOCK);
 
         // node has the versionable aspect
         when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
-            .thenReturn(true);
+                .thenReturn(true);
 
         // node does not have the temporary aspect
-        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY))
-            .thenReturn(false);
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY)).thenReturn(false);
 
         // node is not being processed for versioning
         when(mockedAlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS))
-            .thenReturn(new HashMap<>(Collections.singletonMap(anotherNodeRef, anotherNodeRef)));
+                .thenReturn(
+                        new HashMap<>(Collections.singletonMap(anotherNodeRef, anotherNodeRef)));
 
         // auto version false
         when(mockedNodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION))
-            .thenReturn(Boolean.TRUE);
+                .thenReturn(Boolean.TRUE);
 
         // execute behaviour
         extendedVersionableAspect.onSetNodeType(nodeRef, oldType, newType);
@@ -405,5 +371,4 @@ public class ExtendedVersionableAspectUnitTest implements RecordsManagementModel
         // assert the version was not created
         verify(mockedVersionService).createVersion(eq(nodeRef), any(Map.class));
     }
-
 }

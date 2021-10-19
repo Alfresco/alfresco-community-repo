@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -39,11 +39,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-/**
- * This filter simply sets a request header to test the SSO filters
- */
-public class HTTPRequestAuthenticationFilterTestFilter implements Filter
-{
+/** This filter simply sets a request header to test the SSO filters */
+public class HTTPRequestAuthenticationFilterTestFilter implements Filter {
 
     private String httpServletRequestAuthHeaderName;
 
@@ -51,82 +48,69 @@ public class HTTPRequestAuthenticationFilterTestFilter implements Filter
 
     /**
      * Initialize the filter
-     * 
-     * @param config
-     *            FitlerConfig
+     *
+     * @param config FitlerConfig
      * @exception ServletException
      */
-    public void init(FilterConfig config) throws ServletException
-    {
-        httpServletRequestAuthHeaderName = config.getInitParameter("httpServletRequestAuthHeaderName");
-        if (httpServletRequestAuthHeaderName == null)
-        {
+    public void init(FilterConfig config) throws ServletException {
+        httpServletRequestAuthHeaderName =
+                config.getInitParameter("httpServletRequestAuthHeaderName");
+        if (httpServletRequestAuthHeaderName == null) {
             httpServletRequestAuthHeaderName = "x-user";
         }
 
         userName = config.getInitParameter("userName");
-        if (userName == null)
-        {
+        if (userName == null) {
             userName = "guest";
         }
     }
 
     /**
      * Run the authentication filter
-     * 
-     * @param req
-     *            ServletRequest
-     * @param resp
-     *            ServletResponse
-     * @param chain
-     *            FilterChain
+     *
+     * @param req ServletRequest
+     * @param resp ServletResponse
+     * @param chain FilterChain
      * @exception ServletException
      * @exception IOException
      */
-    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException
-    {
+    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
+            throws IOException, ServletException {
         // Assume it's an HTTP request
 
         HttpServletRequest httpReq = (HttpServletRequest) req;
         chain.doFilter(getProxy(httpReq), resp);
     }
 
-    /**
-     * Cleanup filter resources
-     */
-    public void destroy()
-    {
+    /** Cleanup filter resources */
+    public void destroy() {
         // Nothing to do
     }
 
-    private HttpServletRequest getProxy(HttpServletRequest req)
-    {
-        HttpServletRequest proxy = (HttpServletRequest) Proxy.newProxyInstance(HttpServletRequest.class.getClassLoader(), new Class[] { HttpServletRequest.class },
-                new Handler(req));
+    private HttpServletRequest getProxy(HttpServletRequest req) {
+        HttpServletRequest proxy =
+                (HttpServletRequest)
+                        Proxy.newProxyInstance(
+                                HttpServletRequest.class.getClassLoader(),
+                                new Class[] {HttpServletRequest.class},
+                                new Handler(req));
         return proxy;
     }
 
-    class Handler implements InvocationHandler
-    {
+    class Handler implements InvocationHandler {
         HttpServletRequest httpReq;
 
-        Handler(HttpServletRequest httpReq)
-        {
+        Handler(HttpServletRequest httpReq) {
             this.httpReq = httpReq;
         }
 
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
-        {
-            if (method.getName().equals("getHeader"))
-            {
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.getName().equals("getHeader")) {
                 Object arg0 = args[0];
-                if (arg0 != null)
-                {
-                    if (arg0 instanceof String)
-                    {
+                if (arg0 != null) {
+                    if (arg0 instanceof String) {
                         String headerName = (String) arg0;
-                        if (headerName.equals(httpServletRequestAuthHeaderName))
-                        {
+                        if (headerName.equals(httpServletRequestAuthHeaderName)) {
                             return userName;
                         }
                     }
@@ -134,6 +118,5 @@ public class HTTPRequestAuthenticationFilterTestFilter implements Filter
             }
             return method.invoke(httpReq, args);
         }
-
     }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,16 +27,6 @@ package org.alfresco.repo.security.permissions.impl.acegi;
 
 import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
 import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
-
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
@@ -60,13 +50,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 
-/**
- * @author andyh
- */
-
-public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
-{
+/** @author andyh */
+public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean {
     private static Log log = LogFactory.getLog(ACLEntryVoter.class);
 
     private static final String ACL_NODE = "ACL_NODE";
@@ -80,7 +75,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private static final String ACL_ALLOW = "ACL_ALLOW";
 
     private static final String ACL_METHOD = "ACL_METHOD";
-    
+
     private static final String ACL_DENY = "ACL_DENY";
 
     private PermissionService permissionService;
@@ -92,17 +87,13 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     private OwnableService ownableService;
 
     private AuthorityService authorityService;
-    
+
     private Set<QName> abstainForClassQNames = new HashSet<QName>();
-    
+
     private Set<String> abstainFor = null;
 
-    /**
-     * Default constructor
-     *
-     */
-    public ACLEntryVoter()
-    {
+    /** Default constructor */
+    public ACLEntryVoter() {
         super();
     }
 
@@ -111,134 +102,121 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the permission service
+     *
      * @param permissionService PermissionService
      */
-    public void setPermissionService(PermissionService permissionService)
-    {
+    public void setPermissionService(PermissionService permissionService) {
         this.permissionService = permissionService;
     }
 
     /**
      * Get the permission service
+     *
      * @return the permission service
      */
-    public PermissionService getPermissionService()
-    {
+    public PermissionService getPermissionService() {
         return permissionService;
     }
 
     /**
      * Get the name space prefix resolver
+     *
      * @return the name space prefix resolver
      */
-    public NamespacePrefixResolver getNamespacePrefixResolver()
-    {
+    public NamespacePrefixResolver getNamespacePrefixResolver() {
         return nspr;
     }
 
     /**
      * Set the name space prefix resolver
+     *
      * @param nspr NamespacePrefixResolver
      */
-    public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
-    {
+    public void setNamespacePrefixResolver(NamespacePrefixResolver nspr) {
         this.nspr = nspr;
     }
 
     /**
      * Get the node service
+     *
      * @return the node service
      */
-    public NodeService getNodeService()
-    {
+    public NodeService getNodeService() {
         return nodeService;
     }
 
     /**
      * Get the ownable service
+     *
      * @return the ownable service
      */
-    public OwnableService getOwnableService()
-    {
+    public OwnableService getOwnableService() {
         return ownableService;
     }
 
     /**
      * Set the node service
+     *
      * @param nodeService NodeService
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /**
      * Set the ownable service
+     *
      * @param ownableService OwnableService
      */
-    public void setOwnableService(OwnableService ownableService)
-    {
+    public void setOwnableService(OwnableService ownableService) {
         this.ownableService = ownableService;
     }
 
     /**
      * Set the authentication service
+     *
      * @param authenticationService AuthenticationService
      */
-    public void setAuthenticationService(AuthenticationService authenticationService)
-    {
+    public void setAuthenticationService(AuthenticationService authenticationService) {
         log.warn("Bean property 'authenticationService' no longer required on 'ACLEntryVoter'.");
     }
 
     /**
      * Set the authority service
+     *
      * @param authorityService AuthorityService
      */
-    public void setAuthorityService(AuthorityService authorityService)
-    {
+    public void setAuthorityService(AuthorityService authorityService) {
         this.authorityService = authorityService;
     }
 
-    
-    /**
-     * Types and aspects for which we will abstain on voting if they are present.
-     */
-    public void setAbstainFor(Set<String> abstainFor)
-    {
+    /** Types and aspects for which we will abstain on voting if they are present. */
+    public void setAbstainFor(Set<String> abstainFor) {
         this.abstainFor = abstainFor;
     }
 
-    public void afterPropertiesSet() throws Exception
-    {
-        if (permissionService == null)
-        {
+    public void afterPropertiesSet() throws Exception {
+        if (permissionService == null) {
             throw new IllegalArgumentException("There must be a permission service");
         }
-        if (nspr == null)
-        {
+        if (nspr == null) {
             throw new IllegalArgumentException("There must be a namespace service");
         }
-        if (nodeService == null)
-        {
+        if (nodeService == null) {
             throw new IllegalArgumentException("There must be a node service");
         }
-        if (authorityService == null)
-        {
+        if (authorityService == null) {
             throw new IllegalArgumentException("There must be an authority service");
         }
-        if(abstainFor != null)
-        {
-            for(String qnameString : abstainFor)
-            {
+        if (abstainFor != null) {
+            for (String qnameString : abstainFor) {
                 QName qname = QName.resolveToQName(nspr, qnameString);
                 abstainForClassQNames.add(qname);
             }
         }
-
     }
 
-    public boolean supports(ConfigAttribute attribute)
-    {
+    public boolean supports(ConfigAttribute attribute) {
         if ((attribute.getAttribute() != null)
                 && (attribute.getAttribute().startsWith(ACL_NODE)
                         || attribute.getAttribute().startsWith(ACL_ITEM)
@@ -246,39 +224,33 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                         || attribute.getAttribute().startsWith(ACL_PARENT)
                         || attribute.getAttribute().equals(ACL_ALLOW)
                         || attribute.getAttribute().startsWith(ACL_METHOD)
-                        || attribute.getAttribute().equals(ACL_DENY)))
-        {
+                        || attribute.getAttribute().equals(ACL_DENY))) {
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
 
     /**
-     * This implementation supports only <code>MethodSecurityInterceptor</code>, because it queries the presented <code>MethodInvocation</code>.
-     * 
-     * @param clazz
-     *            the secure object
-     * @return <code>true</code> if the secure object is <code>MethodInvocation</code>, <code>false</code> otherwise
+     * This implementation supports only <code>MethodSecurityInterceptor</code>, because it queries
+     * the presented <code>MethodInvocation</code>.
+     *
+     * @param clazz the secure object
+     * @return <code>true</code> if the secure object is <code>MethodInvocation</code>, <code>false
+     *     </code> otherwise
      */
-    public boolean supports(Class clazz)
-    {
+    public boolean supports(Class clazz) {
         return (MethodInvocation.class.isAssignableFrom(clazz));
     }
 
-    public int vote(Authentication authentication, Object object, ConfigAttributeDefinition config)
-    {
-        if (log.isDebugEnabled())
-        {
+    public int vote(
+            Authentication authentication, Object object, ConfigAttributeDefinition config) {
+        if (log.isDebugEnabled()) {
             MethodInvocation mi = (MethodInvocation) object;
             log.debug("Method: " + mi.getMethod().toString());
         }
-        if (AuthenticationUtil.isRunAsUserTheSystemUser())
-        {
-            if (log.isDebugEnabled())
-            {
+        if (AuthenticationUtil.isRunAsUserTheSystemUser()) {
+            if (log.isDebugEnabled()) {
                 log.debug("Access granted for the system user");
             }
             return AccessDecisionVoter.ACCESS_GRANTED;
@@ -286,8 +258,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
 
-        if (supportedDefinitions.size() == 0)
-        {
+        if (supportedDefinitions.size() == 0) {
             return AccessDecisionVoter.ACCESS_ABSTAIN;
         }
 
@@ -297,331 +268,286 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
         Class<?>[] params = method.getParameterTypes();
 
         Boolean hasMethodEntry = null;
-        
-        for (ConfigAttributeDefintion cad : supportedDefinitions)
-        {
+
+        for (ConfigAttributeDefintion cad : supportedDefinitions) {
             NodeRef testNodeRef = null;
 
-            if (cad.typeString.equals(ACL_DENY))
-            {
+            if (cad.typeString.equals(ACL_DENY)) {
                 return AccessDecisionVoter.ACCESS_DENIED;
-            }
-            else if (cad.typeString.equals(ACL_ALLOW))
-            {
+            } else if (cad.typeString.equals(ACL_ALLOW)) {
                 return AccessDecisionVoter.ACCESS_GRANTED;
-            }
-            else if (cad.typeString.equals(ACL_METHOD))
-            {
-                if(hasMethodEntry == null)
-                {
+            } else if (cad.typeString.equals(ACL_METHOD)) {
+                if (hasMethodEntry == null) {
                     hasMethodEntry = Boolean.FALSE;
                 }
-                
-                if (cad.authority.equals(AuthenticationUtil.getRunAsUser()))
-                {
+
+                if (cad.authority.equals(AuthenticationUtil.getRunAsUser())) {
+                    hasMethodEntry = Boolean.TRUE;
+                } else if (authorityService.getAuthorities().contains(cad.authority)) {
                     hasMethodEntry = Boolean.TRUE;
                 }
-                else if(authorityService.getAuthorities().contains(cad.authority)) 
-                {
-                    hasMethodEntry = Boolean.TRUE;
-                }
-            }
-            else if (cad.typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD))
-            {
-                if (cad.parameter.length == 2 && NodeRef.class.isAssignableFrom(params[cad.parameter[0]])
-                        && NodeRef.class.isAssignableFrom(params[cad.parameter[1]]))
-                {
+            } else if (cad.typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)) {
+                if (cad.parameter.length == 2
+                        && NodeRef.class.isAssignableFrom(params[cad.parameter[0]])
+                        && NodeRef.class.isAssignableFrom(params[cad.parameter[1]])) {
                     testNodeRef = getArgument(invocation, cad.parameter[1]);
-                    if (testNodeRef != null)
-                    {
-                        if (nodeService.exists(testNodeRef))
-                        {
-                            if (log.isDebugEnabled())
-                            {
-                                log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                    if (testNodeRef != null) {
+                        if (nodeService.exists(testNodeRef)) {
+                            if (log.isDebugEnabled()) {
+                                log.debug(
+                                        "\tPermission test on node "
+                                                + nodeService.getPath(testNodeRef));
                             }
-                            ChildAssociationRef primaryParent = nodeService.getPrimaryParent(testNodeRef);
-                            NodeRef testParentNodeRef = getArgument(invocation, cad.parameter[0]); 
-                            if (primaryParent == null || testParentNodeRef == null
-                                    || !testParentNodeRef.equals(primaryParent.getParentRef()))
-                            {
-                                if (log.isDebugEnabled())
-                                {
-                                    log.debug("\tPermission test ignoring secondary parent association to "
-                                            + testParentNodeRef);
+                            ChildAssociationRef primaryParent =
+                                    nodeService.getPrimaryParent(testNodeRef);
+                            NodeRef testParentNodeRef = getArgument(invocation, cad.parameter[0]);
+                            if (primaryParent == null
+                                    || testParentNodeRef == null
+                                    || !testParentNodeRef.equals(primaryParent.getParentRef())) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug(
+                                            "\tPermission test ignoring secondary parent"
+                                                    + " association to "
+                                                    + testParentNodeRef);
                                 }
                                 testNodeRef = null;
                             }
-                        }
-                        else if (log.isDebugEnabled())
-                        {
+                        } else if (log.isDebugEnabled()) {
                             log.debug("\tPermission test on non-existing node " + testNodeRef);
                         }
                     }
-                }
-                else if (cad.parameter.length == 1 && ChildAssociationRef.class.isAssignableFrom(params[cad.parameter[0]]))
-                {
+                } else if (cad.parameter.length == 1
+                        && ChildAssociationRef.class.isAssignableFrom(params[cad.parameter[0]])) {
                     ChildAssociationRef testParentRef = getArgument(invocation, cad.parameter[0]);
-                    if (testParentRef != null)
-                    {
-                        if (testParentRef.isPrimary())
-                        {
+                    if (testParentRef != null) {
+                        if (testParentRef.isPrimary()) {
                             testNodeRef = testParentRef.getChildRef();
-                            if (log.isDebugEnabled())
-                            {
-                                if (nodeService.exists(testNodeRef))
-                                {
-                                    log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                                }
-                                else
-                                {
-                                    log.debug("\tPermission test on non-existing node " + testNodeRef);
+                            if (log.isDebugEnabled()) {
+                                if (nodeService.exists(testNodeRef)) {
+                                    log.debug(
+                                            "\tPermission test on node "
+                                                    + nodeService.getPath(testNodeRef));
+                                } else {
+                                    log.debug(
+                                            "\tPermission test on non-existing node "
+                                                    + testNodeRef);
                                 }
                             }
-                        }
-                        else if (log.isDebugEnabled())
-                        {
-                            log.debug("\tPermission test ignoring secondary parent association to "
-                                    + testParentRef.getParentRef());
+                        } else if (log.isDebugEnabled()) {
+                            log.debug(
+                                    "\tPermission test ignoring secondary parent association to "
+                                            + testParentRef.getParentRef());
                         }
                     }
+                } else {
+                    throw new ACLEntryVoterException(
+                            "The specified parameter is not a NodeRef or ChildAssociationRef");
                 }
-                else
-                {
-                    throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
-                }
-            }
-            else if (cad.typeString.equals(ACL_NODE))
-            {
-                if (cad.parameter.length != 1)
-                {
-                    throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
+            } else if (cad.typeString.equals(ACL_NODE)) {
+                if (cad.parameter.length != 1) {
+                    throw new ACLEntryVoterException(
+                            "The specified parameter is not a NodeRef or ChildAssociationRef");
                 }
 
-                if (List.class.isAssignableFrom(params[cad.parameter[0]]))
-                {
+                if (List.class.isAssignableFrom(params[cad.parameter[0]])) {
                     List<?> listArgument = getArgument(invocation, cad.parameter[0]);
-                    if (listArgument != null)
-                    {
+                    if (listArgument != null) {
                         NodeRef listNodeRef;
                         Integer accessAbstainOrDeny = null;
-                        for (Object listElement : listArgument)
-                        {
+                        for (Object listElement : listArgument) {
                             listNodeRef = getNodeRef(listElement, nodeService);
-                            Integer currentValue = shouldAbstainOrDeny(cad.required, listNodeRef, abstainForClassQNames, nodeService, permissionService);
+                            Integer currentValue =
+                                    shouldAbstainOrDeny(
+                                            cad.required,
+                                            listNodeRef,
+                                            abstainForClassQNames,
+                                            nodeService,
+                                            permissionService);
 
-                            if (currentValue != null)
-                            {
-                                if (currentValue == AccessDecisionVoter.ACCESS_DENIED)
-                                {
+                            if (currentValue != null) {
+                                if (currentValue == AccessDecisionVoter.ACCESS_DENIED) {
                                     return AccessDecisionVoter.ACCESS_DENIED;
-                                }
-                                else
-                                {
+                                } else {
                                     accessAbstainOrDeny = currentValue;
                                 }
                             }
-
                         }
 
-                        if (accessAbstainOrDeny != null)
-                        {
+                        if (accessAbstainOrDeny != null) {
                             return accessAbstainOrDeny;
                         }
-                        if((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
-                        {
+                        if ((hasMethodEntry == null) || (hasMethodEntry.booleanValue())) {
                             return AccessDecisionVoter.ACCESS_GRANTED;
-                        }
-                        else
-                        {
+                        } else {
                             return AccessDecisionVoter.ACCESS_DENIED;
                         }
-
                     }
-                }
-                else
-                {
+                } else {
                     Object testObject = getArgument(invocation, cad.parameter[0]);
-                    //If the execution reaches here, then testNodeRef is always null
+                    // If the execution reaches here, then testNodeRef is always null
                     testNodeRef = getNodeRef(testObject, nodeService);
                 }
-            }
-            else if (cad.typeString.equals(ACL_ITEM))
-            {
-                if (NodeRef.class.isAssignableFrom(params[cad.parameter[0]]))
-                {
-                    if (Map.class.isAssignableFrom(params[1]) || Map.class.isAssignableFrom(params[2]))
-                    {
-                        Map<QName, Serializable> properties = (Map<QName, Serializable>) (Map.class.isAssignableFrom(params[1]) ? getArgument(invocation, 1) : getArgument(invocation, 2));
-                        if (properties != null && properties.containsKey(ContentModel.PROP_OWNER))
-                        {
+            } else if (cad.typeString.equals(ACL_ITEM)) {
+                if (NodeRef.class.isAssignableFrom(params[cad.parameter[0]])) {
+                    if (Map.class.isAssignableFrom(params[1])
+                            || Map.class.isAssignableFrom(params[2])) {
+                        Map<QName, Serializable> properties =
+                                (Map<QName, Serializable>)
+                                        (Map.class.isAssignableFrom(params[1])
+                                                ? getArgument(invocation, 1)
+                                                : getArgument(invocation, 2));
+                        if (properties != null && properties.containsKey(ContentModel.PROP_OWNER)) {
                             testNodeRef = getArgument(invocation, cad.parameter[0]);
 
-                            boolean isChanged = !properties.get(ContentModel.PROP_OWNER).toString().equals(ownableService.getOwner(testNodeRef));
+                            boolean isChanged =
+                                    !properties
+                                            .get(ContentModel.PROP_OWNER)
+                                            .toString()
+                                            .equals(ownableService.getOwner(testNodeRef));
 
-                            if (!isChanged)
-                            {
+                            if (!isChanged) {
                                 testNodeRef = null;
                             }
 
-                            if (log.isDebugEnabled())
-                            {
-                                if (testNodeRef != null)
-                                {
-                                    if (nodeService.exists(testNodeRef))
-                                    {
-                                        log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                            if (log.isDebugEnabled()) {
+                                if (testNodeRef != null) {
+                                    if (nodeService.exists(testNodeRef)) {
+                                        log.debug(
+                                                "\tPermission test on node "
+                                                        + nodeService.getPath(testNodeRef));
+                                    } else {
+                                        log.debug(
+                                                "\tPermission test on non-existing node "
+                                                        + testNodeRef);
                                     }
-                                    else
-                                    {
-                                        log.debug("\tPermission test on non-existing node " + testNodeRef);
-                                    } 
                                 }
                             }
                         }
-                    }
-                    else if (QName.class.isAssignableFrom(params[1]) && params[2] != null)
-                    {
+                    } else if (QName.class.isAssignableFrom(params[1]) && params[2] != null) {
                         testNodeRef = getArgument(invocation, cad.parameter[0]);
                         QName arg1 = getArgument(invocation, 1);
                         boolean isOwnerProperty = ContentModel.PROP_OWNER.equals(arg1);
-                        if(isOwnerProperty)
-                        {
+                        if (isOwnerProperty) {
                             Object arg2 = getArgument(invocation, 2);
-                            boolean isChanged = (arg2 != null && !arg2.toString().equals(ownableService.getOwner(testNodeRef)));
+                            boolean isChanged =
+                                    (arg2 != null
+                                            && !arg2.toString()
+                                                    .equals(ownableService.getOwner(testNodeRef)));
 
-                            if (!isChanged)
-                            {
+                            if (!isChanged) {
                                 testNodeRef = null;
-                            }  
-                        }
-                        else
-                        {
+                            }
+                        } else {
                             testNodeRef = null;
                         }
 
-                        if (log.isDebugEnabled())
-                        {
-                            if (testNodeRef != null)
-                            {
-                                if (nodeService.exists(testNodeRef))
-                                {
-                                    log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                        if (log.isDebugEnabled()) {
+                            if (testNodeRef != null) {
+                                if (nodeService.exists(testNodeRef)) {
+                                    log.debug(
+                                            "\tPermission test on node "
+                                                    + nodeService.getPath(testNodeRef));
+                                } else {
+                                    log.debug(
+                                            "\tPermission test on non-existing node "
+                                                    + testNodeRef);
                                 }
-                                else
-                                {
-                                    log.debug("\tPermission test on non-existing node " + testNodeRef);
-                                } 
                             }
                         }
                     }
-                }
-                else
-                {
+                } else {
                     throw new ACLEntryVoterException("The specified parameter is not a Item");
                 }
-            }
-            else if (cad.typeString.equals(ACL_PARENT))
-            {
+            } else if (cad.typeString.equals(ACL_PARENT)) {
                 // There is no point having parent permissions for store
                 // refs
-                if (cad.parameter.length != 1)
-                {
-                    throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
-                }
-                else if (NodeRef.class.isAssignableFrom(params[cad.parameter[0]]))
-                {
+                if (cad.parameter.length != 1) {
+                    throw new ACLEntryVoterException(
+                            "The specified parameter is not a NodeRef or ChildAssociationRef");
+                } else if (NodeRef.class.isAssignableFrom(params[cad.parameter[0]])) {
                     NodeRef child = getArgument(invocation, cad.parameter[0]);
-                    if (child != null)
-                    {
+                    if (child != null) {
                         testNodeRef = nodeService.getPrimaryParent(child).getParentRef();
-                        if (log.isDebugEnabled())
-                        {
-                            if (nodeService.exists(testNodeRef))
-                            {
-                                log.debug("\tPermission test for parent on node " + nodeService.getPath(testNodeRef));
+                        if (log.isDebugEnabled()) {
+                            if (nodeService.exists(testNodeRef)) {
+                                log.debug(
+                                        "\tPermission test for parent on node "
+                                                + nodeService.getPath(testNodeRef));
+                            } else {
+                                log.debug(
+                                        "\tPermission test for parent on non-existing node "
+                                                + testNodeRef);
                             }
-                            else
-                            {
-                                log.debug("\tPermission test for parent on non-existing node " + testNodeRef);
-                            }
-                            log.debug("\tPermission test for parent on node " + nodeService.getPath(testNodeRef));
+                            log.debug(
+                                    "\tPermission test for parent on node "
+                                            + nodeService.getPath(testNodeRef));
                         }
                     }
-                }
-                else if (ChildAssociationRef.class.isAssignableFrom(params[cad.parameter[0]]))
-                {
+                } else if (ChildAssociationRef.class.isAssignableFrom(params[cad.parameter[0]])) {
                     ChildAssociationRef testParentRef = getArgument(invocation, cad.parameter[0]);
-                    if (testParentRef != null)
-                    {
+                    if (testParentRef != null) {
                         testNodeRef = testParentRef.getParentRef();
-                        if (log.isDebugEnabled())
-                        {
-                            if (nodeService.exists(testNodeRef))
-                            {
-                                log.debug("\tPermission test for parent on child assoc ref for node "
-                                        + nodeService.getPath(testNodeRef));
+                        if (log.isDebugEnabled()) {
+                            if (nodeService.exists(testNodeRef)) {
+                                log.debug(
+                                        "\tPermission test for parent on child assoc ref for node "
+                                                + nodeService.getPath(testNodeRef));
+                            } else {
+                                log.debug(
+                                        "\tPermission test for parent on child assoc ref for non"
+                                                + " existing node "
+                                                + testNodeRef);
                             }
-                            else
-                            {
-                                log.debug("\tPermission test for parent on child assoc ref for non existing node "
-                                        + testNodeRef);
-                            }
-                           
                         }
                     }
 
-                }
-                else
-                {
-                    throw new ACLEntryVoterException("The specified parameter is not a ChildAssociationRef");
+                } else {
+                    throw new ACLEntryVoterException(
+                            "The specified parameter is not a ChildAssociationRef");
                 }
             }
 
-            Integer accessAbstainOrDeny = shouldAbstainOrDeny(cad.required, testNodeRef, abstainForClassQNames, nodeService, permissionService);
-            if (accessAbstainOrDeny != null)
-            {
+            Integer accessAbstainOrDeny =
+                    shouldAbstainOrDeny(
+                            cad.required,
+                            testNodeRef,
+                            abstainForClassQNames,
+                            nodeService,
+                            permissionService);
+            if (accessAbstainOrDeny != null) {
                 return accessAbstainOrDeny;
             }
         }
 
-        if((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
-        {
-             return AccessDecisionVoter.ACCESS_GRANTED;
-        }
-        else
-        {
+        if ((hasMethodEntry == null) || (hasMethodEntry.booleanValue())) {
+            return AccessDecisionVoter.ACCESS_GRANTED;
+        } else {
             return AccessDecisionVoter.ACCESS_DENIED;
         }
     }
 
     @SuppressWarnings("unchecked")
-    private <T> T getArgument(MethodInvocation invocation, int index)
-    {
+    private <T> T getArgument(MethodInvocation invocation, int index) {
         Object[] args = invocation.getArguments();
-        return index > args.length ? null : (T)args[index];        
+        return index > args.length ? null : (T) args[index];
     }
 
-    private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
-    {
+    private List<ConfigAttributeDefintion> extractSupportedDefinitions(
+            ConfigAttributeDefinition config) {
         List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>(2);
         Iterator iter = config.getConfigAttributes();
 
-        while (iter.hasNext())
-        {
+        while (iter.hasNext()) {
             ConfigAttribute attr = (ConfigAttribute) iter.next();
 
-            if (this.supports(attr))
-            {
+            if (this.supports(attr)) {
                 definitions.add(new ConfigAttributeDefintion(attr));
             }
-
         }
         return definitions;
     }
 
-    private class ConfigAttributeDefintion
-    {
+    private class ConfigAttributeDefintion {
         String typeString;
 
         SimplePermissionReference required;
@@ -630,59 +556,59 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
         String authority;
 
-        ConfigAttributeDefintion(ConfigAttribute attr)
-        {
+        ConfigAttributeDefintion(ConfigAttribute attr) {
             StringTokenizer st = new StringTokenizer(attr.getAttribute(), ".", false);
-            if (st.countTokens() < 1)
-            {
-                throw new ACLEntryVoterException("There must be at least one token in a config attribute");
+            if (st.countTokens() < 1) {
+                throw new ACLEntryVoterException(
+                        "There must be at least one token in a config attribute");
             }
             typeString = st.nextToken();
 
-            if (!(typeString.equals(ACL_NODE) || typeString.equals(ACL_ITEM) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
-                    || typeString.equals(ACL_PARENT) || typeString.equals(ACL_ALLOW) || typeString.equals(ACL_METHOD) || typeString
-                    .equals(ACL_DENY)))
-            {
-                throw new ACLEntryVoterException("Invalid type: must be ACL_NODE, ACL_ITEM, ACL_PARENT or ACL_ALLOW");
+            if (!(typeString.equals(ACL_NODE)
+                    || typeString.equals(ACL_ITEM)
+                    || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
+                    || typeString.equals(ACL_PARENT)
+                    || typeString.equals(ACL_ALLOW)
+                    || typeString.equals(ACL_METHOD)
+                    || typeString.equals(ACL_DENY))) {
+                throw new ACLEntryVoterException(
+                        "Invalid type: must be ACL_NODE, ACL_ITEM, ACL_PARENT or ACL_ALLOW");
             }
 
-            if (typeString.equals(ACL_NODE) || typeString.equals(ACL_ITEM) || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
-                    || typeString.equals(ACL_PARENT))
-            {
+            if (typeString.equals(ACL_NODE)
+                    || typeString.equals(ACL_ITEM)
+                    || typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)
+                    || typeString.equals(ACL_PARENT)) {
                 int count = st.countTokens();
-                if (typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD))
-                {
-                    if (count != 3 && count != 4)
-                    {
-                        throw new ACLEntryVoterException("There must be three or four . separated tokens in each config attribute");                        
+                if (typeString.equals(ACL_PRI_CHILD_ASSOC_ON_CHILD)) {
+                    if (count != 3 && count != 4) {
+                        throw new ACLEntryVoterException(
+                                "There must be three or four . separated tokens in each config"
+                                        + " attribute");
                     }
-                }
-                else if (count != 3)
-                {
-                    throw new ACLEntryVoterException("There must be three . separated tokens in each config attribute");
+                } else if (count != 3) {
+                    throw new ACLEntryVoterException(
+                            "There must be three . separated tokens in each config attribute");
                 }
                 // Handle a variable number of parameters
                 parameter = new int[count - 2];
-                for (int i=0; i<parameter.length; i++)
-                {
-                    parameter[i] = Integer.parseInt(st.nextToken());                    
+                for (int i = 0; i < parameter.length; i++) {
+                    parameter[i] = Integer.parseInt(st.nextToken());
                 }
                 String qNameString = st.nextToken();
                 String permissionString = st.nextToken();
                 QName qName = QName.createQName(qNameString, nspr);
 
-                required = SimplePermissionReference.getPermissionReference(qName, permissionString);
-            }
-            else if (typeString.equals(ACL_METHOD))
-            {
-                if (st.countTokens() != 1)
-                {
+                required =
+                        SimplePermissionReference.getPermissionReference(qName, permissionString);
+            } else if (typeString.equals(ACL_METHOD)) {
+                if (st.countTokens() != 1) {
                     throw new ACLEntryVoterException(
-                            "There must be two . separated tokens in each group or role config attribute");
+                            "There must be two . separated tokens in each group or role config"
+                                    + " attribute");
                 }
                 authority = st.nextToken();
             }
-
         }
     }
 }

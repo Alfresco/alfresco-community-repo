@@ -27,9 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.integration.recordfolder;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
@@ -45,7 +43,9 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.GUID;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Move record folder tests.
@@ -53,266 +53,339 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class MoveRecordFolderTest extends BaseRMTestCase
-{
+public class MoveRecordFolderTest extends BaseRMTestCase {
     @Override
-    protected boolean isRecordTest()
-    {
+    protected boolean isRecordTest() {
         return true;
     }
 
     /**
-     * Given two categories, both with cut off immediately schedules, when the record is move then all the parts of the
-     * record should be correct based on the new schedule.
+     * Given two categories, both with cut off immediately schedules, when the record is move then
+     * all the parts of the record should be correct based on the new schedule.
      *
      * @see https://issues.alfresco.com/jira/browse/RM-1345
      */
-    public void testMoveRecordFolderBeforeCutOffFolderLevelDisposition() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
-        {
-            NodeRef recordFolder;
-            NodeRef destinationRecordCategory;
+    public void testMoveRecordFolderBeforeCutOffFolderLevelDisposition() throws Exception {
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest(null, false) {
+                    NodeRef recordFolder;
+                    NodeRef destinationRecordCategory;
 
-            public void given()
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        NodeRef rcOne = createRecordCategory(false);
-                        destinationRecordCategory = createRecordCategory(false);
-                        recordFolder = recordFolderService.createRecordFolder(rcOne, GUID.generate());
+                    public void given() {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        NodeRef rcOne = createRecordCategory(false);
+                                        destinationRecordCategory = createRecordCategory(false);
+                                        recordFolder =
+                                                recordFolderService.createRecordFolder(
+                                                        rcOne, GUID.generate());
 
-                        // check for the lifecycle aspect
-                        assertTrue(nodeService.hasAspect(recordFolder, ASPECT_DISPOSITION_LIFECYCLE));
+                                        // check for the lifecycle aspect
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        recordFolder,
+                                                        ASPECT_DISPOSITION_LIFECYCLE));
 
-                        // check the disposition action details
-                        DispositionAction dispositionAction = dispositionService.getNextDispositionAction(recordFolder);
-                        assertNotNull(dispositionAction);
-                        assertNotNull(CutOffAction.NAME, dispositionAction.getName());
-                        assertNotNull(dispositionAction.getAsOfDate());
-                        assertTrue(dispositionService.isNextDispositionActionEligible(recordFolder));
+                                        // check the disposition action details
+                                        DispositionAction dispositionAction =
+                                                dispositionService.getNextDispositionAction(
+                                                        recordFolder);
+                                        assertNotNull(dispositionAction);
+                                        assertNotNull(
+                                                CutOffAction.NAME, dispositionAction.getName());
+                                        assertNotNull(dispositionAction.getAsOfDate());
+                                        assertTrue(
+                                                dispositionService.isNextDispositionActionEligible(
+                                                        recordFolder));
+                                    }
+                                });
+
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // check the search aspect properties
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        recordFolder, ASPECT_RM_SEARCH));
+                                        assertEquals(
+                                                CutOffAction.NAME,
+                                                nodeService.getProperty(
+                                                        recordFolder,
+                                                        PROP_RS_DISPOSITION_ACTION_NAME));
+                                        assertNotNull(
+                                                nodeService.getProperty(
+                                                        recordFolder,
+                                                        PROP_RS_DISPOSITION_ACTION_AS_OF));
+                                    }
+                                });
+                    }
+
+                    public void when() throws Exception {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // move record folder
+                                        fileFolderService.move(
+                                                recordFolder,
+                                                destinationRecordCategory,
+                                                GUID.generate());
+                                    }
+                                });
+                    }
+
+                    public void then() {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // check for the lifecycle aspect
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        recordFolder,
+                                                        ASPECT_DISPOSITION_LIFECYCLE));
+
+                                        // check the disposition action details
+                                        DispositionAction dispositionAction =
+                                                dispositionService.getNextDispositionAction(
+                                                        recordFolder);
+                                        assertNotNull(dispositionAction);
+                                        assertNotNull(
+                                                CutOffAction.NAME, dispositionAction.getName());
+                                        assertNotNull(dispositionAction.getAsOfDate());
+                                        assertTrue(
+                                                dispositionService.isNextDispositionActionEligible(
+                                                        recordFolder));
+
+                                        // check the search aspect properties
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        recordFolder, ASPECT_RM_SEARCH));
+                                        assertEquals(
+                                                CutOffAction.NAME,
+                                                nodeService.getProperty(
+                                                        recordFolder,
+                                                        PROP_RS_DISPOSITION_ACTION_NAME));
+                                        assertNotNull(
+                                                nodeService.getProperty(
+                                                        recordFolder,
+                                                        PROP_RS_DISPOSITION_ACTION_AS_OF));
+                                    }
+                                });
                     }
                 });
-
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // check the search aspect properties
-                        assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
-                        assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
-                        assertNotNull(nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_AS_OF));
-                    }
-                });
-            }
-
-            public void when() throws Exception
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // move record folder
-                        fileFolderService.move(recordFolder, destinationRecordCategory, GUID.generate());
-                    }
-                });
-            }
-
-            public void then()
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // check for the lifecycle aspect
-                        assertTrue(nodeService.hasAspect(recordFolder, ASPECT_DISPOSITION_LIFECYCLE));
-
-                        // check the disposition action details
-                        DispositionAction dispositionAction = dispositionService.getNextDispositionAction(recordFolder);
-                        assertNotNull(dispositionAction);
-                        assertNotNull(CutOffAction.NAME, dispositionAction.getName());
-                        assertNotNull(dispositionAction.getAsOfDate());
-                        assertTrue(dispositionService.isNextDispositionActionEligible(recordFolder));
-
-                        // check the search aspect properties
-                        assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
-                        assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
-                        assertNotNull(nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_AS_OF));
-                    }
-                });
-            }
-        });
     }
 
-    /**
-     *
-     */
-    public void testMoveRecordFolderBeforeCutOffIntoAFolderWithNoDisposition() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
-        {
-            NodeRef recordFolder;
-            NodeRef destinationRecordCategory;
+    /** */
+    public void testMoveRecordFolderBeforeCutOffIntoAFolderWithNoDisposition() throws Exception {
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest(null, false) {
+                    NodeRef recordFolder;
+                    NodeRef destinationRecordCategory;
 
-            public void given()
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        NodeRef rcOne = createRecordCategory(false);
-                        destinationRecordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                        recordFolder = recordFolderService.createRecordFolder(rcOne, GUID.generate());
+                    public void given() {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        NodeRef rcOne = createRecordCategory(false);
+                                        destinationRecordCategory =
+                                                filePlanService.createRecordCategory(
+                                                        filePlan, GUID.generate());
+                                        recordFolder =
+                                                recordFolderService.createRecordFolder(
+                                                        rcOne, GUID.generate());
 
-                        // check for the lifecycle aspect
-                        assertTrue(nodeService.hasAspect(recordFolder, ASPECT_DISPOSITION_LIFECYCLE));
+                                        // check for the lifecycle aspect
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        recordFolder,
+                                                        ASPECT_DISPOSITION_LIFECYCLE));
 
-                        // check the disposition action details
-                        DispositionAction dispositionAction = dispositionService.getNextDispositionAction(recordFolder);
-                        assertNotNull(dispositionAction);
-                        assertNotNull(CutOffAction.NAME, dispositionAction.getName());
-                        assertNotNull(dispositionAction.getAsOfDate());
-                        assertTrue(dispositionService.isNextDispositionActionEligible(recordFolder));
+                                        // check the disposition action details
+                                        DispositionAction dispositionAction =
+                                                dispositionService.getNextDispositionAction(
+                                                        recordFolder);
+                                        assertNotNull(dispositionAction);
+                                        assertNotNull(
+                                                CutOffAction.NAME, dispositionAction.getName());
+                                        assertNotNull(dispositionAction.getAsOfDate());
+                                        assertTrue(
+                                                dispositionService.isNextDispositionActionEligible(
+                                                        recordFolder));
+                                    }
+                                });
+
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // check the search aspect properties
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        recordFolder, ASPECT_RM_SEARCH));
+                                        assertEquals(
+                                                CutOffAction.NAME,
+                                                nodeService.getProperty(
+                                                        recordFolder,
+                                                        PROP_RS_DISPOSITION_ACTION_NAME));
+                                        assertNotNull(
+                                                nodeService.getProperty(
+                                                        recordFolder,
+                                                        PROP_RS_DISPOSITION_ACTION_AS_OF));
+                                    }
+                                });
+                    }
+
+                    public void when() throws Exception {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // move record folder
+                                        fileFolderService.move(
+                                                recordFolder,
+                                                destinationRecordCategory,
+                                                GUID.generate());
+                                    }
+                                });
+                    }
+
+                    public void then() {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // check for the lifecycle aspect
+                                        assertFalse(
+                                                nodeService.hasAspect(
+                                                        recordFolder,
+                                                        ASPECT_DISPOSITION_LIFECYCLE));
+
+                                        // check the disposition action details
+                                        assertNull(
+                                                dispositionService.getNextDispositionAction(
+                                                        recordFolder));
+
+                                        // check the search aspect properties
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        recordFolder, ASPECT_RM_SEARCH));
+                                    }
+                                });
                     }
                 });
-
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // check the search aspect properties
-                        assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
-                        assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_NAME));
-                        assertNotNull(nodeService.getProperty(recordFolder, PROP_RS_DISPOSITION_ACTION_AS_OF));
-                    }
-                });
-            }
-
-            public void when() throws Exception
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // move record folder
-                        fileFolderService.move(recordFolder, destinationRecordCategory, GUID.generate());
-                    }
-                });
-            }
-
-            public void then()
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // check for the lifecycle aspect
-                        assertFalse(nodeService.hasAspect(recordFolder, ASPECT_DISPOSITION_LIFECYCLE));
-
-                        // check the disposition action details
-                        assertNull(dispositionService.getNextDispositionAction(recordFolder));
-
-                        // check the search aspect properties
-                        assertTrue(nodeService.hasAspect(recordFolder, ASPECT_RM_SEARCH));
-                    }
-                });
-            }
-        });
     }
 
-    /**
-     *
-     */
-    public void testMoveRecordFolderWithRecordsBeforeCutOffRecordLevelDisposition() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
-        {
-            NodeRef record;
-            NodeRef recordFolder;
-            NodeRef destinationRecordCategory;
+    /** */
+    public void testMoveRecordFolderWithRecordsBeforeCutOffRecordLevelDisposition()
+            throws Exception {
+        doBehaviourDrivenTest(
+                new BehaviourDrivenTest(null, false) {
+                    NodeRef record;
+                    NodeRef recordFolder;
+                    NodeRef destinationRecordCategory;
 
-            public void given()
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        NodeRef rcOne = createRecordCategory(true);
-                        destinationRecordCategory = createRecordCategory(true);
-                        recordFolder = recordFolderService.createRecordFolder(rcOne, GUID.generate());
-                        record = utils.createRecord(recordFolder, GUID.generate());
+                    public void given() {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        NodeRef rcOne = createRecordCategory(true);
+                                        destinationRecordCategory = createRecordCategory(true);
+                                        recordFolder =
+                                                recordFolderService.createRecordFolder(
+                                                        rcOne, GUID.generate());
+                                        record = utils.createRecord(recordFolder, GUID.generate());
 
-                        // check for the lifecycle aspect
-                        assertFalse(nodeService.hasAspect(recordFolder, ASPECT_DISPOSITION_LIFECYCLE));
-                        assertTrue(nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE));
+                                        // check for the lifecycle aspect
+                                        assertFalse(
+                                                nodeService.hasAspect(
+                                                        recordFolder,
+                                                        ASPECT_DISPOSITION_LIFECYCLE));
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        record, ASPECT_DISPOSITION_LIFECYCLE));
 
-                        // check the disposition action details
-                        assertNull(dispositionService.getNextDispositionAction(recordFolder));
-                        DispositionAction dispositionAction = dispositionService.getNextDispositionAction(record);
-                        assertNotNull(dispositionAction);
-                        assertNotNull(CutOffAction.NAME, dispositionAction.getName());
-                        assertNotNull(dispositionAction.getAsOfDate());
-                        assertTrue(dispositionService.isNextDispositionActionEligible(record));
+                                        // check the disposition action details
+                                        assertNull(
+                                                dispositionService.getNextDispositionAction(
+                                                        recordFolder));
+                                        DispositionAction dispositionAction =
+                                                dispositionService.getNextDispositionAction(record);
+                                        assertNotNull(dispositionAction);
+                                        assertNotNull(
+                                                CutOffAction.NAME, dispositionAction.getName());
+                                        assertNotNull(dispositionAction.getAsOfDate());
+                                        assertTrue(
+                                                dispositionService.isNextDispositionActionEligible(
+                                                        record));
+                                    }
+                                });
+
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // check the search aspect properties
+                                        assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
+                                        assertEquals(
+                                                CutOffAction.NAME,
+                                                nodeService.getProperty(
+                                                        record, PROP_RS_DISPOSITION_ACTION_NAME));
+                                        assertNotNull(
+                                                nodeService.getProperty(
+                                                        record, PROP_RS_DISPOSITION_ACTION_AS_OF));
+                                    }
+                                });
+                    }
+
+                    public void when() throws Exception {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // move record folder
+                                        fileFolderService.move(
+                                                recordFolder,
+                                                destinationRecordCategory,
+                                                GUID.generate());
+                                    }
+                                });
+                    }
+
+                    public void then() {
+                        doTestInTransaction(
+                                new VoidTest() {
+                                    public void runImpl() throws Exception {
+                                        // check for the lifecycle aspect
+                                        assertFalse(
+                                                nodeService.hasAspect(
+                                                        recordFolder,
+                                                        ASPECT_DISPOSITION_LIFECYCLE));
+                                        assertTrue(
+                                                nodeService.hasAspect(
+                                                        record, ASPECT_DISPOSITION_LIFECYCLE));
+
+                                        // check the disposition action details
+                                        assertNull(
+                                                dispositionService.getNextDispositionAction(
+                                                        recordFolder));
+                                        DispositionAction dispositionAction =
+                                                dispositionService.getNextDispositionAction(record);
+                                        assertNotNull(dispositionAction);
+                                        assertNotNull(
+                                                CutOffAction.NAME, dispositionAction.getName());
+                                        assertNotNull(dispositionAction.getAsOfDate());
+                                        assertTrue(
+                                                dispositionService.isNextDispositionActionEligible(
+                                                        record));
+
+                                        // check the search aspect properties
+                                        assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
+                                        assertEquals(
+                                                CutOffAction.NAME,
+                                                nodeService.getProperty(
+                                                        record, PROP_RS_DISPOSITION_ACTION_NAME));
+                                        assertNotNull(
+                                                nodeService.getProperty(
+                                                        record, PROP_RS_DISPOSITION_ACTION_AS_OF));
+                                    }
+                                });
                     }
                 });
-
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // check the search aspect properties
-                        assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
-                        assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
-                        assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF));
-                    }
-                });
-            }
-
-            public void when() throws Exception
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // move record folder
-                        fileFolderService.move(recordFolder, destinationRecordCategory, GUID.generate());
-                    }
-                });
-            }
-
-            public void then()
-            {
-                doTestInTransaction(new VoidTest()
-                {
-                    public void runImpl() throws Exception
-                    {
-                        // check for the lifecycle aspect
-                        assertFalse(nodeService.hasAspect(recordFolder, ASPECT_DISPOSITION_LIFECYCLE));
-                        assertTrue(nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE));
-
-                        // check the disposition action details
-                        assertNull(dispositionService.getNextDispositionAction(recordFolder));
-                        DispositionAction dispositionAction = dispositionService.getNextDispositionAction(record);
-                        assertNotNull(dispositionAction);
-                        assertNotNull(CutOffAction.NAME, dispositionAction.getName());
-                        assertNotNull(dispositionAction.getAsOfDate());
-                        assertTrue(dispositionService.isNextDispositionActionEligible(record));
-
-                        // check the search aspect properties
-                        assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
-                        assertEquals(CutOffAction.NAME,
-                                    nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
-                        assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF));
-                    }
-                });
-            }
-        });
     }
 
     /**
@@ -320,241 +393,273 @@ public class MoveRecordFolderTest extends BaseRMTestCase
      *
      * @see https://issues.alfresco.com/jira/browse/RM-1039
      */
-    public void testMoveRecordFolderFromNoDisToDis() throws Exception
-    {
-        final NodeRef recordFolder = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create a record category (no disposition schedule)
-                NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, "Caitlin Reed");
+    public void testMoveRecordFolderFromNoDisToDis() throws Exception {
+        final NodeRef recordFolder =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create a record category (no disposition schedule)
+                                NodeRef recordCategory =
+                                        filePlanService.createRecordCategory(
+                                                filePlan, "Caitlin Reed");
 
-                // create a record folder
-                return recordFolderService.createRecordFolder(recordCategory, "Grace Wetherall");
-            }
+                                // create a record folder
+                                return recordFolderService.createRecordFolder(
+                                        recordCategory, "Grace Wetherall");
+                            }
 
-            @Override
-            public void test(NodeRef result) throws Exception
-            {
-                assertNotNull(result);
-                assertNull(dispositionService.getDispositionSchedule(result));
-                assertFalse(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(result, FILING));
-            }
-        });
+                            @Override
+                            public void test(NodeRef result) throws Exception {
+                                assertNotNull(result);
+                                assertNull(dispositionService.getDispositionSchedule(result));
+                                assertFalse(
+                                        nodeService.hasAspect(
+                                                result, ASPECT_DISPOSITION_LIFECYCLE));
+                                assertEquals(
+                                        AccessStatus.ALLOWED,
+                                        permissionService.hasPermission(result, FILING));
+                            }
+                        });
 
-        final NodeRef record = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create a record
-                return fileFolderService.create(recordFolder, "mytest.txt", ContentModel.TYPE_CONTENT).getNodeRef();
-            }
+        final NodeRef record =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create a record
+                                return fileFolderService
+                                        .create(
+                                                recordFolder,
+                                                "mytest.txt",
+                                                ContentModel.TYPE_CONTENT)
+                                        .getNodeRef();
+                            }
 
-            @Override
-            public void test(NodeRef result) throws Exception
-            {
-                assertNotNull(result);
-                assertNull(dispositionService.getDispositionSchedule(result));
-                assertFalse(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(result, FILING));
-            }
-        });
+                            @Override
+                            public void test(NodeRef result) throws Exception {
+                                assertNotNull(result);
+                                assertNull(dispositionService.getDispositionSchedule(result));
+                                assertFalse(
+                                        nodeService.hasAspect(
+                                                result, ASPECT_DISPOSITION_LIFECYCLE));
+                                assertEquals(
+                                        AccessStatus.ALLOWED,
+                                        permissionService.hasPermission(result, FILING));
+                            }
+                        });
 
-        doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run() throws Exception
-            {
-                Capability capability = capabilityService.getCapability("CreateModifyDestroyFolders");
-                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(recordFolder));
-                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, capability.evaluate(recordFolder, rmContainer));
+        doTestInTransaction(
+                new Test<NodeRef>() {
+                    @Override
+                    public NodeRef run() throws Exception {
+                        Capability capability =
+                                capabilityService.getCapability("CreateModifyDestroyFolders");
+                        assertEquals(
+                                AccessDecisionVoter.ACCESS_GRANTED,
+                                capability.evaluate(recordFolder));
+                        assertEquals(
+                                AccessDecisionVoter.ACCESS_GRANTED,
+                                capability.evaluate(recordFolder, rmContainer));
 
-                // take a look at the move capability
-                Capability moveCapability = capabilityService.getCapability("Move");
-                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, moveCapability.evaluate(recordFolder, rmContainer));
+                        // take a look at the move capability
+                        Capability moveCapability = capabilityService.getCapability("Move");
+                        assertEquals(
+                                AccessDecisionVoter.ACCESS_GRANTED,
+                                moveCapability.evaluate(recordFolder, rmContainer));
 
-                // move the node
-                return fileFolderService.move(recordFolder, rmContainer, null).getNodeRef();
-            }
+                        // move the node
+                        return fileFolderService.move(recordFolder, rmContainer, null).getNodeRef();
+                    }
 
-            @Override
-            public void test(NodeRef result) throws Exception
-            {
-                assertNotNull(result);
-                assertNotNull(dispositionService.getDispositionSchedule(result));
-                assertTrue(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
+                    @Override
+                    public void test(NodeRef result) throws Exception {
+                        assertNotNull(result);
+                        assertNotNull(dispositionService.getDispositionSchedule(result));
+                        assertTrue(nodeService.hasAspect(result, ASPECT_DISPOSITION_LIFECYCLE));
 
-                DispositionAction dispositionAction = dispositionService.getNextDispositionAction(result);
-                assertNotNull(dispositionAction);
+                        DispositionAction dispositionAction =
+                                dispositionService.getNextDispositionAction(result);
+                        assertNotNull(dispositionAction);
 
-                assertNull(dispositionAction.getAsOfDate());
-                assertEquals("cutoff", dispositionAction.getName());
-                assertEquals(1, dispositionAction.getEventCompletionDetails().size());
+                        assertNull(dispositionAction.getAsOfDate());
+                        assertEquals("cutoff", dispositionAction.getName());
+                        assertEquals(1, dispositionAction.getEventCompletionDetails().size());
 
-                // take a look at the record and check things are as we would expect
-                assertFalse(nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE));
-            }
-        });
+                        // take a look at the record and check things are as we would expect
+                        assertFalse(nodeService.hasAspect(record, ASPECT_DISPOSITION_LIFECYCLE));
+                    }
+                });
     }
-    
+
     /**
      * Try and move a cutoff folder
-     * 
+     *
      * @see https://issues.alfresco.com/jira/browse/RM-1039
      */
-    public void testMoveCutoffRecordFolder() throws Exception
-    {
-        final NodeRef destination = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create a record category (no disposition schedule)
-                return filePlanService.createRecordCategory(filePlan, "Caitlin Reed");
-            }
-        });
+    public void testMoveCutoffRecordFolder() throws Exception {
+        final NodeRef destination =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create a record category (no disposition schedule)
+                                return filePlanService.createRecordCategory(
+                                        filePlan, "Caitlin Reed");
+                            }
+                        });
 
-        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create folder
-                NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, "Peter Edward Francis");
+        final NodeRef testFolder =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create folder
+                                NodeRef testFolder =
+                                        recordFolderService.createRecordFolder(
+                                                rmContainer, "Peter Edward Francis");
 
-                // complete event
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
-                rmActionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
+                                // complete event
+                                Map<String, Serializable> params = new HashMap<>(1);
+                                params.put(
+                                        CompleteEventAction.PARAM_EVENT_NAME,
+                                        CommonRMTestUtils.DEFAULT_EVENT_NAME);
+                                rmActionService.executeRecordsManagementAction(
+                                        testFolder, CompleteEventAction.NAME, params);
 
-                // cutoff folder
-                rmActionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
+                                // cutoff folder
+                                rmActionService.executeRecordsManagementAction(
+                                        testFolder, CutOffAction.NAME);
 
-                return testFolder;
-            }
+                                return testFolder;
+                            }
 
-            @Override
-            public void test(NodeRef testFolder) throws Exception
-            {
-                // take a look at the move capability
-                Capability moveCapability = capabilityService.getCapability("MoveRecordFolder");
-                assertEquals(AccessDecisionVoter.ACCESS_DENIED, moveCapability.evaluate(testFolder, destination));
-            }
-        });
+                            @Override
+                            public void test(NodeRef testFolder) throws Exception {
+                                // take a look at the move capability
+                                Capability moveCapability =
+                                        capabilityService.getCapability("MoveRecordFolder");
+                                assertEquals(
+                                        AccessDecisionVoter.ACCESS_DENIED,
+                                        moveCapability.evaluate(testFolder, destination));
+                            }
+                        });
 
-        doTestInTransaction(new FailureTest()
-        {
-            @Override
-            public void run() throws Exception
-            {
-                fileFolderService.move(testFolder, destination, null).getNodeRef();
-            }
-        });
+        doTestInTransaction(
+                new FailureTest() {
+                    @Override
+                    public void run() throws Exception {
+                        fileFolderService.move(testFolder, destination, null).getNodeRef();
+                    }
+                });
     }
 
     // try and move a destroyed folder
-    public void testMoveDestroyedRecordFolder() throws Exception
-    {
-        final NodeRef destination = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create a record category (no disposition schedule)
-                return filePlanService.createRecordCategory(filePlan, "Caitlin Reed");
-            }
-        });
+    public void testMoveDestroyedRecordFolder() throws Exception {
+        final NodeRef destination =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create a record category (no disposition schedule)
+                                return filePlanService.createRecordCategory(
+                                        filePlan, "Caitlin Reed");
+                            }
+                        });
 
-        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create folder
-                NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, "Peter Edward Francis");
+        final NodeRef testFolder =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create folder
+                                NodeRef testFolder =
+                                        recordFolderService.createRecordFolder(
+                                                rmContainer, "Peter Edward Francis");
 
-                // complete event
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
-                rmActionService.executeRecordsManagementAction(testFolder, CompleteEventAction.NAME, params);
+                                // complete event
+                                Map<String, Serializable> params = new HashMap<>(1);
+                                params.put(
+                                        CompleteEventAction.PARAM_EVENT_NAME,
+                                        CommonRMTestUtils.DEFAULT_EVENT_NAME);
+                                rmActionService.executeRecordsManagementAction(
+                                        testFolder, CompleteEventAction.NAME, params);
 
-                // cutoff & destroy folder
-                rmActionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
-                rmActionService.executeRecordsManagementAction(testFolder, DestroyAction.NAME);
+                                // cutoff & destroy folder
+                                rmActionService.executeRecordsManagementAction(
+                                        testFolder, CutOffAction.NAME);
+                                rmActionService.executeRecordsManagementAction(
+                                        testFolder, DestroyAction.NAME);
 
-                return testFolder;
-            }
+                                return testFolder;
+                            }
+                        });
 
-        });
+        doTestInTransaction(
+                new Test<NodeRef>() {
+                    @Override
+                    public NodeRef run() throws Exception {
+                        Capability moveCapability =
+                                capabilityService.getCapability("MoveRecordFolder");
+                        assertEquals(
+                                AccessDecisionVoter.ACCESS_GRANTED,
+                                moveCapability.evaluate(testFolder, destination));
 
-        doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run() throws Exception
-            {
-                Capability moveCapability = capabilityService.getCapability("MoveRecordFolder");
-                assertEquals(AccessDecisionVoter.ACCESS_GRANTED, moveCapability.evaluate(testFolder, destination));
+                        return fileFolderService.move(testFolder, destination, null).getNodeRef();
+                    }
 
-                return fileFolderService.move(testFolder, destination, null).getNodeRef();
-            }
-
-            @Override
-            public void test(NodeRef result) throws Exception
-            {
-                assertNotNull(result);
-            }
-        });
-
+                    @Override
+                    public void test(NodeRef result) throws Exception {
+                        assertNotNull(result);
+                    }
+                });
     }
 
-    /**
-     * Given a closed folder
-     * When we evaluate the move capability on it
-     * The access is denied
-     */
-    public void testMoveClosedFolder()
-    {
-        final NodeRef destination = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create a record category
-                return filePlanService.createRecordCategory(filePlan, GUID.generate());
-            }
-        });
+    /** Given a closed folder When we evaluate the move capability on it The access is denied */
+    public void testMoveClosedFolder() {
+        final NodeRef destination =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create a record category
+                                return filePlanService.createRecordCategory(
+                                        filePlan, GUID.generate());
+                            }
+                        });
 
-        final NodeRef testFolder = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create folder
-                NodeRef testFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
+        final NodeRef testFolder =
+                doTestInTransaction(
+                        new Test<NodeRef>() {
+                            @Override
+                            public NodeRef run() {
+                                // create folder
+                                NodeRef testFolder =
+                                        recordFolderService.createRecordFolder(
+                                                rmContainer, GUID.generate());
 
-                // close folder
-                recordFolderService.closeRecordFolder(testFolder);
+                                // close folder
+                                recordFolderService.closeRecordFolder(testFolder);
 
-                return testFolder;
-            }
+                                return testFolder;
+                            }
 
-            @Override
-            public void test(NodeRef testFolder) throws Exception
-            {
-                Capability moveCapability = capabilityService.getCapability("MoveRecordFolder");
-                assertEquals(AccessDecisionVoter.ACCESS_DENIED, moveCapability.evaluate(testFolder, destination));
-            }
-        });
+                            @Override
+                            public void test(NodeRef testFolder) throws Exception {
+                                Capability moveCapability =
+                                        capabilityService.getCapability("MoveRecordFolder");
+                                assertEquals(
+                                        AccessDecisionVoter.ACCESS_DENIED,
+                                        moveCapability.evaluate(testFolder, destination));
+                            }
+                        });
     }
 
-    private NodeRef createRecordCategory(boolean recordLevel)
-    {
+    private NodeRef createRecordCategory(boolean recordLevel) {
         NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
-        DispositionSchedule dis = utils.createBasicDispositionSchedule(rc, GUID.generate(), GUID.generate(),
-                    recordLevel, false);
+        DispositionSchedule dis =
+                utils.createBasicDispositionSchedule(
+                        rc, GUID.generate(), GUID.generate(), recordLevel, false);
         Map<QName, Serializable> adParams = new HashMap<>(3);
         adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
         adParams.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());

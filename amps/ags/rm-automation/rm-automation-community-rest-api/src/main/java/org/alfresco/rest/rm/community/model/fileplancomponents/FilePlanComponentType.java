@@ -32,8 +32,7 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class FilePlanComponentType
-{
+public class FilePlanComponentType {
     public static final String FILE_PLAN_TYPE = "rma:filePlan";
     public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
     public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";

@@ -27,12 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
 import org.alfresco.repo.module.ModuleComponent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.util.List;
 
 /**
  * Convenience class to ensure all V2.0 patches are executed before v2.1
@@ -42,26 +42,22 @@ import org.springframework.context.ApplicationContextAware;
  */
 @SuppressWarnings("deprecation")
 public abstract class RMv21PatchComponent extends ModulePatchComponent
-                                          implements ApplicationContextAware
-{
+        implements ApplicationContextAware {
     /** application context */
     private ApplicationContext applicationContext;
 
     /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     * @see
+     *     org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext)
-    {
+    public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
-    /**
-     * init method
-     */
+    /** init method */
     @Override
-    public void init()
-    {
+    public void init() {
         super.init();
 
         // manual addition of V20 patch dependencies
@@ -73,12 +69,11 @@ public abstract class RMv21PatchComponent extends ModulePatchComponent
     }
 
     /**
-     * @param depends   list of module dependencies
-     * @param beanName  bean name
+     * @param depends list of module dependencies
+     * @param beanName bean name
      */
-    private void addDependency(List<ModuleComponent> depends, String beanName)
-    {
-        ModuleComponent moduleComponent = (ModuleComponent)applicationContext.getBean(beanName);
+    private void addDependency(List<ModuleComponent> depends, String beanName) {
+        ModuleComponent moduleComponent = (ModuleComponent) applicationContext.getBean(beanName);
         depends.add(moduleComponent);
     }
 }

@@ -29,51 +29,46 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Simple servlet filter to add a 'Cache-Control' HTTP header to a response.
- * The Cache-Control header is set to a max-age value by a configurable setting
- * in the 'expires' init parameters - values are in days.
- * 
- * WebScripts or other servlets that happen to match the response type
- * configured for the filter (e.g. "*.js") should override cache settings
- * as required.
- * 
+ * Simple servlet filter to add a 'Cache-Control' HTTP header to a response. The Cache-Control
+ * header is set to a max-age value by a configurable setting in the 'expires' init parameters -
+ * values are in days.
+ *
+ * <p>WebScripts or other servlets that happen to match the response type configured for the filter
+ * (e.g. "*.js") should override cache settings as required.
+ *
  * @author Kevin Roast
  */
-public class StaticAssetCacheFilter implements Filter
-{
-    private static final long DAY_S = 60L*60L*24L;          // 1 day in seconds
-    private static final long DEFAULT_30DAYS = 30L;         // default of 30 days if not configured
-    
-    private long expire = DAY_S * DEFAULT_30DAYS;           // initially set to default value of 30 days
-    
-    
+public class StaticAssetCacheFilter implements Filter {
+    private static final long DAY_S = 60L * 60L * 24L; // 1 day in seconds
+    private static final long DEFAULT_30DAYS = 30L; // default of 30 days if not configured
+
+    private long expire = DAY_S * DEFAULT_30DAYS; // initially set to default value of 30 days
+
     /* (non-Javadoc)
      * @see javax.servlet.Filter#init(javax.servlet.FilterConfig)
      */
-    public void init(FilterConfig config) throws ServletException
-    {
+    public void init(FilterConfig config) throws ServletException {
         String expireParam = config.getInitParameter("expires");
-        if (expireParam != null)
-        {
+        if (expireParam != null) {
             this.expire = Long.parseLong(expireParam) * DAY_S;
         }
     }
-    
+
     /* (non-Javadoc)
      * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
      */
-    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException,
-            ServletException
-    {
-        ((HttpServletResponse)res).setHeader("Cache-Control", "must-revalidate, max-age=" + Long.toString(this.expire));
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws IOException, ServletException {
+        ((HttpServletResponse) res)
+                .setHeader(
+                        "Cache-Control", "must-revalidate, max-age=" + Long.toString(this.expire));
         chain.doFilter(req, res);
     }
-    
+
     /* (non-Javadoc)
      * @see javax.servlet.Filter#destroy()
      */
-    public void destroy()
-    {
+    public void destroy() {
         this.expire = DAY_S * DEFAULT_30DAYS;
     }
 }

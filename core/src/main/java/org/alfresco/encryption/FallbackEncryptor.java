@@ -20,18 +20,17 @@ package org.alfresco.encryption;
 
 /**
  * A fallback encryptor provides a fallback mechanism for decryption, first using the default
- * encryption keys and, if they fail (perhaps because they have been changed), falling back
- * to a backup set of keys.
- * 
- * Note that encryption will be performed only using the default encryption keys.
- * 
+ * encryption keys and, if they fail (perhaps because they have been changed), falling back to a
+ * backup set of keys.
+ *
+ * <p>Note that encryption will be performed only using the default encryption keys.
+ *
  * @since 4.0
  */
-public interface FallbackEncryptor extends Encryptor
-{
+public interface FallbackEncryptor extends Encryptor {
     /**
      * Is the backup key available in order to fall back to?
-     * 
+     *
      * @return boolean
      */
     boolean backupKeyAvailable(String keyAlias);

@@ -42,20 +42,16 @@ import org.mockito.InjectMocks;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class FileReportActionUnitTest extends BaseActionUnitTest
-{
+public class FileReportActionUnitTest extends BaseActionUnitTest {
     /** actioned upon node reference */
     private NodeRef actionedUponNodeRef;
 
     /** file report action */
     private @InjectMocks FileReportAction fileReportAction;
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before() */
     @Override
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         super.before();
 
         // actioned upon node reference
@@ -65,12 +61,9 @@ public class FileReportActionUnitTest extends BaseActionUnitTest
         fileReportAction.setAuditable(false);
     }
 
-    /**
-     * given the destination is not set, ensure that an exception is thrown
-     */
+    /** given the destination is not set, ensure that an exception is thrown */
     @Test
-    public void destinationNotSet()
-    {
+    public void destinationNotSet() {
         // == given ==
 
         // set action parameter values
@@ -89,12 +82,9 @@ public class FileReportActionUnitTest extends BaseActionUnitTest
         verifyZeroInteractions(mockedReportService, mockedNodeService);
     }
 
-    /**
-     * given no report type set, ensure that an exception is thrown
-     */
+    /** given no report type set, ensure that an exception is thrown */
     @Test
-    public void reportTypeNotSet()
-    {
+    public void reportTypeNotSet() {
         // == given ==
 
         // set action parameter values

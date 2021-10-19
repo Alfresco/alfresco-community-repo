@@ -37,12 +37,12 @@ import org.springframework.stereotype.Component;
  * @author sglover
  */
 @Component
-public class RepoNodeEventsRouteBuilder extends RouteBuilder
-{
+public class RepoNodeEventsRouteBuilder extends RouteBuilder {
     private static Log logger = LogFactory.getLog(RepoNodeEventsRouteBuilder.class);
 
     private static final String DEFAULT_SOURCE = "direct-vm:alfresco.events";
-    private static final String DEFAULT_TARGET = "amqp:topic:alfresco.repo.events?jmsMessageType=Text";
+    private static final String DEFAULT_TARGET =
+            "amqp:topic:alfresco.repo.events?jmsMessageType=Text";
 
     @Value("${messaging.events.repo.node.sourceQueue.endpoint:" + DEFAULT_SOURCE + "}")
     public String sourceQueue;
@@ -51,19 +51,17 @@ public class RepoNodeEventsRouteBuilder extends RouteBuilder
     public String targetTopic;
 
     @Override
-    public void configure() throws Exception
-    {
-        if (logger.isDebugEnabled())
-        {
+    public void configure() throws Exception {
+        if (logger.isDebugEnabled()) {
             logger.debug("Repo node events routes config: ");
-            logger.debug("SourceQueue is "+sourceQueue);
-            logger.debug("targetTopic is "+targetTopic);
+            logger.debug("SourceQueue is " + sourceQueue);
+            logger.debug("targetTopic is " + targetTopic);
         }
 
         from(sourceQueue)
-            .routeId("alfresco.events -> topic:alfresco.repo.events")
-            .marshal("defaultDataFormat")
-            .to(targetTopic)
-            .end();
+                .routeId("alfresco.events -> topic:alfresco.repo.events")
+                .marshal("defaultDataFormat")
+                .to(targetTopic)
+                .end();
     }
 }

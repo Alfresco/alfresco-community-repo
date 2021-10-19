@@ -33,8 +33,7 @@ package org.alfresco.rm.rest.api.model;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class RecordCategoryChild extends RMNode
-{
+public class RecordCategoryChild extends RMNode {
     public static final String PARAM_IS_RECORD_FOLDER = "isRecordFolder";
     public static final String PARAM_IS_RECORD_CATEGORY = "isRecordCategory";
     public static final String PARAM_IS_CLOSED = "isClosed";
@@ -46,58 +45,47 @@ public class RecordCategoryChild extends RMNode
     private String relativePath;
     private Boolean isClosed;
 
-    public RecordCategoryChild()
-    {
-        //Default constructor
+    public RecordCategoryChild() {
+        // Default constructor
     }
 
-    public Boolean getIsRecordCategory()
-    {
+    public Boolean getIsRecordCategory() {
         return isRecordCategory;
     }
 
-    public void setIsRecordCategory(Boolean isRecordCategory)
-    {
+    public void setIsRecordCategory(Boolean isRecordCategory) {
         this.isRecordCategory = isRecordCategory;
     }
 
-    public Boolean getIsRecordFolder()
-    {
+    public Boolean getIsRecordFolder() {
         return isRecordFolder;
     }
 
-    public void setIsRecordFolder(Boolean isRecordFolder)
-    {
+    public void setIsRecordFolder(Boolean isRecordFolder) {
         this.isRecordFolder = isRecordFolder;
     }
 
-    public Boolean getHasRetentionSchedule()
-    {
+    public Boolean getHasRetentionSchedule() {
         return hasRetentionSchedule;
     }
 
-    public void setHasRetentionSchedule(Boolean hasRetentionSchedule)
-    {
+    public void setHasRetentionSchedule(Boolean hasRetentionSchedule) {
         this.hasRetentionSchedule = hasRetentionSchedule;
     }
 
-    public String getRelativePath()
-    {
+    public String getRelativePath() {
         return relativePath;
     }
 
-    public void setRelativePath(String relativePath)
-    {
+    public void setRelativePath(String relativePath) {
         this.relativePath = relativePath;
     }
 
-    public Boolean getIsClosed()
-    {
+    public Boolean getIsClosed() {
         return isClosed;
     }
 
-    public void setIsClosed(Boolean isClosed)
-    {
+    public void setIsClosed(Boolean isClosed) {
         this.isClosed = isClosed;
     }
 }

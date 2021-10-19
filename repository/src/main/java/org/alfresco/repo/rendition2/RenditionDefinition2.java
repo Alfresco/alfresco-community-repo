@@ -36,8 +36,7 @@ import java.util.Map;
  * @author adavis
  */
 @AlfrescoPublicApi
-public interface RenditionDefinition2
-{
+public interface RenditionDefinition2 {
     public static final String TIMEOUT = "timeout";
     public static final String MAX_SOURCE_SIZE_K_BYTES = "maxSourceSizeKBytes";
 
@@ -58,6 +57,7 @@ public interface RenditionDefinition2
 
     /** Indicates whether to resize image to a thumbnail (true or false). */
     public static final String THUMBNAIL = "thumbnail";
+
     public static final String RESIZE_WIDTH = "resizeWidth";
     public static final String RESIZE_HEIGHT = "resizeHeight";
     public static final String RESIZE_PERCENTAGE = "resizePercentage";
@@ -67,7 +67,6 @@ public interface RenditionDefinition2
 
     /** Indicates whether the aspect ratio of the image should be maintained (true or false). */
     public static final String MAINTAIN_ASPECT_RATIO = "maintainAspectRatio";
-
 
     // PdfRenderer options
 
@@ -81,7 +80,6 @@ public interface RenditionDefinition2
     /** Indicates whether the aspect ratio of the image should be maintained (true or false). */
     public static final String MAINTAIN_PDF_ASPECT_RATIO = "maintainPdfAspectRatio";
 
-
     // Video options
 
     /** Time from start. Format hh:mm:ss[.xxx] */
@@ -90,29 +88,33 @@ public interface RenditionDefinition2
     /** Duration of clip. */
     public static final String DURATION = "duration";
 
-    /** Indicates if embedded content (such as files within zips or images) should be included (true or false). */
+    /**
+     * Indicates if embedded content (such as files within zips or images) should be included (true
+     * or false).
+     */
     public static final String INCLUDE_CONTENTS = "includeContents";
 
     /**
-     * @deprecated Will be removed when local transformations are removed, as it is only used tp select
-     * SWIFTransformationOptions.
+     * @deprecated Will be removed when local transformations are removed, as it is only used tp
+     *     select SWIFTransformationOptions.
      */
-    @Deprecated
-    String FLASH_VERSION = "flashVersion";
+    @Deprecated String FLASH_VERSION = "flashVersion";
 
     /**
-     * The encoding of a Source Node is automatically added to the Transform Options if not specified.
+     * The encoding of a Source Node is automatically added to the Transform Options if not
+     * specified.
      */
     public static final String SOURCE_ENCODING = "sourceEncoding";
 
     /**
-     * The Source Node Ref is automatically added to the Transform Options if specified but without a value.
+     * The Source Node Ref is automatically added to the Transform Options if specified but without
+     * a value.
      */
     public static final String SOURCE_NODE_REF = "sourceNodeRef";
 
     /**
-     * The encoding of a Target Node is automatically added to the Transform Options if not specified and the
-     * transformer knows about it.
+     * The encoding of a Target Node is automatically added to the Transform Options if not
+     * specified and the transformer knows about it.
      */
     public static final String TARGET_ENCODING = "targetEncoding";
 

@@ -27,13 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Records management action service interface
@@ -41,8 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public interface RecordsManagementActionService
-{
+public interface RecordsManagementActionService {
     /**
      * Get a list of the available records management actions
      *
@@ -51,7 +49,7 @@ public interface RecordsManagementActionService
     List<RecordsManagementAction> getRecordsManagementActions();
 
     /**
-     *  Get a list of the available records management action conditions
+     * Get a list of the available records management action conditions
      *
      * @return List of records management action conditions
      * @since 2.1
@@ -59,8 +57,8 @@ public interface RecordsManagementActionService
     List<RecordsManagementActionCondition> getRecordsManagementActionConditions();
 
     /**
-     * Get a list of the available disposition actions.  A disposition action is a records
-     * management action that can be used when defining disposition instructions.
+     * Get a list of the available disposition actions. A disposition action is a records management
+     * action that can be used when defining disposition instructions.
      *
      * @return List of disposition actions
      */
@@ -85,8 +83,8 @@ public interface RecordsManagementActionService
     /**
      * Execute a records management action
      *
-     * @param nodeRef     node reference to a rm container, rm folder or record
-     * @param name        action name
+     * @param nodeRef node reference to a rm container, rm folder or record
+     * @param name action name
      * @return The result of executed records management action
      */
     RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name);
@@ -94,46 +92,50 @@ public interface RecordsManagementActionService
     /**
      * Execute a records management action against several nodes
      *
-     * @param nodeRefs  node references to rm containers, rm folders or records
-     * @param name      action name
+     * @param nodeRefs node references to rm containers, rm folders or records
+     * @param name action name
      * @return The result of executed records management action against several nodes
      */
-    Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name);
+    Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(
+            List<NodeRef> nodeRefs, String name);
 
     /**
      * Execute a records management action
      *
-     * @param nodeRef     node reference to a rm container, rm folder or record
-     * @param name        action name
-     * @param parameters  action parameters
+     * @param nodeRef node reference to a rm container, rm folder or record
+     * @param name action name
+     * @param parameters action parameters
      * @return The result of executed records management action
      */
-    RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name, Map<String, Serializable> parameters);
+    RecordsManagementActionResult executeRecordsManagementAction(
+            NodeRef nodeRef, String name, Map<String, Serializable> parameters);
 
     /**
      * Execute a records management action against several nodes
      *
-     * @param nodeRefs      node references to rm containers, rm folders or records
-     * @param name          action name
-     * @param parameters    action parameters
+     * @param nodeRefs node references to rm containers, rm folders or records
+     * @param name action name
+     * @param parameters action parameters
      * @return The result of executed records management action against several nodes
      */
-    Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name, Map<String, Serializable> parameters);
+    Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(
+            List<NodeRef> nodeRefs, String name, Map<String, Serializable> parameters);
 
     /**
-     * Execute a records management action. The nodeRef against which the action is to be
-     * executed must be provided by the RecordsManagementAction implementation.
+     * Execute a records management action. The nodeRef against which the action is to be executed
+     * must be provided by the RecordsManagementAction implementation.
      *
-     * @param name        action name
-     * @param parameters  action parameters
+     * @param name action name
+     * @param parameters action parameters
      * @return The result of executed records management action
      */
-    RecordsManagementActionResult executeRecordsManagementAction(String name, Map<String, Serializable> parameters);
+    RecordsManagementActionResult executeRecordsManagementAction(
+            String name, Map<String, Serializable> parameters);
 
     /**
      * Register records management action
      *
-     * @param rmAction  records management action
+     * @param rmAction records management action
      */
     void register(RecordsManagementAction rmAction);
 

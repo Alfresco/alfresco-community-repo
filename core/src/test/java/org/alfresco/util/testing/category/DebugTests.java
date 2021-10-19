@@ -19,9 +19,7 @@
 package org.alfresco.util.testing.category;
 
 /**
- * Category marker for tests that are not meant to run every build. Only run by developers while working on a
- * specific feature/class. They should not be added as part of test suites.
+ * Category marker for tests that are not meant to run every build. Only run by developers while
+ * working on a specific feature/class. They should not be added as part of test suites.
  */
-public interface DebugTests extends NonBuildTests
-{
-}
+public interface DebugTests extends NonBuildTests {}

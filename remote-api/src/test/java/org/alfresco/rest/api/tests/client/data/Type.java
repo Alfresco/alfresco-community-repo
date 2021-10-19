@@ -4,26 +4,29 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.api.tests.client.data;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import org.alfresco.rest.api.model.Association;
 import org.alfresco.rest.api.model.AssociationSource;
@@ -37,15 +40,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-public class Type extends org.alfresco.rest.api.model.Type implements Serializable, ExpectedComparison
-{
+public class Type extends org.alfresco.rest.api.model.Type
+        implements Serializable, ExpectedComparison {
 
     @Override
-    public void expected(Object model)
-    {
+    public void expected(Object model) {
         assertTrue("model is an instance of " + model.getClass(), model instanceof Type);
 
         Type other = (Type) model;
@@ -56,70 +55,67 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
         AssertUtil.assertEquals("parenId", getParentId(), other.getParentId());
         AssertUtil.assertEquals("isArchive", getIsArchive(), other.getIsArchive());
         AssertUtil.assertEquals("isContainer", getIsContainer(), other.getIsContainer());
-        AssertUtil.assertEquals("includedInSupertypeQuery", getIncludedInSupertypeQuery(), other.getIncludedInSupertypeQuery());
+        AssertUtil.assertEquals(
+                "includedInSupertypeQuery",
+                getIncludedInSupertypeQuery(),
+                other.getIncludedInSupertypeQuery());
 
-        if (getModel() != null && other.getModel() != null)
-        {
+        if (getModel() != null && other.getModel() != null) {
             AssertUtil.assertEquals("modelId", getModel().getId(), other.getModel().getId());
             AssertUtil.assertEquals("author", getModel().getAuthor(), other.getModel().getAuthor());
-            AssertUtil.assertEquals("namespaceUri", getModel().getNamespaceUri(), other.getModel().getNamespaceUri());
-            AssertUtil.assertEquals("namespacePrefix", getModel().getNamespacePrefix(), other.getModel().getNamespacePrefix());
+            AssertUtil.assertEquals(
+                    "namespaceUri",
+                    getModel().getNamespaceUri(),
+                    other.getModel().getNamespaceUri());
+            AssertUtil.assertEquals(
+                    "namespacePrefix",
+                    getModel().getNamespacePrefix(),
+                    other.getModel().getNamespacePrefix());
         }
     }
 
     @SuppressWarnings("unchecked")
-    public JSONObject toJSON()
-    {
+    public JSONObject toJSON() {
         JSONObject jsonObject = new JSONObject();
-        if (getId() != null)
-        {
+        if (getId() != null) {
             jsonObject.put("id", getId());
         }
 
         jsonObject.put("title", getTitle());
 
-        if (getParentId() != null)
-        {
+        if (getParentId() != null) {
             jsonObject.put("parentId", getParentId());
         }
 
-        if (getDescription() != null)
-        {
+        if (getDescription() != null) {
             jsonObject.put("description", getDescription());
         }
 
-        if (getProperties() != null)
-        {
+        if (getProperties() != null) {
             jsonObject.put("properties", getProperties());
         }
 
-        if (getModel() != null)
-        {
+        if (getModel() != null) {
             jsonObject.put("model", getModel());
         }
 
-        if (getMandatoryAspects() != null)
-        {
+        if (getMandatoryAspects() != null) {
             jsonObject.put("mandatoryAspects", getMandatoryAspects());
         }
 
-        if (getIsContainer() != null)
-        {
+        if (getIsContainer() != null) {
             jsonObject.put("isContainer", getIsContainer());
         }
 
-        if (getIsArchive() != null)
-        {
+        if (getIsArchive() != null) {
             jsonObject.put("isArchive", getIsArchive());
         }
 
-        if (getIncludedInSupertypeQuery() != null)
-        {
+        if (getIncludedInSupertypeQuery() != null) {
             jsonObject.put("includedInSupertypeQuery", getIncludedInSupertypeQuery());
         }
 
-        if (getAssociations() != null)
-        {
+        if (getAssociations() != null) {
             jsonObject.put("associations", getAssociations());
         }
 
@@ -127,26 +123,27 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
     }
 
     @SuppressWarnings("unchecked")
-    public static Type parseType(JSONObject jsonObject)
-    {
+    public static Type parseType(JSONObject jsonObject) {
         String id = (String) jsonObject.get("id");
         String title = (String) jsonObject.get("title");
         String description = (String) jsonObject.get("description");
         String parentId = (String) jsonObject.get("parentId");
-        List<PropertyDefinition> properties = (List<PropertyDefinition>) jsonObject.get("properties");
-        List<String> mandatoryAspects = jsonObject.get("mandatoryAspects") != null ? new ArrayList((List<String>)jsonObject.get("mandatoryAspects")) : null;
+        List<PropertyDefinition> properties =
+                (List<PropertyDefinition>) jsonObject.get("properties");
+        List<String> mandatoryAspects =
+                jsonObject.get("mandatoryAspects") != null
+                        ? new ArrayList((List<String>) jsonObject.get("mandatoryAspects"))
+                        : null;
         Boolean isContainer = (Boolean) jsonObject.get("isContainer");
         Boolean isArchive = (Boolean) jsonObject.get("isArchive");
         Boolean includedInSupertypeQuery = (Boolean) jsonObject.get("includedInSupertypeQuery");
 
         List<org.alfresco.rest.api.model.Association> associations = null;
 
-        if (jsonObject.get("associations") != null)
-        {
+        if (jsonObject.get("associations") != null) {
             associations = new ArrayList<>();
-            JSONArray jsonArray =  (JSONArray) jsonObject.get("associations");
-            for(int i = 0; i < jsonArray.size(); i++)
-            {
+            JSONArray jsonArray = (JSONArray) jsonObject.get("associations");
+            for (int i = 0; i < jsonArray.size(); i++) {
                 org.alfresco.rest.api.model.Association association = new Association();
                 JSONObject object = (JSONObject) jsonArray.get(i);
                 association.setId((String) object.get("id"));
@@ -156,8 +153,7 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
                 association.setIsProtected((Boolean) object.get("isProtected"));
 
                 JSONObject sourceModel = (JSONObject) object.get("source");
-                if (sourceModel != null)
-                {
+                if (sourceModel != null) {
                     AssociationSource source = new AssociationSource();
                     source.setCls((String) sourceModel.get("cls"));
                     source.setRole((String) sourceModel.get("role"));
@@ -206,25 +202,23 @@ public class Type extends org.alfresco.rest.api.model.Type implements Serializab
     }
 
     @SuppressWarnings("unchecked")
-    public static PublicApiClient.ListResponse<Type> parseTypes(JSONObject jsonObject)
-    {
+    public static PublicApiClient.ListResponse<Type> parseTypes(JSONObject jsonObject) {
         List<Type> types = new ArrayList<Type>();
 
-        JSONObject jsonList = (JSONObject)jsonObject.get("list");
+        JSONObject jsonList = (JSONObject) jsonObject.get("list");
         assertNotNull(jsonList);
 
-        JSONArray jsonEntries = (JSONArray)jsonList.get("entries");
+        JSONArray jsonEntries = (JSONArray) jsonList.get("entries");
         assertNotNull(jsonEntries);
 
-        for(int i = 0; i < jsonEntries.size(); i++)
-        {
-            JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
-            JSONObject entry = (JSONObject)jsonEntry.get("entry");
+        for (int i = 0; i < jsonEntries.size(); i++) {
+            JSONObject jsonEntry = (JSONObject) jsonEntries.get(i);
+            JSONObject entry = (JSONObject) jsonEntry.get("entry");
             types.add(parseType(entry));
         }
 
-        PublicApiClient.ExpectedPaging paging = PublicApiClient.ExpectedPaging.parsePagination(jsonList);
+        PublicApiClient.ExpectedPaging paging =
+                PublicApiClient.ExpectedPaging.parsePagination(jsonList);
         return new PublicApiClient.ListResponse<Type>(paging, types);
     }
-
 }

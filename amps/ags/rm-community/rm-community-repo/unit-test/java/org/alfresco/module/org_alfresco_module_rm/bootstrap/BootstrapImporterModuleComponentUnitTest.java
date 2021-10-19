@@ -47,28 +47,31 @@ import org.mockito.Mock;
  * @author Roy Wetherall
  * @since 2.3
  */
-public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
-{
+public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest {
     /** RM config node */
-    private static final NodeRef configNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
+    private static final NodeRef configNodeRef =
+            new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
 
     /** mocks */
-    @Mock(name="importer")                                  private ImporterBootstrap                         mockedImporter;
-    @Mock(name="modulePatchExecuter")                       private ModulePatchExecuter                       mockedModulePatchExecuter;
-    @Mock(name="recordContributorsGroupBootstrapComponent") private RecordContributorsGroupBootstrapComponent mockedRecordContributorsGroupBootstrapComponent;
+    @Mock(name = "importer")
+    private ImporterBootstrap mockedImporter;
+
+    @Mock(name = "modulePatchExecuter")
+    private ModulePatchExecuter mockedModulePatchExecuter;
+
+    @Mock(name = "recordContributorsGroupBootstrapComponent")
+    private RecordContributorsGroupBootstrapComponent
+            mockedRecordContributorsGroupBootstrapComponent;
 
     /** importer */
-    @InjectMocks
-    private BootstrapImporterModuleComponent importer;
+    @InjectMocks private BootstrapImporterModuleComponent importer;
 
     /**
-     * Given that the system has already been bootstraped
-     * When I try and boostrap the system
-     * Then the system is not bootstraped again
+     * Given that the system has already been bootstraped When I try and boostrap the system Then
+     * the system is not bootstraped again
      */
     @Test
-    public void alreadyBootstraped() throws Throwable
-    {
+    public void alreadyBootstraped() throws Throwable {
         // config node exists
         doReturn(true).when(mockedNodeService).exists(configNodeRef);
 
@@ -78,17 +81,16 @@ public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
         // not bootstraped
         verify(mockedImporter, never()).bootstrap();
         verify(mockedModulePatchExecuter, never()).initSchemaVersion();
-        verify(mockedRecordContributorsGroupBootstrapComponent, never()).createRecordContributorsGroup();
+        verify(mockedRecordContributorsGroupBootstrapComponent, never())
+                .createRecordContributorsGroup();
     }
 
     /**
-     * Given that the system has not been bootstraped
-     * When I try and bootstrap the system
-     * Then the system is bootstraped
+     * Given that the system has not been bootstraped When I try and bootstrap the system Then the
+     * system is bootstraped
      */
     @Test
-    public void boostrap() throws Throwable
-    {
+    public void boostrap() throws Throwable {
         // config node does not exist
         doReturn(false).when(mockedNodeService).exists(configNodeRef);
 
@@ -98,6 +100,7 @@ public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
         // not bootstraped
         verify(mockedImporter, times(1)).bootstrap();
         verify(mockedModulePatchExecuter, times(1)).initSchemaVersion();
-        verify(mockedRecordContributorsGroupBootstrapComponent, times(1)).createRecordContributorsGroup();
+        verify(mockedRecordContributorsGroupBootstrapComponent, times(1))
+                .createRecordContributorsGroup();
     }
 }

@@ -18,49 +18,44 @@
  */
 package org.alfresco.encoding;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Byte Order Marker encoding detection.
- * 
+ *
  * @since 2.1
  * @author Pacific Northwest National Lab
  * @author Derek Hulley
  */
-public class BomCharactersetFinder extends AbstractCharactersetFinder
-{
+public class BomCharactersetFinder extends AbstractCharactersetFinder {
     private static Log logger = LogFactory.getLog(BomCharactersetFinder.class);
-    
+
     @Override
-    public void setBufferSize(int bufferSize)
-    {
-        logger.warn("Setting the buffersize has no effect for charset finder: " + BomCharactersetFinder.class.getName());
+    public void setBufferSize(int bufferSize) {
+        logger.warn(
+                "Setting the buffersize has no effect for charset finder: "
+                        + BomCharactersetFinder.class.getName());
     }
 
-    /**
-     * @return          Returns 64
-     */
+    /** @return Returns 64 */
     @Override
-    protected int getBufferSize()
-    {
+    protected int getBufferSize() {
         return 64;
     }
 
     /**
-     * Just searches the Byte Order Marker, i.e. the first three characters for a sign of
-     * the encoding.
+     * Just searches the Byte Order Marker, i.e. the first three characters for a sign of the
+     * encoding.
      */
-    protected Charset detectCharsetImpl(byte[] buffer) throws Exception
-    {
+    protected Charset detectCharsetImpl(byte[] buffer) throws Exception {
         Charset charset = null;
         ByteArrayInputStream bis = null;
-        try
-        {
+        try {
             bis = new ByteArrayInputStream(buffer);
             bis.mark(3);
             char[] byteHeader = new char[3];
@@ -68,47 +63,33 @@ public class BomCharactersetFinder extends AbstractCharactersetFinder
             int bytesRead = in.read(byteHeader);
             bis.reset();
 
-            if (bytesRead < 2)
-            {
+            if (bytesRead < 2) {
                 // ASCII
                 charset = Charset.forName("Cp1252");
-            }
-            else if (
-                    byteHeader[0] == 0xFE &&
-                    byteHeader[1] == 0xFF)
-            {
+            } else if (byteHeader[0] == 0xFE && byteHeader[1] == 0xFF) {
                 // UCS-2 Big Endian
                 charset = Charset.forName("UTF-16BE");
-            }
-            else if (
-                    byteHeader[0] == 0xFF &&
-                    byteHeader[1] == 0xFE)
-            {
+            } else if (byteHeader[0] == 0xFF && byteHeader[1] == 0xFE) {
                 // UCS-2 Little Endian
                 charset = Charset.forName("UTF-16LE");
-            }
-            else if (
-                    bytesRead >= 3 &&
-                    byteHeader[0] == 0xEF &&
-                    byteHeader[1] == 0xBB &&
-                    byteHeader[2] == 0xBF)
-            {
+            } else if (bytesRead >= 3
+                    && byteHeader[0] == 0xEF
+                    && byteHeader[1] == 0xBB
+                    && byteHeader[2] == 0xBF) {
                 // UTF-8
                 charset = Charset.forName("UTF-8");
-            }
-            else
-            {
+            } else {
                 // No idea
                 charset = null;
             }
             // Done
             return charset;
-        }
-        finally
-        {
-            if (bis != null)
-            {
-                try { bis.close(); } catch (Throwable e) {}
+        } finally {
+            if (bis != null) {
+                try {
+                    bis.close();
+                } catch (Throwable e) {
+                }
             }
         }
     }

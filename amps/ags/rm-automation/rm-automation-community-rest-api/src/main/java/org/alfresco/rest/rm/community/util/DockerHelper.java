@@ -29,11 +29,6 @@ package org.alfresco.rest.rm.community.util;
 
 import static org.testng.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.LogContainerCmd;
 import com.github.dockerjava.api.model.Container;
@@ -44,6 +39,7 @@ import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import org.alfresco.utility.Utility;
 import org.apache.commons.lang.SystemUtils;
 import org.slf4j.Logger;
@@ -52,6 +48,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Helper class for interaction with docker containers
  *
@@ -59,30 +60,23 @@ import org.springframework.stereotype.Service;
  * @since 3.1
  */
 @Service
-public class DockerHelper
-{
+public class DockerHelper {
     private static final Logger LOGGER = LoggerFactory.getLogger(DockerHelper.class);
     private static final String REPO_IMAGE_NAME = "repository";
-    @Getter
-    @Setter
-    private DockerClient dockerClient;
+    @Getter @Setter private DockerClient dockerClient;
 
     @Autowired
-    public DockerHelper(@Value ("${docker.host}") String dockerHost)
-    {
-        if (SystemUtils.IS_OS_WINDOWS)
-        {
-            this.dockerClient = DockerClientBuilder
-                .getInstance(dockerHost)
-                .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
-                .build();
-        }
-        else
-        {
-            this.dockerClient = DockerClientBuilder
-                .getInstance()
-                .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
-                .build();
+    public DockerHelper(@Value("${docker.host}") String dockerHost) {
+        if (SystemUtils.IS_OS_WINDOWS) {
+            this.dockerClient =
+                    DockerClientBuilder.getInstance(dockerHost)
+                            .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
+                            .build();
+        } else {
+            this.dockerClient =
+                    DockerClientBuilder.getInstance()
+                            .withDockerCmdExecFactory(new NettyDockerCmdExecFactory())
+                            .build();
         }
     }
 
@@ -93,30 +87,30 @@ public class DockerHelper
      * @param timeStamp - get the logs since a specific timestamp
      * @return list of strings, where every string is log line
      */
-    private List<String> getDockerLogs(String containerId, int timeStamp)
-    {
+    private List<String> getDockerLogs(String containerId, int timeStamp) {
         final List<String> logs = new ArrayList<>();
 
         final LogContainerCmd logContainerCmd = getDockerClient().logContainerCmd(containerId);
-        logContainerCmd.withStdOut(true)
-                       .withStdErr(true)
-                       .withSince(timeStamp) // UNIX timestamp to filter logs. Output log-entries since that timestamp.
-                       .withTimestamps(true); //print timestamps for every log line
+        logContainerCmd
+                .withStdOut(true)
+                .withStdErr(true)
+                .withSince(
+                        timeStamp) // UNIX timestamp to filter logs. Output log-entries since that
+                // timestamp.
+                .withTimestamps(true); // print timestamps for every log line
 
-        try
-        {
-            logContainerCmd.exec(new LogContainerResultCallback()
-            {
-                @Override
-                public void onNext(Frame item)
-                {
-                    logs.add(item.toString());
-                }
-            }).awaitCompletion();
-        }
-        catch (InterruptedException e)
-        {
-            Thread.currentThread().interrupt();  // set interrupt flag
+        try {
+            logContainerCmd
+                    .exec(
+                            new LogContainerResultCallback() {
+                                @Override
+                                public void onNext(Frame item) {
+                                    logs.add(item.toString());
+                                }
+                            })
+                    .awaitCompletion();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt(); // set interrupt flag
             LOGGER.error("Failed to retrieve logs of container " + containerId, e);
         }
 
@@ -128,19 +122,18 @@ public class DockerHelper
      *
      * @return list of strings, where every string is log line
      */
-    public List<String> getAlfrescoLogs()
-    {
+    public List<String> getAlfrescoLogs() {
         final List<Container> alfrescoContainers = findContainersByImageName(REPO_IMAGE_NAME);
-        if (alfrescoContainers.isEmpty())
-        {
+        if (alfrescoContainers.isEmpty()) {
             return Collections.emptyList();
-        }
-        else
-        {
+        } else {
             List<String> alfrescoLogs = new ArrayList<>();
             // get the logs since current time - 10 seconds
             final int timeStamp = (int) (System.currentTimeMillis() / 1000) - 10;
-            alfrescoContainers.forEach(alfrescoContainer -> alfrescoLogs.addAll(getDockerLogs(alfrescoContainer.getId(), timeStamp)));
+            alfrescoContainers.forEach(
+                    alfrescoContainer ->
+                            alfrescoLogs.addAll(
+                                    getDockerLogs(alfrescoContainer.getId(), timeStamp)));
             return alfrescoLogs;
         }
     }
@@ -151,14 +144,17 @@ public class DockerHelper
      * @param expectedException the expected exception to be thrown
      * @throws Exception
      */
-    public void checkExceptionIsInAlfrescoLogs(String expectedException) throws Exception
-    {
-        //Retry the operation because sometimes it takes few seconds to throw the exception
-        Utility.sleep(6000, 30000, () ->
-        {
-            List<String> alfrescoLogs = getAlfrescoLogs();
-            assertTrue(alfrescoLogs.stream().anyMatch(logLine -> logLine.contains(expectedException)));
-        });
+    public void checkExceptionIsInAlfrescoLogs(String expectedException) throws Exception {
+        // Retry the operation because sometimes it takes few seconds to throw the exception
+        Utility.sleep(
+                6000,
+                30000,
+                () -> {
+                    List<String> alfrescoLogs = getAlfrescoLogs();
+                    assertTrue(
+                            alfrescoLogs.stream()
+                                    .anyMatch(logLine -> logLine.contains(expectedException)));
+                });
     }
 
     /**
@@ -167,12 +163,12 @@ public class DockerHelper
      * @param imageName - the name of the image used by container
      * @return the containers
      */
-    private List<Container> findContainersByImageName(String imageName)
-    {
-        final List<Container> containers = getDockerClient().listContainersCmd().withShowAll(true).exec();
+    private List<Container> findContainersByImageName(String imageName) {
+        final List<Container> containers =
+                getDockerClient().listContainersCmd().withShowAll(true).exec();
 
         return containers.stream()
-                         .filter(container -> container.getImage().contains(imageName))
-                         .collect(Collectors.toList());
+                .filter(container -> container.getImage().contains(imageName))
+                .collect(Collectors.toList());
     }
 }

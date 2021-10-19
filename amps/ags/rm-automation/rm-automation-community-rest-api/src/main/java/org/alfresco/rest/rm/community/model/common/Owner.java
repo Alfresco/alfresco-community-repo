@@ -31,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -42,10 +43,7 @@ import org.alfresco.utility.model.TestModel;
 @Builder
 @Data
 @EqualsAndHashCode(callSuper = true)
-//@NoArgsConstructor
-//@AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
-public class Owner extends TestModel
-{
-
-}
+// @NoArgsConstructor
+// @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class Owner extends TestModel {}

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,9 +28,6 @@ package org.alfresco.repo.rendition;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.util.LinkedList;
-import java.util.List;
 
 import junit.framework.TestCase;
 
@@ -43,35 +40,35 @@ import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @author Nick Smith
- *
  * @deprecated We are introducing the new async RenditionService2.
  */
 @Deprecated
-public class RenditionServiceImplTest extends TestCase
-{
-    private final static String ENGINE_NAME = "Engine Name";
+public class RenditionServiceImplTest extends TestCase {
+    private static final String ENGINE_NAME = "Engine Name";
 
     private ServiceRegistry serviceRegistry = new MockedTestServiceRegistry();
     private ActionService actionService = mock(ActionService.class);
-    
-    private final RenditionDefinitionPersisterImpl renditionDefinitionPersister = mock(RenditionDefinitionPersisterImpl.class);
+
+    private final RenditionDefinitionPersisterImpl renditionDefinitionPersister =
+            mock(RenditionDefinitionPersisterImpl.class);
     private RenditionServiceImpl renditionService;
-    
+
     private final QName ACTION_NAME = QName.createQName(NamespaceService.ALFRESCO_URI, "testName");
 
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         renditionService = new RenditionServiceImpl();
         renditionService.setServiceRegistry(serviceRegistry);
         renditionService.setActionService(actionService);
         renditionService.setRenditionDefinitionPersister(renditionDefinitionPersister);
     }
 
-    public void testGetRenderingEngineDefinition() throws Exception
-    {
+    public void testGetRenderingEngineDefinition() throws Exception {
         // Check returns null when unknown name specified.
         assertNull(renditionService.getRenderingEngineDefinition(""));
 
@@ -89,14 +86,15 @@ public class RenditionServiceImplTest extends TestCase
         assertSame(renderingDefinition, renditionService.getRenderingEngineDefinition(ENGINE_NAME));
     }
 
-    public void testGetRenderingEngineDefinitions() throws Exception
-    {
+    public void testGetRenderingEngineDefinitions() throws Exception {
         LinkedList<ActionDefinition> actionDefs = new LinkedList<ActionDefinition>();
         when(actionService.getActionDefinitions()).thenReturn(actionDefs);
 
         // Check case where no action definitions returned.
-        List<RenderingEngineDefinition> engineDefs = renditionService.getRenderingEngineDefinitions();
-        assertTrue("The list of rendering action definitions should be empty!", engineDefs.isEmpty());
+        List<RenderingEngineDefinition> engineDefs =
+                renditionService.getRenderingEngineDefinitions();
+        assertTrue(
+                "The list of rendering action definitions should be empty!", engineDefs.isEmpty());
 
         // Check that when the action service returns a rendering engine
         // definition then the rendering service includes this in the list of
@@ -107,7 +105,7 @@ public class RenditionServiceImplTest extends TestCase
         assertEquals(1, engineDefs.size());
         assertSame(renderingDefinition, engineDefs.get(0));
         assertNotNull(renditionService.loadRenditionDefinitions(ENGINE_NAME));
-        
+
         // Check that when the action service returns a non-rendering action
         // definition then the rendering service does not include it.
         ActionDefinition actionDefinition = new ActionDefinitionImpl(ENGINE_NAME);
@@ -117,9 +115,9 @@ public class RenditionServiceImplTest extends TestCase
         assertSame(renderingDefinition, engineDefs.get(0));
     }
 
-    public void testCreateRenditionDefinition() throws Exception
-    {
-        RenditionDefinition renderingAction = renditionService.createRenditionDefinition(ACTION_NAME, ENGINE_NAME);
+    public void testCreateRenditionDefinition() throws Exception {
+        RenditionDefinition renderingAction =
+                renditionService.createRenditionDefinition(ACTION_NAME, ENGINE_NAME);
         assertNotNull(renderingAction);
         assertEquals(ENGINE_NAME, renderingAction.getActionDefinitionName());
         assertEquals(ACTION_NAME, renderingAction.getRenditionName());
@@ -127,5 +125,4 @@ public class RenditionServiceImplTest extends TestCase
         assertNotNull(id);
         assertTrue(id.length() > 0);
     }
-
 }

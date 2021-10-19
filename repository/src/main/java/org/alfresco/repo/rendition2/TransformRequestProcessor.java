@@ -26,6 +26,7 @@
 package org.alfresco.repo.rendition2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,67 +45,59 @@ import java.util.Map;
  *
  * @author aepure
  */
-public class TransformRequestProcessor implements Processor
-{
+public class TransformRequestProcessor implements Processor {
     private static Log logger = LogFactory.getLog(RenditionEventProcessor.class);
 
     private RenditionService2Impl renditionService2;
     private ObjectMapper messagingObjectMapper;
     private TransactionService transactionService;
 
-    public void setRenditionService2(RenditionService2Impl renditionService2)
-    {
+    public void setRenditionService2(RenditionService2Impl renditionService2) {
         this.renditionService2 = renditionService2;
     }
 
-    public void setMessagingObjectMapper(ObjectMapper messagingObjectMapper)
-    {
+    public void setMessagingObjectMapper(ObjectMapper messagingObjectMapper) {
         this.messagingObjectMapper = messagingObjectMapper;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
-    @Override public void process(Exchange exchange) throws Exception
-    {
+    @Override
+    public void process(Exchange exchange) throws Exception {
         String body = (String) exchange.getMessage().getBody();
 
-        if (logger.isDebugEnabled())
-        {
-            logger.info("Processing message [thread=" + Thread.currentThread().getId() + ", body=" + body + "]");
+        if (logger.isDebugEnabled()) {
+            logger.info(
+                    "Processing message [thread="
+                            + Thread.currentThread().getId()
+                            + ", body="
+                            + body
+                            + "]");
         }
-        if (body == null || body.isEmpty())
-        {
-            if (logger.isDebugEnabled())
-            {
+        if (body == null || body.isEmpty()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug("Exchange message is null or empty");
             }
             return;
         }
-        try
-        {
+        try {
             TransformRequest event;
-            try
-            {
+            try {
                 event = messagingObjectMapper.readValue(body, TransformRequest.class);
-            }
-            catch (IOException e)
-            {
+            } catch (IOException e) {
                 logger.error("Failed to unmarshal event [" + body + "]", e);
-                throw new AlfrescoRuntimeException("Failed to unmarshal event, skipping processing of this event.");
+                throw new AlfrescoRuntimeException(
+                        "Failed to unmarshal event, skipping processing of this event.");
             }
             processEvent(event);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             logger.error("Failed to process transform request event: " + body, e);
         }
     }
 
-    private void validateEvent(TransformRequest event)
-    {
+    private void validateEvent(TransformRequest event) {
         ParameterCheck.mandatory("event", event);
         ParameterCheck.mandatoryString("requestId", event.getRequestId());
         ParameterCheck.mandatoryString("nodeRef", event.getNodeRef());
@@ -112,8 +105,7 @@ public class TransformRequestProcessor implements Processor
         ParameterCheck.mandatoryString("replyQueue", event.getReplyQueue());
     }
 
-    private void processEvent(TransformRequest event)
-    {
+    private void processEvent(TransformRequest event) {
         validateEvent(event);
 
         String transformName = event.getTransformName();
@@ -123,25 +115,41 @@ public class TransformRequestProcessor implements Processor
         String replyQueue = processReplyQueue(event.getReplyQueue());
         String requestId = event.getRequestId();
 
-        TransformDefinition transformDefinition = new TransformDefinition(transformName, targetMediaType, transformOptions,
-            clientData, replyQueue, requestId, null);
+        TransformDefinition transformDefinition =
+                new TransformDefinition(
+                        transformName,
+                        targetMediaType,
+                        transformOptions,
+                        clientData,
+                        replyQueue,
+                        requestId,
+                        null);
 
         NodeRef nodeRef = new NodeRef(event.getNodeRef());
 
         AuthenticationUtil.runAs(
-            (AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-                renditionService2.transform(nodeRef, transformDefinition);
+                (AuthenticationUtil.RunAsWork<Void>)
+                        () ->
+                                transactionService
+                                        .getRetryingTransactionHelper()
+                                        .doInTransaction(
+                                                () -> {
+                                                    renditionService2.transform(
+                                                            nodeRef, transformDefinition);
 
-                return null;
-            }), AuthenticationUtil.getSystemUserName());
+                                                    return null;
+                                                }),
+                AuthenticationUtil.getSystemUserName());
     }
 
-    String processReplyQueue(String replyQueue)
-    {
-        // Strip "jms:" or "queue://" prefix from the reply queue if provided, it is the responsibility of the
+    String processReplyQueue(String replyQueue) {
+        // Strip "jms:" or "queue://" prefix from the reply queue if provided, it is the
+        // responsibility of the
         // TransformReply Provider to specify the proper protocol of the replyQueue.
-        return replyQueue.startsWith("jms:") ?
-            replyQueue.substring("jms:".length()) :
-            replyQueue.startsWith("queue://") ? replyQueue.substring("queue://".length()) : replyQueue;
+        return replyQueue.startsWith("jms:")
+                ? replyQueue.substring("jms:".length())
+                : replyQueue.startsWith("queue://")
+                        ? replyQueue.substring("queue://".length())
+                        : replyQueue;
     }
 }

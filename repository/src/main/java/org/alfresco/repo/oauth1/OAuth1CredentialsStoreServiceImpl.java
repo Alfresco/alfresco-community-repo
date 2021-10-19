@@ -4,28 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.oauth1;
-
-import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.query.CannedQueryPageDetails;
@@ -38,67 +36,55 @@ import org.alfresco.service.cmr.remotecredentials.OAuth1CredentialsInfo;
 import org.alfresco.service.cmr.remotecredentials.RemoteCredentialsService;
 import org.alfresco.service.cmr.remoteticket.NoSuchSystemException;
 
-/**
- * @author Jared Ottley
- */
-public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStoreService
-{
+import java.util.List;
+
+/** @author Jared Ottley */
+public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStoreService {
     private RemoteCredentialsService remoteCredentialsService;
 
-    public void setRemoteCredentialsService(RemoteCredentialsService remoteCredentialsService)
-    {
+    public void setRemoteCredentialsService(RemoteCredentialsService remoteCredentialsService) {
         this.remoteCredentialsService = remoteCredentialsService;
     }
 
     /**
-     * Add or Update OAuth1 Credentials for the current user to the OAuth1
-     * Credential Store
-     * 
+     * Add or Update OAuth1 Credentials for the current user to the OAuth1 Credential Store
+     *
      * @param remoteSystemId String
      * @param token String
      * @param secret String
-
      * @return OAuth1CredentialsInfo
      */
     @Override
-    public OAuth1CredentialsInfo storePersonalOAuth1Credentials(String remoteSystemId,
-                String token, String secret)
-                throws NoSuchSystemException
-    {
+    public OAuth1CredentialsInfo storePersonalOAuth1Credentials(
+            String remoteSystemId, String token, String secret) throws NoSuchSystemException {
 
-        OAuth1CredentialsInfo credentials = buildPersonalOAuth1CredentialsInfo(remoteSystemId,
-                    token, secret);
+        OAuth1CredentialsInfo credentials =
+                buildPersonalOAuth1CredentialsInfo(remoteSystemId, token, secret);
 
-        if (credentials.getNodeRef() != null)
-        {
+        if (credentials.getNodeRef() != null) {
             return (OAuth1CredentialsInfo) remoteCredentialsService.updateCredentials(credentials);
+        } else {
+            return (OAuth1CredentialsInfo)
+                    remoteCredentialsService.createPersonCredentials(remoteSystemId, credentials);
         }
-        else
-        {
-            return (OAuth1CredentialsInfo) remoteCredentialsService.createPersonCredentials(
-                        remoteSystemId, credentials);
-        }
-
     }
 
     /**
      * Add Shared OAuth1 Credentials to the OAuth1 Credential Store
-     * 
+     *
      * @param remoteSystemId String
      * @param token String
      * @param secret String
      * @return OAuth1CredentialsInfo
      */
     @Override
-    public OAuth1CredentialsInfo storeSharedOAuth1Credentials(String remoteSystemId,
-                String token, String secret)
-                throws NoSuchSystemException
-    {
-        OAuth1CredentialsInfo credentials = buildSharedOAuth1CredentialsInfo(remoteSystemId,
-                    token, secret);
+    public OAuth1CredentialsInfo storeSharedOAuth1Credentials(
+            String remoteSystemId, String token, String secret) throws NoSuchSystemException {
+        OAuth1CredentialsInfo credentials =
+                buildSharedOAuth1CredentialsInfo(remoteSystemId, token, secret);
 
-        return (OAuth1CredentialsInfo) remoteCredentialsService.createSharedCredentials(
-                    remoteSystemId, credentials);
+        return (OAuth1CredentialsInfo)
+                remoteCredentialsService.createSharedCredentials(remoteSystemId, credentials);
     }
 
     /**
@@ -110,32 +96,31 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
      */
     @Override
     public OAuth1CredentialsInfo updateSharedOAuth1Credentials(
-                OAuth1CredentialsInfo exisitingCredentials, String remoteSystemId,
-                String token, String secret)
-                throws NoSuchSystemException
-    {
+            OAuth1CredentialsInfo exisitingCredentials,
+            String remoteSystemId,
+            String token,
+            String secret)
+            throws NoSuchSystemException {
         List<OAuth1CredentialsInfo> shared = listSharedOAuth1Credentials(remoteSystemId);
 
-        for (OAuth1CredentialsInfo credential : shared)
-        {
-            if (credential.getNodeRef().equals(exisitingCredentials.getNodeRef()))
-            {
-                OAuth1CredentialsInfoImpl credentials = new OAuth1CredentialsInfoImpl(
-                            exisitingCredentials.getNodeRef(),
-                            exisitingCredentials.getRemoteSystemName(),
-                            exisitingCredentials.getRemoteSystemContainerNodeRef());
+        for (OAuth1CredentialsInfo credential : shared) {
+            if (credential.getNodeRef().equals(exisitingCredentials.getNodeRef())) {
+                OAuth1CredentialsInfoImpl credentials =
+                        new OAuth1CredentialsInfoImpl(
+                                exisitingCredentials.getNodeRef(),
+                                exisitingCredentials.getRemoteSystemName(),
+                                exisitingCredentials.getRemoteSystemContainerNodeRef());
 
                 credentials.setOAuthToken(token);
                 credentials.setOAuthSecret(secret);
 
-                return (OAuth1CredentialsInfo) remoteCredentialsService
-                            .updateCredentials(credentials);
-
+                return (OAuth1CredentialsInfo)
+                        remoteCredentialsService.updateCredentials(credentials);
             }
         }
 
         throw new AlfrescoRuntimeException(
-                    "Cannot update Credentials which haven't been persisted yet!");
+                "Cannot update Credentials which haven't been persisted yet!");
     }
 
     /**
@@ -144,14 +129,13 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
      * @param secret String
      * @return OAuth1CredentialsInfo
      */
-    private OAuth1CredentialsInfo buildPersonalOAuth1CredentialsInfo(String remoteSystemId,
-                String token, String secret)
-    {
+    private OAuth1CredentialsInfo buildPersonalOAuth1CredentialsInfo(
+            String remoteSystemId, String token, String secret) {
         OAuth1CredentialsInfoImpl credentials = new OAuth1CredentialsInfoImpl();
 
-        OAuth1CredentialsInfoImpl existing = (OAuth1CredentialsInfoImpl) getPersonalOAuth1Credentials(remoteSystemId);
-        if (existing != null)
-        {
+        OAuth1CredentialsInfoImpl existing =
+                (OAuth1CredentialsInfoImpl) getPersonalOAuth1Credentials(remoteSystemId);
+        if (existing != null) {
             credentials = existing;
         }
 
@@ -167,9 +151,8 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
      * @param secret String
      * @return OAuth1CredentialsInfo
      */
-    private OAuth1CredentialsInfo buildSharedOAuth1CredentialsInfo(String remoteSystemId,
-                String token, String secret)
-    {
+    private OAuth1CredentialsInfo buildSharedOAuth1CredentialsInfo(
+            String remoteSystemId, String token, String secret) {
         OAuth1CredentialsInfoImpl credentials = new OAuth1CredentialsInfoImpl();
 
         credentials.setOAuthToken(token);
@@ -180,46 +163,46 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
 
     /**
      * Get the current users OAuth1Credentials for the remote systems
-     * 
+     *
      * @param remoteSystemId String
      * @return OAuth1CredentialsInfo
      */
     @Override
     public OAuth1CredentialsInfo getPersonalOAuth1Credentials(String remoteSystemId)
-                throws NoSuchSystemException
-    {
-        return (OAuth1CredentialsInfo) remoteCredentialsService
-                    .getPersonCredentials(remoteSystemId);
+            throws NoSuchSystemException {
+        return (OAuth1CredentialsInfo)
+                remoteCredentialsService.getPersonCredentials(remoteSystemId);
     }
 
-    /**
-     * @param remoteSystemId String
-     */
+    /** @param remoteSystemId String */
     @Override
     public List<OAuth1CredentialsInfo> listSharedOAuth1Credentials(String remoteSystemId)
-                throws NoSuchSystemException
-    {
+            throws NoSuchSystemException {
         PagingRequest paging = new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE);
         @SuppressWarnings("unchecked")
-        PagingResults<OAuth1CredentialsInfo> pagingResults = (PagingResults<OAuth1CredentialsInfo>) remoteCredentialsService
-                    .listSharedCredentials(remoteSystemId,
-                                RemoteCredentialsModel.TYPE_OAUTH1_CREDENTIALS, paging);
+        PagingResults<OAuth1CredentialsInfo> pagingResults =
+                (PagingResults<OAuth1CredentialsInfo>)
+                        remoteCredentialsService.listSharedCredentials(
+                                remoteSystemId,
+                                RemoteCredentialsModel.TYPE_OAUTH1_CREDENTIALS,
+                                paging);
         return pagingResults.getPage();
     }
 
     /**
      * Delete the current users OAuth1 Credentials for the remote system
-     * 
+     *
      * @param remoteSystemId String
      * @return boolean
      */
     @Override
     public boolean deletePersonalOAuth1Credentials(String remoteSystemId)
-                throws NoSuchSystemException
-    {
+            throws NoSuchSystemException {
         OAuth1CredentialsInfo credentials = getPersonalOAuth1Credentials(remoteSystemId);
 
-        if (credentials == null) { return false; }
+        if (credentials == null) {
+            return false;
+        }
 
         remoteCredentialsService.deleteCredentials(credentials);
 
@@ -227,21 +210,18 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     }
 
     @Override
-    public boolean deleteSharedOAuth1Credentials(String remoteSystemId,
-                OAuth1CredentialsInfo credentials) throws NoSuchSystemException
-    {
+    public boolean deleteSharedOAuth1Credentials(
+            String remoteSystemId, OAuth1CredentialsInfo credentials) throws NoSuchSystemException {
         List<OAuth1CredentialsInfo> shared = listSharedOAuth1Credentials(remoteSystemId);
 
-        if (shared.isEmpty()) { return false; }
+        if (shared.isEmpty()) {
+            return false;
+        }
 
-        for (OAuth1CredentialsInfo credential : shared)
-        {
-            if (credential.getNodeRef().equals(credentials.getNodeRef()))
-            {
+        for (OAuth1CredentialsInfo credential : shared) {
+            if (credential.getNodeRef().equals(credentials.getNodeRef())) {
                 remoteCredentialsService.deleteCredentials(credential);
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
@@ -255,10 +235,10 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
      * @return OAuth1CredentialsInfo
      */
     @Override
-    public OAuth1CredentialsInfo updateCredentialsAuthenticationSucceeded(boolean succeeded,
-                OAuth1CredentialsInfo credentials)
-    {
-        return (OAuth1CredentialsInfo) remoteCredentialsService
-                    .updateCredentialsAuthenticationSucceeded(succeeded, credentials);
+    public OAuth1CredentialsInfo updateCredentialsAuthenticationSucceeded(
+            boolean succeeded, OAuth1CredentialsInfo credentials) {
+        return (OAuth1CredentialsInfo)
+                remoteCredentialsService.updateCredentialsAuthenticationSucceeded(
+                        succeeded, credentials);
     }
 }

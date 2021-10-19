@@ -25,8 +25,14 @@
  */
 package org.alfresco.heartbeat;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.sun.management.OperatingSystemMXBean;
 import com.sun.management.UnixOperatingSystemMXBean;
+
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -40,16 +46,8 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-/**
- * @author eknizat
- */
-public class SystemUsageDataCollectorTest
-{
+/** @author eknizat */
+public class SystemUsageDataCollectorTest {
     private SystemUsageDataCollector usageSystemCollector;
     private HBDataCollectorService mockCollectorService;
     private DescriptorDAO mockDescriptorDAO;
@@ -58,8 +56,7 @@ public class SystemUsageDataCollectorTest
     private BasicDataSource mockDataSource;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         mockDescriptorDAO = mock(DescriptorDAO.class);
         mockCollectorService = mock(HBDataCollectorService.class);
         mockScheduler = mock(HeartBeatJobScheduler.class);
@@ -69,7 +66,9 @@ public class SystemUsageDataCollectorTest
         when(mockDescriptor.getId()).thenReturn("mock_id");
         when(mockDescriptorDAO.getDescriptor()).thenReturn(mockDescriptor);
 
-        usageSystemCollector = new SystemUsageDataCollector("acs.repository.usage.system","1.0","0 0 0 ? * *", mockScheduler);
+        usageSystemCollector =
+                new SystemUsageDataCollector(
+                        "acs.repository.usage.system", "1.0", "0 0 0 ? * *", mockScheduler);
         usageSystemCollector.setHbDataCollectorService(mockCollectorService);
         usageSystemCollector.setDataSource(mockDataSource);
         usageSystemCollector.setCurrentRepoDescriptorDAO(mockDescriptorDAO);
@@ -78,10 +77,8 @@ public class SystemUsageDataCollectorTest
     }
 
     @Test
-    public void testHBDataFields()
-    {
-        for (HBData data : this.collectedData)
-        {
+    public void testHBDataFields() {
+        for (HBData data : this.collectedData) {
             assertNotNull(data.getCollectorId());
             assertNotNull(data.getCollectorVersion());
             assertNotNull(data.getSchemaVersion());
@@ -91,22 +88,20 @@ public class SystemUsageDataCollectorTest
     }
 
     @Test
-    public void testSystemUsageDataIsCollected()
-    {
+    public void testSystemUsageDataIsCollected() {
         HBData systemUsage = grabDataByCollectorId(usageSystemCollector.getCollectorId());
         assertNotNull("Repository usage data missing.", systemUsage);
 
-        Map<String,Object> data = systemUsage.getData();
+        Map<String, Object> data = systemUsage.getData();
 
         assertTrue(data.containsKey("cpu"));
         Map<String, Object> cpu = (Map<String, Object>) data.get("cpu");
         assertTrue(cpu.containsKey("availableProcessors"));
 
-        OperatingSystemMXBean osMBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-        if (osMBean != null)
-        {
-            if (osMBean instanceof UnixOperatingSystemMXBean)
-            {
+        OperatingSystemMXBean osMBean =
+                ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+        if (osMBean != null) {
+            if (osMBean instanceof UnixOperatingSystemMXBean) {
                 assertTrue(data.containsKey("openFileDescriptorCount"));
             }
             assertTrue(cpu.containsKey("percentageProcessLoad"));
@@ -126,12 +121,9 @@ public class SystemUsageDataCollectorTest
         assertTrue(mem.containsKey("max"));
     }
 
-    private HBData grabDataByCollectorId(String collectorId)
-    {
-        for (HBData d : this.collectedData)
-        {
-            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId))
-            {
+    private HBData grabDataByCollectorId(String collectorId) {
+        for (HBData d : this.collectedData) {
+            if (d.getCollectorId() != null && d.getCollectorId().equals(collectorId)) {
                 return d;
             }
         }

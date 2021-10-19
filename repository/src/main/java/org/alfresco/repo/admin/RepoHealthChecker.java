@@ -27,21 +27,15 @@ package org.alfresco.repo.admin;
 
 import org.alfresco.repo.domain.schema.DataSourceCheck;
 
-/**
- * A utility service to do the database and other health checks.
- */
-public class RepoHealthChecker
-{
+/** A utility service to do the database and other health checks. */
+public class RepoHealthChecker {
     private final DataSourceCheck dataSourceCheck;
 
-    public RepoHealthChecker(DataSourceCheck dataSourceCheck)
-    {
+    public RepoHealthChecker(DataSourceCheck dataSourceCheck) {
         this.dataSourceCheck = dataSourceCheck;
     }
 
-    public void checkDatabase()
-    {
+    public void checkDatabase() {
         dataSourceCheck.init();
     }
-
 }

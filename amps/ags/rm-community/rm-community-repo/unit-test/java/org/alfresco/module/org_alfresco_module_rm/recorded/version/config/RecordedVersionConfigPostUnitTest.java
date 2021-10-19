@@ -33,8 +33,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.json.JSONObject;
@@ -42,38 +40,38 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 
+import java.util.Map;
+
 /**
  * Recorded Version Config REST API POST implementation unit test.
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordedVersionConfigPostUnitTest extends BaseRecordedVersionConfigTest
-{
+public class RecordedVersionConfigPostUnitTest extends BaseRecordedVersionConfigTest {
     /** RecordedVersionConfigPost webscript instance */
     protected @InjectMocks RecordedVersionConfigPost webScript;
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest#getWebScript()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest#getWebScript()
      */
     @Override
-    protected DeclarativeWebScript getWebScript()
-    {
+    protected DeclarativeWebScript getWebScript() {
         return webScript;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest#getWebScriptTemplate()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest#getWebScriptTemplate()
      */
     @Override
-    protected String getWebScriptTemplate()
-    {
+    protected String getWebScriptTemplate() {
         return RECORDED_VERSION_CONFIG_WEBSCRIPT_ROOT + "recorded-version-config.post.json.ftl";
     }
 
     @Test
-    public void setRecordedVersionConfig() throws Exception
-    {
+    public void setRecordedVersionConfig() throws Exception {
         // Build the content
         String content = buildContent(ALL);
 
@@ -96,12 +94,11 @@ public class RecordedVersionConfigPostUnitTest extends BaseRecordedVersionConfig
 
     /**
      * Helper method to build the content for the POST request
-     * @param policy The recordable version policy
      *
+     * @param policy The recordable version policy
      * @return Content for the build request
      */
-    private String buildContent(RecordableVersionPolicy policy)
-    {
+    private String buildContent(RecordableVersionPolicy policy) {
         StringBuilder sb = new StringBuilder();
         sb.append("{\"");
         sb.append(RECORDED_VERSION);

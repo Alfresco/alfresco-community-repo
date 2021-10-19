@@ -40,8 +40,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
-public class TransferCompleteAction extends RMActionExecuterAbstractBase
-{
+public class TransferCompleteAction extends RMActionExecuterAbstractBase {
     /** I18N */
     private static final String MSG_NODE_NOT_TRANSFER = "rm.action.node-not-transfer";
 
@@ -51,29 +50,23 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     /** Transfer service */
     private TransferService transferService;
 
-    /**
-     * @return transfer service
-     */
-    protected TransferService getTransferService()
-    {
+    /** @return transfer service */
+    protected TransferService getTransferService() {
         return this.transferService;
     }
 
-    /**
-     * @param transferService transfer service
-     */
-    public void setTransferService(TransferService transferService)
-    {
+    /** @param transferService transfer service */
+    public void setTransferService(TransferService transferService) {
         this.transferService = transferService;
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
+    protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
         checkTransferSubClass(actionedUponNodeRef);
         getTransferService().completeTransfer(actionedUponNodeRef);
     }
@@ -83,11 +76,9 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
      *
      * @param actionedUponNodeRef actioned upon node reference
      */
-    private void checkTransferSubClass(NodeRef actionedUponNodeRef)
-    {
+    private void checkTransferSubClass(NodeRef actionedUponNodeRef) {
         QName type = getNodeService().getType(actionedUponNodeRef);
-        if (!getDictionaryService().isSubClass(type, TYPE_TRANSFER))
-        {
+        if (!getDictionaryService().isSubClass(type, TYPE_TRANSFER)) {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NODE_NOT_TRANSFER));
         }
     }

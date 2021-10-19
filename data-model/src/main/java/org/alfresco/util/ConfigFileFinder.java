@@ -27,6 +27,7 @@ package org.alfresco.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.logging.Log;
 
 import java.io.File;
@@ -50,151 +51,146 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * Used to find configuration files as resources from the jar file or from some external location. The path supplied
- * to {@link #readFiles(String, Log)} may be a directory name. Normally used by ConfigScheduler.
+ * Used to find configuration files as resources from the jar file or from some external location.
+ * The path supplied to {@link #readFiles(String, Log)} may be a directory name. Normally used by
+ * ConfigScheduler.
  *
  * @author adavis
  */
-public abstract class ConfigFileFinder
-{
+public abstract class ConfigFileFinder {
     private final ObjectMapper jsonObjectMapper;
     private int fileCount;
 
-    public ConfigFileFinder(ObjectMapper jsonObjectMapper)
-    {
+    public ConfigFileFinder(ObjectMapper jsonObjectMapper) {
         this.jsonObjectMapper = jsonObjectMapper;
     }
 
-    public int getFileCount()
-    {
+    public int getFileCount() {
         return fileCount;
     }
 
-    public void setFileCount(int fileCount)
-    {
+    public void setFileCount(int fileCount) {
         this.fileCount = fileCount;
     }
 
-    public boolean readFiles(String path, Log log)
-    {
+    public boolean readFiles(String path, Log log) {
         AtomicBoolean successReadingConfig = new AtomicBoolean(true);
-        try
-        {
+        try {
             AtomicBoolean somethingRead = new AtomicBoolean(false);
 
             // Try reading resources in a jar
-            final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-            if (jarFile.isFile())
-            {
+            final File jarFile =
+                    new File(
+                            getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+            if (jarFile.isFile()) {
                 readFromJar(jarFile, path, log, successReadingConfig, somethingRead);
-            }
-            else
-            {
+            } else {
                 // Try reading resources from disk
-                Iterator<URL> pathUrls = getClass().getClassLoader().getResources(path).asIterator();
-                while(pathUrls.hasNext())
-                {
+                Iterator<URL> pathUrls =
+                        getClass().getClassLoader().getResources(path).asIterator();
+                while (pathUrls.hasNext()) {
                     URL url = pathUrls.next();
-                    if (url != null)
-                    {
+                    if (url != null) {
                         String urlPath = URLDecoder.decode(url.getPath(), "UTF-8");
                         readFromDisk(urlPath, log, successReadingConfig, somethingRead);
                     }
                 }
             }
 
-            if (!somethingRead.get() && new File(path).exists())
-            {
+            if (!somethingRead.get() && new File(path).exists()) {
                 // Try reading files from disk
                 readFromDisk(path, log, successReadingConfig, somethingRead);
             }
 
-            if (!somethingRead.get())
-            {
-                log.debug("No config read from "+path);
+            if (!somethingRead.get()) {
+                log.debug("No config read from " + path);
             }
-        }
-        catch (IOException | URISyntaxException e)
-        {
-            log.error("Error reading from "+path, e);
+        } catch (IOException | URISyntaxException e) {
+            log.error("Error reading from " + path, e);
             successReadingConfig.set(false);
         }
         return successReadingConfig.get();
     }
 
-    private void readFromJar(File jarFile, String path, Log log, AtomicBoolean successReadingConfig, AtomicBoolean somethingRead) throws IOException
-    {
+    private void readFromJar(
+            File jarFile,
+            String path,
+            Log log,
+            AtomicBoolean successReadingConfig,
+            AtomicBoolean somethingRead)
+            throws IOException {
         JarFile jar = new JarFile(jarFile);
-        try
-        {
+        try {
             Enumeration<JarEntry> entries = jar.entries(); // gives ALL entries in jar
             String prefix = path + "/";
             List<String> names = new ArrayList<>();
-            while (entries.hasMoreElements())
-            {
+            while (entries.hasMoreElements()) {
                 final String name = entries.nextElement().getName();
-                if ((name.startsWith(prefix) && name.length() > prefix.length()) ||
-                    (name.equals(path)))
-                {
+                if ((name.startsWith(prefix) && name.length() > prefix.length())
+                        || (name.equals(path))) {
                     names.add(name);
                 }
             }
             Collections.sort(names);
-            for (String name : names)
-            {
+            for (String name : names) {
                 InputStreamReader reader = new InputStreamReader(getResourceAsStream(name));
-                readFromReader(successReadingConfig, somethingRead, reader, "resource", name, null, log);
+                readFromReader(
+                        successReadingConfig, somethingRead, reader, "resource", name, null, log);
             }
-        }
-        finally
-        {
+        } finally {
             jar.close();
         }
     }
 
-    private void readFromDisk(String path, Log log, AtomicBoolean successReadingConfig, AtomicBoolean somethingRead) throws FileNotFoundException
-    {
+    private void readFromDisk(
+            String path, Log log, AtomicBoolean successReadingConfig, AtomicBoolean somethingRead)
+            throws FileNotFoundException {
         File root = new File(path);
-        if (root.isDirectory())
-        {
+        if (root.isDirectory()) {
             File[] files = root.listFiles();
             Arrays.sort(files, (file1, file2) -> file1.getName().compareTo(file2.getName()));
-            for (File file : files)
-            {
+            for (File file : files) {
                 // Only read files in the config directory
-                if (!file.isDirectory())
-                {
+                if (!file.isDirectory()) {
                     FileReader reader = new FileReader(file);
                     String filePath = file.getPath();
-                    readFromReader(successReadingConfig, somethingRead, reader, "file", filePath, null, log);
-                }
-                else
-                {
+                    readFromReader(
+                            successReadingConfig,
+                            somethingRead,
+                            reader,
+                            "file",
+                            filePath,
+                            null,
+                            log);
+                } else {
                     log.debug("Skipping directory " + file.getName() + " in " + path);
                 }
             }
-        }
-        else
-        {
+        } else {
             FileReader reader = new FileReader(root);
             String filePath = root.getPath();
-            readFromReader(successReadingConfig, somethingRead, reader, "file", filePath, null, log);
+            readFromReader(
+                    successReadingConfig, somethingRead, reader, "file", filePath, null, log);
         }
     }
 
-    private InputStream getResourceAsStream(String resource)
-    {
-        final InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
+    private InputStream getResourceAsStream(String resource) {
+        final InputStream in =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
         return in == null ? getClass().getResourceAsStream(resource) : in;
     }
 
-    private void readFromReader(AtomicBoolean successReadingConfig, AtomicBoolean somethingRead,
-                               Reader reader, String readFrom, String path, String baseUrl, Log log)
-    {
+    private void readFromReader(
+            AtomicBoolean successReadingConfig,
+            AtomicBoolean somethingRead,
+            Reader reader,
+            String readFrom,
+            String path,
+            String baseUrl,
+            Log log) {
         somethingRead.set(true);
         boolean success = readFile(reader, readFrom, path, null, log);
-        if (success)
-        {
+        if (success) {
             fileCount++;
         }
         boolean newSuccessReadingConfig = successReadingConfig.get();
@@ -202,32 +198,26 @@ public abstract class ConfigFileFinder
         successReadingConfig.set(newSuccessReadingConfig);
     }
 
-    public boolean readFile(Reader reader, String readFrom, String path, String baseUrl, Log log)
-    {
+    public boolean readFile(Reader reader, String readFrom, String path, String baseUrl, Log log) {
         // At the moment it is assumed the file is Json, but that does not need to be the case.
         // We have the path including extension.
         boolean successReadingConfig = true;
-        try
-        {
+        try {
             JsonNode jsonNode = jsonObjectMapper.readValue(reader, JsonNode.class);
             String readFromMessage = readFrom + ' ' + path;
-            if (log.isTraceEnabled())
-            {
+            if (log.isTraceEnabled()) {
                 log.trace(readFromMessage + " config is: " + jsonNode);
-            }
-            else
-            {
+            } else {
                 log.debug(readFromMessage + " config read");
             }
             readJson(jsonNode, readFromMessage, baseUrl);
-        }
-        catch (Exception e)
-        {
-            log.error("Error reading "+path, e);
+        } catch (Exception e) {
+            log.error("Error reading " + path, e);
             successReadingConfig = false;
         }
         return successReadingConfig;
     }
 
-    protected abstract void readJson(JsonNode jsonNode, String readFromMessage, String baseUrl) throws IOException;
+    protected abstract void readJson(JsonNode jsonNode, String readFromMessage, String baseUrl)
+            throws IOException;
 }

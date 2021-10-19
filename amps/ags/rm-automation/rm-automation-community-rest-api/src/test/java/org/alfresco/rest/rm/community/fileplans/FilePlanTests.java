@@ -26,8 +26,6 @@
  */
 package org.alfresco.rest.rm.community.fileplans;
 
-import static java.util.Arrays.asList;
-
 import static org.alfresco.rest.rm.community.base.AllowableOperations.CREATE;
 import static org.alfresco.rest.rm.community.base.AllowableOperations.DELETE;
 import static org.alfresco.rest.rm.community.base.AllowableOperations.UPDATE;
@@ -59,8 +57,7 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 
-import java.util.ArrayList;
-import java.util.NoSuchElementException;
+import static java.util.Arrays.asList;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.base.DataProviderClass;
@@ -76,59 +73,61 @@ import org.alfresco.utility.report.Bug;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.NoSuchElementException;
+
 /**
  * This class contains the tests for the File Plan CRUD API
  *
  * @author Rodica Sutu
  * @since 2.6
  */
-public class FilePlanTests extends BaseRMRestTest
-{
-    //** Number of children (for children creation test) */
+public class FilePlanTests extends BaseRMRestTest {
+    // ** Number of children (for children creation test) */
     private static final int NUMBER_OF_CHILDREN = 10;
 
     /**
-     * Data Provider with:
-     * with the object types not allowed as children for a record category
+     * Data Provider with: with the object types not allowed as children for a record category
      *
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] childrenNotAllowedForFilePlan()
-    {
+    public static Object[][] childrenNotAllowedForFilePlan() {
         return new String[][] {
-                { FILE_PLAN_TYPE },
-                { TRANSFER_CONTAINER_TYPE },
-                { UNFILED_CONTAINER_TYPE },
-                { UNFILED_RECORD_FOLDER_TYPE },
-                { TRANSFER_TYPE },
-                { CONTENT_TYPE },
-                { NON_ELECTRONIC_RECORD_TYPE},
-                { RECORD_FOLDER_TYPE}
+            {FILE_PLAN_TYPE},
+            {TRANSFER_CONTAINER_TYPE},
+            {UNFILED_CONTAINER_TYPE},
+            {UNFILED_RECORD_FOLDER_TYPE},
+            {TRANSFER_TYPE},
+            {CONTENT_TYPE},
+            {NON_ELECTRONIC_RECORD_TYPE},
+            {RECORD_FOLDER_TYPE}
         };
     }
 
     /**
+     *
+     *
      * <pre>
      * Given that the RM site doesn't exist
      * When I use the API to get the File Plan
      * Then I get the 404 response code
      * </pre>
      */
-    @Test (priority = 1)
-    // Set priority to 1 in order for this test to run last one in this class. The rm site is created only once at the
-    // beginning of the class and because this test deletes the rm site, the other tests might be affected
-    public void getFilePlanWhenRMIsNotCreated()
-    {
+    @Test(priority = 1)
+    // Set priority to 1 in order for this test to run last one in this class. The rm site is
+    // created only once at the
+    // beginning of the class and because this test deletes the rm site, the other tests might be
+    // affected
+    public void getFilePlanWhenRMIsNotCreated() {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
 
         // Check RM Site Exist
-        if (rmSiteAPI.existsRMSite())
-        {
+        if (rmSiteAPI.existsRMSite()) {
             // Delete RM Site
             rmSiteAPI.deleteRMSite();
         }
-        //get file plan
+        // get file plan
         getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS);
 
         // Check the response code is NOT_FOUND
@@ -136,6 +135,8 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given that a file plan exists
      * When I ask the API for the details of the file plan
@@ -143,8 +144,7 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    public void getFilePlanWhenRMIsCreated()
-    {
+    public void getFilePlanWhenRMIsCreated() {
         // Create RM Site if doesn't exist
         createRMSiteIfNotExists();
 
@@ -152,12 +152,14 @@ public class FilePlanTests extends BaseRMRestTest
 
         // Check the response code
         assertStatusCode(OK);
-        //check file plan details
+        // check file plan details
         assertEquals(FILE_PLAN_TYPE, filePlan.getNodeType());
         assertEquals(ContainerName.documentLibrary.toString(), filePlan.getName());
     }
 
     /**
+     *
+     *
      * <pre>
      * Given that a file plan exists
      * When I ask the API for the details of the file plan to include the allowableOperations property
@@ -165,20 +167,28 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    public void includeAllowableOperations()
-    {
+    public void includeAllowableOperations() {
         // Check the list of allowableOperations returned
-        FilePlan filePlan = getRestAPIFactory().getFilePlansAPI().getFilePlan(FILE_PLAN_ALIAS, "include=" + ALLOWABLE_OPERATIONS);
+        FilePlan filePlan =
+                getRestAPIFactory()
+                        .getFilePlansAPI()
+                        .getFilePlan(FILE_PLAN_ALIAS, "include=" + ALLOWABLE_OPERATIONS);
 
-        assertTrue(filePlan.getAllowableOperations().containsAll(asList(UPDATE, CREATE)),
-                "Wrong list of the allowable operations is return" + filePlan.getAllowableOperations().toString());
+        assertTrue(
+                filePlan.getAllowableOperations().containsAll(asList(UPDATE, CREATE)),
+                "Wrong list of the allowable operations is return"
+                        + filePlan.getAllowableOperations().toString());
 
         // Check the list of allowableOperations doesn't contain DELETE operation
-        assertFalse(filePlan.getAllowableOperations().contains(DELETE),
-                "The list of allowable operations contains delete option" + filePlan.getAllowableOperations().toString());
+        assertFalse(
+                filePlan.getAllowableOperations().contains(DELETE),
+                "The list of allowable operations contains delete option"
+                        + filePlan.getAllowableOperations().toString());
     }
 
     /**
+     *
+     *
      * <pre>
      * Given that RM site exists
      * When a non-RM user asks the API for the details of the file plan
@@ -186,8 +196,7 @@ public class FilePlanTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    public void getFilePlanWithNonRMuser()
-    {
+    public void getFilePlanWithNonRMuser() {
         // Create a random user
         UserModel nonRMuser = getDataUser().createRandomTestUser("testUser");
 
@@ -199,36 +208,41 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     /**
-     * Given that a file plan exists
-     * When I ask the API to modify the details of the file plan
-     * Then the details of the file are modified
-     * Note: the details of the file plan are limited to title and description.
+     * Given that a file plan exists When I ask the API to modify the details of the file plan Then
+     * the details of the file are modified Note: the details of the file plan are limited to title
+     * and description.
      */
     @Test
-    @Bug (id = "RM-4295")
-    public void updateFilePlan()
-    {
+    @Bug(id = "RM-4295")
+    public void updateFilePlan() {
         String FILE_PLAN_DESCRIPTION = "Description updated " + getRandomAlphanumeric();
         String FILE_PLAN_TITLE = "Title updated " + getRandomAlphanumeric();
 
         // Build object for updating the filePlan
-        FilePlan filePlanComponent = FilePlan.builder()
-                                             .properties(FilePlanProperties.builder()
-                                                                           .title(FILE_PLAN_TITLE)
-                                                                           .description(FILE_PLAN_DESCRIPTION)
-                                                                           .build())
-                                             .build();
+        FilePlan filePlanComponent =
+                FilePlan.builder()
+                        .properties(
+                                FilePlanProperties.builder()
+                                        .title(FILE_PLAN_TITLE)
+                                        .description(FILE_PLAN_DESCRIPTION)
+                                        .build())
+                        .build();
         // Create a random user
         UserModel nonRMuser = getDataUser().createRandomTestUser("testUser");
 
         // Update the file plan
-         getRestAPIFactory().getFilePlansAPI(nonRMuser).updateFilePlan(filePlanComponent, FILE_PLAN_ALIAS);
+        getRestAPIFactory()
+                .getFilePlansAPI(nonRMuser)
+                .updateFilePlan(filePlanComponent, FILE_PLAN_ALIAS);
 
-        //Check the response status code is FORBIDDEN
+        // Check the response status code is FORBIDDEN
         assertStatusCode(FORBIDDEN);
 
         // Update the file plan
-        FilePlan renamedFilePlan = getRestAPIFactory().getFilePlansAPI().updateFilePlan(filePlanComponent, FILE_PLAN_ALIAS);
+        FilePlan renamedFilePlan =
+                getRestAPIFactory()
+                        .getFilePlansAPI()
+                        .updateFilePlan(filePlanComponent, FILE_PLAN_ALIAS);
 
         // Verify the response status code
         assertStatusCode(OK);
@@ -241,18 +255,15 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     /**
-     * Given that a file plan exists
-     * When I ask the API to modify the name of the file plan
-     * Then a error is returned (422 response code)
+     * Given that a file plan exists When I ask the API to modify the name of the file plan Then a
+     * error is returned (422 response code)
      */
     @Test
-    @Bug (id = "RM-4295")
-    public void updateFilePlanName()
-    {
+    @Bug(id = "RM-4295")
+    public void updateFilePlanName() {
         // Build object for updating the filePlan
-        FilePlan filePlanComponent = FilePlan.builder()
-                                             .name(getRandomName("File Plan name updated "))
-                                             .build();
+        FilePlan filePlanComponent =
+                FilePlan.builder().name(getRandomName("File Plan name updated ")).build();
 
         // Update the file plan
         getRestAPIFactory().getFilePlansAPI().updateFilePlan(filePlanComponent, FILE_PLAN_ALIAS);
@@ -262,11 +273,14 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given that a file plan exists
      * When I ask the API to create a root record category
      * Then it is created as a root record category
      * </pre>
+     *
      * <pre>
      * Given that a file plan exists
      * When I use the API to create a folder (cm:folder type) into the fileplan
@@ -274,27 +288,25 @@ public class FilePlanTests extends BaseRMRestTest
      * (see RM-4572 comments)
      * </pre>
      */
-    @Test
-    (
-        description = "Create root category",
-        dataProviderClass = DataProviderClass.class,
-        dataProvider = "categoryTypes"
-    )
-    public void createFilePlanChildren(String nodeType)
-    {
+    @Test(
+            description = "Create root category",
+            dataProviderClass = DataProviderClass.class,
+            dataProvider = "categoryTypes")
+    public void createFilePlanChildren(String nodeType) {
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
         // Create the root record category
-        RecordCategory recordCategory = RecordCategory.builder()
-                                                      .name(categoryName)
-                                                      .properties(RecordCategoryProperties.builder()
-                                                                           .title(categoryTitle)
-                                                                           .build())
-                                                      .nodeType(nodeType)
-                                                      .build();
-        RecordCategory rootRecordCategory = getRestAPIFactory().getFilePlansAPI()
-                                                               .createRootRecordCategory(recordCategory,FILE_PLAN_ALIAS);
+        RecordCategory recordCategory =
+                RecordCategory.builder()
+                        .name(categoryName)
+                        .properties(RecordCategoryProperties.builder().title(categoryTitle).build())
+                        .nodeType(nodeType)
+                        .build();
+        RecordCategory rootRecordCategory =
+                getRestAPIFactory()
+                        .getFilePlansAPI()
+                        .createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS);
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -311,11 +323,14 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given a root category
      * When I ask the API to create a root category having the same name
      * Then  the response code received is 409 - name clashes with an existing node
-     *</pre>
+     * </pre>
+     *
      * <pre>
      * Given a root category
      * When I ask the API to create a root category having the same name  with autoRename parameter on true
@@ -324,35 +339,40 @@ public class FilePlanTests extends BaseRMRestTest
      */
     @Test
     @Bug(id = "RM-5116")
-    public void createDuplicateCategories()
-    {
+    public void createDuplicateCategories() {
         String categoryName = "Category name " + getRandomAlphanumeric();
         String categoryTitle = "Category title " + getRandomAlphanumeric();
 
-
         // Create the root record category
-        RecordCategory recordCategory = RecordCategory.builder()
-                                                      .name(categoryName)
-                                                      .properties(RecordCategoryProperties.builder()
-                                                                           .title(categoryTitle)
-                                                                           .build())
-                                                      .build();
+        RecordCategory recordCategory =
+                RecordCategory.builder()
+                        .name(categoryName)
+                        .properties(RecordCategoryProperties.builder().title(categoryTitle).build())
+                        .build();
         // Create the root record category
-        RecordCategory rootRecordCategory = getRestAPIFactory().getFilePlansAPI().createRootRecordCategory(recordCategory,FILE_PLAN_ALIAS);
+        RecordCategory rootRecordCategory =
+                getRestAPIFactory()
+                        .getFilePlansAPI()
+                        .createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS);
 
         // Verify the status code
         assertStatusCode(CREATED);
         assertEquals(rootRecordCategory.getName(), categoryName);
 
         // Create the same root record category
-        getRestAPIFactory().getFilePlansAPI().createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS);
+        getRestAPIFactory()
+                .getFilePlansAPI()
+                .createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS);
 
         // Verify the status code
         assertStatusCode(CONFLICT);
 
-        //create the same category with autoRename parameter on true
-        RecordCategory rootRecordCategoryAutoRename = getRestAPIFactory().getFilePlansAPI()
-                                                                         .createRootRecordCategory(recordCategory, FILE_PLAN_ALIAS,"autoRename=true");
+        // create the same category with autoRename parameter on true
+        RecordCategory rootRecordCategoryAutoRename =
+                getRestAPIFactory()
+                        .getFilePlansAPI()
+                        .createRootRecordCategory(
+                                recordCategory, FILE_PLAN_ALIAS, "autoRename=true");
 
         // Verify the status code
         assertStatusCode(CREATED);
@@ -361,15 +381,18 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     @Test
-    public void listFilePlanChildren()
-    {
-        //delete all the root categories
-        getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getEntries().forEach(recordCategoryEntry ->
-                deleteRecordCategory(recordCategoryEntry.getEntry().getId()));
+    public void listFilePlanChildren() {
+        // delete all the root categories
+        getRestAPIFactory()
+                .getFilePlansAPI()
+                .getRootRecordCategories(FILE_PLAN_ALIAS)
+                .getEntries()
+                .forEach(
+                        recordCategoryEntry ->
+                                deleteRecordCategory(recordCategoryEntry.getEntry().getId()));
         // Add child folders
         ArrayList<RecordCategory> children = new ArrayList<>();
-        for (int i = 0; i < NUMBER_OF_CHILDREN; i++)
-        {
+        for (int i = 0; i < NUMBER_OF_CHILDREN; i++) {
             String categoryName = "Category name " + getRandomAlphanumeric();
             String categoryTitle = "Category title " + getRandomAlphanumeric();
             // Create a record folder
@@ -379,68 +402,79 @@ public class FilePlanTests extends BaseRMRestTest
         }
 
         // Get record category children from API
-        RecordCategoryCollection recordCategoryChildren = getRestAPIFactory().getFilePlansAPI()
-                                                                             .getRootRecordCategories(FILE_PLAN_ALIAS, "include=aspects,properties");
+        RecordCategoryCollection recordCategoryChildren =
+                getRestAPIFactory()
+                        .getFilePlansAPI()
+                        .getRootRecordCategories(FILE_PLAN_ALIAS, "include=aspects,properties");
 
         // Check status code
         assertStatusCode(OK);
 
         // Check children against created list
-        recordCategoryChildren.getEntries().forEach(c ->
-                {
-                    RecordCategory recordCategoryChild = c.getEntry();
-                    String recordCategoryChildId = recordCategoryChild.getId();
-                    assertNotNull(recordCategoryChildId);
-                    logger.info("Checking child " + recordCategoryChildId);
+        recordCategoryChildren
+                .getEntries()
+                .forEach(
+                        c -> {
+                            RecordCategory recordCategoryChild = c.getEntry();
+                            String recordCategoryChildId = recordCategoryChild.getId();
+                            assertNotNull(recordCategoryChildId);
+                            logger.info("Checking child " + recordCategoryChildId);
 
-                    try
-                    {
-                        // Find this child in created children list
-                        RecordCategory createdComponent = children.stream()
-                                                                       .filter(child -> child.getId().equals(recordCategoryChildId))
-                                                                       .findFirst()
-                                                                       .orElseThrow();
+                            try {
+                                // Find this child in created children list
+                                RecordCategory createdComponent =
+                                        children.stream()
+                                                .filter(
+                                                        child ->
+                                                                child.getId()
+                                                                        .equals(
+                                                                                recordCategoryChildId))
+                                                .findFirst()
+                                                .orElseThrow();
 
-                        // Created by
-                        assertEquals(recordCategoryChild.getCreatedByUser().getId(), getAdminUser().getUsername());
+                                // Created by
+                                assertEquals(
+                                        recordCategoryChild.getCreatedByUser().getId(),
+                                        getAdminUser().getUsername());
 
-                        assertEquals(createdComponent.getName(), recordCategoryChild.getName());
-                        assertEquals(createdComponent.getNodeType(), recordCategoryChild.getNodeType());
+                                assertEquals(
+                                        createdComponent.getName(), recordCategoryChild.getName());
+                                assertEquals(
+                                        createdComponent.getNodeType(),
+                                        recordCategoryChild.getNodeType());
 
-                    }
-                    catch (NoSuchElementException e)
-                    {
-                        fail("No child element for " + recordCategoryChildId);
-                    }
-                }
-                );
+                            } catch (NoSuchElementException e) {
+                                fail("No child element for " + recordCategoryChildId);
+                            }
+                        });
     }
 
     /**
+     *
+     *
      * <pre>
      * Given that RM site is created
      * When I use the API to create invalid types inside a file plan
      * Then the node type provided is converted to a record category
      * </pre>
      */
-    @Test
-    (
-        description = "Create a record folder/unfiled container/unfiled folder/record/file plan container",
-        dataProvider = "childrenNotAllowedForFilePlan"
-    )
-    public void createChildrenNotAllowedInFilePlan(String nodeType)
-    {
+    @Test(
+            description =
+                    "Create a record folder/unfiled container/unfiled folder/record/file plan"
+                            + " container",
+            dataProvider = "childrenNotAllowedForFilePlan")
+    public void createChildrenNotAllowedInFilePlan(String nodeType) {
         String componentName = "Component" + getRandomAlphanumeric();
 
         // Create the root record category
-        RecordCategory component = RecordCategory.builder()
-                                                      .name(componentName)
-                                                      .nodeType(nodeType)
-                                                 .build();
+        RecordCategory component =
+                RecordCategory.builder().name(componentName).nodeType(nodeType).build();
         // Create the invalid node type
-        RecordCategory rootRecordCategory = getRestAPIFactory().getFilePlansAPI()
-                                                               .createRootRecordCategory(component, FILE_PLAN_ALIAS);
-        //check the response status code
+        RecordCategory rootRecordCategory =
+                getRestAPIFactory()
+                        .getFilePlansAPI()
+                        .createRootRecordCategory(component, FILE_PLAN_ALIAS);
+        // check the response status code
         assertStatusCode(CREATED);
         assertEquals(rootRecordCategory.getName(), componentName);
         assertEquals(rootRecordCategory.getNodeType(), RECORD_CATEGORY_TYPE);
@@ -452,15 +486,13 @@ public class FilePlanTests extends BaseRMRestTest
     }
 
     @Test
-    public  void listChildrenUserPermission()
-    {
+    public void listChildrenUserPermission() {
         // Create a random user
         UserModel managerUser = getDataUser().createRandomTestUser("managerUser");
 
         // Add child folders
         ArrayList<RecordCategory> children = new ArrayList<>();
-        for (int i = 0; i < NUMBER_OF_CHILDREN/2; i++)
-        {
+        for (int i = 0; i < NUMBER_OF_CHILDREN / 2; i++) {
             String categoryName = "Category name " + getRandomAlphanumeric();
             String categoryTitle = "Category title " + getRandomAlphanumeric();
             // Create a record folder
@@ -469,50 +501,65 @@ public class FilePlanTests extends BaseRMRestTest
             children.add(recordCategory);
         }
 
-        getRestAPIFactory().getRMUserAPI().assignRoleToUser(managerUser.getUsername(), ROLE_RM_MANAGER.roleId);
+        getRestAPIFactory()
+                .getRMUserAPI()
+                .assignRoleToUser(managerUser.getUsername(), ROLE_RM_MANAGER.roleId);
         // Get record category children from API
-        getRestAPIFactory().getFilePlansAPI(managerUser).getRootRecordCategories(FILE_PLAN_ALIAS)
-                           .assertThat().entriesListIsEmpty().assertThat().paginationExist();
+        getRestAPIFactory()
+                .getFilePlansAPI(managerUser)
+                .getRootRecordCategories(FILE_PLAN_ALIAS)
+                .assertThat()
+                .entriesListIsEmpty()
+                .assertThat()
+                .paginationExist();
 
         ArrayList<RecordCategory> childrenManager = new ArrayList<>();
-        for (int i = 0; i < NUMBER_OF_CHILDREN / 2; i++)
-        {
+        for (int i = 0; i < NUMBER_OF_CHILDREN / 2; i++) {
             String categoryName = "Category for manager " + getRandomAlphanumeric();
             String categoryTitle = "Category for manager " + getRandomAlphanumeric();
             // Create a record folder
             RecordCategory recordCategory = createRootCategory(categoryName, categoryTitle);
             assertNotNull(recordCategory.getId());
-            getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategory.getId(), managerUser, PERMISSION_FILING);
+            getRestAPIFactory()
+                    .getRMUserAPI()
+                    .addUserPermission(recordCategory.getId(), managerUser, PERMISSION_FILING);
             childrenManager.add(recordCategory);
         }
         // Get record category children from API
-        RecordCategoryCollection recordCategoryChildren = getRestAPIFactory().getFilePlansAPI(managerUser).getRootRecordCategories(FILE_PLAN_ALIAS);
+        RecordCategoryCollection recordCategoryChildren =
+                getRestAPIFactory()
+                        .getFilePlansAPI(managerUser)
+                        .getRootRecordCategories(FILE_PLAN_ALIAS);
 
-        //Check children against created list
-        recordCategoryChildren.getEntries().forEach(c ->
-        {
-            RecordCategory recordCategoryChild = c.getEntry();
-            String recordCategoryChildId = recordCategoryChild.getId();
-            assertNotNull(recordCategoryChildId);
-            logger.info("Checking child " + recordCategoryChildId);
+        // Check children against created list
+        recordCategoryChildren
+                .getEntries()
+                .forEach(
+                        c -> {
+                            RecordCategory recordCategoryChild = c.getEntry();
+                            String recordCategoryChildId = recordCategoryChild.getId();
+                            assertNotNull(recordCategoryChildId);
+                            logger.info("Checking child " + recordCategoryChildId);
 
-            try
-            {
-                // Find this child in created children list
-                assertTrue(childrenManager.stream()
-                                          .anyMatch(child -> child.getId().equals(recordCategoryChildId))
-                             );
-                assertFalse(children.stream()
-                                    .anyMatch(child -> child.getId().equals(recordCategoryChildId))
-
-                             );
-            } catch (NoSuchElementException e)
-            {
-                fail("No child element for " + recordCategoryChildId);
-            }
-        }
-        );
+                            try {
+                                // Find this child in created children list
+                                assertTrue(
+                                        childrenManager.stream()
+                                                .anyMatch(
+                                                        child ->
+                                                                child.getId()
+                                                                        .equals(
+                                                                                recordCategoryChildId)));
+                                assertFalse(
+                                        children.stream()
+                                                .anyMatch(
+                                                        child ->
+                                                                child.getId()
+                                                                        .equals(
+                                                                                recordCategoryChildId)));
+                            } catch (NoSuchElementException e) {
+                                fail("No child element for " + recordCategoryChildId);
+                            }
+                        });
     }
-
-
 }

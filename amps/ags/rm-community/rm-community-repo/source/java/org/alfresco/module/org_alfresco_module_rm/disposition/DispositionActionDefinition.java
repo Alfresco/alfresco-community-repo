@@ -27,13 +27,12 @@
 
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
-import java.util.List;
-
-import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.namespace.QName;
+
+import java.util.List;
 
 /**
  * Disposition action interface
@@ -41,8 +40,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 // Not @AlfrescoPublicApi because it depends on Period which is not part of the public API.
-public interface DispositionActionDefinition
-{
+public interface DispositionActionDefinition {
     /**
      * Get the NodeRef that represents the disposition action definition
      *
@@ -107,12 +105,10 @@ public interface DispositionActionDefinition
     List<RecordsManagementEvent> getEvents();
 
     /**
-     * Indicates whether the disposition action is eligible when the earliest
-     * event is complete, otherwise all events must be complete before
-     * eligibility.
+     * Indicates whether the disposition action is eligible when the earliest event is complete,
+     * otherwise all events must be complete before eligibility.
      *
-     * @return boolean true if eligible on first action complete, false
-     *         otherwise
+     * @return boolean true if eligible on first action complete, false otherwise
      */
     boolean eligibleOnFirstCompleteEvent();
 
@@ -126,9 +122,7 @@ public interface DispositionActionDefinition
     /**
      * Get the ghost on destroy from the disposition
      *
-     * @return boolean the gost on destroy flag (on applicable to destroy
-     *         actions)
+     * @return boolean the gost on destroy flag (on applicable to destroy actions)
      */
     String getGhostOnDestroy();
-
 }

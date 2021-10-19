@@ -27,9 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -40,6 +37,9 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.namespace.QName;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * rma:unfiledRecordContainer behaviour bean
  *
@@ -48,55 +48,46 @@ import org.alfresco.service.namespace.QName;
  */
 @BehaviourBean(defaultType = "rma:unfiledRecordContainer")
 public class UnfiledRecordContainerType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                       NodeServicePolicies.OnDeleteNodePolicy
-{
+        implements NodeServicePolicies.OnCreateChildAssociationPolicy,
+                NodeServicePolicies.OnDeleteNodePolicy {
     private static final String BEHAVIOUR_NAME = "onDeleteUnfiledRecordContainer";
-    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
+    private static final List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES =
+            Arrays.asList(
+                    TYPE_UNFILED_RECORD_FOLDER,
+                    ContentModel.TYPE_CONTENT,
+                    TYPE_NON_ELECTRONIC_DOCUMENT);
 
-    /**
-     * Disable the behaviours for this transaction
-     *
-     */
-    public void disable()
-    {
+    /** Disable the behaviours for this transaction */
+    public void disable() {
         getBehaviour(BEHAVIOUR_NAME).disable();
     }
 
-    /**
-     * Enable behaviours for this transaction
-     *
-     */
-    public void enable()
-    {
+    /** Enable behaviours for this transaction */
+    public void enable() {
         getBehaviour(BEHAVIOUR_NAME).enable();
     }
 
     @Override
     @Behaviour(kind = BehaviourKind.ASSOCIATION)
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
-    {
+    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode) {
         // We need to automatically cast the created folder to record folder if it is a plain folder
-        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
+        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check
+        // subtypes.
         // Some modules use hidden folder subtypes to store information (see RM-3283).
         QName childType = nodeService.getType(childAssocRef.getChildRef());
-        if (childType.equals(ContentModel.TYPE_FOLDER))
-        {
+        if (childType.equals(ContentModel.TYPE_FOLDER)) {
             nodeService.setType(childAssocRef.getChildRef(), TYPE_UNFILED_RECORD_FOLDER);
         }
 
         // check the created child is of an accepted type
-        validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+        validateNewChildAssociationSubTypesIncluded(
+                childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
     }
 
     @Override
-    @Behaviour
-    (
-                kind = BehaviourKind.CLASS,
-                name = BEHAVIOUR_NAME
-    )
-    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
-    {
-        throw new IntegrityException("Operation failed. Deletion of Unfiled Record Container is not allowed.", null);
+    @Behaviour(kind = BehaviourKind.CLASS, name = BEHAVIOUR_NAME)
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived) {
+        throw new IntegrityException(
+                "Operation failed. Deletion of Unfiled Record Container is not allowed.", null);
     }
 }

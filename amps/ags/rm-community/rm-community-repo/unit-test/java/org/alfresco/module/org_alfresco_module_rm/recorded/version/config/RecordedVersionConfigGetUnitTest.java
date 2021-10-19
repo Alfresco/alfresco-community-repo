@@ -35,11 +35,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigGet;
 import org.alfresco.module.org_alfresco_module_rm.script.slingshot.Version;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
@@ -49,38 +44,41 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Recorded Version Config REST API GET implementation unit test.
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordedVersionConfigGetUnitTest extends BaseRecordedVersionConfigTest
-{
+public class RecordedVersionConfigGetUnitTest extends BaseRecordedVersionConfigTest {
     /** RecordedVersionConfigGet webscript instance */
     protected @InjectMocks RecordedVersionConfigGet webScript;
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recorded.version.config.BaseRecordedVersionConfigTest#getWebScript()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recorded.version.config.BaseRecordedVersionConfigTest#getWebScript()
      */
     @Override
-    protected DeclarativeWebScript getWebScript()
-    {
+    protected DeclarativeWebScript getWebScript() {
         return webScript;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recorded.version.config.BaseRecordedVersionConfigTest#getWebScriptTemplate()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recorded.version.config.BaseRecordedVersionConfigTest#getWebScriptTemplate()
      */
     @Override
-    protected String getWebScriptTemplate()
-    {
+    protected String getWebScriptTemplate() {
         return RECORDED_VERSION_CONFIG_WEBSCRIPT_ROOT + "recorded-version-config.get.json.ftl";
     }
 
     @Test
-    public void getRecordedVersionConfig() throws Exception
-    {
+    public void getRecordedVersionConfig() throws Exception {
         // Build parameters
         Map<String, String> parameters = buildParameters();
 
@@ -88,10 +86,11 @@ public class RecordedVersionConfigGetUnitTest extends BaseRecordedVersionConfigT
         doReturn(null).when(mockedNodeService).getProperty(testdoc, PROP_RECORDABLE_VERSION_POLICY);
 
         // Setup versions
-        List<Version> versions = Arrays.asList(
-                new Version(NONE.toString(), true),
-                new Version(MAJOR_ONLY.toString(), false),
-                new Version(ALL.toString(), false));
+        List<Version> versions =
+                Arrays.asList(
+                        new Version(NONE.toString(), true),
+                        new Version(MAJOR_ONLY.toString(), false),
+                        new Version(ALL.toString(), false));
 
         // Stub getVersions
         doReturn(versions).when(mockedRecordableVersionConfigService).getVersions(testdoc);
@@ -114,14 +113,12 @@ public class RecordedVersionConfigGetUnitTest extends BaseRecordedVersionConfigT
         List<RecordableVersionPolicy> policies = new ArrayList<>();
         boolean isSelected = false;
         int selectedOnce = 0;
-        for (int i = 0; i < recordableVersions.length(); i++)
-        {
+        for (int i = 0; i < recordableVersions.length(); i++) {
             JSONObject jsonObject = recordableVersions.getJSONObject(i);
             String policy = jsonObject.getString("policy");
             policies.add(RecordableVersionPolicy.valueOf(policy));
             boolean selected = Boolean.valueOf(jsonObject.getString("selected")).booleanValue();
-            if (selected)
-            {
+            if (selected) {
                 isSelected = true;
                 selectedOnce++;
             }

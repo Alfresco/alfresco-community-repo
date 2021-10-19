@@ -4,34 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.action;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.StringTokenizer;
 
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -52,16 +44,21 @@ import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.StringTokenizer;
+
 /**
  * Action execution tracking service implementation
- * 
+ *
  * @author Nick Burch
  */
-public class ActionTrackingServiceImpl implements ActionTrackingService
-{
-    /**
-     * The logger
-     */
+public class ActionTrackingServiceImpl implements ActionTrackingService {
+    /** The logger */
     private static Log logger = LogFactory.getLog(ActionTrackingServiceImpl.class);
 
     private SimpleCache<String, ExecutionDetails> executingActionsCache;
@@ -70,76 +67,66 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     private RuntimeActionService runtimeActionService;
 
     /**
-     * Doesn't need to be cluster unique, is just used to try to reduce the
-     * chance of clashes in the quickest and easiest way.
+     * Doesn't need to be cluster unique, is just used to try to reduce the chance of clashes in the
+     * quickest and easiest way.
      */
     private short nextExecutionId = 1;
+
     private short wrapExecutionIdAfter = Short.MAX_VALUE / 2;
     /** How we separate bits of the cache key */
     private static final char cacheKeyPartSeparator = '=';
 
     /**
      * Set the transaction service
-     * 
+     *
      * @param transactionService the transaction service
      */
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     /**
      * Set the node service
-     * 
+     *
      * @param nodeService the node service
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /**
      * Set the runtime action service
-     * 
+     *
      * @param runtimeActionService the runtime action service
      */
-    public void setRuntimeActionService(RuntimeActionService runtimeActionService)
-    {
+    public void setRuntimeActionService(RuntimeActionService runtimeActionService) {
         this.runtimeActionService = runtimeActionService;
     }
 
-    /**
-     * Sets the cache used to store details of currently executing actions,
-     * cluster wide.
-     */
-    public void setExecutingActionsCache(SimpleCache<String, ExecutionDetails> executingActionsCache)
-    {
+    /** Sets the cache used to store details of currently executing actions, cluster wide. */
+    public void setExecutingActionsCache(
+            SimpleCache<String, ExecutionDetails> executingActionsCache) {
         this.executingActionsCache = executingActionsCache;
     }
 
     /** Used by unit tests only */
-    protected void resetNextExecutionId()
-    {
+    protected void resetNextExecutionId() {
         this.nextExecutionId = 1;
     }
 
-    public void recordActionPending(Action action)
-    {
+    public void recordActionPending(Action action) {
         recordActionPending((ActionImpl) action);
     }
-    
-    public void recordActionPending(Action action, NodeRef actionedUponNodeRef)
-    {
+
+    public void recordActionPending(Action action, NodeRef actionedUponNodeRef) {
         recordActionPending((ActionImpl) action, actionedUponNodeRef);
     }
-    
-    public void recordActionPending(ActionImpl action)
-    {
+
+    public void recordActionPending(ActionImpl action) {
         recordActionPending(action, null);
     }
 
-    public void recordActionPending(ActionImpl action, NodeRef actionedUponNodeRef)
-    {
+    public void recordActionPending(ActionImpl action, NodeRef actionedUponNodeRef) {
         // Set the status
         action.setExecutionStatus(ActionStatus.Pending);
 
@@ -151,15 +138,12 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         placeActionInCache(action, actionedUponNodeRef);
     }
 
-    public void recordActionComplete(Action action)
-    {
+    public void recordActionComplete(Action action) {
         recordActionComplete((ActionImpl) action);
     }
 
-    private void recordActionComplete(final ActionImpl action)
-    {
-        if (logger.isDebugEnabled() == true)
-        {
+    private void recordActionComplete(final ActionImpl action) {
+        if (logger.isDebugEnabled() == true) {
             logger.debug("Action " + action + " has completed execution");
         }
 
@@ -167,62 +151,77 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         action.setExecutionEndDate(new Date());
         action.setExecutionStatus(ActionStatus.Completed);
         action.setExecutionFailureMessage(null);
-        
+
         // Do we need to update the persisted details?
-        if (action.getNodeRef() != null && nodeService.exists(action.getNodeRef()))
-        {
-           // Make sure we re-fetch the latest action details and save
-           //  this version back into the repository
-           // (That way, if someone has a reference to the
-           // action and plays with it, we still save the
-           // correct information)
-           final Date startedAt = action.getExecutionStartDate();
-           final Date endedAt = action.getExecutionEndDate();
-           final NodeRef actionNode = action.getNodeRef();
-           
-           AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-           {
-               public void afterCommit()
-               {
-                  transactionService.getRetryingTransactionHelper().doInTransaction(
-                      new RetryingTransactionCallback<Object>()
-                      {
-                         public Object execute() throws Throwable
-                         {
-                           // Update the action as the system user
-                          return AuthenticationUtil.runAs(new RunAsWork<Action>() 
-                             {
-                                public Action doWork() throws Exception
-                                {
-                                   // Ensure the action persisted node still exists, and wasn't deleted
-                                   //  between when it loaded running and now
-                                   if( !nodeService.exists(actionNode) )
-                                   {
-                                       // Persisted node has gone, nothing to update
-                                       return null;
-                                   }
-                                    
-                                   // Grab the latest version of the action
-                                   ActionImpl action = (ActionImpl) runtimeActionService
-                                   .createAction(actionNode);
+        if (action.getNodeRef() != null && nodeService.exists(action.getNodeRef())) {
+            // Make sure we re-fetch the latest action details and save
+            //  this version back into the repository
+            // (That way, if someone has a reference to the
+            // action and plays with it, we still save the
+            // correct information)
+            final Date startedAt = action.getExecutionStartDate();
+            final Date endedAt = action.getExecutionEndDate();
+            final NodeRef actionNode = action.getNodeRef();
 
-                                   // Update it
-                                   action.setExecutionStatus(ActionStatus.Completed);
-                                   action.setExecutionFailureMessage(null);
-                                   action.setExecutionStartDate(startedAt);
-                                   action.setExecutionEndDate(endedAt);
-                                   runtimeActionService.saveActionImpl(actionNode, action);
+            AlfrescoTransactionSupport.bindListener(
+                    new TransactionListenerAdapter() {
+                        public void afterCommit() {
+                            transactionService
+                                    .getRetryingTransactionHelper()
+                                    .doInTransaction(
+                                            new RetryingTransactionCallback<Object>() {
+                                                public Object execute() throws Throwable {
+                                                    // Update the action as the system user
+                                                    return AuthenticationUtil.runAs(
+                                                            new RunAsWork<Action>() {
+                                                                public Action doWork()
+                                                                        throws Exception {
+                                                                    // Ensure the action persisted
+                                                                    // node still exists, and wasn't
+                                                                    // deleted
+                                                                    //  between when it loaded
+                                                                    // running and now
+                                                                    if (!nodeService.exists(
+                                                                            actionNode)) {
+                                                                        // Persisted node has gone,
+                                                                        // nothing to update
+                                                                        return null;
+                                                                    }
 
-                                   // All done
-                                   return action;
-                                }
-                             }, AuthenticationUtil.SYSTEM_USER_NAME
-                          );
-                         }
-                      }, false, true
-                  );
-               }
-           });
+                                                                    // Grab the latest version of
+                                                                    // the action
+                                                                    ActionImpl action =
+                                                                            (ActionImpl)
+                                                                                    runtimeActionService
+                                                                                            .createAction(
+                                                                                                    actionNode);
+
+                                                                    // Update it
+                                                                    action.setExecutionStatus(
+                                                                            ActionStatus.Completed);
+                                                                    action
+                                                                            .setExecutionFailureMessage(
+                                                                                    null);
+                                                                    action.setExecutionStartDate(
+                                                                            startedAt);
+                                                                    action.setExecutionEndDate(
+                                                                            endedAt);
+                                                                    runtimeActionService
+                                                                            .saveActionImpl(
+                                                                                    actionNode,
+                                                                                    action);
+
+                                                                    // All done
+                                                                    return action;
+                                                                }
+                                                            },
+                                                            AuthenticationUtil.SYSTEM_USER_NAME);
+                                                }
+                                            },
+                                            false,
+                                            true);
+                        }
+                    });
         }
 
         // Remove it from the cache, as it's finished
@@ -230,22 +229,22 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         executingActionsCache.remove(key);
     }
 
-    public void recordActionExecuting(Action action)
-    {
+    public void recordActionExecuting(Action action) {
         recordActionExecuting((ActionImpl) action, null);
     }
-    
-    public void recordActionExecuting(Action action, NodeRef actionedUponNodeRef)
-    {
+
+    public void recordActionExecuting(Action action, NodeRef actionedUponNodeRef) {
         recordActionExecuting((ActionImpl) action, actionedUponNodeRef);
     }
-    
-    private void recordActionExecuting(ActionImpl action, NodeRef actionedUponNodeRef)
-    {
-        if (logger.isDebugEnabled() == true)
-        {
-            logger.debug("Action " + action + " with provisional key " + generateCacheKey(action)
-                    + " has begun exection");
+
+    private void recordActionExecuting(ActionImpl action, NodeRef actionedUponNodeRef) {
+        if (logger.isDebugEnabled() == true) {
+            logger.debug(
+                    "Action "
+                            + action
+                            + " with provisional key "
+                            + generateCacheKey(action)
+                            + " has begun exection");
         }
 
         // Grab what status it was before
@@ -256,22 +255,22 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         action.setExecutionStatus(ActionStatus.Running);
 
         // If it's a synchronous execution, put it into the cache
-        if (previousStatus != ActionStatus.Pending)
-        {
+        if (previousStatus != ActionStatus.Pending) {
             placeActionInCache(action, actionedUponNodeRef);
-        }
-        else
-        {
+        } else {
             // If it's async, update the existing cache entry
             String key = generateCacheKey(action);
             ExecutionDetails details = executingActionsCache.get(key);
 
             // Check it's really there, warn + fix if not
-            if (details == null)
-            {
-                logger.warn("Went to mark the start of execution of " + action + " with key " + key
-                        + " but it wasn't in the running actions cache! "
-                        + "Your running actions cache is probably too small");
+            if (details == null) {
+                logger.warn(
+                        "Went to mark the start of execution of "
+                                + action
+                                + " with key "
+                                + key
+                                + " but it wasn't in the running actions cache! "
+                                + "Your running actions cache is probably too small");
             }
 
             // Update and save into the cache
@@ -281,37 +280,30 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
     }
 
     /**
-     * For an action that needs to go into the cache (async action that is
-     * pending, or sync action that is running), assign an execution instance
-     * and put into the cache
+     * For an action that needs to go into the cache (async action that is pending, or sync action
+     * that is running), assign an execution instance and put into the cache
      */
-    private void placeActionInCache(ActionImpl action, NodeRef actionedUponNodeRef)
-    {
+    private void placeActionInCache(ActionImpl action, NodeRef actionedUponNodeRef) {
         // Assign it a (unique) execution ID
         // (Keep checking to see if the key is used as we
         // increase nextExecutionId until it isn't)
         String key = null;
         boolean assigned = false;
-        while (!assigned)
-        {
+        while (!assigned) {
             // Try
             action.setExecutionInstance(nextExecutionId++);
             key = generateCacheKey(action);
 
             // Is it ok?
-            if (executingActionsCache.get(key) == null)
-            {
+            if (executingActionsCache.get(key) == null) {
                 assigned = true;
             }
 
             // Do we need to wrap?
             // (Wrap before absolutely needed, makes things simpler)
-            if (nextExecutionId > wrapExecutionIdAfter)
-            {
-                synchronized (this)
-                {
-                    while (nextExecutionId > wrapExecutionIdAfter)
-                    {
+            if (nextExecutionId > wrapExecutionIdAfter) {
+                synchronized (this) {
+                    while (nextExecutionId > wrapExecutionIdAfter) {
                         nextExecutionId -= wrapExecutionIdAfter;
                     }
                 }
@@ -322,32 +314,24 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         ExecutionDetails details = buildExecutionDetails(action, actionedUponNodeRef);
         executingActionsCache.put(key, details);
 
-        if (logger.isDebugEnabled() == true)
-        {
+        if (logger.isDebugEnabled() == true) {
             logger.debug("Action " + action + " with key " + key + " placed into execution cache");
         }
     }
 
-    /**
-     * Schedule the recording of the action failure to occur in another
-     * transaction
-     */
-    public void recordActionFailure(Action action, final Throwable exception)
-    {
-        if (logger.isDebugEnabled() == true)
-        {
-            if (exception instanceof ActionCancelledException)
-            {
+    /** Schedule the recording of the action failure to occur in another transaction */
+    public void recordActionFailure(Action action, final Throwable exception) {
+        if (logger.isDebugEnabled() == true) {
+            if (exception instanceof ActionCancelledException) {
                 logger.debug("Will shortly record completed cancellation of action " + action);
-            }
-            else if (exception instanceof ActionServiceTransientException)
-            {
+            } else if (exception instanceof ActionServiceTransientException) {
                 logger.debug("Will shortly record transient failure of action " + action);
-            }
-            else
-            {
-                logger.debug("Will shortly record failure of action " + action + " due to "
-                        + exception.getMessage());
+            } else {
+                logger.debug(
+                        "Will shortly record failure of action "
+                                + action
+                                + " due to "
+                                + exception.getMessage());
             }
         }
 
@@ -355,18 +339,13 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         ((ActionImpl) action).setExecutionEndDate(new Date());
 
         // Record it as Failed or Cancelled, depending on the exception
-        if (exception instanceof ActionCancelledException)
-        {
+        if (exception instanceof ActionCancelledException) {
             ((ActionImpl) action).setExecutionStatus(ActionStatus.Cancelled);
             ((ActionImpl) action).setExecutionFailureMessage(null);
-        }
-        else if (exception instanceof ActionServiceTransientException)
-        {
+        } else if (exception instanceof ActionServiceTransientException) {
             ((ActionImpl) action).setExecutionStatus(ActionStatus.Declined);
             ((ActionImpl) action).setExecutionFailureMessage(exception.getMessage());
-        }
-        else
-        {
+        } else {
             ((ActionImpl) action).setExecutionStatus(ActionStatus.Failed);
             ((ActionImpl) action).setExecutionFailureMessage(exception.getMessage());
         }
@@ -376,8 +355,7 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         executingActionsCache.remove(key);
 
         // Do we need to update the persisted details?
-        if (action.getNodeRef() != null)
-        {
+        if (action.getNodeRef() != null) {
             // Take a local copy of the details
             // (That way, if someone has a reference to the
             // action and plays with it, we still save the
@@ -390,74 +368,101 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
 
             // Have the details updated on the action as soon
             // as the transaction has finished rolling back
-            AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-            {
-                public void afterRollback()
-                {
-                    transactionService.getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<Object>()
-                            {
-                                public Object execute() throws Throwable
-                                {
-                                    // Update the action as the system user
-                                    return AuthenticationUtil.runAs(new RunAsWork<Action>()
-                                    {
-                                        public Action doWork() throws Exception
-                                        {
-                                            // Grab the latest version of the
-                                            // action
-                                            ActionImpl action = (ActionImpl) runtimeActionService
-                                                    .createAction(actionNode);
+            AlfrescoTransactionSupport.bindListener(
+                    new TransactionListenerAdapter() {
+                        public void afterRollback() {
+                            transactionService
+                                    .getRetryingTransactionHelper()
+                                    .doInTransaction(
+                                            new RetryingTransactionCallback<Object>() {
+                                                public Object execute() throws Throwable {
+                                                    // Update the action as the system user
+                                                    return AuthenticationUtil.runAs(
+                                                            new RunAsWork<Action>() {
+                                                                public Action doWork()
+                                                                        throws Exception {
+                                                                    // Grab the latest version of
+                                                                    // the
+                                                                    // action
+                                                                    ActionImpl action =
+                                                                            (ActionImpl)
+                                                                                    runtimeActionService
+                                                                                            .createAction(
+                                                                                                    actionNode);
 
-                                            // Update it
-                                            if (exception instanceof ActionCancelledException)
-                                            {
-                                                action.setExecutionStatus(ActionStatus.Cancelled);
-                                                action.setExecutionFailureMessage(null);
-                                            }
-                                            else
-                                            {
-                                                action.setExecutionStatus(ActionStatus.Failed);
-                                                action.setExecutionFailureMessage(exception.getMessage());
-                                            }
-                                            action.setExecutionStartDate(startedAt);
-                                            action.setExecutionEndDate(endedAt);
-                                            runtimeActionService.saveActionImpl(actionNode, action);
+                                                                    // Update it
+                                                                    if (exception
+                                                                            instanceof
+                                                                            ActionCancelledException) {
+                                                                        action.setExecutionStatus(
+                                                                                ActionStatus
+                                                                                        .Cancelled);
+                                                                        action
+                                                                                .setExecutionFailureMessage(
+                                                                                        null);
+                                                                    } else {
+                                                                        action.setExecutionStatus(
+                                                                                ActionStatus
+                                                                                        .Failed);
+                                                                        action
+                                                                                .setExecutionFailureMessage(
+                                                                                        exception
+                                                                                                .getMessage());
+                                                                    }
+                                                                    action.setExecutionStartDate(
+                                                                            startedAt);
+                                                                    action.setExecutionEndDate(
+                                                                            endedAt);
+                                                                    runtimeActionService
+                                                                            .saveActionImpl(
+                                                                                    actionNode,
+                                                                                    action);
 
-                                            if (logger.isDebugEnabled() == true)
-                                            {
-                                                logger.debug("Recorded failure of action "
-                                                        + actionId + ", node " + actionNode
-                                                        + " due to " + message);
-                                            }
+                                                                    if (logger.isDebugEnabled()
+                                                                            == true) {
+                                                                        logger.debug(
+                                                                                "Recorded failure"
+                                                                                    + " of action "
+                                                                                        + actionId
+                                                                                        + ", node "
+                                                                                        + actionNode
+                                                                                        + " due to "
+                                                                                        + message);
+                                                                    }
 
-                                            // All done
-                                            return action;
-                                        }
-                                    }, AuthenticationUtil.SYSTEM_USER_NAME);
-                                }
-                            }, false, true);
-                }
-            });
+                                                                    // All done
+                                                                    return action;
+                                                                }
+                                                            },
+                                                            AuthenticationUtil.SYSTEM_USER_NAME);
+                                                }
+                                            },
+                                            false,
+                                            true);
+                        }
+                    });
         }
     }
 
-    public boolean isCancellationRequested(CancellableAction action)
-    {
+    public boolean isCancellationRequested(CancellableAction action) {
         // If the action isn't in the cache, but is of
         // status executing, then put it back into the
         // cache and warn
         // (Probably means the cache is too small)
         String key = generateCacheKey(action);
         ExecutionDetails details = getExecutionDetails(buildExecutionSummary(key));
-        if (details == null)
-        {
+        if (details == null) {
             Exception e = new Exception("Cancellation status missing from cache");
             e.fillInStackTrace();
 
-            logger.warn("Unable to check cancellation status for running action " + action
-                    + " with execution key " + key + " as it wasn't in the running actions cache! "
-                    + "Your running actions cache is probably too small", e);
+            logger.warn(
+                    "Unable to check cancellation status for running action "
+                            + action
+                            + " with execution key "
+                            + key
+                            + " as it wasn't in the running actions cache! "
+                            + "Your running actions cache is probably too small",
+                    e);
 
             // Re-generate
             details = buildExecutionDetails(action);
@@ -472,171 +477,153 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         return details.isCancelRequested();
     }
 
-    public void requestActionCancellation(CancellableAction action)
-    {
+    public void requestActionCancellation(CancellableAction action) {
         requestActionCancellation(generateCacheKey(action));
     }
 
-    public void requestActionCancellation(ExecutionSummary executionSummary)
-    {
+    public void requestActionCancellation(ExecutionSummary executionSummary) {
         requestActionCancellation(generateCacheKey(executionSummary));
     }
 
-    private void requestActionCancellation(String actionKey)
-    {
-        if (logger.isDebugEnabled())
-        {
+    private void requestActionCancellation(String actionKey) {
+        if (logger.isDebugEnabled()) {
             logger.debug("requesting cancellation of action: " + actionKey);
         }
-        
+
         // See if the action is in the cache
         ExecutionDetails details = executingActionsCache.get(actionKey);
 
-        if (details == null)
-        {
+        if (details == null) {
             // It isn't in the cache, so nothing to do
             return;
         }
 
-        // Create a new copy of the details, this time with 
+        // Create a new copy of the details, this time with
         //  the cancel flag set
-        details = new ExecutionDetails(
-              details.getExecutionSummary(), details.getPersistedActionRef(),
-              details.getRunningOn(), details.getStartedAt(), true
-        );
+        details =
+                new ExecutionDetails(
+                        details.getExecutionSummary(),
+                        details.getPersistedActionRef(),
+                        details.getRunningOn(),
+                        details.getStartedAt(),
+                        true);
 
         // Save the flag to the cache
         executingActionsCache.put(actionKey, details);
     }
 
-    public List<ExecutionSummary> getAllExecutingActions()
-    {
+    public List<ExecutionSummary> getAllExecutingActions() {
         Collection<String> actions = executingActionsCache.getKeys();
         List<ExecutionSummary> details = new ArrayList<ExecutionSummary>(actions.size());
-        for (String key : actions)
-        {
+        for (String key : actions) {
             details.add(buildExecutionSummary(key));
         }
         return details;
     }
 
-    public List<ExecutionSummary> getExecutingActions(Action action)
-    {
+    public List<ExecutionSummary> getExecutingActions(Action action) {
         Collection<String> actions = executingActionsCache.getKeys();
         List<ExecutionSummary> details = new ArrayList<ExecutionSummary>();
-        String match = action.getActionDefinitionName() + cacheKeyPartSeparator + action.getId()
-                + cacheKeyPartSeparator;
-        for (String key : actions)
-        {
-            if (key.startsWith(match))
-            {
+        String match =
+                action.getActionDefinitionName()
+                        + cacheKeyPartSeparator
+                        + action.getId()
+                        + cacheKeyPartSeparator;
+        for (String key : actions) {
+            if (key.startsWith(match)) {
                 details.add(buildExecutionSummary(key));
             }
         }
         return details;
     }
 
-    public List<ExecutionSummary> getExecutingActions(String type)
-    {
+    public List<ExecutionSummary> getExecutingActions(String type) {
         Collection<String> actions = executingActionsCache.getKeys();
         List<ExecutionSummary> details = new ArrayList<ExecutionSummary>();
         String match = type + cacheKeyPartSeparator;
-        for (String key : actions)
-        {
-            if (key.startsWith(match))
-            {
+        for (String key : actions) {
+            if (key.startsWith(match)) {
                 details.add(buildExecutionSummary(key));
             }
         }
         return details;
     }
-    
-    public List<ExecutionSummary> getExecutingActions(String type, NodeRef actionedUponNodeRef)
-    {
+
+    public List<ExecutionSummary> getExecutingActions(String type, NodeRef actionedUponNodeRef) {
         List<ExecutionSummary> executionSummaries = getExecutingActions(type);
-        if (actionedUponNodeRef == null)
-        {
+        if (actionedUponNodeRef == null) {
             return executionSummaries;
         }
         List<ExecutionSummary> filteredExecutingActions = new ArrayList<ExecutionSummary>();
-        for (ExecutionSummary executionSummary : executionSummaries)
-        {
+        for (ExecutionSummary executionSummary : executionSummaries) {
             ExecutionDetails details = getExecutionDetails(executionSummary);
-            if (details.getActionedUponNodeRef() != null && details.getActionedUponNodeRef().equals(actionedUponNodeRef))
-            {
+            if (details.getActionedUponNodeRef() != null
+                    && details.getActionedUponNodeRef().equals(actionedUponNodeRef)) {
                 filteredExecutingActions.add(executionSummary);
             }
         }
         return filteredExecutingActions;
     }
 
-    public ExecutionDetails getExecutionDetails(ExecutionSummary executionSummary)
-    {
+    public ExecutionDetails getExecutionDetails(ExecutionSummary executionSummary) {
         ExecutionDetails details = executingActionsCache.get(generateCacheKey(executionSummary));
-        if (details != null)
-        {
+        if (details != null) {
             details.setExecutionSummary(executionSummary);
         }
         return details;
     }
 
-    /**
-     * Generates the cache key for the specified action.
-     */
-    protected static String generateCacheKey(Action action)
-    {
-        return action.getActionDefinitionName() + cacheKeyPartSeparator + action.getId()
-                + cacheKeyPartSeparator + ((ActionImpl) action).getExecutionInstance();
+    /** Generates the cache key for the specified action. */
+    protected static String generateCacheKey(Action action) {
+        return action.getActionDefinitionName()
+                + cacheKeyPartSeparator
+                + action.getId()
+                + cacheKeyPartSeparator
+                + ((ActionImpl) action).getExecutionInstance();
     }
 
-    protected static String generateCacheKey(ExecutionSummary summary)
-    {
-        return summary.getActionType() + cacheKeyPartSeparator + summary.getActionId()
-                + cacheKeyPartSeparator + summary.getExecutionInstance();
+    protected static String generateCacheKey(ExecutionSummary summary) {
+        return summary.getActionType()
+                + cacheKeyPartSeparator
+                + summary.getActionId()
+                + cacheKeyPartSeparator
+                + summary.getExecutionInstance();
     }
-    
-    /**
-     * Builds up the details to be stored in a cache for a specific action
-     */
-    protected static ExecutionDetails buildExecutionDetails(Action action)
-    {
+
+    /** Builds up the details to be stored in a cache for a specific action */
+    protected static ExecutionDetails buildExecutionDetails(Action action) {
         return buildExecutionDetails(action, null);
     }
 
-    /**
-     * Builds up the details to be stored in a cache for a specific action
-     */
-    protected static ExecutionDetails buildExecutionDetails(Action action, NodeRef actionedUponNodeRef)
-    {
+    /** Builds up the details to be stored in a cache for a specific action */
+    protected static ExecutionDetails buildExecutionDetails(
+            Action action, NodeRef actionedUponNodeRef) {
         // Where are we running?
-        if (machineName == null)
-        {
-            try
-            {
+        if (machineName == null) {
+            try {
                 InetAddress localhost = InetAddress.getLocalHost();
                 machineName = localhost.getHostAddress() + " : " + localhost.getHostName();
-            }
-            catch (UnknownHostException e)
-            {
+            } catch (UnknownHostException e) {
                 machineName = "(machine details unavailable - server IP not known)";
             }
         }
 
         // Generate
-        return new ExecutionDetails(buildExecutionSummary(action), 
-                action.getNodeRef(), actionedUponNodeRef,
-                machineName, action.getExecutionStartDate(), false);
+        return new ExecutionDetails(
+                buildExecutionSummary(action),
+                action.getNodeRef(),
+                actionedUponNodeRef,
+                machineName,
+                action.getExecutionStartDate(),
+                false);
     }
 
     private static String machineName = null;
 
-    /**
-     * Turns a cache key back into its constituent parts, for easier access.
-     */
-    protected static ExecutionSummary buildExecutionSummary(String key)
-    {
-        StringTokenizer st = new StringTokenizer(key, new String(
-                new char[] { cacheKeyPartSeparator }));
+    /** Turns a cache key back into its constituent parts, for easier access. */
+    protected static ExecutionSummary buildExecutionSummary(String key) {
+        StringTokenizer st =
+                new StringTokenizer(key, new String(new char[] {cacheKeyPartSeparator}));
         String actionType = st.nextToken();
         String actionId = st.nextToken();
         int executionInstance = Integer.parseInt(st.nextToken());
@@ -644,9 +631,10 @@ public class ActionTrackingServiceImpl implements ActionTrackingService
         return new ExecutionSummary(actionType, actionId, executionInstance);
     }
 
-    protected static ExecutionSummary buildExecutionSummary(Action action)
-    {
-        return new ExecutionSummary(action.getActionDefinitionName(), action.getId(),
+    protected static ExecutionSummary buildExecutionSummary(Action action) {
+        return new ExecutionSummary(
+                action.getActionDefinitionName(),
+                action.getId(),
                 ((ActionImpl) action).getExecutionInstance());
     }
 }

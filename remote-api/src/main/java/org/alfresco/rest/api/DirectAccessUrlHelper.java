@@ -35,31 +35,27 @@ import org.apache.commons.lang3.BooleanUtils;
  *
  * @author Sara Aspery
  */
-public class DirectAccessUrlHelper
-{
+public class DirectAccessUrlHelper {
     private RestApiDirectUrlConfig restApiDirectUrlConfig;
 
-    public void setRestApiDirectUrlConfig(RestApiDirectUrlConfig restApiDirectUrlConfig)
-    {
+    public void setRestApiDirectUrlConfig(RestApiDirectUrlConfig restApiDirectUrlConfig) {
         this.restApiDirectUrlConfig = restApiDirectUrlConfig;
     }
 
-    public Long getDefaultExpiryTimeInSec()
-    {
-        if (restApiDirectUrlConfig ==null || !restApiDirectUrlConfig.isEnabled())
-        {
+    public Long getDefaultExpiryTimeInSec() {
+        if (restApiDirectUrlConfig == null || !restApiDirectUrlConfig.isEnabled()) {
             throw new DisabledServiceException("Direct access url isn't available.");
         }
 
         return restApiDirectUrlConfig.getDefaultExpiryTimeInSec();
     }
 
-    public boolean getAttachment(DirectAccessUrlRequest directAccessUrlRequest)
-    {
+    public boolean getAttachment(DirectAccessUrlRequest directAccessUrlRequest) {
         boolean attachment = true;
-        if (directAccessUrlRequest != null )
-        {
-            attachment = BooleanUtils.toBooleanDefaultIfNull(directAccessUrlRequest.isAttachment(), true);
+        if (directAccessUrlRequest != null) {
+            attachment =
+                    BooleanUtils.toBooleanDefaultIfNull(
+                            directAccessUrlRequest.isAttachment(), true);
         }
         return attachment;
     }

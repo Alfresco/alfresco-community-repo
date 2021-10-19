@@ -27,14 +27,6 @@
 
 package org.alfresco.repo.action.parameter;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -47,25 +39,32 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Node parameter processor.
  *
  * @author Roy Wetherall
  * @since 2.1
  */
-public class NodeParameterProcessor extends ParameterProcessor implements ParameterSubstitutionSuggester
-{
+public class NodeParameterProcessor extends ParameterProcessor
+        implements ParameterSubstitutionSuggester {
     /** Supported data types */
-    private QName[] supportedDataTypes =
-    {
-            DataTypeDefinition.TEXT,
-            DataTypeDefinition.BOOLEAN,
-            DataTypeDefinition.DATE,
-            DataTypeDefinition.DATETIME,
-            DataTypeDefinition.DOUBLE,
-            DataTypeDefinition.FLOAT,
-            DataTypeDefinition.INT,
-            DataTypeDefinition.MLTEXT
+    private QName[] supportedDataTypes = {
+        DataTypeDefinition.TEXT,
+        DataTypeDefinition.BOOLEAN,
+        DataTypeDefinition.DATE,
+        DataTypeDefinition.DATETIME,
+        DataTypeDefinition.DOUBLE,
+        DataTypeDefinition.FLOAT,
+        DataTypeDefinition.INT,
+        DataTypeDefinition.MLTEXT
     };
 
     private int maximumNumberSuggestions = DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS;
@@ -85,76 +84,63 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
     /** List of definitions (aspects and types) to use for substitution suggestions */
     private List<QName> suggestionDefinitions = null;
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param namespaceService  namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    /** @param namespaceService namespace service */
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    /** @param dictionaryService dictionary service */
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    /**
-     * @param recordsManagementAdminService Records management admin service
-     */
-    public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
-    {
+    /** @param recordsManagementAdminService Records management admin service */
+    public void setRecordsManagementAdminService(
+            RecordsManagementAdminService recordsManagementAdminService) {
         this.recordsManagementAdminService = recordsManagementAdminService;
     }
 
     /**
-     * @see org.alfresco.repo.action.parameter.ParameterProcessor#process(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.parameter.ParameterProcessor#process(java.lang.String,
+     *     org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public String process(String value, NodeRef actionedUponNodeRef)
-    {
+    public String process(String value, NodeRef actionedUponNodeRef) {
         // the default position is to return the value un-changed
         String result = value;
 
         // strip the processor name from the value
         value = stripName(value);
-        if (!value.isEmpty())
-        {
+        if (!value.isEmpty()) {
             QName qname = QName.createQName(value, namespaceService);
 
             PropertyDefinition propertyDefinition = dictionaryService.getProperty(qname);
-            if (propertyDefinition == null)
-            {
-                throw new AlfrescoRuntimeException("The property " + value + " does not have a property definition.");
+            if (propertyDefinition == null) {
+                throw new AlfrescoRuntimeException(
+                        "The property " + value + " does not have a property definition.");
             }
 
             QName type = propertyDefinition.getDataType().getName();
-            if (ArrayUtils.contains(supportedDataTypes, type))
-            {
+            if (ArrayUtils.contains(supportedDataTypes, type)) {
                 Serializable propertyValue = nodeService.getProperty(actionedUponNodeRef, qname);
-                if (propertyValue != null)
-                {
+                if (propertyValue != null) {
                     result = propertyValue.toString();
-                }
-                else
-                {
+                } else {
                     // set the result to the empty string
                     result = "";
                 }
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("The property " + value + " is of type " + type.toString() + " which is not supported by parameter substitution.");
+            } else {
+                throw new AlfrescoRuntimeException(
+                        "The property "
+                                + value
+                                + " is of type "
+                                + type.toString()
+                                + " which is not supported by parameter substitution.");
             }
         }
 
@@ -162,24 +148,24 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
     }
 
     /**
-     * Set the maxmimum number of suggestions returned  from the global property
+     * Set the maxmimum number of suggestions returned from the global property
      *
      * @param maximumNumberSuggestions
      */
-    public void setMaximumNumberSuggestions(int maximumNumberSuggestions)
-    {
-        this.maximumNumberSuggestions = (maximumNumberSuggestions <= 0 ? DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS: maximumNumberSuggestions);
+    public void setMaximumNumberSuggestions(int maximumNumberSuggestions) {
+        this.maximumNumberSuggestions =
+                (maximumNumberSuggestions <= 0
+                        ? DEFAULT_MAXIMUM_NUMBER_SUGGESTIONS
+                        : maximumNumberSuggestions);
     }
 
     /**
      * Add suggestion definition to the list used to get properties suggestions from.
      *
-     * @param  definition  Type or aspect
+     * @param definition Type or aspect
      */
-    public void addSuggestionDefinition(QName definition)
-    {
-        if(this.suggestionDefinitions == null)
-        {
+    public void addSuggestionDefinition(QName definition) {
+        if (this.suggestionDefinitions == null) {
             this.suggestionDefinitions = Collections.synchronizedList(new ArrayList<>());
         }
         this.suggestionDefinitions.add(definition);
@@ -188,21 +174,18 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
     /**
      * Get a list of node substitution suggestions for the specified fragment.
      *
-     * @param substitutionFragment  The fragment to search for
-     * @returns  A list of node substitution suggestions, for example 'node.cm:title'
-     *
-     * @see org.alfresco.repo.action.parameter.ParameterSubstitutionSuggester#getSubstitutionSuggestions(java.lang.String)
+     * @param substitutionFragment The fragment to search for
+     * @returns A list of node substitution suggestions, for example 'node.cm:title'
+     * @see
+     *     org.alfresco.repo.action.parameter.ParameterSubstitutionSuggester#getSubstitutionSuggestions(java.lang.String)
      */
     @Override
-    public List<String> getSubstitutionSuggestions(String substitutionFragment)
-    {
+    public List<String> getSubstitutionSuggestions(String substitutionFragment) {
         Set<String> suggestionSet = Collections.synchronizedSet(new HashSet<>());
-        if(this.suggestionDefinitions != null)
-        {
-            for(QName definition : this.suggestionDefinitions)
-            {
-                if(getSubstitutionSuggestions(definition, substitutionFragment.toLowerCase(), suggestionSet))
-                {
+        if (this.suggestionDefinitions != null) {
+            for (QName definition : this.suggestionDefinitions) {
+                if (getSubstitutionSuggestions(
+                        definition, substitutionFragment.toLowerCase(), suggestionSet)) {
                     break;
                 }
             }
@@ -216,47 +199,57 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
     /**
      * Get a list of node substitution suggestions for the given definition and specified fragment.
      *
-     * @param definitionName  Definition (aspect or type) to get properties of and the call this method for associated aspects
-     * @param substitutionFragment  Substitution fragment to search for
-     * @param suggestions  The current list of suggestions to which we will add newly found suggestions
+     * @param definitionName Definition (aspect or type) to get properties of and the call this
+     *     method for associated aspects
+     * @param substitutionFragment Substitution fragment to search for
+     * @param suggestions The current list of suggestions to which we will add newly found
+     *     suggestions
      */
-    private boolean getSubstitutionSuggestions(QName definitionName, String substitutionFragment, Set<String> suggestions)
-    {
+    private boolean getSubstitutionSuggestions(
+            QName definitionName, String substitutionFragment, Set<String> suggestions) {
         boolean gotMaximumSuggestions = false;
         ClassDefinition definition = this.dictionaryService.getAspect(definitionName);
-        if(definition == null)
-        {
+        if (definition == null) {
             definition = this.dictionaryService.getType(definitionName);
         }
-        if(definition != null)
-        {
-            gotMaximumSuggestions = getSubstitutionSuggestionsForDefinition(definition, substitutionFragment, suggestions);
+        if (definition != null) {
+            gotMaximumSuggestions =
+                    getSubstitutionSuggestionsForDefinition(
+                            definition, substitutionFragment, suggestions);
         }
-        if(recordsManagementAdminService.isCustomisable(definitionName) && !gotMaximumSuggestions)
-        {
-            gotMaximumSuggestions = processPropertyDefinitions(recordsManagementAdminService.getCustomPropertyDefinitions(definitionName), substitutionFragment, suggestions);
+        if (recordsManagementAdminService.isCustomisable(definitionName)
+                && !gotMaximumSuggestions) {
+            gotMaximumSuggestions =
+                    processPropertyDefinitions(
+                            recordsManagementAdminService.getCustomPropertyDefinitions(
+                                    definitionName),
+                            substitutionFragment,
+                            suggestions);
         }
         return gotMaximumSuggestions;
     }
 
     /**
-     * Get a list of node substitution suggestions for the given definition and specified fragment. Calls itself recursively for
-     * associated aspects.
+     * Get a list of node substitution suggestions for the given definition and specified fragment.
+     * Calls itself recursively for associated aspects.
      *
-     * @param definition  Definition (aspect or type) to get properties of and the call this method for associated aspects
-     * @param substitutionFragment  Substitution fragment to search for
-     * @param suggestions  The current list of suggestions to which we will add newly found suggestions
+     * @param definition Definition (aspect or type) to get properties of and the call this method
+     *     for associated aspects
+     * @param substitutionFragment Substitution fragment to search for
+     * @param suggestions The current list of suggestions to which we will add newly found
+     *     suggestions
      */
-    private boolean getSubstitutionSuggestionsForDefinition(ClassDefinition definition, String substitutionFragment, Set<String> suggestions)
-    {
-        boolean gotMaximumSuggestions = processPropertyDefinitions(definition.getProperties(), substitutionFragment, suggestions);
-        if(!gotMaximumSuggestions)
-        {
-            for(QName defaultAspect : definition.getDefaultAspectNames())
-            {
-                gotMaximumSuggestions = getSubstitutionSuggestions(defaultAspect, substitutionFragment, suggestions);
-                if(gotMaximumSuggestions)
-                {
+    private boolean getSubstitutionSuggestionsForDefinition(
+            ClassDefinition definition, String substitutionFragment, Set<String> suggestions) {
+        boolean gotMaximumSuggestions =
+                processPropertyDefinitions(
+                        definition.getProperties(), substitutionFragment, suggestions);
+        if (!gotMaximumSuggestions) {
+            for (QName defaultAspect : definition.getDefaultAspectNames()) {
+                gotMaximumSuggestions =
+                        getSubstitutionSuggestions(
+                                defaultAspect, substitutionFragment, suggestions);
+                if (gotMaximumSuggestions) {
                     break;
                 }
             }
@@ -265,32 +258,30 @@ public class NodeParameterProcessor extends ParameterProcessor implements Parame
     }
 
     /**
-     * Process the supplied map of property definitions and add the ones that match the supplied fragment to the list of suggestions.
+     * Process the supplied map of property definitions and add the ones that match the supplied
+     * fragment to the list of suggestions.
      *
-     * @param definition  Definition (aspect or type) to get properties of and the call this method for associated aspects
-     * @param substitutionFragment  Substitution fragment to search for
-     * @param suggestions  The current list of suggestions to which we will add newly found suggestions
+     * @param definition Definition (aspect or type) to get properties of and the call this method
+     *     for associated aspects
+     * @param substitutionFragment Substitution fragment to search for
+     * @param suggestions The current list of suggestions to which we will add newly found
+     *     suggestions
      */
-    private boolean processPropertyDefinitions(Map<QName, PropertyDefinition> properties, String substitutionFragment, Set<String> suggestions)
-    {
+    private boolean processPropertyDefinitions(
+            Map<QName, PropertyDefinition> properties,
+            String substitutionFragment,
+            Set<String> suggestions) {
         boolean gotMaximumSuggestions = false;
-        if (properties != null)
-        {
-            for (Map.Entry<QName, PropertyDefinition> entry : properties.entrySet())
-            {
+        if (properties != null) {
+            for (Map.Entry<QName, PropertyDefinition> entry : properties.entrySet()) {
                 PropertyDefinition propertyDefinition = entry.getValue();
                 QName type = propertyDefinition.getDataType().getName();
-                if(ArrayUtils.contains(supportedDataTypes, type))
-                {
+                if (ArrayUtils.contains(supportedDataTypes, type)) {
                     String suggestion = getName() + "." + entry.getKey().getPrefixString();
-                    if(suggestion.toLowerCase().contains(substitutionFragment))
-                    {
-                        if(suggestions.size() < this.maximumNumberSuggestions)
-                        {
+                    if (suggestion.toLowerCase().contains(substitutionFragment)) {
+                        if (suggestions.size() < this.maximumNumberSuggestions) {
                             suggestions.add(suggestion);
-                        }
-                        else
-                        {
+                        } else {
                             gotMaximumSuggestions = true;
                             break;
                         }

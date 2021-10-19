@@ -36,26 +36,22 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class HasDispositionDateCapabilityCondition extends AbstractCapabilityCondition
-{
+public class HasDispositionDateCapabilityCondition extends AbstractCapabilityCondition {
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
+    public boolean evaluateImpl(NodeRef nodeRef) {
         boolean result = false;
 
         DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
-        if (dispositionAction != null)
-        {
-            if (dispositionAction.getAsOfDate() != null)
-            {
+        if (dispositionAction != null) {
+            if (dispositionAction.getAsOfDate() != null) {
                 result = true;
             }
-        }
-        else if (filePlanService.isFilePlanComponent(nodeRef) && nodeService.getProperty(nodeRef, PROP_DISPOSITION_AS_OF) != null)
-        {
+        } else if (filePlanService.isFilePlanComponent(nodeRef)
+                && nodeService.getProperty(nodeRef, PROP_DISPOSITION_AS_OF) != null) {
             result = true;
         }
 

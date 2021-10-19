@@ -38,26 +38,15 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * rma:recordSearch behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:recordSearch"
-)
-public class RecordSearchAspect extends BaseBehaviourBean
-{
-    /**
-     * Copy callback for record search
-     */
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
-    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
-    {
+@BehaviourBean(defaultType = "rma:recordSearch")
+public class RecordSearchAspect extends BaseBehaviourBean {
+    /** Copy callback for record search */
+    @Behaviour(kind = BehaviourKind.CLASS, policy = "alf:getCopyCallback")
+    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails) {
         return new DoNothingCopyBehaviourCallback();
-    }   
+    }
 }

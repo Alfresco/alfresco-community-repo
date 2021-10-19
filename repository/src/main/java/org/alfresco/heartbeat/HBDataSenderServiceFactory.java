@@ -25,17 +25,15 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.heartbeat.datasender.HBDataSenderServiceBuilder;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
+import org.alfresco.heartbeat.datasender.HBDataSenderServiceBuilder;
 
 /**
  * Creates and configures a {@link HBDataSenderService}
  *
  * @author Ancuta Morarasu
- *
  */
-public class HBDataSenderServiceFactory
-{
+public class HBDataSenderServiceFactory {
     private String target;
     private boolean heartbeatEnabled;
     private String sendingSchedule;
@@ -45,8 +43,7 @@ public class HBDataSenderServiceFactory
      *
      * @param target valid url
      */
-    public void setTarget(String target)
-    {
+    public void setTarget(String target) {
         this.target = target;
     }
 
@@ -55,8 +52,7 @@ public class HBDataSenderServiceFactory
      *
      * @param heartbeatEnabled
      */
-    public void setHeartbeatEnabled(boolean heartbeatEnabled)
-    {
+    public void setHeartbeatEnabled(boolean heartbeatEnabled) {
         this.heartbeatEnabled = heartbeatEnabled;
     }
 
@@ -65,8 +61,7 @@ public class HBDataSenderServiceFactory
      *
      * @param sendingSchedule
      */
-    public void setSendingSchedule(String sendingSchedule)
-    {
+    public void setSendingSchedule(String sendingSchedule) {
         this.sendingSchedule = sendingSchedule;
     }
 
@@ -75,12 +70,11 @@ public class HBDataSenderServiceFactory
      *
      * @return
      */
-    public HBDataSenderService createInstance() 
-    {
+    public HBDataSenderService createInstance() {
         return HBDataSenderServiceBuilder.builder()
-                  .withHeartbeatURL(target)
-                  .withSendingSchedule(sendingSchedule)
-                  .enable(heartbeatEnabled)
-                  .build();
+                .withHeartbeatURL(target)
+                .withSendingSchedule(sendingSchedule)
+                .enable(heartbeatEnabled)
+                .build();
     }
 }

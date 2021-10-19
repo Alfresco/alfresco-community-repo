@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,14 +32,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A virtual folder definition. This class holds the (virtual entry)
- * structure of a virtual folder, created according to the template that is
- * applied.<br>
- * 
+ * A virtual folder definition. This class holds the (virtual entry) structure of a virtual folder,
+ * created according to the template that is applied.<br>
+ *
  * @author Bogdan Horje
  */
-public class VirtualFolderDefinition
-{
+public class VirtualFolderDefinition {
 
     private String name;
 
@@ -51,114 +49,94 @@ public class VirtualFolderDefinition
 
     private List<VirtualFolderDefinition> children = new LinkedList<VirtualFolderDefinition>();
 
-    private Map<String, VirtualFolderDefinition> childrenByName = new HashMap<String, VirtualFolderDefinition>();
+    private Map<String, VirtualFolderDefinition> childrenByName =
+            new HashMap<String, VirtualFolderDefinition>();
 
-    private Map<String, VirtualFolderDefinition> childrenById = new HashMap<String, VirtualFolderDefinition>();
+    private Map<String, VirtualFolderDefinition> childrenById =
+            new HashMap<String, VirtualFolderDefinition>();
 
     private String id;
 
     private Map<String, String> properties = new HashMap<>();
 
-    public VirtualFolderDefinition()
-    {
+    public VirtualFolderDefinition() {
         this("");
     }
 
-    public VirtualFolderDefinition(String name)
-    {
+    public VirtualFolderDefinition(String name) {
         super();
         this.name = name;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
-        if (this.id == null)
-        {
+        if (this.id == null) {
             this.id = name;
         }
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
-        if (this.name == null)
-        {
+        if (this.name == null) {
             this.name = id;
         }
     }
 
-    public String getId()
-    {
+    public String getId() {
         return this.id;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public FilingRule getFilingRule()
-    {
+    public FilingRule getFilingRule() {
         return filingRule;
     }
 
-    public void setFilingRule(FilingRule filingRule)
-    {
+    public void setFilingRule(FilingRule filingRule) {
         this.filingRule = filingRule;
     }
 
-    public VirtualQuery getQuery()
-    {
+    public VirtualQuery getQuery() {
         return query;
     }
 
-    public void setQuery(VirtualQuery query)
-    {
+    public void setQuery(VirtualQuery query) {
         this.query = query;
     }
 
-    public VirtualFolderDefinition findChildByName(String name)
-    {
+    public VirtualFolderDefinition findChildByName(String name) {
         return childrenByName.get(name);
     }
 
-    public List<VirtualFolderDefinition> getChildren()
-    {
+    public List<VirtualFolderDefinition> getChildren() {
         return children;
     }
 
-    public void addChild(VirtualFolderDefinition child)
-    {
+    public void addChild(VirtualFolderDefinition child) {
         this.children.add(child);
-        this.childrenByName.put(child.getName(),
-                                child);
-        this.childrenById.put(child.getId(),
-                              child);
+        this.childrenByName.put(child.getName(), child);
+        this.childrenById.put(child.getId(), child);
     }
 
-    public VirtualFolderDefinition findChildById(String childId)
-    {
+    public VirtualFolderDefinition findChildById(String childId) {
         return childrenById.get(childId);
     }
 
-    public void setProperties(Map<String, String> properties)
-    {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
-    public Map<String, String> getProperties()
-    {
+    public Map<String, String> getProperties() {
         return this.properties;
     }
 }

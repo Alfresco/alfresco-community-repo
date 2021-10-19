@@ -38,14 +38,12 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @see org.alfresco.module.org_alfresco_module_rm.PropertyAlreadyExistsMetadataException
  */
 @AlfrescoPublicApi
-public class PropertyAlreadyExistsMetadataException extends CustomMetadataException
-{
+public class PropertyAlreadyExistsMetadataException extends CustomMetadataException {
     private static final long serialVersionUID = -6194867814140009959L;
 
     public static final String MSG_PROPERTY_ALREADY_EXISTS = "rm.admin.property-already-exists";
 
-    public PropertyAlreadyExistsMetadataException(String propIdAsString)
-    {
+    public PropertyAlreadyExistsMetadataException(String propIdAsString) {
         super(I18NUtil.getMessage(MSG_PROPERTY_ALREADY_EXISTS, propIdAsString));
     }
 }

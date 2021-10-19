@@ -32,12 +32,6 @@ import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagement
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
@@ -71,20 +65,26 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Extend JSON conversion component to include RM specifics.
  *
  * @author Roy Wetherall
  */
-public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JSONConversionComponent
-                                     implements NodeServicePolicies.OnDeleteNodePolicy,
-                                                NodeServicePolicies.OnCreateNodePolicy
-{
+public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONConversionComponent
+        implements NodeServicePolicies.OnDeleteNodePolicy, NodeServicePolicies.OnCreateNodePolicy {
     /** JSON values */
     private static final String IS_RM_NODE = "isRmNode";
+
     private static final String RM_NODE = "rmNode";
     private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
-    private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
+    private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED =
+            "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
     private static final String IS_VISIBLE_FOR_CURRENT_USER = "isVisibleForCurrentUser";
     private static final String FROZEN_ACTIVE_CONTENT = "frozencontent";
@@ -116,9 +116,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /** freeze service */
     private FreezeService freezeService;
 
-    /**
-     * Disposition service
-     */
+    /** Disposition service */
     private DispositionService dispositionService;
 
     /** Indicators */
@@ -136,107 +134,68 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /** Constants for checking the cache */
     private static final String RM_SITE_EXISTS = "rmSiteExists";
 
-    /**
-     * @param enabled   true if enabled, false otherwise
-     */
-    public void setRecordContributorsGroupEnabled(boolean enabled)
-    {
+    /** @param enabled true if enabled, false otherwise */
+    public void setRecordContributorsGroupEnabled(boolean enabled) {
         isRecordContributorsGroupEnabled = enabled;
     }
 
-    /**
-     * @param recordContributorsGroupName   record contributors group name
-     */
-    public void setRecordContributorsGroupName(String recordContributorsGroupName)
-    {
+    /** @param recordContributorsGroupName record contributors group name */
+    public void setRecordContributorsGroupName(String recordContributorsGroupName) {
         this.recordContributorsGroupName = recordContributorsGroupName;
     }
 
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
+    /** @param recordService record service */
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
-    /**
-     * @param filePlanRoleService file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
+    /** @param filePlanRoleService file plan role service */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) {
         this.filePlanRoleService = filePlanRoleService;
     }
 
-    /**
-     * @param capabilityService capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
+    /** @param capabilityService capability service */
+    public void setCapabilityService(CapabilityService capabilityService) {
         this.capabilityService = capabilityService;
     }
 
-    /**
-     * @return the filePlanService
-     */
-    protected FilePlanService getFileplanService()
-    {
+    /** @return the filePlanService */
+    protected FilePlanService getFileplanService() {
         return this.filePlanService;
     }
 
-    /**
-     * @return the capabilityService
-     */
-    protected CapabilityService getCapabilityService()
-    {
+    /** @return the capabilityService */
+    protected CapabilityService getCapabilityService() {
         return this.capabilityService;
     }
 
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    /** @param dictionaryService dictionary service */
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    /**
-     * @param siteService site service
-     */
-    public void setSiteService(SiteService siteService)
-    {
+    /** @param siteService site service */
+    public void setSiteService(SiteService siteService) {
         this.siteService = siteService;
     }
 
-    /**
-     * @param indicator registered indicator
-     */
-    public void registerIndicator(BaseEvaluator indicator)
-    {
+    /** @param indicator registered indicator */
+    public void registerIndicator(BaseEvaluator indicator) {
         indicators.add(indicator);
     }
 
-    /**
-     * @param action registered action
-     */
-    public void registerAction(BaseEvaluator action)
-    {
+    /** @param action registered action */
+    public void registerAction(BaseEvaluator action) {
         actions.add(action);
     }
 
-    /**
-     * @param policyComponent policy component
-     */
-    public void setPolicyComponent(PolicyComponent policyComponent)
-    {
+    /** @param policyComponent policy component */
+    public void setPolicyComponent(PolicyComponent policyComponent) {
         this.policyComponent = policyComponent;
     }
 
@@ -245,8 +204,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
      *
      * @return The json conversion component cache
      */
-    protected SimpleCache<String, Object> getJsonConversionComponentCache()
-    {
+    protected SimpleCache<String, Object> getJsonConversionComponentCache() {
         return this.jsonConversionComponentCache;
     }
 
@@ -255,30 +213,23 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
      *
      * @param jsonConversionComponentCache The json conversion component cache
      */
-    public void setJsonConversionComponentCache(SimpleCache<String, Object> jsonConversionComponentCache)
-    {
+    public void setJsonConversionComponentCache(
+            SimpleCache<String, Object> jsonConversionComponentCache) {
         this.jsonConversionComponentCache = jsonConversionComponentCache;
     }
 
-    /**
-     * @param dispositionService the disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    /** @param dispositionService the disposition service */
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
-    /**
-     *
-     * @param freezeService
-     */
-    public void setFreezeService(FreezeService freezeService) { this.freezeService = freezeService; }
+    /** @param freezeService */
+    public void setFreezeService(FreezeService freezeService) {
+        this.freezeService = freezeService;
+    }
 
-    /**
-     * The initialise method
-     */
-    public void init()
-    {
+    /** The initialise method */
+    public void init() {
         policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
                 RecordsManagementModel.TYPE_RM_SITE,
@@ -291,15 +242,15 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @see org.alfresco.repo.jscript.app.JSONConversionComponent#setRootValues(org.alfresco.service.cmr.model.FileInfo,
-     *      org.json.simple.JSONObject, boolean)
+     * @see
+     *     org.alfresco.repo.jscript.app.JSONConversionComponent#setRootValues(org.alfresco.service.cmr.model.FileInfo,
+     *     org.json.simple.JSONObject, boolean)
      */
     @SuppressWarnings("unchecked")
     @Override
-    protected void setRootValues(FileInfo nodeInfo, JSONObject rootJSONObject, boolean useShortQNames)
-    {
-        if (nodeInfo != null)
-        {
+    protected void setRootValues(
+            FileInfo nodeInfo, JSONObject rootJSONObject, boolean useShortQNames) {
+        if (nodeInfo != null) {
             // Set the base root values
             super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
 
@@ -309,20 +260,21 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             checkRmSiteExistence(rootJSONObject);
 
             // get the record contributor information
-            rootJSONObject.put(IS_RECORD_CONTRIBUTOR_GROUP_ENABLED, isRecordContributorsGroupEnabled);
+            rootJSONObject.put(
+                    IS_RECORD_CONTRIBUTOR_GROUP_ENABLED, isRecordContributorsGroupEnabled);
             rootJSONObject.put(RECORD_CONTRIBUTOR_GROUP_NAME, recordContributorsGroupName);
 
             // Get the node reference for convenience
             NodeRef nodeRef = nodeInfo.getNodeRef();
 
-            if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef, ViewRecordsCapability.NAME)))
-            {
+            if (AccessStatus.ALLOWED.equals(
+                    capabilityService.getCapabilityAccessState(
+                            nodeRef, ViewRecordsCapability.NAME))) {
                 // Indicate whether the node is a RM object or not
                 boolean isFilePlanComponent = filePlanService.isFilePlanComponent(nodeRef);
                 rootJSONObject.put(IS_RM_NODE, isFilePlanComponent);
 
-                if (isFilePlanComponent)
-                {
+                if (isFilePlanComponent) {
                     rootJSONObject.put(RM_NODE, setRmNodeValues(nodeRef, useShortQNames));
 
                     // FIXME: Is this the right place to add the information?
@@ -330,12 +282,13 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 }
             }
             Set<NodeRef> filePlans = filePlanService.getFilePlans();
-            if (!CollectionUtils.isEmpty(filePlans))
-            {
+            if (!CollectionUtils.isEmpty(filePlans)) {
                 NodeRef filePlanNodeRef = filePlans.stream().findFirst().orElse(null);
-                if (filePlanNodeRef != null)
-                {
-                    Set<Role> roles = filePlanRoleService.getRolesByUser(filePlanNodeRef, AuthenticationUtil.getFullyAuthenticatedUser());
+                if (filePlanNodeRef != null) {
+                    Set<Role> roles =
+                            filePlanRoleService.getRolesByUser(
+                                    filePlanNodeRef,
+                                    AuthenticationUtil.getFullyAuthenticatedUser());
                     boolean hasFilingPermission = !CollectionUtils.isEmpty(roles);
                     rootJSONObject.put(IS_VISIBLE_FOR_CURRENT_USER, hasFilingPermission);
                 }
@@ -346,89 +299,83 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /**
      * Checks for the existence of the RM site
      *
-     * @param rootJSONObject    the root JSON object
+     * @param rootJSONObject the root JSON object
      */
     @SuppressWarnings("unchecked")
-    private void checkRmSiteExistence(JSONObject rootJSONObject)
-    {
-        if (!getJsonConversionComponentCache().contains(RM_SITE_EXISTS))
-        {
+    private void checkRmSiteExistence(JSONObject rootJSONObject) {
+        if (!getJsonConversionComponentCache().contains(RM_SITE_EXISTS)) {
             SiteInfo site = siteService.getSite(FilePlanService.DEFAULT_RM_SITE_ID);
-            if (site != null)
-            {
+            if (site != null) {
                 getJsonConversionComponentCache().put(RM_SITE_EXISTS, true);
                 rootJSONObject.put(IS_RM_SITE_CREATED, true);
-            }
-            else
-            {
+            } else {
                 getJsonConversionComponentCache().put(RM_SITE_EXISTS, false);
                 rootJSONObject.put(IS_RM_SITE_CREATED, false);
             }
-        }
-        else
-        {
-            rootJSONObject.put(IS_RM_SITE_CREATED, getJsonConversionComponentCache().get(RM_SITE_EXISTS));
+        } else {
+            rootJSONObject.put(
+                    IS_RM_SITE_CREATED, getJsonConversionComponentCache().get(RM_SITE_EXISTS));
         }
     }
 
     /**
      * Helper method to add information about node
      *
-     * @param nodeInfo          node information
-     * @param rootJSONObject    root JSON object
+     * @param nodeInfo node information
+     * @param rootJSONObject root JSON object
      */
     @SuppressWarnings("unchecked")
-    private void addInfo(final FileInfo nodeInfo, JSONObject rootJSONObject)
-    {
+    private void addInfo(final FileInfo nodeInfo, JSONObject rootJSONObject) {
         String itemType = (String) rootJSONObject.get("type");
         final QName itemTypeQName = QName.createQName(itemType, namespaceService);
 
-        NodeRef originatingLocation = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
-            public NodeRef doWork()
-            {
-                NodeRef originatingLocation = null;
+        NodeRef originatingLocation =
+                AuthenticationUtil.runAsSystem(
+                        new RunAsWork<NodeRef>() {
+                            public NodeRef doWork() {
+                                NodeRef originatingLocation = null;
 
-                if (dictionaryService.isSubClass(itemTypeQName, ContentModel.TYPE_CONTENT))
-                {
-                    NodeRef nodeRef = nodeInfo.getNodeRef();
-                    List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                                if (dictionaryService.isSubClass(
+                                        itemTypeQName, ContentModel.TYPE_CONTENT)) {
+                                    NodeRef nodeRef = nodeInfo.getNodeRef();
+                                    List<ChildAssociationRef> parentAssocs =
+                                            nodeService.getParentAssocs(nodeRef);
 
-                    for (ChildAssociationRef parent : parentAssocs)
-                    {
-                        // FIXME: What if there is more than a secondary parent?
-                        // RM-3930
-                        if (!parent.isPrimary())
-                        {
-                            originatingLocation = parent.getParentRef();
+                                    for (ChildAssociationRef parent : parentAssocs) {
+                                        // FIXME: What if there is more than a secondary parent?
+                                        // RM-3930
+                                        if (!parent.isPrimary()) {
+                                            originatingLocation = parent.getParentRef();
 
-                            // only consider the non-RM parent otherwise we can
-                            // run into issues with frozen or transferring records
-                            if (!nodeService.hasAspect(originatingLocation, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-                            {
-                                // assume we have found the correct in-place location
-                                // FIXME when we support multiple in-place locations
-                                // See RM-3929
-                                break;
+                                            // only consider the non-RM parent otherwise we can
+                                            // run into issues with frozen or transferring records
+                                            if (!nodeService.hasAspect(
+                                                    originatingLocation,
+                                                    RecordsManagementModel
+                                                            .ASPECT_FILE_PLAN_COMPONENT)) {
+                                                // assume we have found the correct in-place
+                                                // location
+                                                // FIXME when we support multiple in-place locations
+                                                // See RM-3929
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                return originatingLocation;
                             }
-                        }
-                    }
-                }
+                        });
 
-                return originatingLocation;
-            }
-        });
-
-        if (originatingLocation != null)
-        {
+        if (originatingLocation != null) {
             // add the originating location (if there is one)
             String pathSeparator = "/";
             String displayPath = getDisplayPath(originatingLocation);
             String[] displayPathElements = displayPath.split(pathSeparator);
-            Object[] subPath = ArrayUtils.subarray(displayPathElements, 5, displayPathElements.length);
+            Object[] subPath =
+                    ArrayUtils.subarray(displayPathElements, 5, displayPathElements.length);
             StringBuilder originatingLocationPath = new StringBuilder();
-            for (int i = 0; i < subPath.length; i++)
-            {
+            for (int i = 0; i < subPath.length; i++) {
                 originatingLocationPath.append(pathSeparator).append(subPath[i]);
             }
             rootJSONObject.put("originatingLocationPath", originatingLocationPath.toString());
@@ -438,31 +385,28 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /**
      * Helper method to get the display path.
      *
-     * @param nodeRef   node reference
-     * @return String   display path
+     * @param nodeRef node reference
+     * @return String display path
      */
-    private String getDisplayPath(final NodeRef nodeRef)
-    {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<String>()
-        {
-            public String doWork() throws Exception
-            {
-                return PathUtil.getDisplayPath(nodeService.getPath(nodeRef), true);
-            }
-        });
+    private String getDisplayPath(final NodeRef nodeRef) {
+        return AuthenticationUtil.runAsSystem(
+                new RunAsWork<String>() {
+                    public String doWork() throws Exception {
+                        return PathUtil.getDisplayPath(nodeService.getPath(nodeRef), true);
+                    }
+                });
     }
 
     /**
      * Helper method to set the RM node values
      *
-     * @param nodeRef               node reference
-     * @param useShortQName         indicates whether the short QName are used or not
-     * @return {@link JSONObject}   JSON object containing values
+     * @param nodeRef node reference
+     * @param useShortQName indicates whether the short QName are used or not
+     * @return {@link JSONObject} JSON object containing values
      */
     @SuppressWarnings("unchecked")
-    private JSONObject setRmNodeValues(final NodeRef nodeRef, final boolean useShortQName)
-    {
-    	JSONObject rmNodeValues = new JSONObject();
+    private JSONObject setRmNodeValues(final NodeRef nodeRef, final boolean useShortQName) {
+        JSONObject rmNodeValues = new JSONObject();
 
         // UI convenience type
         rmNodeValues.put("uiType", getUIType(nodeRef));
@@ -473,37 +417,50 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
         // set the primary parent node reference
         ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
-        if (assoc != null)
-        {
+        if (assoc != null) {
             rmNodeValues.put("primaryParentNodeRef", assoc.getParentRef().toString());
         }
 
-        Map<String, Object> values = AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, Object>>()
-        {
-            public Map<String, Object> doWork() throws Exception
-            {
-                Map<String, Object> result = new HashMap<>();
+        Map<String, Object> values =
+                AuthenticationUtil.runAsSystem(
+                        new RunAsWork<Map<String, Object>>() {
+                            public Map<String, Object> doWork() throws Exception {
+                                Map<String, Object> result = new HashMap<>();
 
-                // File plan node reference
-                NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-                if (filePlan != null)
-                {
-                    result.put("filePlan", filePlan.toString());
+                                // File plan node reference
+                                NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+                                if (filePlan != null) {
+                                    result.put("filePlan", filePlan.toString());
 
-                    // Unfiled container node reference
-                    NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-                    if (unfiledRecordContainer != null)
-                    {
-                        result.put("unfiledRecordContainer", unfiledRecordContainer.toString());
-                        result.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
-                        QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
-                        result.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
-                    }
-                }
+                                    // Unfiled container node reference
+                                    NodeRef unfiledRecordContainer =
+                                            filePlanService.getUnfiledContainer(filePlan);
+                                    if (unfiledRecordContainer != null) {
+                                        result.put(
+                                                "unfiledRecordContainer",
+                                                unfiledRecordContainer.toString());
+                                        result.put(
+                                                "properties",
+                                                propertiesToJSON(
+                                                        unfiledRecordContainer,
+                                                        nodeService.getProperties(
+                                                                unfiledRecordContainer),
+                                                        useShortQName));
+                                        QName type =
+                                                fileFolderService
+                                                        .getFileInfo(unfiledRecordContainer)
+                                                        .getType();
+                                        result.put(
+                                                "type",
+                                                useShortQName
+                                                        ? type.toPrefixString(namespaceService)
+                                                        : type.toString());
+                                    }
+                                }
 
-                return result;
-            }
-         });
+                                return result;
+                            }
+                        });
 
         rmNodeValues.putAll(values);
 
@@ -513,40 +470,55 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         // Set the actions array
         setActions(rmNodeValues, nodeRef);
 
-        AuthenticationUtil.runAsSystem((RunAsWork<Void>) () -> {
-            //Add details of the next incomplete event in the disposition schedule
-            if (dispositionService.getNextDispositionAction(nodeRef) != null)
-            {
-                for (EventCompletionDetails details : dispositionService.getNextDispositionAction(nodeRef).getEventCompletionDetails())
-                {
-                    if (!details.isEventComplete())
-                    {
-                        HashMap properties = (HashMap) rmNodeValues.get("properties");
-                        properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
-                        properties.put("incompleteDispositionEvent", details.getEventName());
-                        properties.put("dispositionEventCombination", nodeService.getProperty(dispositionService.getNextDispositionAction(nodeRef).getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));
+        AuthenticationUtil.runAsSystem(
+                (RunAsWork<Void>)
+                        () -> {
+                            // Add details of the next incomplete event in the disposition schedule
+                            if (dispositionService.getNextDispositionAction(nodeRef) != null) {
+                                for (EventCompletionDetails details :
+                                        dispositionService
+                                                .getNextDispositionAction(nodeRef)
+                                                .getEventCompletionDetails()) {
+                                    if (!details.isEventComplete()) {
+                                        HashMap properties =
+                                                (HashMap) rmNodeValues.get("properties");
+                                        properties.put(
+                                                "combineDispositionStepConditions",
+                                                nodeService.getProperty(
+                                                        dispositionService
+                                                                .getNextDispositionAction(nodeRef)
+                                                                .getDispositionActionDefinition()
+                                                                .getNodeRef(),
+                                                        PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
+                                        properties.put(
+                                                "incompleteDispositionEvent",
+                                                details.getEventName());
+                                        properties.put(
+                                                "dispositionEventCombination",
+                                                nodeService.getProperty(
+                                                        dispositionService
+                                                                .getNextDispositionAction(nodeRef)
+                                                                .getDispositionActionDefinition()
+                                                                .getNodeRef(),
+                                                        PROP_DISPOSITION_EVENT_COMBINATION));
 
-                        break;
-                    }
-                }
-            }
-            return null;
-        });
+                                        break;
+                                    }
+                                }
+                            }
+                            return null;
+                        });
 
         return rmNodeValues;
     }
 
     @SuppressWarnings("unchecked")
-    private void setIndicators(JSONObject rmNodeValues, NodeRef nodeRef)
-    {
-        if (indicators != null && !indicators.isEmpty())
-        {
+    private void setIndicators(JSONObject rmNodeValues, NodeRef nodeRef) {
+        if (indicators != null && !indicators.isEmpty()) {
             JSONArray jsonIndicators = new JSONArray();
 
-            for (BaseEvaluator indicator : indicators)
-            {
-                if (indicator.evaluate(nodeRef))
-                {
+            for (BaseEvaluator indicator : indicators) {
+                if (indicator.evaluate(nodeRef)) {
                     jsonIndicators.add(indicator.getName());
                 }
             }
@@ -556,16 +528,12 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     @SuppressWarnings("unchecked")
-    private void setActions(JSONObject rmNodeValues, NodeRef nodeRef)
-    {
-        if (actions != null && !actions.isEmpty())
-        {
+    private void setActions(JSONObject rmNodeValues, NodeRef nodeRef) {
+        if (actions != null && !actions.isEmpty()) {
             JSONArray jsonActions = new JSONArray();
 
-            for (BaseEvaluator action : actions)
-            {
-                if (action.evaluate(nodeRef))
-                {
+            for (BaseEvaluator action : actions) {
+                if (action.evaluate(nodeRef)) {
                     jsonActions.add(action.getName());
                 }
             }
@@ -575,21 +543,18 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     }
 
     /**
-     * @see org.alfresco.repo.jscript.app.JSONConversionComponent#permissionsToJSON(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.repo.jscript.app.JSONConversionComponent#permissionsToJSON(org.alfresco.service.cmr.repository.NodeRef)
      */
     @SuppressWarnings("unchecked")
-    protected JSONObject permissionsToJSON(final NodeRef nodeRef)
-    {
+    protected JSONObject permissionsToJSON(final NodeRef nodeRef) {
         JSONObject permissionsJSON = new JSONObject();
-        if (!filePlanService.isFilePlanComponent(nodeRef))
-        {
+        if (!filePlanService.isFilePlanComponent(nodeRef)) {
             permissionsJSON = super.permissionsToJSON(nodeRef);
-        }
-        else
-        {
-            if (ALLOWED.equals(permissionService.hasPermission(nodeRef, READ_RECORDS)))
-            {
-                permissionsJSON.put("inherited", permissionService.getInheritParentPermissions(nodeRef));
+        } else {
+            if (ALLOWED.equals(permissionService.hasPermission(nodeRef, READ_RECORDS))) {
+                permissionsJSON.put(
+                        "inherited", permissionService.getInheritParentPermissions(nodeRef));
                 permissionsJSON.put("roles", allSetPermissionsToJSON(nodeRef));
                 permissionsJSON.put("user", userPermissionsToJSON(nodeRef));
             }
@@ -597,102 +562,87 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         return permissionsJSON;
     }
 
-    /**
-     * Gets the rm 'type' used as a UI convenience and compatibility flag.
-     */
-    private String getUIType(NodeRef nodeRef)
-    {
+    /** Gets the rm 'type' used as a UI convenience and compatibility flag. */
+    private String getUIType(NodeRef nodeRef) {
         String result = "unknown";
 
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
-        if (kind != null)
-        {
-            switch (kind)
-            {
+        if (kind != null) {
+            switch (kind) {
                 case FILE_PLAN:
-                {
-                    result = "fileplan";
-                    break;
-                }
+                    {
+                        result = "fileplan";
+                        break;
+                    }
                 case RECORD_CATEGORY:
-                {
-                    result = "record-category";
-                    break;
-                }
+                    {
+                        result = "record-category";
+                        break;
+                    }
                 case RECORD_FOLDER:
-                {
-                    if (recordService.isMetadataStub(nodeRef))
                     {
-                        result = "metadata-stub-folder";
+                        if (recordService.isMetadataStub(nodeRef)) {
+                            result = "metadata-stub-folder";
+                        } else {
+                            result = "record-folder";
+                        }
+                        break;
                     }
-                    else
-                    {
-                        result = "record-folder";
-                    }
-                    break;
-                }
                 case RECORD:
-                {
-                    if (recordService.isMetadataStub(nodeRef))
                     {
-                        result = "metadata-stub";
-                    }
-                    else
-                    {
-                        if (recordService.isDeclared(nodeRef))
-                        {
-                            result = "record";
+                        if (recordService.isMetadataStub(nodeRef)) {
+                            result = "metadata-stub";
+                        } else {
+                            if (recordService.isDeclared(nodeRef)) {
+                                result = "record";
+                            } else {
+                                result = "undeclared-record";
+                            }
                         }
-                        else
-                        {
-                            result = "undeclared-record";
-                        }
+                        break;
                     }
-                    break;
-                }
                 case HOLD:
-                {
-                    result = "hold";
-                    break;
-                }
+                    {
+                        result = "hold";
+                        break;
+                    }
                 case TRANSFER:
-                {
-                    result = "transfer-container";
-                    break;
-                }
+                    {
+                        result = "transfer-container";
+                        break;
+                    }
                 case UNFILED_RECORD_FOLDER:
-                {
-                    result = "unfiled-record-folder";
-                    break;
-                }
+                    {
+                        result = "unfiled-record-folder";
+                        break;
+                    }
                 default:
-                {
-                    break;
-                }
+                    {
+                        break;
+                    }
             }
-        }
-        else if (freezeService.isFrozen(nodeRef))
-        {
+        } else if (freezeService.isFrozen(nodeRef)) {
             result = FROZEN_ACTIVE_CONTENT;
         }
         return result;
     }
 
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(org.alfresco.service.cmr.repository.ChildAssociationRef,
+     *     boolean)
      */
     @Override
-    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
-    {
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived) {
         getJsonConversionComponentCache().put(RM_SITE_EXISTS, false);
     }
 
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    public void onCreateNode(ChildAssociationRef childAssocRef)
-    {
+    public void onCreateNode(ChildAssociationRef childAssocRef) {
         getJsonConversionComponentCache().put(RM_SITE_EXISTS, true);
     }
 }

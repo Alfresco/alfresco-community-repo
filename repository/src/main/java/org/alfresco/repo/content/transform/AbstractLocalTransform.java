@@ -42,11 +42,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Abstract supper class for local transformer using flat transform options.
- */
-public abstract class AbstractLocalTransform implements LocalTransform
-{
+/** Abstract supper class for local transformer using flat transform options. */
+public abstract class AbstractLocalTransform implements LocalTransform {
     protected static final Log log = LogFactory.getLog(LocalTransform.class);
 
     protected final String name;
@@ -58,14 +55,17 @@ public abstract class AbstractLocalTransform implements LocalTransform
     private final boolean strictMimeTypeCheck;
     private final Map<String, Set<String>> strictMimetypeExceptions;
     private final boolean retryTransformOnDifferentMimeType;
-    private final static ThreadLocal<Integer> depth = ThreadLocal.withInitial(()->0);
+    private static final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
 
-    AbstractLocalTransform(String name, TransformerDebug transformerDebug,
-                           MimetypeService mimetypeService, boolean strictMimeTypeCheck,
-                           Map<String, Set<String>> strictMimetypeExceptions, boolean retryTransformOnDifferentMimeType,
-                           Set<TransformOption> transformsTransformOptions,
-                           LocalTransformServiceRegistry localTransformServiceRegistry)
-    {
+    AbstractLocalTransform(
+            String name,
+            TransformerDebug transformerDebug,
+            MimetypeService mimetypeService,
+            boolean strictMimeTypeCheck,
+            Map<String, Set<String>> strictMimetypeExceptions,
+            boolean retryTransformOnDifferentMimeType,
+            Set<TransformOption> transformsTransformOptions,
+            LocalTransformServiceRegistry localTransformServiceRegistry) {
         this.name = name;
         this.transformerDebug = transformerDebug;
         this.mimetypeService = mimetypeService;
@@ -79,114 +79,165 @@ public abstract class AbstractLocalTransform implements LocalTransform
 
     public abstract boolean isAvailable();
 
-    protected abstract void transformImpl(ContentReader reader,
-                                          ContentWriter writer, Map<String, String> transformOptions,
-                                          String sourceMimetype, String targetMimetype,
-                                          String sourceExtension, String targetExtension,
-                                          String renditionName, NodeRef sourceNodeRef)
+    protected abstract void transformImpl(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, String> transformOptions,
+            String sourceMimetype,
+            String targetMimetype,
+            String sourceExtension,
+            String targetExtension,
+            String renditionName,
+            NodeRef sourceNodeRef)
             throws UnsupportedTransformationException, ContentIOException;
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public Set<String> getTransformsTransformOptionNames()
-    {
+    public Set<String> getTransformsTransformOptionNames() {
         return transformsTransformOptionNames;
     }
 
     @Override
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
-                          String renditionName, NodeRef sourceNodeRef)
-    {
-        if (isAvailable())
-        {
+    public void transform(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, String> transformOptions,
+            String renditionName,
+            NodeRef sourceNodeRef) {
+        if (isAvailable()) {
             String sourceMimetype = reader.getMimetype();
             String targetMimetype = writer.getMimetype();
 
             String sourceExtension = mimetypeService.getExtension(sourceMimetype);
             String targetExtension = mimetypeService.getExtension(targetMimetype);
-            if (sourceExtension == null || targetExtension == null)
-            {
-                throw new AlfrescoRuntimeException("Unknown extensions for mimetypes: \n" +
-                        "   source mimetype: " + sourceMimetype + "\n" +
-                        "   source extension: " + sourceExtension + "\n" +
-                        "   target mimetype: " + targetMimetype + "\n" +
-                        "   target extension: " + targetExtension);
+            if (sourceExtension == null || targetExtension == null) {
+                throw new AlfrescoRuntimeException(
+                        "Unknown extensions for mimetypes: \n"
+                                + "   source mimetype: "
+                                + sourceMimetype
+                                + "\n"
+                                + "   source extension: "
+                                + sourceExtension
+                                + "\n"
+                                + "   target mimetype: "
+                                + targetMimetype
+                                + "\n"
+                                + "   target extension: "
+                                + targetExtension);
             }
 
             transformOptions = getStrippedTransformOptions(transformOptions);
-            transformWithDebug(reader, writer, transformOptions, renditionName, sourceNodeRef, sourceMimetype,
-                    targetMimetype, sourceExtension, targetExtension);
+            transformWithDebug(
+                    reader,
+                    writer,
+                    transformOptions,
+                    renditionName,
+                    sourceNodeRef,
+                    sourceMimetype,
+                    targetMimetype,
+                    sourceExtension,
+                    targetExtension);
 
-            if (log.isDebugEnabled())
-            {
-                log.debug("Local transformation completed: \n" +
-                        "   source: " + reader + "\n" +
-                        "   target: " + writer + "\n" +
-                        "   options: " + transformOptions);
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "Local transformation completed: \n"
+                                + "   source: "
+                                + reader
+                                + "\n"
+                                + "   target: "
+                                + writer
+                                + "\n"
+                                + "   options: "
+                                + transformOptions);
             }
-        }
-        else
-        {
-            if (log.isDebugEnabled())
-            {
+        } else {
+            if (log.isDebugEnabled()) {
                 transformOptions = getStrippedTransformOptions(transformOptions);
-                log.debug("Local transformer not available: \n" +
-                        "   source: " + reader + "\n" +
-                        "   target: " + writer + "\n" +
-                        "   options: " + transformOptions);
+                log.debug(
+                        "Local transformer not available: \n"
+                                + "   source: "
+                                + reader
+                                + "\n"
+                                + "   target: "
+                                + writer
+                                + "\n"
+                                + "   options: "
+                                + transformOptions);
             }
         }
     }
 
-    private void transformWithDebug(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
-                                    String renditionName, NodeRef sourceNodeRef, String sourceMimetype, String targetMimetype,
-                                    String sourceExtension, String targetExtension)
-    {
-        try
-        {
-            depth.set(depth.get()+1);
+    private void transformWithDebug(
+            ContentReader reader,
+            ContentWriter writer,
+            Map<String, String> transformOptions,
+            String renditionName,
+            NodeRef sourceNodeRef,
+            String sourceMimetype,
+            String targetMimetype,
+            String sourceExtension,
+            String targetExtension) {
+        try {
+            depth.set(depth.get() + 1);
 
-            if (transformerDebug.isEnabled())
-            {
-                transformerDebug.pushTransform("Local:"+name, reader.getContentUrl(), sourceMimetype,
-                        targetMimetype, reader.getSize(), transformOptions, renditionName, sourceNodeRef);
+            if (transformerDebug.isEnabled()) {
+                transformerDebug.pushTransform(
+                        "Local:" + name,
+                        reader.getContentUrl(),
+                        sourceMimetype,
+                        targetMimetype,
+                        reader.getSize(),
+                        transformOptions,
+                        renditionName,
+                        sourceNodeRef);
             }
 
             strictMimetypeCheck(reader, sourceNodeRef, sourceMimetype);
-            transformImpl(reader, writer, transformOptions, sourceMimetype,
-                    targetMimetype, sourceExtension, targetExtension, renditionName, sourceNodeRef);
-        }
-        catch (Throwable e)
-        {
-            retryWithDifferentMimetype(reader, writer, targetMimetype, transformOptions, renditionName, sourceNodeRef, e);
-        }
-        finally
-        {
+            transformImpl(
+                    reader,
+                    writer,
+                    transformOptions,
+                    sourceMimetype,
+                    targetMimetype,
+                    sourceExtension,
+                    targetExtension,
+                    renditionName,
+                    sourceNodeRef);
+        } catch (Throwable e) {
+            retryWithDifferentMimetype(
+                    reader,
+                    writer,
+                    targetMimetype,
+                    transformOptions,
+                    renditionName,
+                    sourceNodeRef,
+                    e);
+        } finally {
             transformerDebug.popTransform();
-            depth.set(depth.get()-1);
+            depth.set(depth.get() - 1);
         }
     }
 
-    private void strictMimetypeCheck(ContentReader reader, NodeRef sourceNodeRef, String declaredMimetype)
-    {
-        if (mimetypeService != null && strictMimeTypeCheck && depth.get() == 1)
-        {
+    private void strictMimetypeCheck(
+            ContentReader reader, NodeRef sourceNodeRef, String declaredMimetype) {
+        if (mimetypeService != null && strictMimeTypeCheck && depth.get() == 1) {
             String detectedMimetype = mimetypeService.getMimetypeIfNotMatches(reader.getReader());
 
-            if (!strictMimetypeCheck(declaredMimetype, detectedMimetype))
-            {
+            if (!strictMimetypeCheck(declaredMimetype, detectedMimetype)) {
                 Set<String> allowedMimetypes = strictMimetypeExceptions.get(declaredMimetype);
-                if (allowedMimetypes != null && allowedMimetypes.contains(detectedMimetype))
-                {
+                if (allowedMimetypes != null && allowedMimetypes.contains(detectedMimetype)) {
                     String fileName = transformerDebug.getFileName(sourceNodeRef, true, 0);
                     String readerSourceMimetype = reader.getMimetype();
-                    String message = "Transformation of ("+fileName+
-                            ") has not taken place because the declared mimetype ("+
-                            readerSourceMimetype+") does not match the detected mimetype ("+
-                            detectedMimetype+").";
+                    String message =
+                            "Transformation of ("
+                                    + fileName
+                                    + ") has not taken place because the declared mimetype ("
+                                    + readerSourceMimetype
+                                    + ") does not match the detected mimetype ("
+                                    + detectedMimetype
+                                    + ").";
                     log.warn(message);
                     throw new UnsupportedTransformationException(message);
                 }
@@ -199,17 +250,16 @@ public abstract class AbstractLocalTransform implements LocalTransform
      * There are a few issues with the Tika mimetype detection. As a result we still allow some
      * transformations to take place even if there is a discrepancy between the detected and
      * declared mimetypes.
+     *
      * @param declaredMimetype the mimetype on the source node
      * @param detectedMimetype returned by Tika having looked at the content.
      * @return true if the transformation should take place. This includes the case where the
-     *         detectedMimetype is null (returned by Tika when the mimetypes are the same), or
-     *         the supplied pair of mimetypes have been added to the
-     *         {@code}transformer.strict.mimetype.check.whitelist{@code}.
+     *     detectedMimetype is null (returned by Tika when the mimetypes are the same), or the
+     *     supplied pair of mimetypes have been added to the
+     *     {@code}transformer.strict.mimetype.check.whitelist{@code}.
      */
-    private boolean strictMimetypeCheck(String declaredMimetype, String detectedMimetype)
-    {
-        if (detectedMimetype == null)
-        {
+    private boolean strictMimetypeCheck(String declaredMimetype, String detectedMimetype) {
+        if (detectedMimetype == null) {
             return true;
         }
 
@@ -217,107 +267,134 @@ public abstract class AbstractLocalTransform implements LocalTransform
         return detectedMimetypes != null && detectedMimetypes.contains(detectedMimetype);
     }
 
-    private void retryWithDifferentMimetype(ContentReader reader, ContentWriter writer, String targetMimetype,
-                                            Map<String, String> transformOptions, String renditionName,
-                                            NodeRef sourceNodeRef, Throwable e)
-    {
-        if (mimetypeService != null && localTransformServiceRegistry != null)
-        {
+    private void retryWithDifferentMimetype(
+            ContentReader reader,
+            ContentWriter writer,
+            String targetMimetype,
+            Map<String, String> transformOptions,
+            String renditionName,
+            NodeRef sourceNodeRef,
+            Throwable e) {
+        if (mimetypeService != null && localTransformServiceRegistry != null) {
             String differentType = mimetypeService.getMimetypeIfNotMatches(reader.getReader());
-            if (differentType == null)
-            {
+            if (differentType == null) {
                 transformerDebug.debug("          Failed", e);
-                throw new ContentIOException("Content conversion failed: \n" +
-                        "   reader: " + reader + "\n" +
-                        "   writer: " + writer + "\n" +
-                        "   options: " + transformOptions,
+                throw new ContentIOException(
+                        "Content conversion failed: \n"
+                                + "   reader: "
+                                + reader
+                                + "\n"
+                                + "   writer: "
+                                + writer
+                                + "\n"
+                                + "   options: "
+                                + transformOptions,
                         e);
-            }
-            else
-            {
+            } else {
                 transformerDebug.debug("          Failed: Mimetype was '" + differentType + "'", e);
                 String claimedMimetype = reader.getMimetype();
 
-                if (retryTransformOnDifferentMimeType)
-                {
+                if (retryTransformOnDifferentMimeType) {
                     reader = reader.getReader();
                     reader.setMimetype(differentType);
                     long sourceSizeInBytes = reader.getSize();
 
-                    LocalTransform localTransform = localTransformServiceRegistry.getLocalTransform(
-                            differentType, sourceSizeInBytes, targetMimetype, transformOptions, renditionName);
-                    if (localTransform == null)
-                    {
+                    LocalTransform localTransform =
+                            localTransformServiceRegistry.getLocalTransform(
+                                    differentType,
+                                    sourceSizeInBytes,
+                                    targetMimetype,
+                                    transformOptions,
+                                    renditionName);
+                    if (localTransform == null) {
                         transformerDebug.debug("          Failed", e);
-                        throw new ContentIOException("Content conversion failed: \n" +
-                                "   reader: " + reader + "\n" +
-                                "   writer: " + writer + "\n" +
-                                "   options: " + transformOptions + "\n" +
-                                "   claimed mime type: " + claimedMimetype + "\n" +
-                                "   detected mime type: " + differentType + "\n" +
-                                "   transformer not found" + "\n",
-                                e
-                        );
+                        throw new ContentIOException(
+                                "Content conversion failed: \n"
+                                        + "   reader: "
+                                        + reader
+                                        + "\n"
+                                        + "   writer: "
+                                        + writer
+                                        + "\n"
+                                        + "   options: "
+                                        + transformOptions
+                                        + "\n"
+                                        + "   claimed mime type: "
+                                        + claimedMimetype
+                                        + "\n"
+                                        + "   detected mime type: "
+                                        + differentType
+                                        + "\n"
+                                        + "   transformer not found"
+                                        + "\n",
+                                e);
                     }
-                    localTransform.transform(reader, writer, transformOptions, renditionName, sourceNodeRef);
-                }
-                else
-                {
-                    throw new ContentIOException("Content conversion failed: \n" +
-                            "   reader: " + reader + "\n" +
-                            "   writer: " + writer + "\n" +
-                            "   options: " + transformOptions + "\n" +
-                            "   claimed mime type: " + claimedMimetype + "\n" +
-                            "   detected mime type: " + differentType,
-                            e
-                    );
+                    localTransform.transform(
+                            reader, writer, transformOptions, renditionName, sourceNodeRef);
+                } else {
+                    throw new ContentIOException(
+                            "Content conversion failed: \n"
+                                    + "   reader: "
+                                    + reader
+                                    + "\n"
+                                    + "   writer: "
+                                    + writer
+                                    + "\n"
+                                    + "   options: "
+                                    + transformOptions
+                                    + "\n"
+                                    + "   claimed mime type: "
+                                    + claimedMimetype
+                                    + "\n"
+                                    + "   detected mime type: "
+                                    + differentType,
+                            e);
                 }
             }
         }
     }
 
     /**
-     * Returns a list of transform option names known to this transformer. When a transform is part of a pipeline or a
-     * failover, the rendition options may include options needed for other transforms. So that extra options are not
-     * passed to the T-Engine for this transform and rejected, {@link #getStrippedTransformOptions(Map)} removes them
-     * using the names obtained here.
+     * Returns a list of transform option names known to this transformer. When a transform is part
+     * of a pipeline or a failover, the rendition options may include options needed for other
+     * transforms. So that extra options are not passed to the T-Engine for this transform and
+     * rejected, {@link #getStrippedTransformOptions(Map)} removes them using the names obtained
+     * here.
      */
-    private static void addOptionNames(Set<String> transformsTransformOptionNames, Set<TransformOption> transformsTransformOptions)
-    {
-        for (TransformOption transformOption : transformsTransformOptions)
-        {
-            if (transformOption instanceof TransformOptionValue)
-            {
-                transformsTransformOptionNames.add(((TransformOptionValue)transformOption).getName());
-            }
-            else
-            {
-                addOptionNames(transformsTransformOptionNames, ((TransformOptionGroup)transformOption).getTransformOptions());
+    private static void addOptionNames(
+            Set<String> transformsTransformOptionNames,
+            Set<TransformOption> transformsTransformOptions) {
+        for (TransformOption transformOption : transformsTransformOptions) {
+            if (transformOption instanceof TransformOptionValue) {
+                transformsTransformOptionNames.add(
+                        ((TransformOptionValue) transformOption).getName());
+            } else {
+                addOptionNames(
+                        transformsTransformOptionNames,
+                        ((TransformOptionGroup) transformOption).getTransformOptions());
             }
         }
     }
 
     /**
-     * Returns a subset of the supplied actual transform options from the rendition definition that are known to this
-     * transformer. The ones that will be passed to the T-Engine. It strips out extra ones.
-     * @param transformOptions the complete set of actual transform options. This will be returned if all options are
-     *                         known to this transformer. Otherwise a new Map is returned.
+     * Returns a subset of the supplied actual transform options from the rendition definition that
+     * are known to this transformer. The ones that will be passed to the T-Engine. It strips out
+     * extra ones.
+     *
+     * @param transformOptions the complete set of actual transform options. This will be returned
+     *     if all options are known to this transformer. Otherwise a new Map is returned.
      * @return the transformOptions to be past to the T-Engine.
      */
-    public Map<String, String> getStrippedTransformOptions(Map<String, String> transformOptions)
-    {
+    public Map<String, String> getStrippedTransformOptions(Map<String, String> transformOptions) {
         Set<String> optionNames = transformOptions.keySet();
-        if (transformsTransformOptionNames.containsAll(optionNames))
-        {
+        if (transformsTransformOptionNames.containsAll(optionNames)) {
             return transformOptions;
         }
 
         Map<String, String> strippedTransformOptions = new HashMap<>(transformOptions.size());
-        for (Map.Entry<String, String> entry : transformOptions.entrySet())
-        {
+        for (Map.Entry<String, String> entry : transformOptions.entrySet()) {
             String key = entry.getKey();
-            if (transformsTransformOptionNames.contains(key))
-            {
+            if (transformsTransformOptionNames.contains(key)) {
                 String value = entry.getValue();
                 strippedTransformOptions.put(key, value);
             }

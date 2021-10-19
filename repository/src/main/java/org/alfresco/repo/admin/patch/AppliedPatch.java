@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,12 +29,11 @@ import java.util.Date;
 
 /**
  * Applied patch bean
- * 
+ *
  * @author Derek Hulley
  * @since 3.4
  */
-public class AppliedPatch
-{
+public class AppliedPatch {
     private String id;
     private String description;
     private int fixesFromSchema;
@@ -47,18 +46,11 @@ public class AppliedPatch
     private boolean succeeded;
     private String report;
 
-    /**
-     * Default constructor
-     */
-    public AppliedPatch()
-    {
-    }
-    
-    /**
-     * Construct an instance from another patch info-provider
-     */
-    public AppliedPatch(AppliedPatch appliedPatch)
-    {
+    /** Default constructor */
+    public AppliedPatch() {}
+
+    /** Construct an instance from another patch info-provider */
+    public AppliedPatch(AppliedPatch appliedPatch) {
         this.id = appliedPatch.getId();
         this.description = appliedPatch.getDescription();
         this.fixesFromSchema = appliedPatch.getFixesFromSchema();
@@ -71,103 +63,92 @@ public class AppliedPatch
         this.succeeded = appliedPatch.getSucceeded();
         this.report = appliedPatch.getReport();
     }
-    
-    public String getId()
-    {
+
+    public String getId() {
         return id;
     }
-    public void setId(String id)
-    {
+
+    public void setId(String id) {
         this.id = id;
     }
-    
-    public String getDescription()
-    {
+
+    public String getDescription() {
         return description;
     }
-    public void setDescription(String description)
-    {
+
+    public void setDescription(String description) {
         this.description = description;
     }
-    
-    public int getFixesFromSchema()
-    {
+
+    public int getFixesFromSchema() {
         return fixesFromSchema;
     }
-    public void setFixesFromSchema(int fixesFromSchema)
-    {
+
+    public void setFixesFromSchema(int fixesFromSchema) {
         this.fixesFromSchema = fixesFromSchema;
     }
-    
-    public int getFixesToSchema()
-    {
+
+    public int getFixesToSchema() {
         return fixesToSchema;
     }
-    public void setFixesToSchema(int fixesToSchema)
-    {
+
+    public void setFixesToSchema(int fixesToSchema) {
         this.fixesToSchema = fixesToSchema;
     }
-    
-    public int getTargetSchema()
-    {
+
+    public int getTargetSchema() {
         return targetSchema;
     }
-    public void setTargetSchema(int targetSchema)
-    {
+
+    public void setTargetSchema(int targetSchema) {
         this.targetSchema = targetSchema;
     }
-    
-    public int getAppliedToSchema()
-    {
+
+    public int getAppliedToSchema() {
         return appliedToSchema;
     }
-    public void setAppliedToSchema(int appliedToSchema)
-    {
+
+    public void setAppliedToSchema(int appliedToSchema) {
         this.appliedToSchema = appliedToSchema;
     }
-    
-    public String getAppliedToServer()
-    {
+
+    public String getAppliedToServer() {
         return appliedToServer;
     }
-    public void setAppliedToServer(String appliedToServer)
-    {
+
+    public void setAppliedToServer(String appliedToServer) {
         this.appliedToServer = appliedToServer;
     }
-    
-    public Date getAppliedOnDate()
-    {
+
+    public Date getAppliedOnDate() {
         return appliedOnDate;
     }
-    public void setAppliedOnDate(Date appliedOnDate)
-    {
+
+    public void setAppliedOnDate(Date appliedOnDate) {
         this.appliedOnDate = appliedOnDate;
     }
-    
-    public boolean getWasExecuted()
-    {
+
+    public boolean getWasExecuted() {
         return wasExecuted;
     }
-    public void setWasExecuted(boolean wasExecuted)
-    {
+
+    public void setWasExecuted(boolean wasExecuted) {
         this.wasExecuted = wasExecuted;
     }
-    
-    public boolean getSucceeded()
-    {
+
+    public boolean getSucceeded() {
         return succeeded;
     }
-    public void setSucceeded(boolean succeeded)
-    {
+
+    public void setSucceeded(boolean succeeded) {
         this.succeeded = succeeded;
     }
-    
-    public String getReport()
-    {
+
+    public String getReport() {
         return report;
     }
-    public void setReport(String report)
-    {
+
+    public void setReport(String report) {
         this.report = report;
     }
 }

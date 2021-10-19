@@ -35,8 +35,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public class RecordsManagementActionResult
-{
+public class RecordsManagementActionResult {
     /** Result value */
     private Object value;
 
@@ -45,16 +44,12 @@ public class RecordsManagementActionResult
      *
      * @param value result value
      */
-    public RecordsManagementActionResult(Object value)
-    {
+    public RecordsManagementActionResult(Object value) {
         this.value = value;
     }
 
-    /**
-     * @return  result value
-     */
-    public Object getValue()
-    {
+    /** @return result value */
+    public Object getValue() {
         return this.value;
     }
 }

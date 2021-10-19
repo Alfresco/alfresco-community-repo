@@ -28,10 +28,9 @@ package org.alfresco.rest.core;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import javax.annotation.Resource;
-
 import lombok.Getter;
 import lombok.Setter;
+
 import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
 import org.alfresco.rest.requests.search.SearchAPI;
@@ -55,6 +54,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+
 /**
  * REST API Factory which provides access to the APIs
  *
@@ -63,10 +64,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Scope(value = "prototype")
-public class RestAPIFactory
-{
+public class RestAPIFactory {
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private DataUserAIS dataUser;
 
     @Resource(name = "RMRestWrapper")
@@ -74,173 +74,138 @@ public class RestAPIFactory
     @Setter
     private RMRestWrapper rmRestWrapper;
 
-    private GSCoreAPI getGSCoreAPI(UserModel userModel)
-    {
-        getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
+    private GSCoreAPI getGSCoreAPI(UserModel userModel) {
+        getRmRestWrapper()
+                .authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withGSCoreAPI();
     }
 
-    private RestCoreAPI getCoreAPI(UserModel userModel)
-    {
-        getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
+    private RestCoreAPI getCoreAPI(UserModel userModel) {
+        getRmRestWrapper()
+                .authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withCoreAPI();
     }
 
-    public SearchAPI getSearchAPI(UserModel userModel)
-    {
-        getRmRestWrapper().authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
+    public SearchAPI getSearchAPI(UserModel userModel) {
+        getRmRestWrapper()
+                .authenticateUser(userModel != null ? userModel : getDataUser().getAdminUser());
         return getRmRestWrapper().withSearchAPI();
     }
 
-    /**
-     * When no user is given the default is set to admin
-     */
-    public SearchAPI getSearchAPI()
-    {
+    /** When no user is given the default is set to admin */
+    public SearchAPI getSearchAPI() {
         return getSearchAPI(null);
     }
 
-    public Node getNodeAPI(RepoTestModel model) throws RuntimeException
-    {
-        try
-        {
+    public Node getNodeAPI(RepoTestModel model) throws RuntimeException {
+        try {
             return getCoreAPI(null).usingNode(model);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to load nodeAPI.", e);
         }
     }
 
-    public Node getNodeAPI(UserModel userModel, RepoTestModel model) throws RuntimeException
-    {
-        try
-        {
+    public Node getNodeAPI(UserModel userModel, RepoTestModel model) throws RuntimeException {
+        try {
             return getCoreAPI(userModel).usingNode(model);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to load nodeAPI.", e);
         }
     }
 
-    public RMSiteAPI getRMSiteAPI()
-    {
+    public RMSiteAPI getRMSiteAPI() {
         return getGSCoreAPI(null).usingRMSite();
     }
 
-    public RMSiteAPI getRMSiteAPI(UserModel userModel)
-    {
+    public RMSiteAPI getRMSiteAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingRMSite();
     }
 
-    public FilePlanAPI getFilePlansAPI()
-    {
+    public FilePlanAPI getFilePlansAPI() {
         return getGSCoreAPI(null).usingFilePlans();
     }
 
-    public FilePlanAPI getFilePlansAPI(UserModel userModel)
-    {
+    public FilePlanAPI getFilePlansAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingFilePlans();
     }
 
-    public RecordCategoryAPI getRecordCategoryAPI()
-    {
+    public RecordCategoryAPI getRecordCategoryAPI() {
         return getGSCoreAPI(null).usingRecordCategory();
     }
 
-    public RecordCategoryAPI getRecordCategoryAPI(UserModel userModel)
-    {
+    public RecordCategoryAPI getRecordCategoryAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingRecordCategory();
     }
 
-    public RecordFolderAPI getRecordFolderAPI()
-    {
+    public RecordFolderAPI getRecordFolderAPI() {
         return getGSCoreAPI(null).usingRecordFolder();
     }
 
-    public RecordFolderAPI getRecordFolderAPI(UserModel userModel)
-    {
+    public RecordFolderAPI getRecordFolderAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingRecordFolder();
     }
 
-    public RecordsAPI getRecordsAPI()
-    {
+    public RecordsAPI getRecordsAPI() {
         return getGSCoreAPI(null).usingRecords();
     }
 
-    public RecordsAPI getRecordsAPI(UserModel userModel)
-    {
+    public RecordsAPI getRecordsAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingRecords();
     }
 
-    public FilesAPI getFilesAPI()
-    {
+    public FilesAPI getFilesAPI() {
         return getGSCoreAPI(null).usingFiles();
     }
 
-    public FilesAPI getFilesAPI(UserModel userModel)
-    {
+    public FilesAPI getFilesAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingFiles();
     }
 
-    public TransferContainerAPI getTransferContainerAPI()
-    {
+    public TransferContainerAPI getTransferContainerAPI() {
         return getGSCoreAPI(null).usingTransferContainer();
     }
 
-    public TransferContainerAPI getTransferContainerAPI(UserModel userModel)
-    {
+    public TransferContainerAPI getTransferContainerAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingTransferContainer();
     }
 
-    public TransferAPI getTransferAPI()
-    {
+    public TransferAPI getTransferAPI() {
         return getGSCoreAPI(null).usingTransfer();
     }
 
-    public TransferAPI getTransferAPI(UserModel userModel)
-    {
+    public TransferAPI getTransferAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingTransfer();
     }
 
-    public RMUserAPI getRMUserAPI()
-    {
+    public RMUserAPI getRMUserAPI() {
         return getGSCoreAPI(null).usingRMUser();
     }
 
-    public RMUserAPI getRMUserAPI(UserModel userModel)
-    {
+    public RMUserAPI getRMUserAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingRMUser();
     }
 
-    public UnfiledContainerAPI getUnfiledContainersAPI()
-    {
+    public UnfiledContainerAPI getUnfiledContainersAPI() {
         return getGSCoreAPI(null).usingUnfiledContainers();
     }
 
-    public UnfiledContainerAPI getUnfiledContainersAPI(UserModel userModel)
-    {
+    public UnfiledContainerAPI getUnfiledContainersAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingUnfiledContainers();
     }
 
-    public UnfiledRecordFolderAPI getUnfiledRecordFoldersAPI()
-    {
+    public UnfiledRecordFolderAPI getUnfiledRecordFoldersAPI() {
         return getGSCoreAPI(null).usingUnfiledRecordFolder();
     }
 
-    public UnfiledRecordFolderAPI getUnfiledRecordFoldersAPI(UserModel userModel)
-    {
+    public UnfiledRecordFolderAPI getUnfiledRecordFoldersAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingUnfiledRecordFolder();
     }
 
-    public ActionsExecutionAPI getActionsAPI(UserModel userModel)
-    {
+    public ActionsExecutionAPI getActionsAPI(UserModel userModel) {
         return getGSCoreAPI(userModel).usingActionsExecutionsAPI();
     }
 
-    public ActionsExecutionAPI getActionsAPI()
-    {
+    public ActionsExecutionAPI getActionsAPI() {
         return getGSCoreAPI(null).usingActionsExecutionsAPI();
     }
 }

@@ -27,8 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import java.io.Serializable;
-import java.util.Map;
+import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -37,8 +36,8 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
-
+import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Audits file plan component property updates
@@ -47,21 +46,19 @@ import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTI
  * @since 2.1
  */
 @BehaviourBean
-public class UpdateObjectAuditEvent extends AuditEvent implements OnUpdatePropertiesPolicy
-{
+public class UpdateObjectAuditEvent extends AuditEvent implements OnUpdatePropertiesPolicy {
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef,
+     *     java.util.Map, java.util.Map)
      */
     @Override
-    @Behaviour
-    (
+    @Behaviour(
             kind = BehaviourKind.CLASS,
             type = "rma:filePlanComponent",
-            notificationFrequency = TRANSACTION_COMMIT
-    )
-    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {
+            notificationFrequency = TRANSACTION_COMMIT)
+    public void onUpdateProperties(
+            NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after) {
         recordsManagementAuditService.auditEvent(nodeRef, getName(), before, after, false, true);
     }
-
 }

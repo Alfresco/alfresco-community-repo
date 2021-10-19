@@ -28,8 +28,7 @@ package org.alfresco.rest.api.model;
 
 import java.util.Objects;
 
-public class Association
-{
+public class Association {
     private String id;
     private String title;
     private String description;
@@ -38,12 +37,16 @@ public class Association
     private AssociationSource source = null;
     private AssociationSource target = null;
 
-    public Association()
-    {
-    }
+    public Association() {}
 
-    public Association(String id, String title, String description, Boolean isChild, Boolean isProtected, AssociationSource source, AssociationSource target)
-    {
+    public Association(
+            String id,
+            String title,
+            String description,
+            Boolean isChild,
+            Boolean isProtected,
+            AssociationSource source,
+            AssociationSource target) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -53,105 +56,94 @@ public class Association
         this.target = target;
     }
 
-    public String getId()
-    {
+    public String getId() {
         return id;
     }
 
-    public void setId(String id)
-    {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title)
-    {
+    public void setTitle(String title) {
         this.title = title;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description)
-    {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public Boolean getIsChild()
-    {
+    public Boolean getIsChild() {
         return isChild;
     }
 
-    public void setIsChild(Boolean isChild)
-    {
+    public void setIsChild(Boolean isChild) {
         this.isChild = isChild;
     }
 
-    public Boolean getIsProtected()
-    {
+    public Boolean getIsProtected() {
         return isProtected;
     }
 
-    public void setIsProtected(Boolean isProtected)
-    {
+    public void setIsProtected(Boolean isProtected) {
         this.isProtected = isProtected;
     }
 
-    public AssociationSource getSource()
-    {
+    public AssociationSource getSource() {
         return source;
     }
 
-    public void setSource(AssociationSource source)
-    {
+    public void setSource(AssociationSource source) {
         this.source = source;
     }
 
-    public AssociationSource getTarget()
-    {
+    public AssociationSource getTarget() {
         return target;
     }
 
-    public void setTarget(AssociationSource target)
-    {
+    public void setTarget(AssociationSource target) {
         this.target = target;
     }
 
     @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         Association other = (Association) obj;
-        return Objects.equals(id, other.getId()) &&
-                Objects.equals(title, other.getTitle()) &&
-                Objects.equals(description, other.getDescription()) &&
-                Objects.equals(isChild, other.getIsChild()) &&
-                Objects.equals(isProtected, other.getIsProtected()) &&
-                Objects.equals(source, other.getSource()) &&
-                Objects.equals(target, other.getTarget());
+        return Objects.equals(id, other.getId())
+                && Objects.equals(title, other.getTitle())
+                && Objects.equals(description, other.getDescription())
+                && Objects.equals(isChild, other.getIsChild())
+                && Objects.equals(isProtected, other.getIsProtected())
+                && Objects.equals(source, other.getSource())
+                && Objects.equals(target, other.getTarget());
     }
 
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder(512);
-        builder.append("Association [id=").append(this.id)
-                .append(", title=").append(this.title)
-                .append(", description=").append(this.description)
-                .append(", isChild=").append(isChild)
-                .append(", isProtected=").append(isProtected)
-                .append(", source=").append(source)
-                .append(", target=").append(target)
+        builder.append("Association [id=")
+                .append(this.id)
+                .append(", title=")
+                .append(this.title)
+                .append(", description=")
+                .append(this.description)
+                .append(", isChild=")
+                .append(isChild)
+                .append(", isProtected=")
+                .append(isProtected)
+                .append(", source=")
+                .append(source)
+                .append(", target=")
+                .append(target)
                 .append(']');
         return builder.toString();
     }

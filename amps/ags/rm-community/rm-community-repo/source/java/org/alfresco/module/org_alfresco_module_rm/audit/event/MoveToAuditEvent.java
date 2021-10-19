@@ -40,20 +40,16 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
  * @since 2.1
  */
 @BehaviourBean
-public class MoveToAuditEvent extends AuditEvent implements OnMoveNodePolicy
-{
+public class MoveToAuditEvent extends AuditEvent implements OnMoveNodePolicy {
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     * @see
+     *     org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef,
+     *     org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            type = "rma:filePlanComponent"
-    )
-    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
-    {
+    @Behaviour(kind = BehaviourKind.CLASS, type = "rma:filePlanComponent")
+    public void onMoveNode(
+            ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef) {
         recordsManagementAuditService.auditEvent(newChildAssocRef.getChildRef(), getName());
     }
-
 }

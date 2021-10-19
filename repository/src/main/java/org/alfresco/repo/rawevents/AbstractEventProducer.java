@@ -26,6 +26,7 @@
 package org.alfresco.repo.rawevents;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.ProducerTemplate;
@@ -35,21 +36,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Abstract helper to send events to an endpoint. The
- * <code>AbstractEventProducer</code> acts as a wrapper that provides
- * marshalling for a Camel <code>ProducerTemplate</code>. <br/>
- * <p/>
- * A client has the option of creating an event producer without supplying an
- * endpoint. In this case, a endpoint must be provided with every send
- * operation. <br/>
- * <p/>
- * A client also has the option to provide an <code>ObjectMapper</code> that
- * will be used to marshal basic POJOs (Plain Old Java Objects) to JSON before
- * sending the event.
- * <p/>
+ * Abstract helper to send events to an endpoint. The <code>AbstractEventProducer</code> acts as a
+ * wrapper that provides marshalling for a Camel <code>ProducerTemplate</code>. <br>
+ *
+ * <p>A client has the option of creating an event producer without supplying an endpoint. In this
+ * case, a endpoint must be provided with every send operation. <br>
+ *
+ * <p>A client also has the option to provide an <code>ObjectMapper</code> that will be used to
+ * marshal basic POJOs (Plain Old Java Objects) to JSON before sending the event.
+ *
+ * <p>
  */
-public abstract class AbstractEventProducer
-{
+public abstract class AbstractEventProducer {
     protected static final String ERROR_SENDING = "Could not send event";
     public static final String JMS_AMQP_PREFIX = "JMS_AMQP_";
 
@@ -61,25 +59,20 @@ public abstract class AbstractEventProducer
     protected String endpoint;
     protected ObjectMapper objectMapper;
 
-    public void setProducer(ProducerTemplate producer)
-    {
+    public void setProducer(ProducerTemplate producer) {
         this.producer = producer;
     }
 
-    public void setEndpoint(String endpoint)
-    {
+    public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
 
-    public void setObjectMapper(ObjectMapper objectMapper)
-    {
+    public void setObjectMapper(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
 
-    protected Map<String, Object> addHeaders(Map<String, Object> origHeaders)
-    {
-        if (origHeaders == null)
-        {
+    protected Map<String, Object> addHeaders(Map<String, Object> origHeaders) {
+        if (origHeaders == null) {
             origHeaders = new HashMap<>();
         }
 
@@ -87,39 +80,35 @@ public abstract class AbstractEventProducer
         return origHeaders;
     }
 
-    public void send(String endpointUri, Object event)
-    {
+    public void send(String endpointUri, Object event) {
         send(endpointUri, event, null);
     }
 
-    public void send(String endpointUri, Object event, Map<String, Object> headers)
-    {
+    public void send(String endpointUri, Object event, Map<String, Object> headers) {
         send(endpointUri, null, event, headers);
     }
 
-    public void send(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
-    {
-        try
-        {
-            if (StringUtils.isEmpty(endpointUri))
-            {
+    public void send(
+            String endpointUri,
+            ExchangePattern exchangePattern,
+            Object event,
+            Map<String, Object> headers) {
+        try {
+            if (StringUtils.isEmpty(endpointUri)) {
                 endpointUri = this.endpoint;
             }
 
-            if (this.objectMapper != null && !(event instanceof String))
-            {
+            if (this.objectMapper != null && !(event instanceof String)) {
                 event = this.objectMapper.writeValueAsString(event);
             }
 
-            if (exchangePattern == null)
-            {
+            if (exchangePattern == null) {
                 exchangePattern = ExchangePattern.InOnly;
             }
 
-            this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
-        }
-        catch (Exception e)
-        {
+            this.producer.sendBodyAndHeaders(
+                    endpointUri, exchangePattern, event, this.addHeaders(headers));
+        } catch (Exception e) {
             throw new AlfrescoRuntimeException(ERROR_SENDING, e);
         }
     }

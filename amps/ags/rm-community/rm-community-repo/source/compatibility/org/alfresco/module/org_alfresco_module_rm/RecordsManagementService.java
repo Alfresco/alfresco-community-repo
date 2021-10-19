@@ -27,11 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm;
 
-import java.io.Serializable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -42,19 +37,21 @@ import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Records management service interface.
  *
- * Allows simple creation, manipulation and querying of records management components.
+ * <p>Allows simple creation, manipulation and querying of records management components.
  *
  * @author Roy Wetherall
  * @deprecated as of 2.2
  */
-public interface RecordsManagementService
-{
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)}
-     */
+public interface RecordsManagementService {
+    /** @deprecated As of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)} */
     @Deprecated
     boolean isFilePlanComponent(NodeRef nodeRef);
 
@@ -72,27 +69,19 @@ public interface RecordsManagementService
     @Deprecated
     FilePlanComponentKind getFilePlanComponentKindFromType(QName type);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#isFilePlanContainer(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#isFilePlanContainer(NodeRef)} */
     @Deprecated
     boolean isRecordsManagementContainer(NodeRef nodeRef);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#isFilePlan(NodeRef)} */
     @Deprecated
     boolean isFilePlan(NodeRef nodeRef);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#isRecordCategory(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#isRecordCategory(NodeRef)} */
     @Deprecated
     boolean isRecordCategory(NodeRef nodeRef);
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolder(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolder(NodeRef)} */
     @Deprecated
     boolean isRecordFolder(NodeRef nodeRef);
 
@@ -116,99 +105,84 @@ public interface RecordsManagementService
      */
     boolean isCutoff(NodeRef nodeRef);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getNodeRefPath(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getNodeRefPath(NodeRef)} */
     @Deprecated
     List<NodeRef> getNodeRefPath(NodeRef nodeRef);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlan(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getFilePlan(NodeRef)} */
     @Deprecated
     NodeRef getFilePlan(NodeRef nodeRef);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getFilePlans()}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getFilePlans()} */
     @Deprecated
     List<NodeRef> getFilePlans();
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName)} */
     @Deprecated
     NodeRef createFilePlan(NodeRef parent, String name, QName type);
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName, Map)}
+     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, QName,
+     *     Map)}
      */
     @Deprecated
-    NodeRef createFilePlan(NodeRef parent, String name, QName type, Map<QName, Serializable> properties);
+    NodeRef createFilePlan(
+            NodeRef parent, String name, QName type, Map<QName, Serializable> properties);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String)} */
     @Deprecated
     NodeRef createFilePlan(NodeRef parent, String name);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, Map)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#createFilePlan(NodeRef, String, Map)} */
     @Deprecated
     NodeRef createFilePlan(NodeRef parent, String name, Map<QName, Serializable> properties);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getAllContained(NodeRef, boolean)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getAllContained(NodeRef, boolean)} */
     @Deprecated
     List<NodeRef> getAllContained(NodeRef recordCategory, boolean deep);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getAllContained(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getAllContained(NodeRef)} */
     @Deprecated
     List<NodeRef> getAllContained(NodeRef recordCategory);
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef, boolean)}
+     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef,
+     *     boolean)}
      */
     @Deprecated
     List<NodeRef> getContainedRecordCategories(NodeRef recordCategory, boolean deep);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef)} */
     @Deprecated
     List<NodeRef> getContainedRecordCategories(NodeRef recordCategory);
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef, boolean)}
+     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordCategories(NodeRef,
+     *     boolean)}
      */
     @Deprecated
     List<NodeRef> getContainedRecordFolders(NodeRef container, boolean deep);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordFolders(NodeRef)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#getContainedRecordFolders(NodeRef)} */
     @Deprecated
     List<NodeRef> getContainedRecordFolders(NodeRef container);
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String, QName)}
+     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String,
+     *     QName)}
      */
     @Deprecated
     NodeRef createRecordCategory(NodeRef parent, String name, QName type);
 
     /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String, QName, Map)}
+     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String,
+     *     QName, Map)}
      */
     @Deprecated
-    NodeRef createRecordCategory(NodeRef parent, String name, QName type, Map<QName, Serializable> properties);
+    NodeRef createRecordCategory(
+            NodeRef parent, String name, QName type, Map<QName, Serializable> properties);
 
-    /**
-     * @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String)}
-     */
+    /** @deprecated As of 2.1, see {@link FilePlanService#createRecordCategory(NodeRef, String)} */
     @Deprecated
     NodeRef createRecordCategory(NodeRef parent, String name);
 
@@ -218,9 +192,7 @@ public interface RecordsManagementService
     @Deprecated
     NodeRef createRecordCategory(NodeRef parent, String name, Map<QName, Serializable> properties);
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolderDeclared(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordFolderService#isRecordFolderDeclared(NodeRef)} */
     @Deprecated
     boolean isRecordFolderDeclared(NodeRef nodeRef);
 
@@ -232,16 +204,19 @@ public interface RecordsManagementService
     boolean isRecordFolderClosed(NodeRef nodeRef);
 
     /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String, QName)}
+     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String,
+     *     QName)}
      */
     @Deprecated
     NodeRef createRecordFolder(NodeRef rmContainer, String name, QName type);
 
     /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String, QName, Map)}
+     * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String,
+     *     QName, Map)}
      */
     @Deprecated
-    NodeRef createRecordFolder(NodeRef rmContainer, String name, QName type, Map<QName, Serializable> properties);
+    NodeRef createRecordFolder(
+            NodeRef rmContainer, String name, QName type, Map<QName, Serializable> properties);
 
     /**
      * @deprecated As of 2.2, see {@link RecordFolderService#createRecordFolder(NodeRef, String)}
@@ -255,27 +230,19 @@ public interface RecordsManagementService
     @Deprecated
     NodeRef createRecordFolder(NodeRef parent, String name, Map<QName, Serializable> properties);
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordService#getRecords(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordService#getRecords(NodeRef)} */
     @Deprecated
     List<NodeRef> getRecords(NodeRef recordFolder);
 
-    /**
-     * @deprecated As of 2.2, see {@link RecordFolderService#getRecordFolders(NodeRef)}
-     */
+    /** @deprecated As of 2.2, see {@link RecordFolderService#getRecordFolders(NodeRef)} */
     @Deprecated
     List<NodeRef> getRecordFolders(NodeRef record);
 
-    /**
-     * @deprecated As of 2.1, replaced by {@link RecordService#getRecordMetaDataAspects()}
-     */
+    /** @deprecated As of 2.1, replaced by {@link RecordService#getRecordMetaDataAspects()} */
     @Deprecated
     Set<QName> getRecordMetaDataAspects();
 
-    /**
-     * @deprecated As of 2.1, replaced by {@link RecordService#isDeclared(NodeRef)}
-     */
+    /** @deprecated As of 2.1, replaced by {@link RecordService#isDeclared(NodeRef)} */
     @Deprecated
     boolean isRecordDeclared(NodeRef nodeRef);
 
@@ -300,9 +267,7 @@ public interface RecordsManagementService
     @Deprecated
     boolean hasFrozenChildren(NodeRef nodeRef);
 
-    /**
-     * @deprecated As of 2.1, replaced by {@link RecordService#isRecord(NodeRef)}
-     */
+    /** @deprecated As of 2.1, replaced by {@link RecordService#isRecord(NodeRef)} */
     @Deprecated
     boolean isRecord(NodeRef nodeRef);
 }

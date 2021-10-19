@@ -18,14 +18,6 @@
  */
 package org.alfresco.util.cache;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.transaction.TransactionListener;
 import org.alfresco.util.transaction.TransactionSupportUtil;
@@ -35,712 +27,550 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 /**
- * The base implementation for an asynchronously refreshed cache. 
- * 
- * Currently supports one value or a cache per key (such as tenant.)  Implementors just need to provide buildCache(String key/tennnantId)
- * 
+ * The base implementation for an asynchronously refreshed cache.
+ *
+ * <p>Currently supports one value or a cache per key (such as tenant.) Implementors just need to
+ * provide buildCache(String key/tennnantId)
+ *
  * @author Andy
  * @since 4.1.3
- *
- * @author mrogers
- * MER 17/04/2014 Refactored to core and generalised tennancy
+ * @author mrogers MER 17/04/2014 Refactored to core and generalised tennancy
  */
-public abstract class AbstractAsynchronouslyRefreshedCache<T> 
-    implements AsynchronouslyRefreshedCache<T>, 
-    RefreshableCacheListener, 
-    Callable<Void>, 
-    BeanNameAware,
-    InitializingBean, 
-    TransactionListener
-{
-       private static final String RESOURCE_KEY_TXN_DATA = "AbstractAsynchronouslyRefreshedCache.TxnData";
-        
-        private static Log logger = LogFactory.getLog(AbstractAsynchronouslyRefreshedCache.class);
+public abstract class AbstractAsynchronouslyRefreshedCache<T>
+        implements AsynchronouslyRefreshedCache<T>,
+                RefreshableCacheListener,
+                Callable<Void>,
+                BeanNameAware,
+                InitializingBean,
+                TransactionListener {
+    private static final String RESOURCE_KEY_TXN_DATA =
+            "AbstractAsynchronouslyRefreshedCache.TxnData";
 
-        private enum RefreshState
-        {
-            IDLE, WAITING, RUNNING, DONE
-        };
+    private static Log logger = LogFactory.getLog(AbstractAsynchronouslyRefreshedCache.class);
 
-        private ThreadPoolExecutor threadPoolExecutor;
-        private AsynchronouslyRefreshedCacheRegistry registry;
+    private enum RefreshState {
+        IDLE,
+        WAITING,
+        RUNNING,
+        DONE
+    };
 
-        // State
+    private ThreadPoolExecutor threadPoolExecutor;
+    private AsynchronouslyRefreshedCacheRegistry registry;
 
-        private List<RefreshableCacheListener> listeners = new LinkedList<RefreshableCacheListener>();
-        protected final ReentrantReadWriteLock liveLock = new ReentrantReadWriteLock();
-        private final ReentrantReadWriteLock refreshLock = new ReentrantReadWriteLock();
-        private final ReentrantReadWriteLock runLock = new ReentrantReadWriteLock();
-        protected HashMap<String, T> live = new HashMap<String, T>();
-        private LinkedHashSet<Refresh> refreshQueue = new LinkedHashSet<Refresh>();
-        private String cacheId;
-        private RefreshState refreshState = RefreshState.IDLE;
-        private String resourceKeyTxnData;
+    // State
 
-        @Override
-        public void register(RefreshableCacheListener listener)
-        {
-            listeners.add(listener);
+    private List<RefreshableCacheListener> listeners = new LinkedList<RefreshableCacheListener>();
+    protected final ReentrantReadWriteLock liveLock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock refreshLock = new ReentrantReadWriteLock();
+    private final ReentrantReadWriteLock runLock = new ReentrantReadWriteLock();
+    protected HashMap<String, T> live = new HashMap<String, T>();
+    private LinkedHashSet<Refresh> refreshQueue = new LinkedHashSet<Refresh>();
+    private String cacheId;
+    private RefreshState refreshState = RefreshState.IDLE;
+    private String resourceKeyTxnData;
+
+    @Override
+    public void register(RefreshableCacheListener listener) {
+        listeners.add(listener);
+    }
+
+    /** @param threadPoolExecutor the threadPoolExecutor to set */
+    public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor) {
+        this.threadPoolExecutor = threadPoolExecutor;
+    }
+
+    /** @param registry the registry to set */
+    public void setRegistry(AsynchronouslyRefreshedCacheRegistry registry) {
+        this.registry = registry;
+    }
+
+    public void init() {
+        registry.register(this);
+    }
+
+    @Override
+    public String toString() {
+        return "AbstractAsynchronouslyRefreshedCache [cacheId=" + cacheId + "]";
+    }
+
+    @Override
+    public T get(String key) {
+        liveLock.readLock().lock();
+        try {
+            if (live.get(key) != null) {
+                if (logger.isTraceEnabled()) {
+                    logger.trace("get() from cache for key " + key + " on " + this);
+                }
+                return live.get(key);
+            }
+        } finally {
+            liveLock.readLock().unlock();
         }
 
-        /**
-         * @param threadPoolExecutor
-         *            the threadPoolExecutor to set
-         */
-        public void setThreadPoolExecutor(ThreadPoolExecutor threadPoolExecutor)
-        {
-            this.threadPoolExecutor = threadPoolExecutor;
+        if (logger.isDebugEnabled()) {
+            logger.debug("get() miss, scheduling and waiting for key " + key + " on " + this);
         }
 
-        /**
-         * @param registry
-         *            the registry to set
-         */
-        public void setRegistry(AsynchronouslyRefreshedCacheRegistry registry)
-        {
-            this.registry = registry;
-        }
-
-
-        public void init()
-        {
-            registry.register(this);
-        }
-
-        @Override
-        public String toString()
-        {
-            return "AbstractAsynchronouslyRefreshedCache [cacheId=" + cacheId + "]";
-        }
-
-        @Override
-        public T get(String key)
-        {
-            liveLock.readLock().lock();
-            try
-            {
-                if (live.get(key) != null)
-                {
-                    if (logger.isTraceEnabled())
-                    {
-                        logger.trace("get() from cache for key " + key + " on " + this);
+        // There was nothing to return so we build and return
+        Refresh refresh = null;
+        refreshLock.writeLock().lock();
+        try {
+            // Is there anything we can wait for
+            for (Refresh existing : refreshQueue) {
+                if (existing.getKey().equals(key)) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("get() found existing build to wait for on " + this);
                     }
-                    return live.get(key);
+                    refresh = existing;
                 }
             }
-            finally
-            {
-                liveLock.readLock().unlock();
-            }
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("get() miss, scheduling and waiting for key " + key + " on " + this);
-            }
-
-            // There was nothing to return so we build and return
-            Refresh refresh = null;
-            refreshLock.writeLock().lock();
-            try
-            {
-                // Is there anything we can wait for
-                for (Refresh existing : refreshQueue)
-                {
-                    if (existing.getKey().equals(key))
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("get() found existing build to wait for on " + this);
-                        }
-                        refresh = existing;
-                    }
+            if (refresh == null) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("get() building from scratch on " + this);
                 }
-
-                if (refresh == null)
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("get() building from scratch on " + this);
-                    }
-                    refresh = new Refresh(key);
-                    refreshQueue.add(refresh);
-                }
-
+                refresh = new Refresh(key);
+                refreshQueue.add(refresh);
             }
-            finally
-            {
-                refreshLock.writeLock().unlock();
-            }
-            submit();
-            waitForBuild(refresh);
 
-            return get(key);
+        } finally {
+            refreshLock.writeLock().unlock();
+        }
+        submit();
+        waitForBuild(refresh);
+
+        return get(key);
+    }
+
+    /**
+     * Use the current thread to build and put a new version of the cache entry before returning.
+     *
+     * @param key the cache key
+     */
+    public void forceInChangesForThisUncommittedTransaction(String key) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Building cache for tenant " + key + " on " + this);
+        }
+        T cache = buildCache(key);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Cache built for tenant " + key + " on " + this);
         }
 
-        /**
-         * Use the current thread to build and put a new version of the cache entry before returning.
-         * @param key           the cache key
-         */
-        public void forceInChangesForThisUncommittedTransaction(String key)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Building cache for tenant " + key + " on " + this);
-            }
-            T cache = buildCache(key);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Cache built for tenant " + key + " on " + this);
-            }
-
-            liveLock.writeLock().lock();
-            try
-            {
-                live.put(key, cache);
-            }
-            finally
-            {
-                liveLock.writeLock().unlock();
-            }
-
-            broadcastEvent(new RefreshableCacheRefreshedEvent(cacheId, key));
+        liveLock.writeLock().lock();
+        try {
+            live.put(key, cache);
+        } finally {
+            liveLock.writeLock().unlock();
         }
 
-        protected void waitForBuild(Refresh refresh)
-        {
-            while (refresh.getState() != RefreshState.DONE)
-            {
-                synchronized (refresh)
-                {
-                    try
-                    {
-                        refresh.wait(100);
-                    }
-                    catch (InterruptedException e)
-                    {
-                    }
+        broadcastEvent(new RefreshableCacheRefreshedEvent(cacheId, key));
+    }
+
+    protected void waitForBuild(Refresh refresh) {
+        while (refresh.getState() != RefreshState.DONE) {
+            synchronized (refresh) {
+                try {
+                    refresh.wait(100);
+                } catch (InterruptedException e) {
                 }
             }
         }
+    }
 
-        @Override
-        public void refresh(String key)
-        {
-            // String tenantId = tenantService.getCurrentUserDomain();
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Async cache refresh request for tenant " + key + " on " + this);
-            }
-            registry.broadcastEvent(new RefreshableCacheRefreshEvent(cacheId, key), true);
+    @Override
+    public void refresh(String key) {
+        // String tenantId = tenantService.getCurrentUserDomain();
+        if (logger.isDebugEnabled()) {
+            logger.debug("Async cache refresh request for tenant " + key + " on " + this);
+        }
+        registry.broadcastEvent(new RefreshableCacheRefreshEvent(cacheId, key), true);
+    }
+
+    @Override
+    public void onRefreshableCacheEvent(RefreshableCacheEvent refreshableCacheEvent) {
+        // Ignore events not targeted for this cache
+        if (!refreshableCacheEvent.getCacheId().equals(cacheId)) {
+            return;
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    "Async cache onRefreshableCacheEvent " + refreshableCacheEvent + " on " + this);
         }
 
-        @Override
-        public void onRefreshableCacheEvent(RefreshableCacheEvent refreshableCacheEvent)
-        {
-            // Ignore events not targeted for this cache
-            if (!refreshableCacheEvent.getCacheId().equals(cacheId))
-            {
-                return;
-            }
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Async cache onRefreshableCacheEvent " + refreshableCacheEvent + " on " + this);
-            }
+        // If in a transaction delay the refresh until after it commits
 
-            // If in a transaction delay the refresh until after it commits
-
-            if (TransactionSupportUtil.getTransactionId() != null)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Async cache adding" + refreshableCacheEvent.getKey() + " to post commit list: " + this);
-                }
-                TransactionData txData = getTransactionData();
-                txData.keys.add(refreshableCacheEvent.getKey());
+        if (TransactionSupportUtil.getTransactionId() != null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        "Async cache adding"
+                                + refreshableCacheEvent.getKey()
+                                + " to post commit list: "
+                                + this);
             }
-            else
-            {
-                LinkedHashSet<String> keys = new LinkedHashSet<String>();
-                keys.add(refreshableCacheEvent.getKey());
-                queueRefreshAndSubmit(keys);
-            }
+            TransactionData txData = getTransactionData();
+            txData.keys.add(refreshableCacheEvent.getKey());
+        } else {
+            LinkedHashSet<String> keys = new LinkedHashSet<String>();
+            keys.add(refreshableCacheEvent.getKey());
+            queueRefreshAndSubmit(keys);
         }
-        
-        /**
-         * To be used in a transaction only.
-         */
-        private TransactionData getTransactionData()
-        {
-            TransactionData data = (TransactionData) TransactionSupportUtil.getResource(resourceKeyTxnData);
-            if (data == null)
-            {
-                data = new TransactionData();
-                // create and initialize caches
-                data.keys = new LinkedHashSet<String>();
+    }
 
-                // ensure that we get the transaction callbacks as we have bound the unique
-                // transactional caches to a common manager
-                // The synchronizations are not available after the txn is committed/rolled back
-                // the resources are still stored in org.alfresco.util.transaction.TransactionSupportUtil
-                if (TransactionSynchronizationManager.isSynchronizationActive())
-                {
-                    TransactionSupportUtil.bindListener(this, 0);
-                }
-                TransactionSupportUtil.bindResource(resourceKeyTxnData, data);
+    /** To be used in a transaction only. */
+    private TransactionData getTransactionData() {
+        TransactionData data =
+                (TransactionData) TransactionSupportUtil.getResource(resourceKeyTxnData);
+        if (data == null) {
+            data = new TransactionData();
+            // create and initialize caches
+            data.keys = new LinkedHashSet<String>();
+
+            // ensure that we get the transaction callbacks as we have bound the unique
+            // transactional caches to a common manager
+            // The synchronizations are not available after the txn is committed/rolled back
+            // the resources are still stored in
+            // org.alfresco.util.transaction.TransactionSupportUtil
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSupportUtil.bindListener(this, 0);
             }
-            return data;
+            TransactionSupportUtil.bindResource(resourceKeyTxnData, data);
         }
+        return data;
+    }
 
-        private void queueRefreshAndSubmit(LinkedHashSet<String> tenantIds)
-        {
-            if((tenantIds == null) || (tenantIds.size() == 0))
-            {
-                return;
-            }
-            refreshLock.writeLock().lock();
-            try
-            {
-                for (String tenantId : tenantIds)
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Async cache adding refresh to queue for tenant " + tenantId + " on " + this);
-                    }
-                    refreshQueue.add(new Refresh(tenantId));
-                }
-            }
-            finally
-            {
-                refreshLock.writeLock().unlock();
-            }
-            submit();
+    private void queueRefreshAndSubmit(LinkedHashSet<String> tenantIds) {
+        if ((tenantIds == null) || (tenantIds.size() == 0)) {
+            return;
         }
-
-        @Override
-        public boolean isUpToDate(String key)
-        {
-           refreshLock.readLock().lock();
-           try
-           {
-               for(Refresh refresh : refreshQueue)
-               {
-                   if(refresh.getKey().equals(key))
-                   {
-                       return false;
-                   }
-               }
-               if (TransactionSupportUtil.getTransactionId() != null)
-               {
-                   return (!getTransactionData().keys.contains(key));
-               }
-               else
-               {
-                   return true;
-               }
-           }
-           finally
-           {
-               refreshLock.readLock().unlock();
-           }
+        refreshLock.writeLock().lock();
+        try {
+            for (String tenantId : tenantIds) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug(
+                            "Async cache adding refresh to queue for tenant "
+                                    + tenantId
+                                    + " on "
+                                    + this);
+                }
+                refreshQueue.add(new Refresh(tenantId));
+            }
+        } finally {
+            refreshLock.writeLock().unlock();
         }
-        
-        /**
-         * Must be run with runLock.writeLock
-         */
-        private Refresh getNextRefresh()
-        {
-            if (runLock.writeLock().isHeldByCurrentThread())
-            {
-                for (Refresh refresh : refreshQueue)
-                {
-                    if (refresh.state == RefreshState.WAITING)
-                    {
-                        return refresh;
-                    }
-                }
-                return null;
-            }
-            else
-            {
-                throw new IllegalStateException("Method should not be called without holding the write lock: " + this);
-            }
+        submit();
+    }
 
-        }
-
-        /**
-         * Must be run with runLock.writeLock
-         */
-        private int countWaiting()
-        {
-            int count = 0;
-            if (runLock.writeLock().isHeldByCurrentThread())
-            {
-                refreshLock.readLock().lock();
-                try
-                {
-                    for (Refresh refresh : refreshQueue)
-                    {
-                        if (refresh.state == RefreshState.WAITING)
-                        {
-                            count++;
-                        }
-                    }
-                    return count;
-                }
-                finally
-                {
-                    refreshLock.readLock().unlock();
-                }
-            }
-            else
-            {
-                throw new IllegalStateException("Method should not be called without holding the write lock: " + this);
-            }
-
-        }
-
-        private void submit()
-        {
-            runLock.writeLock().lock();
-            try
-            {
-                if (refreshState == RefreshState.IDLE)
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("submit() scheduling job: " + this);
-                    }
-                    threadPoolExecutor.submit(this);
-                    refreshState = RefreshState.WAITING;
-                }
-            }
-            finally
-            {
-                runLock.writeLock().unlock();
-            }
-        }
-
-        @Override
-        public Void call()
-        {
-            liveLock.writeLock().lock();
-            try
-            {
-                doCall();
-                return null;
-            }
-            catch (Exception e)
-            {
-                logger.error("Cache update failed: " + this, e);
-                runLock.writeLock().lock();
-                try
-                {
-                    threadPoolExecutor.submit(this);
-                    refreshState = RefreshState.WAITING;
-                }
-                finally
-                {
-                    runLock.writeLock().unlock();
-                }
-                return null;
-            }
-            finally
-            {
-                liveLock.writeLock().unlock();
-            }
-        }
-
-        private void doCall() throws Exception
-        {
-            Refresh refresh = setUpRefresh();
-            if (refresh == null)
-            {
-                return;
-            }
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Building cache for key" + refresh.getKey() + " on " + this); 
-            }
-
-            try
-            {
-                doRefresh(refresh);
-            }
-            catch (Exception e)
-            {
-                refresh.setState(RefreshState.WAITING);
-                throw e;
-            }
-        }
-        
-        private void doRefresh(Refresh refresh)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Building cache for tenant" + refresh.getKey() + ": " + this);
-            }
-            T cache = buildCache(refresh.getKey());
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(".... cache built for tenant" + refresh.getKey());
-            }
-
-            liveLock.writeLock().lock();
-            try
-            {
-                live.put(refresh.getKey(), cache);
-            }
-            finally
-            {
-                liveLock.writeLock().unlock();
-            }
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Cache entry updated for tenant" + refresh.getKey());
-            }
-
-            broadcastEvent(new RefreshableCacheRefreshedEvent(cacheId, refresh.key));
-            
-            runLock.writeLock().lock();
-            try
-            {
-                refreshLock.writeLock().lock();
-                try
-                {
-                    if (countWaiting() > 0)
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Rescheduling more work: " + this);
-                        }
-                        threadPoolExecutor.submit(this);
-                        refreshState = RefreshState.WAITING;
-                    }
-                    else
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Nothing to do; going idle: " + this);
-                        }
-                        refreshState = RefreshState.IDLE;
-                    }
-                    refresh.setState(RefreshState.DONE);
-                    refreshQueue.remove(refresh);
-                }
-                finally
-                {
-                    refreshLock.writeLock().unlock();
-                }
-            }
-            finally
-            {
-                runLock.writeLock().unlock();
-            }
-        }
-
-        private Refresh setUpRefresh() throws Exception
-        {
-            Refresh refresh = null;
-            runLock.writeLock().lock();
-            try
-            {
-                if (refreshState == RefreshState.WAITING)
-                {
-                    refreshLock.writeLock().lock();
-                    try
-                    {
-                        refresh = getNextRefresh();
-                        if (refresh != null)
-                        {
-                            refreshState = RefreshState.RUNNING;
-                            refresh.setState(RefreshState.RUNNING);
-                            return refresh;
-                        }
-                        else
-                        {
-                            refreshState = RefreshState.IDLE;
-                            return null;
-                        }
-                    }
-                    finally
-                    {
-                        refreshLock.writeLock().unlock();
-                    }
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (Exception e)
-            {
-                if (refresh != null)
-                {
-                    refresh.setState(RefreshState.WAITING);
-                }
-                throw e;
-            }
-            finally
-            {
-                runLock.writeLock().unlock();
-            }
-
-        }
-
-        @Override
-        public void setBeanName(String name)
-        {
-            cacheId = name;
-
-        }
-
-        @Override
-        public String getCacheId()
-        {
-            return cacheId;
-        }
-
-        /**
-         * Build the cache entry for the specific key.
-         * This method is called in a thread-safe manner i.e. it is only ever called by a single
-         * thread.
-         * 
-         * @param key
-         * @return new Cache instance
-         */
-        protected abstract T buildCache(String key);
-
-        private static class Refresh
-        {
-            private String key;
-
-            private volatile RefreshState state = RefreshState.WAITING;
-
-            Refresh(String key)
-            {
-                this.key = key;
-            }
-
-            /**
-             * @return the tenantId
-             */
-            public String getKey()
-            {
-                return key;
-            }
-
-            /**
-             * @return the state
-             */
-            public RefreshState getState()
-            {
-                return state;
-            }
-
-            /**
-             * @param state
-             *            the state to set
-             */
-            public void setState(RefreshState state)
-            {
-                this.state = state;
-            }
-
-            @Override
-            public int hashCode()
-            {
-                // The bucked is determined by the tenantId alone - we are going to change the state
-                final int prime = 31;
-                int result = 1;
-                result = prime * result + ((key == null) ? 0 : key.hashCode());
-                return result;
-            }
-
-            @Override
-            public boolean equals(Object obj)
-            {
-                if (this == obj)
-                    return true;
-                if (obj == null)
+    @Override
+    public boolean isUpToDate(String key) {
+        refreshLock.readLock().lock();
+        try {
+            for (Refresh refresh : refreshQueue) {
+                if (refresh.getKey().equals(key)) {
                     return false;
-                if (getClass() != obj.getClass())
-                    return false;
-                Refresh other = (Refresh) obj;
-                if (state != other.state)
-                    return false;
-                if (key == null)
-                {
-                    if (other.key != null)
-                        return false;
                 }
-                else if (!key.equals(other.key))
-                    return false;
+            }
+            if (TransactionSupportUtil.getTransactionId() != null) {
+                return (!getTransactionData().keys.contains(key));
+            } else {
                 return true;
             }
+        } finally {
+            refreshLock.readLock().unlock();
+        }
+    }
 
-            @Override
-            public String toString()
-            {
-                return "Refresh [key=" + key + ", state=" + state + ", hashCode()=" + hashCode() + "]";
+    /** Must be run with runLock.writeLock */
+    private Refresh getNextRefresh() {
+        if (runLock.writeLock().isHeldByCurrentThread()) {
+            for (Refresh refresh : refreshQueue) {
+                if (refresh.state == RefreshState.WAITING) {
+                    return refresh;
+                }
             }
-
+            return null;
+        } else {
+            throw new IllegalStateException(
+                    "Method should not be called without holding the write lock: " + this);
         }
+    }
 
-        @Override
-        public void afterPropertiesSet() throws Exception
-        {
-            PropertyCheck.mandatory(this, "threadPoolExecutor", threadPoolExecutor);
-            PropertyCheck.mandatory(this, "registry", registry);
-            registry.register(this);
-            
-            resourceKeyTxnData = RESOURCE_KEY_TXN_DATA + "." + cacheId;
-
-        }
-
-        public void broadcastEvent(RefreshableCacheEvent event)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Notifying cache listeners for " + getCacheId() + " " + event);
+    /** Must be run with runLock.writeLock */
+    private int countWaiting() {
+        int count = 0;
+        if (runLock.writeLock().isHeldByCurrentThread()) {
+            refreshLock.readLock().lock();
+            try {
+                for (Refresh refresh : refreshQueue) {
+                    if (refresh.state == RefreshState.WAITING) {
+                        count++;
+                    }
+                }
+                return count;
+            } finally {
+                refreshLock.readLock().unlock();
             }
-            // If the system is up and running, broadcast the event immediately
-            for (RefreshableCacheListener listener : this.listeners)
-            {
-                listener.onRefreshableCacheEvent(event);
+        } else {
+            throw new IllegalStateException(
+                    "Method should not be called without holding the write lock: " + this);
+        }
+    }
+
+    private void submit() {
+        runLock.writeLock().lock();
+        try {
+            if (refreshState == RefreshState.IDLE) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("submit() scheduling job: " + this);
+                }
+                threadPoolExecutor.submit(this);
+                refreshState = RefreshState.WAITING;
             }
+        } finally {
+            runLock.writeLock().unlock();
+        }
+    }
 
+    @Override
+    public Void call() {
+        liveLock.writeLock().lock();
+        try {
+            doCall();
+            return null;
+        } catch (Exception e) {
+            logger.error("Cache update failed: " + this, e);
+            runLock.writeLock().lock();
+            try {
+                threadPoolExecutor.submit(this);
+                refreshState = RefreshState.WAITING;
+            } finally {
+                runLock.writeLock().unlock();
+            }
+            return null;
+        } finally {
+            liveLock.writeLock().unlock();
+        }
+    }
+
+    private void doCall() throws Exception {
+        Refresh refresh = setUpRefresh();
+        if (refresh == null) {
+            return;
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Building cache for key" + refresh.getKey() + " on " + this);
+        }
+
+        try {
+            doRefresh(refresh);
+        } catch (Exception e) {
+            refresh.setState(RefreshState.WAITING);
+            throw e;
+        }
+    }
+
+    private void doRefresh(Refresh refresh) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Building cache for tenant" + refresh.getKey() + ": " + this);
+        }
+        T cache = buildCache(refresh.getKey());
+        if (logger.isDebugEnabled()) {
+            logger.debug(".... cache built for tenant" + refresh.getKey());
+        }
+
+        liveLock.writeLock().lock();
+        try {
+            live.put(refresh.getKey(), cache);
+        } finally {
+            liveLock.writeLock().unlock();
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Cache entry updated for tenant" + refresh.getKey());
+        }
+
+        broadcastEvent(new RefreshableCacheRefreshedEvent(cacheId, refresh.key));
+
+        runLock.writeLock().lock();
+        try {
+            refreshLock.writeLock().lock();
+            try {
+                if (countWaiting() > 0) {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Rescheduling more work: " + this);
+                    }
+                    threadPoolExecutor.submit(this);
+                    refreshState = RefreshState.WAITING;
+                } else {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Nothing to do; going idle: " + this);
+                    }
+                    refreshState = RefreshState.IDLE;
+                }
+                refresh.setState(RefreshState.DONE);
+                refreshQueue.remove(refresh);
+            } finally {
+                refreshLock.writeLock().unlock();
+            }
+        } finally {
+            runLock.writeLock().unlock();
+        }
+    }
+
+    private Refresh setUpRefresh() throws Exception {
+        Refresh refresh = null;
+        runLock.writeLock().lock();
+        try {
+            if (refreshState == RefreshState.WAITING) {
+                refreshLock.writeLock().lock();
+                try {
+                    refresh = getNextRefresh();
+                    if (refresh != null) {
+                        refreshState = RefreshState.RUNNING;
+                        refresh.setState(RefreshState.RUNNING);
+                        return refresh;
+                    } else {
+                        refreshState = RefreshState.IDLE;
+                        return null;
+                    }
+                } finally {
+                    refreshLock.writeLock().unlock();
+                }
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            if (refresh != null) {
+                refresh.setState(RefreshState.WAITING);
+            }
+            throw e;
+        } finally {
+            runLock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public void setBeanName(String name) {
+        cacheId = name;
+    }
+
+    @Override
+    public String getCacheId() {
+        return cacheId;
+    }
+
+    /**
+     * Build the cache entry for the specific key. This method is called in a thread-safe manner
+     * i.e. it is only ever called by a single thread.
+     *
+     * @param key
+     * @return new Cache instance
+     */
+    protected abstract T buildCache(String key);
+
+    private static class Refresh {
+        private String key;
+
+        private volatile RefreshState state = RefreshState.WAITING;
+
+        Refresh(String key) {
+            this.key = key;
+        }
+
+        /** @return the tenantId */
+        public String getKey() {
+            return key;
+        }
+
+        /** @return the state */
+        public RefreshState getState() {
+            return state;
+        }
+
+        /** @param state the state to set */
+        public void setState(RefreshState state) {
+            this.state = state;
         }
 
         @Override
-        public void beforeCommit(boolean readOnly)
-        {
-            // Nothing
+        public int hashCode() {
+            // The bucked is determined by the tenantId alone - we are going to change the state
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((key == null) ? 0 : key.hashCode());
+            return result;
         }
 
         @Override
-        public void beforeCompletion()
-        {
-            // Nothing
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            Refresh other = (Refresh) obj;
+            if (state != other.state) return false;
+            if (key == null) {
+                if (other.key != null) return false;
+            } else if (!key.equals(other.key)) return false;
+            return true;
         }
 
         @Override
-        public void afterCommit()
-        {
-            TransactionData txnData = getTransactionData();
-            queueRefreshAndSubmit(txnData.keys);
+        public String toString() {
+            return "Refresh [key=" + key + ", state=" + state + ", hashCode()=" + hashCode() + "]";
         }
+    }
 
-        @Override
-        public void afterRollback()
-        {
-            // Nothing
-        }
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        PropertyCheck.mandatory(this, "threadPoolExecutor", threadPoolExecutor);
+        PropertyCheck.mandatory(this, "registry", registry);
+        registry.register(this);
 
-        private static class TransactionData
-        {
-            LinkedHashSet<String> keys;
+        resourceKeyTxnData = RESOURCE_KEY_TXN_DATA + "." + cacheId;
+    }
+
+    public void broadcastEvent(RefreshableCacheEvent event) {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Notifying cache listeners for " + getCacheId() + " " + event);
         }
+        // If the system is up and running, broadcast the event immediately
+        for (RefreshableCacheListener listener : this.listeners) {
+            listener.onRefreshableCacheEvent(event);
+        }
+    }
+
+    @Override
+    public void beforeCommit(boolean readOnly) {
+        // Nothing
+    }
+
+    @Override
+    public void beforeCompletion() {
+        // Nothing
+    }
+
+    @Override
+    public void afterCommit() {
+        TransactionData txnData = getTransactionData();
+        queueRefreshAndSubmit(txnData.keys);
+    }
+
+    @Override
+    public void afterRollback() {
+        // Nothing
+    }
+
+    private static class TransactionData {
+        LinkedHashSet<String> keys;
+    }
 }

@@ -47,53 +47,47 @@ import org.alfresco.service.namespace.QName;
  * @since 2.4
  */
 @BehaviourBean(defaultType = "rma:nonElectronicDocument")
-public class NonElectronicRecordType extends BaseBehaviourBean implements NodeServicePolicies.OnUpdateNodePolicy
-{
+public class NonElectronicRecordType extends BaseBehaviourBean
+        implements NodeServicePolicies.OnUpdateNodePolicy {
 
     /** record service */
     protected RecordService recordService;
 
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
+    /** @param recordService record service */
+    public void setRecordService(RecordService recordService) {
         this.recordService = recordService;
     }
 
-    @Behaviour(kind = BehaviourKind.CLASS, notificationFrequency = NotificationFrequency.FIRST_EVENT)
+    @Behaviour(
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.FIRST_EVENT)
     @Override
-    public void onUpdateNode(final NodeRef nodeRef)
-    {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                final NodeRef child = nodeRef;
-                if (nodeService.exists(child))
-                {
-                    NodeRef parentRef = nodeService.getPrimaryParent(child).getParentRef();
-                    QName parentType = nodeService.getType(parentRef);
-                    boolean isUnfiledRecordContainer = parentType
-                                .equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-                    boolean isUnfiledRecordFolder = parentType
-                                .equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
-                    if (isUnfiledRecordContainer || isUnfiledRecordFolder)
-                    {
-                        if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
-                        {
-                            nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
+    public void onUpdateNode(final NodeRef nodeRef) {
+        AuthenticationUtil.runAsSystem(
+                new RunAsWork<Void>() {
+                    @Override
+                    public Void doWork() {
+                        final NodeRef child = nodeRef;
+                        if (nodeService.exists(child)) {
+                            NodeRef parentRef = nodeService.getPrimaryParent(child).getParentRef();
+                            QName parentType = nodeService.getType(parentRef);
+                            boolean isUnfiledRecordContainer =
+                                    parentType.equals(
+                                            RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
+                            boolean isUnfiledRecordFolder =
+                                    parentType.equals(
+                                            RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
+                            if (isUnfiledRecordContainer || isUnfiledRecordFolder) {
+                                if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT)) {
+                                    nodeService.addAspect(child, ASPECT_FILE_PLAN_COMPONENT, null);
+                                }
+                                if (!nodeService.hasAspect(child, ASPECT_RECORD)) {
+                                    recordService.makeRecord(child);
+                                }
+                            }
                         }
-                        if (!nodeService.hasAspect(child, ASPECT_RECORD))
-                        {
-                            recordService.makeRecord(child);
-                        }
+                        return null;
                     }
-                }
-                return null;
-            }
-        });
+                });
     }
-
 }

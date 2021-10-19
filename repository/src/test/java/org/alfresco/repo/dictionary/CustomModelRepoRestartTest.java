@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -51,70 +51,58 @@ import org.springframework.context.ApplicationContext;
  * @author Jamal Kaabi-Mofrad
  */
 @Category(LuceneTests.class)
-public class CustomModelRepoRestartTest
-{
+public class CustomModelRepoRestartTest {
     private CustomModelService customModelService;
     private RetryingTransactionHelper transactionHelper;
     private String modelName;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         getCtxAndSetBeans();
         modelName = System.currentTimeMillis() + "testCustomModel";
     }
 
     @After
-    public void tearDown() throws Exception
-    {
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Exception
-            {
-                try
-                {
-                    // Deactivate the model
-                    customModelService.deactivateCustomModel(modelName);
-                }
-                catch (Exception ex)
-                {
-                    // Ignore
-                }
-                return null;
-            }
-        });
+    public void tearDown() throws Exception {
+        transactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Exception {
+                        try {
+                            // Deactivate the model
+                            customModelService.deactivateCustomModel(modelName);
+                        } catch (Exception ex) {
+                            // Ignore
+                        }
+                        return null;
+                    }
+                });
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Exception
-            {
-                try
-                {
-                    // Delete the model
-                    customModelService.deleteCustomModel(modelName);
-                }
-                catch (Exception ex)
-                {
-                    // we did our best, so ignore
-                }
-                return null;
-            }
-        });
+        transactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Exception {
+                        try {
+                            // Delete the model
+                            customModelService.deleteCustomModel(modelName);
+                        } catch (Exception ex) {
+                            // we did our best, so ignore
+                        }
+                        return null;
+                    }
+                });
 
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
-    private void getCtxAndSetBeans()
-    {
+    private void getCtxAndSetBeans() {
         ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
         this.customModelService = ctx.getBean("customModelService", CustomModelService.class);
-        this.transactionHelper = ctx.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
+        this.transactionHelper =
+                ctx.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
     }
 
     @Test
-    public void testActivateModelAndRestartRepo() throws Exception
-    {
+    public void testActivateModelAndRestartRepo() throws Exception {
         final long timeMillis = System.currentTimeMillis();
         final String uri = "http://www.alfresco.org/model/testcmmrestartnamespace" + timeMillis;
         final String prefix = "testcmmrestart" + timeMillis;
@@ -123,27 +111,26 @@ public class CustomModelRepoRestartTest
         model.createNamespace(uri, prefix);
 
         // Create the model
-        CustomModelDefinition modelDefinition = transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
-            public CustomModelDefinition execute() throws Exception
-            {
-                return customModelService.createCustomModel(model, false);
-            }
-        });
+        CustomModelDefinition modelDefinition =
+                transactionHelper.doInTransaction(
+                        new RetryingTransactionCallback<CustomModelDefinition>() {
+                            public CustomModelDefinition execute() throws Exception {
+                                return customModelService.createCustomModel(model, false);
+                            }
+                        });
 
         assertNotNull(modelDefinition);
         assertEquals(modelName, modelDefinition.getName().getLocalName());
         assertFalse(modelDefinition.isActive());
 
         // Activate the model
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Exception
-            {
-                customModelService.activateCustomModel(modelName);
-                return null;
-            }
-        });
+        transactionHelper.doInTransaction(
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Exception {
+                        customModelService.activateCustomModel(modelName);
+                        return null;
+                    }
+                });
 
         // Retrieve the model
         modelDefinition = getModel(modelName);
@@ -163,14 +150,12 @@ public class CustomModelRepoRestartTest
         assertTrue(modelDefinition.isActive());
     }
 
-    private CustomModelDefinition getModel(final String modelName)
-    {
-        return transactionHelper.doInTransaction(new RetryingTransactionCallback<CustomModelDefinition>()
-        {
-            public CustomModelDefinition execute() throws Exception
-            {
-                return customModelService.getCustomModel(modelName);
-            }
-        });
+    private CustomModelDefinition getModel(final String modelName) {
+        return transactionHelper.doInTransaction(
+                new RetryingTransactionCallback<CustomModelDefinition>() {
+                    public CustomModelDefinition execute() throws Exception {
+                        return customModelService.getCustomModel(modelName);
+                    }
+                });
     }
 }

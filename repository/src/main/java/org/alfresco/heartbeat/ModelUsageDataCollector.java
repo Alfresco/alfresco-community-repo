@@ -40,21 +40,23 @@ import java.util.*;
 
 /**
  * A collector of data related to the data models being used.
+ *
  * <ul>
- *  <li>Collector ID: <b>acs.repository.usage.model</b></li>
- *  <li>Data:
- *      <ul>
- *          <li><b>numOfActiveModels:</b> Int - Number of active models. {@link CustomModelsInfo#getNumberOfActiveModels()}</li>
- *          <li><b>numOfActiveTypes:</b> Int - Number of active types. {@link CustomModelsInfo#getNumberOfActiveTypes()}</li>
- *          <li><b>numOfActiveAspects:</b> Int - Number of active aspects. {@link CustomModelsInfo#getNumberOfActiveAspects()}</li>
- *      </ul>
- *  </li>
+ *   <li>Collector ID: <b>acs.repository.usage.model</b>
+ *   <li>Data:
+ *       <ul>
+ *         <li><b>numOfActiveModels:</b> Int - Number of active models. {@link
+ *             CustomModelsInfo#getNumberOfActiveModels()}
+ *         <li><b>numOfActiveTypes:</b> Int - Number of active types. {@link
+ *             CustomModelsInfo#getNumberOfActiveTypes()}
+ *         <li><b>numOfActiveAspects:</b> Int - Number of active aspects. {@link
+ *             CustomModelsInfo#getNumberOfActiveAspects()}
+ *       </ul>
  * </ul>
  *
  * @author eknizat
  */
-public class ModelUsageDataCollector extends HBBaseDataCollector implements InitializingBean
-{
+public class ModelUsageDataCollector extends HBBaseDataCollector implements InitializingBean {
     /** The logger. */
     private static final Log logger = LogFactory.getLog(ModelUsageDataCollector.class);
 
@@ -67,53 +69,56 @@ public class ModelUsageDataCollector extends HBBaseDataCollector implements Init
     /** The transaction service. */
     private TransactionService transactionService;
 
-    public ModelUsageDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                   HeartBeatJobScheduler hbJobScheduler)
-    {
+    public ModelUsageDataCollector(
+            String collectorId,
+            String collectorVersion,
+            String cronExpression,
+            HeartBeatJobScheduler hbJobScheduler) {
         super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
     }
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
+    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO) {
         this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
     }
 
-    public void setCustomModelService(CustomModelService customModelService)
-    {
+    public void setCustomModelService(CustomModelService customModelService) {
         this.customModelService = customModelService;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "customModelService", customModelService);
         PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
     }
 
     @Override
-    public List<HBData> collectData()
-    {
+    public List<HBData> collectData() {
         logger.debug("Preparing repository usage (model) data...");
 
-        final CustomModelsInfo customModelsInfo = transactionService.getRetryingTransactionHelper().doInTransaction(
-                () -> customModelService.getCustomModelsInfo(), true);
+        final CustomModelsInfo customModelsInfo =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(() -> customModelService.getCustomModelsInfo(), true);
 
         Map<String, Object> modelUsageValues = new HashMap<>();
-        modelUsageValues.put("numOfActiveModels", new Integer(customModelsInfo.getNumberOfActiveModels()));
-        modelUsageValues.put("numOfActiveTypes", new Integer(customModelsInfo.getNumberOfActiveTypes()));
-        modelUsageValues.put("numOfActiveAspects", new Integer(customModelsInfo.getNumberOfActiveAspects()));
-        HBData modelUsageData = new HBData(
-                this.currentRepoDescriptorDAO.getDescriptor().getId(),
-                this.getCollectorId(),
-                this.getCollectorVersion(),
-                new Date(),
-                modelUsageValues);
+        modelUsageValues.put(
+                "numOfActiveModels", new Integer(customModelsInfo.getNumberOfActiveModels()));
+        modelUsageValues.put(
+                "numOfActiveTypes", new Integer(customModelsInfo.getNumberOfActiveTypes()));
+        modelUsageValues.put(
+                "numOfActiveAspects", new Integer(customModelsInfo.getNumberOfActiveAspects()));
+        HBData modelUsageData =
+                new HBData(
+                        this.currentRepoDescriptorDAO.getDescriptor().getId(),
+                        this.getCollectorId(),
+                        this.getCollectorVersion(),
+                        new Date(),
+                        modelUsageValues);
 
         return Arrays.asList(modelUsageData);
     }

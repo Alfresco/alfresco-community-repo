@@ -27,9 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.PolicyRegister;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMSecurityCommon;
@@ -38,15 +35,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInvocation;
 
+import java.io.Serializable;
+import java.util.Map;
+
 /**
  * Abstract base policy implementation
  *
  * @author Roy Wetherall
  * @since 2.1
  */
-public abstract class AbstractBasePolicy extends RMSecurityCommon
-                                         implements Policy
-{
+public abstract class AbstractBasePolicy extends RMSecurityCommon implements Policy {
     /** Capability service */
     private CapabilityService capabilityService;
 
@@ -56,65 +54,43 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     /** Policy name */
     private String name;
 
-    /**
-     * @param name  policy name
-     */
-    public void setName(String name)
-    {
+    /** @param name policy name */
+    public void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy#getName()
-     */
+    /** @see org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy#getName() */
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    /**
-     * @return Capability service
-     */
-    protected CapabilityService getCapabilityService()
-    {
+    /** @return Capability service */
+    protected CapabilityService getCapabilityService() {
         return this.capabilityService;
     }
 
-    /**
-     * @return Policy register
-     */
-    protected PolicyRegister getPolicyRegister()
-    {
+    /** @return Policy register */
+    protected PolicyRegister getPolicyRegister() {
         return this.policyRegister;
     }
 
-    /**
-     * @param capabilityService capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
+    /** @param capabilityService capability service */
+    public void setCapabilityService(CapabilityService capabilityService) {
         this.capabilityService = capabilityService;
     }
 
-    /**
-     * @param policyRegister	policy register
-     */
-    public void setPolicyRegister(PolicyRegister policyRegister)
-    {
-		this.policyRegister = policyRegister;
-	}
+    /** @param policyRegister policy register */
+    public void setPolicyRegister(PolicyRegister policyRegister) {
+        this.policyRegister = policyRegister;
+    }
 
-    /**
-     * Init method
-     */
-    public void init()
-    {
+    /** Init method */
+    public void init() {
         getPolicyRegister().registerPolicy(this);
     }
 
     /**
-     *
      * @param invocation
      * @param params
      * @param position
@@ -122,17 +98,14 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
      * @return
      */
     @SuppressWarnings("rawtypes")
-    protected QName getType(MethodInvocation invocation, Class[] params, int position, boolean parent)
-    {
-        if (QName.class.isAssignableFrom(params[position]))
-        {
-            if (invocation.getArguments()[position] != null)
-            {
+    protected QName getType(
+            MethodInvocation invocation, Class[] params, int position, boolean parent) {
+        if (QName.class.isAssignableFrom(params[position])) {
+            if (invocation.getArguments()[position] != null) {
                 return (QName) invocation.getArguments()[position];
             }
-        }
-        else if (NodeRef.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
-        {
+        } else if (NodeRef.class.isAssignableFrom(params[position])
+                && invocation.getArguments()[position] != null) {
             NodeRef nodeRef = (NodeRef) invocation.getArguments()[position];
             return nodeService.getType(nodeRef);
         }
@@ -141,59 +114,52 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     }
 
     /**
-     *
      * @param invocation
      * @param params
      * @param position
      * @return
      */
     @SuppressWarnings("rawtypes")
-    protected QName getQName(MethodInvocation invocation, Class[] params, int position)
-    {
-        if (QName.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
-        {
+    protected QName getQName(MethodInvocation invocation, Class[] params, int position) {
+        if (QName.class.isAssignableFrom(params[position])
+                && invocation.getArguments()[position] != null) {
             return (QName) invocation.getArguments()[position];
         }
         throw new ACLEntryVoterException("Unknown type");
     }
 
     /**
-     *
      * @param invocation
      * @param params
      * @param position
      * @return
      */
     @SuppressWarnings("rawtypes")
-    protected Serializable getProperty(MethodInvocation invocation, Class[] params, int position)
-    {
-        if (invocation.getArguments()[position] == null)
-        {
+    protected Serializable getProperty(MethodInvocation invocation, Class[] params, int position) {
+        if (invocation.getArguments()[position] == null) {
             return null;
         }
-        if (Serializable.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
-        {
+        if (Serializable.class.isAssignableFrom(params[position])
+                && invocation.getArguments()[position] != null) {
             return (Serializable) invocation.getArguments()[position];
         }
         throw new ACLEntryVoterException("Unknown type");
     }
 
     /**
-     *
      * @param invocation
      * @param params
      * @param position
      * @return
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Map<QName, Serializable> getProperties(MethodInvocation invocation, Class[] params, int position)
-    {
-        if (invocation.getArguments()[position] == null)
-        {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected Map<QName, Serializable> getProperties(
+            MethodInvocation invocation, Class[] params, int position) {
+        if (invocation.getArguments()[position] == null) {
             return null;
         }
-        if (Map.class.isAssignableFrom(params[position]) && invocation.getArguments()[position] != null)
-        {
+        if (Map.class.isAssignableFrom(params[position])
+                && invocation.getArguments()[position] != null) {
             return (Map<QName, Serializable>) invocation.getArguments()[position];
         }
         throw new ACLEntryVoterException("Unknown type");

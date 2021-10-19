@@ -27,13 +27,9 @@ package org.alfresco.service.cmr.search;
 
 import org.alfresco.api.AlfrescoPublicApi;
 
-/**
- * Parameters used for search hightlighting.
- */
-
+/** Parameters used for search hightlighting. */
 @AlfrescoPublicApi
-public abstract class HighlightParameters
-{
+public abstract class HighlightParameters {
     final Integer snippetCount;
     final Integer fragmentSize;
 
@@ -42,9 +38,12 @@ public abstract class HighlightParameters
     final String prefix;
     final String postfix;
 
-    public HighlightParameters(Integer snippetCount, Integer fragmentSize,
-                               Boolean mergeContiguous, String prefix, String postfix)
-    {
+    public HighlightParameters(
+            Integer snippetCount,
+            Integer fragmentSize,
+            Boolean mergeContiguous,
+            String prefix,
+            String postfix) {
         this.snippetCount = snippetCount;
         this.fragmentSize = fragmentSize;
         this.mergeContiguous = mergeContiguous;
@@ -53,32 +52,29 @@ public abstract class HighlightParameters
     }
 
     @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
         HighlightParameters that = (HighlightParameters) o;
 
-        if (snippetCount != null ? !snippetCount.equals(that.snippetCount) : that.snippetCount != null)
-            return false;
-        if (fragmentSize != null ? !fragmentSize.equals(that.fragmentSize) : that.fragmentSize != null)
-            return false;
-        if (mergeContiguous != null ? !mergeContiguous.equals(that.mergeContiguous) : that.mergeContiguous != null)
-            return false;
-        if (prefix != null ? !prefix.equals(that.prefix) : that.prefix != null)
-            return false;
-        if (postfix != null ? !postfix.equals(that.postfix) : that.postfix != null)
-            return false;
+        if (snippetCount != null
+                ? !snippetCount.equals(that.snippetCount)
+                : that.snippetCount != null) return false;
+        if (fragmentSize != null
+                ? !fragmentSize.equals(that.fragmentSize)
+                : that.fragmentSize != null) return false;
+        if (mergeContiguous != null
+                ? !mergeContiguous.equals(that.mergeContiguous)
+                : that.mergeContiguous != null) return false;
+        if (prefix != null ? !prefix.equals(that.prefix) : that.prefix != null) return false;
+        if (postfix != null ? !postfix.equals(that.postfix) : that.postfix != null) return false;
 
         return true;
     }
 
     @Override
-    public int hashCode()
-    {
+    public int hashCode() {
         int result = snippetCount != null ? snippetCount.hashCode() : 0;
         result = 31 * result + (fragmentSize != null ? fragmentSize.hashCode() : 0);
         result = 31 * result + (mergeContiguous != null ? mergeContiguous.hashCode() : 0);
@@ -88,39 +84,40 @@ public abstract class HighlightParameters
     }
 
     @Override
-    public String toString()
-    {
-        return "HighlightParameters{" +
-                    "snippetCount=" + snippetCount +
-                    ", fragmentSize=" + fragmentSize +
-                    ", mergeContiguous=" + mergeContiguous +
-                    ", prefix='" + prefix + '\'' +
-                    ", postfix='" + postfix + '\'' +
-                    '}';
+    public String toString() {
+        return "HighlightParameters{"
+                + "snippetCount="
+                + snippetCount
+                + ", fragmentSize="
+                + fragmentSize
+                + ", mergeContiguous="
+                + mergeContiguous
+                + ", prefix='"
+                + prefix
+                + '\''
+                + ", postfix='"
+                + postfix
+                + '\''
+                + '}';
     }
 
-    public Integer getSnippetCount()
-    {
+    public Integer getSnippetCount() {
         return snippetCount;
     }
 
-    public Integer getFragmentSize()
-    {
+    public Integer getFragmentSize() {
         return fragmentSize;
     }
 
-    public Boolean getMergeContiguous()
-    {
+    public Boolean getMergeContiguous() {
         return mergeContiguous;
     }
 
-    public String getPrefix()
-    {
+    public String getPrefix() {
         return prefix;
     }
 
-    public String getPostfix()
-    {
+    public String getPostfix() {
         return postfix;
     }
 }

@@ -27,8 +27,7 @@ package org.alfresco.rest.api.model;
 
 import java.util.List;
 
-public class ActionDefinition
-{
+public class ActionDefinition {
     private String id;
     private String name;
     private String title;
@@ -38,22 +37,18 @@ public class ActionDefinition
     private boolean trackStatus;
     private List<ParameterDefinition> parameterDefinitions;
 
-    /**
-     * For Jackson deserialisation.
-     */
-    public ActionDefinition()
-    {
-    }
+    /** For Jackson deserialisation. */
+    public ActionDefinition() {}
 
-    public ActionDefinition(String id,
-                            String name,
-                            String title,
-                            String description,
-                            List<String> applicableTypes,
-                            boolean adhocPropertiesAllowed,
-                            boolean trackStatus,
-                            List<ParameterDefinition> parameterDefinitions)
-    {
+    public ActionDefinition(
+            String id,
+            String name,
+            String title,
+            String description,
+            List<String> applicableTypes,
+            boolean adhocPropertiesAllowed,
+            boolean trackStatus,
+            List<ParameterDefinition> parameterDefinitions) {
         this.id = id;
         this.name = name;
         this.title = title;
@@ -64,51 +59,40 @@ public class ActionDefinition
         this.parameterDefinitions = parameterDefinitions;
     }
 
-    /**
-     * Will be used as a synonym for name.
-     */
-    public String getId()
-    {
+    /** Will be used as a synonym for name. */
+    public String getId() {
         return id;
     }
-    
-    public String getName()
-    {
+
+    public String getName() {
         return name;
     }
 
-    public String getTitle()
-    {
+    public String getTitle() {
         return title;
     }
 
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
-    public List<String> getApplicableTypes()
-    {
+    public List<String> getApplicableTypes() {
         return applicableTypes;
     }
 
-    public boolean isAdhocPropertiesAllowed()
-    {
+    public boolean isAdhocPropertiesAllowed() {
         return adhocPropertiesAllowed;
     }
 
-    public boolean isTrackStatus()
-    {
+    public boolean isTrackStatus() {
         return trackStatus;
     }
 
-    public List<ParameterDefinition> getParameterDefinitions()
-    {
+    public List<ParameterDefinition> getParameterDefinitions() {
         return parameterDefinitions;
     }
 
-    public static class ParameterDefinition
-    {
+    public static class ParameterDefinition {
         private String name;
         private String type;
         private boolean multiValued;
@@ -116,20 +100,16 @@ public class ActionDefinition
         private String displayLabel;
         private String parameterConstraintName;
 
-        /**
-         * For Jackson deserialisation.
-         */
-        public ParameterDefinition()
-        {
-        }
+        /** For Jackson deserialisation. */
+        public ParameterDefinition() {}
 
-        public ParameterDefinition(String name,
-                                   String type,
-                                   boolean multiValued,
-                                   boolean mandatory,
-                                   String displayLabel,
-                                   String parameterConstraintName)
-        {
+        public ParameterDefinition(
+                String name,
+                String type,
+                boolean multiValued,
+                boolean mandatory,
+                String displayLabel,
+                String parameterConstraintName) {
             this.name = name;
             this.type = type;
             this.multiValued = multiValued;
@@ -138,33 +118,27 @@ public class ActionDefinition
             this.parameterConstraintName = parameterConstraintName;
         }
 
-        public String getName()
-        {
+        public String getName() {
             return name;
         }
 
-        public String getType()
-        {
+        public String getType() {
             return type;
         }
 
-        public boolean isMultiValued()
-        {
+        public boolean isMultiValued() {
             return multiValued;
         }
 
-        public boolean isMandatory()
-        {
+        public boolean isMandatory() {
             return mandatory;
         }
 
-        public String getDisplayLabel()
-        {
+        public String getDisplayLabel() {
             return displayLabel;
         }
 
-        public String getParameterConstraintName()
-        {
+        public String getParameterConstraintName() {
             return parameterConstraintName;
         }
     }

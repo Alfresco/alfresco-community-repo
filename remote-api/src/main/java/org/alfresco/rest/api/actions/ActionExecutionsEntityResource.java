@@ -25,9 +25,6 @@
  */
 package org.alfresco.rest.api.actions;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -37,22 +34,21 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.springframework.extensions.webscripts.Status;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @EntityResource(name = "action-executions", title = "Actions")
-public class ActionExecutionsEntityResource implements EntityResourceAction.Create<Action>
-{
+public class ActionExecutionsEntityResource implements EntityResourceAction.Create<Action> {
     private Actions actions;
 
-    public void setActions(Actions actions)
-    {
+    public void setActions(Actions actions) {
         this.actions = actions;
     }
 
     @WebApiDescription(title = "Execute action", successStatus = Status.STATUS_ACCEPTED)
     @Override
-    public List<Action> create(List<Action> entity, Parameters parameters)
-    {
-        if (entity == null || entity.size() != 1)
-        {
+    public List<Action> create(List<Action> entity, Parameters parameters) {
+        if (entity == null || entity.size() != 1) {
             throw new InvalidArgumentException("Please specify one action request only.");
         }
 

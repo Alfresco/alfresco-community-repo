@@ -27,10 +27,10 @@
 
 package org.alfresco.module.org_alfresco_module_rm.hold;
 
-import java.util.List;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import java.util.List;
 
 /**
  * Hold service interface.
@@ -39,14 +39,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.2
  */
 @AlfrescoPublicApi
-public interface HoldService
-{
+public interface HoldService {
     /**
-     * Indicates whether the passed node reference is a hold.  A hold is a container for a group of frozen object and contains the freeze
-     * reason.
+     * Indicates whether the passed node reference is a hold. A hold is a container for a group of
+     * frozen object and contains the freeze reason.
      *
-     * @param nodeRef   hold node reference
-     * @return boolean  true if hold, false otherwise
+     * @param nodeRef hold node reference
+     * @return boolean true if hold, false otherwise
      */
     boolean isHold(NodeRef nodeRef);
 
@@ -70,8 +69,9 @@ public interface HoldService
      * Gets the list of all the holds within the holds container for the given node reference
      *
      * @param nodeRef The {@link NodeRef} of the record / record folder /active content
-     * @param includedInHold <code>true</code> to retrieve the list of hold node references which will include the node reference
-     * <code>false</code> to get a list of node references which will not have the given node reference
+     * @param includedInHold <code>true</code> to retrieve the list of hold node references which
+     *     will include the node reference <code>false</code> to get a list of node references which
+     *     will not have the given node reference
      * @return List of hold node references
      */
     List<NodeRef> heldBy(NodeRef nodeRef, boolean includedInHold);
@@ -121,8 +121,9 @@ public interface HoldService
     /**
      * Adds the item to the given hold
      *
-     * @param hold    The {@link NodeRef} of the hold
-     * @param nodeRef The {@link NodeRef} of the record / record folder / active content which will be added to the given hold
+     * @param hold The {@link NodeRef} of the hold
+     * @param nodeRef The {@link NodeRef} of the record / record folder / active content which will
+     *     be added to the given hold
      */
     void addToHold(NodeRef hold, NodeRef nodeRef);
 
@@ -138,7 +139,8 @@ public interface HoldService
      * Adds the item to the given list of holds
      *
      * @param holds The list of {@link NodeRef}s of the holds
-     * @param nodeRef The {@link NodeRef} of the record / record folder / active content which will be added to the given holds
+     * @param nodeRef The {@link NodeRef} of the record / record folder / active content which will
+     *     be added to the given holds
      */
     void addToHolds(List<NodeRef> holds, NodeRef nodeRef);
 
@@ -154,7 +156,8 @@ public interface HoldService
      * Removes the record from the given hold
      *
      * @param hold The {@link NodeRef} of the hold
-     * @param nodeRef The {@link NodeRef} of the record / record folder which will be removed from the given hold
+     * @param nodeRef The {@link NodeRef} of the record / record folder which will be removed from
+     *     the given hold
      */
     void removeFromHold(NodeRef hold, NodeRef nodeRef);
 
@@ -170,7 +173,8 @@ public interface HoldService
      * Removes the item from the given list of hold
      *
      * @param holds The list {@link NodeRef}s of the holds
-     * @param nodeRef The {@link NodeRef} of the record / record folder which will be removed from the given holds
+     * @param nodeRef The {@link NodeRef} of the record / record folder which will be removed from
+     *     the given holds
      */
     void removeFromHolds(List<NodeRef> holds, NodeRef nodeRef);
 

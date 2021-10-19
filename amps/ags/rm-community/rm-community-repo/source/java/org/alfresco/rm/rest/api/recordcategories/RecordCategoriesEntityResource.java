@@ -54,56 +54,56 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Tuna Aksoy
  * @since 2.6
  */
-@EntityResource(name="record-categories", title = "Record Categories")
-public class RecordCategoriesEntityResource implements
-        EntityResourceAction.ReadById<RecordCategory>,
-        EntityResourceAction.Delete,
-        EntityResourceAction.Update<RecordCategory>,
-        InitializingBean
-{
+@EntityResource(name = "record-categories", title = "Record Categories")
+public class RecordCategoriesEntityResource
+        implements EntityResourceAction.ReadById<RecordCategory>,
+                EntityResourceAction.Delete,
+                EntityResourceAction.Update<RecordCategory>,
+                InitializingBean {
     private FilePlanComponentsApiUtils apiUtils;
     private FileFolderService fileFolderService;
     private ApiNodesModelFactory nodesModelFactory;
     private TransactionService transactionService;
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
+    public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
         this.apiUtils = apiUtils;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
+    public void setFileFolderService(FileFolderService fileFolderService) {
         this.fileFolderService = fileFolderService;
     }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
+    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
         this.nodesModelFactory = nodesModelFactory;
     }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         mandatory("apiUtils", apiUtils);
         mandatory("fileFolderService", fileFolderService);
         mandatory("apiNodesModelFactory", nodesModelFactory);
     }
 
-    @WebApiDescription(title = "Get record category information", description = "Gets information for a record category with id 'recordCategoryId'")
+    @WebApiDescription(
+            title = "Get record category information",
+            description = "Gets information for a record category with id 'recordCategoryId'")
     @WebApiParam(name = "recordCategoryId", title = "The record category id")
-    public RecordCategory readById(String recordCategoryId, Parameters parameters)
-    {
+    public RecordCategory readById(String recordCategoryId, Parameters parameters) {
         checkNotBlank("recordCategoryId", recordCategoryId);
         mandatory("parameters", parameters);
 
         String relativePath = parameters.getParameter(Nodes.PARAM_RELATIVE_PATH);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY, relativePath, true);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        recordCategoryId,
+                        RecordsManagementModel.TYPE_RECORD_CATEGORY,
+                        relativePath,
+                        true);
 
         FileInfo info = fileFolderService.getFileInfo(nodeRef);
 
@@ -111,45 +111,53 @@ public class RecordCategoriesEntityResource implements
     }
 
     @Override
-    @WebApiDescription(title="Update record category", description = "Updates a record category with id 'recordCategoryId'")
-    public RecordCategory update(String recordCategoryId, RecordCategory recordCategoryInfo, Parameters parameters)
-    {
+    @WebApiDescription(
+            title = "Update record category",
+            description = "Updates a record category with id 'recordCategoryId'")
+    public RecordCategory update(
+            String recordCategoryId, RecordCategory recordCategoryInfo, Parameters parameters) {
         checkNotBlank("recordCategoryId", recordCategoryId);
         mandatory("recordCategoryInfo", recordCategoryInfo);
         mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateNode(nodeRef, recordCategoryInfo, parameters);
-                return null;
-            }
-        };
+        RetryingTransactionCallback<Void> callback =
+                new RetryingTransactionCallback<Void>() {
+                    public Void execute() {
+                        apiUtils.updateNode(nodeRef, recordCategoryInfo, parameters);
+                        return null;
+                    }
+                };
         transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
-        
+        RetryingTransactionCallback<FileInfo> readCallback =
+                new RetryingTransactionCallback<FileInfo>() {
+                    public FileInfo execute() {
+                        return fileFolderService.getFileInfo(nodeRef);
+                    }
+                };
+        FileInfo info =
+                transactionService
+                        .getRetryingTransactionHelper()
+                        .doInTransaction(readCallback, false, true);
+
         return nodesModelFactory.createRecordCategory(info, parameters, null, false);
     }
 
     @Override
-    @WebApiDescription(title = "Delete record category", description="Deletes a record category with id 'recordCategoryId'")
-    public void delete(String recordCategoryId, Parameters parameters)
-    {
+    @WebApiDescription(
+            title = "Delete record category",
+            description = "Deletes a record category with id 'recordCategoryId'")
+    public void delete(String recordCategoryId, Parameters parameters) {
         checkNotBlank("recordCategoryId", recordCategoryId);
         mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
+        NodeRef nodeRef =
+                apiUtils.lookupAndValidateNodeType(
+                        recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
 
         fileFolderService.delete(nodeRef);
     }

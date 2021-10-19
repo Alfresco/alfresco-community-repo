@@ -42,6 +42,4 @@ import org.junit.runner.RunWith;
     // Execute all test classes ending with "UnitTest"
     ".*UnitTest"
 })
-public class AllUnitTestSuite
-{
-}
+public class AllUnitTestSuite {}

@@ -19,10 +19,10 @@
 package org.alfresco.util.testing.category;
 
 /**
- * Category marker for tests that fail very frequently so are excluded from the build. Only run by developers while
- * working on a specific feature/class. An issue should be raised to identify and fix the reason the test fails.
+ * Category marker for tests that fail very frequently so are excluded from the build. Only run by
+ * developers while working on a specific feature/class. An issue should be raised to identify and
+ * fix the reason the test fails.
+ *
  * @see IntermittentlyFailingTests for tests that fail intermittently but not that frequently
  */
-public interface FrequentlyFailingTests extends NonBuildTests
-{
-}
+public interface FrequentlyFailingTests extends NonBuildTests {}

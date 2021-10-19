@@ -25,19 +25,16 @@
  */
 package org.alfresco.repo.deployment;
 
-public class DeploymentMethodProviderImpl implements DeploymentMethodProvider
-{
+public class DeploymentMethodProviderImpl implements DeploymentMethodProvider {
 
     private DeploymentMethod deploymentMethod;
 
     @Override
-    public DeploymentMethod getDeploymentMethod()
-    {
+    public DeploymentMethod getDeploymentMethod() {
         return deploymentMethod;
     }
 
-    public void setDeploymentMethod(DeploymentMethod deploymentMethod)
-    {
+    public void setDeploymentMethod(DeploymentMethod deploymentMethod) {
         this.deploymentMethod = deploymentMethod;
     }
 }

@@ -31,12 +31,11 @@ import com.google.common.collect.HashMultimap;
 
 import org.junit.Test;
 
-public class CommunityPublicAPIUnitTest
-{
+public class CommunityPublicAPIUnitTest {
     @Test
-    public void testPublicAPIConsistency()
-    {
+    public void testPublicAPIConsistency() {
         HashMultimap<Class<?>, Class<?>> knownBadReferences = HashMultimap.create();
-        PublicAPITestUtil.testPublicAPIConsistency("org.alfresco.module.org_alfresco_module_rm", knownBadReferences);
+        PublicAPITestUtil.testPublicAPIConsistency(
+                "org.alfresco.module.org_alfresco_module_rm", knownBadReferences);
     }
 }

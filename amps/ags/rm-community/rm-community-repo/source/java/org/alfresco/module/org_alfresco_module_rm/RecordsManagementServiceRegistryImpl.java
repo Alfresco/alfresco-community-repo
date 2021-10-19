@@ -51,158 +51,157 @@ import org.alfresco.repo.service.ServiceDescriptorRegistry;
  */
 @SuppressWarnings("deprecation")
 public class RecordsManagementServiceRegistryImpl extends ServiceDescriptorRegistry
-                                                  implements RecordsManagementServiceRegistry
-{
+        implements RecordsManagementServiceRegistry {
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementActionService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementActionService()
      */
     @Override
-    public RecordsManagementActionService getRecordsManagementActionService()
-    {
+    public RecordsManagementActionService getRecordsManagementActionService() {
         return (RecordsManagementActionService) getService(RECORDS_MANAGEMENT_ACTION_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementAdminService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementAdminService()
      */
     @Override
-    public RecordsManagementAdminService getRecordsManagementAdminService()
-    {
+    public RecordsManagementAdminService getRecordsManagementAdminService() {
         return (RecordsManagementAdminService) getService(RECORDS_MANAGEMENT_ADMIN_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementEventService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementEventService()
      */
     @Override
-    public RecordsManagementEventService getRecordsManagementEventService()
-    {
+    public RecordsManagementEventService getRecordsManagementEventService() {
         return (RecordsManagementEventService) getService(RECORDS_MANAGEMENT_EVENT_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementService()
      */
     @Override
-    public RecordsManagementService getRecordsManagementService()
-    {
+    public RecordsManagementService getRecordsManagementService() {
         return (RecordsManagementService) getService(RECORDS_MANAGEMENT_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordService()
      */
-    public RecordService getRecordService()
-    {
+    public RecordService getRecordService() {
         return (RecordService) getService(RECORD_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementSecurityService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementSecurityService()
      */
     @Override
     @Deprecated
-    public RecordsManagementSecurityService getRecordsManagementSecurityService()
-    {
+    public RecordsManagementSecurityService getRecordsManagementSecurityService() {
         return (RecordsManagementSecurityService) getService(RECORDS_MANAGEMENT_SECURITY_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementAuditService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordsManagementAuditService()
      */
     @Override
-    public RecordsManagementAuditService getRecordsManagementAuditService()
-    {
+    public RecordsManagementAuditService getRecordsManagementAuditService() {
         return (RecordsManagementAuditService) getService(RECORDS_MANAGEMENT_AUDIT_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getDictionaryService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getDictionaryService()
      */
     @Override
-    public DispositionService getDispositionService()
-    {
+    public DispositionService getDispositionService() {
         return (DispositionService) getService(DISPOSITION_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getCapabilityService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getCapabilityService()
      */
     @Override
-    public CapabilityService getCapabilityService()
-    {
+    public CapabilityService getCapabilityService() {
         return (CapabilityService) getService(CAPABILITY_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFreezeService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFreezeService()
      */
     @Override
-    public FreezeService getFreezeService()
-    {
+    public FreezeService getFreezeService() {
         return (FreezeService) getService(FREEZE_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getExtendedSecurityService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getExtendedSecurityService()
      */
     @Override
-    public ExtendedSecurityService getExtendedSecurityService()
-    {
+    public ExtendedSecurityService getExtendedSecurityService() {
         return (ExtendedSecurityService) getService(EXTENDED_SECURITY_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanService()
      */
     @Override
-    public FilePlanService getFilePlanService()
-    {
+    public FilePlanService getFilePlanService() {
         return (FilePlanService) getService(FILE_PLAN_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanRoleService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanRoleService()
      */
     @Override
-    public FilePlanRoleService getFilePlanRoleService()
-    {
+    public FilePlanRoleService getFilePlanRoleService() {
         return (FilePlanRoleService) getService(FILE_PLAN_ROLE_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanPermissionService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getFilePlanPermissionService()
      */
     @Override
-    public FilePlanPermissionService getFilePlanPermissionService()
-    {
+    public FilePlanPermissionService getFilePlanPermissionService() {
         return (FilePlanPermissionService) getService(FILE_PLAN_PERMISSION_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getIdentifierService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getIdentifierService()
      */
     @Override
-    public IdentifierService getIdentifierService()
-    {
+    public IdentifierService getIdentifierService() {
         return (IdentifierService) getService(IDENTIFIER_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordFolderService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getRecordFolderService()
      */
     @Override
-    public RecordFolderService getRecordFolderService()
-    {
+    public RecordFolderService getRecordFolderService() {
         return (RecordFolderService) getService(RECORD_FOLDER_SERVICE);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getTransferService()
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry#getTransferService()
      */
     @Override
-    public TransferService getTransferService()
-    {
+    public TransferService getTransferService() {
         return (TransferService) getService(TRANSFER_SERVICE);
     }
 }

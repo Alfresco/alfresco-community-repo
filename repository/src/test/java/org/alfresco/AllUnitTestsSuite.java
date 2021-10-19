@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,8 +32,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * All Repository project UNIT test classes (no application context) should be added to this test suite.
- * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ * All Repository project UNIT test classes (no application context) should be added to this test
+ * suite. Tests marked as DBTests are automatically excluded and are run as part of {@link
+ * AllDBTestsTestSuite}.
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
@@ -142,7 +143,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.security.sync.LDAPUserRegistryTest.class,
     org.alfresco.traitextender.TraitExtenderIntegrationTest.class,
     org.alfresco.traitextender.AJExtensionsCompileTest.class,
-
     org.alfresco.repo.virtual.page.PageCollatorTest.class,
     org.alfresco.repo.virtual.ref.GetChildByIdMethodTest.class,
     org.alfresco.repo.virtual.ref.GetParentReferenceMethodTest.class,
@@ -155,18 +155,14 @@ import org.junit.runners.Suite;
     org.alfresco.repo.virtual.ref.StringParameterTest.class,
     org.alfresco.repo.virtual.ref.VirtualProtocolTest.class,
     org.alfresco.repo.virtual.store.ReferenceComparatorTest.class,
-
     org.alfresco.repo.virtual.ref.ZeroReferenceParserTest.class,
     org.alfresco.repo.virtual.ref.ZeroStringifierTest.class,
-
     org.alfresco.repo.virtual.ref.HashStringifierTest.class,
     org.alfresco.repo.virtual.ref.NodeRefRadixHasherTest.class,
     org.alfresco.repo.virtual.ref.NumericPathHasherTest.class,
     org.alfresco.repo.virtual.ref.StoredPathHasherTest.class,
-
     org.alfresco.repo.virtual.template.VirtualQueryImplTest.class,
     org.alfresco.repo.virtual.store.TypeVirtualizationMethodUnitTest.class,
-
     org.alfresco.repo.security.authentication.AuthenticationServiceImplTest.class,
     org.alfresco.util.EmailHelperTest.class,
     org.alfresco.repo.action.ParameterDefinitionImplTest.class,
@@ -219,7 +215,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.workflow.activiti.properties.ActivitiPriorityPropertyHandlerTest.class,
     org.alfresco.repo.workflow.WorkflowSuiteContextShutdownTest.class,
     org.alfresco.repo.search.LuceneUtilsTest.class,
-
     org.alfresco.heartbeat.HBDataCollectorServiceImplTest.class,
     org.alfresco.heartbeat.jobs.LockingJobTest.class,
     org.alfresco.heartbeat.jobs.QuartzJobSchedulerTest.class,
@@ -229,18 +224,13 @@ import org.junit.runners.Suite;
     org.alfresco.heartbeat.ModelUsageDataCollectorTest.class,
     org.alfresco.heartbeat.SessionsUsageDataCollectorTest.class,
     org.alfresco.heartbeat.SystemUsageDataCollectorTest.class,
-
     org.alfresco.util.BeanExtenderUnitTest.class,
     org.alfresco.util.bean.HierarchicalBeanLoaderTest.class,
     org.alfresco.util.resource.HierarchicalResourceLoaderTest.class,
     org.alfresco.repo.events.ClientUtilTest.class,
     org.alfresco.repo.rendition2.RenditionService2Test.class,
     org.alfresco.repo.rendition2.TransformationOptionsConverterTest.class,
-
     org.alfresco.repo.event2.RepoEvent2UnitSuite.class,
-
     org.alfresco.util.schemacomp.SchemaDifferenceHelperUnitTest.class
 })
-public class AllUnitTestsSuite
-{
-}
+public class AllUnitTestsSuite {}

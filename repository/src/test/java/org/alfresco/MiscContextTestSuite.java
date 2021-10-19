@@ -35,8 +35,8 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * Repository project tests using the various application contexts including the minimal context
- * alfresco/minimal-context.xml but not the main one alfresco/application-context.xml.
- * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
+ * alfresco/minimal-context.xml but not the main one alfresco/application-context.xml. Tests marked
+ * as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
  */
 @RunWith(Categories.class)
 @Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
@@ -46,7 +46,8 @@ import org.springframework.context.ApplicationContext;
     // Minimum context [classpath:alfresco/minimal-context.xml]
     // ----------------------------------------------------------------------
 
-    // Metadata tests - replaced with simplified tests in LocalRenditionTest and ServiceRenditionTest
+    // Metadata tests - replaced with simplified tests in LocalRenditionTest and
+    // ServiceRenditionTest
     org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.MappingMetadataExtracterTest.class,
 
@@ -57,11 +58,13 @@ import org.springframework.context.ApplicationContext;
     // if/when we decide to move the transformations in a separate component
     // ----------------------------------------------------------------------
 
-    // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
+    // [classpath:alfresco/application-context.xml,
+    // classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
     // some tests fail locally - on windows
     org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class,
 
-    // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
+    // [classpath:/test/alfresco/test-renditions-context.xml,
+    // classpath:alfresco/application-context.xml,
     // classpath:alfresco/test/global-integration-test-context.xml]
     // this does NOT passes locally
     org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
@@ -70,10 +73,12 @@ import org.springframework.context.ApplicationContext;
     // Misc contexts
     // ----------------------------------------------------------------------
 
-    // [classpath:alfresco/node-locator-context.xml, classpath:test-nodeLocatorServiceImpl-context.xml]
+    // [classpath:alfresco/node-locator-context.xml,
+    // classpath:test-nodeLocatorServiceImpl-context.xml]
     org.alfresco.repo.nodelocator.NodeLocatorServiceImplTest.class,
 
-    // [classpath*:alfresco/ibatis/ibatis-test-context.xml, classpath:alfresco/application-context.xml,
+    // [classpath*:alfresco/ibatis/ibatis-test-context.xml,
+    // classpath:alfresco/application-context.xml,
     // classpath:alfresco/test/global-integration-test-context.xml]
     org.alfresco.repo.domain.query.CannedQueryDAOTest.class,
     org.alfresco.repo.node.NodeServiceTest.class,
@@ -103,22 +108,19 @@ import org.springframework.context.ApplicationContext;
     // [ibatis/hierarchy-test/hierarchy-test-context.xml]
     org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class
 })
-public class MiscContextTestSuite
-{
+public class MiscContextTestSuite {
     /**
-     * Asks {@link ApplicationContextHelper} to give us a
-     *  suitable, perhaps cached context for use in our tests
+     * Asks {@link ApplicationContextHelper} to give us a suitable, perhaps cached context for use
+     * in our tests
      */
     public static ApplicationContext getMinimalContext() {
         ApplicationContextHelper.setUseLazyLoading(false);
         ApplicationContextHelper.setNoAutoStart(true);
         return ApplicationContextHelper.getApplicationContext(
-            new String[] { "classpath:alfresco/minimal-context.xml" }
-        );
+                new String[] {"classpath:alfresco/minimal-context.xml"});
     }
 
-    static
-    {
+    static {
         getMinimalContext();
     }
 }

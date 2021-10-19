@@ -30,23 +30,18 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
-public class AlfrescoSqlSessionFactoryBuilder extends SqlSessionFactoryBuilder
-{
+public class AlfrescoSqlSessionFactoryBuilder extends SqlSessionFactoryBuilder {
     private DBMetricsReporter dbMetricsReporter;
 
-    public SqlSessionFactory build(Configuration config)
-    {
+    public SqlSessionFactory build(Configuration config) {
         return new AlfrescoDefaultSqlSessionFactory(config, dbMetricsReporter);
     }
 
-    public DBMetricsReporter getDbMetricsReporter()
-    {
+    public DBMetricsReporter getDbMetricsReporter() {
         return dbMetricsReporter;
     }
 
-    public void setDbMetricsReporter(DBMetricsReporter dbMetricsReporter)
-    {
+    public void setDbMetricsReporter(DBMetricsReporter dbMetricsReporter) {
         this.dbMetricsReporter = dbMetricsReporter;
     }
-
 }

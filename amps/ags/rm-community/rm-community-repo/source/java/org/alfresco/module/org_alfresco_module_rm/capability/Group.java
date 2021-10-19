@@ -36,8 +36,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public interface Group
-{
+public interface Group {
     /**
      * Gets the id of a group (Get the id of the group)
      *

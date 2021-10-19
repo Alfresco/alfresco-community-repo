@@ -25,9 +25,6 @@
  */
 package org.alfresco.repo.event2;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
@@ -36,13 +33,15 @@ import org.alfresco.repo.event.v1.model.RepoEvent;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.namespace.QName;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /**
  * Encapsulates peer association events occurred in a single transaction.
  *
  * @author Sara Aspery
  */
-public class PeerAssociationEventConsolidator implements PeerAssociationEventSupportedPolicies
-{
+public class PeerAssociationEventConsolidator implements PeerAssociationEventSupportedPolicies {
     private final Deque<EventType> eventTypes;
 
     protected final AssociationRef associationRef;
@@ -50,8 +49,8 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
     private PeerAssociationResource resource;
     private final NodeResourceHelper helper;
 
-    public PeerAssociationEventConsolidator(AssociationRef associationRef, NodeResourceHelper helper)
-    {
+    public PeerAssociationEventConsolidator(
+            AssociationRef associationRef, NodeResourceHelper helper) {
         this.eventTypes = new ArrayDeque<>();
         this.associationRef = associationRef;
         this.helper = helper;
@@ -63,28 +62,27 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
      * @param eventInfo the object holding the event information
      * @return the {@link RepoEvent} instance
      */
-    public RepoEvent<DataAttributes<PeerAssociationResource>> getRepoEvent(EventInfo eventInfo)
-    {
+    public RepoEvent<DataAttributes<PeerAssociationResource>> getRepoEvent(EventInfo eventInfo) {
         EventType eventType = getDerivedEvent();
 
         DataAttributes<PeerAssociationResource> eventData = buildEventData(eventInfo, resource);
 
         return RepoEvent.<DataAttributes<PeerAssociationResource>>builder()
-                    .setId(eventInfo.getId())
-                    .setSource(eventInfo.getSource())
-                    .setTime(eventInfo.getTimestamp())
-                    .setType(eventType.getType())
-                    .setData(eventData)
-                    .setDataschema(EventJSONSchema.getSchemaV1(eventType))
-                    .build();
+                .setId(eventInfo.getId())
+                .setSource(eventInfo.getSource())
+                .setTime(eventInfo.getTimestamp())
+                .setType(eventType.getType())
+                .setData(eventData)
+                .setDataschema(EventJSONSchema.getSchemaV1(eventType))
+                .build();
     }
 
-    protected DataAttributes<PeerAssociationResource> buildEventData(EventInfo eventInfo, PeerAssociationResource resource)
-    {
+    protected DataAttributes<PeerAssociationResource> buildEventData(
+            EventInfo eventInfo, PeerAssociationResource resource) {
         return EventData.<PeerAssociationResource>builder()
-                    .setEventGroupId(eventInfo.getTxnId())
-                    .setResource(resource)
-                    .build();
+                .setEventGroupId(eventInfo.getTxnId())
+                .setResource(resource)
+                .build();
     }
 
     /**
@@ -93,8 +91,7 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
      * @param associationRef AssociationRef
      */
     @Override
-    public void onCreateAssociation(AssociationRef associationRef)
-    {
+    public void onCreateAssociation(AssociationRef associationRef) {
         eventTypes.add(EventType.PEER_ASSOC_CREATED);
         resource = buildPeerAssociationResource(associationRef);
     }
@@ -105,14 +102,12 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
      * @param associationRef AssociationRef
      */
     @Override
-    public void beforeDeleteAssociation(AssociationRef associationRef)
-    {
+    public void beforeDeleteAssociation(AssociationRef associationRef) {
         eventTypes.add(EventType.PEER_ASSOC_DELETED);
         resource = buildPeerAssociationResource(associationRef);
     }
 
-    private PeerAssociationResource buildPeerAssociationResource(AssociationRef associationRef)
-    {
+    private PeerAssociationResource buildPeerAssociationResource(AssociationRef associationRef) {
         String sourceId = associationRef.getSourceRef().getId();
         String targetId = associationRef.getTargetRef().getId();
         String assocType = helper.getQNamePrefixString(associationRef.getTypeQName());
@@ -120,40 +115,31 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
         return new PeerAssociationResource(sourceId, targetId, assocType);
     }
 
-    /**
-     * @return a derived event for a transaction.
-     */
-    private EventType getDerivedEvent()
-    {
-        if (isTemporaryPeerAssociation())
-        {
+    /** @return a derived event for a transaction. */
+    private EventType getDerivedEvent() {
+        if (isTemporaryPeerAssociation()) {
             // This event will be filtered out, but we set the correct
             // event type anyway for debugging purposes
             return EventType.PEER_ASSOC_DELETED;
-        }
-        else if (eventTypes.contains(EventType.PEER_ASSOC_CREATED))
-        {
+        } else if (eventTypes.contains(EventType.PEER_ASSOC_CREATED)) {
             return EventType.PEER_ASSOC_CREATED;
-        }
-        else if (eventTypes.getLast() == EventType.PEER_ASSOC_DELETED)
-        {
+        } else if (eventTypes.getLast() == EventType.PEER_ASSOC_DELETED) {
             return EventType.PEER_ASSOC_DELETED;
-        }
-        else
-        {
+        } else {
             // Default to first event
             return eventTypes.getFirst();
         }
     }
 
     /**
-     * Whether or not the association has been created and then deleted, i.e. a temporary association.
+     * Whether or not the association has been created and then deleted, i.e. a temporary
+     * association.
      *
      * @return {@code true} if the association has been created and then deleted, otherwise false
      */
-    public boolean isTemporaryPeerAssociation()
-    {
-        return eventTypes.contains(EventType.PEER_ASSOC_CREATED) && eventTypes.getLast() == EventType.PEER_ASSOC_DELETED;
+    public boolean isTemporaryPeerAssociation() {
+        return eventTypes.contains(EventType.PEER_ASSOC_CREATED)
+                && eventTypes.getLast() == EventType.PEER_ASSOC_DELETED;
     }
 
     /**
@@ -161,8 +147,7 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
      *
      * @return QName the peer association type
      */
-    public QName getAssocType()
-    {
+    public QName getAssocType() {
         return associationRef.getTypeQName();
     }
 
@@ -171,9 +156,7 @@ public class PeerAssociationEventConsolidator implements PeerAssociationEventSup
      *
      * @return Deque<EventType> queue of event types
      */
-    public Deque<EventType> getEventTypes()
-    {
+    public Deque<EventType> getEventTypes() {
         return eventTypes;
     }
 }
-

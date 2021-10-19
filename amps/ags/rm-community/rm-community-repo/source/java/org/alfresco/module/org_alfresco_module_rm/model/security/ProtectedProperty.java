@@ -36,24 +36,17 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public class ProtectedProperty extends ProtectedModelArtifact
-{
+public class ProtectedProperty extends ProtectedModelArtifact {
     /** always allow new indicator */
     private boolean allwaysAllowNew = false;
 
-    /**
-     * @param allwaysAllowNew   true if always allow new, false otherwise
-     */
-    public void setAllwaysAllowNew(boolean allwaysAllowNew)
-    {
+    /** @param allwaysAllowNew true if always allow new, false otherwise */
+    public void setAllwaysAllowNew(boolean allwaysAllowNew) {
         this.allwaysAllowNew = allwaysAllowNew;
     }
 
-    /**
-     * @return  true if always allow new, false otherwise
-     */
-    public boolean isAllwaysAllowNew()
-    {
+    /** @return true if always allow new, false otherwise */
+    public boolean isAllwaysAllowNew() {
         return allwaysAllowNew;
     }
 }

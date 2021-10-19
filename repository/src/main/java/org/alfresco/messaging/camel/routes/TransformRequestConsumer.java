@@ -43,8 +43,7 @@ import java.util.concurrent.Executors;
  * @author aepure
  */
 @Component
-public class TransformRequestConsumer extends RouteBuilder
-{
+public class TransformRequestConsumer extends RouteBuilder {
     private static Log logger = LogFactory.getLog(TransformRequestConsumer.class);
 
     @Value("${acs.repo.transform.request.endpoint}")
@@ -57,25 +56,21 @@ public class TransformRequestConsumer extends RouteBuilder
     // Not restricted for now, should be restricted after performance tests.
     private ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public void setSourceQueue(String sourceQueue)
-    {
+    public void setSourceQueue(String sourceQueue) {
         this.sourceQueue = sourceQueue;
     }
 
-    public void setExecutorService(ExecutorService executorService)
-    {
+    public void setExecutorService(ExecutorService executorService) {
         this.executorService = executorService;
     }
 
-    public void setProcessor(Processor processor)
-    {
+    public void setProcessor(Processor processor) {
         this.processor = processor;
     }
 
-    @Override public void configure()
-    {
-        if (logger.isDebugEnabled())
-        {
+    @Override
+    public void configure() {
+        if (logger.isDebugEnabled()) {
             logger.debug("Transform Request events route config: ");
             logger.debug("SourceQueue is " + sourceQueue);
         }

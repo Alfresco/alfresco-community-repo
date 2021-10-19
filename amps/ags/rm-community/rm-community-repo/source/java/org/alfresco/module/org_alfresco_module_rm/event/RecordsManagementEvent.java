@@ -37,8 +37,7 @@ import org.alfresco.util.ParameterCheck;
  * @since 1.0
  */
 @AlfrescoPublicApi
-public class RecordsManagementEvent
-{
+public class RecordsManagementEvent {
     /** Records management event type */
     private RecordsManagementEventType type;
 
@@ -51,17 +50,17 @@ public class RecordsManagementEvent
     /**
      * Constructor
      *
-     * @param type          event type
-     * @param name          event name
-     * @param displayLabel  event display label
+     * @param type event type
+     * @param name event name
+     * @param displayLabel event display label
      */
-    public RecordsManagementEvent(RecordsManagementEventType type, String name, String displayLabel)
-    {
+    public RecordsManagementEvent(
+            RecordsManagementEventType type, String name, String displayLabel) {
         ParameterCheck.mandatory("type", type);
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("displayLabel", displayLabel);
 
-        this.type =  type;
+        this.type = type;
         this.name = name;
         this.displayLabel = displayLabel;
     }
@@ -69,41 +68,33 @@ public class RecordsManagementEvent
     /**
      * Get records management type name
      *
-     * @return  String records management event type name
+     * @return String records management event type name
      */
-    public String getType()
-    {
+    public String getType() {
         return type.getName();
     }
 
     /**
      * Get the records management event type.
      *
-     * @return {@link RecordsManagementEventType}   records management event type
-     *
+     * @return {@link RecordsManagementEventType} records management event type
      * @since 2.2
      */
-    public RecordsManagementEventType getRecordsManagementEventType()
-    {
+    public RecordsManagementEventType getRecordsManagementEventType() {
         return type;
     }
 
     /**
      * Event name
      *
-     * @return String   event name
+     * @return String event name
      */
-    public String getName()
-    {
+    public String getName() {
         return this.name;
     }
 
-    /**
-     *
-     * @return
-     */
-    public String getDisplayLabel()
-    {
+    /** @return */
+    public String getDisplayLabel() {
         return displayLabel;
     }
 }

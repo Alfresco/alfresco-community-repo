@@ -29,12 +29,11 @@ package org.alfresco.rm.rest.api.model;
 
 /**
  * POJO object carrying information of a transfer child
- * 
+ *
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class TransferChild extends RMNode
-{
+public class TransferChild extends RMNode {
     public static final String PARAM_IS_COMPLETED = "isCompleted";
     public static final String PARAM_IS_RECORD_FOLDER = "isRecordFolder";
     public static final String PARAM_IS_RECORD = "isRecord";
@@ -43,38 +42,31 @@ public class TransferChild extends RMNode
     protected Boolean isRecordFolder;
     protected Boolean isRecord;
 
-    public TransferChild()
-    {
-        //Default constructor
+    public TransferChild() {
+        // Default constructor
     }
 
-    public Boolean getIsClosed()
-    {
+    public Boolean getIsClosed() {
         return isClosed;
     }
 
-    public void setIsClosed(Boolean isClosed)
-    {
+    public void setIsClosed(Boolean isClosed) {
         this.isClosed = isClosed;
     }
 
-    public Boolean getIsRecordFolder()
-    {
+    public Boolean getIsRecordFolder() {
         return isRecordFolder;
     }
 
-    public void setIsRecordFolder(Boolean isRecordFolder)
-    {
+    public void setIsRecordFolder(Boolean isRecordFolder) {
         this.isRecordFolder = isRecordFolder;
     }
 
-    public Boolean getIsRecord()
-    {
+    public Boolean getIsRecord() {
         return isRecord;
     }
 
-    public void setIsRecord(Boolean isRecord)
-    {
+    public void setIsRecord(Boolean isRecord) {
         this.isRecord = isRecord;
     }
 }

@@ -29,15 +29,12 @@ package org.alfresco.rm.rest.api.model;
 
 /**
  * Concrete class carrying specific information for an unfiled record folder
- * 
+ *
  * @author Ramona Popa
  * @since 2.6
  */
-public class UnfiledRecordFolder extends RMNode
-{
-    public UnfiledRecordFolder()
-    {
+public class UnfiledRecordFolder extends RMNode {
+    public UnfiledRecordFolder() {
         super();
     }
-
 }

@@ -27,10 +27,6 @@
 
 package org.alfresco.rm.rest.api.model;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.api.model.Assoc;
@@ -39,14 +35,17 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
  * Abstract base class carrying general information for an RM node
  *
  * @author Ana Bozianu
  * @since 2.6
  */
-public abstract class RMNode
-{
+public abstract class RMNode {
     public static final String PARAM_ID = "id";
     public static final String PARAM_PARENT_ID = "parentId";
     public static final String PARAM_NAME = "name";
@@ -61,15 +60,15 @@ public abstract class RMNode
     public static final String PARAM_PATH = "path";
     public static final String PARAM_ALLOWABLE_OPERATIONS = "allowableOperations";
     public static final String PARAM_AUTO_RENAME = "autoRename";
-    
+
     public static final String PARAM_ISPRIMARY = "isPrimary";
-    
+
     public static final String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
-    
+
     public static final String PARAM_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
     public static final String PARAM_IS_CLOSED = "isClosed";
     public static final String PARAM_INCLUDE_ASSOCIATION = "association";
-    
+
     public static final String FILE_PLAN_TYPE = "rma:filePlan";
     public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
     public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";
@@ -100,141 +99,111 @@ public abstract class RMNode
     protected List<String> allowableOperations;
     protected Assoc association;
 
-    public RMNode()
-    {
+    public RMNode() {}
 
-    }
-
-    @JsonProperty ("id")
+    @JsonProperty("id")
     @UniqueId
-    public NodeRef getNodeRef()
-    {
+    public NodeRef getNodeRef() {
         return nodeRef;
     }
 
-    public void setNodeRef(NodeRef nodeRef)
-    {
+    public void setNodeRef(NodeRef nodeRef) {
         this.nodeRef = nodeRef;
     }
 
-    public NodeRef getParentId()
-    {
+    public NodeRef getParentId() {
         return parentNodeRef;
     }
 
-    public void setParentId(NodeRef parentNodeRef)
-    {
+    public void setParentId(NodeRef parentNodeRef) {
         this.parentNodeRef = parentNodeRef;
     }
 
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public String getNodeType()
-    {
+    public String getNodeType() {
         return nodeType;
     }
 
-    public void setNodeType(String nodeType)
-    {
+    public void setNodeType(String nodeType) {
         this.nodeType = nodeType;
     }
 
-    public Date getCreatedAt()
-    {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt)
-    {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Date getModifiedAt()
-    {
+    public Date getModifiedAt() {
         return modifiedAt;
     }
 
-    public void setModifiedAt(Date modifiedAt)
-    {
+    public void setModifiedAt(Date modifiedAt) {
         this.modifiedAt = modifiedAt;
     }
 
-    public UserInfo getCreatedByUser()
-    {
+    public UserInfo getCreatedByUser() {
         return createdByUser;
     }
 
-    public void setCreatedByUser(UserInfo createdByUser)
-    {
+    public void setCreatedByUser(UserInfo createdByUser) {
         this.createdByUser = createdByUser;
     }
 
-    public UserInfo getModifiedByUser()
-    {
+    public UserInfo getModifiedByUser() {
         return modifiedByUser;
     }
 
-    public void setModifiedByUser(UserInfo modifiedByUser)
-    {
+    public void setModifiedByUser(UserInfo modifiedByUser) {
         this.modifiedByUser = modifiedByUser;
     }
 
-    public List<String> getAspectNames()
-    {
+    public List<String> getAspectNames() {
         return aspectNames;
     }
 
-    public void setAspectNames(List<String> aspectNames)
-    {
+    public void setAspectNames(List<String> aspectNames) {
         this.aspectNames = aspectNames;
     }
 
-    public Map<String, Object> getProperties()
-    {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
-    public void setProperties(Map<String, Object> properties)
-    {
+    public void setProperties(Map<String, Object> properties) {
         this.properties = properties;
     }
 
-    public PathInfo getPath()
-    {
+    public PathInfo getPath() {
         return path;
     }
 
-    public void setPath(PathInfo path)
-    {
+    public void setPath(PathInfo path) {
         this.path = path;
     }
 
-    public List<String> getAllowableOperations()
-    {
+    public List<String> getAllowableOperations() {
         return allowableOperations;
     }
 
-    public void setAllowableOperations(List<String> allowableOperations)
-    {
+    public void setAllowableOperations(List<String> allowableOperations) {
         this.allowableOperations = allowableOperations;
     }
 
-    public Assoc getAssociation()
-    {
+    public Assoc getAssociation() {
         return association;
     }
 
-    public void setAssociation(Assoc association)
-    {
+    public void setAssociation(Assoc association) {
         this.association = association;
     }
-
 }

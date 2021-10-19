@@ -25,7 +25,10 @@
  */
 package org.alfresco.transform.client.registry;
 
+import static org.alfresco.transform.client.registry.TransformRegistryHelper.retrieveTransformListBySize;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ShutdownIndicator;
@@ -38,34 +41,37 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.alfresco.transform.client.registry.TransformRegistryHelper.retrieveTransformListBySize;
-
-/**
- * Used by clients to work out if a transformation is supported by the Transform Service.
- */
-public abstract class TransformServiceRegistryImpl extends AbstractTransformRegistry implements InitializingBean
-{
-    public static class Data extends TransformCache
-    {
+/** Used by clients to work out if a transformation is supported by the Transform Service. */
+public abstract class TransformServiceRegistryImpl extends AbstractTransformRegistry
+        implements InitializingBean {
+    public static class Data extends TransformCache {
         private int tEngineCount = 0;
         private int fileCount;
         boolean firstTime = true;
 
         @Override
-        public String toString()
-        {
-            return transformerCount == 0 && transformCount == 0 && tEngineCount == 0 && fileCount == 0
+        public String toString() {
+            return transformerCount == 0
+                            && transformCount == 0
+                            && tEngineCount == 0
+                            && fileCount == 0
                     ? ""
-                    : "(transformers: "+transformerCount+" transforms: "+transformCount+" t-engines: "+tEngineCount+" files: "+fileCount+")";
+                    : "(transformers: "
+                            + transformerCount
+                            + " transforms: "
+                            + transformCount
+                            + " t-engines: "
+                            + tEngineCount
+                            + " files: "
+                            + fileCount
+                            + ")";
         }
 
-        public void setTEngineCount(int tEngineCount)
-        {
+        public void setTEngineCount(int tEngineCount) {
             this.tEngineCount = tEngineCount;
         }
 
-        public void setFileCount(int fileCount)
-        {
+        public void setFileCount(int fileCount) {
             this.fileCount = fileCount;
         }
     }
@@ -75,150 +81,147 @@ public abstract class TransformServiceRegistryImpl extends AbstractTransformRegi
     private CronExpression cronExpression;
     private CronExpression initialAndOnErrorCronExpression;
 
-    private ConfigScheduler<Data> configScheduler = new ConfigScheduler<Data>(this) // Don't change to <> as the release:prepare fails!
-    {
-        @Override
-        public boolean readConfig() throws IOException
-        {
-            return TransformServiceRegistryImpl.this.readConfig();
-        }
+    private ConfigScheduler<Data> configScheduler =
+            new ConfigScheduler<Data>(this) // Don't change to <> as the release:prepare fails!
+            {
+                @Override
+                public boolean readConfig() throws IOException {
+                    return TransformServiceRegistryImpl.this.readConfig();
+                }
 
-        @Override
-        public Data createData()
-        {
-            return TransformServiceRegistryImpl.this.createData();
-        }
-    };
+                @Override
+                public Data createData() {
+                    return TransformServiceRegistryImpl.this.createData();
+                }
+            };
 
-    public void setJsonObjectMapper(ObjectMapper jsonObjectMapper)
-    {
+    public void setJsonObjectMapper(ObjectMapper jsonObjectMapper) {
         this.jsonObjectMapper = jsonObjectMapper;
     }
 
-    public CronExpression getCronExpression()
-    {
+    public CronExpression getCronExpression() {
         return cronExpression;
     }
 
-    public void setCronExpression(CronExpression cronExpression)
-    {
+    public void setCronExpression(CronExpression cronExpression) {
         this.cronExpression = cronExpression;
     }
 
-    public CronExpression getInitialAndOnErrorCronExpression()
-    {
+    public CronExpression getInitialAndOnErrorCronExpression() {
         return initialAndOnErrorCronExpression;
     }
 
-    public void setInitialAndOnErrorCronExpression(CronExpression initialAndOnErrorCronExpression)
-    {
+    public void setInitialAndOnErrorCronExpression(CronExpression initialAndOnErrorCronExpression) {
         this.initialAndOnErrorCronExpression = initialAndOnErrorCronExpression;
     }
 
-    public void setShutdownIndicator(ShutdownIndicator shutdownIndicator)
-    {
+    public void setShutdownIndicator(ShutdownIndicator shutdownIndicator) {
         configScheduler.setShutdownIndicator(shutdownIndicator);
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         PropertyCheck.mandatory(this, "jsonObjectMapper", jsonObjectMapper);
         // If we have a cronExpression it indicates that we will schedule reading.
-        if (cronExpression != null)
-        {
-            PropertyCheck.mandatory(this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
+        if (cronExpression != null) {
+            PropertyCheck.mandatory(
+                    this, "initialAndOnErrorCronExpression", initialAndOnErrorCronExpression);
         }
 
         Log log = getLog();
         configScheduler.run(enabled, log, cronExpression, initialAndOnErrorCronExpression);
     }
 
-    public Data createData()
-    {
+    public Data createData() {
         return new Data();
     }
 
-    public Data getData()
-    {
+    public Data getData() {
         return configScheduler.getData();
     }
 
     public abstract boolean readConfig() throws IOException;
 
-    public boolean isEnabled()
-    {
+    public boolean isEnabled() {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
         setFirstTime(true);
     }
 
-    protected void setFirstTime(boolean firstTime)
-    {
+    protected void setFirstTime(boolean firstTime) {
         getData().firstTime = firstTime;
     }
 
-    protected boolean getFirstTime()
-    {
+    protected boolean getFirstTime() {
         return getData().firstTime;
     }
 
     protected abstract Log getLog();
 
     @Override
-    protected void logError(String msg)
-    {
+    protected void logError(String msg) {
         getLog().error(msg);
     }
 
     @Override
-    protected void logWarn(String msg)
-    {
+    protected void logWarn(String msg) {
         getLog().warn(msg);
     }
 
     @Override
-    public String findTransformerName(final String sourceMimetype, final long sourceSizeInBytes,
-                                      final String targetMimetype, final Map<String, String> actualOptions,
-                                      final String renditionName)
-    {
+    public String findTransformerName(
+            final String sourceMimetype,
+            final long sourceSizeInBytes,
+            final String targetMimetype,
+            final Map<String, String> actualOptions,
+            final String renditionName) {
         return enabled
-            ? super.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName)
-            : null;
+                ? super.findTransformerName(
+                        sourceMimetype,
+                        sourceSizeInBytes,
+                        targetMimetype,
+                        actualOptions,
+                        renditionName)
+                : null;
     }
 
     @Override
-    public long findMaxSize(final String sourceMimetype, final String targetMimetype,
-                            final Map<String, String> actualOptions, final String renditionName)
-    {
+    public long findMaxSize(
+            final String sourceMimetype,
+            final String targetMimetype,
+            final Map<String, String> actualOptions,
+            final String renditionName) {
         return enabled
-            ? super.findMaxSize(sourceMimetype, targetMimetype, actualOptions, renditionName)
-            : 0;
+                ? super.findMaxSize(sourceMimetype, targetMimetype, actualOptions, renditionName)
+                : 0;
     }
 
     /**
-     * Works out an ordered list of transformer that will be used to transform content of a given source mimetype
-     * into a target mimetype given a list of actual transform option names and values (Strings) plus the data contained
-     * in the Transform objects registered with this class. These are ordered by size and priority.
+     * Works out an ordered list of transformer that will be used to transform content of a given
+     * source mimetype into a target mimetype given a list of actual transform option names and
+     * values (Strings) plus the data contained in the Transform objects registered with this class.
+     * These are ordered by size and priority.
      *
-     * @param sourceMimetype    the mimetype of the source content
-     * @param targetMimetype    the mimetype of the target
-     * @param actualOptions     the actual name value pairs available that could be passed to the Transform Service.
-     * @param renditionName     (optional) name for the set of options and target mimetype. If supplied is used to cache
-     *                          results to avoid having to work out if a given transformation is supported a second time.
-     *                          The sourceMimetype and sourceSizeInBytes may still change. In the case of ACS this is the
-     *                          rendition name.
+     * @param sourceMimetype the mimetype of the source content
+     * @param targetMimetype the mimetype of the target
+     * @param actualOptions the actual name value pairs available that could be passed to the
+     *     Transform Service.
+     * @param renditionName (optional) name for the set of options and target mimetype. If supplied
+     *     is used to cache results to avoid having to work out if a given transformation is
+     *     supported a second time. The sourceMimetype and sourceSizeInBytes may still change. In
+     *     the case of ACS this is the rendition name.
      */
-    public List<SupportedTransform> findTransformers(final String sourceMimetype, final String targetMimetype,
-                                                     final Map<String, String> actualOptions,
-                                                     final String renditionName)
-    {
+    public List<SupportedTransform> findTransformers(
+            final String sourceMimetype,
+            final String targetMimetype,
+            final Map<String, String> actualOptions,
+            final String renditionName) {
         return enabled
-            ? retrieveTransformListBySize(getData(), sourceMimetype, targetMimetype, actualOptions, renditionName)
-            : Collections.emptyList();
+                ? retrieveTransformListBySize(
+                        getData(), sourceMimetype, targetMimetype, actualOptions, renditionName)
+                : Collections.emptyList();
     }
 }

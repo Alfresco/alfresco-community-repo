@@ -27,11 +27,6 @@
 
 package org.alfresco.rm.rest.api.impl;
 
-import java.security.InvalidParameterException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -48,42 +43,45 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
+import java.security.InvalidParameterException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Utility class that handles common api endpoint tasks
  *
  * @author Ana Bozianu
  * @since 2.6
  */
-public class SearchTypesFactory
-{
+public class SearchTypesFactory {
     private DictionaryService dictionaryService;
     private Nodes nodes;
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    public void setNodes(Nodes nodes)
-    {
+    public void setNodes(Nodes nodes) {
         this.nodes = nodes;
     }
 
-    public Set<QName> buildSearchTypesForFilePlanEndpoint()
-    {
+    public Set<QName> buildSearchTypesForFilePlanEndpoint() {
         Set<QName> searchTypeQNames = new HashSet<>();
         searchTypeQNames.add(RecordsManagementModel.TYPE_RECORD_CATEGORY);
         return searchTypeQNames;
     }
 
     /**
-     * Helper method to build search types for unfiled container and unfiled record folders endpoints
+     * Helper method to build search types for unfiled container and unfiled record folders
+     * endpoints
+     *
      * @param parameters
      * @param listFolderChildrenEqualsQueryProperties
      * @return
      */
-    public Set<QName> buildSearchTypesForUnfiledEndpoint(Parameters parameters, Set<String> listFolderChildrenEqualsQueryProperties)
-    {
+    public Set<QName> buildSearchTypesForUnfiledEndpoint(
+            Parameters parameters, Set<String> listFolderChildrenEqualsQueryProperties) {
         Set<QName> searchTypeQNames = new HashSet<>();
 
         Query q = parameters.getQuery();
@@ -92,81 +90,78 @@ public class SearchTypesFactory
         boolean includeRecords = false;
         boolean includeSubTypes = false;
 
-        if (q != null)
-        {
+        if (q != null) {
             // filtering via "where" clause
-            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(listFolderChildrenEqualsQueryProperties, null);
+            MapBasedQueryWalker propertyWalker =
+                    new MapBasedQueryWalker(listFolderChildrenEqualsQueryProperties, null);
             QueryHelper.walk(q, propertyWalker);
 
-            Boolean isUnfiledRecordFolder = propertyWalker.getProperty(UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER,
-                    WhereClauseParser.EQUALS, Boolean.class);
-            Boolean isRecord = propertyWalker.getProperty(UnfiledChild.PARAM_IS_RECORD, WhereClauseParser.EQUALS, Boolean.class);
-            if ((isUnfiledRecordFolder != null && isUnfiledRecordFolder.booleanValue()) || (isRecord != null && !isRecord.booleanValue()))
-            {
+            Boolean isUnfiledRecordFolder =
+                    propertyWalker.getProperty(
+                            UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER,
+                            WhereClauseParser.EQUALS,
+                            Boolean.class);
+            Boolean isRecord =
+                    propertyWalker.getProperty(
+                            UnfiledChild.PARAM_IS_RECORD, WhereClauseParser.EQUALS, Boolean.class);
+            if ((isUnfiledRecordFolder != null && isUnfiledRecordFolder.booleanValue())
+                    || (isRecord != null && !isRecord.booleanValue())) {
                 includeUnfiledRecordFolders = true;
-            }
-            else if ((isUnfiledRecordFolder != null && !isUnfiledRecordFolder.booleanValue()) || (isRecord != null && isRecord.booleanValue()))
-            {
+            } else if ((isUnfiledRecordFolder != null && !isUnfiledRecordFolder.booleanValue())
+                    || (isRecord != null && isRecord.booleanValue())) {
                 includeRecords = true;
             }
 
-            String nodeTypeQNameStr = propertyWalker.getProperty(UnfiledChild.PARAM_NODE_TYPE, WhereClauseParser.EQUALS, String.class);
+            String nodeTypeQNameStr =
+                    propertyWalker.getProperty(
+                            UnfiledChild.PARAM_NODE_TYPE, WhereClauseParser.EQUALS, String.class);
             QName filterNodeTypeQName;
-            if (nodeTypeQNameStr != null)
-            {
-                if ((isUnfiledRecordFolder != null) || (isRecord != null))
-                {
-                    throw new InvalidArgumentException("Invalid filter - nodeType and isUnfiledRecordFolder/isRecord are mutually exclusive");
+            if (nodeTypeQNameStr != null) {
+                if ((isUnfiledRecordFolder != null) || (isRecord != null)) {
+                    throw new InvalidArgumentException(
+                            "Invalid filter - nodeType and isUnfiledRecordFolder/isRecord are"
+                                    + " mutually exclusive");
                 }
 
                 Pair<QName, Boolean> pair = parseNodeTypeFilter(nodeTypeQNameStr);
                 filterNodeTypeQName = pair.getFirst();
                 includeSubTypes = pair.getSecond();
 
-                if (filterNodeTypeQName.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER))
-                {
+                if (filterNodeTypeQName.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER)) {
                     includeUnfiledRecordFolders = true;
-                }
-                else if (filterNodeTypeQName.equals(ContentModel.TYPE_CONTENT))
-                {
+                } else if (filterNodeTypeQName.equals(ContentModel.TYPE_CONTENT)) {
                     includeRecords = true;
-                }
-                else if (dictionaryService.isSubClass(filterNodeTypeQName, ContentModel.TYPE_CONTENT))
-                {
+                } else if (dictionaryService.isSubClass(
+                        filterNodeTypeQName, ContentModel.TYPE_CONTENT)) {
                     searchTypeQNames.add(filterNodeTypeQName);
-                    if (includeSubTypes)
-                    {
-                        Collection<QName> qnames = dictionaryService.getSubTypes(filterNodeTypeQName, true);
+                    if (includeSubTypes) {
+                        Collection<QName> qnames =
+                                dictionaryService.getSubTypes(filterNodeTypeQName, true);
                         searchTypeQNames.addAll(qnames);
                     }
-                }
-                else
-                {
-                    throw new InvalidParameterException("Filter nodeType: " + nodeTypeQNameStr + " is invalid for this endpoint");
+                } else {
+                    throw new InvalidParameterException(
+                            "Filter nodeType: "
+                                    + nodeTypeQNameStr
+                                    + " is invalid for this endpoint");
                 }
             }
-        }
-        else
-        {
+        } else {
             includeRecords = true;
             includeUnfiledRecordFolders = true;
             includeSubTypes = true;
         }
 
-        if (includeUnfiledRecordFolders)
-        {
+        if (includeUnfiledRecordFolders) {
             searchTypeQNames.add(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
         }
-        if (includeRecords)
-        {
+        if (includeRecords) {
 
-            if (includeSubTypes)
-            {
-                Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
+            if (includeSubTypes) {
+                Collection<QName> qnames =
+                        dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
                 searchTypeQNames.addAll(qnames);
-            }
-            else
-            {
+            } else {
                 searchTypeQNames.add(ContentModel.TYPE_CONTENT);
                 searchTypeQNames.add(RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT);
             }
@@ -176,12 +171,13 @@ public class SearchTypesFactory
 
     /**
      * Helper method to build search types for categories endpoint
+     *
      * @param parameters
      * @param listRecordCategoryChildrenEqualsQueryProperties
      * @return
      */
-    public Set<QName> buildSearchTypesCategoriesEndpoint(Parameters parameters, Set<String> listRecordCategoryChildrenEqualsQueryProperties)
-    {
+    public Set<QName> buildSearchTypesCategoriesEndpoint(
+            Parameters parameters, Set<String> listRecordCategoryChildrenEqualsQueryProperties) {
         Set<QName> searchTypeQNames = new HashSet<>();
 
         Query q = parameters.getQuery();
@@ -189,63 +185,68 @@ public class SearchTypesFactory
         boolean includeRecordFolders = false;
         boolean includeRecordCategories = false;
 
-        if (q != null)
-        {
+        if (q != null) {
             // filtering via "where" clause
-            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(listRecordCategoryChildrenEqualsQueryProperties, null);
+            MapBasedQueryWalker propertyWalker =
+                    new MapBasedQueryWalker(listRecordCategoryChildrenEqualsQueryProperties, null);
             QueryHelper.walk(q, propertyWalker);
 
-            Boolean isRecordFolder = propertyWalker.getProperty(RecordCategoryChild.PARAM_IS_RECORD_FOLDER,
-                    WhereClauseParser.EQUALS, Boolean.class);
-            Boolean isRecordCategory = propertyWalker.getProperty(RecordCategoryChild.PARAM_IS_RECORD_CATEGORY, WhereClauseParser.EQUALS, Boolean.class);
+            Boolean isRecordFolder =
+                    propertyWalker.getProperty(
+                            RecordCategoryChild.PARAM_IS_RECORD_FOLDER,
+                            WhereClauseParser.EQUALS,
+                            Boolean.class);
+            Boolean isRecordCategory =
+                    propertyWalker.getProperty(
+                            RecordCategoryChild.PARAM_IS_RECORD_CATEGORY,
+                            WhereClauseParser.EQUALS,
+                            Boolean.class);
 
-            if ((isRecordFolder != null && isRecordFolder.booleanValue()) || (isRecordCategory != null && !isRecordCategory.booleanValue()))
-            {
+            if ((isRecordFolder != null && isRecordFolder.booleanValue())
+                    || (isRecordCategory != null && !isRecordCategory.booleanValue())) {
                 includeRecordFolders = true;
-            }
-            else if ((isRecordFolder != null && !isRecordFolder.booleanValue()) || (isRecordCategory != null && isRecordCategory.booleanValue()))
-            {
+            } else if ((isRecordFolder != null && !isRecordFolder.booleanValue())
+                    || (isRecordCategory != null && isRecordCategory.booleanValue())) {
                 includeRecordCategories = true;
             }
 
-            String nodeTypeQNameStr = propertyWalker.getProperty(RecordCategoryChild.PARAM_NODE_TYPE, WhereClauseParser.EQUALS, String.class);
+            String nodeTypeQNameStr =
+                    propertyWalker.getProperty(
+                            RecordCategoryChild.PARAM_NODE_TYPE,
+                            WhereClauseParser.EQUALS,
+                            String.class);
             QName filterNodeTypeQName;
-            if (nodeTypeQNameStr != null)
-            {
-                if ((isRecordFolder != null) || (isRecordCategory != null))
-                {
-                    throw new InvalidArgumentException("Invalid filter - nodeType and isRecordFolder/isRecordCategory are mutually exclusive");
+            if (nodeTypeQNameStr != null) {
+                if ((isRecordFolder != null) || (isRecordCategory != null)) {
+                    throw new InvalidArgumentException(
+                            "Invalid filter - nodeType and isRecordFolder/isRecordCategory are"
+                                    + " mutually exclusive");
                 }
 
                 Pair<QName, Boolean> pair = parseNodeTypeFilter(nodeTypeQNameStr);
                 filterNodeTypeQName = pair.getFirst();
-                if (filterNodeTypeQName.equals(RecordsManagementModel.TYPE_RECORD_FOLDER))
-                {
+                if (filterNodeTypeQName.equals(RecordsManagementModel.TYPE_RECORD_FOLDER)) {
                     includeRecordFolders = true;
 
-                }
-                else if (filterNodeTypeQName.equals(RecordsManagementModel.TYPE_RECORD_CATEGORY))
-                {
+                } else if (filterNodeTypeQName.equals(
+                        RecordsManagementModel.TYPE_RECORD_CATEGORY)) {
                     includeRecordCategories = true;
-                }
-                else
-                {
-                    throw new InvalidParameterException("Filter nodeType: " + nodeTypeQNameStr + " is invalid for this endpoint");
+                } else {
+                    throw new InvalidParameterException(
+                            "Filter nodeType: "
+                                    + nodeTypeQNameStr
+                                    + " is invalid for this endpoint");
                 }
             }
-        }
-        else
-        {
+        } else {
             includeRecordCategories = true;
             includeRecordFolders = true;
         }
 
-        if (includeRecordFolders)
-        {
+        if (includeRecordFolders) {
             searchTypeQNames.add(RecordsManagementModel.TYPE_RECORD_FOLDER);
         }
-        if (includeRecordCategories)
-        {
+        if (includeRecordCategories) {
             searchTypeQNames.add(RecordsManagementModel.TYPE_RECORD_CATEGORY);
         }
         return searchTypeQNames;
@@ -253,39 +254,36 @@ public class SearchTypesFactory
 
     /**
      * Helper method to build search types for transfer containers endpoint
+     *
      * @return
      */
-    public Set<QName> buildSearchTypesForTransferContainersEndpoint()
-    {
+    public Set<QName> buildSearchTypesForTransferContainersEndpoint() {
         Set<QName> searchTypeQNames = new HashSet<>();
         searchTypeQNames.add(RecordsManagementModel.TYPE_TRANSFER);
         return searchTypeQNames;
     }
 
     /**
-     * Helper method to parse the nodeType filter
-     * default nodeType filtering is without subTypes (unless nodeType value is suffixed with ' INCLUDESUBTYPES')
+     * Helper method to parse the nodeType filter default nodeType filtering is without subTypes
+     * (unless nodeType value is suffixed with ' INCLUDESUBTYPES')
+     *
      * @param nodeTypeStr
      * @return
      */
-    private Pair<QName, Boolean> parseNodeTypeFilter(String nodeTypeStr)
-    {
+    private Pair<QName, Boolean> parseNodeTypeFilter(String nodeTypeStr) {
         boolean filterIncludeSubTypes = false;
 
         int idx = nodeTypeStr.lastIndexOf(' ');
-        if (idx > 0)
-        {
+        if (idx > 0) {
             String suffix = nodeTypeStr.substring(idx);
-            if (suffix.equalsIgnoreCase(" " + RMNode.PARAM_INCLUDE_SUBTYPES))
-            {
+            if (suffix.equalsIgnoreCase(" " + RMNode.PARAM_INCLUDE_SUBTYPES)) {
                 filterIncludeSubTypes = true;
                 nodeTypeStr = nodeTypeStr.substring(0, idx);
             }
         }
 
         QName filterNodeTypeQName = nodes.createQName(nodeTypeStr);
-        if (dictionaryService.getType(filterNodeTypeQName) == null)
-        {
+        if (dictionaryService.getType(filterNodeTypeQName) == null) {
             throw new InvalidParameterException("Filter nodeType: " + nodeTypeStr + " is invalid");
         }
 

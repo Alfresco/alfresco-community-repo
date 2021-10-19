@@ -47,133 +47,106 @@ import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Module compatibility component unit test
- * 
+ *
  * @author Roy Wetherall
  * @since 2.4
  */
-public class ModuleCompatibilityComponentUnitTest 
-{
-	/** mocks */
-	@Mock private DescriptorService mockedDescriptorService;
-	@Mock private ModuleService mockedModuleService;
-	@Mock private ContextRefreshedEvent mockedContextRefreshedEvent;
-	@Mock private ConfigurableApplicationContext mockedApplicationContext;
-	@Mock private ModuleDetails mockedModuleDetails;
-	@Mock private LicenseDescriptor mockedDescriptor;
-	
-	/** object under test */
-	@InjectMocks private ModuleCompatibilityComponent moduleCompatibilityComponent;
-	
-	/**
-	 * Before test execution
-	 */
-	@Before
-	public void before()
-	{
-		MockitoAnnotations.initMocks(this);
-		
-		when(mockedContextRefreshedEvent.getApplicationContext())
-			.thenReturn(mockedApplicationContext);
-		when(mockedDescriptorService.getLicenseDescriptor())
-			.thenReturn(mockedDescriptor);		
-	}
-	
-	/**
-	 * Given that core community is installed
-	 * And that RM community is installed
-	 * When the application context is loaded
-	 * Then it is successful
-	 */
-	@Test
-	public void communityOnCommunity()
-	{
-		// community core installed
-		when(mockedDescriptor.getLicenseMode())
-			.thenReturn(LicenseMode.UNKNOWN);
-		
-		// community RM installed
-		when(mockedModuleService.getModule(anyString()))
-			.thenReturn(null);
-		
-		// on app context refresh
-		moduleCompatibilityComponent.onApplicationEvent(mockedContextRefreshedEvent);
-		
-		// verify close never called
-		verify(mockedApplicationContext, never()).close();
-		
-	}
-	
-	/**
-	 * Given that core community is installed
-	 * And that RM enterprise is installed
-	 * When the application context is loaded
-	 * Then it fails
-	 */
-	@Test
-	public void enterpriseOnCommunity()
-	{
-		// community core installed
-		when(mockedDescriptor.getLicenseMode())
-			.thenReturn(LicenseMode.UNKNOWN);
-		
-		// enterprise RM installed
-		when(mockedModuleService.getModule(anyString()))
-			.thenReturn(mockedModuleDetails);
-		
-		// on app context refresh
-		moduleCompatibilityComponent.onApplicationEvent(mockedContextRefreshedEvent);
-		
-		// verify close is called
-		verify(mockedApplicationContext).close();
-		
-	}
-	
-	/**
-	 * Given that core enterprise is installed
-	 * And that RM community is installed
-	 * When the application context is loaded
-	 * Then it fails
-	 */
-	@Test
-	public void communityOnEnterprise()
-	{
-		// enterprise core installed
-		when(mockedDescriptor.getLicenseMode())
-			.thenReturn(LicenseMode.ENTERPRISE);
-		
-		// community RM installed
-		when(mockedModuleService.getModule(anyString()))
-			.thenReturn(null);
-		
-		// on app context refresh
-		moduleCompatibilityComponent.onApplicationEvent(mockedContextRefreshedEvent);
-		
-		// verify close is called
-		verify(mockedApplicationContext).close();		
-	}
-	
-	/**
-	 * Given that core enterprise is installed
-	 * And that RM enterprise is installed
-	 * When the application context is loaded
-	 * Then it is successful
-	 */
-	@Test
-	public void enterpriseOnEnterprise()
-	{
-		// enterprise core installed
-		when(mockedDescriptor.getLicenseMode())
-			.thenReturn(LicenseMode.ENTERPRISE);
-		
-		// enterprise RM installed
-		when(mockedModuleService.getModule(anyString()))
-			.thenReturn(mockedModuleDetails);
-		
-		// on app context refresh
-		moduleCompatibilityComponent.onApplicationEvent(mockedContextRefreshedEvent);
-		
-		// verify close never called
-		verify(mockedApplicationContext, never()).close();
-		
-	}
+public class ModuleCompatibilityComponentUnitTest {
+    /** mocks */
+    @Mock private DescriptorService mockedDescriptorService;
+
+    @Mock private ModuleService mockedModuleService;
+    @Mock private ContextRefreshedEvent mockedContextRefreshedEvent;
+    @Mock private ConfigurableApplicationContext mockedApplicationContext;
+    @Mock private ModuleDetails mockedModuleDetails;
+    @Mock private LicenseDescriptor mockedDescriptor;
+
+    /** object under test */
+    @InjectMocks private ModuleCompatibilityComponent moduleCompatibilityComponent;
+
+    /** Before test execution */
+    @Before
+    public void before() {
+        MockitoAnnotations.initMocks(this);
+
+        when(mockedContextRefreshedEvent.getApplicationContext())
+                .thenReturn(mockedApplicationContext);
+        when(mockedDescriptorService.getLicenseDescriptor()).thenReturn(mockedDescriptor);
+    }
+
+    /**
+     * Given that core community is installed And that RM community is installed When the
+     * application context is loaded Then it is successful
+     */
+    @Test
+    public void communityOnCommunity() {
+        // community core installed
+        when(mockedDescriptor.getLicenseMode()).thenReturn(LicenseMode.UNKNOWN);
+
+        // community RM installed
+        when(mockedModuleService.getModule(anyString())).thenReturn(null);
+
+        // on app context refresh
+        moduleCompatibilityComponent.onApplicationEvent(mockedContextRefreshedEvent);
+
+        // verify close never called
+        verify(mockedApplicationContext, never()).close();
+    }
+
+    /**
+     * Given that core community is installed And that RM enterprise is installed When the
+     * application context is loaded Then it fails
+     */
+    @Test
+    public void enterpriseOnCommunity() {
+        // community core installed
+        when(mockedDescriptor.getLicenseMode()).thenReturn(LicenseMode.UNKNOWN);
+
+        // enterprise RM installed
+        when(mockedModuleService.getModule(anyString())).thenReturn(mockedModuleDetails);
+
+        // on app context refresh
+        moduleCompatibilityComponent.onApplicationEvent(mockedContextRefreshedEvent);
+
+        // verify close is called
+        verify(mockedApplicationContext).close();
+    }
+
+    /**
+     * Given that core enterprise is installed And that RM community is installed When the
+     * application context is loaded Then it fails
+     */
+    @Test
+    public void communityOnEnterprise() {
+        // enterprise core installed
+        when(mockedDescriptor.getLicenseMode()).thenReturn(LicenseMode.ENTERPRISE);
+
+        // community RM installed
+        when(mockedModuleService.getModule(anyString())).thenReturn(null);
+
+        // on app context refresh
+        moduleCompatibilityComponent.onApplicationEvent(mockedContextRefreshedEvent);
+
+        // verify close is called
+        verify(mockedApplicationContext).close();
+    }
+
+    /**
+     * Given that core enterprise is installed And that RM enterprise is installed When the
+     * application context is loaded Then it is successful
+     */
+    @Test
+    public void enterpriseOnEnterprise() {
+        // enterprise core installed
+        when(mockedDescriptor.getLicenseMode()).thenReturn(LicenseMode.ENTERPRISE);
+
+        // enterprise RM installed
+        when(mockedModuleService.getModule(anyString())).thenReturn(mockedModuleDetails);
+
+        // on app context refresh
+        moduleCompatibilityComponent.onApplicationEvent(mockedContextRefreshedEvent);
+
+        // verify close never called
+        verify(mockedApplicationContext, never()).close();
+    }
 }

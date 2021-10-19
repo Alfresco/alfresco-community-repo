@@ -27,18 +27,18 @@
 
 package org.alfresco.rest.rm.community.model.transfer;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.model.RestByUserModel;
-import org.alfresco.utility.model.TestModel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+
+import org.alfresco.rest.model.RestByUserModel;
+import org.alfresco.utility.model.TestModel;
+
+import java.util.List;
 
 /**
  * POJO for Transfer
@@ -51,38 +51,36 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class Transfer extends TestModel
-{
+public class Transfer extends TestModel {
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private RestByUserModel createdByUser;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String nodeType;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String parentId;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private List<String> aspectNames;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String createdAt;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String id;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private TransferProperties properties;
 
     /************************/
     /** Optional parameters */
     /************************/
-    @JsonProperty
-    private List<String> allowableOperations;
+    @JsonProperty private List<String> allowableOperations;
 }

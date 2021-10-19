@@ -38,8 +38,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public class RelationshipDisplayName
-{
+public class RelationshipDisplayName {
     /** The source text of the relationship */
     private String sourceText;
 
@@ -47,15 +46,13 @@ public class RelationshipDisplayName
     private String targetText;
 
     /**
-     * Constructor for creating the relationship display name.
-     * In case of a bidirectional relationship the source
-     * text and target text will be the same.
+     * Constructor for creating the relationship display name. In case of a bidirectional
+     * relationship the source text and target text will be the same.
      *
      * @param sourceText The source text of the relationship
      * @param targetText The target text of the relationship
      */
-    public RelationshipDisplayName(String sourceText, String targetText)
-    {
+    public RelationshipDisplayName(String sourceText, String targetText) {
         mandatoryString("sourceText", sourceText);
         mandatoryString("targetText", targetText);
 
@@ -68,8 +65,7 @@ public class RelationshipDisplayName
      *
      * @return The source text of the relationship
      */
-    public String getSourceText()
-    {
+    public String getSourceText() {
         return this.sourceText;
     }
 
@@ -78,8 +74,7 @@ public class RelationshipDisplayName
      *
      * @param sourceText The source text of the relationship
      */
-    private void setSourceText(String sourceText)
-    {
+    private void setSourceText(String sourceText) {
         this.sourceText = sourceText;
     }
 
@@ -88,8 +83,7 @@ public class RelationshipDisplayName
      *
      * @return The target text of the relationship
      */
-    public String getTargetText()
-    {
+    public String getTargetText() {
         return this.targetText;
     }
 
@@ -98,22 +92,20 @@ public class RelationshipDisplayName
      *
      * @param targetText The target text of the relationship
      */
-    private void setTargetText(String targetText)
-    {
+    private void setTargetText(String targetText) {
         this.targetText = targetText;
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
+    /** @see java.lang.Object#toString() */
     @Override
-    public String toString()
-    {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("(")
-          .append("source=").append(sourceText)
-          .append(", target=").append(targetText)
-          .append(")");
+                .append("source=")
+                .append(sourceText)
+                .append(", target=")
+                .append(targetText)
+                .append(")");
         return sb.toString();
     }
 }

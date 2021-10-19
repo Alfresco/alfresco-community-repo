@@ -35,12 +35,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Supertype layer interface for all resultset coming from a search engine (e.g. Elasticsearch, Solr)
- * This interface has been originally extracted from the Apache Solr ResultSet implementation,
- * that's the reason why the naming used for denoting some things (e.g. facets) is tied to the Solr world.
+ * Supertype layer interface for all resultset coming from a search engine (e.g. Elasticsearch,
+ * Solr) This interface has been originally extracted from the Apache Solr ResultSet implementation,
+ * that's the reason why the naming used for denoting some things (e.g. facets) is tied to the Solr
+ * world.
  */
-public interface SearchEngineResultSet extends ResultSet, SearchEngineResultMetadata
-{
+public interface SearchEngineResultSet extends ResultSet, SearchEngineResultMetadata {
     Map<String, List<Pair<String, Integer>>> getFieldFacets();
 
     Map<String, List<Pair<String, Integer>>> getFacetIntervals();

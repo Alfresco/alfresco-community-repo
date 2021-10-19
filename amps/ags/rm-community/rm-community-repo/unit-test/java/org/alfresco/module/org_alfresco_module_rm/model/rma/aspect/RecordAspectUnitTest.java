@@ -26,14 +26,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
@@ -51,35 +51,29 @@ import org.mockito.Mock;
  *
  * @author Claudia Agache
  */
-public class RecordAspectUnitTest
-{
+public class RecordAspectUnitTest {
     private static final NodeRef NODE_REF = new NodeRef("node://Ref/");
     private static final NodeRef COPY_REF = new NodeRef("node://Copy/");
-    private static final AssociationRef SOURCE_ASSOC_REF = new AssociationRef(COPY_REF, ContentModel.ASSOC_ORIGINAL,
-            NODE_REF);
-    private static final AssociationRef TARGET_ASSOC_REF = new AssociationRef(NODE_REF, ContentModel.ASSOC_ORIGINAL,
-            COPY_REF);
+    private static final AssociationRef SOURCE_ASSOC_REF =
+            new AssociationRef(COPY_REF, ContentModel.ASSOC_ORIGINAL, NODE_REF);
+    private static final AssociationRef TARGET_ASSOC_REF =
+            new AssociationRef(NODE_REF, ContentModel.ASSOC_ORIGINAL, COPY_REF);
 
-    @InjectMocks
-    private RecordAspect recordAspect;
-    @Mock
-    private NodeService mockNodeService;
-    @Mock
-    private ExtendedSecurityService mockExtendedSecurityService;
-    @Mock
-    private ContentBinDuplicationUtility mockContentBinDuplicationUtility;
+    @InjectMocks private RecordAspect recordAspect;
+    @Mock private NodeService mockNodeService;
+    @Mock private ExtendedSecurityService mockExtendedSecurityService;
+    @Mock private ContentBinDuplicationUtility mockContentBinDuplicationUtility;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         initMocks(this);
     }
 
     /** Check that the bin is duplicated before adding the aspect if the file has a copy. */
     @Test
-    public void testDuplicateBinBeforeAddingAspectForFileWithCopy()
-    {
-        when(mockNodeService.getSourceAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(SOURCE_ASSOC_REF));
+    public void testDuplicateBinBeforeAddingAspectForFileWithCopy() {
+        when(mockNodeService.getSourceAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL))
+                .thenReturn(asList(SOURCE_ASSOC_REF));
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
@@ -88,9 +82,9 @@ public class RecordAspectUnitTest
 
     /** Check that the bin is duplicated before adding the aspect if the file is a copy. */
     @Test
-    public void testDuplicateBinBeforeAddingAspectForCopy()
-    {
-        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(asList(TARGET_ASSOC_REF));
+    public void testDuplicateBinBeforeAddingAspectForCopy() {
+        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL))
+                .thenReturn(asList(TARGET_ASSOC_REF));
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
@@ -99,10 +93,11 @@ public class RecordAspectUnitTest
 
     /** Check that the bin is not duplicated before adding the aspect if the node has no copies. */
     @Test
-    public void testNotDuplicateBinForFileWithNoCopies()
-    {
-        when(mockNodeService.getSourceAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(emptyList());
-        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL)).thenReturn(emptyList());
+    public void testNotDuplicateBinForFileWithNoCopies() {
+        when(mockNodeService.getSourceAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL))
+                .thenReturn(emptyList());
+        when(mockNodeService.getTargetAssocs(NODE_REF, ContentModel.ASSOC_ORIGINAL))
+                .thenReturn(emptyList());
 
         recordAspect.beforeAddAspect(NODE_REF, ASPECT_RECORD);
 
@@ -111,8 +106,7 @@ public class RecordAspectUnitTest
 
     /** Check that the bin is duplicated when copying a record. */
     @Test
-    public void testDuplicateBinWhenCopyingRecord()
-    {
+    public void testDuplicateBinWhenCopyingRecord() {
         when(mockNodeService.exists(COPY_REF)).thenReturn(true);
         when(mockNodeService.hasAspect(COPY_REF, ASPECT_RECORD)).thenReturn(true);
 

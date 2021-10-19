@@ -27,6 +27,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,35 +47,23 @@ import org.mockito.Mock;
 
 import java.util.Map;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 /**
  * Unit tests for {@link CreateHoldAuditEvent}.
  *
  * @author Sara Aspery
  * @since 3.3
  */
-public class CreateHoldAuditEventUnitTest extends BaseUnitTest
-{
-    @InjectMocks
-    private CreateHoldAuditEvent createHoldAuditEvent;
+public class CreateHoldAuditEventUnitTest extends BaseUnitTest {
+    @InjectMocks private CreateHoldAuditEvent createHoldAuditEvent;
 
-    @Mock
-    private NodeService mockedNodeService;
+    @Mock private NodeService mockedNodeService;
 
     private NodeRef holdNodeRef;
     private ChildAssociationRef childAssociationRef;
 
     /** Set up the mocks. */
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         initMocks(this);
 
         holdNodeRef = generateNodeRef();
@@ -80,14 +76,11 @@ public class CreateHoldAuditEventUnitTest extends BaseUnitTest
         when(mockedNodeService.getProperty(holdNodeRef, PROP_HOLD_REASON)).thenReturn(holdReason);
     }
 
-    /**
-     * Check that the create hold event calls an audit event.
-     *
-     */
+    /** Check that the create hold event calls an audit event. */
     @Test
-    public void testCreateHoldCausesAuditEvent()
-    {
+    public void testCreateHoldCausesAuditEvent() {
         createHoldAuditEvent.onCreateNode(childAssociationRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(holdNodeRef), any(String.class), isNull(Map.class), any(Map.class));
+        verify(mockedRecordsManagementAuditService, times(1))
+                .auditEvent(eq(holdNodeRef), any(String.class), isNull(Map.class), any(Map.class));
     }
 }

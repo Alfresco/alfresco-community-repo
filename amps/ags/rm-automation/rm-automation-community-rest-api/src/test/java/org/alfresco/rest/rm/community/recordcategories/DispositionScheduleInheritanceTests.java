@@ -39,27 +39,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class DispositionScheduleInheritanceTests extends BaseRMRestTest
-{
+public class DispositionScheduleInheritanceTests extends BaseRMRestTest {
     private static final String RETAIN_STEP = "retain";
     private static final String CUTOFF_STEP = "cutoff";
 
-    @Autowired
-    private DispositionScheduleService dispositionScheduleService;
+    @Autowired private DispositionScheduleService dispositionScheduleService;
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records level
-     *      - subCategory without RS
-     *              - recFolder
-     *                      - incomplete electronic record
-     *                      - complete non-electronic record
-     * Then both records should inherit the RS from rootCategory
+     * Given following structure is created: rootCategory with RS applied on records level -
+     * subCategory without RS - recFolder - incomplete electronic record - complete non-electronic
+     * record Then both records should inherit the RS from rootCategory
      */
-    @AlfrescoTest (jira = "MNT-19967")
+    @AlfrescoTest(jira = "MNT-19967")
     @Test
-    public void testRSInheritanceOnRecordsWhenOnlyACategoryHasRS()
-    {
+    public void testRSInheritanceOnRecordsWhenOnlyACategoryHasRS() {
         STEP("Create record category with retention schedule and apply it to records.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
@@ -71,31 +64,32 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addRetainAfterPeriodStep(rootCategory.getName(), "immediately");
 
         STEP("Create a subcategory with a record folder");
-        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
-        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
+        RecordCategoryChild subCategory =
+                createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
+        RecordCategoryChild recFolder =
+                createFolder(subCategory.getId(), getRandomName("recFolder"));
 
         STEP("Create 2 records in the record folder. Complete one of them.");
         Record elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
-        Record nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
+        Record nonElRecord =
+                createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
         getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
 
         STEP("Check that both records inherit root category retention schedule");
-        Assert.assertTrue(elRecord.getProperties().getRecordSearchHasDispositionSchedule(),
+        Assert.assertTrue(
+                elRecord.getProperties().getRecordSearchHasDispositionSchedule(),
                 "rma:recordSearchHasDispositionSchedule property should be true");
-        Assert.assertTrue(nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
+        Assert.assertTrue(
+                nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
                 "rma:recordSearchHasDispositionSchedule property should be true");
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records folder level
-     *      - subCategory without RS
-     *              - recFolder
-     * Then recFolder should inherit the RS from rootCategory
+     * Given following structure is created: rootCategory with RS applied on records folder level -
+     * subCategory without RS - recFolder Then recFolder should inherit the RS from rootCategory
      */
     @Test
-    public void testRSInheritanceOnRecordFoldersWhenOnlyACategoryHasRS()
-    {
+    public void testRSInheritanceOnRecordFoldersWhenOnlyACategoryHasRS() {
         STEP("Create record category with retention schedule and apply it to record folders.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), false);
@@ -107,27 +101,25 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addRetainAfterPeriodStep(rootCategory.getName(), "immediately");
 
         STEP("Create a subcategory with a record folder");
-        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
-        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
+        RecordCategoryChild subCategory =
+                createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
+        RecordCategoryChild recFolder =
+                createFolder(subCategory.getId(), getRandomName("recFolder"));
 
         STEP("Check that recFolder inherits root category retention schedule");
-        Assert.assertTrue(recFolder.getProperties().getRecordSearchHasDispositionSchedule(),
+        Assert.assertTrue(
+                recFolder.getProperties().getRecordSearchHasDispositionSchedule(),
                 "rma:recordSearchHasDispositionSchedule property should be true");
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records level
-     *      - subCategory1 with another RS applied on records level
-     *              - subCategory2 without RS
-     *                      - recFolder
-     *                              - incomplete electronic record
-     *                              - complete non-electronic record
-     * Then both records should inherit the RS from subCategory1
+     * Given following structure is created: rootCategory with RS applied on records level -
+     * subCategory1 with another RS applied on records level - subCategory2 without RS - recFolder -
+     * incomplete electronic record - complete non-electronic record Then both records should
+     * inherit the RS from subCategory1
      */
     @Test
-    public void testRSInheritanceOnRecordsWhen2CategoriesHaveRS()
-    {
+    public void testRSInheritanceOnRecordsWhen2CategoriesHaveRS() {
         STEP("Create record category with retention schedule and apply it to records.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
@@ -136,7 +128,8 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addCutOffImmediatelyStep(rootCategory.getName());
 
         STEP("Create a subcategory with retention schedule and apply it to records.");
-        RecordCategoryChild subCategory1 = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
+        RecordCategoryChild subCategory1 =
+                createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
         String subcategory1Path = rootCategory.getName() + "/" + subCategory1.getName();
         dispositionScheduleService.createCategoryRetentionSchedule(subcategory1Path, true);
 
@@ -144,38 +137,43 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addRetainAfterPeriodStep(subcategory1Path, "day|1");
 
         STEP("Create a subcategory2 in subcategory1");
-        RecordCategoryChild subCategory2 = createRecordCategory(subCategory1.getId(), getRandomName("subCategory"));
+        RecordCategoryChild subCategory2 =
+                createRecordCategory(subCategory1.getId(), getRandomName("subCategory"));
 
         STEP("Create a record folder with 2 records. Complete one of them.");
-        RecordCategoryChild recFolder = createFolder(subCategory2.getId(), getRandomName("recFolder"));
+        RecordCategoryChild recFolder =
+                createFolder(subCategory2.getId(), getRandomName("recFolder"));
         Record elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
-        Record nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
+        Record nonElRecord =
+                createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
         getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
 
         STEP("Check that both records inherit subCategory1 retention schedule");
-        Assert.assertTrue(elRecord.getProperties().getRecordSearchHasDispositionSchedule(),
-                "rma:recordSearchHasDispositionSchedule property should be true for incomplete record");
-        Assert.assertTrue(nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
-                "rma:recordSearchHasDispositionSchedule property should be true for complete record");
-        Assert.assertEquals(elRecord.getProperties().getRecordSearchDispositionActionName(),
+        Assert.assertTrue(
+                elRecord.getProperties().getRecordSearchHasDispositionSchedule(),
+                "rma:recordSearchHasDispositionSchedule property should be true for incomplete"
+                        + " record");
+        Assert.assertTrue(
+                nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
+                "rma:recordSearchHasDispositionSchedule property should be true for complete"
+                        + " record");
+        Assert.assertEquals(
+                elRecord.getProperties().getRecordSearchDispositionActionName(),
                 RETAIN_STEP,
                 "Disposition action should be retain and not cutoff for incomplete record");
-        Assert.assertEquals(nonElRecord.getProperties().getRecordSearchDispositionActionName(),
+        Assert.assertEquals(
+                nonElRecord.getProperties().getRecordSearchDispositionActionName(),
                 RETAIN_STEP,
                 "Disposition action should be retain and not cutoff for complete record");
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records folder level
-     *      - subCategory1 with another RS applied on records folder level
-     *          - subCategory2 without RS
-     *              - recFolder
-     * Then recFolder should inherit the RS from subCategory1
+     * Given following structure is created: rootCategory with RS applied on records folder level -
+     * subCategory1 with another RS applied on records folder level - subCategory2 without RS -
+     * recFolder Then recFolder should inherit the RS from subCategory1
      */
     @Test
-    public void testRSInheritanceOnRecordFoldersWhen2CategoriesHaveRS()
-    {
+    public void testRSInheritanceOnRecordFoldersWhen2CategoriesHaveRS() {
         STEP("Create record category with retention schedule and apply it to record folders.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), false);
@@ -184,7 +182,8 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addRetainAfterPeriodStep(rootCategory.getName(), "day|2");
 
         STEP("Create a subcategory with retention schedule and apply it to record folders.");
-        RecordCategoryChild subCategory1 = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
+        RecordCategoryChild subCategory1 =
+                createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
         String subcategory1Path = rootCategory.getName() + "/" + subCategory1.getName();
         dispositionScheduleService.createCategoryRetentionSchedule(subcategory1Path, false);
 
@@ -192,29 +191,29 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addCutOffImmediatelyStep(subcategory1Path);
 
         STEP("Create a subcategory2 with a record folder in subcategory1");
-        RecordCategoryChild subCategory2 = createRecordCategory(subCategory1.getId(), getRandomName("subCategory"));
-        RecordCategoryChild recFolder = createFolder(subCategory2.getId(), getRandomName("recFolder"));
+        RecordCategoryChild subCategory2 =
+                createRecordCategory(subCategory1.getId(), getRandomName("subCategory"));
+        RecordCategoryChild recFolder =
+                createFolder(subCategory2.getId(), getRandomName("recFolder"));
 
         STEP("Check that recFolder inherits subCategory1 retention schedule");
-        Assert.assertTrue(recFolder.getProperties().getRecordSearchHasDispositionSchedule(),
+        Assert.assertTrue(
+                recFolder.getProperties().getRecordSearchHasDispositionSchedule(),
                 "rma:recordSearchHasDispositionSchedule property should be true");
-        Assert.assertEquals(recFolder.getProperties().getRecordSearchDispositionActionName(),
+        Assert.assertEquals(
+                recFolder.getProperties().getRecordSearchDispositionActionName(),
                 CUTOFF_STEP,
                 "Disposition action should be cutoff and not retain for the record folder");
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on folder records level
-     *      - subCategory with another RS applied on records level
-     *              - recFolder
-     *                      - incomplete electronic record
-     *                      - complete non-electronic record
-     * Then both records should inherit the RS from subCategory
+     * Given following structure is created: rootCategory with RS applied on folder records level -
+     * subCategory with another RS applied on records level - recFolder - incomplete electronic
+     * record - complete non-electronic record Then both records should inherit the RS from
+     * subCategory
      */
     @Test
-    public void testMixedRSInheritanceWhenFirstParentHasRSOnRecords()
-    {
+    public void testMixedRSInheritanceWhenFirstParentHasRSOnRecords() {
         STEP("Create record category with retention schedule and apply it to folder records.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), false);
@@ -223,7 +222,8 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addCutOffImmediatelyStep(rootCategory.getName());
 
         STEP("Create a subcategory with retention schedule and apply it to records.");
-        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
+        RecordCategoryChild subCategory =
+                createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
         String subcategoryPath = rootCategory.getName() + "/" + subCategory.getName();
         dispositionScheduleService.createCategoryRetentionSchedule(subcategoryPath, true);
 
@@ -231,37 +231,41 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addRetainAfterPeriodStep(subcategoryPath, "day|1");
 
         STEP("Create a record folder with 2 records. Complete one of them.");
-        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
+        RecordCategoryChild recFolder =
+                createFolder(subCategory.getId(), getRandomName("recFolder"));
         Record elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
-        Record nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
+        Record nonElRecord =
+                createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
         getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
 
         STEP("Check that both records inherit subCategory retention schedule");
-        Assert.assertTrue(elRecord.getProperties().getRecordSearchHasDispositionSchedule(),
-                "rma:recordSearchHasDispositionSchedule property should be true for incomplete record");
-        Assert.assertTrue(nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
-                "rma:recordSearchHasDispositionSchedule property should be true for complete record");
-        Assert.assertEquals(elRecord.getProperties().getRecordSearchDispositionActionName(),
+        Assert.assertTrue(
+                elRecord.getProperties().getRecordSearchHasDispositionSchedule(),
+                "rma:recordSearchHasDispositionSchedule property should be true for incomplete"
+                        + " record");
+        Assert.assertTrue(
+                nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
+                "rma:recordSearchHasDispositionSchedule property should be true for complete"
+                        + " record");
+        Assert.assertEquals(
+                elRecord.getProperties().getRecordSearchDispositionActionName(),
                 RETAIN_STEP,
                 "Disposition action should be retain and not cutoff for incomplete record");
-        Assert.assertEquals(nonElRecord.getProperties().getRecordSearchDispositionActionName(),
+        Assert.assertEquals(
+                nonElRecord.getProperties().getRecordSearchDispositionActionName(),
                 RETAIN_STEP,
                 "Disposition action should be retain and not cutoff for complete record");
     }
 
     /**
-     * Given following structure is created:
-     * rootCategory with RS applied on records level
-     *      - subCategory with another RS applied on folder records level
-     *              - recFolder
-     *                      - incomplete electronic record
-     *                      - complete non-electronic record
-     * Then both records should not have RS (rma:recordSearchHasDispositionSchedule property is set to false)
-     * and record folder inherits the RS from subCategory
+     * Given following structure is created: rootCategory with RS applied on records level -
+     * subCategory with another RS applied on folder records level - recFolder - incomplete
+     * electronic record - complete non-electronic record Then both records should not have RS
+     * (rma:recordSearchHasDispositionSchedule property is set to false) and record folder inherits
+     * the RS from subCategory
      */
     @Test
-    public void testMixedRSInheritanceWhenFirstParentHasRSOnFolders()
-    {
+    public void testMixedRSInheritanceWhenFirstParentHasRSOnFolders() {
         STEP("Create record category with retention schedule and apply it to records.");
         RecordCategory rootCategory = createRootCategory(getRandomName("rootCategory"));
         dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
@@ -270,7 +274,8 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addCutOffImmediatelyStep(rootCategory.getName());
 
         STEP("Create a subcategory with retention schedule and apply it to record folders.");
-        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
+        RecordCategoryChild subCategory =
+                createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
         String subcategoryPath = rootCategory.getName() + "/" + subCategory.getName();
         dispositionScheduleService.createCategoryRetentionSchedule(subcategoryPath, false);
 
@@ -278,21 +283,29 @@ public class DispositionScheduleInheritanceTests extends BaseRMRestTest
         dispositionScheduleService.addRetainAfterPeriodStep(subcategoryPath, "day|1");
 
         STEP("Create a record folder with 2 records. Complete one of them.");
-        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
+        RecordCategoryChild recFolder =
+                createFolder(subCategory.getId(), getRandomName("recFolder"));
         Record elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
-        Record nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
+        Record nonElRecord =
+                createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
         getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
 
         STEP("Check that the records don't have retention schedule");
-        Assert.assertFalse(elRecord.getProperties().getRecordSearchHasDispositionSchedule(),
-                "rma:recordSearchHasDispositionSchedule property should be false for incomplete record");
-        Assert.assertFalse(nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
-                "rma:recordSearchHasDispositionSchedule property should be false for complete record");
+        Assert.assertFalse(
+                elRecord.getProperties().getRecordSearchHasDispositionSchedule(),
+                "rma:recordSearchHasDispositionSchedule property should be false for incomplete"
+                        + " record");
+        Assert.assertFalse(
+                nonElRecord.getProperties().getRecordSearchHasDispositionSchedule(),
+                "rma:recordSearchHasDispositionSchedule property should be false for complete"
+                        + " record");
 
         STEP("Check that recFolder inherits subCategory retention schedule");
-        Assert.assertTrue(recFolder.getProperties().getRecordSearchHasDispositionSchedule(),
+        Assert.assertTrue(
+                recFolder.getProperties().getRecordSearchHasDispositionSchedule(),
                 "rma:recordSearchHasDispositionSchedule property should be true");
-        Assert.assertEquals(recFolder.getProperties().getRecordSearchDispositionActionName(),
+        Assert.assertEquals(
+                recFolder.getProperties().getRecordSearchDispositionActionName(),
                 RETAIN_STEP,
                 "Disposition action should be retain and not cutoff for the record folder");
     }

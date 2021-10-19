@@ -32,14 +32,14 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.script.slingshot.Version;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Recordable version config service
@@ -47,8 +47,8 @@ import org.alfresco.service.cmr.repository.NodeService;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordableVersionConfigServiceImpl implements RecordableVersionConfigService, RecordableVersionModel
-{
+public class RecordableVersionConfigServiceImpl
+        implements RecordableVersionConfigService, RecordableVersionModel {
     /** Node service */
     private NodeService nodeService;
 
@@ -57,8 +57,7 @@ public class RecordableVersionConfigServiceImpl implements RecordableVersionConf
      *
      * @return The node service
      */
-    protected NodeService getNodeService()
-    {
+    protected NodeService getNodeService() {
         return this.nodeService;
     }
 
@@ -67,24 +66,22 @@ public class RecordableVersionConfigServiceImpl implements RecordableVersionConf
      *
      * @param nodeService The node service
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService#getVersions(org.alfresco.service.cmr.repository.NodeRef)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService#getVersions(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public List<Version> getVersions(NodeRef nodeRef)
-    {
+    public List<Version> getVersions(NodeRef nodeRef) {
         mandatory("nodeRef", nodeRef);
 
         RecordableVersionPolicy[] recordableVersionPolicies = RecordableVersionPolicy.values();
         List<Version> versions = new ArrayList<>(recordableVersionPolicies.length);
 
-        for (RecordableVersionPolicy recordableVersionPolicy : recordableVersionPolicies)
-        {
+        for (RecordableVersionPolicy recordableVersionPolicy : recordableVersionPolicies) {
             String policy = recordableVersionPolicy.toString();
             boolean selected = isVersionPolicySelected(recordableVersionPolicy, nodeRef);
             versions.add(new Version(policy, selected));
@@ -94,16 +91,18 @@ public class RecordableVersionConfigServiceImpl implements RecordableVersionConf
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService#setVersion(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see
+     *     org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService#setVersion(org.alfresco.service.cmr.repository.NodeRef,
+     *     java.lang.String)
      */
     @Override
-    public void setVersion(NodeRef nodeRef, String version)
-    {
+    public void setVersion(NodeRef nodeRef, String version) {
         mandatory("nodeRef", nodeRef);
         mandatoryString("recordedVersion", version);
 
         RecordableVersionPolicy recordableVersionPolicy = RecordableVersionPolicy.valueOf(version);
-        getNodeService().setProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY, recordableVersionPolicy);
+        getNodeService()
+                .setProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY, recordableVersionPolicy);
     }
 
     /**
@@ -111,23 +110,20 @@ public class RecordableVersionConfigServiceImpl implements RecordableVersionConf
      *
      * @param recordableVersionPolicy The recordable version policy
      * @param nodeRef Node reference of the document
-     * @return <code>true</code> if the specified recordable version policy has been selected for the document, <code>false</code> otherwise
+     * @return <code>true</code> if the specified recordable version policy has been selected for
+     *     the document, <code>false</code> otherwise
      */
-    private boolean isVersionPolicySelected(RecordableVersionPolicy recordableVersionPolicy, NodeRef nodeRef)
-    {
+    private boolean isVersionPolicySelected(
+            RecordableVersionPolicy recordableVersionPolicy, NodeRef nodeRef) {
         boolean isVersionPolicySelected = false;
-        String policy = (String) getNodeService().getProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY);
-        if (isNotBlank(policy))
-        {
-            if (RecordableVersionPolicy.valueOf(policy).equals(recordableVersionPolicy))
-            {
+        String policy =
+                (String) getNodeService().getProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY);
+        if (isNotBlank(policy)) {
+            if (RecordableVersionPolicy.valueOf(policy).equals(recordableVersionPolicy)) {
                 isVersionPolicySelected = true;
             }
-        }
-        else
-        {
-            if (recordableVersionPolicy.equals(NONE))
-            {
+        } else {
+            if (recordableVersionPolicy.equals(NONE)) {
                 isVersionPolicySelected = true;
             }
         }

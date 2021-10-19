@@ -26,26 +26,24 @@
 
 package org.alfresco.rest.api;
 
-
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-public interface Actions
-{
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params);
+public interface Actions {
+    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(
+            NodeRef nodeRef, Parameters params);
 
     CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params);
 
     ActionDefinition getActionDefinitionById(String actionDefinitionId);
-    
-    enum SortKey
-    {
+
+    enum SortKey {
         NAME,
         TITLE
     };
-    
+
     Action executeAction(Action action, Parameters parameters);
 }

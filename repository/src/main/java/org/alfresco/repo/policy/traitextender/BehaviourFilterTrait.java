@@ -29,9 +29,5 @@ package org.alfresco.repo.policy.traitextender;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.traitextender.Trait;
 
-/**
- * @author Oussama Messeguem
- */
-public interface BehaviourFilterTrait extends Trait, BehaviourFilter
-{
-}
+/** @author Oussama Messeguem */
+public interface BehaviourFilterTrait extends Trait, BehaviourFilter {}

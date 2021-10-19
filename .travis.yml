@@ -1,4 +1,7 @@
 ---
+import:
+  - source: Alfresco/alfresco-build-tools:.travis.pre-commit.yml@v1.1.5
+
 dist: focal
 language: java
 jdk: openjdk11

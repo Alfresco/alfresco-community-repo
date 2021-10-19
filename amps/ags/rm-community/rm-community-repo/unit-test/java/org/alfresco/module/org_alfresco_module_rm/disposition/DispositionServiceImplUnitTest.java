@@ -32,8 +32,6 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Date;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -41,14 +39,15 @@ import org.alfresco.service.cmr.repository.Period;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Date;
+
 /**
  * Unit tests for {@link DispositionServiceImpl}.
  *
  * @author Tom Page
  * @since 2.3.1
  */
-public class DispositionServiceImplUnitTest
-{
+public class DispositionServiceImplUnitTest {
     /** The node being subject to the disposition step. */
     NodeRef CONTENT_NODE_REF = new NodeRef("content://node/");
 
@@ -58,44 +57,49 @@ public class DispositionServiceImplUnitTest
     private NodeService mockNodeService = mock(NodeService.class);
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         dispositionService.setNodeService(mockNodeService);
     }
 
     /**
-     * Check that the relevant information is retrieved from the DispositionActionDefinition in order to determine the
-     * "disposition as of" date.
+     * Check that the relevant information is retrieved from the DispositionActionDefinition in
+     * order to determine the "disposition as of" date.
      */
     @Test
-    public void testCalculateAsOfDate()
-    {
+    public void testCalculateAsOfDate() {
         // Set up a mock for the disposition action definition.
-        DispositionActionDefinition mockDispositionActionDefinition = mock(DispositionActionDefinition.class);
+        DispositionActionDefinition mockDispositionActionDefinition =
+                mock(DispositionActionDefinition.class);
         Period mockPeriod = mock(Period.class);
         when(mockDispositionActionDefinition.getPeriod()).thenReturn(mockPeriod);
-        when(mockDispositionActionDefinition.getPeriodProperty()).thenReturn(ContentModel.PROP_CREATED);
+        when(mockDispositionActionDefinition.getPeriodProperty())
+                .thenReturn(ContentModel.PROP_CREATED);
         // Set up a created date and another date that is some Period later.
         Date createdDate = new Date(1234567890);
-        when(mockNodeService.getProperty(CONTENT_NODE_REF, ContentModel.PROP_CREATED)).thenReturn(createdDate);
+        when(mockNodeService.getProperty(CONTENT_NODE_REF, ContentModel.PROP_CREATED))
+                .thenReturn(createdDate);
         Date nextDate = new Date(1240000000);
         when(mockPeriod.getNextDate(createdDate)).thenReturn(nextDate);
 
         // Call the method under test.
-        Date asOfDate = dispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition);
+        Date asOfDate =
+                dispositionService.calculateAsOfDate(
+                        CONTENT_NODE_REF, mockDispositionActionDefinition);
 
         assertEquals("Unexpected calculation for 'as of' date", nextDate, asOfDate);
     }
 
     /** Check that the calculated "disposition as of" date is null if a null period is given. */
     @Test
-    public void testCalculateAsOfDate_nullPeriod()
-    {
-        DispositionActionDefinition mockDispositionActionDefinition = mock(DispositionActionDefinition.class);
+    public void testCalculateAsOfDate_nullPeriod() {
+        DispositionActionDefinition mockDispositionActionDefinition =
+                mock(DispositionActionDefinition.class);
         when(mockDispositionActionDefinition.getPeriod()).thenReturn(null);
 
         // Call the method under test.
-        Date asOfDate = dispositionService.calculateAsOfDate(CONTENT_NODE_REF, mockDispositionActionDefinition);
+        Date asOfDate =
+                dispositionService.calculateAsOfDate(
+                        CONTENT_NODE_REF, mockDispositionActionDefinition);
 
         assertNull("It should not be possible to determine the 'as of' date.", asOfDate);
     }

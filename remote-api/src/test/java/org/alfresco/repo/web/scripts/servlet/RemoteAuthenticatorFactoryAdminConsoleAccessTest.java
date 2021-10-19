@@ -25,6 +25,11 @@
  */
 package org.alfresco.repo.web.scripts.servlet;
 
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -37,7 +42,6 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -59,22 +63,20 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRespons
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration({ "classpath:alfresco/application-context.xml", "classpath:alfresco/web-scripts-application-context.xml",
-    "classpath:alfresco/web-scripts-application-context-test.xml" })
-public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpringTest
-{
+@ContextConfiguration({
+    "classpath:alfresco/application-context.xml",
+    "classpath:alfresco/web-scripts-application-context.xml",
+    "classpath:alfresco/web-scripts-application-context-test.xml"
+})
+public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpringTest {
     private String proxyHeader = "X-Alfresco-Remote-User";
     public static int setStatusCode;
 
@@ -88,44 +90,52 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     private AuthorityService authorityService;
 
     @Before
-    public void before() throws Exception
-    {
+    public void before() throws Exception {
         blockingRemoteUserMapper = new BlockingRemoteUserMapper();
 
-        DefaultChildApplicationContextManager childApplicationContextManager = (DefaultChildApplicationContextManager) applicationContext
-            .getBean("Authentication");
-        remoteUserAuthenticatorFactory = (RemoteUserAuthenticatorFactory) applicationContext.getBean("webscripts.authenticator.remoteuser");
+        DefaultChildApplicationContextManager childApplicationContextManager =
+                (DefaultChildApplicationContextManager)
+                        applicationContext.getBean("Authentication");
+        remoteUserAuthenticatorFactory =
+                (RemoteUserAuthenticatorFactory)
+                        applicationContext.getBean("webscripts.authenticator.remoteuser");
         remoteUserAuthenticatorFactory.setRemoteUserMapper(blockingRemoteUserMapper);
-        remoteUserAuthenticatorFactory
-            .setGetRemoteUserTimeoutMilliseconds((long) (BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS / 2));//highly impatient
+        remoteUserAuthenticatorFactory.setGetRemoteUserTimeoutMilliseconds(
+                (long) (BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS / 2)); // highly impatient
         personService = (PersonService) applicationContext.getBean("PersonService");
 
-        authenticationService = applicationContext.getBean("AuthenticationService", MutableAuthenticationService.class);
-        authenticationComponent = applicationContext.getBean("AuthenticationComponent", AuthenticationComponent.class);
+        authenticationService =
+                applicationContext.getBean(
+                        "AuthenticationService", MutableAuthenticationService.class);
+        authenticationComponent =
+                applicationContext.getBean(
+                        "AuthenticationComponent", AuthenticationComponent.class);
         authorityService = applicationContext.getBean("AuthorityService", AuthorityService.class);
 
         childApplicationContextManager.stop();
-        childApplicationContextManager.setProperty("chain", "external1:external,alfrescoNtlm1:alfrescoNtlm");
-        ChildApplicationContextFactory childApplicationContextFactory = childApplicationContextManager.getChildApplicationContextFactory("external1");
+        childApplicationContextManager.setProperty(
+                "chain", "external1:external,alfrescoNtlm1:alfrescoNtlm");
+        ChildApplicationContextFactory childApplicationContextFactory =
+                childApplicationContextManager.getChildApplicationContextFactory("external1");
         childApplicationContextFactory.stop();
         childApplicationContextFactory.setProperty("external.authentication.proxyUserName", "");
     }
 
     @Test
-    public void testAdminGuestAccess()
-    {
+    public void testAdminGuestAccess() {
         RequiredAuthentication required = RequiredAuthentication.admin;
         boolean isGuest = true;
 
         final boolean authenticated = authenticateWithGuestParameters(required, isGuest);
 
-        assertFalse("This should not authenticate. Admin access and guest is not a valid combination.", authenticated);
+        assertFalse(
+                "This should not authenticate. Admin access and guest is not a valid combination.",
+                authenticated);
         checkTimeOutFeaturesWasNotUsed();
     }
 
     @Test
-    public void testUserGuestAccess()
-    {
+    public void testUserGuestAccess() {
         RequiredAuthentication required = RequiredAuthentication.user;
         boolean isGuest = true;
 
@@ -136,8 +146,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     }
 
     @Test
-    public void testGuestGuestAccess()
-    {
+    public void testGuestGuestAccess() {
         RequiredAuthentication required = RequiredAuthentication.guest;
         boolean isGuest = true;
 
@@ -148,8 +157,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     }
 
     @Test
-    public void testNoneGuestAccess()
-    {
+    public void testNoneGuestAccess() {
         RequiredAuthentication required = RequiredAuthentication.none;
         boolean isGuest = true;
 
@@ -160,20 +168,19 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     }
 
     @Test
-    public void testNoneNotGuestAccess()
-    {
+    public void testNoneNotGuestAccess() {
         RequiredAuthentication required = RequiredAuthentication.none;
         boolean isGuest = false;
 
-        final boolean authenticated = authenticateWithGuestParameters(RequiredAuthentication.none, false);
+        final boolean authenticated =
+                authenticateWithGuestParameters(RequiredAuthentication.none, false);
 
         assertFalse("This should not authenticate.", authenticated);
         checkTimeOutFeaturesWasNotUsed();
     }
 
     @Test
-    public void testExternalAuthForAdminPage()
-    {
+    public void testExternalAuthForAdminPage() {
         RequiredAuthentication required = RequiredAuthentication.admin;
         Set<String> families = new HashSet<>();
         families.add("AdminConsole");
@@ -182,8 +189,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     }
 
     @Test
-    public void testExternalAuthForAdminResource()
-    {
+    public void testExternalAuthForAdminResource() {
         RequiredAuthentication required = RequiredAuthentication.admin;
         Set<String> families = Collections.emptySet();
 
@@ -191,8 +197,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     }
 
     @Test
-    public void testExternalAuthForUserResource()
-    {
+    public void testExternalAuthForUserResource() {
         RequiredAuthentication required = RequiredAuthentication.user;
         Set<String> families = Collections.emptySet();
 
@@ -200,8 +205,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
     }
 
     @Test
-    public void testAdminCanAccessAdminConsoleScript()
-    {
+    public void testAdminCanAccessAdminConsoleScript() {
         Set<String> families = new HashSet<>();
         families.add("AdminConsole");
         complexCheckOfScriptCases(families);
@@ -209,21 +213,18 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
     @Category(IntermittentlyFailingTests.class) // ACS-959
     @Test
-    public void testAdminCanAccessAdminConsoleHelperScript()
-    {
+    public void testAdminCanAccessAdminConsoleHelperScript() {
         Set<String> families = new HashSet<>();
         families.add("AdminConsoleHelper");
         complexCheckOfScriptCases(families);
     }
 
     /**
-     * Tested access to the AdminConsole for an non literal admin user
-     * but with admin permissions (user added to ALFRESCO_ADMINISTRATORS)
-     * and accessing via Basic Auth
+     * Tested access to the AdminConsole for an non literal admin user but with admin permissions
+     * (user added to ALFRESCO_ADMINISTRATORS) and accessing via Basic Auth
      */
     @Test
-    public void testUserCanAccessAdminConsoleScript()
-    {
+    public void testUserCanAccessAdminConsoleScript() {
         Set<String> families = new HashSet<>();
         families.add("AdminConsole");
 
@@ -240,12 +241,10 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         String headerToAdd = getBasicAuthHeader(username, password);
 
         checkAdminConsoleFamilyWithBasicAuthHeaderPresentUser(families, headerToAdd);
-
     }
 
-    private void complexCheckOfScriptCases(final Set<String> families)
-    {
-        final String headerToAdd = "Basic YWRtaW46YWRtaW4="; //admin:admin
+    private void complexCheckOfScriptCases(final Set<String> families) {
+        final String headerToAdd = "Basic YWRtaW46YWRtaW4="; // admin:admin
 
         checkGenericResourceAccess();
 
@@ -258,48 +257,60 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         checkAdminConsoleFamilyWithBasicAuthHeaderButWrongPassword(families);
     }
 
-    private void checkAdminConsoleFamilyWithBasicAuthHeaderButWrongPassword(Set<String> families)
-    {
+    private void checkAdminConsoleFamilyWithBasicAuthHeaderButWrongPassword(Set<String> families) {
         blockingRemoteUserMapper.reset();
         // now try with bad password
         String headerToAddWithWrongPassword = "Basic YWRtaW46YmliaQ=="; // admin:bibi
         final boolean authenticated = authenticate(families, headerToAddWithWrongPassword);
 
-        assertFalse("It is an AdminConsole webscript now and Admin basic auth header was present BUT with wrong password. Should fail.",
-            authenticated);
+        assertFalse(
+                "It is an AdminConsole webscript now and Admin basic auth header was present BUT"
+                        + " with wrong password. Should fail.",
+                authenticated);
         assertEquals("Status should be 401", 401, setStatusCode);
         final String message = "The code from blockingRemoteUserMapper shouldn't have been called";
         assertFalse(message, blockingRemoteUserMapper.isWasInterrupted());
         assertEquals(message, blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
-    private void checkAdminConsoleFamilyPage(Set<String> families)
-    {
+    private void checkAdminConsoleFamilyPage(Set<String> families) {
         blockingRemoteUserMapper.reset();
         // now try an admin console family page
         final boolean authenticated = authenticate(families, null);
 
-        assertFalse("It is an AdminConsole webscript now, but Admin basic auth header was not present. It should return 401", authenticated);
+        assertFalse(
+                "It is an AdminConsole webscript now, but Admin basic auth header was not present."
+                        + " It should return 401",
+                authenticated);
         assertEquals("Status should be 401", 401, setStatusCode);
-        assertTrue("Because it is an AdminConsole webscript, the interrupt should have been called.", blockingRemoteUserMapper.isWasInterrupted());
-        assertTrue("The interrupt should have been called.", blockingRemoteUserMapper.getTimePassed() < BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS);
+        assertTrue(
+                "Because it is an AdminConsole webscript, the interrupt should have been called.",
+                blockingRemoteUserMapper.isWasInterrupted());
+        assertTrue(
+                "The interrupt should have been called.",
+                blockingRemoteUserMapper.getTimePassed()
+                        < BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS);
     }
 
-    private void checkAdminConsoleFamilyWithBasicAuthHeaderPresent(Set<String> families, String headerToAdd)
-    {
+    private void checkAdminConsoleFamilyWithBasicAuthHeaderPresent(
+            Set<String> families, String headerToAdd) {
         blockingRemoteUserMapper.reset();
         // now try with valid basic auth as well
         final boolean authenticated = authenticate(families, headerToAdd);
 
-        assertTrue("It is an AdminConsole webscript now and Admin basic auth header was present. It should succeed.", authenticated);
-        // status is not checked here, as it is not returned by this framework we are testing. It should eventually be 200
+        assertTrue(
+                "It is an AdminConsole webscript now and Admin basic auth header was present. It"
+                        + " should succeed.",
+                authenticated);
+        // status is not checked here, as it is not returned by this framework we are testing. It
+        // should eventually be 200
         final String message = "The code from blockingRemoteUserMapper shouldn't have been called";
         assertFalse(message, blockingRemoteUserMapper.isWasInterrupted());
         assertEquals(message, blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
-    private void checkAdminConsoleFamilyWithBasicAuthHeaderPresentUser(Set<String> families, String headerToAdd)
-    {
+    private void checkAdminConsoleFamilyWithBasicAuthHeaderPresentUser(
+            Set<String> families, String headerToAdd) {
         blockingRemoteUserMapper.reset();
         // now try with valid basic auth as well
         boolean authenticated = false;
@@ -307,77 +318,98 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         try {
             authenticated = authenticate(families, headerToAdd);
         } catch (Exception e) {
-            logger.error(String.format("The authentication should not require secure context to be set. %s", e.getMessage()), e);
+            logger.error(
+                    String.format(
+                            "The authentication should not require secure context to be set. %s",
+                            e.getMessage()),
+                    e);
         }
 
-        assertTrue("It is an AdminConsole webscript and a User with Admin access and basic auth header was present. It should succeed.", authenticated);
-        // status is not checked here, as it is not returned by this framework we are testing. It should eventually be 200
+        assertTrue(
+                "It is an AdminConsole webscript and a User with Admin access and basic auth header"
+                        + " was present. It should succeed.",
+                authenticated);
+        // status is not checked here, as it is not returned by this framework we are testing. It
+        // should eventually be 200
         final String message = "The code from blockingRemoteUserMapper shouldn't have been called";
         assertFalse(message, blockingRemoteUserMapper.isWasInterrupted());
         assertEquals(message, blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
-    private void checkAdminConsoleFamilyPageWithRemoteUserMapperDisabled(Set<String> families)
-    {
+    private void checkAdminConsoleFamilyPageWithRemoteUserMapperDisabled(Set<String> families) {
         blockingRemoteUserMapper.reset();
         blockingRemoteUserMapper.setEnabled(false);
         // now try an admin console family page
         final boolean authenticated = authenticate(families, null);
 
-        assertFalse("It is an AdminConsole webscript now, but Admin basic auth header was not present. It should return 401", authenticated);
+        assertFalse(
+                "It is an AdminConsole webscript now, but Admin basic auth header was not present."
+                        + " It should return 401",
+                authenticated);
         assertEquals("Status should be 401", 401, setStatusCode);
-        assertFalse("The interrupt should have not been called because the RemoteUserMapper is not enabled.",
-            blockingRemoteUserMapper.isWasInterrupted());
+        assertFalse(
+                "The interrupt should have not been called because the RemoteUserMapper is not"
+                        + " enabled.",
+                blockingRemoteUserMapper.isWasInterrupted());
         assertEquals("RemoteUserMapper not called", blockingRemoteUserMapper.getTimePassed(), 0);
     }
 
-    private void checkGenericResourceAccess()
-    {
+    private void checkGenericResourceAccess() {
         blockingRemoteUserMapper.reset();
         // first try a generic resource
         final boolean authenticated = authenticate(Collections.emptySet(), null);
 
-        assertFalse("This should not be authenticated as it is not an Admin Console requested. And no credentials have been provided", authenticated);
-        assertFalse("Because it is not an Admin Console, the timeout feature from BasicHttpAuthenticator should not be requested. "
-            + "Therefore the interrupt should not have been called. ", blockingRemoteUserMapper.isWasInterrupted());
-        assertTrue("No interrupt should have been called.",
-            blockingRemoteUserMapper.getTimePassed() > BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS - 1);
+        assertFalse(
+                "This should not be authenticated as it is not an Admin Console requested. And no"
+                        + " credentials have been provided",
+                authenticated);
+        assertFalse(
+                "Because it is not an Admin Console, the timeout feature from"
+                        + " BasicHttpAuthenticator should not be requested. Therefore the interrupt"
+                        + " should not have been called. ",
+                blockingRemoteUserMapper.isWasInterrupted());
+        assertTrue(
+                "No interrupt should have been called.",
+                blockingRemoteUserMapper.getTimePassed()
+                        > BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS - 1);
     }
 
-    private void checkTimeOutFeaturesWasNotUsed()
-    {
-        assertFalse("The timeout feature from BasicHttpAuthenticator should not be requested. Therefore the interrupt should not have been called. ",
-            blockingRemoteUserMapper.isWasInterrupted());
-        assertTrue("No interrupt should have been called.",
-            blockingRemoteUserMapper.getTimePassed() > BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS - 1);
+    private void checkTimeOutFeaturesWasNotUsed() {
+        assertFalse(
+                "The timeout feature from BasicHttpAuthenticator should not be requested. Therefore"
+                        + " the interrupt should not have been called. ",
+                blockingRemoteUserMapper.isWasInterrupted());
+        assertTrue(
+                "No interrupt should have been called.",
+                blockingRemoteUserMapper.getTimePassed()
+                        > BlockingRemoteUserMapper.BLOCKING_FOR_MILLIS - 1);
     }
 
-    private boolean authenticate(Set<String> families, String headerToAdd)
-    {
+    private boolean authenticate(Set<String> families, String headerToAdd) {
         WebScriptServletRequest mockRequest = prepareMockRequest(families, headerToAdd);
         WebScriptServletResponse mockResponse = prepareMockResponse();
 
-        Authenticator authenticator = remoteUserAuthenticatorFactory.create(mockRequest, mockResponse);
+        Authenticator authenticator =
+                remoteUserAuthenticatorFactory.create(mockRequest, mockResponse);
         return authenticator.authenticate(RequiredAuthentication.admin, false);
     }
 
-    private boolean authenticateWithGuestParameters(RequiredAuthentication required, boolean isGuest)
-    {
+    private boolean authenticateWithGuestParameters(
+            RequiredAuthentication required, boolean isGuest) {
         blockingRemoteUserMapper.reset();
 
         WebScriptServletRequest mockRequest = prepareMockRequest(Collections.emptySet(), null);
         WebScriptServletResponse mockResponse = prepareMockResponse();
 
-        Authenticator authenticator = remoteUserAuthenticatorFactory.create(mockRequest, mockResponse);
+        Authenticator authenticator =
+                remoteUserAuthenticatorFactory.create(mockRequest, mockResponse);
         return authenticator.authenticate(required, isGuest);
     }
 
-    private WebScriptServletRequest prepareMockRequest(Set<String> families, String headerToAdd)
-    {
+    private WebScriptServletRequest prepareMockRequest(Set<String> families, String headerToAdd) {
         HttpServletRequest mockHttpRequest = mock(HttpServletRequest.class);
         when(mockHttpRequest.getScheme()).thenReturn("http");
-        if (headerToAdd != null)
-        {
+        if (headerToAdd != null) {
             when(mockHttpRequest.getHeader("Authorization")).thenReturn(headerToAdd);
         }
         WebScriptServletRequest mockRequest = mock(WebScriptServletRequest.class);
@@ -393,8 +425,7 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
         return mockRequest;
     }
 
-    private void checkExtAuthStillWorks(RequiredAuthentication required, Set<String> families)
-    {
+    private void checkExtAuthStillWorks(RequiredAuthentication required, Set<String> families) {
         blockingRemoteUserMapper.reset();
 
         DefaultRemoteUserMapper defaultRemoteUserMapper = new DefaultRemoteUserMapper();
@@ -422,53 +453,57 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
         WebScriptServletResponse mockResponse = prepareMockResponse();
 
-        Authenticator authenticator = remoteUserAuthenticatorFactory.create(mockRequest, mockResponse);
+        Authenticator authenticator =
+                remoteUserAuthenticatorFactory.create(mockRequest, mockResponse);
 
         final boolean authenticated = authenticator.authenticate(required, false);
 
         assertTrue("This should be authenticating with external auth", authenticated);
-        assertFalse("We have been using the DefaultRemoteUserMapper, so our BlockingRemoteUserMapper shouldn't have been called",
-            blockingRemoteUserMapper.isWasInterrupted());
-        assertEquals("BlockingRemoteUserMapper shouldn't have been called", blockingRemoteUserMapper.getTimePassed(), 0);
+        assertFalse(
+                "We have been using the DefaultRemoteUserMapper, so our BlockingRemoteUserMapper"
+                        + " shouldn't have been called",
+                blockingRemoteUserMapper.isWasInterrupted());
+        assertEquals(
+                "BlockingRemoteUserMapper shouldn't have been called",
+                blockingRemoteUserMapper.getTimePassed(),
+                0);
     }
 
-    private WebScriptServletResponse prepareMockResponse()
-    {
+    private WebScriptServletResponse prepareMockResponse() {
         HttpServletResponse mockHttpResponse = mock(HttpServletResponse.class);
         WebScriptServletResponse mockResponse = mock(WebScriptServletResponse.class);
         when(mockResponse.getHttpServletResponse()).thenReturn(mockHttpResponse);
-        doAnswer(new Answer()
-        {
-            public Object answer(InvocationOnMock invocation)
-            {
-                Object[] args = invocation.getArguments();
-                if (args != null && args.length == 1)
-                {
-                    setStatusCode = -1;
-                    try
-                    {
-                        setStatusCode = (int) args[0];
-                    }
-                    catch (Exception e)
-                    {
-                        logger.error("Could not get the status code: " + e.getMessage(), e);
-                    }
-                }
-                return null;
-            }
-        }).when(mockHttpResponse).setStatus(anyInt());
+        doAnswer(
+                        new Answer() {
+                            public Object answer(InvocationOnMock invocation) {
+                                Object[] args = invocation.getArguments();
+                                if (args != null && args.length == 1) {
+                                    setStatusCode = -1;
+                                    try {
+                                        setStatusCode = (int) args[0];
+                                    } catch (Exception e) {
+                                        logger.error(
+                                                "Could not get the status code: " + e.getMessage(),
+                                                e);
+                                    }
+                                }
+                                return null;
+                            }
+                        })
+                .when(mockHttpResponse)
+                .setStatus(anyInt());
         return mockResponse;
     }
 
     /**
-     * User creation consists of creating a user and an authentication to be compared when a login is asked
+     * User creation consists of creating a user and an authentication to be compared when a login
+     * is asked
+     *
      * @param userName
      * @param password
      */
-    private void createUser(String userName, String password)
-    {
-        if (!personService.personExists(userName))
-        {
+    private void createUser(String userName, String password) {
+        if (!personService.personExists(userName)) {
             this.authenticationService.createAuthentication(userName, password.toCharArray());
 
             PropertyMap personProps = new PropertyMap();
@@ -485,18 +520,19 @@ public class RemoteAuthenticatorFactoryAdminConsoleAccessTest extends BaseSpring
 
     /**
      * Formats the value for a basic auth to be put in headers
+     *
      * @param userName
      * @param password
      * @return
      */
-    private String getBasicAuthHeader(String userName, String password)
-    {
-        return String.format("Basic %s", Base64.encodeBase64String(String.format("%s:%s", userName, password).getBytes()));
+    private String getBasicAuthHeader(String userName, String password) {
+        return String.format(
+                "Basic %s",
+                Base64.encodeBase64String(String.format("%s:%s", userName, password).getBytes()));
     }
 }
 
-class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
-{
+class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean {
     public static final int BLOCKING_FOR_MILLIS = 1000;
     private volatile boolean wasInterrupted;
     private volatile int timePassed;
@@ -504,48 +540,37 @@ class BlockingRemoteUserMapper implements RemoteUserMapper, ActivateableBean
     private boolean isEnabled = true;
 
     @Override
-    public String getRemoteUser(HttpServletRequest request)
-    {
+    public String getRemoteUser(HttpServletRequest request) {
         long t1 = System.currentTimeMillis();
-        try
-        {
+        try {
             Thread.sleep(BLOCKING_FOR_MILLIS);
-        }
-        catch (InterruptedException ie)
-        {
+        } catch (InterruptedException ie) {
             wasInterrupted = true;
-        }
-        finally
-        {
+        } finally {
             timePassed = (int) (System.currentTimeMillis() - t1);
         }
         return null;
     }
 
-    public boolean isWasInterrupted()
-    {
+    public boolean isWasInterrupted() {
         return wasInterrupted;
     }
 
-    public int getTimePassed()
-    {
+    public int getTimePassed() {
         return timePassed;
     }
 
-    public void reset()
-    {
+    public void reset() {
         wasInterrupted = false;
         timePassed = 0;
     }
 
     @Override
-    public boolean isActive()
-    {
+    public boolean isActive() {
         return isEnabled;
     }
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         this.isEnabled = enabled;
     }
 }

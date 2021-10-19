@@ -27,16 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat;
 
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
+
 import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-
-public interface RMCaveatConfigComponent
-{
+public interface RMCaveatConfigComponent {
     void init();
 
     /**
@@ -69,34 +68,23 @@ public interface RMCaveatConfigComponent
      */
     RMConstraintInfo getRMConstraint(String listName);
 
-    /**
-     * Add RM constraint
-     */
+    /** Add RM constraint */
     void addRMConstraint(String listName);
 
-    /**
-     * Add RM constraint value for given authority
-     */
+    /** Add RM constraint value for given authority */
     void addRMConstraintListValue(String listName, String authorityName, String value);
 
-    /**
-     * Update RM constraint values for given authority
-     */
-    void updateRMConstraintListAuthority(String listName, String authorityName, List<String>values);
+    /** Update RM constraint values for given authority */
+    void updateRMConstraintListAuthority(
+            String listName, String authorityName, List<String> values);
 
-    /**
-     * Update RM constraint authorities for given value
-     */
-    void updateRMConstraintListValue(String listName, String valueName, List<String>authorities);
+    /** Update RM constraint authorities for given value */
+    void updateRMConstraintListValue(String listName, String valueName, List<String> authorities);
 
-    /**
-     * Remove RM constraint value (all authorities)
-     */
+    /** Remove RM constraint value (all authorities) */
     void removeRMConstraintListValue(String listName, String valueName);
 
-    /**
-     * Remove RM constraint authority (all values)
-     */
+    /** Remove RM constraint authority (all values) */
     void removeRMConstraintListAuthority(String listName, String authorityName);
 
     /**
@@ -108,6 +96,7 @@ public interface RMCaveatConfigComponent
 
     /**
      * Get the details of a caveat list
+     *
      * @param listName
      * @return
      */

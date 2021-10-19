@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -30,24 +30,20 @@ import junit.framework.TestCase;
 import org.alfresco.repo.web.util.PagingCursor.Page;
 import org.alfresco.repo.web.util.PagingCursor.Rows;
 
-
 /**
  * Test Paged and Row Based Cursors
- * 
+ *
  * @author davidc
  */
-public class PagingCursorTest extends TestCase
-{
+public class PagingCursorTest extends TestCase {
     protected PagingCursor pageCursor;
-    
+
     @Override
-    protected void setUp() throws Exception
-    {
+    protected void setUp() throws Exception {
         pageCursor = new PagingCursor();
     }
 
-    public void testZeroBasedBooleans()
-    {
+    public void testZeroBasedBooleans() {
         assertFalse(pageCursor.isZeroBasedPage());
         pageCursor.setZeroBasedPage(true);
         assertTrue(pageCursor.isZeroBasedPage());
@@ -55,9 +51,8 @@ public class PagingCursorTest extends TestCase
         pageCursor.setZeroBasedRow(false);
         assertFalse(pageCursor.isZeroBasedRow());
     }
-    
-    public void testZeroRowsPageCursor()
-    {
+
+    public void testZeroRowsPageCursor() {
         Page page = pageCursor.createPageCursor(0, 10, 1);
         assertNotNull(page);
         assertEquals(0, page.getTotalRows());
@@ -73,8 +68,7 @@ public class PagingCursorTest extends TestCase
         assertEquals(-1, page.getEndRow());
     }
 
-    public void testOutOfBoundsPageCursor()
-    {
+    public void testOutOfBoundsPageCursor() {
         Page page1 = pageCursor.createPageCursor(1, 1, 1);
         assertNotNull(page1);
         assertTrue(page1.isInRange());
@@ -127,8 +121,7 @@ public class PagingCursorTest extends TestCase
         assertFalse(page17.isInRange());
     }
 
-    public void testTotalPageCursor()
-    {
+    public void testTotalPageCursor() {
         Page page1 = pageCursor.createPageCursor(10, 1, 1);
         assertEquals(10, page1.getTotalRows());
         assertEquals(10, page1.getTotalPages());
@@ -146,8 +139,7 @@ public class PagingCursorTest extends TestCase
         assertEquals(2, page5.getTotalPages());
     }
 
-    public void testPagingPageCursor()
-    {
+    public void testPagingPageCursor() {
         Page page1 = pageCursor.createPageCursor(10, 1, 1);
         assertEquals(1, page1.getCurrentPage());
         assertEquals(1, page1.getFirstPage());
@@ -214,8 +206,7 @@ public class PagingCursorTest extends TestCase
         assertEquals(10, page8.getEndRow());
     }
 
-    public void testUnlimitedPageCursor()
-    {
+    public void testUnlimitedPageCursor() {
         Page page1 = pageCursor.createPageCursor(100, 0, 1);
         assertTrue(page1.isInRange());
         assertEquals(1, page1.getCurrentPage());
@@ -229,31 +220,26 @@ public class PagingCursorTest extends TestCase
         assertFalse(page2.isInRange());
     }
 
-    public void testScrollPageCursor()
-    {
+    public void testScrollPageCursor() {
         int count = 0;
         long[] coll = new long[100];
 
         Page page = pageCursor.createPageCursor(100, 10, 1);
-        while (page.isInRange())
-        {
-           for (long i = page.getStartRow(); i <= page.getEndRow(); i++)
-           {
-              coll[(int)i] = i;
-              count++;
-           }
-           page = pageCursor.createPageCursor(100, 10, page.getNextPage());
+        while (page.isInRange()) {
+            for (long i = page.getStartRow(); i <= page.getEndRow(); i++) {
+                coll[(int) i] = i;
+                count++;
+            }
+            page = pageCursor.createPageCursor(100, 10, page.getNextPage());
         }
-        
+
         assertEquals(100, count);
-        for (int test = 0; test < count; test++)
-        {
+        for (int test = 0; test < count; test++) {
             assertEquals(test, coll[test]);
         }
     }
-    
-    public void testZeroRowsIndexCursor()
-    {
+
+    public void testZeroRowsIndexCursor() {
         Rows rows = pageCursor.createRowsCursor(0, 10, 0);
         assertNotNull(rows);
         assertEquals(0, rows.getTotalRows());
@@ -264,8 +250,7 @@ public class PagingCursorTest extends TestCase
         assertEquals(-1, rows.getNextSkipRows());
     }
 
-    public void testOutOfBoundsRowsCursor()
-    {
+    public void testOutOfBoundsRowsCursor() {
         Rows rows1 = pageCursor.createRowsCursor(1, 1, 0);
         assertNotNull(rows1);
         assertTrue(rows1.isInRange());
@@ -277,14 +262,12 @@ public class PagingCursorTest extends TestCase
         assertTrue(rows3.isInRange());
     }
 
-    public void testTotalRowsCursor()
-    {
+    public void testTotalRowsCursor() {
         Rows rows1 = pageCursor.createRowsCursor(10, 1, 1);
         assertEquals(10, rows1.getTotalRows());
     }
 
-    public void testPagingRowsCursor()
-    {
+    public void testPagingRowsCursor() {
         Rows rows1 = pageCursor.createRowsCursor(10, 1, 0);
         assertEquals(0, rows1.getStartRow());
         assertEquals(0, rows1.getEndRow());
@@ -307,8 +290,7 @@ public class PagingCursorTest extends TestCase
         assertEquals(-1, rows5.getNextSkipRows());
     }
 
-    public void testUnlimitedRowsCursor()
-    {
+    public void testUnlimitedRowsCursor() {
         Rows rows1 = pageCursor.createRowsCursor(100, 0, 0);
         assertTrue(rows1.isInRange());
         assertEquals(0, rows1.getStartRow());
@@ -316,27 +298,22 @@ public class PagingCursorTest extends TestCase
         assertEquals(-1, rows1.getNextSkipRows());
     }
 
-    public void testScrollRowsCursor()
-    {
+    public void testScrollRowsCursor() {
         int count = 0;
         long[] coll = new long[100];
 
         Rows rows = pageCursor.createRowsCursor(100, 10, 0);
-        while (rows.isInRange())
-        {
-           for (long i = rows.getStartRow(); i <= rows.getEndRow(); i++)
-           {
-              coll[(int)i] = i;
-              count++;
-           }
-           rows = pageCursor.createRowsCursor(100, 10, rows.getNextSkipRows());
+        while (rows.isInRange()) {
+            for (long i = rows.getStartRow(); i <= rows.getEndRow(); i++) {
+                coll[(int) i] = i;
+                count++;
+            }
+            rows = pageCursor.createRowsCursor(100, 10, rows.getNextSkipRows());
         }
-        
+
         assertEquals(100, count);
-        for (int test = 0; test < count; test++)
-        {
+        for (int test = 0; test < count; test++) {
             assertEquals(test, coll[test]);
         }
     }
-    
 }

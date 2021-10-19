@@ -25,33 +25,27 @@
  */
 package org.alfresco.repo.event2.filter;
 
+import org.alfresco.service.namespace.QName;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.alfresco.service.namespace.QName;
 
 /**
  * Implementation of the child association types filter.
  *
  * @author Sara Aspery
  */
-public class ChildAssociationTypeFilter extends AbstractNodeEventFilter
-{
+public class ChildAssociationTypeFilter extends AbstractNodeEventFilter {
     private final List<String> assocTypesBlackList;
 
-    public ChildAssociationTypeFilter(String filteredChildAssocTypes)
-    {
+    public ChildAssociationTypeFilter(String filteredChildAssocTypes) {
         this.assocTypesBlackList = parseFilterList(filteredChildAssocTypes);
     }
 
-    /**
-     *
-     * @see org.alfresco.repo.event2.filter.AbstractNodeEventFilter#getExcludedTypes()
-     */
+    /** @see org.alfresco.repo.event2.filter.AbstractNodeEventFilter#getExcludedTypes() */
     @Override
-    public Set<QName> getExcludedTypes()
-    {
+    public Set<QName> getExcludedTypes() {
         Set<QName> result = new HashSet<>();
 
         // add child association types defined in repository.properties/alfresco-global.properties
@@ -59,5 +53,4 @@ public class ChildAssociationTypeFilter extends AbstractNodeEventFilter
 
         return result;
     }
-
 }

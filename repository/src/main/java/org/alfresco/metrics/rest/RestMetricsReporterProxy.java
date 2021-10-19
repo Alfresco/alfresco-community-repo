@@ -32,63 +32,54 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class RestMetricsReporterProxy implements RestMetricsReporter, ApplicationContextAware, InitializingBean
-{
+public class RestMetricsReporterProxy
+        implements RestMetricsReporter, ApplicationContextAware, InitializingBean {
     private Log logger = LogFactory.getLog(getClass());
     private ApplicationContext applicationContext;
     private RestMetricsReporter restMetricsReporterImpl;
 
     @Override
-    public void reportRestRequestExecutionTime(long milliseconds, String queryTpe, String statementID)
-    {
-        if (restMetricsReporterImpl != null)
-        {
-            restMetricsReporterImpl.reportRestRequestExecutionTime(milliseconds, queryTpe, statementID);
+    public void reportRestRequestExecutionTime(
+            long milliseconds, String queryTpe, String statementID) {
+        if (restMetricsReporterImpl != null) {
+            restMetricsReporterImpl.reportRestRequestExecutionTime(
+                    milliseconds, queryTpe, statementID);
         }
     }
 
     @Override
-    public boolean isEnabled()
-    {
-        if (restMetricsReporterImpl != null)
-        {
+    public boolean isEnabled() {
+        if (restMetricsReporterImpl != null) {
             return restMetricsReporterImpl.isEnabled();
         }
         return false;
     }
 
     @Override
-    public boolean isRestServicePathMetricsEnabled()
-    {
-        if (restMetricsReporterImpl != null)
-        {
+    public boolean isRestServicePathMetricsEnabled() {
+        if (restMetricsReporterImpl != null) {
             return restMetricsReporterImpl.isRestServicePathMetricsEnabled();
         }
         return false;
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception
-    {
+    public void afterPropertiesSet() throws Exception {
         init();
     }
 
-    private void init()
-    {
-        try
-        {
-            restMetricsReporterImpl = (RestMetricsReporter) applicationContext.getBean("restMetricsReporterImpl");
-        }
-        catch (Exception e)
-        {
+    private void init() {
+        try {
+            restMetricsReporterImpl =
+                    (RestMetricsReporter) applicationContext.getBean("restMetricsReporterImpl");
+        } catch (Exception e) {
             // we expect that we will not have this bean in the community runtime
             // so don't report this problem
         }
     }
 
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
 }

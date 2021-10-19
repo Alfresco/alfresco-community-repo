@@ -25,7 +25,15 @@
  * #L%
  */
 
- package org.alfresco.module.org_alfresco_module_rm.audit.event;
+package org.alfresco.module.org_alfresco_module_rm.audit.event;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,34 +47,22 @@ import org.mockito.Mock;
 
 import java.util.Map;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 /**
  * Unit tests for {@link DeleteHoldAuditEvent}.
  *
  * @author Sara Aspery
  * @since 3.3
  */
-public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
-{
-    @InjectMocks
-    private DeleteHoldAuditEvent deleteHoldAuditEvent;
+public class DeleteHoldAuditEventUnitTest extends BaseUnitTest {
+    @InjectMocks private DeleteHoldAuditEvent deleteHoldAuditEvent;
 
-    @Mock
-    private NodeService mockedNodeService;
+    @Mock private NodeService mockedNodeService;
 
     private NodeRef holdNodeRef;
 
     /** Set up the mocks. */
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         initMocks(this);
 
         holdNodeRef = generateNodeRef();
@@ -75,15 +71,17 @@ public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
         when(mockedNodeService.getProperty(holdNodeRef, PROP_NAME)).thenReturn(holdName);
     }
 
-    /**
-     * Check that the delete hold event calls an audit event.
-     *
-     */
+    /** Check that the delete hold event calls an audit event. */
     @Test
-    public void testDeleteHoldCausesAuditEvent()
-    {
+    public void testDeleteHoldCausesAuditEvent() {
         deleteHoldAuditEvent.beforeDeleteNode(holdNodeRef);
         verify(mockedRecordsManagementAuditService, times(1))
-            .auditEvent(eq(holdNodeRef), any(String.class), any(Map.class), isNull(Map.class), Matchers.eq(true), Matchers.eq(false));
+                .auditEvent(
+                        eq(holdNodeRef),
+                        any(String.class),
+                        any(Map.class),
+                        isNull(Map.class),
+                        Matchers.eq(true),
+                        Matchers.eq(false));
     }
 }

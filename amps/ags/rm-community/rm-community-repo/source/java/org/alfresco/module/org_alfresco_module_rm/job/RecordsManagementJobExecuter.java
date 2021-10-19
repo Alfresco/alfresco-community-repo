@@ -37,47 +37,38 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
  *
  * @author Roy Wetherall
  */
-public abstract class RecordsManagementJobExecuter implements RecordsManagementModel
-{
+public abstract class RecordsManagementJobExecuter implements RecordsManagementModel {
     /** Retrying transaction helper */
     protected RetryingTransactionHelper retryingTransactionHelper;
 
     /** Repository state helper */
     protected RepositoryState repositoryState;
 
-    /**
-     * @param retryingTransactionHelper retrying transaction helper
-     */
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
+    /** @param retryingTransactionHelper retrying transaction helper */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper) {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
-    /**
-     * @param repositoryState   repository state helper component
-     */
-    public void setRepositoryState(RepositoryState repositoryState)
-    {
+    /** @param repositoryState repository state helper component */
+    public void setRepositoryState(RepositoryState repositoryState) {
         this.repositoryState = repositoryState;
     }
 
-    /**
-     * Executes the jobs work.
-     */
-    public void execute()
-    {
+    /** Executes the jobs work. */
+    public void execute() {
         // jobs not allowed to execute unless bootstrap is complete
-        if (!repositoryState.isBootstrapping())
-        {
-            retryingTransactionHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                executeImpl();
-                return null;
-            }, false, true);
+        if (!repositoryState.isBootstrapping()) {
+            retryingTransactionHelper.doInTransaction(
+                    (RetryingTransactionCallback<Void>)
+                            () -> {
+                                executeImpl();
+                                return null;
+                            },
+                    false,
+                    true);
         }
     }
 
-    /**
-     * Jobs work implementation.
-     */
+    /** Jobs work implementation. */
     public abstract void executeImpl();
 }

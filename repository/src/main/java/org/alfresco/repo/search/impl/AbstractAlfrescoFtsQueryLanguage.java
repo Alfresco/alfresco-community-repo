@@ -4,31 +4,26 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.repo.search.impl;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.repo.search.impl.parsers.AlfrescoFunctionEvaluationContext;
@@ -55,90 +50,89 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition.SortType;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 
-/**
- * @author Andy
- *
- */
-public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQueryLanguage
-{
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/** @author Andy */
+public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQueryLanguage {
     NamespaceService namespaceService;
     DictionaryService dictionaryService;
 
     QueryEngine queryEngine;
-    
-    /**
-     * @param namespaceService the namespaceService to set
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+
+    /** @param namespaceService the namespaceService to set */
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
-    /**
-     * @param dictionaryService the dictionaryService to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
+    /** @param dictionaryService the dictionaryService to set */
+    public void setDictionaryService(DictionaryService dictionaryService) {
         this.dictionaryService = dictionaryService;
     }
 
-    /**
-     * @param queryEngine QueryEngine
-     */
-    public void setQueryEngine(QueryEngine queryEngine)
-    {
+    /** @param queryEngine QueryEngine */
+    public void setQueryEngine(QueryEngine queryEngine) {
         this.queryEngine = queryEngine;
     }
-    
-    protected NamespacePrefixResolver getNamespacePrefixResolver()
-    {
+
+    protected NamespacePrefixResolver getNamespacePrefixResolver() {
         return namespaceService;
     }
-    
-    protected DictionaryService getDictionaryService()
-    {
+
+    protected DictionaryService getDictionaryService() {
         return dictionaryService;
     }
-    
-    public ResultSet executeQuery(SearchParameters searchParameters)
-    {
+
+    public ResultSet executeQuery(SearchParameters searchParameters) {
         String ftsExpression = searchParameters.getQuery();
         QueryModelFactory factory = queryEngine.getQueryModelFactory();
-        AlfrescoFunctionEvaluationContext context = new AlfrescoFunctionEvaluationContext(
-                namespaceService, dictionaryService,
-                searchParameters.getNamespace());
+        AlfrescoFunctionEvaluationContext context =
+                new AlfrescoFunctionEvaluationContext(
+                        namespaceService, dictionaryService, searchParameters.getNamespace());
 
         QueryOptions options = QueryOptions.create(searchParameters);
 
         FTSParser.Mode mode;
 
-        if(options.getDefaultFTSConnective() == Connective.AND)
-        {
+        if (options.getDefaultFTSConnective() == Connective.AND) {
             mode = FTSParser.Mode.DEFAULT_CONJUNCTION;
-        }
-        else
-        {
+        } else {
             mode = FTSParser.Mode.DEFAULT_DISJUNCTION;
         }
-            
-        Constraint constraint = FTSQueryParser.buildFTS(ftsExpression, factory, context, null, null, mode, options.getDefaultFTSFieldConnective(),
-                searchParameters.getQueryTemplates(), options.getDefaultFieldName(), FTSQueryParser.RerankPhase.SINGLE_PASS);
-        org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, buildOrderings(factory, searchParameters));
+
+        Constraint constraint =
+                FTSQueryParser.buildFTS(
+                        ftsExpression,
+                        factory,
+                        context,
+                        null,
+                        null,
+                        mode,
+                        options.getDefaultFTSFieldConnective(),
+                        searchParameters.getQueryTemplates(),
+                        options.getDefaultFieldName(),
+                        FTSQueryParser.RerankPhase.SINGLE_PASS);
+        org.alfresco.repo.search.impl.querymodel.Query query =
+                factory.createQuery(
+                        null, null, constraint, buildOrderings(factory, searchParameters));
 
         QueryEngineResults results = queryEngine.executeQuery(query, options, context);
         ResultSet resultSet = results.getResults().values().iterator().next();
         return resultSet;
     }
 
-    public List<Ordering> buildOrderings(QueryModelFactory factory, SearchParameters searchParameters)
-    {
-        List<Ordering> orderings = new ArrayList<Ordering>(searchParameters.getSortDefinitions().size());
-        for (SortDefinition sd : searchParameters.getSortDefinitions())
-        {
-            if (sd.getSortType() == SortType.FIELD)
-            {
+    public List<Ordering> buildOrderings(
+            QueryModelFactory factory, SearchParameters searchParameters) {
+        List<Ordering> orderings =
+                new ArrayList<Ordering>(searchParameters.getSortDefinitions().size());
+        for (SortDefinition sd : searchParameters.getSortDefinitions()) {
+            if (sd.getSortType() == SortType.FIELD) {
                 Function function = factory.getFunction(PropertyAccessor.NAME);
-                Argument arg = factory.createPropertyArgument(PropertyAccessor.ARG_PROPERTY, true, true, "", sd.getField());
+                Argument arg =
+                        factory.createPropertyArgument(
+                                PropertyAccessor.ARG_PROPERTY, true, true, "", sd.getField());
                 Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                 functionArguments.put(arg.getName(), arg);
                 Column column = factory.createColumn(function, functionArguments, sd.getField());
@@ -146,23 +140,19 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
                 Order order = sd.isAscending() ? Order.ASCENDING : Order.DESCENDING;
 
                 Ordering ordering = factory.createOrdering(column, order);
-                
+
                 orderings.add(ordering);
-            }
-            else  if (sd.getSortType() == SortType.SCORE)
-            {
+            } else if (sd.getSortType() == SortType.SCORE) {
                 Function function = factory.getFunction(Score.NAME);
                 Map<String, Argument> functionArguments = new LinkedHashMap<String, Argument>();
                 Column column = factory.createColumn(function, functionArguments, Score.NAME);
                 Order order = sd.isAscending() ? Order.ASCENDING : Order.DESCENDING;
 
                 Ordering ordering = factory.createOrdering(column, order);
-                
+
                 orderings.add(ordering);
-            }
-            else
-            {
-                throw new UnsupportedOperationException("Unsupported Ordering "+sd.getSortType());
+            } else {
+                throw new UnsupportedOperationException("Unsupported Ordering " + sd.getSortType());
             }
         }
         return orderings;

@@ -49,23 +49,18 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class FilePlanAPI extends RMModelRequest
-{
+public class FilePlanAPI extends RMModelRequest {
     /**
      * Constructor.
      *
      * @param rmRestWrapper RM REST Wrapper
      */
-    public FilePlanAPI(RMRestWrapper rmRestWrapper)
-    {
+    public FilePlanAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
-    /**
-     * see {@link #getFilePlan(String, String)}
-     */
-    public FilePlan getFilePlan(String filePlanId)
-    {
+    /** see {@link #getFilePlan(String, String)} */
+    public FilePlan getFilePlan(String filePlanId) {
         mandatoryString("filePlanId", filePlanId);
 
         return getFilePlan(filePlanId, EMPTY);
@@ -78,30 +73,28 @@ public class FilePlanAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The {@link FilePlan} for the given {@code filePlanId}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code filePlanId} is not a valid format</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code filePlanId}</li>
-     *  <li>{@code filePlanId} does not exist</li>
-     * </ul>
+     *     <ul>
+     *       <li>{@code filePlanId} is not a valid format
+     *       <li>authentication fails
+     *       <li>current user does not have permission to read {@code filePlanId}
+     *       <li>{@code filePlanId} does not exist
+     *     </ul>
      */
-    public FilePlan getFilePlan(String filePlanId, String parameters)
-    {
+    public FilePlan getFilePlan(String filePlanId, String parameters) {
         mandatoryString("filePlanId", filePlanId);
 
-        return getRmRestWrapper().processModel(FilePlan.class, simpleRequest(
-                GET,
-                "/file-plans/{filePlanId}?{parameters}",
-                filePlanId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        FilePlan.class,
+                        simpleRequest(
+                                GET,
+                                "/file-plans/{filePlanId}?{parameters}",
+                                filePlanId,
+                                parameters));
     }
 
-    /**
-     * see {@link #getRootRecordCategories(String, String)}
-     */
-    public RecordCategoryCollection getRootRecordCategories(String filePlanId)
-    {
+    /** see {@link #getRootRecordCategories(String, String)} */
+    public RecordCategoryCollection getRootRecordCategories(String filePlanId) {
         mandatoryString("filePlanId", filePlanId);
 
         return getRootRecordCategories(filePlanId, EMPTY);
@@ -114,29 +107,28 @@ public class FilePlanAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The {@link RecordCategoryCollection} for the given {@code filePlanId}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to read {@code filePlanId}</li>
-     *  <li>{@code filePlanId} does not exist</li>
-     *</ul>
+     *     <ul>
+     *       <li>authentication fails
+     *       <li>current user does not have permission to read {@code filePlanId}
+     *       <li>{@code filePlanId} does not exist
+     *     </ul>
      */
-    public RecordCategoryCollection getRootRecordCategories(String filePlanId, String parameters)
-    {
+    public RecordCategoryCollection getRootRecordCategories(String filePlanId, String parameters) {
         mandatoryString("filePlanId", filePlanId);
 
-        return getRmRestWrapper().processModels(RecordCategoryCollection.class, simpleRequest(
-            GET,
-            "file-plans/{filePlanId}/categories?{parameters}",
-            filePlanId,
-            parameters
-        ));
+        return getRmRestWrapper()
+                .processModels(
+                        RecordCategoryCollection.class,
+                        simpleRequest(
+                                GET,
+                                "file-plans/{filePlanId}/categories?{parameters}",
+                                filePlanId,
+                                parameters));
     }
 
-    /**
-     * see {@link #createRootRecordCategory(RecordCategory, String, String)}
-     */
-    public RecordCategory createRootRecordCategory(RecordCategory recordCategoryModel, String filePlanId)
-    {
+    /** see {@link #createRootRecordCategory(RecordCategory, String, String)} */
+    public RecordCategory createRootRecordCategory(
+            RecordCategory recordCategoryModel, String filePlanId) {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("filePlanId", filePlanId);
 
@@ -151,34 +143,35 @@ public class FilePlanAPI extends RMModelRequest
      * @param parameters The URL parameters to add
      * @return The created {@link RecordCategory}
      * @throws RuntimeException for the following cases:
-     * <ul>
-     *  <li>{@code filePlanId} is not a valid format or {@code filePlanId} is invalid</li>
-     *  <li>authentication fails</li>
-     *  <li>current user does not have permission to add children to {@code filePlanId}</li>
-     *  <li>{@code filePlanIds} does not exist</li>
-     *  <li>new name clashes with an existing node in the current parent container</li>
-     *  <li>model integrity exception, including node name with invalid characters</li>
-     * </ul>
+     *     <ul>
+     *       <li>{@code filePlanId} is not a valid format or {@code filePlanId} is invalid
+     *       <li>authentication fails
+     *       <li>current user does not have permission to add children to {@code filePlanId}
+     *       <li>{@code filePlanIds} does not exist
+     *       <li>new name clashes with an existing node in the current parent container
+     *       <li>model integrity exception, including node name with invalid characters
+     *     </ul>
      */
-    public RecordCategory createRootRecordCategory(RecordCategory recordCategoryModel, String filePlanId, String parameters)
-    {
+    public RecordCategory createRootRecordCategory(
+            RecordCategory recordCategoryModel, String filePlanId, String parameters) {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("filePlanId", filePlanId);
 
-        return getRmRestWrapper().processModel(RecordCategory.class, requestWithBody(
-                POST,
-                toJson(recordCategoryModel),
-                "file-plans/{filePlanId}/categories?{parameters}",
-                filePlanId,
-                parameters
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        RecordCategory.class,
+                        requestWithBody(
+                                POST,
+                                toJson(recordCategoryModel),
+                                "file-plans/{filePlanId}/categories?{parameters}",
+                                filePlanId,
+                                parameters));
     }
 
     /**
      * see {@link #updateFilePlan(FilePlan, String, String)
      */
-    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId)
-    {
+    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId) {
         mandatoryObject("filePlanModel", filePlanModel);
         mandatoryString("filePlanId", filePlanId);
 
@@ -188,29 +181,31 @@ public class FilePlanAPI extends RMModelRequest
     /**
      * Updates a file plan.
      *
-     * @param filePlanModel The file plan  model which holds the information
-     * @param filePlanId    The identifier of the file plan
-     * @param parameters          The URL parameters to add
+     * @param filePlanModel The file plan model which holds the information
+     * @param filePlanId The identifier of the file plan
+     * @param parameters The URL parameters to add
      * @throws RuntimeException for the following cases:
-     *                   <ul>
-     *                   <li>the update request is invalid or {@code filePlanId} is not a valid format or {@code filePlanModel} is invalid</li>
-     *                   <li>authentication fails</li>
-     *                   <li>current user does not have permission to update {@code filePlanId}</li>
-     *                   <li>{@code filePlanId} does not exist</li>
-     *                   <li>model integrity exception, including file name with invalid characters</li>
-     *                   </ul>
+     *     <ul>
+     *       <li>the update request is invalid or {@code filePlanId} is not a valid format or {@code
+     *           filePlanModel} is invalid
+     *       <li>authentication fails
+     *       <li>current user does not have permission to update {@code filePlanId}
+     *       <li>{@code filePlanId} does not exist
+     *       <li>model integrity exception, including file name with invalid characters
+     *     </ul>
      */
-    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId, String parameters)
-    {
+    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId, String parameters) {
         mandatoryObject("filePlanModel", filePlanModel);
         mandatoryString("filePlanId", filePlanId);
 
-        return getRmRestWrapper().processModel(FilePlan.class, requestWithBody(
-                PUT,
-                toJson(filePlanModel),
-                "file-plans/{filePlanId}?{parameters}",
-                filePlanId,
-                parameters));
+        return getRmRestWrapper()
+                .processModel(
+                        FilePlan.class,
+                        requestWithBody(
+                                PUT,
+                                toJson(filePlanModel),
+                                "file-plans/{filePlanId}?{parameters}",
+                                filePlanId,
+                                parameters));
     }
-
 }

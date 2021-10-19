@@ -30,10 +30,10 @@ package org.alfresco.repo.action.parameter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 /**
  * Tests for the DateParameterProcessor
@@ -41,20 +41,17 @@ import org.junit.Test;
  * @author Mark Hibbins
  * @since 2.2
  */
-public class DateParameterProcessorUnitTest
-{
+public class DateParameterProcessorUnitTest {
     private DateParameterProcessor dateParameterProcessor;
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         this.dateParameterProcessor = new DateParameterProcessor();
         this.dateParameterProcessor.setName("date");
     }
 
     @Test
-    public void testGetSubstitutionSuggestions_01()
-    {
+    public void testGetSubstitutionSuggestions_01() {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("date");
         assertTrue(suggestions.contains("date.day.short"));
         assertTrue(suggestions.contains("date.day"));
@@ -70,8 +67,7 @@ public class DateParameterProcessorUnitTest
     }
 
     @Test
-    public void testGetSubstitutionSuggestions_02()
-    {
+    public void testGetSubstitutionSuggestions_02() {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("dat");
         assertTrue(suggestions.contains("date.day.short"));
         assertTrue(suggestions.contains("date.day"));
@@ -87,8 +83,7 @@ public class DateParameterProcessorUnitTest
     }
 
     @Test
-    public void testGetSubstitutionSuggestions_03()
-    {
+    public void testGetSubstitutionSuggestions_03() {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("at");
         assertTrue(suggestions.contains("date.day.short"));
         assertTrue(suggestions.contains("date.day"));
@@ -104,8 +99,7 @@ public class DateParameterProcessorUnitTest
     }
 
     @Test
-    public void testGetSubstitutionSuggestions_05()
-    {
+    public void testGetSubstitutionSuggestions_05() {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("ay");
         assertTrue(suggestions.contains("date.day.short"));
         assertTrue(suggestions.contains("date.day"));
@@ -117,8 +111,7 @@ public class DateParameterProcessorUnitTest
     }
 
     @Test
-    public void testGetSubstitutionSuggestions_06()
-    {
+    public void testGetSubstitutionSuggestions_06() {
         List<String> suggestions = this.dateParameterProcessor.getSubstitutionSuggestions("on");
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.month.short"));

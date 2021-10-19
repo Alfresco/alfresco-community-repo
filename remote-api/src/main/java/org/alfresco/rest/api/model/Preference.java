@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,101 +26,84 @@
 package org.alfresco.rest.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
 
 import org.alfresco.rest.framework.resource.UniqueId;
 
+import java.io.Serializable;
+
 /**
  * Represents a user preference.
- * 
- * @author steveglover
  *
+ * @author steveglover
  */
-public class Preference implements Comparable<Preference>
-{
-	private String name;
-	private Serializable value;
-	
-	public Preference()
-	{
-	}
-	
-	public Preference(String name, Serializable value)
-	{
-		if(name == null)
-		{
-			throw new IllegalArgumentException();
-		}
-		this.name = name;
-		this.value = value;
-	}
+public class Preference implements Comparable<Preference> {
+    private String name;
+    private Serializable value;
 
-	@JsonProperty("id")
-	@UniqueId
-	public String getName()
-	{
-		return name;
-	}
+    public Preference() {}
 
-	public void setName(String name)
-	{
-		if(name == null)
-		{
-			throw new IllegalArgumentException();
-		}
-		this.name = name;
-	}
+    public Preference(String name, Serializable value) {
+        if (name == null) {
+            throw new IllegalArgumentException();
+        }
+        this.name = name;
+        this.value = value;
+    }
 
-	public Serializable getValue()
-	{
-		return value;
-	}
+    @JsonProperty("id")
+    @UniqueId
+    public String getName() {
+        return name;
+    }
 
-	public void setValue(Serializable value)
-	{
-		this.value = value;
-	}
+    public void setName(String name) {
+        if (name == null) {
+            throw new IllegalArgumentException();
+        }
+        this.name = name;
+    }
 
-	@Override
-	public int hashCode() 
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
-	}
+    public Serializable getValue() {
+        return value;
+    }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		
-		if (obj == null)
-		{
-			return false;
-		}
-		
-		if (getClass() != obj.getClass())
-		{
-			return false;
-		}
-		
-		Preference other = (Preference) obj;
-		return name.equals(other.name);
-	}
+    public void setValue(Serializable value) {
+        this.value = value;
+    }
 
-	@Override
-	public int compareTo(Preference preference)
-	{
-		return name.compareTo(preference.getName());
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "Preference [name=" + name + ", value=" + value + "]";
-	}
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+
+        if (obj == null) {
+            return false;
+        }
+
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+
+        Preference other = (Preference) obj;
+        return name.equals(other.name);
+    }
+
+    @Override
+    public int compareTo(Preference preference) {
+        return name.compareTo(preference.getName());
+    }
+
+    @Override
+    public String toString() {
+        return "Preference [name=" + name + ", value=" + value + "]";
+    }
 }

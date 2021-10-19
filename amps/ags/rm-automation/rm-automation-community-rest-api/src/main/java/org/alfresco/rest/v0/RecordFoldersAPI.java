@@ -43,32 +43,29 @@ import org.springframework.stereotype.Component;
  * @since 2.5
  */
 @Component
-public class RecordFoldersAPI extends BaseAPI
-{
+public class RecordFoldersAPI extends BaseAPI {
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordFoldersAPI.class);
 
     /**
      * Close the record folder
      *
-     * @param user         the user closing the folder
-     * @param password     the user's password
+     * @param user the user closing the folder
+     * @param password the user's password
      * @param recordFolder the record folder name
      * @return The HTTP Response (or null if the response could not be understood).
      */
-    public HttpResponse closeRecordFolder(String user, String password, String recordFolder)
-    {
-        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
+    public HttpResponse closeRecordFolder(String user, String password, String recordFolder) {
+        String recNodeRef =
+                getNodeRefSpacesStore()
+                        + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
 
-        try
-        {
+        try {
             JSONObject requestParams = new JSONObject();
             requestParams.put("name", "closeRecordFolder");
             requestParams.put("nodeRef", recNodeRef);
 
             return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
-        }
-        catch (JSONException error)
-        {
+        } catch (JSONException error) {
             LOGGER.error("Unable to extract response parameter", error);
         }
         return null;

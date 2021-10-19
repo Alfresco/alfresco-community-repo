@@ -28,20 +28,18 @@ package org.alfresco.rest.api.model;
 /**
  * Representation of a probe result.
  *
- * Probes simply return a status code of 200 for okay and some other code if not. They should provide very limited
- * information to the caller for security reasons as they generally provide unauthenticated access.
+ * <p>Probes simply return a status code of 200 for okay and some other code if not. They should
+ * provide very limited information to the caller for security reasons as they generally provide
+ * unauthenticated access.
  */
-public class Probe
-{
+public class Probe {
     final String message;
 
-    public Probe(String message)
-    {
+    public Probe(String message) {
         this.message = message;
     }
 
-    public String getMessage()
-    {
+    public String getMessage() {
         return message;
     }
 }

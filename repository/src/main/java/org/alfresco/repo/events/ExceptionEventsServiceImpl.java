@@ -25,51 +25,43 @@
  */
 package org.alfresco.repo.events;
 
-import org.alfresco.sync.events.types.ExceptionGeneratedEvent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.sync.events.types.ExceptionGeneratedEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.gytheio.messaging.MessageProducer;
 import org.gytheio.messaging.MessagingException;
 
-public class ExceptionEventsServiceImpl extends AbstractEventsService implements ExceptionEventsService
-{
+public class ExceptionEventsServiceImpl extends AbstractEventsService
+        implements ExceptionEventsService {
     private static Log logger = LogFactory.getLog(ExceptionEventsServiceImpl.class);
 
     private MessageProducer messageProducer;
     private boolean enabled;
 
-    public void setEnabled(boolean enabled)
-    {
+    public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
-    public void setMessageProducer(MessageProducer messageProducer)
-    {
+    public void setMessageProducer(MessageProducer messageProducer) {
         this.messageProducer = messageProducer;
     }
 
-    public void init()
-    {
-    }
+    public void init() {}
 
     @Override
-    public void exceptionGenerated(String txnId, Throwable t)
-    {
-        if(enabled)
-        {
-            try
-            {
+    public void exceptionGenerated(String txnId, Throwable t) {
+        if (enabled) {
+            try {
                 long timestamp = System.currentTimeMillis();
                 String networkId = TenantUtil.getCurrentDomain();
                 String username = AuthenticationUtil.getFullyAuthenticatedUser();
-                ExceptionGeneratedEvent event = new ExceptionGeneratedEvent(nextSequenceNumber(), txnId, timestamp,
-                        networkId, t, username);
+                ExceptionGeneratedEvent event =
+                        new ExceptionGeneratedEvent(
+                                nextSequenceNumber(), txnId, timestamp, networkId, t, username);
                 messageProducer.send(event);
-            }
-            catch(MessagingException e)
-            {
+            } catch (MessagingException e) {
                 logger.error(e);
             }
         }

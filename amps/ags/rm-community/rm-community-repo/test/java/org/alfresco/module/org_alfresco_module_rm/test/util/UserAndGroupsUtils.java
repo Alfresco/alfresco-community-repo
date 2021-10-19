@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -42,17 +41,14 @@ import org.springframework.context.ApplicationContext;
  * @author Ana Manolache
  * @since 2.6
  */
-public class UserAndGroupsUtils
-{
+public class UserAndGroupsUtils {
     protected FilePlanRoleService filePlanRoleService;
     protected AuthorityService authorityService;
 
-    /**
-     * @param applicationContext the application context
-     */
-    public UserAndGroupsUtils(ApplicationContext applicationContext)
-    {
-        filePlanRoleService = (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
+    /** @param applicationContext the application context */
+    public UserAndGroupsUtils(ApplicationContext applicationContext) {
+        filePlanRoleService =
+                (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
         authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
     }
 
@@ -62,11 +58,11 @@ public class UserAndGroupsUtils
      * @param userName the username of the user to add to the role
      * @param role the role to add the user to
      */
-    public void addUserToRole(NodeRef filePlan, String userName, RMRole role)
-    {
+    public void addUserToRole(NodeRef filePlan, String userName, RMRole role) {
         // Find the authority for the given role
         Role roleObj = filePlanRoleService.getRole(filePlan, role.getGroupName());
-        assertNotNull("Notification role " + role.getGroupName() + " could not be retrieved", roleObj);
+        assertNotNull(
+                "Notification role " + role.getGroupName() + " could not be retrieved", roleObj);
         String roleGroup = roleObj.getRoleGroupName();
         assertNotNull("Notification role group " + roleGroup + " can not be null.", roleGroup);
 
@@ -74,11 +70,8 @@ public class UserAndGroupsUtils
         authorityService.addAuthority(roleGroup, userName);
     }
 
-    /**
-     * An enum of RM Roles
-     */
-    public enum RMRole
-    {
+    /** An enum of RM Roles */
+    public enum RMRole {
         RM_ADMINISTRATOR("Administrator"),
         RM_MANAGER("RecordsManager"),
         RM_POWER_USER("PowerUser"),
@@ -87,13 +80,11 @@ public class UserAndGroupsUtils
 
         private String groupName;
 
-        private RMRole(String groupName)
-        {
+        private RMRole(String groupName) {
             this.groupName = groupName;
         }
 
-        public String getGroupName()
-        {
+        public String getGroupName() {
             return this.groupName;
         }
     }

@@ -21,30 +21,25 @@ package org.alfresco.util.log;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 /**
- * A stand in for the org.apache.log4j.NDC class that avoids introducing runtime dependencies against the otherwise
- * optional log4j.
- * 
+ * A stand in for the org.apache.log4j.NDC class that avoids introducing runtime dependencies
+ * against the otherwise optional log4j.
+ *
  * @author dward
  */
-public class NDC
-{
+public class NDC {
     private static Log logger = LogFactory.getLog(NDC.class);
-    
+
     /** Log4J delegate for NDC */
     private static NDCDelegate ndcDelegate;
 
-    static
-    {
-        if (logger.isDebugEnabled())
-        {
-            try
-            {
-                ndcDelegate = (NDCDelegate) Class.forName("org.alfresco.util.log.log4j.Log4JNDC").newInstance();
-            }
-            catch (Throwable e)
-            {
+    static {
+        if (logger.isDebugEnabled()) {
+            try {
+                ndcDelegate =
+                        (NDCDelegate)
+                                Class.forName("org.alfresco.util.log.log4j.Log4JNDC").newInstance();
+            } catch (Throwable e) {
                 // We just ignore it
             }
         }
@@ -52,25 +47,18 @@ public class NDC
 
     /**
      * Push new diagnostic context information for the current thread.
-     * 
-     * @param message
-     *            The new diagnostic context information.
+     *
+     * @param message The new diagnostic context information.
      */
-    public static void push(String message)
-    {
-        if (ndcDelegate != null)
-        {
+    public static void push(String message) {
+        if (ndcDelegate != null) {
             ndcDelegate.push(message);
         }
     }
 
-    /**
-     * Remove the diagnostic context for this thread.
-     */
-    static public void remove()
-    {
-        if (ndcDelegate != null)
-        {
+    /** Remove the diagnostic context for this thread. */
+    public static void remove() {
+        if (ndcDelegate != null) {
             ndcDelegate.remove();
         }
     }

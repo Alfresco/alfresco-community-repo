@@ -34,18 +34,20 @@ import java.io.InputStream;
  *
  * @author aepure
  */
-public interface TransformReplyProvider
-{
+public interface TransformReplyProvider {
     /**
-     * Stores content from transformInputStream on a defined store,
-     * produces a TransformReply response message and send it to a
-     * specific queue defined in transformDefinition.
+     * Stores content from transformInputStream on a defined store, produces a TransformReply
+     * response message and send it to a specific queue defined in transformDefinition.
      *
      * @param sourceNodeRef the node from which the content is retrieved.
      * @param transformInputStream content resulted after transformation.
-     * @param transformDefinition which defines the transform, where to sent the response and some client specified data.
+     * @param transformDefinition which defines the transform, where to sent the response and some
+     *     client specified data.
      * @param transformContentHashCode hash code of the resulted content.
      */
-    void produceTransformEvent(NodeRef sourceNodeRef, InputStream transformInputStream,
-        TransformDefinition transformDefinition, int transformContentHashCode);
+    void produceTransformEvent(
+            NodeRef sourceNodeRef,
+            InputStream transformInputStream,
+            TransformDefinition transformDefinition,
+            int transformContentHashCode);
 }

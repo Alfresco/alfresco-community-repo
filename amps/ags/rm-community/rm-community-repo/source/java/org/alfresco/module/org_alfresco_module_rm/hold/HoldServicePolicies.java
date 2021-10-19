@@ -39,24 +39,22 @@ import org.alfresco.service.namespace.QName;
  * @author Roxana Lucanu
  * @since 3.3
  */
-
-public interface HoldServicePolicies
-{
-    interface BeforeCreateHoldPolicy extends ClassPolicy
-    {
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateHold");
+public interface HoldServicePolicies {
+    interface BeforeCreateHoldPolicy extends ClassPolicy {
+        public static final QName QNAME =
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateHold");
         /**
          * Called before a hold is created.
          *
-         * @param name   name of the hold to be created
+         * @param name name of the hold to be created
          * @param reason reason for the hold to be created
          */
         void beforeCreateHold(String name, String reason);
     }
 
-    interface OnCreateHoldPolicy extends ClassPolicy
-    {
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateHold");
+    interface OnCreateHoldPolicy extends ClassPolicy {
+        public static final QName QNAME =
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateHold");
         /**
          * Called when a hold is created.
          *
@@ -65,9 +63,9 @@ public interface HoldServicePolicies
         void onCreateHold(NodeRef hold);
     }
 
-    interface BeforeDeleteHoldPolicy extends ClassPolicy
-    {
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteHold");
+    interface BeforeDeleteHoldPolicy extends ClassPolicy {
+        public static final QName QNAME =
+                QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteHold");
         /**
          * Called before a hold is deleted.
          *
@@ -76,9 +74,9 @@ public interface HoldServicePolicies
         void beforeDeleteHold(NodeRef hold);
     }
 
-    interface OnDeleteHoldPolicy extends ClassPolicy
-    {
-        public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteHold");
+    interface OnDeleteHoldPolicy extends ClassPolicy {
+        public static final QName QNAME =
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteHold");
 
         /**
          * Called when a hold is deleted.
@@ -88,56 +86,51 @@ public interface HoldServicePolicies
         void onDeleteHold(String holdname);
     }
 
-    interface BeforeAddToHoldPolicy extends ClassPolicy
-    {
+    interface BeforeAddToHoldPolicy extends ClassPolicy {
         QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeAddToHold");
 
         /**
          * Called before adding content to hold.
          *
-         * @param hold           the hold to be added into
+         * @param hold the hold to be added into
          * @param contentNodeRef the item to be added to hold
          */
         void beforeAddToHold(NodeRef hold, NodeRef contentNodeRef);
     }
 
-    interface OnAddToHoldPolicy extends ClassPolicy
-    {
+    interface OnAddToHoldPolicy extends ClassPolicy {
         QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onAddToHold");
 
         /**
          * Called when content is added to hold.
          *
-         * @param hold           the hold to be added into
+         * @param hold the hold to be added into
          * @param contentNodeRef the item to be added to hold
          */
         void onAddToHold(NodeRef hold, NodeRef contentNodeRef);
     }
 
-    interface BeforeRemoveFromHoldPolicy extends ClassPolicy
-    {
+    interface BeforeRemoveFromHoldPolicy extends ClassPolicy {
         QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeRemoveFromHold");
 
         /**
          * Called before removing content from hold.
          *
-         * @param hold           the hold to be removed from
+         * @param hold the hold to be removed from
          * @param contentNodeRef the item to be removed from hold
          */
         void beforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef);
     }
 
-    interface OnRemoveFromHoldPolicy extends ClassPolicy
-    {
+    interface OnRemoveFromHoldPolicy extends ClassPolicy {
         QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveFromHold");
 
         /**
          * Called when removing content from hold.
          *
-         * @param hold           the hold to be removed from
+         * @param hold the hold to be removed from
          * @param contentNodeRef the item to be removed from hold
          */
         void onRemoveFromHold(NodeRef hold, NodeRef contentNodeRef);
     }
-
 }

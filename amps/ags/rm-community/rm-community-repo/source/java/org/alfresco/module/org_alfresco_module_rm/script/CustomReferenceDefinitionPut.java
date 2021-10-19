@@ -30,33 +30,32 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 import static org.alfresco.util.WebScriptUtils.getRequestContentAsJSONObject;
 import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Implementation for Java backed webscript to update RM custom reference definitions.
- * There is currently only support for updating the label (for bidirectional references) or
- * the source/target (for parent/child references).
+ * Implementation for Java backed webscript to update RM custom reference definitions. There is
+ * currently only support for updating the label (for bidirectional references) or the source/target
+ * (for parent/child references).
  *
  * @author Neil McErlean
  * @author Tuna Aksoy
  */
-public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
-{
+public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase {
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+     * @see
+     *     org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *     org.springframework.extensions.webscripts.Status,
+     *     org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) {
         String uniqueName = getRequestParameterValue(req, REF_ID);
         JSONObject requestContent = getRequestContentAsJSONObject(req);
         RelationshipDisplayName displayName = createDisplayName(requestContent);
@@ -64,7 +63,8 @@ public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
 
         Map<String, Object> model = new HashMap<>();
         String servicePath = req.getServicePath();
-        Map<String, Object> customReferenceData = createRelationshipDefinitionData(servicePath, uniqueName);
+        Map<String, Object> customReferenceData =
+                createRelationshipDefinitionData(servicePath, uniqueName);
         model.putAll(customReferenceData);
 
         return model;
@@ -77,8 +77,8 @@ public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
      * @param String The relationship unique name
      * @return The relationship definition data
      */
-    private Map<String, Object> createRelationshipDefinitionData(String servicePath, String uniqueName)
-    {
+    private Map<String, Object> createRelationshipDefinitionData(
+            String servicePath, String uniqueName) {
         Map<String, Object> relationshipDefinitionData = new HashMap<>(3);
         relationshipDefinitionData.put(URL, servicePath);
         relationshipDefinitionData.put(REF_ID, uniqueName);

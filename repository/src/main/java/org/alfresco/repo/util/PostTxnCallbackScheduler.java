@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.util;
 
-import java.util.Objects;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.transaction.TransactionService;
@@ -33,67 +32,63 @@ import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.Objects;
+
 /**
  * Schedules a callback to a post-commit phase.
  *
  * @author alex.mukha
  */
-public class PostTxnCallbackScheduler
-{
+public class PostTxnCallbackScheduler {
     private static Log logger = LogFactory.getLog(PostTxnCallbackScheduler.class);
 
     private TransactionService transactionService;
 
-    public void setTransactionService(TransactionService transactionService)
-    {
+    public void setTransactionService(TransactionService transactionService) {
         this.transactionService = transactionService;
     }
 
     /**
      * @param callback The callback to be scheduled in a post-commit phase
-     * @param uniqueId The unique id of the callback. Consecutive requests to schedule the callback with the same id
-     *                will overwrite the previously scheduled one.
+     * @param uniqueId The unique id of the callback. Consecutive requests to schedule the callback
+     *     with the same id will overwrite the previously scheduled one.
      */
-    public void scheduleRendition(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
-    {
+    public void scheduleRendition(
+            RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId) {
         AlfrescoTransactionSupport.bindListener(new PostTxTransactionListener(callback, uniqueId));
     }
 
-    private class PostTxTransactionListener extends TransactionListenerAdapter
-    {
+    private class PostTxTransactionListener extends TransactionListenerAdapter {
         private final RetryingTransactionHelper.RetryingTransactionCallback callback;
         private final String id;
 
-        PostTxTransactionListener(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
-        {
+        PostTxTransactionListener(
+                RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId) {
             this.callback = callback;
             this.id = uniqueId;
             logger.debug("Created lister with id = " + id);
         }
 
         @Override
-        public void afterCommit()
-        {
-            try
-            {
+        public void afterCommit() {
+            try {
                 transactionService.getRetryingTransactionHelper().doInTransaction(callback);
-            }
-            catch (Exception e)
-            {
-                logger.debug("The after commit callback " + id + " failed to execute: " + e.getMessage());
+            } catch (Exception e) {
+                logger.debug(
+                        "The after commit callback "
+                                + id
+                                + " failed to execute: "
+                                + e.getMessage());
                 // consume exception in afterCommit
             }
         }
 
         @Override
-        public boolean equals(Object o)
-        {
-            if (this == o)
-            {
+        public boolean equals(Object o) {
+            if (this == o) {
                 return true;
             }
-            if (o == null || getClass() != o.getClass())
-            {
+            if (o == null || getClass() != o.getClass()) {
                 return false;
             }
             PostTxTransactionListener that = (PostTxTransactionListener) o;
@@ -101,8 +96,7 @@ public class PostTxnCallbackScheduler
         }
 
         @Override
-        public int hashCode()
-        {
+        public int hashCode() {
             return Objects.hash(id);
         }
     }

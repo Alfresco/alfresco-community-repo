@@ -29,9 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getTemplateVars;
 
-import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -40,18 +37,22 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
 /**
- * Abstract base class for all RM webscript classes.
- * Includes utility methods for processing the webscript request.
+ * Abstract base class for all RM webscript classes. Includes utility methods for processing the
+ * webscript request.
  *
  * @author Neil McErlean
  * @author Tuna Aksoy
  * @author Gavin Cornwell
  */
-public abstract class AbstractRmWebScript extends DeclarativeWebScript
-{
+public abstract class AbstractRmWebScript extends DeclarativeWebScript {
     /** Constants */
     protected static final String PATH_SEPARATOR = "/";
+
     protected static final String STORE_TYPE = "store_type";
     protected static final String STORE_ID = "store_id";
     protected static final String ID = "id";
@@ -72,8 +73,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      *
      * @return The disposition service instance
      */
-    protected DispositionService getDispositionService()
-    {
+    protected DispositionService getDispositionService() {
         return this.dispositionService;
     }
 
@@ -82,8 +82,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      *
      * @param dispositionService The disposition service instance
      */
-    public void setDispositionService(DispositionService dispositionService)
-    {
+    public void setDispositionService(DispositionService dispositionService) {
         this.dispositionService = dispositionService;
     }
 
@@ -92,8 +91,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      *
      * @return The namespace service instance
      */
-    protected NamespaceService getNamespaceService()
-    {
+    protected NamespaceService getNamespaceService() {
         return this.namespaceService;
     }
 
@@ -102,8 +100,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      *
      * @param namespaceService The namespace service instance
      */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
+    public void setNamespaceService(NamespaceService namespaceService) {
         this.namespaceService = namespaceService;
     }
 
@@ -112,8 +109,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      *
      * @return The node service instance
      */
-    protected NodeService getNodeService()
-    {
+    protected NodeService getNodeService() {
         return this.nodeService;
     }
 
@@ -122,8 +118,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      *
      * @param nodeService The node service instance
      */
-    public void setNodeService(NodeService nodeService)
-    {
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
@@ -132,10 +127,8 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
      *
      * @param req The webscript request
      * @return The NodeRef passed in the request
-     *
      */
-    protected NodeRef parseRequestForNodeRef(WebScriptRequest req)
-    {
+    protected NodeRef parseRequestForNodeRef(WebScriptRequest req) {
         // get the parameters that represent the NodeRef, we know they are present
         // otherwise this webscript would not have matched
         Map<String, String> templateVars = getTemplateVars(req);
@@ -146,10 +139,10 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
         // create the NodeRef and ensure it is valid
         NodeRef nodeRef = new NodeRef(storeType, storeId, nodeId);
 
-        if (!getNodeService().exists(nodeRef))
-        {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find node: '" +
-                        nodeRef.toString() + "'.");
+        if (!getNodeService().exists(nodeRef)) {
+            throw new WebScriptException(
+                    HttpServletResponse.SC_NOT_FOUND,
+                    "Unable to find node: '" + nodeRef.toString() + "'.");
         }
 
         return nodeRef;

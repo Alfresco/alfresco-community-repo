@@ -37,46 +37,33 @@ import org.junit.Test;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class EventJSONSchemaUnitTest
-{
+public class EventJSONSchemaUnitTest {
 
     @Test
-    public void testEventJsonSchema()
-    {
-        for (EventType type : EventType.values())
-        {
-            try
-            {
+    public void testEventJsonSchema() {
+        for (EventType type : EventType.values()) {
+            try {
                 EventJSONSchema.getSchema(type, 1);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 fail(ex.getMessage());
             }
         }
     }
 
     @Test(expected = AlfrescoRuntimeException.class)
-    public void testEventJsonSchemaInvalid()
-    {
+    public void testEventJsonSchemaInvalid() {
         // Invalid version
-        for (EventType type : EventType.values())
-        {
+        for (EventType type : EventType.values()) {
             EventJSONSchema.getSchema(type, 5);
         }
     }
 
     @Test
-    public void testEventJsonSchemaV1()
-    {
-        for (EventType type : EventType.values())
-        {
-            try
-            {
+    public void testEventJsonSchemaV1() {
+        for (EventType type : EventType.values()) {
+            try {
                 EventJSONSchema.getSchemaV1(type);
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 fail(ex.getMessage());
             }
         }

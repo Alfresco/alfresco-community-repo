@@ -34,11 +34,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -52,28 +47,27 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * RM V3.2 Hold child assoc patch unit test
- * 
+ *
  * @author Ross Gale
  * @since 3.2
  */
-public class RMv32HoldChildAssocPatchUnitTest
-{
-    @Mock
-    private QNameDAO qNameDAO;
+public class RMv32HoldChildAssocPatchUnitTest {
+    @Mock private QNameDAO qNameDAO;
 
-    @Mock
-    private NodeService nodeService;
+    @Mock private NodeService nodeService;
 
-    @Mock
-    private FilePlanService filePlanService;
+    @Mock private FilePlanService filePlanService;
 
-    @Mock
-    private HoldService holdService;
+    @Mock private HoldService holdService;
 
-    @InjectMocks
-    private RMv32HoldChildAssocPatch patch;
+    @InjectMocks private RMv32HoldChildAssocPatch patch;
 
     private NodeRef filePlanRef, holdRef, heldItemRef;
 
@@ -81,14 +75,12 @@ public class RMv32HoldChildAssocPatchUnitTest
 
     private List<NodeRef> holds;
 
-    @Mock
-    private ChildAssociationRef childAssociationRef;
+    @Mock private ChildAssociationRef childAssociationRef;
 
     private List<ChildAssociationRef> childAssocs;
 
     @Before
-    public void setUp()
-    {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
         filePlanRef = new NodeRef("workspace://SpacesStore/filePlan");
         holdRef = new NodeRef("workspace://SpacesStore/hold");
@@ -105,24 +97,22 @@ public class RMv32HoldChildAssocPatchUnitTest
      * Test held items are removed from a hold and re-add to make sure the association is correct
      */
     @Test
-    public void testAHoldIsRemovedAndReplacedDuringUpgrade()
-    {
-        when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS)).thenReturn(new Pair(ASSOC_FROZEN_CONTENT,null));
+    public void testAHoldIsRemovedAndReplacedDuringUpgrade() {
+        when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS))
+                .thenReturn(new Pair(ASSOC_FROZEN_CONTENT, null));
         when(filePlanService.getFilePlans()).thenReturn(fileplans);
         when(holdService.getHolds(filePlanRef)).thenReturn(holds);
-        when(nodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_RECORDS)).thenReturn(childAssocs);
+        when(nodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_RECORDS))
+                .thenReturn(childAssocs);
         when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
         patch.applyInternal();
         verify(holdService, times(1)).removeFromHold(holdRef, heldItemRef);
         verify(holdService, times(1)).addToHold(holdRef, heldItemRef);
     }
 
-    /**
-     * Test patch doesnt run without an association added during rm site creation
-     */
+    /** Test patch doesnt run without an association added during rm site creation */
     @Test
-    public void testAHoldIsntRemovedAndReplacedDuringUpgradeWithNoRmSite()
-    {
+    public void testAHoldIsntRemovedAndReplacedDuringUpgradeWithNoRmSite() {
         when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS)).thenReturn(null);
         patch.applyInternal();
         verify(qNameDAO, never()).updateQName(ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_CONTENT);

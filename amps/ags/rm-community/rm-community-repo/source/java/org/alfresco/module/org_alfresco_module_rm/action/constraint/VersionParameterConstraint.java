@@ -27,11 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.constraint;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.repo.action.constraint.BaseParameterConstraint;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Recordable version config constraint
@@ -39,18 +39,13 @@ import org.alfresco.repo.action.constraint.BaseParameterConstraint;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class VersionParameterConstraint extends BaseParameterConstraint
-{
-    /**
-     * @see org.alfresco.repo.action.constraint.BaseParameterConstraint#getAllowableValuesImpl()
-     */
+public class VersionParameterConstraint extends BaseParameterConstraint {
+    /** @see org.alfresco.repo.action.constraint.BaseParameterConstraint#getAllowableValuesImpl() */
     @Override
-    protected Map<String, String> getAllowableValuesImpl()
-    {
+    protected Map<String, String> getAllowableValuesImpl() {
         RecordableVersionPolicy[] recordableVersionPolicies = RecordableVersionPolicy.values();
         Map<String, String> allowableValues = new HashMap<>(recordableVersionPolicies.length);
-        for (RecordableVersionPolicy recordableVersionPolicy : recordableVersionPolicies)
-        {
+        for (RecordableVersionPolicy recordableVersionPolicy : recordableVersionPolicies) {
             String policy = recordableVersionPolicy.toString();
             allowableValues.put(policy, getI18NLabel(policy));
         }

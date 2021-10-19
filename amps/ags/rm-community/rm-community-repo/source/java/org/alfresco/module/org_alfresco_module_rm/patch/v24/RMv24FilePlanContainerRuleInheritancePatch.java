@@ -27,65 +27,64 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v24;
 
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
+import java.util.Set;
+
 /**
- * RM v2.4 patch that ensures that file plan root containers do not inherited rules, because this is no longer enforced
- * in the service code anymore.
- * 
- * See https://issues.alfresco.com/jira/browse/RM-3154
+ * RM v2.4 patch that ensures that file plan root containers do not inherited rules, because this is
+ * no longer enforced in the service code anymore.
+ *
+ * <p>See https://issues.alfresco.com/jira/browse/RM-3154
  *
  * @author Roy Wetherall
  * @since 2.4
  */
-public class RMv24FilePlanContainerRuleInheritancePatch extends AbstractModulePatch
-{
+public class RMv24FilePlanContainerRuleInheritancePatch extends AbstractModulePatch {
     /** file plan service */
     private FilePlanService filePlanService;
-    
+
     /** node service */
     private NodeService nodeService;
 
-    /**
-     * @param filePlanService file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
+    /** @param filePlanService file plan service */
+    public void setFilePlanService(FilePlanService filePlanService) {
         this.filePlanService = filePlanService;
     }
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
-     * 
-     * Note that we do not break rule inheritance for the root file since this wasn't previously 
-     * the behaviour and we don't want to prevent this from happening if the current installation 
-     * has been setup to allow it.
+     *     <p>Note that we do not break rule inheritance for the root file since this wasn't
+     *     previously the behaviour and we don't want to prevent this from happening if the current
+     *     installation has been setup to allow it.
      */
     @Override
-    public void applyInternal()
-    {
+    public void applyInternal() {
         // get all the file plans
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
-        for (NodeRef filePlan : filePlans)
-        {
+        for (NodeRef filePlan : filePlans) {
             // set rule inheritance for all root file plan containers
-            nodeService.addAspect(filePlanService.getUnfiledContainer(filePlan), RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
-            nodeService.addAspect(filePlanService.getHoldContainer(filePlan), RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);        
-            nodeService.addAspect(filePlanService.getTransferContainer(filePlan), RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+            nodeService.addAspect(
+                    filePlanService.getUnfiledContainer(filePlan),
+                    RuleModel.ASPECT_IGNORE_INHERITED_RULES,
+                    null);
+            nodeService.addAspect(
+                    filePlanService.getHoldContainer(filePlan),
+                    RuleModel.ASPECT_IGNORE_INHERITED_RULES,
+                    null);
+            nodeService.addAspect(
+                    filePlanService.getTransferContainer(filePlan),
+                    RuleModel.ASPECT_IGNORE_INHERITED_RULES,
+                    null);
         }
     }
 }

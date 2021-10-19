@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,32 +26,28 @@
 
 package org.alfresco.repo.nodelocator;
 
+import org.alfresco.service.cmr.action.ParameterDefinition;
+
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.service.cmr.action.ParameterDefinition;
-
 /**
- * Base class for all {@link NodeLocator} implementations. 
- * <p>Extending this class with automatically register the node locator with the NodeLocatorService.</p>
- * 
+ * Base class for all {@link NodeLocator} implementations.
+ *
+ * <p>Extending this class with automatically register the node locator with the NodeLocatorService.
+ *
  * @author Nick Smith
  * @since 4.0
  */
-public abstract class AbstractNodeLocator implements NodeLocator
-{
-    public void setNodeLocatorService(NodeLocatorService nodeLocatorService)
-    {
+public abstract class AbstractNodeLocator implements NodeLocator {
+    public void setNodeLocatorService(NodeLocatorService nodeLocatorService) {
         nodeLocatorService.register(getName(), this);
     }
-    
-    /**
-    * {@inheritDoc}
-    */
-    public List<ParameterDefinition> getParameterDefinitions()
-    {
+
+    /** {@inheritDoc} */
+    public List<ParameterDefinition> getParameterDefinitions() {
         return Collections.emptyList();
     }
-    
+
     public abstract String getName();
 }

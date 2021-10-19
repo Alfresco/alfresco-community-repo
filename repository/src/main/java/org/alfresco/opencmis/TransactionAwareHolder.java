@@ -34,100 +34,84 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 /**
  * A Tx aware wrapper around {@link Holder}.
  *
- * <p>
- *     This wrapper is created in {@link CMISTransactionAwareHolderInterceptor}.
- *     It is designed to handle the state of the {@link Holder} in case of tx retries which are handled by
- *     {@link RetryingTransactionInterceptor}.
- * </p>
- * <p>
- *     There are a few things that influenced the implementation of this wrapper and need to be taken into account:
- *     <ul>
- *         <li>
- *             The wrapper is created in {@link CMISTransactionAwareHolderInterceptor} and is replacing the incoming
- *             parameter ({@link Holder}) in the call to {@link AlfrescoCmisServiceImpl}.
- *         </li>
- *         <li>
- *             The calls to {@link AlfrescoCmisServiceImpl} generally return nothing, therefore the state
- *             of {@link Holder} or it's wrapper ({@link TransactionAwareHolder}) is modified inside
- *             the {@link AlfrescoCmisServiceImpl} and then read in CMIS layer.
- *         </li>
- *         <li>
- *             The {@link CMISTransactionAwareHolderInterceptor} is called after {@link RetryingTransactionInterceptor}
- *             but due to internal counter in Spring AOP it is not called again if the tx is retried.
- *             The proxied service ({@link AlfrescoCmisServiceImpl}) is called straight away.
- *             Fortunately the parameter replacing is not required for the second time.
- *             The wrapper ({@link TransactionAwareHolder}) will still be used.
- *         </li>
- *         <li>
- *             The {@link TxAwareHolderListener} is bound to the tx when the internal value is read.
- *             This is done this way because once the tx is rolled backed the listener list is cleared.
- *             The {@link TxAwareHolderListener} is still required to be called once the retry succeeds with a commit.
- *             The {@link CMISTransactionAwareHolderInterceptor} cannot recreate the {@link TransactionAwareHolder}
- *             as the interceptor is called only once.
- *             It is safe to bind the same listener many times as it is always the same object.
- *         </li>
- *     </ul>
- * </p>
+ * <p>This wrapper is created in {@link CMISTransactionAwareHolderInterceptor}. It is designed to
+ * handle the state of the {@link Holder} in case of tx retries which are handled by {@link
+ * RetryingTransactionInterceptor}.
+ *
+ * <p>There are a few things that influenced the implementation of this wrapper and need to be taken
+ * into account:
+ *
+ * <ul>
+ *   <li>The wrapper is created in {@link CMISTransactionAwareHolderInterceptor} and is replacing
+ *       the incoming parameter ({@link Holder}) in the call to {@link AlfrescoCmisServiceImpl}.
+ *   <li>The calls to {@link AlfrescoCmisServiceImpl} generally return nothing, therefore the state
+ *       of {@link Holder} or it's wrapper ({@link TransactionAwareHolder}) is modified inside the
+ *       {@link AlfrescoCmisServiceImpl} and then read in CMIS layer.
+ *   <li>The {@link CMISTransactionAwareHolderInterceptor} is called after {@link
+ *       RetryingTransactionInterceptor} but due to internal counter in Spring AOP it is not called
+ *       again if the tx is retried. The proxied service ({@link AlfrescoCmisServiceImpl}) is called
+ *       straight away. Fortunately the parameter replacing is not required for the second time. The
+ *       wrapper ({@link TransactionAwareHolder}) will still be used.
+ *   <li>The {@link TxAwareHolderListener} is bound to the tx when the internal value is read. This
+ *       is done this way because once the tx is rolled backed the listener list is cleared. The
+ *       {@link TxAwareHolderListener} is still required to be called once the retry succeeds with a
+ *       commit. The {@link CMISTransactionAwareHolderInterceptor} cannot recreate the {@link
+ *       TransactionAwareHolder} as the interceptor is called only once. It is safe to bind the same
+ *       listener many times as it is always the same object.
+ * </ul>
  *
  * @author alex.mukha
  */
-public class TransactionAwareHolder<T> extends Holder<T>
-{
+public class TransactionAwareHolder<T> extends Holder<T> {
     private Holder<T> internalHolder;
     private T value;
     private TxAwareHolderListener txListener;
 
-    TransactionAwareHolder(Holder<T> internalHolder)
-    {
+    TransactionAwareHolder(Holder<T> internalHolder) {
         this.internalHolder = internalHolder;
         this.value = internalHolder.getValue();
     }
 
     @Override
-    public T getValue()
-    {
+    public T getValue() {
         registerTxListenerIfNeeded();
         return this.value;
     }
 
     @Override
-    public void setValue(T value)
-    {
+    public void setValue(T value) {
         registerTxListenerIfNeeded();
         this.value = value;
     }
 
     @Override
-    public String toString()
-    {
-        return "TransactionAwareHolder{" +
-                "internalHolder=" + internalHolder +
-                ", value=" + value +
-                '}';
+    public String toString() {
+        return "TransactionAwareHolder{"
+                + "internalHolder="
+                + internalHolder
+                + ", value="
+                + value
+                + '}';
     }
 
     // MNT-21800 CMIS Web Service Check Out returns error
-    private void registerTxListenerIfNeeded()
-    {
-        if (this.txListener == null && TransactionSynchronizationManager.isSynchronizationActive())
-        {
+    private void registerTxListenerIfNeeded() {
+        if (this.txListener == null
+                && TransactionSynchronizationManager.isSynchronizationActive()) {
             TxAwareHolderListener listener = new TxAwareHolderListener();
             AlfrescoTransactionSupport.bindListener(listener);
             this.txListener = listener;
         }
     }
 
-    private class TxAwareHolderListener extends TransactionListenerAdapter
-    {
+    private class TxAwareHolderListener extends TransactionListenerAdapter {
         @Override
-        public void afterCommit()
-        {
+        public void afterCommit() {
             internalHolder.setValue(getValue());
         }
 
         @Override
-        public void afterRollback()
-        {
+        public void afterRollback() {
             setValue(internalHolder.getValue());
         }
     }

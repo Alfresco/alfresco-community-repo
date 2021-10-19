@@ -29,7 +29,6 @@ package org.alfresco.rest.rm.community.records;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.NON_ELECTRONIC_RECORD_TYPE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
@@ -83,47 +82,87 @@ import org.testng.annotations.Test;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class DeleteRecordTests extends BaseRMRestTest
-{
-    @Autowired
-    private DispositionScheduleService dispositionScheduleService;
-    @Autowired
-    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
-    @Autowired
-    private org.alfresco.rest.v0.RecordsAPI recordsAPI;
-    @Autowired
-    private RoleService roleService;
+public class DeleteRecordTests extends BaseRMRestTest {
+    @Autowired private DispositionScheduleService dispositionScheduleService;
+    @Autowired private RMRolesAndActionsAPI rmRolesAndActionsAPI;
+    @Autowired private org.alfresco.rest.v0.RecordsAPI recordsAPI;
+    @Autowired private RoleService roleService;
     private RecordCategoryChild recordFolder;
     private UnfiledContainerChild unfiledRecordFolder;
 
-    @BeforeClass (alwaysRun = true)
-    public void setupDeleteRecordTests()
-    {
+    @BeforeClass(alwaysRun = true)
+    public void setupDeleteRecordTests() {
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         recordFolder = createCategoryFolderInFilePlan();
-        unfiledRecordFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, getRandomName("Unfiled Folder "),
-                UNFILED_RECORD_FOLDER_TYPE);
+        unfiledRecordFolder =
+                createUnfiledContainerChild(
+                        UNFILED_RECORDS_CONTAINER_ALIAS,
+                        getRandomName("Unfiled Folder "),
+                        UNFILED_RECORD_FOLDER_TYPE);
     }
 
     /** Data provider with electronic and non-electronic records to be deleted */
-    @DataProvider (name = "recordsToBeDeleted")
-    public Object[][] getRecordsToBeDeleted()
-    {
-        return new String[][]
+    @DataProvider(name = "recordsToBeDeleted")
+    public Object[][] getRecordsToBeDeleted() {
+        return new String[][] {
+            // records created in an arbitrary record folder
             {
-                // records created in an arbitrary record folder
-                {getRestAPIFactory().getRecordFolderAPI().createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE)).getId()},
-                {getRestAPIFactory().getRecordFolderAPI().createRecord(createNonElectronicRecordModel(), recordFolder.getId()).getId()},
-                // records created in unfiled records root
-                {getRestAPIFactory().getUnfiledContainersAPI().uploadRecord(createElectronicUnfiledContainerChildModel(), UNFILED_RECORDS_CONTAINER_ALIAS, getFile(IMAGE_FILE)).getId()},
-                {getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(createNonElectronicUnfiledContainerChildModel(), UNFILED_RECORDS_CONTAINER_ALIAS).getId()},
-                // records created in an arbitrary unfiled records folder
-                {getRestAPIFactory().getUnfiledRecordFoldersAPI().uploadRecord(createElectronicUnfiledContainerChildModel(), unfiledRecordFolder.getId(), getFile(IMAGE_FILE)).getId()},
-                {getRestAPIFactory().getUnfiledRecordFoldersAPI().createUnfiledRecordFolderChild(createNonElectronicUnfiledContainerChildModel(), unfiledRecordFolder.getId()).getId()}
-            };
+                getRestAPIFactory()
+                        .getRecordFolderAPI()
+                        .createRecord(
+                                createElectronicRecordModel(),
+                                recordFolder.getId(),
+                                getFile(IMAGE_FILE))
+                        .getId()
+            },
+            {
+                getRestAPIFactory()
+                        .getRecordFolderAPI()
+                        .createRecord(createNonElectronicRecordModel(), recordFolder.getId())
+                        .getId()
+            },
+            // records created in unfiled records root
+            {
+                getRestAPIFactory()
+                        .getUnfiledContainersAPI()
+                        .uploadRecord(
+                                createElectronicUnfiledContainerChildModel(),
+                                UNFILED_RECORDS_CONTAINER_ALIAS,
+                                getFile(IMAGE_FILE))
+                        .getId()
+            },
+            {
+                getRestAPIFactory()
+                        .getUnfiledContainersAPI()
+                        .createUnfiledContainerChild(
+                                createNonElectronicUnfiledContainerChildModel(),
+                                UNFILED_RECORDS_CONTAINER_ALIAS)
+                        .getId()
+            },
+            // records created in an arbitrary unfiled records folder
+            {
+                getRestAPIFactory()
+                        .getUnfiledRecordFoldersAPI()
+                        .uploadRecord(
+                                createElectronicUnfiledContainerChildModel(),
+                                unfiledRecordFolder.getId(),
+                                getFile(IMAGE_FILE))
+                        .getId()
+            },
+            {
+                getRestAPIFactory()
+                        .getUnfiledRecordFoldersAPI()
+                        .createUnfiledRecordFolderChild(
+                                createNonElectronicUnfiledContainerChildModel(),
+                                unfiledRecordFolder.getId())
+                        .getId()
+            }
+        };
     }
 
     /**
+     *
+     *
      * <pre>
      * Given an electronic record
      * And that I have the "Delete Record" capability
@@ -132,19 +171,16 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then it is deleted from the file plan
      * </pre>
      */
-    @Test
-    (
-        dataProvider = "recordsToBeDeleted",
-        description = "Admin user can delete records"
-    )
-    @AlfrescoTest(jira="RM-4363")
-    public void adminCanDeleteRecords(String recordId)
-    {
+    @Test(dataProvider = "recordsToBeDeleted", description = "Admin user can delete records")
+    @AlfrescoTest(jira = "RM-4363")
+    public void adminCanDeleteRecords(String recordId) {
         // Delete record and verify successful deletion
         deleteAndVerify(recordId);
     }
 
     /**
+     *
+     *
      * <pre>
      * Given a non-electronic record
      * And that I don't have write permissions
@@ -153,19 +189,20 @@ public class DeleteRecordTests extends BaseRMRestTest
      * And error gets reported
      * </pre>
      */
-    @Test
-    (
-        description = "User without write permissions can't delete a record"
-    )
-    @AlfrescoTest(jira="RM-4363")
-    public void userWithoutWritePermissionsCantDeleteRecord()
-    {
+    @Test(description = "User without write permissions can't delete a record")
+    @AlfrescoTest(jira = "RM-4363")
+    public void userWithoutWritePermissionsCantDeleteRecord() {
         // Create a non-electronic record in unfiled records
-        UnfiledContainerChild nonElectronicRecord = UnfiledContainerChild.builder()
-                .name("Record " + RandomData.getRandomAlphanumeric())
-                .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                .build();
-        UnfiledContainerChild newRecord = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(nonElectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
+        UnfiledContainerChild nonElectronicRecord =
+                UnfiledContainerChild.builder()
+                        .name("Record " + RandomData.getRandomAlphanumeric())
+                        .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+                        .build();
+        UnfiledContainerChild newRecord =
+                getRestAPIFactory()
+                        .getUnfiledContainersAPI()
+                        .createUnfiledContainerChild(
+                                nonElectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
 
         assertStatusCode(CREATED);
 
@@ -178,6 +215,8 @@ public class DeleteRecordTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given a record
      * And that I don't have the "Delete Record" capability
@@ -186,25 +225,29 @@ public class DeleteRecordTests extends BaseRMRestTest
      * And error gets reported
      * </pre>
      */
-    @Test
-    (
-        description = "User without delete records capability can't delete a record"
-    )
-    @AlfrescoTest(jira="RM-4363")
-    public void userWithoutDeleteRecordsCapabilityCantDeleteRecord()
-    {
+    @Test(description = "User without delete records capability can't delete a record")
+    @AlfrescoTest(jira = "RM-4363")
+    public void userWithoutDeleteRecordsCapabilityCantDeleteRecord() {
         // Create test user and add it with collaboration privileges
         // Add RM role to user, RM Power User doesn't have the "Delete Record" capabilities
         UserModel deleteUser = roleService.createUserWithRMRole(ROLE_RM_POWER_USER.roleId);
 
-        // Grant "deleteUser" filing permissions on "randomFolder" parent, this will be inherited to randomFolder
+        // Grant "deleteUser" filing permissions on "randomFolder" parent, this will be inherited to
+        // randomFolder
         RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
-        getRestAPIFactory().getRMUserAPI().addUserPermission(recordCategoryAPI.getRecordCategory(recordFolder.getParentId()).getId(), deleteUser, PERMISSION_FILING);
+        getRestAPIFactory()
+                .getRMUserAPI()
+                .addUserPermission(
+                        recordCategoryAPI.getRecordCategory(recordFolder.getParentId()).getId(),
+                        deleteUser,
+                        PERMISSION_FILING);
         assertStatusCode(OK);
 
         // Create a non-electronic record in "randomFolder"
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
-        Record newRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder.getId());
+        Record newRecord =
+                recordFolderAPI.createRecord(
+                        createNonElectronicRecordModel(), recordFolder.getId());
         assertStatusCode(CREATED);
 
         // Verify the user can see "newRecord"
@@ -218,6 +261,8 @@ public class DeleteRecordTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given a record
      * And a copy of that record
@@ -226,15 +271,20 @@ public class DeleteRecordTests extends BaseRMRestTest
      * </pre>
      */
     @Test(description = "Deleting copy of record doesn't delete original content")
-    @AlfrescoTest(jira="MNT-18806")
-    public void deleteCopyOfRecord()
-    {
+    @AlfrescoTest(jira = "MNT-18806")
+    public void deleteCopyOfRecord() {
         STEP("Create another record category with a folder.");
         RecordCategoryChild recordFolderB = createCategoryFolderInFilePlan();
 
         STEP("Create a record in first folder and copy it into second folder.");
-        String recordId = getRestAPIFactory().getRecordFolderAPI()
-                    .createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE)).getId();
+        String recordId =
+                getRestAPIFactory()
+                        .getRecordFolderAPI()
+                        .createRecord(
+                                createElectronicRecordModel(),
+                                recordFolder.getId(),
+                                getFile(IMAGE_FILE))
+                        .getId();
         String copyId = copyNode(recordId, recordFolderB.getId()).getId();
         assertStatusCode(CREATED);
 
@@ -250,8 +300,9 @@ public class DeleteRecordTests extends BaseRMRestTest
         getNodeContent(recordId);
     }
 
-
     /**
+     *
+     *
      * <pre>
      * Given a file that has a copy
      * And the original file is declared as record
@@ -259,15 +310,19 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then it is still possible to view the content of the copy
      * </pre>
      */
-    @Test (description = "Deleting record doesn't delete the content for the copies")
-    @AlfrescoTest (jira = "MNT-20145")
-    public void deleteOriginOfRecord()
-    {
+    @Test(description = "Deleting record doesn't delete the content for the copies")
+    @AlfrescoTest(jira = "MNT-20145")
+    public void deleteOriginOfRecord() {
         STEP("Create a file.");
-        FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile =
+                dataContent
+                        .usingAdmin()
+                        .usingSite(testSite)
+                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Create a copy of the file.");
-        RestNodeModel copyOfTestFile = copyNode(testFile.getNodeRefWithoutVersion(), testSite.getGuid());
+        RestNodeModel copyOfTestFile =
+                copyNode(testFile.getNodeRefWithoutVersion(), testSite.getGuid());
 
         STEP("Declare original file as record");
         getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
@@ -282,6 +337,8 @@ public class DeleteRecordTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given a file that has a copy
      * And the original file is declared as record
@@ -290,16 +347,22 @@ public class DeleteRecordTests extends BaseRMRestTest
      * Then it is still possible to view the content of the copy
      * </pre>
      */
-    @Test (description = "Destroying record doesn't delete the content for the associated copy")
-    @AlfrescoTest (jira = "MNT-20145")
-    public void destroyOfRecord()
-    {
+    @Test(description = "Destroying record doesn't delete the content for the associated copy")
+    @AlfrescoTest(jira = "MNT-20145")
+    public void destroyOfRecord() {
         STEP("Create a file.");
-        FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile =
+                dataContent
+                        .usingAdmin()
+                        .usingSite(testSite)
+                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         FolderModel folderModel = dataContent.usingAdmin().usingSite(testSite).createFolder();
 
         STEP("Create a copy of the file.");
-        RestNodeModel copy = copyNode(testFile.getNodeRefWithoutVersion(), folderModel.getNodeRefWithoutVersion());
+        RestNodeModel copy =
+                copyNode(
+                        testFile.getNodeRefWithoutVersion(),
+                        folderModel.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         STEP("Declare the file as record.");
@@ -307,24 +370,37 @@ public class DeleteRecordTests extends BaseRMRestTest
         assertStatusCode(CREATED);
 
         STEP("Create a record category with a disposition schedule.");
-        RecordCategory recordCategory = createRootCategory(getRandomName("Category with disposition"));
+        RecordCategory recordCategory =
+                createRootCategory(getRandomName("Category with disposition"));
         dispositionScheduleService.createCategoryRetentionSchedule(recordCategory.getName(), true);
 
         STEP("Add retention schedule cut off and destroy step with immediate period.");
         dispositionScheduleService.addCutOffImmediatelyStep(recordCategory.getName());
-        dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(recordCategory.getName());
+        dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(
+                recordCategory.getName());
 
         STEP("Create a record folder and file the record");
-        RecordCategoryChild recFolder = createFolder(recordCategory.getId(), getRandomName("recFolder"));
-        RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(recFolder.getId()).build();
-        Record recordFiled = getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, testFile.getNodeRefWithoutVersion());
+        RecordCategoryChild recFolder =
+                createFolder(recordCategory.getId(), getRandomName("recFolder"));
+        RecordBodyFile recordBodyFile =
+                RecordBodyFile.builder().targetParentId(recFolder.getId()).build();
+        Record recordFiled =
+                getRestAPIFactory()
+                        .getRecordsAPI()
+                        .fileRecord(recordBodyFile, testFile.getNodeRefWithoutVersion());
         getRestAPIFactory().getRecordsAPI().completeRecord(recordFiled.getId());
         assertStatusCode(CREATED);
 
         STEP("Execute the disposition schedule steps.");
-        rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
+        rmRolesAndActionsAPI.executeAction(
+                getAdminUser().getUsername(),
+                getAdminUser().getUsername(),
+                recordFiled.getName(),
                 RM_ACTIONS.CUT_OFF);
-        rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
+        rmRolesAndActionsAPI.executeAction(
+                getAdminUser().getUsername(),
+                getAdminUser().getUsername(),
+                recordFiled.getName(),
                 RM_ACTIONS.DESTROY);
 
         STEP("Check that it's possible to load the copy content.");
@@ -333,29 +409,49 @@ public class DeleteRecordTests extends BaseRMRestTest
     }
 
     /**
+     *
+     *
      * <pre>
      * Given a file that has version declared as record
      * When the record is deleted
      * Then it is still possible to view the content of the file
      * </pre>
      */
-    @Test (description = "Deleting record made from version doesn't delete the content for the file")
-    @AlfrescoTest (jira = "MNT-20145")
-    public void deleteVersionDeclaredAsRecord()
-    {
+    @Test(description = "Deleting record made from version doesn't delete the content for the file")
+    @AlfrescoTest(jira = "MNT-20145")
+    public void deleteVersionDeclaredAsRecord() {
         STEP("Create a file.");
-        FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile =
+                dataContent
+                        .usingAdmin()
+                        .usingSite(testSite)
+                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Declare file version as record.");
-        recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),
+        recordsAPI.declareDocumentVersionAsRecord(
+                getAdminUser().getUsername(),
+                getAdminUser().getPassword(),
+                testSite.getId(),
                 testFile.getName());
-        UnfiledContainerChild unfiledContainerChild = getRestAPIFactory().getUnfiledContainersAPI()
-                                                                       .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                                                                       .getEntries().stream()
-                                                                       .filter(child -> child.getEntry().getName()
-                                                                                             .startsWith(testFile.getName().substring(0, testFile.getName().indexOf("."))))
-                                                                       .findFirst()
-                                                                       .get().getEntry();
+        UnfiledContainerChild unfiledContainerChild =
+                getRestAPIFactory()
+                        .getUnfiledContainersAPI()
+                        .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+                        .getEntries()
+                        .stream()
+                        .filter(
+                                child ->
+                                        child.getEntry()
+                                                .getName()
+                                                .startsWith(
+                                                        testFile.getName()
+                                                                .substring(
+                                                                        0,
+                                                                        testFile.getName()
+                                                                                .indexOf("."))))
+                        .findFirst()
+                        .get()
+                        .getEntry();
 
         STEP("Delete the record.");
         deleteAndVerify(unfiledContainerChild.getId());
@@ -365,14 +461,12 @@ public class DeleteRecordTests extends BaseRMRestTest
         assertStatusCode(OK);
     }
 
-
     /**
      * Utility method to delete a record and verify successful deletion
      *
      * @param recordId The id of the record
      */
-    private void deleteAndVerify(String recordId)
-    {
+    private void deleteAndVerify(String recordId) {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
 
         // Delete record and verify status
@@ -391,17 +485,13 @@ public class DeleteRecordTests extends BaseRMRestTest
      * @param destinationFolder The id of the folder to copy it to.
      * @return The model returned by the copy API.
      */
-    private RestNodeModel copyNode(String nodeId, String destinationFolder)
-    {
+    private RestNodeModel copyNode(String nodeId, String destinationFolder) {
         Node node = getNode(nodeId);
         RestNodeBodyMoveCopyModel copyBody = new RestNodeBodyMoveCopyModel();
         copyBody.setTargetParentId(destinationFolder);
-        try
-        {
+        try {
             return node.copy(copyBody);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Problem copying record.", e);
         }
     }
@@ -412,14 +502,10 @@ public class DeleteRecordTests extends BaseRMRestTest
      * @param nodeId
      * @return The response containing the node content.
      */
-    private RestResponse getNodeContent(String nodeId)
-    {
-        try
-        {
+    private RestResponse getNodeContent(String nodeId) {
+        try {
             return getNode(nodeId).getNodeContent();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to load content for node.", e);
         }
     }
@@ -429,14 +515,10 @@ public class DeleteRecordTests extends BaseRMRestTest
      *
      * @param nodeId The node to check.
      */
-    private void checkNodeExists(String nodeId)
-    {
-        try
-        {
+    private void checkNodeExists(String nodeId) {
+        try {
             getNode(nodeId).getNode();
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             throw new RuntimeException("Node does not exist.", e);
         }
     }
@@ -447,18 +529,18 @@ public class DeleteRecordTests extends BaseRMRestTest
      * @param recordId The record to get.
      * @return The node object.
      */
-    private Node getNode(String recordId)
-    {
+    private Node getNode(String recordId) {
         RepoTestModel repoTestModel = new RepoTestModel() {};
         repoTestModel.setNodeRef(recordId);
         return getRestAPIFactory().getNodeAPI(repoTestModel);
     }
 
     @AfterClass(alwaysRun = true)
-    public void cleanupDeleteRecordTests()
-    {
+    public void cleanupDeleteRecordTests() {
         dataSite.deleteSite(testSite);
         deleteRecordCategory(recordFolder.getParentId());
-        getRestAPIFactory().getUnfiledRecordFoldersAPI().deleteUnfiledRecordFolder(unfiledRecordFolder.getId());
+        getRestAPIFactory()
+                .getUnfiledRecordFoldersAPI()
+                .deleteUnfiledRecordFolder(unfiledRecordFolder.getId());
     }
 }

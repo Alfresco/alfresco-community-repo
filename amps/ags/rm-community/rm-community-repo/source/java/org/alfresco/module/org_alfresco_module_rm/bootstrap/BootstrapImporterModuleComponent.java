@@ -39,8 +39,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * @author Roy Wetherall
  * @since 2.0
  */
-public class BootstrapImporterModuleComponent extends ImporterModuleComponent
-{
+public class BootstrapImporterModuleComponent extends ImporterModuleComponent {
     /** rm config folder name */
     private static final String CONFIG_NODEID = "rm_config_folder";
 
@@ -53,27 +52,22 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     /** record contributors group bootstrap component */
     private RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent;
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
+    /** @param nodeService node service */
+    public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
     }
 
-    /**
-     * @param modulePatchExecuter   module patch executer
-     */
-    public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter)
-    {
+    /** @param modulePatchExecuter module patch executer */
+    public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter) {
         this.modulePatchExecuter = modulePatchExecuter;
     }
 
     /**
-     * @param recordContributorsGroupBootstrapComponent record contributors group bootstrap component
+     * @param recordContributorsGroupBootstrapComponent record contributors group bootstrap
+     *     component
      */
-    public void setRecordContributorsGroupBootstrapComponent(RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent)
-    {
+    public void setRecordContributorsGroupBootstrapComponent(
+            RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent) {
         this.recordContributorsGroupBootstrapComponent = recordContributorsGroupBootstrapComponent;
     }
 
@@ -83,11 +77,9 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
      * @see org.alfresco.repo.module.ImporterModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
-    {
+    protected void executeInternal() throws Throwable {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
-        if (!nodeService.exists(nodeRef))
-        {
+        if (!nodeService.exists(nodeRef)) {
             super.executeInternal();
 
             // Bootstrap creation of initial data.

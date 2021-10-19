@@ -20,41 +20,24 @@ package org.alfresco.util.transaction;
 
 /**
  * NO-OP listener.
- * 
+ *
  * @author Derek Hulley
  * @since 5.0
  */
-public abstract class TransactionListenerAdapter implements TransactionListener
-{
-    /**
-     * {@inheritDoc}
-     */
+public abstract class TransactionListenerAdapter implements TransactionListener {
+    /** {@inheritDoc} */
     @Override
-    public void beforeCommit(boolean readOnly)
-    {
-    }
+    public void beforeCommit(boolean readOnly) {}
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
-    public void beforeCompletion()
-    {
-    }
+    public void beforeCompletion() {}
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
-    public void afterCommit()
-    {
-    }
+    public void afterCommit() {}
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
-    public void afterRollback()
-    {
-    }
+    public void afterRollback() {}
 }

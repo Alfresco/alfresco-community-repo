@@ -40,15 +40,11 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class FilesAPI extends RMModelRequest<FilesAPI>
-{
+public class FilesAPI extends RMModelRequest<FilesAPI> {
     public static final String PARENT_ID_PARAM = "parentId";
 
-    /**
-     * @param rmRestWrapper RM REST Wrapper
-     */
-    public FilesAPI(RMRestWrapper rmRestWrapper)
-    {
+    /** @param rmRestWrapper RM REST Wrapper */
+    public FilesAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
@@ -59,16 +55,16 @@ public class FilesAPI extends RMModelRequest<FilesAPI>
      * @return The {@link Record} for created record
      * @throws RuntimeException for malformed JSON responses
      */
-    public Record declareAsRecord(String fileId)
-    {
+    public Record declareAsRecord(String fileId) {
         mandatoryString("fileId", fileId);
 
-        return getRmRestWrapper().processModel(Record.class, simpleRequest(
-            POST,
-            "/files/{fileId}/declare?{parameters}",
-            fileId,
-            getRmRestWrapper().getParameters()
-        ));
+        return getRmRestWrapper()
+                .processModel(
+                        Record.class,
+                        simpleRequest(
+                                POST,
+                                "/files/{fileId}/declare?{parameters}",
+                                fileId,
+                                getRmRestWrapper().getParameters()));
     }
 }
-

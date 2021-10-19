@@ -4,26 +4,29 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.api.tests;
+
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
+import static org.junit.Assert.*;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
@@ -51,9 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.*;
-
 /**
  * V1 REST API tests for Node Associations
  *
@@ -75,8 +75,7 @@ import static org.junit.Assert.*;
  *
  * @author janv
  */
-public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
-{
+public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest {
     private static final String URL_DELETED_NODES = "deleted-nodes";
 
     private static final String PARAM_ASSOC_TYPE = "assocType";
@@ -96,55 +95,52 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
     private static final String URL_SECONDARY_CHILDREN = "secondary-children";
     private static final String URL_PARENTS = "parents";
-    
-    protected String getNodeTargetsUrl(String nodeId)
-    {
+
+    protected String getNodeTargetsUrl(String nodeId) {
         return URL_NODES + "/" + nodeId + "/" + URL_TARGETS;
     }
 
-    protected String getNodeSourcesUrl(String nodeId)
-    {
+    protected String getNodeSourcesUrl(String nodeId) {
         return URL_NODES + "/" + nodeId + "/" + URL_SOURCES;
     }
 
-    protected String getNodeSecondaryChildrenUrl(String nodeId)
-    {
+    protected String getNodeSecondaryChildrenUrl(String nodeId) {
         return URL_NODES + "/" + nodeId + "/" + URL_SECONDARY_CHILDREN;
     }
 
-    protected String getNodeParentsUrl(String nodeId)
-    {
+    protected String getNodeParentsUrl(String nodeId) {
         return URL_NODES + "/" + nodeId + "/" + URL_PARENTS;
     }
 
     private PermissionService permissionService;
 
     @Before
-    public void setup() throws Exception
-    {
+    public void setup() throws Exception {
         super.setup();
 
-        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
+        permissionService =
+                applicationContext.getBean("permissionService", PermissionService.class);
     }
 
     /**
-     * Tests basic api to manage (add, list, remove) node peer associations (ie. source node -> target node)
+     * Tests basic api to manage (add, list, remove) node peer associations (ie. source node ->
+     * target node)
      *
-     * <p>POST:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
+     * <p>POST: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
      *
-     * <p>DELETE:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets/<targetNodeId>}
+     * <p>DELETE: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets/<targetNodeId>}
      *
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<targetNodeId>/sources}
+     * <p>GET: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
+     * {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<targetNodeId>/sources}
      */
     @Test
-    public void testNodePeerAssocs() throws Exception
-    {
+    public void testNodePeerAssocs() throws Exception {
         setRequestContext(user1);
-                
+
         String myFolderNodeId = getMyNodeId();
 
         // create folder
@@ -169,9 +165,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         response = post(getNodeChildrenUrl(f2Id), toJsonAsStringNonNull(n), 201);
         String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
-
-        try
-        {
+        try {
             // As user 1 ...
 
             Paging paging = getPaging(0, 100);
@@ -179,7 +173,8 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // empty lists - before
 
             response = getAll(getNodeTargetsUrl(o1Id), paging, null, 200);
-            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            List<Node> nodes =
+                    RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             response = getAll(getNodeSourcesUrl(o1Id), paging, null, 200);
@@ -245,7 +240,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // test basic list filter
 
             Map<String, String> params = new HashMap<>(1);
-            params.put("where", "(assocType='"+ASSOC_TYPE_CM_REFERENCES+"')");
+            params.put("where", "(assocType='" + ASSOC_TYPE_CM_REFERENCES + "')");
 
             response = getAll(getNodeTargetsUrl(o1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -260,7 +255,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(ASSOC_TYPE_CM_REFERENCES, nodes.get(0).getAssociation().getAssocType());
 
             params = new HashMap<>(1);
-            params.put("where", "(assocType='"+ASSOC_TYPE_CM_PARTS+"')");
+            params.put("where", "(assocType='" + ASSOC_TYPE_CM_PARTS + "')");
 
             response = getAll(getNodeTargetsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -336,14 +331,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-
             //
             // -ve tests - add assoc
             //
 
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
                 post(getNodeTargetsUrl(o1Id), toJsonAsStringNonNull(tgt), 401);
@@ -369,7 +363,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 getAll(getNodeTargetsUrl(f1Id), paging, null, 401);
                 getAll(getNodeSourcesUrl(f1Id), paging, null, 401);
@@ -388,14 +382,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 // TODO paging - in-built sort order ? (RA-926, RA-927)
             }
 
-
             //
             // -ve test - remove assoc(s)
             //
 
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 delete(getNodeTargetsUrl(o1Id), o2Id, 401);
 
@@ -417,9 +410,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 params.put(PARAM_ASSOC_TYPE, "cm:unknowntype");
                 delete(getNodeTargetsUrl(o1Id), o2Id, params, 400);
             }
-        }
-        finally
-        {
+        } finally {
             // some cleanup
             setRequestContext(user1);
             deleteNode(f1Id, true, 204);
@@ -430,33 +421,32 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
     /**
      * Tests base permissions for managing (adding, listing and removing) peer associations.
      *
-     * <p>POST:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
+     * <p>POST: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
      *
-     * <p>DELETE:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets/<targetNodeId>}
+     * <p>DELETE: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets/<targetNodeId>}
      *
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
+     * <p>GET: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
      * {
      */
     @Test
-    public void testNodePeerAssocsPermissions() throws Exception
-    {
+    public void testNodePeerAssocsPermissions() throws Exception {
         setRequestContext(user1);
-        
+
         // as user 1 - create folder in "Shared Files" area and content within the folder
         String sharedFolderNodeId = getSharedNodeId();
 
-        String sf1Id = createFolder(sharedFolderNodeId, "shared folder "+RUNID).getId();
+        String sf1Id = createFolder(sharedFolderNodeId, "shared folder " + RUNID).getId();
 
         Node n = new Node();
-        n.setName("shared content "+RUNID);
+        n.setName("shared content " + RUNID);
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
         HttpResponse response = post(getNodeChildrenUrl(sf1Id), toJsonAsStringNonNull(n), 201);
-        String so1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
-
+        String so1Id =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // as user 1 - create folder in user's home (My Files) area and content within the folder
 
@@ -469,12 +459,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
         response = post(getNodeChildrenUrl(u1f1Id), toJsonAsStringNonNull(n), 201);
-        String u1o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+        String u1o1Id =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // as user 2 - create folder in user's home (My Files) area and content within the folder
 
         setRequestContext(user2);
-        
+
         String u2myNodeId = getMyNodeId();
 
         String u2f1Id = createFolder(u2myNodeId, "f1").getId();
@@ -484,10 +475,10 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
         response = post(getNodeChildrenUrl(u2f1Id), toJsonAsStringNonNull(n), 201);
-        String u2o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+        String u2o1Id =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
-        try
-        {
+        try {
             Paging paging = getPaging(0, 100);
 
             // empty lists - before
@@ -495,7 +486,8 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             setRequestContext(user1);
 
             response = getAll(getNodeTargetsUrl(u1f1Id), paging, null, 200);
-            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            List<Node> nodes =
+                    RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             setRequestContext(user2);
@@ -561,11 +553,22 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // update permission
             // TODO refactor with remote permission api calls (use v0 until we have v1 ?) (RA-1085)
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
-            permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
-            
+            permissionService.setPermission(
+                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id),
+                    user2,
+                    PermissionService.EDITOR,
+                    true);
+
             setRequestContext(networkAdmin);
-            
-            response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
+
+            response =
+                    publicApiClient.get(
+                            getScope(),
+                            "nodes/" + sf1Id + "/targets",
+                            null,
+                            null,
+                            null,
+                            createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
@@ -581,8 +584,15 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             post(getNodeTargetsUrl(sf1Id), toJsonAsStringNonNull(tgt), 201);
 
             setRequestContext(networkAdmin);
-            
-            response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
+
+            response =
+                    publicApiClient.get(
+                            getScope(),
+                            "nodes/" + sf1Id + "/targets",
+                            null,
+                            null,
+                            null,
+                            createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
@@ -599,17 +609,27 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(1, nodes.size());
             assertEquals(u2o1Id, nodes.get(0).getId());
 
-
             // Test listing sources (with permissions applied)
 
             // update permission
             // TODO refactor with remote permission api calls (use v0 until we have v1 ?)
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
-            permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
+            permissionService.setPermission(
+                    new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id),
+                    user2,
+                    PermissionService.EDITOR,
+                    true);
 
             setRequestContext(networkAdmin);
-            
-            response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
+
+            response =
+                    publicApiClient.get(
+                            getScope(),
+                            "nodes/" + so1Id + "/sources",
+                            null,
+                            null,
+                            null,
+                            createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
@@ -625,8 +645,15 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             post(getNodeTargetsUrl(u2f1Id), toJsonAsStringNonNull(tgt), 201);
 
             setRequestContext(networkAdmin);
-            
-            response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
+
+            response =
+                    publicApiClient.get(
+                            getScope(),
+                            "nodes/" + so1Id + "/sources",
+                            null,
+                            null,
+                            null,
+                            createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
@@ -642,39 +669,38 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u2f1Id, nodes.get(0).getId());
-        }
-        finally
-        {
+        } finally {
             // some cleanup
             setRequestContext(user1);
             deleteNode(u1f1Id, true, 204);
             deleteNode(sf1Id, true, 204);
-            
+
             setRequestContext(user2);
             deleteNode(u2f1Id, true, 204);
         }
     }
 
     /**
-     * Tests basic api to manage (add, list, remove) node secondary child associations (ie. parent node -> child node)
+     * Tests basic api to manage (add, list, remove) node secondary child associations (ie. parent
+     * node -> child node)
      *
-     * Note: refer to NodeApiTest for tests for primary child association
+     * <p>Note: refer to NodeApiTest for tests for primary child association
      *
-     * <p>POST:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children}
+     * <p>POST: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children}
      *
-     * <p>DELETE:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children/<childNodeId>}
+     * <p>DELETE: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children/<childNodeId>}
      *
-     * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children}
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<childNodeId>/parents}
+     * <p>GET: {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children}
+     * {@literal
+     * <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<childNodeId>/parents}
      */
     @Test
-    public void testNodeSecondaryChildAssocs() throws Exception
-    {
+    public void testNodeSecondaryChildAssocs() throws Exception {
         setRequestContext(user1);
-        
+
         String myFolderNodeId = getMyNodeId();
 
         // create folder
@@ -682,7 +708,8 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("f1");
         n.setNodeType(TYPE_CM_FOLDER);
         n.setAspectNames(Arrays.asList(ASPECT_CM_PREFERENCES));
-        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), toJsonAsStringNonNull(n), 201);
+        HttpResponse response =
+                post(getNodeChildrenUrl(myFolderNodeId), toJsonAsStringNonNull(n), 201);
         String f1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create content node
@@ -704,14 +731,11 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         response = post(getNodeChildrenUrl(f2Id), toJsonAsStringNonNull(n), 201);
         String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
-
         String f3Id = createFolder(myFolderNodeId, "f3").getId();
 
         String f4Id = createFolder(myFolderNodeId, "f4").getId();
 
-
-        try
-        {
+        try {
             // As user 1 ...
 
             Paging paging = getPaging(0, 100);
@@ -719,7 +743,8 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // lists - before
 
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
-            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            List<Node> nodes =
+                    RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // primary parent only
@@ -738,19 +763,14 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
             post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 201);
 
-
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             int i = 0;
-            for (Node node : nodes)
-            {
+            for (Node node : nodes) {
                 Association nodeAssoc = node.getAssociation();
-                if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS))
-                {
+                if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS)) {
                     i++;
-                }
-                else if ( nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE))
-                {
+                } else if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE)) {
                     i++;
                 }
                 assertEquals(o2Id, node.getId());
@@ -761,24 +781,17 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             response = getAll(getNodeParentsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             i = 0;
-            for (Node node : nodes)
-            {
+            for (Node node : nodes) {
                 String nodeId = node.getId();
                 Association nodeAssoc = node.getAssociation();
-                if (nodeId.equals(f2Id))
-                {
+                if (nodeId.equals(f2Id)) {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
                     assertTrue(nodeAssoc.getIsPrimary());
                     i++;
-                }
-                else if (nodeId.equals(f1Id))
-                {
-                    if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS))
-                    {
+                } else if (nodeId.equals(f1Id)) {
+                    if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS)) {
                         i++;
-                    }
-                    else if ( nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE))
-                    {
+                    } else if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE)) {
                         i++;
                     }
                     assertFalse(nodeAssoc.getIsPrimary());
@@ -789,7 +802,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // test list filter - assocType (/secondary-children & /parents)
 
             Map<String, String> params = new HashMap<>(1);
-            params.put("where", "(assocType='"+ASSOC_TYPE_CM_CONTAINS+"')");
+            params.put("where", "(assocType='" + ASSOC_TYPE_CM_CONTAINS + "')");
 
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -800,18 +813,14 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             i = 0;
-            for (Node node : nodes)
-            {
+            for (Node node : nodes) {
                 String nodeId = node.getId();
                 Association nodeAssoc = node.getAssociation();
-                if (nodeId.equals(f2Id))
-                {
+                if (nodeId.equals(f2Id)) {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
                     assertTrue(nodeAssoc.getIsPrimary());
                     i++;
-                }
-                else if (nodeId.equals(f1Id))
-                {
+                } else if (nodeId.equals(f1Id)) {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
                     assertFalse(nodeAssoc.getIsPrimary());
                     i++;
@@ -820,32 +829,35 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(2, i);
 
             params = new HashMap<>(1);
-            params.put("where", "(assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
+            params.put("where", "(assocType='" + ASSOC_TYPE_CM_PREFERENCE_IMAGE + "')");
 
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
-            assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
+            assertEquals(
+                    ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
             assertFalse(nodes.get(0).getAssociation().getIsPrimary());
 
             response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1Id, nodes.get(0).getId());
-            assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
+            assertEquals(
+                    ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
             assertFalse(nodes.get(0).getAssociation().getIsPrimary());
-
 
             // test list filter - isPrimary (/children)
 
             // note: see NodeApiTest for other filters related to /nodes/{parentId}/children filters
 
-            // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of File/Folder to avoid duplicate names
+            // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of
+            // File/Folder to avoid duplicate names
             response = getAll(getNodeChildrenUrl(f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
-            List<String> nodeIds = Arrays.asList(new String[] { nodes.get(0).getId(), nodes.get(1).getId()} );
+            List<String> nodeIds =
+                    Arrays.asList(new String[] {nodes.get(0).getId(), nodes.get(1).getId()});
             assertTrue(nodeIds.contains(o1Id));
             assertTrue(nodeIds.contains(o2Id));
 
@@ -860,12 +872,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params = new HashMap<>(1);
             params.put("where", "(isPrimary=false)");
 
-            // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of File/Folder to avoid duplicate names
+            // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of
+            // File/Folder to avoid duplicate names
             response = getAll(getNodeChildrenUrl(f1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
-
 
             // test list filter - isPrimary (/parents)
 
@@ -887,18 +899,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             i = 0;
-            for (Node node : nodes)
-            {
+            for (Node node : nodes) {
                 String nodeId = node.getId();
                 Association nodeAssoc = node.getAssociation();
-                if (nodeId.equals(f1Id))
-                {
-                    if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS))
-                    {
+                if (nodeId.equals(f1Id)) {
+                    if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS)) {
                         i++;
-                    }
-                    else if ( nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE))
-                    {
+                    } else if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE)) {
                         i++;
                     }
                     assertFalse(nodeAssoc.getIsPrimary());
@@ -908,15 +915,17 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             // combined filter
             params = new HashMap<>(1);
-            params.put("where", "(isPrimary=false and assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
+            params.put(
+                    "where",
+                    "(isPrimary=false and assocType='" + ASSOC_TYPE_CM_PREFERENCE_IMAGE + "')");
 
             response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1Id, nodes.get(0).getId());
             assertFalse(nodes.get(0).getAssociation().getIsPrimary());
-            assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
-
+            assertEquals(
+                    ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
 
             // remove one secondary child assoc
 
@@ -987,15 +996,16 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 int childCnt = 6;
                 String[] childIds = new String[childCnt];
 
-                for (int j = 0; j < childCnt; j++)
-                {
+                for (int j = 0; j < childCnt; j++) {
                     String childName = "child " + j;
                     n = new Node();
                     n.setName(childName);
                     n.setNodeType(TYPE_CM_CONTENT);
                     response = post(getNodeChildrenUrl(f2Id), toJsonAsStringNonNull(n), 201);
 
-                    childIds[j] = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+                    childIds[j] =
+                            RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class)
+                                    .getId();
 
                     secChild = new AssocChild(childIds[j], ASSOC_TYPE_CM_CONTAINS);
                     post(getNodeSecondaryChildrenUrl(f3Id), toJsonAsStringNonNull(secChild), 201);
@@ -1008,7 +1018,8 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(childCnt, nodes.size());
 
-                PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+                PublicApiClient.ExpectedPaging expectedPaging =
+                        RestApiUtil.parsePaging(response.getJsonResponse());
                 assertEquals(childCnt, expectedPaging.getCount().intValue());
                 assertEquals(skipCount, expectedPaging.getSkipCount().intValue());
                 assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
@@ -1039,7 +1050,9 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 n.setNodeType(TYPE_CM_CONTENT);
                 response = post(getNodeChildrenUrl(f4Id), toJsonAsStringNonNull(n), 201);
 
-                String childId = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+                String childId =
+                        RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class)
+                                .getId();
 
                 paging = getPaging(0, 100);
                 response = getAll(getNodeParentsUrl(childId), paging, null, 200);
@@ -1050,25 +1063,28 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 int parentCnt = 5;
                 String[] parentIds = new String[parentCnt];
 
-                for (int j = 0; j < parentCnt; j++)
-                {
-                    String parentName = "parent "+j;
+                for (int j = 0; j < parentCnt; j++) {
+                    String parentName = "parent " + j;
                     parentIds[j] = createFolder(f4Id, parentName).getId();
 
                     secChild = new AssocChild(childId, ASSOC_TYPE_CM_CONTAINS);
-                    post(getNodeSecondaryChildrenUrl(parentIds[j]), toJsonAsStringNonNull(secChild), 201);
+                    post(
+                            getNodeSecondaryChildrenUrl(parentIds[j]),
+                            toJsonAsStringNonNull(secChild),
+                            201);
                 }
 
                 int skipCount = 0;
                 int maxItems = 100;
-                int expectedCnt = parentCnt+1;
+                int expectedCnt = parentCnt + 1;
 
                 paging = getPaging(skipCount, maxItems);
                 response = getAll(getNodeParentsUrl(childId), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(expectedCnt, nodes.size());
 
-                PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+                PublicApiClient.ExpectedPaging expectedPaging =
+                        RestApiUtil.parsePaging(response.getJsonResponse());
                 assertEquals(expectedCnt, expectedPaging.getCount().intValue());
                 assertEquals(skipCount, expectedPaging.getSkipCount().intValue());
                 assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
@@ -1082,14 +1098,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 List<String> expectedIds = new ArrayList<>(5);
                 expectedIds.addAll(Arrays.asList(parentIds));
 
-                skipCount=0;
-                maxItems=2;
+                skipCount = 0;
+                maxItems = 2;
                 paging = getPaging(skipCount, maxItems);
                 response = getAll(getNodeParentsUrl(childId), paging, params, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(maxItems, nodes.size());
-                for (Node node : nodes)
-                {
+                for (Node node : nodes) {
                     expectedIds.remove(node.getId());
                 }
                 assertEquals(3, expectedIds.size());
@@ -1099,14 +1114,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
                 assertTrue(expectedPaging.getHasMoreItems().booleanValue());
 
-                skipCount=2;
-                maxItems=2;
+                skipCount = 2;
+                maxItems = 2;
                 paging = getPaging(skipCount, maxItems);
                 response = getAll(getNodeParentsUrl(childId), paging, params, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(maxItems, nodes.size());
-                for (Node node : nodes)
-                {
+                for (Node node : nodes) {
                     expectedIds.remove(node.getId());
                 }
                 assertEquals(1, expectedIds.size());
@@ -1116,14 +1130,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
                 assertTrue(expectedPaging.getHasMoreItems().booleanValue());
 
-                skipCount=4;
-                maxItems=2;
+                skipCount = 4;
+                maxItems = 2;
                 paging = getPaging(skipCount, maxItems);
                 response = getAll(getNodeParentsUrl(childId), paging, params, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(1, nodes.size());
-                for (Node node : nodes)
-                {
+                for (Node node : nodes) {
                     expectedIds.remove(node.getId());
                 }
                 assertEquals(0, expectedIds.size());
@@ -1140,7 +1153,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
                 post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 401);
@@ -1167,14 +1180,18 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             {
                 setRequestContext(null);
-                
+
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 401);
                 getAll(getNodeParentsUrl(o2Id), paging, null, 401);
 
                 setRequestContext(user1);
-                
-                getAll(getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()), paging, null, 404);
+
+                getAll(
+                        getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()),
+                        paging,
+                        null,
+                        404);
                 getAll(getNodeParentsUrl(UUID.randomUUID().toString()), paging, null, 404);
 
                 params = new HashMap<>(1);
@@ -1190,7 +1207,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             {
                 setRequestContext(null);
-                
+
                 // unauthenticated - belts-and-braces ;-)
                 delete(getNodeSecondaryChildrenUrl(f1Id), o2Id, null, 401);
 
@@ -1217,9 +1234,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 params.put(PARAM_ASSOC_TYPE, "cm:contains");
                 delete(getNodeSecondaryChildrenUrl(f1Id), o1Id, params, 400);
             }
-        }
-        finally
-        {
+        } finally {
             // some cleanup
             setRequestContext(user1);
             deleteNode(f1Id, true, 204);
@@ -1230,14 +1245,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
-     * Regardless of which parent is used to list children of a node, the node information
-     * should consistently present the primary parent as a node's {@code parentId}.
-     * <p>
-     * See REPO-1780
+     * Regardless of which parent is used to list children of a node, the node information should
+     * consistently present the primary parent as a node's {@code parentId}.
+     *
+     * <p>See REPO-1780
      */
     @Test
-    public void testListChildrenConsistentParentIdWithSecondaryAssociations() throws Exception
-    {
+    public void testListChildrenConsistentParentIdWithSecondaryAssociations() throws Exception {
         setRequestContext(user1);
         String myNodeId = getMyNodeId();
 
@@ -1247,7 +1261,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
         // Create content file
         String contentFileName = "content" + RUNID + " in folder";
-        String contentId = createTextFile(primaryFolderId, contentFileName, "The quick brown fox jumps over the lazy dog.").getId();
+        String contentId =
+                createTextFile(
+                                primaryFolderId,
+                                contentFileName,
+                                "The quick brown fox jumps over the lazy dog.")
+                        .getId();
 
         // Add a secondary parent for content file
         Node n = new Node();
@@ -1255,18 +1274,21 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setNodeType(TYPE_CM_FOLDER);
         n.setAspectNames(Arrays.asList(ASPECT_CM_PREFERENCES));
         HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(n), 201);
-        String secondaryFolderId = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+        String secondaryFolderId =
+                RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
         AssocChild secChild = new AssocChild(contentId, ASSOC_TYPE_CM_CONTAINS);
         post(getNodeSecondaryChildrenUrl(secondaryFolderId), toJsonAsStringNonNull(secChild), 201);
 
         Paging paging = getPaging(0, 100);
         // Order by folders and modified date first
-        Map<String, String> orderBy = Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
+        Map<String, String> orderBy =
+                Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
 
         // Retrieve the node via the primary parent
         String primaryChildrenUrl = getNodeChildrenUrl(primaryFolderId);
         response = getAll(primaryChildrenUrl, paging, orderBy, 200);
-        List<Document> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
+        List<Document> nodes =
+                RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         Document node = nodes.get(0);
         assertEquals(contentId, node.getId());
         assertEquals(primaryFolderId, node.getParentId());
@@ -1289,17 +1311,15 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
      * @throws Exception
      */
     @Test
-    public void testDeleteAndRestoreNodeWithAssocs() throws Exception
-    {
+    public void testDeleteAndRestoreNodeWithAssocs() throws Exception {
         // as user 1 ...
         setRequestContext(user1);
-        
+
         String f1Id = null;
         String f2Id = null;
         String f3Id = null;
 
-        try
-        {
+        try {
             String myFolderNodeId = getMyNodeId();
 
             // create primary parent-child hierarchy
@@ -1313,7 +1333,8 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             f3Id = createFolder(myFolderNodeId, "f3").getId();
 
             HttpResponse response = getAll(getNodeParentsUrl(f1bId), null, null, 200);
-            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            List<Node> nodes =
+                    RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1Id, nodes.get(0).getId());
 
@@ -1368,14 +1389,15 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             response = getAll(getNodeSecondaryChildrenUrl(f2Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
-            List<String> nodeIds = Arrays.asList(new String[]{nodes.get(0).getId(), nodes.get(1).getId()});
+            List<String> nodeIds =
+                    Arrays.asList(new String[] {nodes.get(0).getId(), nodes.get(1).getId()});
             assertTrue(nodeIds.contains(f1bId));
             assertTrue(nodeIds.contains(f1dId));
 
             response = getAll(getNodeSecondaryChildrenUrl(f3Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
-            nodeIds = Arrays.asList(new String[]{nodes.get(0).getId(), nodes.get(1).getId()});
+            nodeIds = Arrays.asList(new String[] {nodes.get(0).getId(), nodes.get(1).getId()});
             assertTrue(nodeIds.contains(f1bId));
             assertTrue(nodeIds.contains(f1dId));
 
@@ -1404,7 +1426,6 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(1, nodes.size());
             assertEquals(c1eId, nodes.get(0).getId());
 
-
             // ... delete to trashcan/archive ...
             deleteNode(f1bId);
 
@@ -1418,12 +1439,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-
             // ... and then restore again ...
-            post(URL_DELETED_NODES+"/"+f1bId+"/restore", null, null, 200);
+            post(URL_DELETED_NODES + "/" + f1bId + "/restore", null, null, 200);
 
             // check primary parent-child hierarchy is restored
-            // but not the secondary parents or peer assocs of the deleted nodes (outside or within the hierarchy)
+            // but not the secondary parents or peer assocs of the deleted nodes (outside or within
+            // the hierarchy)
 
             response = getSingle(NodesEntityResource.class, f1bId, null, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
@@ -1479,40 +1500,35 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             response = getAll(getNodeTargetsUrl(f3Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
-        }
-        finally
-        {
+        } finally {
             // some cleanup
             setRequestContext(user1);
 
-            if (f1Id != null)
-            {
+            if (f1Id != null) {
                 deleteNode(f1Id, true, 204);
             }
 
-            if (f2Id != null)
-            {
+            if (f2Id != null) {
                 deleteNode(f2Id, true, 204);
             }
 
-            if (f3Id != null)
-            {
+            if (f3Id != null) {
                 deleteNode(f3Id, true, 204);
             }
         }
     }
 
     /**
-     * Test ability to create a node and optionally specify one or more associations (to other existing nodes) at time of create.
+     * Test ability to create a node and optionally specify one or more associations (to other
+     * existing nodes) at time of create.
      *
      * @throws Exception
      */
     @Test
-    public void testCreateNodeWithAssocs() throws Exception
-    {
+    public void testCreateNodeWithAssocs() throws Exception {
         // as user 1
         setRequestContext(user1);
-        
+
         String myFolderNodeId = getMyNodeId();
 
         // create node with some assocs in a single call
@@ -1522,7 +1538,8 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("f1");
         n.setNodeType(TYPE_CM_FOLDER);
         n.setAspectNames(Arrays.asList(ASPECT_CM_PREFERENCES));
-        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), toJsonAsStringNonNull(n), 201);
+        HttpResponse response =
+                post(getNodeChildrenUrl(myFolderNodeId), toJsonAsStringNonNull(n), 201);
         String f1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create content node
@@ -1557,12 +1574,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
         String f3Id = createFolder(myFolderNodeId, "f3").getId();
 
-        try
-        {
+        try {
             Paging paging = getPaging(0, 100);
 
             response = getAll(getNodeSecondaryChildrenUrl(f2Id), paging, null, 200);
-            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            List<Node> nodes =
+                    RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o1Id, nodes.get(0).getId());
 
@@ -1572,7 +1589,6 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(o2Id, nodes.get(0).getId());
 
             // TODO test model with mandatory aspect
-
 
             // -ve test -  minor: error code if creating a cyclic child assoc (REPO-475)
             n = new Node();
@@ -1611,9 +1627,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             tgt = new AssocTarget(f2Id, null);
             n.setTargets(Collections.singletonList(tgt));
             post(getNodeChildrenUrl(f3Id), RestApiUtil.toJsonAsStringNonNull(n), 400);
-        }
-        finally
-        {
+        } finally {
             // some cleanup
             setRequestContext(user1);
             deleteNode(f1Id, true, 204);
@@ -1623,8 +1637,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Override
-    public String getScope()
-    {
+    public String getScope() {
         return "public";
     }
 }

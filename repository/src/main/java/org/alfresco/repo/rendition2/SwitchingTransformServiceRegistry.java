@@ -34,47 +34,65 @@ import java.util.Map;
  *
  * @author adavis
  */
-public class SwitchingTransformServiceRegistry implements TransformServiceRegistry
-{
+public class SwitchingTransformServiceRegistry implements TransformServiceRegistry {
     private final TransformServiceRegistry primary;
     private final TransformServiceRegistry secondary;
 
-    public SwitchingTransformServiceRegistry(TransformServiceRegistry primary, TransformServiceRegistry secondary)
-    {
+    public SwitchingTransformServiceRegistry(
+            TransformServiceRegistry primary, TransformServiceRegistry secondary) {
         this.primary = primary;
         this.secondary = secondary;
     }
 
     @Override
-    public long findMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> options, String renditionName)
-    {
+    public long findMaxSize(
+            String sourceMimetype,
+            String targetMimetype,
+            Map<String, String> options,
+            String renditionName) {
         long maxSize;
-        long primaryMaxSize = primary.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-        if (primaryMaxSize == -1L)
-        {
+        long primaryMaxSize =
+                primary.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+        if (primaryMaxSize == -1L) {
             maxSize = -1L;
-        }
-        else
-        {
-            long secondaryMaxSize = secondary.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
-            maxSize = primaryMaxSize == 0
-                ? secondaryMaxSize
-                : secondaryMaxSize == 0
-                    ? primaryMaxSize
-                    : secondaryMaxSize == -1L
-                        ? Long.valueOf(-1L)
-                        : Long.valueOf(Math.max(primaryMaxSize, secondaryMaxSize));
+        } else {
+            long secondaryMaxSize =
+                    secondary.findMaxSize(sourceMimetype, targetMimetype, options, renditionName);
+            maxSize =
+                    primaryMaxSize == 0
+                            ? secondaryMaxSize
+                            : secondaryMaxSize == 0
+                                    ? primaryMaxSize
+                                    : secondaryMaxSize == -1L
+                                            ? Long.valueOf(-1L)
+                                            : Long.valueOf(
+                                                    Math.max(primaryMaxSize, secondaryMaxSize));
         }
         return maxSize;
     }
 
     @Override
-    public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype, Map<String, String> actualOptions, String renditionName)
-    {
-        String name = primary.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-        if (name == null)
-        {
-            name = secondary.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+    public String findTransformerName(
+            String sourceMimetype,
+            long sourceSizeInBytes,
+            String targetMimetype,
+            Map<String, String> actualOptions,
+            String renditionName) {
+        String name =
+                primary.findTransformerName(
+                        sourceMimetype,
+                        sourceSizeInBytes,
+                        targetMimetype,
+                        actualOptions,
+                        renditionName);
+        if (name == null) {
+            name =
+                    secondary.findTransformerName(
+                            sourceMimetype,
+                            sourceSizeInBytes,
+                            targetMimetype,
+                            actualOptions,
+                            renditionName);
         }
         return name;
     }

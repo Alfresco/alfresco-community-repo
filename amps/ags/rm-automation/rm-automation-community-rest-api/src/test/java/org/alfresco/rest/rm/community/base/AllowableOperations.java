@@ -32,8 +32,7 @@ package org.alfresco.rest.rm.community.base;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class AllowableOperations
-{
+public class AllowableOperations {
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     public static final String DELETE = "delete";

@@ -55,107 +55,129 @@ import org.mockito.Mock;
  *
  * @author Sara Aspery
  */
-public class ContentServiceImplUnitTest
-{
-    private static final Boolean ENABLED = Boolean.TRUE;
-    private static final Boolean DISABLED = Boolean.FALSE;
+public class ContentServiceImplUnitTest {
 
-    private static final Long SYS_DEFAULT_EXPIRY_TIME_IN_SECS = 30L;
-    private static final Long SYS_MAX_EXPIRY_TIME_IN_SECS = 300L;
+  private static final Boolean ENABLED = Boolean.TRUE;
+  private static final Boolean DISABLED = Boolean.FALSE;
 
-    private static final NodeRef NODE_REF = new NodeRef("content://Node/Ref");
+  private static final Long SYS_DEFAULT_EXPIRY_TIME_IN_SECS = 30L;
+  private static final Long SYS_MAX_EXPIRY_TIME_IN_SECS = 300L;
 
-    @InjectMocks
-    private ContentServiceImpl contentService;
+  private static final NodeRef NODE_REF = new NodeRef("content://Node/Ref");
 
-    @Mock
-    private ContentStore mockContentStore;
+  @InjectMocks
+  private ContentServiceImpl contentService;
 
-    @Mock
-    private NodeService mockNodeService;
+  @Mock
+  private ContentStore mockContentStore;
 
-    @Mock
-    private ContentData mockContentData;
+  @Mock
+  private NodeService mockNodeService;
 
-    @Before
-    public void setup()
-    {
-        openMocks(this);
-        when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentData);
-        when(mockContentData.getContentUrl()).thenReturn("someContentUrl");
-        when(mockContentData.getMimetype()).thenReturn("someMimetype");
-        when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_NAME)).thenReturn("someFilename");
+  @Mock
+  private ContentData mockContentData;
+
+  @Before
+  public void setup() {
+    openMocks(this);
+    when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_CONTENT))
+      .thenReturn(mockContentData);
+    when(mockContentData.getContentUrl()).thenReturn("someContentUrl");
+    when(mockContentData.getMimetype()).thenReturn("someMimetype");
+    when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_NAME))
+      .thenReturn("someFilename");
+  }
+
+  @Test
+  public void testIsContentDirectUrlEnabled_SystemWideIsDisabled() {
+    setupSystemWideDirectAccessConfig(DISABLED);
+    assertFalse(
+      "Expected contentDirectUrl to be disabled",
+      contentService.isContentDirectUrlEnabled()
+    );
+    verify(mockContentStore, never()).isContentDirectUrlEnabled();
+  }
+
+  @Test
+  public void testIsContentDirectUrlEnabled_SystemWideIsEnabledButStoreIsDisabled() {
+    setupSystemWideDirectAccessConfig(ENABLED);
+    when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
+    assertFalse(
+      "Expected contentDirectUrl to be disabled",
+      contentService.isContentDirectUrlEnabled()
+    );
+  }
+
+  @Test
+  public void testIsContentDirectUrlEnabled_SystemWideIsEnabledAndStoreIsEnabled() {
+    setupSystemWideDirectAccessConfig(ENABLED);
+    when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
+    assertTrue(
+      "Expected contentDirectUrl to be enabled",
+      contentService.isContentDirectUrlEnabled()
+    );
+  }
+
+  @Test
+  public void testRequestContentDirectUrl_SystemWideIsDisabled() {
+    setupSystemWideDirectAccessConfig(DISABLED);
+    try {
+      contentService.requestContentDirectUrl(NODE_REF, true, 20L);
+      fail("Expected DirectAccessUrlDisabledException");
+    } catch (DirectAccessUrlDisabledException ex) {
+      verify(mockContentStore, never()).isContentDirectUrlEnabled();
     }
+  }
 
-    @Test
-    public void testIsContentDirectUrlEnabled_SystemWideIsDisabled()
-    {
-        setupSystemWideDirectAccessConfig(DISABLED);
-        assertFalse("Expected contentDirectUrl to be disabled", contentService.isContentDirectUrlEnabled());
-        verify(mockContentStore, never()).isContentDirectUrlEnabled();
-    }
+  @Test
+  public void testRequestContentDirectUrl_SystemWideIsEnabledButStoreIsDisabled() {
+    setupSystemWideDirectAccessConfig(ENABLED);
+    when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
 
-    @Test
-    public void testIsContentDirectUrlEnabled_SystemWideIsEnabledButStoreIsDisabled()
-    {
-        setupSystemWideDirectAccessConfig(ENABLED);
-        when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
-        assertFalse("Expected contentDirectUrl to be disabled", contentService.isContentDirectUrlEnabled());
-    }
+    DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(
+      NODE_REF,
+      true,
+      20L
+    );
+    assertNull(directAccessUrl);
+    verify(mockContentStore, never())
+      .requestContentDirectUrl(
+        anyString(),
+        eq(true),
+        anyString(),
+        anyString(),
+        anyLong()
+      );
+  }
 
-    @Test
-    public void testIsContentDirectUrlEnabled_SystemWideIsEnabledAndStoreIsEnabled()
-    {
-        setupSystemWideDirectAccessConfig(ENABLED);
-        when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
-        assertTrue("Expected contentDirectUrl to be enabled", contentService.isContentDirectUrlEnabled());
-    }
+  @Test
+  public void testRequestContentDirectUrl_StoreIsEnabledButNotImplemented() {
+    setupSystemWideDirectAccessConfig(ENABLED);
+    when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
 
-    @Test
-    public void testRequestContentDirectUrl_SystemWideIsDisabled()
-    {
-        setupSystemWideDirectAccessConfig(DISABLED);
-        try
-        {
-            contentService.requestContentDirectUrl(NODE_REF, true, 20L);
-            fail("Expected DirectAccessUrlDisabledException");
-        }
-        catch (DirectAccessUrlDisabledException ex)
-        {
-            verify(mockContentStore, never()).isContentDirectUrlEnabled();
-        }
-    }
+    DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(
+      NODE_REF,
+      true,
+      20L
+    );
+    assertNull(directAccessUrl);
+    verify(mockContentStore, times(1))
+      .requestContentDirectUrl(
+        anyString(),
+        eq(true),
+        anyString(),
+        anyString(),
+        anyLong()
+      );
+  }
 
-    @Test
-    public void testRequestContentDirectUrl_SystemWideIsEnabledButStoreIsDisabled()
-    {
-        setupSystemWideDirectAccessConfig(ENABLED);
-        when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
-
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
-        assertNull(directAccessUrl);
-        verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
-    }
-
-    @Test
-    public void testRequestContentDirectUrl_StoreIsEnabledButNotImplemented()
-    {
-        setupSystemWideDirectAccessConfig(ENABLED);
-        when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
-
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
-        assertNull(directAccessUrl);
-        verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
-    }
-
-    /* Helper method to set system-wide direct access url configuration settings */
-    private void setupSystemWideDirectAccessConfig(Boolean isEnabled)
-    {
-        SystemWideDirectUrlConfig sysConfig = new SystemWideDirectUrlConfig();
-        sysConfig.setEnabled(isEnabled);
-        sysConfig.setDefaultExpiryTimeInSec(SYS_DEFAULT_EXPIRY_TIME_IN_SECS);
-        sysConfig.setMaxExpiryTimeInSec(SYS_MAX_EXPIRY_TIME_IN_SECS);
-        sysConfig.validate();
-        contentService.setSystemWideDirectUrlConfig(sysConfig);
-    }
+  /* Helper method to set system-wide direct access url configuration settings */
+  private void setupSystemWideDirectAccessConfig(Boolean isEnabled) {
+    SystemWideDirectUrlConfig sysConfig = new SystemWideDirectUrlConfig();
+    sysConfig.setEnabled(isEnabled);
+    sysConfig.setDefaultExpiryTimeInSec(SYS_DEFAULT_EXPIRY_TIME_IN_SECS);
+    sysConfig.setMaxExpiryTimeInSec(SYS_MAX_EXPIRY_TIME_IN_SECS);
+    sysConfig.validate();
+    contentService.setSystemWideDirectUrlConfig(sysConfig);
+  }
 }

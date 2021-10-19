@@ -39,77 +39,85 @@ import org.alfresco.service.cmr.security.AccessStatus;
  *
  * @since 2.4
  */
-public class RM3341Test extends BaseRMTestCase
-{
-    public void testCopyingContentsInHoldandTransfer() throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-                assertNotNull(holdContainer);
-                NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
-                assertNotNull(transferContainer);
+public class RM3341Test extends BaseRMTestCase {
 
-                assertEquals(AccessStatus.ALLOWED,
-                            permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED,
-                            permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
+  public void testCopyingContentsInHoldandTransfer() throws Exception {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
+          assertNotNull(holdContainer);
+          NodeRef transferContainer = filePlanService.getTransferContainer(
+            filePlan
+          );
+          assertNotNull(transferContainer);
 
-                return null;
-            }
-        }, ADMIN_USER);
+          assertEquals(
+            AccessStatus.ALLOWED,
+            permissionService.hasPermission(
+              holdContainer,
+              RMPermissionModel.FILING
+            )
+          );
+          assertEquals(
+            AccessStatus.ALLOWED,
+            permissionService.hasPermission(
+              transferContainer,
+              RMPermissionModel.FILING
+            )
+          );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
+          return null;
+        }
+      },
+      ADMIN_USER
+    );
 
-            public Void run()
-            {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
+          assertNotNull(holdContainer);
 
-                NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-                assertNotNull(holdContainer);
+          try {
+            fileFolderService.create(
+              holdContainer,
+              "test file",
+              ContentModel.TYPE_CONTENT
+            );
+            fail("This should have thrown an exception");
+          } catch (IntegrityException e) {
+            // ("Content can't be added to a hold container. Use record folders to file content.")
+          }
+          return null;
+        }
+      }
+    );
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          NodeRef transferContainer = filePlanService.getTransferContainer(
+            filePlan
+          );
+          assertNotNull(transferContainer);
 
-                try
-                {
-                    fileFolderService.create(holdContainer, "test file", ContentModel.TYPE_CONTENT);
-                    fail("This should have thrown an exception");
-                }
-                catch (IntegrityException e)
-                {
-                    // ("Content can't be added to a hold container. Use record folders to file content.")
-                }
-                return null;
-            }
+          try {
+            fileFolderService.create(
+              transferContainer,
+              "test content",
+              ContentModel.TYPE_CONTENT
+            );
 
-        });
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-
-            public Void run()
-            {
-
-                NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
-                assertNotNull(transferContainer);
-
-                try
-                {
-
-                    fileFolderService.create(transferContainer, "test content", ContentModel.TYPE_CONTENT);
-
-                    fail("This should have thrown an exception");
-
-                }
-                catch (IntegrityException e)
-                {
-                    // ("Content can't be added to a transfer container. Use record folders to file content.")
-                }
-                return null;
-            }
-
-        });
-    }
+            fail("This should have thrown an exception");
+          } catch (IntegrityException e) {
+            // ("Content can't be added to a transfer container. Use record folders to file content.")
+          }
+          return null;
+        }
+      }
+    );
+  }
 }

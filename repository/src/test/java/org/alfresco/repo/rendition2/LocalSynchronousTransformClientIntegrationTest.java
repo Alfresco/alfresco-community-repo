@@ -25,6 +25,15 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -39,155 +48,156 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-
 /**
  * Integration tests for {@link LocalSynchronousTransformClient}
  */
 @Category(NeverRunsTests.class)
-public class LocalSynchronousTransformClientIntegrationTest extends AbstractRenditionIntegrationTest
-{
-    @Autowired
-    protected SynchronousTransformClient localSynchronousTransformClient;
+public class LocalSynchronousTransformClientIntegrationTest
+  extends AbstractRenditionIntegrationTest {
 
-    protected SynchronousTransformClient synchronousTransformClient;
+  @Autowired
+  protected SynchronousTransformClient localSynchronousTransformClient;
 
-    @BeforeClass
-    public static void before()
-    {
-        AbstractRenditionIntegrationTest.before();
-        local();
+  protected SynchronousTransformClient synchronousTransformClient;
+
+  @BeforeClass
+  public static void before() {
+    AbstractRenditionIntegrationTest.before();
+    local();
+  }
+
+  @AfterClass
+  public static void after() {
+    // Strict MimetypeCheck property cleanup
+    System.clearProperty("transformer.strict.mimetype.check");
+    // Retry on DifferentMimetype property cleanup
+    System.clearProperty("content.transformer.retryOn.different.mimetype");
+    AbstractRenditionIntegrationTest.after();
+  }
+
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
+    AuthenticationUtil.setRunAsUser(AuthenticationUtil.getAdminUserName());
+    synchronousTransformClient = localSynchronousTransformClient;
+  }
+
+  @Test
+  public void testTransformDocxJpegMedium() throws Exception {
+    checkTransform("quick.docx", "medium", true);
+  }
+
+  @Test
+  public void testTransformDocxDoclib() throws Exception {
+    checkTransform("quick.docx", "doclib", true);
+  }
+
+  @Test
+  public void testParallelTransforms() throws Exception {
+    Collection<Callable<Void>> transforms = new ArrayList<>();
+    ExecutorService executorService = Executors.newWorkStealingPool(10);
+    for (int i = 0; i < 50; i++) {
+      Callable<Void> callable = () -> {
+        checkTransform("quick.txt", "text/plain", Collections.emptyMap(), true);
+        return null;
+      };
+      transforms.add(callable);
     }
+    executorService.invokeAll(transforms);
+  }
 
-    @AfterClass
-    public static void after()
-    {
-        // Strict MimetypeCheck property cleanup
-        System.clearProperty("transformer.strict.mimetype.check");
-        // Retry on DifferentMimetype property cleanup
-        System.clearProperty("content.transformer.retryOn.different.mimetype");
-        AbstractRenditionIntegrationTest.after();
+  @Test
+  public void testTransformDocxJpegImgpreview() throws Exception {
+    checkTransform("quick.docx", "imgpreview", true);
+  }
+
+  @Test
+  public void testTransformDocxPngAvatar() throws Exception {
+    checkTransform("quick.docx", "avatar", true);
+  }
+
+  @Test
+  public void testTransformDocxPngAvatar32() throws Exception {
+    checkTransform("quick.docx", "avatar32", true);
+  }
+
+  @Test
+  public void testTransformDocxFlashWebpreview() throws Exception {
+    checkTransform("quick.docx", "webpreview", false);
+  }
+
+  @Test
+  public void testTransformDocxPdf() throws Exception {
+    checkTransform("quick.docx", "pdf", false);
+  }
+
+  @Test
+  public void testRetryOnDifferentMimetype() throws Exception {
+    boolean expectedToPass = synchronousTransformClient
+      .getClass()
+      .isInstance(LocalSynchronousTransformClient.class);
+
+    // File is actually an image masked as docx
+    checkTransform("quick-differentMimetype.docx", "pdf", expectedToPass);
+  }
+
+  @Test
+  public void testNonWhitelistedStrictMimetype() throws Exception {
+    checkTransform("quickMaskedHtml.jpeg", "avatar32", false);
+  }
+
+  // Does a synchronous transform similar to the supplied rendition, which is done asynchronously.
+  private void checkTransform(
+    String testFileName,
+    String renditionDefinitionName,
+    boolean expectedToPass
+  ) throws Exception {
+    if (expectedToPass) {
+      RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(
+        renditionDefinitionName
+      );
+      String targetMimetype = renditionDefinition.getTargetMimetype();
+      Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
+
+      checkTransform(
+        testFileName,
+        targetMimetype,
+        actualOptions,
+        expectedToPass
+      );
     }
+  }
 
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
-        AuthenticationUtil.setRunAsUser(AuthenticationUtil.getAdminUserName());
-        synchronousTransformClient = localSynchronousTransformClient;
+  private void checkTransform(
+    String testFileName,
+    String targetMimetype,
+    Map<String, String> actualOptions,
+    boolean expectedToPass
+  ) {
+    if (expectedToPass) {
+      NodeRef sourceNode = transactionService
+        .getRetryingTransactionHelper()
+        .doInTransaction(() -> createContentNodeFromQuickFile(testFileName));
+      ContentReader reader = contentService.getReader(sourceNode, PROP_CONTENT);
+      ContentWriter writer = contentService.getTempWriter();
+      writer.setMimetype(targetMimetype);
+      synchronousTransformClient.transform(
+        reader,
+        writer,
+        actualOptions,
+        null,
+        sourceNode
+      );
+
+      ContentReader transformReader = writer.getReader();
+      String content = transformReader == null
+        ? null
+        : transformReader.getContentString();
+      content = content == null || content.isEmpty() ? null : content;
+      assertNotNull(
+        "The synchronous transform resulted in no content",
+        content
+      );
     }
-
-    @Test
-    public void testTransformDocxJpegMedium() throws Exception
-    {
-        checkTransform("quick.docx", "medium", true);
-    }
-
-    @Test
-    public void testTransformDocxDoclib() throws Exception
-    {
-        checkTransform("quick.docx", "doclib", true);
-    }
-
-    @Test
-    public void testParallelTransforms() throws Exception
-    {
-        Collection<Callable<Void>> transforms = new ArrayList<>();
-        ExecutorService executorService = Executors.newWorkStealingPool(10);
-        for (int i=0; i<50; i++)
-        {
-            Callable<Void> callable = () ->
-            {
-                checkTransform("quick.txt", "text/plain", Collections.emptyMap(), true);
-                return null;
-            };
-            transforms.add(callable);
-        }
-        executorService.invokeAll(transforms);
-    }
-
-    @Test
-    public void testTransformDocxJpegImgpreview() throws Exception
-    {
-        checkTransform("quick.docx", "imgpreview", true);
-    }
-
-    @Test
-    public void testTransformDocxPngAvatar() throws Exception
-    {
-        checkTransform("quick.docx", "avatar", true);
-    }
-
-    @Test
-    public void testTransformDocxPngAvatar32() throws Exception
-    {
-        checkTransform("quick.docx", "avatar32", true);
-    }
-
-    @Test
-    public void testTransformDocxFlashWebpreview() throws Exception
-    {
-        checkTransform("quick.docx", "webpreview", false);
-    }
-
-    @Test
-    public void testTransformDocxPdf() throws Exception
-    {
-        checkTransform("quick.docx", "pdf", false);
-    }
-
-    @Test
-    public void testRetryOnDifferentMimetype() throws Exception
-    {
-        boolean expectedToPass = synchronousTransformClient.getClass().isInstance(LocalSynchronousTransformClient.class);
-
-        // File is actually an image masked as docx
-        checkTransform("quick-differentMimetype.docx", "pdf", expectedToPass);
-    }
-
-    @Test
-    public void testNonWhitelistedStrictMimetype() throws Exception
-    {
-        checkTransform("quickMaskedHtml.jpeg", "avatar32", false);
-    }
-
-    // Does a synchronous transform similar to the supplied rendition, which is done asynchronously.
-    private void checkTransform(String testFileName, String renditionDefinitionName, boolean expectedToPass) throws Exception
-    {
-        if (expectedToPass)
-        {
-            RenditionDefinition2 renditionDefinition =
-                    renditionDefinitionRegistry2.getRenditionDefinition(renditionDefinitionName);
-            String targetMimetype = renditionDefinition.getTargetMimetype();
-            Map<String, String> actualOptions = renditionDefinition.getTransformOptions();
-
-            checkTransform(testFileName, targetMimetype, actualOptions, expectedToPass);
-        }
-    }
-
-    private void checkTransform(String testFileName, String targetMimetype, Map<String, String> actualOptions, boolean expectedToPass)
-    {
-        if (expectedToPass)
-        {
-            NodeRef sourceNode = transactionService.getRetryingTransactionHelper().doInTransaction(() ->
-                    createContentNodeFromQuickFile(testFileName));
-            ContentReader reader = contentService.getReader(sourceNode, PROP_CONTENT);
-            ContentWriter writer = contentService.getTempWriter();
-            writer.setMimetype(targetMimetype);
-            synchronousTransformClient.transform(reader, writer, actualOptions, null, sourceNode);
-
-            ContentReader transformReader = writer.getReader();
-            String content = transformReader == null ? null : transformReader.getContentString();
-            content = content == null || content.isEmpty() ? null : content;
-            assertNotNull("The synchronous transform resulted in no content", content);
-        }
-    }
+  }
 }

@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
@@ -53,101 +52,111 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 @BehaviourBean
-public class OnReferenceCreateEventType extends SimpleRecordsManagementEventTypeImpl
-                                        implements RecordsManagementModel,
-                                                   OnCreateReference
-{
-    /** Records management action service */
-    private RecordsManagementActionService recordsManagementActionService;
+public class OnReferenceCreateEventType
+  extends SimpleRecordsManagementEventTypeImpl
+  implements RecordsManagementModel, OnCreateReference {
 
-    /** Disposition service */
-    private DispositionService dispositionService;
+  /** Records management action service */
+  private RecordsManagementActionService recordsManagementActionService;
 
-    /** Reference */
-    private QName reference;
+  /** Disposition service */
+  private DispositionService dispositionService;
 
-    /**
-     * @param dispositionService    the disposition service to set
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
-    }
+  /** Reference */
+  private QName reference;
 
-    /**
-     * @param recordsManagementActionService the recordsManagementActionService to set
-     */
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
-        this.recordsManagementActionService = recordsManagementActionService;
-    }
+  /**
+   * @param dispositionService    the disposition service to set
+   */
+  public void setDispositionService(DispositionService dispositionService) {
+    this.dispositionService = dispositionService;
+  }
 
-    /**
-     * Set the reference
-     *
-     * @param reference
-     */
-    public void setReferenceName(String reference)
-    {
-        this.reference = QName.createQName(reference);
-    }
+  /**
+   * @param recordsManagementActionService the recordsManagementActionService to set
+   */
+  public void setRecordsManagementActionService(
+    RecordsManagementActionService recordsManagementActionService
+  ) {
+    this.recordsManagementActionService = recordsManagementActionService;
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl#isAutomaticEvent()
-     */
-    @Override
-    public boolean isAutomaticEvent()
-    {
-        return true;
-    }
+  /**
+   * Set the reference
+   *
+   * @param reference
+   */
+  public void setReferenceName(String reference) {
+    this.reference = QName.createQName(reference);
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference#onCreateReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
-     */
-    @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            type = "rma:record",
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    public void onCreateReference(final NodeRef fromNodeRef, final NodeRef toNodeRef, final QName reference)
-    {
-        AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                // Check whether it is the reference type we care about
-                if (reference.equals(OnReferenceCreateEventType.this.reference))
-                {
-                    DispositionAction da = dispositionService.getNextDispositionAction(toNodeRef);
-                    if (da != null)
-                    {
-                        List<EventCompletionDetails> events = da.getEventCompletionDetails();
-                        for (EventCompletionDetails event : events)
-                        {
-                            RecordsManagementEvent rmEvent = getRecordsManagementEventService().getEvent(event.getEventName());
-                            if (!event.isEventComplete() &&
-                                rmEvent.getType().equals(getName()))
-                            {
-                                // Complete the event
-                                Map<String, Serializable> params = new HashMap<>(3);
-                                params.put(CompleteEventAction.PARAM_EVENT_NAME, event.getEventName());
-                                params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_BY, AuthenticationUtil.getFullyAuthenticatedUser());
-                                params.put(CompleteEventAction.PARAM_EVENT_COMPLETED_AT, new Date());
-                                recordsManagementActionService.executeRecordsManagementAction(toNodeRef, "completeEvent", params);
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl#isAutomaticEvent()
+   */
+  @Override
+  public boolean isAutomaticEvent() {
+    return true;
+  }
 
-                                break;
-                            }
-                        }
-                    }
-                }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference#onCreateReference(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+   */
+  @Override
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    type = "rma:record",
+    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+  )
+  public void onCreateReference(
+    final NodeRef fromNodeRef,
+    final NodeRef toNodeRef,
+    final QName reference
+  ) {
+    AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>() {
+      public Object doWork() {
+        // Check whether it is the reference type we care about
+        if (reference.equals(OnReferenceCreateEventType.this.reference)) {
+          DispositionAction da = dispositionService.getNextDispositionAction(
+            toNodeRef
+          );
+          if (da != null) {
+            List<EventCompletionDetails> events = da.getEventCompletionDetails();
+            for (EventCompletionDetails event : events) {
+              RecordsManagementEvent rmEvent = getRecordsManagementEventService()
+                .getEvent(event.getEventName());
+              if (
+                !event.isEventComplete() && rmEvent.getType().equals(getName())
+              ) {
+                // Complete the event
+                Map<String, Serializable> params = new HashMap<>(3);
+                params.put(
+                  CompleteEventAction.PARAM_EVENT_NAME,
+                  event.getEventName()
+                );
+                params.put(
+                  CompleteEventAction.PARAM_EVENT_COMPLETED_BY,
+                  AuthenticationUtil.getFullyAuthenticatedUser()
+                );
+                params.put(
+                  CompleteEventAction.PARAM_EVENT_COMPLETED_AT,
+                  new Date()
+                );
+                recordsManagementActionService.executeRecordsManagementAction(
+                  toNodeRef,
+                  "completeEvent",
+                  params
+                );
 
-                return null;
+                break;
+              }
             }
-        };
+          }
+        }
 
-        AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminUserName());
+        return null;
+      }
+    };
 
-    }
+    AuthenticationUtil.runAs(work, AuthenticationUtil.getAdminUserName());
+  }
 }

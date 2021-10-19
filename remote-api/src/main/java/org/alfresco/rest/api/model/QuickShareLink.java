@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -44,228 +44,200 @@ import java.util.Map;
  * @author janv
  *
  */
-public class QuickShareLink
-{
-    // unique short id (ie. shorter than a guid, 22 vs 36 chars)
-    private String sharedId;
+public class QuickShareLink {
 
-    private Date expiresAt;
+  // unique short id (ie. shorter than a guid, 22 vs 36 chars)
+  private String sharedId;
 
-    private String nodeId;
-    private String name;
-    private String title;
-    private String description;
-    private PathInfo path;
+  private Date expiresAt;
 
-    private ContentInfo content;
+  private String nodeId;
+  private String name;
+  private String title;
+  private String description;
+  private PathInfo path;
 
-    private Date modifiedAt;
-    private UserInfo modifiedByUser;
-    private UserInfo sharedByUser;
+  private ContentInfo content;
 
-    private List<String> allowableOperations;
+  private Date modifiedAt;
+  private UserInfo modifiedByUser;
+  private UserInfo sharedByUser;
 
-    private List<String> allowableOperationsOnTarget;
-    private Map<String, Object> properties;
-    private List<String> aspectNames;
-    private Boolean isFavorite;
+  private List<String> allowableOperations;
 
-    public QuickShareLink()
-    {
-    }
+  private List<String> allowableOperationsOnTarget;
+  private Map<String, Object> properties;
+  private List<String> aspectNames;
+  private Boolean isFavorite;
 
-    public QuickShareLink(String sharedId, String nodeId)
-    {
-        this.sharedId = sharedId;
-        this.nodeId = nodeId;
-    }
+  public QuickShareLink() {}
 
-    public List<String> getAspectNames()
-    {
-        return aspectNames;
-    }
+  public QuickShareLink(String sharedId, String nodeId) {
+    this.sharedId = sharedId;
+    this.nodeId = nodeId;
+  }
 
-    public void setAspectNames(List<String> aspectNames)
-    {
-        this.aspectNames = aspectNames;
-    }
+  public List<String> getAspectNames() {
+    return aspectNames;
+  }
 
-    public Map<String, Object> getProperties()
-    {
-        return properties;
-    }
+  public void setAspectNames(List<String> aspectNames) {
+    this.aspectNames = aspectNames;
+  }
 
-    public void setProperties(Map<String, Object> properties)
-    {
-        this.properties = properties;
-    }
+  public Map<String, Object> getProperties() {
+    return properties;
+  }
 
-    public Boolean getIsFavorite()
-    {
-        return isFavorite;
-    }
+  public void setProperties(Map<String, Object> properties) {
+    this.properties = properties;
+  }
 
-    public void setIsFavorite(Boolean isFavorite)
-    {
-        this.isFavorite = isFavorite;
-    }
+  public Boolean getIsFavorite() {
+    return isFavorite;
+  }
 
-    public String getId() {
-        return sharedId;
-    }
+  public void setIsFavorite(Boolean isFavorite) {
+    this.isFavorite = isFavorite;
+  }
 
-    public void setId(String sharedId) {
-        this.sharedId = sharedId;
-    }
+  public String getId() {
+    return sharedId;
+  }
 
-    public Date getExpiresAt()
-    {
-        return expiresAt;
-    }
+  public void setId(String sharedId) {
+    this.sharedId = sharedId;
+  }
 
-    public void setExpiresAt(Date expiresAt)
-    {
-        this.expiresAt = expiresAt;
-    }
+  public Date getExpiresAt() {
+    return expiresAt;
+  }
 
-    public String getNodeId() {
-        return nodeId;
-    }
+  public void setExpiresAt(Date expiresAt) {
+    this.expiresAt = expiresAt;
+  }
 
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
-    }
+  public String getNodeId() {
+    return nodeId;
+  }
 
-    public ContentInfo getContent()
-    {
-        return content;
-    }
+  public void setNodeId(String nodeId) {
+    this.nodeId = nodeId;
+  }
 
-    public void setContent(ContentInfo content)
-    {
-        this.content = content;
-    }
+  public ContentInfo getContent() {
+    return content;
+  }
 
-    public String getName()
-    {
-        return name;
-    }
+  public void setContent(ContentInfo content) {
+    this.content = content;
+  }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getTitle()
-    {
-        return title;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setTitle(String title)
-    {
-        this.title = title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getDescription()
-    {
-        return description;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public PathInfo getPath()
-    {
-        return path;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setPath(PathInfo pathInfo)
-    {
-        this.path = pathInfo;
-    }
+  public PathInfo getPath() {
+    return path;
+  }
 
-    public Date getModifiedAt()
-    {
-        return modifiedAt;
-    }
+  public void setPath(PathInfo pathInfo) {
+    this.path = pathInfo;
+  }
 
-    public void setModifiedAt(Date modifiedAt)
-    {
-        this.modifiedAt = modifiedAt;
-    }
+  public Date getModifiedAt() {
+    return modifiedAt;
+  }
 
-    public UserInfo getModifiedByUser()
-    {
-        return modifiedByUser;
-    }
+  public void setModifiedAt(Date modifiedAt) {
+    this.modifiedAt = modifiedAt;
+  }
 
-    public void setModifiedByUser(UserInfo modifiedByUser)
-    {
-        this.modifiedByUser = modifiedByUser;
-    }
+  public UserInfo getModifiedByUser() {
+    return modifiedByUser;
+  }
 
-    public UserInfo getSharedByUser()
-    {
-        return sharedByUser;
-    }
+  public void setModifiedByUser(UserInfo modifiedByUser) {
+    this.modifiedByUser = modifiedByUser;
+  }
 
-    public void setSharedByUser(UserInfo sharedByUser)
-    {
-        this.sharedByUser = sharedByUser;
-    }
+  public UserInfo getSharedByUser() {
+    return sharedByUser;
+  }
 
-    /**
-     * Retrieve the allowable operations for the shared link.
-     *
-     * @return List of operation labels, e.g. "delete"
-     */
-    public List<String> getAllowableOperations()
-    {
-        return allowableOperations;
-    }
+  public void setSharedByUser(UserInfo sharedByUser) {
+    this.sharedByUser = sharedByUser;
+  }
 
-    public void setAllowableOperations(List<String> allowableOperations)
-    {
-        this.allowableOperations = allowableOperations;
-    }
+  /**
+   * Retrieve the allowable operations for the shared link.
+   *
+   * @return List of operation labels, e.g. "delete"
+   */
+  public List<String> getAllowableOperations() {
+    return allowableOperations;
+  }
 
-    /**
-     * Retrieve the allowable operations for the actual file being shared.
-     *
-     * @return List of operation labels, e.g. "delete"
-     */
-    public List<String> getAllowableOperationsOnTarget()
-    {
-        return allowableOperationsOnTarget;
-    }
+  public void setAllowableOperations(List<String> allowableOperations) {
+    this.allowableOperations = allowableOperations;
+  }
 
-    public void setAllowableOperationsOnTarget(List<String> allowableOperationsOnTarget)
-    {
-        this.allowableOperationsOnTarget = allowableOperationsOnTarget;
-    }
+  /**
+   * Retrieve the allowable operations for the actual file being shared.
+   *
+   * @return List of operation labels, e.g. "delete"
+   */
+  public List<String> getAllowableOperationsOnTarget() {
+    return allowableOperationsOnTarget;
+  }
 
-    // eg. for debug logging etc
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("QuickShareLink [id=").append(getId());
-        sb.append(", nodeId=").append(getNodeId());
-        sb.append(", name=").append(getName());
-        sb.append(", title=").append(getTitle());
-        sb.append(", description=").append(getDescription());
-        sb.append(", path=").append(getPath());
-        sb.append(", modifiedAt=").append(getModifiedAt());
-        sb.append(", modifiedByUser=").append(getModifiedByUser());
-        sb.append(", sharedByUser=").append(getSharedByUser());
-        sb.append(", content=").append(getContent());
-        sb.append(", allowableOperations=").append(getAllowableOperations());
-        sb.append(", allowableOperationsOnTarget=").append(getAllowableOperationsOnTarget());
-        sb.append(", expiresAt=").append(getExpiresAt());
-        sb.append(", properties=").append(getProperties());
-        sb.append("]");
-        return sb.toString();
-    }
+  public void setAllowableOperationsOnTarget(
+    List<String> allowableOperationsOnTarget
+  ) {
+    this.allowableOperationsOnTarget = allowableOperationsOnTarget;
+  }
+
+  // eg. for debug logging etc
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("QuickShareLink [id=").append(getId());
+    sb.append(", nodeId=").append(getNodeId());
+    sb.append(", name=").append(getName());
+    sb.append(", title=").append(getTitle());
+    sb.append(", description=").append(getDescription());
+    sb.append(", path=").append(getPath());
+    sb.append(", modifiedAt=").append(getModifiedAt());
+    sb.append(", modifiedByUser=").append(getModifiedByUser());
+    sb.append(", sharedByUser=").append(getSharedByUser());
+    sb.append(", content=").append(getContent());
+    sb.append(", allowableOperations=").append(getAllowableOperations());
+    sb
+      .append(", allowableOperationsOnTarget=")
+      .append(getAllowableOperationsOnTarget());
+    sb.append(", expiresAt=").append(getExpiresAt());
+    sb.append(", properties=").append(getProperties());
+    sb.append("]");
+    return sb.toString();
+  }
 }

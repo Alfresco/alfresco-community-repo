@@ -30,7 +30,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.NameValuePair;
@@ -48,24 +47,27 @@ import org.springframework.stereotype.Component;
  * @since 2.5
  */
 @Component
-public class SearchAPI extends BaseAPI
-{
+public class SearchAPI extends BaseAPI {
+
     /** http client factory */
     @Autowired
     private AlfrescoHttpClientFactory alfrescoHttpClientFactory;
 
     /** faceted search API endpoint */
-    private static final String FACETED_SEARCH_ENDPOINT = "{0}alfresco/s/slingshot/rmsearch/faceted/rmsearch?{1}";
+    private static final String FACETED_SEARCH_ENDPOINT =
+        "{0}alfresco/s/slingshot/rmsearch/faceted/rmsearch?{1}";
 
     /** share live search API endpoint */
-    private static final String SHARE_LIVE_SEARCH_DOCS_ENDPOINT = "{0}alfresco/s/slingshot/live-search-docs?{1}";
+    private static final String SHARE_LIVE_SEARCH_DOCS_ENDPOINT =
+        "{0}alfresco/s/slingshot/live-search-docs?{1}";
 
     /** RM search URL template */
-    private static final String RM_SEARCH_ENDPOINT = "{0}alfresco/s/slingshot/rmsearch/{1}?{2}";
+    private static final String RM_SEARCH_ENDPOINT =
+        "{0}alfresco/s/slingshot/rmsearch/{1}?{2}";
 
     /** RM all nodes search filters */
     private static final String RM_DEFAULT_NODES_FILTERS =
-                "records/true,undeclared/true,vital/false,folders/{0},categories/{1},frozen/false,cutoff/false";
+        "records/true,undeclared/true,vital/false,folders/{0},categories/{1},frozen/false,cutoff/false";
 
     /**
      * Perform search request on search endpoint as a user.
@@ -79,9 +81,9 @@ public class SearchAPI extends BaseAPI
     private JSONObject doSearch(
         String searchEndpoint,
         String searchUser,
-        String searchPassword)
-    {
-      return facetedRequest(searchUser, searchPassword, null, searchEndpoint);
+        String searchPassword
+    ) {
+        return facetedRequest(searchUser, searchPassword, null, searchEndpoint);
     }
 
     /**
@@ -100,13 +102,12 @@ public class SearchAPI extends BaseAPI
         String site,
         String query,
         String filters,
-        String sortby)
-    {
+        String sortby
+    ) {
         List<BasicNameValuePair> searchParameters = new ArrayList<>();
         searchParameters.add(new BasicNameValuePair("query", query));
         searchParameters.add(new BasicNameValuePair("filters", filters));
-        if (sortby != null)
-        {
+        if (sortby != null) {
             searchParameters.add(new BasicNameValuePair("sortby", sortby));
         }
 
@@ -114,7 +115,8 @@ public class SearchAPI extends BaseAPI
             RM_SEARCH_ENDPOINT,
             alfrescoHttpClientFactory.getObject().getAlfrescoUrl(),
             (site != null) ? site : RM_SITE_ID,
-            URLEncodedUtils.format(searchParameters, "UTF-8"));
+            URLEncodedUtils.format(searchParameters, "UTF-8")
+        );
 
         return doSearch(requestURL, username, password);
     }
@@ -131,19 +133,36 @@ public class SearchAPI extends BaseAPI
      * @return list of node names
      */
 
-    public List<String> searchForNodeNamesAsUser(String username, String password, String query, String sortby,
-                boolean includeCategories, boolean includeFolders)
-    {
-        String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
-                    Boolean.toString(includeCategories));
+    public List<String> searchForNodeNamesAsUser(
+        String username,
+        String password,
+        String query,
+        String sortby,
+        boolean includeCategories,
+        boolean includeFolders
+    ) {
+        String searchFilterParamaters = MessageFormat.format(
+            RM_DEFAULT_NODES_FILTERS,
+            Boolean.toString(includeFolders),
+            Boolean.toString(includeCategories)
+        );
 
-        return getItemNames(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby));
+        return getItemNames(
+            rmSearch(
+                username,
+                password,
+                "rm",
+                query,
+                searchFilterParamaters,
+                sortby
+            )
+        );
     }
 
     /**
      * Search as a user for nodes on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
      * by sortby and returns the property value for the given nodeRef and property name
-     * 
+     *
      * @param username
      * @param password
      * @param query
@@ -152,14 +171,35 @@ public class SearchAPI extends BaseAPI
      * @param includeFolders
      * @return list of node properties
      */
-    public String searchForNodePropertyAsUser(String username, String password, String nodeRef, String propertyName, String query, String sortby,
-                boolean includeCategories, boolean includeFolders)
-    {
-        String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
-                    Boolean.toString(includeCategories));
-        return getItemProperty(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby), nodeRef, propertyName); 
+    public String searchForNodePropertyAsUser(
+        String username,
+        String password,
+        String nodeRef,
+        String propertyName,
+        String query,
+        String sortby,
+        boolean includeCategories,
+        boolean includeFolders
+    ) {
+        String searchFilterParamaters = MessageFormat.format(
+            RM_DEFAULT_NODES_FILTERS,
+            Boolean.toString(includeFolders),
+            Boolean.toString(includeCategories)
+        );
+        return getItemProperty(
+            rmSearch(
+                username,
+                password,
+                "rm",
+                query,
+                searchFilterParamaters,
+                sortby
+            ),
+            nodeRef,
+            propertyName
+        );
     }
-    
+
     /**
      * Generic faceted search.
      * @param username
@@ -167,9 +207,17 @@ public class SearchAPI extends BaseAPI
      * @param parameters
      * @return search results (see API reference for more details), null for any errors
      */
-    public JSONObject facetedSearch(String username, String password, List<NameValuePair> parameters)
-    {
-        return facetedRequest(username, password, parameters, FACETED_SEARCH_ENDPOINT);
+    public JSONObject facetedSearch(
+        String username,
+        String password,
+        List<NameValuePair> parameters
+    ) {
+        return facetedRequest(
+            username,
+            password,
+            parameters,
+            FACETED_SEARCH_ENDPOINT
+        );
     }
 
     /**
@@ -180,10 +228,17 @@ public class SearchAPI extends BaseAPI
      * @param searchTerm
      * @return search results (see API reference for more details)
      */
-    public JSONObject liveSearchForDocuments(String searchUser, String searchPassword, String searchTerm)
-    {
-        return facetedRequest(searchUser, searchPassword, Arrays.asList(new BasicNameValuePair("t", searchTerm)),
-                    SHARE_LIVE_SEARCH_DOCS_ENDPOINT);
+    public JSONObject liveSearchForDocuments(
+        String searchUser,
+        String searchPassword,
+        String searchTerm
+    ) {
+        return facetedRequest(
+            searchUser,
+            searchPassword,
+            Arrays.asList(new BasicNameValuePair("t", searchTerm)),
+            SHARE_LIVE_SEARCH_DOCS_ENDPOINT
+        );
     }
 
     /**
@@ -193,12 +248,16 @@ public class SearchAPI extends BaseAPI
      * @param searchTerm
      * @return search results (see API reference for more details)
      */
-    public JSONObject facetedSearchForTerm(String searchUser, String searchPassword, String searchTerm)
-    {
+    public JSONObject facetedSearchForTerm(
+        String searchUser,
+        String searchPassword,
+        String searchTerm
+    ) {
         return facetedSearch(
             searchUser,
             searchPassword,
-            Arrays.asList(new BasicNameValuePair("term", searchTerm)));
+            Arrays.asList(new BasicNameValuePair("term", searchTerm))
+        );
     }
 
     /**
@@ -208,8 +267,11 @@ public class SearchAPI extends BaseAPI
      * @param term search term
      * @return list of document names found
      */
-    public List<String> searchForDocumentsAsUser(String username, String password, String term)
-    {
+    public List<String> searchForDocumentsAsUser(
+        String username,
+        String password,
+        String term
+    ) {
         return getItemNames(facetedSearchForTerm(username, password, term));
     }
 
@@ -220,44 +282,53 @@ public class SearchAPI extends BaseAPI
      * @param term search term
      * @return list of document names found
      */
-    public List<String> liveSearchForDocumentsAsUser(String username, String password, String term) throws JSONException
-    {
-        JSONObject searchResult = liveSearchForDocuments(username, password, term);
+    public List<String> liveSearchForDocumentsAsUser(
+        String username,
+        String password,
+        String term
+    ) throws JSONException {
+        JSONObject searchResult = liveSearchForDocuments(
+            username,
+            password,
+            term
+        );
         LOGGER.info(searchResult.toString(3));
         return getItemNames(searchResult);
     }
 
     /**
      * Helper method to extract list of names from search result.
-     * 
+     *
      * @param searchResult
      * @return list of document or record names in search result
-     * @throws FileNotFoundException 
-     * @throws JsonSyntaxException 
-     * @throws JsonIOException 
+     * @throws FileNotFoundException
+     * @throws JsonSyntaxException
+     * @throws JsonIOException
      * @throws RuntimeException for malformed search response
      */
     /**
      * Helper method to extract list of names from search result.
-     * 
+     *
      * @param searchResult
      * @return
      */
-    private List<String> getItemNames(JSONObject searchResult)
-    {
+    private List<String> getItemNames(JSONObject searchResult) {
         return getPropertyValues(searchResult, "name");
     }
-    
+
     /**
      * Helper method to extract list of property values from search result for the given nodeRef.
-     * 
+     *
      * @param searchResult
      * @param nodeRef
      * @param propertyName
      * @return
      */
-    private String getItemProperty(JSONObject searchResult, String nodeRef, String propertyName)
-    {
+    private String getItemProperty(
+        JSONObject searchResult,
+        String nodeRef,
+        String propertyName
+    ) {
         return getPropertyValue(searchResult, nodeRef, propertyName);
     }
 }

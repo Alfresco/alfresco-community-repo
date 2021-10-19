@@ -21,47 +21,44 @@ package org.alfresco.encryption.ssl;
 import org.alfresco.encryption.KeyStoreParameters;
 
 /**
- * 
+ *
  * @since 4.0
  *
  */
-public class SSLEncryptionParameters
-{
-    private KeyStoreParameters keyStoreParameters;
-    private KeyStoreParameters trustStoreParameters;
+public class SSLEncryptionParameters {
 
-    /**
-     *  Default constructor (for use by Spring)
-     */
-    public SSLEncryptionParameters()
-    {
-        super();
-    }
+  private KeyStoreParameters keyStoreParameters;
+  private KeyStoreParameters trustStoreParameters;
 
-    public SSLEncryptionParameters(KeyStoreParameters keyStoreParameters, KeyStoreParameters trustStoreParameters)
-    {
-        super();
-        this.keyStoreParameters = keyStoreParameters;
-        this.trustStoreParameters = trustStoreParameters;
-    }
+  /**
+   *  Default constructor (for use by Spring)
+   */
+  public SSLEncryptionParameters() {
+    super();
+  }
 
-    public KeyStoreParameters getKeyStoreParameters()
-    {
-        return keyStoreParameters;
-    }
-    
-    public KeyStoreParameters getTrustStoreParameters()
-    {
-        return trustStoreParameters;
-    }
+  public SSLEncryptionParameters(
+    KeyStoreParameters keyStoreParameters,
+    KeyStoreParameters trustStoreParameters
+  ) {
+    super();
+    this.keyStoreParameters = keyStoreParameters;
+    this.trustStoreParameters = trustStoreParameters;
+  }
 
-    public void setKeyStoreParameters(KeyStoreParameters keyStoreParameters)
-    {
-        this.keyStoreParameters = keyStoreParameters;
-    }
+  public KeyStoreParameters getKeyStoreParameters() {
+    return keyStoreParameters;
+  }
 
-    public void setTrustStoreParameters(KeyStoreParameters trustStoreParameters)
-    {
-        this.trustStoreParameters = trustStoreParameters;
-    }
+  public KeyStoreParameters getTrustStoreParameters() {
+    return trustStoreParameters;
+  }
+
+  public void setKeyStoreParameters(KeyStoreParameters keyStoreParameters) {
+    this.keyStoreParameters = keyStoreParameters;
+  }
+
+  public void setTrustStoreParameters(KeyStoreParameters trustStoreParameters) {
+    this.trustStoreParameters = trustStoreParameters;
+  }
 }

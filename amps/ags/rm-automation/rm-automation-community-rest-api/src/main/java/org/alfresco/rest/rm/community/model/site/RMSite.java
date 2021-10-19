@@ -27,14 +27,12 @@
 package org.alfresco.rest.rm.community.model.site;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.model.RestSiteModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.alfresco.rest.model.RestSiteModel;
 
 /**
  * POJO for RM Site component
@@ -46,15 +44,18 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class RMSite extends RestSiteModel
-{
-    @JsonProperty (required = true)
+public class RMSite extends RestSiteModel {
+
+    @JsonProperty(required = true)
     private RMSiteCompliance compliance;
 
     /** Private constructor allowing Lombok to include superclass fields in the builder. */
     @Builder
-    private RMSite(String title, String description, RMSiteCompliance compliance)
-    {
+    private RMSite(
+        String title,
+        String description,
+        RMSiteCompliance compliance
+    ) {
         this.setTitle(title);
         this.setDescription(description);
         this.compliance = compliance;

@@ -38,7 +38,6 @@ import static org.testng.Assert.assertFalse;
 import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -66,8 +65,8 @@ import org.testng.annotations.Test;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class DeclareDocumentAsRecordTests extends BaseRMRestTest
-{
+public class DeclareDocumentAsRecordTests extends BaseRMRestTest {
+
     private UserModel testUser, testUserReadOnly;
     private SiteModel testSite;
     private FolderModel testFolder;
@@ -75,19 +74,21 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
     @Autowired
     RecordsAPI recordsAPI;
 
-    @BeforeClass(alwaysRun=true)
-    public void declareDocumentAsRecordSetup()
-    {
+    @BeforeClass(alwaysRun = true)
+    public void declareDocumentAsRecordSetup() {
         // create test user and test collaboration site to store documents in
         testUser = getDataUser().createRandomTestUser();
         testUserReadOnly = getDataUser().createRandomTestUser();
 
         testSite = dataSite.usingAdmin().createPublicRandomSite();
 
-        getDataUser().addUserToSite(testUser, testSite, UserRole.SiteContributor);
-        getDataUser().addUserToSite(testUserReadOnly, testSite, UserRole.SiteConsumer);
+        getDataUser()
+            .addUserToSite(testUser, testSite, UserRole.SiteContributor);
+        getDataUser()
+            .addUserToSite(testUserReadOnly, testSite, UserRole.SiteConsumer);
 
-        testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+        testFolder =
+            dataContent.usingSite(testSite).usingUser(testUser).createFolder();
     }
 
     /**
@@ -108,64 +109,103 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      *
      * @throws Exception for malformed JSON API response
      */
-    @Test(description = "User with correct permissions can declare document as a record")
+    @Test(
+        description = "User with correct permissions can declare document as a record"
+    )
     @AlfrescoTest(jira = "RM-4429, RM-6779")
-    public void userWithPrivilegesCanDeclareDocumentAsRecord() throws Exception
-    {
+    public void userWithPrivilegesCanDeclareDocumentAsRecord()
+        throws Exception {
         // create document in a folder in a collaboration site
-        FileModel document = dataContent.usingSite(testSite)
+        FileModel document = dataContent
+            .usingSite(testSite)
             .usingUser(testUser)
             .usingResource(testFolder)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         // declare document as record
-        Record record = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(document.getNodeRefWithoutVersion());
+        Record record = getRestAPIFactory()
+            .getFilesAPI(testUser)
+            .declareAsRecord(document.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         // verify the declared record is in Unfiled Records folder
-        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
-        List<UnfiledContainerChildEntry> matchingRecords = unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory()
+            .getUnfiledContainersAPI();
+        List<UnfiledContainerChildEntry> matchingRecords = unfiledContainersAPI
+            .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
             .getEntries()
             .stream()
-            .filter(e -> e.getEntry().getId().equals(document.getNodeRefWithoutVersion()))
+            .filter(e ->
+                e.getEntry().getId().equals(document.getNodeRefWithoutVersion())
+            )
             .collect(Collectors.toList());
         // there should be only one matching record corresponding this document
-        assertEquals(matchingRecords.size(), 1, "More than one record matching document name");
+        assertEquals(
+            matchingRecords.size(),
+            1,
+            "More than one record matching document name"
+        );
 
         // verify the original file in collaboration site has been renamed to reflect the record identifier
-        List<RestNodeModel> filesAfterRename = getRestAPIFactory().getNodeAPI(testFolder)
-                .listChildren()
-                .getEntries()
-                .stream()
-                .filter(f -> f.onModel().getId().equals(document.getNodeRefWithoutVersion()))
-                .collect(Collectors.toList());
-        assertEquals(filesAfterRename.size(), 1, "There should be only one file in folder " + testFolder.getName());
+        List<RestNodeModel> filesAfterRename = getRestAPIFactory()
+            .getNodeAPI(testFolder)
+            .listChildren()
+            .getEntries()
+            .stream()
+            .filter(f ->
+                f.onModel().getId().equals(document.getNodeRefWithoutVersion())
+            )
+            .collect(Collectors.toList());
+        assertEquals(
+            filesAfterRename.size(),
+            1,
+            "There should be only one file in folder " + testFolder.getName()
+        );
 
         // verify the new name has the form of "<original name> (<record Id>).<original extension>"
         String recordName = filesAfterRename.get(0).onModel().getName();
-        assertEquals(recordName, document.getName().replace(".", String.format(" (%s).", record.getProperties().getIdentifier())));
+        assertEquals(
+            recordName,
+            document
+                .getName()
+                .replace(
+                    ".",
+                    String.format(
+                        " (%s).",
+                        record.getProperties().getIdentifier()
+                    )
+                )
+        );
 
         // verify the document in collaboration site is now a record, note the file is now renamed hence folder + doc. name concatenation
         // this also verifies the document is still in the initial folder
-        Document documentPostFiling = dataContent.usingSite(testSite)
+        Document documentPostFiling = dataContent
+            .usingSite(testSite)
             .usingUser(testUser)
             .getCMISDocument(testFolder.getCmisLocation() + "/" + recordName);
 
         // a document is a record if "Record" is one of its secondary types
-        List<SecondaryType> documentSecondary = documentPostFiling.getSecondaryTypes()
+        List<SecondaryType> documentSecondary = documentPostFiling
+            .getSecondaryTypes()
             .stream()
             .filter(t -> t.getDisplayName().equals("Record"))
             .collect(Collectors.toList());
         assertFalse(documentSecondary.isEmpty(), "Document is not a record");
 
         // verify the document is readable and has same content as corresponding record
-        try
-        (
-            InputStream recordInputStream = getRestAPIFactory().getRecordsAPI().getRecordContent(record.getId()).asInputStream();
-            InputStream documentInputStream = documentPostFiling.getContentStream().getStream()
-        )
-        {
-            assertEquals(DigestUtils.sha1(recordInputStream), DigestUtils.sha1(documentInputStream));
+        try (
+            InputStream recordInputStream = getRestAPIFactory()
+                .getRecordsAPI()
+                .getRecordContent(record.getId())
+                .asInputStream();
+            InputStream documentInputStream = documentPostFiling
+                .getContentStream()
+                .getStream()
+        ) {
+            assertEquals(
+                DigestUtils.sha1(recordInputStream),
+                DigestUtils.sha1(documentInputStream)
+            );
         }
     }
 
@@ -178,28 +218,39 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * </pre>
      * @throws Exception for malformed JSON API response
      */
-    @Test(description = "User with read-only permissions can't declare document a record")
+    @Test(
+        description = "User with read-only permissions can't declare document a record"
+    )
     @AlfrescoTest(jira = "RM-4429")
-    public void userWithReadPermissionsCantDeclare() throws Exception
-    {
+    public void userWithReadPermissionsCantDeclare() throws Exception {
         // create document in a folder in a collaboration site
-        FileModel document = dataContent.usingSite(testSite)
+        FileModel document = dataContent
+            .usingSite(testSite)
             .usingUser(testUser)
             .usingResource(testFolder)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         // declare document as record as testUserReadOnly
-        getRestAPIFactory().getFilesAPI(testUserReadOnly).declareAsRecord(document.getNodeRefWithoutVersion());
+        getRestAPIFactory()
+            .getFilesAPI(testUserReadOnly)
+            .declareAsRecord(document.getNodeRefWithoutVersion());
         assertStatusCode(FORBIDDEN);
 
         // verify the document is still in the original folder
-        List<RestNodeModel> filesAfterRename = getRestAPIFactory().getNodeAPI(testFolder)
-                .listChildren()
-                .getEntries()
-                .stream()
-                .filter(f -> f.onModel().getId().equals(document.getNodeRefWithoutVersion()))
-                .collect(Collectors.toList());
-       assertEquals(filesAfterRename.size(), 1, "Declare as record failed but original document is missing");
+        List<RestNodeModel> filesAfterRename = getRestAPIFactory()
+            .getNodeAPI(testFolder)
+            .listChildren()
+            .getEntries()
+            .stream()
+            .filter(f ->
+                f.onModel().getId().equals(document.getNodeRefWithoutVersion())
+            )
+            .collect(Collectors.toList());
+        assertEquals(
+            filesAfterRename.size(),
+            1,
+            "Declare as record failed but original document is missing"
+        );
     }
 
     /**
@@ -211,19 +262,26 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      */
     @Test(description = "Record can't be declared a record")
     @AlfrescoTest(jira = "RM-4429")
-    public void recordCantBeDeclaredARecord()
-    {
+    public void recordCantBeDeclaredARecord() {
         // create a non-electronic record in a random folder
-        Record nonelectronicRecord = Record.builder()
-            .properties(RecordProperties.builder()
-                .description("Description")
-                .title("Title")
-                .build())
+        Record nonelectronicRecord = Record
+            .builder()
+            .properties(
+                RecordProperties
+                    .builder()
+                    .description("Description")
+                    .title("Title")
+                    .build()
+            )
             .name("Non-Electronic Record")
             .nodeType(NON_ELECTRONIC_RECORD_TYPE)
             .build();
-        Record record = getRestAPIFactory().getRecordFolderAPI()
-            .createRecord(nonelectronicRecord, createCategoryFolderInFilePlan().getId());
+        Record record = getRestAPIFactory()
+            .getRecordFolderAPI()
+            .createRecord(
+                nonelectronicRecord,
+                createCategoryFolderInFilePlan().getId()
+            );
         assertStatusCode(CREATED);
 
         // try to declare it as a record
@@ -238,14 +296,20 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * Then I get a invalid operation exception
      * </pre>
      */
-    @Test(description = "Node that is not a document can't be declared a record")
+    @Test(
+        description = "Node that is not a document can't be declared a record"
+    )
     @AlfrescoTest(jira = "RM-4429")
-    public void nonDocumentCantBeDeclaredARecord()
-    {
-        FolderModel otherTestFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+    public void nonDocumentCantBeDeclaredARecord() {
+        FolderModel otherTestFolder = dataContent
+            .usingSite(testSite)
+            .usingUser(testUser)
+            .createFolder();
 
         // try to declare otherTestFolder as a record
-        getRestAPIFactory().getFilesAPI().declareAsRecord(otherTestFolder.getNodeRefWithoutVersion());
+        getRestAPIFactory()
+            .getFilesAPI()
+            .declareAsRecord(otherTestFolder.getNodeRefWithoutVersion());
         assertStatusCode(UNPROCESSABLE_ENTITY);
     }
 
@@ -254,117 +318,130 @@ public class DeclareDocumentAsRecordTests extends BaseRMRestTest
      * When the file is declared as record
      * Then the action is successful
      */
-    @Test (description = "Declaring as record a file that already has its version declared as record is successful")
-    @AlfrescoTest (jira = "RM-6786")
-    public void declareAsRecordAFileWithARecordVersion()
-    {
+    @Test(
+        description = "Declaring as record a file that already has its version declared as record is successful"
+    )
+    @AlfrescoTest(jira = "RM-6786")
+    public void declareAsRecordAFileWithARecordVersion() {
         STEP("Create a file.");
-        FileModel testFile = dataContent.usingAdmin().usingSite(testSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel testFile = dataContent
+            .usingAdmin()
+            .usingSite(testSite)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        STEP("Declare file version as record and check that record is successfully created.");
-        recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),
-                testFile.getName());
+        STEP(
+            "Declare file version as record and check that record is successfully created."
+        );
+        recordsAPI.declareDocumentVersionAsRecord(
+            getAdminUser().getUsername(),
+            getAdminUser().getPassword(),
+            testSite.getId(),
+            testFile.getName()
+        );
 
-        STEP("Declare file as record and check that record is successfully created.");
-        getRestAPIFactory().getFilesAPI().declareAsRecord(testFile.getNodeRefWithoutVersion());
+        STEP(
+            "Declare file as record and check that record is successfully created."
+        );
+        getRestAPIFactory()
+            .getFilesAPI()
+            .declareAsRecord(testFile.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
     }
-
-//    @Test(description = "Create 500 documents and declare them ass records concurently.")
-//    public void declare500DocumentsAsRecordsConcurrently() throws Exception
-//    {
-//        FolderModel testFolder1 = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
-//        // create 500 documents in a folder in a collaboration site
-//        List<FileModel> listOfDocuments = new ArrayList<FileModel>();
-//        for(int i = 0; i < 500; i++)
-//        {
-//            FileModel document = dataContent.usingSite(testSite)
-//                        .usingUser(testUser)
-//                        .usingResource(testFolder1)
-//                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-//            listOfDocuments.add(document);
-//        }
-//
-//        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
-//        String unfiledContainerId = unfiledContainersAPI.getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId();
-//        Counter.initSuccessCount(0);
-//        Counter.initFailCount(0);
-//        ExecutorService pool = Executors.newFixedThreadPool(16);
-//        for (FileModel document : listOfDocuments)
-//        {
-//            pool.submit(new Task(document, unfiledContainerId));
-//        }
-//        pool.shutdown();
-//        pool.awaitTermination(120L, TimeUnit.SECONDS);
-//
-//        assertEquals(Counter.getSuccessCount(), 500 - Counter.getFailCount());
-//    }
-//
-//    class Task implements Runnable
-//    {
-//        private FileModel document;
-//        private String unfiledContainerId;
-//        public Task(FileModel document, String unfiledContainerId)
-//        {
-//            this.document = document;
-//            this.unfiledContainerId = unfiledContainerId;
-//        }
-//
-//        @Override
-//        public void run()
-//        {
-//            String parentId = "";
-//            try
-//            {
-//                Record record = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(document.getNodeRefWithoutVersion());
-//                assertStatusCode(CREATED);
-//
-//                parentId = record.getParentId();
-//            }
-//            catch (Exception e)
-//            {
-//                Counter.incrementFailCount();
-//                fail("Should not be here");
-//            }
-//
-//            assertEquals(parentId, unfiledContainerId, "Declare as record was unsuccessful.");
-//            Counter.incrementSuccessCount();
-//        }
-//    }
-//
-//    static class Counter
-//    {
-//        private static int successCount;
-//        private static int failCount;
-//
-//        public static void initSuccessCount(int initialCount)
-//        {
-//            successCount = initialCount;
-//        }
-//
-//        public static void initFailCount(int initialCount)
-//        {
-//            failCount = initialCount;
-//        }
-//
-//        public static synchronized void incrementSuccessCount()
-//        {
-//            successCount++;
-//        }
-//
-//        public static int getSuccessCount()
-//        {
-//            return successCount;
-//        }
-//
-//        public static synchronized void incrementFailCount()
-//        {
-//            failCount++;
-//        }
-//
-//        public static int getFailCount()
-//        {
-//            return failCount;
-//        }
-//    }
+    //    @Test(description = "Create 500 documents and declare them ass records concurently.")
+    //    public void declare500DocumentsAsRecordsConcurrently() throws Exception
+    //    {
+    //        FolderModel testFolder1 = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+    //        // create 500 documents in a folder in a collaboration site
+    //        List<FileModel> listOfDocuments = new ArrayList<FileModel>();
+    //        for(int i = 0; i < 500; i++)
+    //        {
+    //            FileModel document = dataContent.usingSite(testSite)
+    //                        .usingUser(testUser)
+    //                        .usingResource(testFolder1)
+    //                        .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+    //            listOfDocuments.add(document);
+    //        }
+    //
+    //        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
+    //        String unfiledContainerId = unfiledContainersAPI.getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS).getId();
+    //        Counter.initSuccessCount(0);
+    //        Counter.initFailCount(0);
+    //        ExecutorService pool = Executors.newFixedThreadPool(16);
+    //        for (FileModel document : listOfDocuments)
+    //        {
+    //            pool.submit(new Task(document, unfiledContainerId));
+    //        }
+    //        pool.shutdown();
+    //        pool.awaitTermination(120L, TimeUnit.SECONDS);
+    //
+    //        assertEquals(Counter.getSuccessCount(), 500 - Counter.getFailCount());
+    //    }
+    //
+    //    class Task implements Runnable
+    //    {
+    //        private FileModel document;
+    //        private String unfiledContainerId;
+    //        public Task(FileModel document, String unfiledContainerId)
+    //        {
+    //            this.document = document;
+    //            this.unfiledContainerId = unfiledContainerId;
+    //        }
+    //
+    //        @Override
+    //        public void run()
+    //        {
+    //            String parentId = "";
+    //            try
+    //            {
+    //                Record record = getRestAPIFactory().getFilesAPI(testUser).declareAsRecord(document.getNodeRefWithoutVersion());
+    //                assertStatusCode(CREATED);
+    //
+    //                parentId = record.getParentId();
+    //            }
+    //            catch (Exception e)
+    //            {
+    //                Counter.incrementFailCount();
+    //                fail("Should not be here");
+    //            }
+    //
+    //            assertEquals(parentId, unfiledContainerId, "Declare as record was unsuccessful.");
+    //            Counter.incrementSuccessCount();
+    //        }
+    //    }
+    //
+    //    static class Counter
+    //    {
+    //        private static int successCount;
+    //        private static int failCount;
+    //
+    //        public static void initSuccessCount(int initialCount)
+    //        {
+    //            successCount = initialCount;
+    //        }
+    //
+    //        public static void initFailCount(int initialCount)
+    //        {
+    //            failCount = initialCount;
+    //        }
+    //
+    //        public static synchronized void incrementSuccessCount()
+    //        {
+    //            successCount++;
+    //        }
+    //
+    //        public static int getSuccessCount()
+    //        {
+    //            return successCount;
+    //        }
+    //
+    //        public static synchronized void incrementFailCount()
+    //        {
+    //            failCount++;
+    //        }
+    //
+    //        public static int getFailCount()
+    //        {
+    //            return failCount;
+    //        }
+    //    }
 }

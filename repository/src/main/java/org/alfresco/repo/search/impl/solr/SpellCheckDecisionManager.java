@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,7 +28,6 @@ package org.alfresco.repo.search.impl.solr;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -43,105 +42,115 @@ import org.json.JSONObject;
  * @author Jamal Kaabi-Mofrad
  * @since 5.0
  */
-public class SpellCheckDecisionManager
-{
-    private static final Log logger = LogFactory.getLog(SpellCheckDecisionManager.class);
+public class SpellCheckDecisionManager {
 
-    private static final String COLLATION = "collation";
-    private boolean collate;
-    private String url;
-    private JSONObject spellCheckJsonValue;
+  private static final Log logger = LogFactory.getLog(
+    SpellCheckDecisionManager.class
+  );
 
-    public SpellCheckDecisionManager(JSONObject resultJson, String origURL, JSONObject reguestJsonBody,
-                String spellCheckParams)
-    {
-        try
-        {
-            List<String> collationQueriesList = new ArrayList<>();
-            JSONObject response = resultJson.getJSONObject("response");
-            long numberFound = response.getLong("numFound");
+  private static final String COLLATION = "collation";
+  private boolean collate;
+  private String url;
+  private JSONObject spellCheckJsonValue;
 
-            this.url = origURL;
+  public SpellCheckDecisionManager(
+    JSONObject resultJson,
+    String origURL,
+    JSONObject reguestJsonBody,
+    String spellCheckParams
+  ) {
+    try {
+      List<String> collationQueriesList = new ArrayList<>();
+      JSONObject response = resultJson.getJSONObject("response");
+      long numberFound = response.getLong("numFound");
 
-            JSONObject spellcheck = resultJson.getJSONObject("spellcheck");
-            JSONArray suggestions = spellcheck.getJSONArray("suggestions");
+      this.url = origURL;
 
-            JSONArray collations = null;
-            /**
-            * A top level collations key will be present in Solr 6 only.
-            **/
-            if(spellcheck.has("collations"))
-            {
-                collations = spellcheck.getJSONArray("collations");
-            }
+      JSONObject spellcheck = resultJson.getJSONObject("spellcheck");
+      JSONArray suggestions = spellcheck.getJSONArray("suggestions");
 
-            /*
-            * If the top level collations array exists use it, we are talking to Solr 6. Otherwise use the suggestions
-            * array, we are talking to Solr4.
-            */
+      JSONArray collations = null;
+      /**
+       * A top level collations key will be present in Solr 6 only.
+       **/
+      if (spellcheck.has("collations")) {
+        collations = spellcheck.getJSONArray("collations");
+      }
 
-            JSONArray jsonArray = (collations!=null) ? collations : suggestions;
+      /*
+       * If the top level collations array exists use it, we are talking to Solr 6. Otherwise use the suggestions
+       * array, we are talking to Solr4.
+       */
 
-            /*
-            * The code below will work for both Solr 4 and Solr 6.
-            */
+      JSONArray jsonArray = (collations != null) ? collations : suggestions;
 
-            for (int key = 0, value = 1, length = jsonArray.length(); value < length; key += 2, value += 2) {
-                String jsonName = jsonArray.getString(key);
+      /*
+       * The code below will work for both Solr 4 and Solr 6.
+       */
 
-                if (COLLATION.equals(jsonName)) {
-                    JSONObject valueJsonObject = jsonArray.getJSONObject(value);
-                    long collationHit = valueJsonObject.getLong("hits");
+      for (
+        int key = 0, value = 1, length = jsonArray.length();
+        value < length;
+        key += 2, value += 2
+      ) {
+        String jsonName = jsonArray.getString(key);
 
-                    this.collate = numberFound == 0 && collationHit > 0;
-                    if (collate) {
-                        reguestJsonBody.put("query", valueJsonObject.getString("collationQuery"));
-                        spellCheckJsonValue = new JSONObject();
-                        spellCheckJsonValue.put("searchInsteadFor", valueJsonObject.getString("collationQueryString"));
-                        break;
-                    } else if (collationHit > numberFound) {
-                        collationQueriesList.add(valueJsonObject.getString("collationQueryString"));
-                    }
-                }
-            }
+        if (COLLATION.equals(jsonName)) {
+          JSONObject valueJsonObject = jsonArray.getJSONObject(value);
+          long collationHit = valueJsonObject.getLong("hits");
 
-            if (collate) {
-                this.url = origURL.replace(spellCheckParams, "");
-            } else if (collationQueriesList.size() > 0) {
-                spellCheckJsonValue = new JSONObject();
-                JSONArray jsonArray1 = new JSONArray(collationQueriesList);
-                spellCheckJsonValue.put("didYouMean", jsonArray1);
-            } else {
-                spellCheckJsonValue = new JSONObject();
-            }
+          this.collate = numberFound == 0 && collationHit > 0;
+          if (collate) {
+            reguestJsonBody.put(
+              "query",
+              valueJsonObject.getString("collationQuery")
+            );
+            spellCheckJsonValue = new JSONObject();
+            spellCheckJsonValue.put(
+              "searchInsteadFor",
+              valueJsonObject.getString("collationQueryString")
+            );
+            break;
+          } else if (collationHit > numberFound) {
+            collationQueriesList.add(
+              valueJsonObject.getString("collationQueryString")
+            );
+          }
         }
-        catch (Exception e)
-        {
-            logger.info(e.getMessage());
-        }
-    }
+      }
 
-    /**
-     * @return the collate
-     */
-    public boolean isCollate()
-    {
-        return this.collate;
+      if (collate) {
+        this.url = origURL.replace(spellCheckParams, "");
+      } else if (collationQueriesList.size() > 0) {
+        spellCheckJsonValue = new JSONObject();
+        JSONArray jsonArray1 = new JSONArray(collationQueriesList);
+        spellCheckJsonValue.put("didYouMean", jsonArray1);
+      } else {
+        spellCheckJsonValue = new JSONObject();
+      }
+    } catch (Exception e) {
+      logger.info(e.getMessage());
     }
+  }
 
-    /**
-     * @return the url
-     */
-    public String getUrl()
-    {
-        return this.url;
-    }
+  /**
+   * @return the collate
+   */
+  public boolean isCollate() {
+    return this.collate;
+  }
 
-    /**
-     * @return the spellCheckJsonValue
-     */
-    public JSONObject getSpellCheckJsonValue()
-    {
-        return this.spellCheckJsonValue;
-    }
+  /**
+   * @return the url
+   */
+  public String getUrl() {
+    return this.url;
+  }
+
+  /**
+   * @return the spellCheckJsonValue
+   */
+  public JSONObject getSpellCheckJsonValue() {
+    return this.spellCheckJsonValue;
+  }
 }

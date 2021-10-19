@@ -31,7 +31,6 @@ import static org.apache.http.HttpStatus.SC_OK;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
@@ -46,13 +45,17 @@ import org.springframework.stereotype.Component;
  * @since 2.5
  */
 @Component
-public class RecordCategoriesAPI extends BaseAPI
-{
-    private static final Logger LOGGER = LoggerFactory.getLogger(RecordCategoriesAPI.class);
-    private static final String RM_ACTIONS_API = "{0}rma/actions/ExecutionQueue";
-    private static final String DISPOSITION_ACTIONS_API = "{0}node/{1}/dispositionschedule/dispositionactiondefinitions";
-    private static final String DISPOSITION_SCHEDULE_API = "{0}node/{1}/dispositionschedule";
+public class RecordCategoriesAPI extends BaseAPI {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        RecordCategoriesAPI.class
+    );
+    private static final String RM_ACTIONS_API =
+        "{0}rma/actions/ExecutionQueue";
+    private static final String DISPOSITION_ACTIONS_API =
+        "{0}node/{1}/dispositionschedule/dispositionactiondefinitions";
+    private static final String DISPOSITION_SCHEDULE_API =
+        "{0}node/{1}/dispositionschedule";
 
     /**
      * Creates a retention schedule for the category given as parameter
@@ -62,15 +65,26 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param categoryName the category name to create the retention schedule for
      * @return The HTTP Response.
      */
-    public HttpResponse createRetentionSchedule(String user, String password, String categoryName)
-    {
-        String catNodeRef = getNodeRefSpacesStore() + getItemNodeRef(user, password, "/" + categoryName);
+    public HttpResponse createRetentionSchedule(
+        String user,
+        String password,
+        String categoryName
+    ) {
+        String catNodeRef =
+            getNodeRefSpacesStore() +
+            getItemNodeRef(user, password, "/" + categoryName);
 
         JSONObject requestParams = new JSONObject();
         requestParams.put("name", "createDispositionSchedule");
         requestParams.put("nodeRef", catNodeRef);
 
-        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            RM_ACTIONS_API
+        );
     }
 
     /**
@@ -81,11 +95,22 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param categoryName
      * @return the disposition schedule nodeRef
      */
-    public String getDispositionScheduleNodeRef(String user, String password, String categoryName)
-    {
-        String catNodeRef = NODE_PREFIX + getItemNodeRef(user, password, "/" + categoryName);
-        JSONObject dispositionSchedule = doGetRequest(user, password, MessageFormat.format(DISPOSITION_SCHEDULE_API, "{0}", catNodeRef));
-        return dispositionSchedule.getJSONObject("data").getString("nodeRef").replace(getNodeRefSpacesStore(), "");
+    public String getDispositionScheduleNodeRef(
+        String user,
+        String password,
+        String categoryName
+    ) {
+        String catNodeRef =
+            NODE_PREFIX + getItemNodeRef(user, password, "/" + categoryName);
+        JSONObject dispositionSchedule = doGetRequest(
+            user,
+            password,
+            MessageFormat.format(DISPOSITION_SCHEDULE_API, "{0}", catNodeRef)
+        );
+        return dispositionSchedule
+            .getJSONObject("data")
+            .getString("nodeRef")
+            .replace(getNodeRefSpacesStore(), "");
     }
 
     /**
@@ -96,15 +121,45 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param retentionNodeRef the retention nodeRef
      * @return The HTTP Response.
      */
-    public HttpResponse setRetentionScheduleGeneralFields(String user, String password, String retentionNodeRef, Map<RETENTION_SCHEDULE, String> retentionProperties, Boolean appliedToRecords)
-    {
+    public HttpResponse setRetentionScheduleGeneralFields(
+        String user,
+        String password,
+        String retentionNodeRef,
+        Map<RETENTION_SCHEDULE, String> retentionProperties,
+        Boolean appliedToRecords
+    ) {
         String dispRetentionNodeRef = NODE_PREFIX + retentionNodeRef;
 
         JSONObject requestParams = new JSONObject();
-        requestParams.put("prop_rma_dispositionAuthority", getPropertyValue(retentionProperties, RETENTION_SCHEDULE.RETENTION_AUTHORITY));
-        requestParams.put("prop_rma_dispositionInstructions", getPropertyValue(retentionProperties, RETENTION_SCHEDULE.RETENTION_INSTRUCTIONS));
-        requestParams.put("prop_rma_recordLevelDisposition", appliedToRecords.toString());
-        return doPostJsonRequest(user, password, SC_OK, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", dispRetentionNodeRef));
+        requestParams.put(
+            "prop_rma_dispositionAuthority",
+            getPropertyValue(
+                retentionProperties,
+                RETENTION_SCHEDULE.RETENTION_AUTHORITY
+            )
+        );
+        requestParams.put(
+            "prop_rma_dispositionInstructions",
+            getPropertyValue(
+                retentionProperties,
+                RETENTION_SCHEDULE.RETENTION_INSTRUCTIONS
+            )
+        );
+        requestParams.put(
+            "prop_rma_recordLevelDisposition",
+            appliedToRecords.toString()
+        );
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            MessageFormat.format(
+                UPDATE_METADATA_API,
+                "{0}",
+                dispRetentionNodeRef
+            )
+        );
     }
 
     /**
@@ -115,26 +170,79 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param categoryName the category name to create the retention schedule for
      * @return The HTTP Response.
      */
-    public HttpResponse addDispositionScheduleSteps(String user, String password, String categoryName, Map<RETENTION_SCHEDULE, String> properties)
-    {
-        String catNodeRef = NODE_PREFIX + getItemNodeRef(user, password, "/" + categoryName);
+    public HttpResponse addDispositionScheduleSteps(
+        String user,
+        String password,
+        String categoryName,
+        Map<RETENTION_SCHEDULE, String> properties
+    ) {
+        String catNodeRef =
+            NODE_PREFIX + getItemNodeRef(user, password, "/" + categoryName);
 
         JSONObject requestParams = new JSONObject();
-        addPropertyToRequest(requestParams, "name", properties, RETENTION_SCHEDULE.NAME);
-        addPropertyToRequest(requestParams, "description", properties, RETENTION_SCHEDULE.DESCRIPTION);
-        addPropertyToRequest(requestParams, "period", properties, RETENTION_SCHEDULE.RETENTION_PERIOD);
-        addPropertyToRequest(requestParams, "ghostOnDestroy", properties, RETENTION_SCHEDULE.RETENTION_GHOST);
-        addPropertyToRequest(requestParams, "periodProperty", properties, RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY);
-        addPropertyToRequest(requestParams, "location", properties, RETENTION_SCHEDULE.RETENTION_LOCATION);
-        String events = getPropertyValue(properties, RETENTION_SCHEDULE.RETENTION_EVENTS);
-        if(!events.equals(""))
-        {
+        addPropertyToRequest(
+            requestParams,
+            "name",
+            properties,
+            RETENTION_SCHEDULE.NAME
+        );
+        addPropertyToRequest(
+            requestParams,
+            "description",
+            properties,
+            RETENTION_SCHEDULE.DESCRIPTION
+        );
+        addPropertyToRequest(
+            requestParams,
+            "period",
+            properties,
+            RETENTION_SCHEDULE.RETENTION_PERIOD
+        );
+        addPropertyToRequest(
+            requestParams,
+            "ghostOnDestroy",
+            properties,
+            RETENTION_SCHEDULE.RETENTION_GHOST
+        );
+        addPropertyToRequest(
+            requestParams,
+            "periodProperty",
+            properties,
+            RETENTION_SCHEDULE.RETENTION_PERIOD_PROPERTY
+        );
+        addPropertyToRequest(
+            requestParams,
+            "location",
+            properties,
+            RETENTION_SCHEDULE.RETENTION_LOCATION
+        );
+        String events = getPropertyValue(
+            properties,
+            RETENTION_SCHEDULE.RETENTION_EVENTS
+        );
+        if (!events.equals("")) {
             requestParams.append("events", events);
         }
-        addPropertyToRequest(requestParams, "combineDispositionStepConditions", properties, RETENTION_SCHEDULE.COMBINE_DISPOSITION_STEP_CONDITIONS);
-        addPropertyToRequest(requestParams, "eligibleOnFirstCompleteEvent", properties, RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT);
+        addPropertyToRequest(
+            requestParams,
+            "combineDispositionStepConditions",
+            properties,
+            RETENTION_SCHEDULE.COMBINE_DISPOSITION_STEP_CONDITIONS
+        );
+        addPropertyToRequest(
+            requestParams,
+            "eligibleOnFirstCompleteEvent",
+            properties,
+            RETENTION_SCHEDULE.RETENTION_ELIGIBLE_FIRST_EVENT
+        );
 
-        return doPostJsonRequest(user, password, SC_OK, requestParams, MessageFormat.format(DISPOSITION_ACTIONS_API, "{0}", catNodeRef));
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            MessageFormat.format(DISPOSITION_ACTIONS_API, "{0}", catNodeRef)
+        );
     }
 
     /**
@@ -145,8 +253,11 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param categoryName the name of the category
      * @throws AssertionError if the delete was unsuccessful.
      */
-    public void deleteCategory(String username, String password, String categoryName)
-    {
+    public void deleteCategory(
+        String username,
+        String password,
+        String categoryName
+    ) {
         deleteItem(username, password, "/" + categoryName);
     }
 
@@ -158,9 +269,17 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param categoryName the name of the sub-category
      * @throws AssertionError if the deletion was unsuccessful.
      */
-    public void deleteSubCategory(String username, String password, String categoryName, String subCategoryName)
-    {
-        deleteItem(username, password, "/" + categoryName + "/" + subCategoryName);
+    public void deleteSubCategory(
+        String username,
+        String password,
+        String categoryName,
+        String subCategoryName
+    ) {
+        deleteItem(
+            username,
+            password,
+            "/" + categoryName + "/" + subCategoryName
+        );
     }
 
     /**
@@ -172,8 +291,12 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param containerName the name of the category or container sin which the folder is
      * @throws AssertionError if the deletion was unsuccessful.
      */
-    public void deleteFolderInContainer(String username, String password, String folderName, String containerName)
-    {
+    public void deleteFolderInContainer(
+        String username,
+        String password,
+        String folderName,
+        String containerName
+    ) {
         deleteItem(username, password, "/" + containerName + "/" + folderName);
     }
 
@@ -184,11 +307,19 @@ public class RecordCategoriesAPI extends BaseAPI
      * @param instructions retention authority
      * @return the map
      */
-    public Map<RETENTION_SCHEDULE, String> getRetentionProperties(String authority, String instructions)
-    {
+    public Map<RETENTION_SCHEDULE, String> getRetentionProperties(
+        String authority,
+        String instructions
+    ) {
         Map<RETENTION_SCHEDULE, String> retentionProperties = new HashMap<>();
-        retentionProperties.put(RETENTION_SCHEDULE.RETENTION_AUTHORITY, authority);
-        retentionProperties.put(RETENTION_SCHEDULE.RETENTION_INSTRUCTIONS, instructions);
+        retentionProperties.put(
+            RETENTION_SCHEDULE.RETENTION_AUTHORITY,
+            authority
+        );
+        retentionProperties.put(
+            RETENTION_SCHEDULE.RETENTION_INSTRUCTIONS,
+            instructions
+        );
         return retentionProperties;
     }
 }

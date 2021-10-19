@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import java.io.Serializable;
 import java.util.Map;
-
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -49,40 +48,50 @@ import org.alfresco.service.namespace.QName;
  * @since 3.3
  */
 @BehaviourBean
-public class CreateHoldAuditEvent extends AuditEvent implements NodeServicePolicies.OnCreateNodePolicy
-{
-    /**
-     * Node Service
-     */
-    private NodeService nodeService;
+public class CreateHoldAuditEvent
+  extends AuditEvent
+  implements NodeServicePolicies.OnCreateNodePolicy {
 
-    /**
-     * Sets the node service
-     *
-     * @param nodeService nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /**
+   * Node Service
+   */
+  private NodeService nodeService;
 
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @Override
-    @Behaviour
-            (
-                    kind = BehaviourKind.CLASS,
-                    type = "rma:hold",
-                    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-            )
-    public void onCreateNode(ChildAssociationRef childAssociationRef)
-    {
-        NodeRef holdNodeRef = childAssociationRef.getChildRef();
+  /**
+   * Sets the node service
+   *
+   * @param nodeService nodeService to set
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-        Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(holdNodeRef, nodeService);
-        auditProperties.put(PROP_HOLD_REASON, nodeService.getProperty(holdNodeRef, PROP_HOLD_REASON));
+  /**
+   * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+   */
+  @Override
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    type = "rma:hold",
+    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+  )
+  public void onCreateNode(ChildAssociationRef childAssociationRef) {
+    NodeRef holdNodeRef = childAssociationRef.getChildRef();
 
-        recordsManagementAuditService.auditEvent(holdNodeRef, getName(), null, auditProperties);
-    }
+    Map<QName, Serializable> auditProperties = HoldUtils.makePropertiesMap(
+      holdNodeRef,
+      nodeService
+    );
+    auditProperties.put(
+      PROP_HOLD_REASON,
+      nodeService.getProperty(holdNodeRef, PROP_HOLD_REASON)
+    );
+
+    recordsManagementAuditService.auditEvent(
+      holdNodeRef,
+      getName(),
+      null,
+      auditProperties
+    );
+  }
 }

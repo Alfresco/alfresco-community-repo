@@ -26,13 +26,11 @@
  */
 package org.alfresco.rest.rm.community.util;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-
+import java.io.IOException;
 import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
 
 /**
@@ -41,8 +39,8 @@ import org.alfresco.rest.rm.community.model.common.ReviewPeriod;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class ReviewPeriodSerializer extends JsonSerializer<ReviewPeriod>
-{
+public class ReviewPeriodSerializer extends JsonSerializer<ReviewPeriod> {
+
     /**
      * @param value The Review Period value that is being serialized.
      * @param gen Jackson utility is responsible for writing JSON
@@ -51,9 +49,18 @@ public class ReviewPeriodSerializer extends JsonSerializer<ReviewPeriod>
      * @throws JsonProcessingException
      */
     @Override
-    public void serialize(ReviewPeriod value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException
-    {
+    public void serialize(
+        ReviewPeriod value,
+        JsonGenerator gen,
+        SerializerProvider serializers
+    ) throws IOException, JsonProcessingException {
         //create the custom  string value for the Review Period type
-       gen.writeString(new StringBuilder().append(value.getPeriodType()).append("|").append(value.getExpression()).toString());
+        gen.writeString(
+            new StringBuilder()
+                .append(value.getPeriodType())
+                .append("|")
+                .append(value.getExpression())
+                .toString()
+        );
     }
 }

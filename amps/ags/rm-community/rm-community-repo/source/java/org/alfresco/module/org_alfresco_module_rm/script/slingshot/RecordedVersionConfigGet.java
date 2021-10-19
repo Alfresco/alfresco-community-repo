@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,43 +43,47 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordedVersionConfigGet extends AbstractRmWebScript
-{
-    /** Recordable version config service */
-    private RecordableVersionConfigService recordableVersionConfigService;
+public class RecordedVersionConfigGet extends AbstractRmWebScript {
 
-    /**
-     * Gets the recordable version config service
-     *
-     * @return The recordable version config service
-     */
-    protected RecordableVersionConfigService getRecordableVersionConfigService()
-    {
-        return this.recordableVersionConfigService;
-    }
+  /** Recordable version config service */
+  private RecordableVersionConfigService recordableVersionConfigService;
 
-    /**
-     * Sets the recordable version config service
-     *
-     * @param recordableVersionConfigService The recordable version config service
-     */
-    public void setRecordableVersionConfigService(RecordableVersionConfigService recordableVersionConfigService)
-    {
-        this.recordableVersionConfigService = recordableVersionConfigService;
-    }
+  /**
+   * Gets the recordable version config service
+   *
+   * @return The recordable version config service
+   */
+  protected RecordableVersionConfigService getRecordableVersionConfigService() {
+    return this.recordableVersionConfigService;
+  }
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *          org.springframework.extensions.webscripts.Status,
-     *          org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<>(1);
-        NodeRef nodeRef = parseRequestForNodeRef(req);
-        List<Version> recordableVersions = getRecordableVersionConfigService().getVersions(nodeRef);
-        model.put("recordableVersions", recordableVersions);
-        return model;
-    }
+  /**
+   * Sets the recordable version config service
+   *
+   * @param recordableVersionConfigService The recordable version config service
+   */
+  public void setRecordableVersionConfigService(
+    RecordableVersionConfigService recordableVersionConfigService
+  ) {
+    this.recordableVersionConfigService = recordableVersionConfigService;
+  }
+
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+   *          org.springframework.extensions.webscripts.Status,
+   *          org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, Object> model = new HashMap<>(1);
+    NodeRef nodeRef = parseRequestForNodeRef(req);
+    List<Version> recordableVersions = getRecordableVersionConfigService()
+      .getVersions(nodeRef);
+    model.put("recordableVersions", recordableVersions);
+    return model;
+  }
 }

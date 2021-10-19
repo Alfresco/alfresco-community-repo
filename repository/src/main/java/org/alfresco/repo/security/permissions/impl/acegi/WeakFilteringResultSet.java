@@ -25,9 +25,8 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
-import org.alfresco.service.cmr.search.ResultSet;
-
 import java.util.BitSet;
+import org.alfresco.service.cmr.search.ResultSet;
 
 /**
  * WeakFilteringResultSet allows to add a filter to results without hiding the numberOfFound before filter is applied.
@@ -36,20 +35,20 @@ import java.util.BitSet;
  *
  */
 public class WeakFilteringResultSet extends FilteringResultSet {
-    public WeakFilteringResultSet(ResultSet unfiltered) {
-        super(unfiltered);
-    }
 
-    public WeakFilteringResultSet(ResultSet unfiltered, BitSet inclusionMask) {
-        super(unfiltered, inclusionMask);
-    }
+  public WeakFilteringResultSet(ResultSet unfiltered) {
+    super(unfiltered);
+  }
 
-    /**
-     * returns the total number of results found before the filter is applied.
-     */
-    @Override
-    public long getNumberFound()
-    {
-        return getUnFilteredResultSet().getNumberFound();
-    }
+  public WeakFilteringResultSet(ResultSet unfiltered, BitSet inclusionMask) {
+    super(unfiltered, inclusionMask);
+  }
+
+  /**
+   * returns the total number of results found before the filter is applied.
+   */
+  @Override
+  public long getNumberFound() {
+    return getUnFilteredResultSet().getNumberFound();
+  }
 }

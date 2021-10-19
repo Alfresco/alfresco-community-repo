@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -46,30 +45,40 @@ import org.alfresco.service.namespace.QName;
  * @since 2.7
  */
 @BehaviourBean
-public class CreateUserGroupAuditEvent extends AuditEvent implements OnCreateNodePolicy
-{
-    /** Node Service */
-    private NodeService nodeService;
+public class CreateUserGroupAuditEvent
+  extends AuditEvent
+  implements OnCreateNodePolicy {
 
-    /**
-     * Sets the node service
-     *
-     * @param nodeService nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /** Node Service */
+  private NodeService nodeService;
 
-    /** Behaviour to audit user group creation. */
-    @Override
-    @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
-    public void onCreateNode(ChildAssociationRef childAssocRef)
-    {
-        Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
-                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
+  /**
+   * Sets the node service
+   *
+   * @param nodeService nodeService to set
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
-    }
+  /** Behaviour to audit user group creation. */
+  @Override
+  @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
+  public void onCreateNode(ChildAssociationRef childAssocRef) {
+    Map<QName, Serializable> auditProperties = new HashMap<>();
+    auditProperties.put(
+      ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
+      nodeService.getProperty(
+        childAssocRef.getChildRef(),
+        ContentModel.PROP_AUTHORITY_DISPLAY_NAME
+      )
+    );
+
+    recordsManagementAuditService.auditEvent(
+      childAssocRef.getChildRef(),
+      getName(),
+      null,
+      auditProperties
+    );
+  }
 }

@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
 import java.io.Serializable;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -57,160 +56,165 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:recordComponentIdentifier"
-)
-public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
-                                             implements NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                                        NodeServicePolicies.BeforeDeleteNodePolicy
-{
-    /** I18N */
-    private static final String MSG_SET_ID = "rm.service.set-id";
+@BehaviourBean(defaultType = "rma:recordComponentIdentifier")
+public class RecordComponentIdentifierAspect
+  extends BaseBehaviourBean
+  implements
+    NodeServicePolicies.OnUpdatePropertiesPolicy,
+    NodeServicePolicies.BeforeDeleteNodePolicy {
 
-    /** attribute context value */
-    private static final String CONTEXT_VALUE = "rma:identifier";
+  /** I18N */
+  private static final String MSG_SET_ID = "rm.service.set-id";
 
-    /** file plan service */
-    private FilePlanService filePlanService;
+  /** attribute context value */
+  private static final String CONTEXT_VALUE = "rma:identifier";
 
-    /** attribute service */
-    private AttributeService attributeService;
+  /** file plan service */
+  private FilePlanService filePlanService;
 
-    /** identifier service */
-    private IdentifierService identifierService;
+  /** attribute service */
+  private AttributeService attributeService;
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
+  /** identifier service */
+  private IdentifierService identifierService;
 
-    /**
-     * @param attributeService  attribute service
-     */
-    public void setAttributeService(AttributeService attributeService)
-    {
-        this.attributeService = attributeService;
-    }
+  /**
+   * @param filePlanService   file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
 
-    /**
-     * @param identifierService identifier service
-     */
-    public void setIdentifierService(IdentifierService identifierService)
-    {
-        this.identifierService = identifierService;
-    }
+  /**
+   * @param attributeService  attribute service
+   */
+  public void setAttributeService(AttributeService attributeService) {
+    this.attributeService = attributeService;
+  }
 
-    /**
-     * Ensures that the {@link RecordsManagementModel#PROP_IDENTIFIER rma:identifier} property remains
-     * unique within the context of the parent node.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
-     */
-    @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.EVERY_EVENT
-    )
-    public void onUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                String newIdValue = (String)after.get(PROP_IDENTIFIER);
-                if (newIdValue != null)
-                {
-                    String oldIdValue = (String)before.get(PROP_IDENTIFIER);
-                    if (oldIdValue != null && !oldIdValue.equals(newIdValue))
-                    {
-                        throw new IntegrityException(I18NUtil.getMessage(MSG_SET_ID, nodeRef.toString()), null);
-                    }
+  /**
+   * @param identifierService identifier service
+   */
+  public void setIdentifierService(IdentifierService identifierService) {
+    this.identifierService = identifierService;
+  }
 
-                    // update uniqueness
-                    updateUniqueness(nodeRef, oldIdValue, newIdValue);
-                }
-                return null;
+  /**
+   * Ensures that the {@link RecordsManagementModel#PROP_IDENTIFIER rma:identifier} property remains
+   * unique within the context of the parent node.
+   *
+   * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+   */
+  @Override
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    notificationFrequency = NotificationFrequency.EVERY_EVENT
+  )
+  public void onUpdateProperties(
+    final NodeRef nodeRef,
+    final Map<QName, Serializable> before,
+    final Map<QName, Serializable> after
+  ) {
+    AuthenticationUtil.runAs(
+      new RunAsWork<Object>() {
+        public Object doWork() {
+          String newIdValue = (String) after.get(PROP_IDENTIFIER);
+          if (newIdValue != null) {
+            String oldIdValue = (String) before.get(PROP_IDENTIFIER);
+            if (oldIdValue != null && !oldIdValue.equals(newIdValue)) {
+              throw new IntegrityException(
+                I18NUtil.getMessage(MSG_SET_ID, nodeRef.toString()),
+                null
+              );
             }
-        }, AuthenticationUtil.getSystemUserName());
-    }
 
-    /**
-     * Cleans up the {@link RecordsManagementModel#PROP_IDENTIFIER rma:identifier} property unique triplet.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.EVERY_EVENT
-    )
-    public void beforeDeleteNode(final NodeRef nodeRef)
-    {
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                String beforeId = (String) nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
-                updateUniqueness(nodeRef, beforeId, null);
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * Record component identifier aspect copy callback
-     */
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       policy = "alf:getCopyCallback"
-    )
-    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
-    {
-        return new DoNothingCopyBehaviourCallback();
-    }
-
-
-    /**
-     * Updates the uniqueness check using the values provided.  If the after value is <tt>null</tt>
-     * then this is considered to be a removal.
-     *
-     * @param nodeRef   node reference
-     * @param beforeId  id before
-     * @param afterId   id after
-     */
-    private void updateUniqueness(NodeRef nodeRef, String beforeId, String afterId)
-    {
-        NodeRef contextNodeRef = filePlanService.getFilePlan(nodeRef);
-
-        if (beforeId == null)
-        {
-            if (afterId != null)
-            {
-                // Just create it
-                attributeService.createAttribute(null, CONTEXT_VALUE, contextNodeRef, afterId);
-            }
+            // update uniqueness
+            updateUniqueness(nodeRef, oldIdValue, newIdValue);
+          }
+          return null;
         }
-        else if (afterId == null)
-        {
-            // The before value was not null, so remove it
-            attributeService.removeAttribute(CONTEXT_VALUE, contextNodeRef, beforeId);
-            // Do a blanket removal in case this is a contextual nodes
-            attributeService.removeAttributes(CONTEXT_VALUE, nodeRef);
-        }
-        else if(!beforeId.equals(afterId))
-        {
-            // This is a full update
-            attributeService.updateOrCreateAttribute(
-                    CONTEXT_VALUE, contextNodeRef, beforeId,
-                    CONTEXT_VALUE, contextNodeRef, afterId);
-        }
-    }
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
 
+  /**
+   * Cleans up the {@link RecordsManagementModel#PROP_IDENTIFIER rma:identifier} property unique triplet.
+   *
+   * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    notificationFrequency = NotificationFrequency.EVERY_EVENT
+  )
+  public void beforeDeleteNode(final NodeRef nodeRef) {
+    AuthenticationUtil.runAs(
+      new RunAsWork<Object>() {
+        public Object doWork() {
+          String beforeId = (String) nodeService.getProperty(
+            nodeRef,
+            PROP_IDENTIFIER
+          );
+          updateUniqueness(nodeRef, beforeId, null);
+          return null;
+        }
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
+
+  /**
+   * Record component identifier aspect copy callback
+   */
+  @Behaviour(kind = BehaviourKind.CLASS, policy = "alf:getCopyCallback")
+  public CopyBehaviourCallback getCopyCallback(
+    QName classRef,
+    CopyDetails copyDetails
+  ) {
+    return new DoNothingCopyBehaviourCallback();
+  }
+
+  /**
+   * Updates the uniqueness check using the values provided.  If the after value is <tt>null</tt>
+   * then this is considered to be a removal.
+   *
+   * @param nodeRef   node reference
+   * @param beforeId  id before
+   * @param afterId   id after
+   */
+  private void updateUniqueness(
+    NodeRef nodeRef,
+    String beforeId,
+    String afterId
+  ) {
+    NodeRef contextNodeRef = filePlanService.getFilePlan(nodeRef);
+
+    if (beforeId == null) {
+      if (afterId != null) {
+        // Just create it
+        attributeService.createAttribute(
+          null,
+          CONTEXT_VALUE,
+          contextNodeRef,
+          afterId
+        );
+      }
+    } else if (afterId == null) {
+      // The before value was not null, so remove it
+      attributeService.removeAttribute(CONTEXT_VALUE, contextNodeRef, beforeId);
+      // Do a blanket removal in case this is a contextual nodes
+      attributeService.removeAttributes(CONTEXT_VALUE, nodeRef);
+    } else if (!beforeId.equals(afterId)) {
+      // This is a full update
+      attributeService.updateOrCreateAttribute(
+        CONTEXT_VALUE,
+        contextNodeRef,
+        beforeId,
+        CONTEXT_VALUE,
+        contextNodeRef,
+        afterId
+      );
+    }
+  }
 }

@@ -20,29 +20,28 @@ package org.alfresco.processor;
 
 /**
  * Interface for Proccessor classes - such as Template or Scripting Processors.
- * 
+ *
  * @author Roy Wetherall
  */
-public interface Processor
-{
-    /**
-     * Get the name of the processor
-     * 
-     * @return  the name of the processor
-     */
-    public String getName();
-    
-    /**
-     * The file extension that the processor is associated with, null if none.
-     * 
-     * @return  the extension
-     */
-    public String getExtension();
-    
-    /**
-     * Registers a processor extension with the processor
-     * 
-     * @param processorExtension    the process extension
-     */
-    public void registerProcessorExtension(ProcessorExtension processorExtension);
+public interface Processor {
+  /**
+   * Get the name of the processor
+   *
+   * @return  the name of the processor
+   */
+  public String getName();
+
+  /**
+   * The file extension that the processor is associated with, null if none.
+   *
+   * @return  the extension
+   */
+  public String getExtension();
+
+  /**
+   * Registers a processor extension with the processor
+   *
+   * @param processorExtension    the process extension
+   */
+  public void registerProcessorExtension(ProcessorExtension processorExtension);
 }

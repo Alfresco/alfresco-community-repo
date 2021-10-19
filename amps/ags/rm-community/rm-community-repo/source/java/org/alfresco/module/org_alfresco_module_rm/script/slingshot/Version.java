@@ -39,66 +39,61 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public class Version
-{
-    /** The version policy */
-    private String policy;
+public class Version {
 
-    /** Is the version selected */
-    private boolean selected;
+  /** The version policy */
+  private String policy;
 
-    /**
-     * Constructor
-     *
-     * @param policy The version policy
-     * @param selected Is the version selected
-     */
-    public Version(String policy, boolean selected)
-    {
-        mandatoryString("policy", policy);
-        mandatory("selected", selected);
+  /** Is the version selected */
+  private boolean selected;
 
-        setPolicy(policy);
-        setSelected(selected);
-    }
+  /**
+   * Constructor
+   *
+   * @param policy The version policy
+   * @param selected Is the version selected
+   */
+  public Version(String policy, boolean selected) {
+    mandatoryString("policy", policy);
+    mandatory("selected", selected);
 
-    /**
-     * Gets the version policy
-     *
-     * @return The version policy
-     */
-    public String getPolicy()
-    {
-        return this.policy;
-    }
+    setPolicy(policy);
+    setSelected(selected);
+  }
 
-    /**
-     * Sets the version policy
-     *
-     * @param policy The version policy
-     */
-    private void setPolicy(String policy)
-    {
-        this.policy = policy;
-    }
+  /**
+   * Gets the version policy
+   *
+   * @return The version policy
+   */
+  public String getPolicy() {
+    return this.policy;
+  }
 
-    /**
-     * Is the version selected
-     *
-     * @return <code>true</code> if the version is selected, <code>false</code> otherwise
-     */
-    public boolean isSelected()
-    {
-        return this.selected;
-    }
+  /**
+   * Sets the version policy
+   *
+   * @param policy The version policy
+   */
+  private void setPolicy(String policy) {
+    this.policy = policy;
+  }
 
-    /**
-     * Sets the version as selected
-     *
-     * @param selected <code>true</code> if the version should be selected, <code>false</code> otherwise
-     */
-    private void setSelected(boolean selected)
-    {
-        this.selected = selected;
-    }
+  /**
+   * Is the version selected
+   *
+   * @return <code>true</code> if the version is selected, <code>false</code> otherwise
+   */
+  public boolean isSelected() {
+    return this.selected;
+  }
+
+  /**
+   * Sets the version as selected
+   *
+   * @param selected <code>true</code> if the version should be selected, <code>false</code> otherwise
+   */
+  private void setSelected(boolean selected) {
+    this.selected = selected;
+  }
 }

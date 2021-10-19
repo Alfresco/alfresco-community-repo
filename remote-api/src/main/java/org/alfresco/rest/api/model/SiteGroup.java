@@ -30,114 +30,109 @@ import org.alfresco.rest.api.groups.GroupsEntityResource;
 import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
 
-public class SiteGroup implements Comparable<SiteGroup>
-{
-    private String role;
-    private String id; // group id (aka authority name)
+public class SiteGroup implements Comparable<SiteGroup> {
 
-    public SiteGroup() {}
+  private String role;
+  private String id; // group id (aka authority name)
 
-    public SiteGroup(String id, String role)
-    {
-        if (id == null)
-        {
-            throw new IllegalArgumentException();
-        }
-        if (role == null)
-        {
-            throw new IllegalArgumentException();
-        }
-        this.role = role;
-        this.id = id;
+  public SiteGroup() {}
+
+  public SiteGroup(String id, String role) {
+    if (id == null) {
+      throw new IllegalArgumentException();
+    }
+    if (role == null) {
+      throw new IllegalArgumentException();
+    }
+    this.role = role;
+    this.id = id;
+  }
+
+  public static SiteGroup getMemberOfSite(String id, String role) {
+    return new SiteGroup(id, role);
+  }
+
+  @JsonProperty("id")
+  @UniqueId
+  @EmbeddedEntityResource(
+    propertyName = "group",
+    entityResource = GroupsEntityResource.class
+  )
+  public String getId() {
+    return id;
+  }
+
+  public String getRole() {
+    return role;
+  }
+
+  public void setRole(String role) {
+    if (role == null) {
+      throw new IllegalArgumentException();
+    }
+    this.role = role;
+  }
+
+  public void setId(String id) {
+    if (id == null) {
+      throw new IllegalArgumentException();
+    }
+    this.id = id;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((role == null) ? 0 : role.hashCode());
+    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
 
-    public static SiteGroup getMemberOfSite(String id, String role)
-    {
-        return new SiteGroup(id, role);
+    if (obj == null) {
+      return false;
     }
 
-    @JsonProperty("id")
-    @UniqueId
-    @EmbeddedEntityResource(propertyName = "group", entityResource = GroupsEntityResource.class)
-    public String getId()
-    {
-        return id;
+    if (getClass() != obj.getClass()) {
+      return false;
     }
 
-    public String getRole()
-    {
-        return role;
+    SiteGroup other = (SiteGroup) obj;
+    if (role != other.role) {
+      return false;
     }
 
-    public void setRole(String role)
-    {
-        if (role == null)
-        {
-            throw new IllegalArgumentException();
-        }
-        this.role = role;
+    return id.equals(other.id);
+  }
+
+  @Override
+  public int compareTo(SiteGroup o) {
+    int i = id.compareTo(o.getId());
+    if (i == 0) {
+      i = role.compareTo(o.getRole());
     }
+    return i;
+  }
 
-    public void setId(String id)
-    {
-        if (id == null)
-        {
-            throw new IllegalArgumentException();
-        }
-        this.id = id;
-    }
-
-    @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((role == null) ? 0 : role.hashCode());
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
-            return true;
-        }
-
-        if (obj == null)
-        {
-            return false;
-        }
-
-        if (getClass() != obj.getClass())
-        {
-            return false;
-        }
-
-        SiteGroup other = (SiteGroup) obj;
-        if (role != other.role)
-        {
-            return false;
-        }
-
-        return id.equals(other.id);
-    }
-
-    @Override
-    public int compareTo(SiteGroup o)
-    {
-        int i = id.compareTo(o.getId());
-        if (i == 0)
-        {
-            i = role.compareTo(o.getRole());
-        }
-        return i;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "SiteGroup [role='" + role + '\'' + ", id='" + id + '\'' + ", role='" + role + '\'' + "]";
-    }
+  @Override
+  public String toString() {
+    return (
+      "SiteGroup [role='" +
+      role +
+      '\'' +
+      ", id='" +
+      id +
+      '\'' +
+      ", role='" +
+      role +
+      '\'' +
+      "]"
+    );
+  }
 }

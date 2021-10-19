@@ -28,7 +28,6 @@ package org.alfresco.rest.v0;
 
 import java.text.MessageFormat;
 import java.util.List;
-
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
@@ -44,12 +43,15 @@ import org.springframework.stereotype.Component;
  * @since 2.6
  */
 @Component
-public class CopyToAPI extends BaseAPI
-{
+public class CopyToAPI extends BaseAPI {
+
     /** Logger for the class. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(CopyToAPI.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        CopyToAPI.class
+    );
     /** The URI for the copy-to API. */
-    private static final String COPY_TO_API = "{0}doclib/action/copy-to/node/{1}";
+    private static final String COPY_TO_API =
+        "{0}doclib/action/copy-to/node/{1}";
 
     /**
      * Copy a list of nodes to the target container.
@@ -63,8 +65,12 @@ public class CopyToAPI extends BaseAPI
      * @return The HTTP Response.
      * @throws AssertionError If the API call didn't return a 200 response.
      */
-    public HttpResponse copyTo(String user, String password, String targetContainerPath, List<String> nodeRefs)
-    {
+    public HttpResponse copyTo(
+        String user,
+        String password,
+        String targetContainerPath,
+        List<String> nodeRefs
+    ) {
         return copyTo(user, password, 200, targetContainerPath, nodeRefs);
     }
 
@@ -81,12 +87,22 @@ public class CopyToAPI extends BaseAPI
      * @return The HTTP Response.
      * @throws AssertionError If the API didn't return the expected status code.
      */
-    public HttpResponse copyTo(String user, String password, int expectedStatusCode, String targetContainerPath, List<String> nodeRefs)
-    {
+    public HttpResponse copyTo(
+        String user,
+        String password,
+        int expectedStatusCode,
+        String targetContainerPath,
+        List<String> nodeRefs
+    ) {
         JSONObject requestParams = new JSONObject();
         requestParams.put("nodeRefs", new JSONArray(nodeRefs));
 
-        return doSlingshotPostJsonRequest(user, password, expectedStatusCode, requestParams,
-                    MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath));
+        return doSlingshotPostJsonRequest(
+            user,
+            password,
+            expectedStatusCode,
+            requestParams,
+            MessageFormat.format(COPY_TO_API, "{0}", targetContainerPath)
+        );
     }
 }

@@ -1,4 +1,5 @@
 package org.alfresco.util.cache;
+
 /*
  * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
@@ -19,56 +20,51 @@ package org.alfresco.util.cache;
  */
 import java.util.LinkedList;
 import java.util.List;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Base registry implementation 
- * 
+ * Base registry implementation
+ *
  * @author Andy
  */
-public class DefaultAsynchronouslyRefreshedCacheRegistry implements AsynchronouslyRefreshedCacheRegistry
-{
-    private static Log logger = LogFactory.getLog(DefaultAsynchronouslyRefreshedCacheRegistry.class);
-    
-    private List<RefreshableCacheListener> listeners = new LinkedList<RefreshableCacheListener>();
+public class DefaultAsynchronouslyRefreshedCacheRegistry
+  implements AsynchronouslyRefreshedCacheRegistry {
 
-    @Override
-    public void register(RefreshableCacheListener listener)
-    {
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("Listener added for " + listener.getCacheId());
-        }
-        listeners.add(listener);
-    }
+  private static Log logger = LogFactory.getLog(
+    DefaultAsynchronouslyRefreshedCacheRegistry.class
+  );
 
-    public void broadcastEvent(RefreshableCacheEvent event, boolean toAll)
-    {
-        // If the system is up and running, broadcast the event immediately
-        for (RefreshableCacheListener listener : this.listeners)
-        {
-            if (toAll)
-            {
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("Delivering event (" + event + ") to listener (" + listener + ").");
-                }
-                listener.onRefreshableCacheEvent(event);
-            }
-            else
-            {
-                if (listener.getCacheId().equals(event.getCacheId()))
-                {
-                    if(logger.isDebugEnabled())
-                    {
-                        logger.debug("Delivering event (" + event + ") to listener (" + listener + ").");
-                    }
-                    listener.onRefreshableCacheEvent(event);
-                }
-            }
-        }
+  private List<RefreshableCacheListener> listeners = new LinkedList<RefreshableCacheListener>();
+
+  @Override
+  public void register(RefreshableCacheListener listener) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Listener added for " + listener.getCacheId());
     }
+    listeners.add(listener);
+  }
+
+  public void broadcastEvent(RefreshableCacheEvent event, boolean toAll) {
+    // If the system is up and running, broadcast the event immediately
+    for (RefreshableCacheListener listener : this.listeners) {
+      if (toAll) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+            "Delivering event (" + event + ") to listener (" + listener + ")."
+          );
+        }
+        listener.onRefreshableCacheEvent(event);
+      } else {
+        if (listener.getCacheId().equals(event.getCacheId())) {
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+              "Delivering event (" + event + ") to listener (" + listener + ")."
+            );
+          }
+          listener.onRefreshableCacheEvent(event);
+        }
+      }
+    }
+  }
 }
-

@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -46,43 +45,47 @@ import org.alfresco.service.namespace.QName;
  * @since 2.7
  */
 @BehaviourBean
-public class DeletePersonAuditEvent extends AuditEvent implements BeforeDeleteNodePolicy
-{
-    /** Node Service*/
-    private NodeService nodeService;
+public class DeletePersonAuditEvent
+  extends AuditEvent
+  implements BeforeDeleteNodePolicy {
 
-    /**
-     * Sets the node service
-     *
-     * @param nodeService nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /** Node Service*/
+  private NodeService nodeService;
 
-    /**
-     * Behaviour that will audit user deletion
-     *
-     * @param  nodeRef the node to be deleted
-     *
-     */
+  /**
+   * Sets the node service
+   *
+   * @param nodeService nodeService to set
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-    @Override
-    @Behaviour
-    (
-        kind = BehaviourKind.CLASS,
-        type = "cm:person"
-    )
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        //retrieve the username property to be audited
-        Map<QName, Serializable> userName = new HashMap<>();
-        userName.put(ContentModel.PROP_USERNAME, nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME));
+  /**
+   * Behaviour that will audit user deletion
+   *
+   * @param  nodeRef the node to be deleted
+   *
+   */
 
-        //audit the property values before the delete event
-        recordsManagementAuditService.auditEvent(nodeRef, getName(), userName, null, true, false);
-    }
+  @Override
+  @Behaviour(kind = BehaviourKind.CLASS, type = "cm:person")
+  public void beforeDeleteNode(NodeRef nodeRef) {
+    //retrieve the username property to be audited
+    Map<QName, Serializable> userName = new HashMap<>();
+    userName.put(
+      ContentModel.PROP_USERNAME,
+      nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME)
+    );
 
-
+    //audit the property values before the delete event
+    recordsManagementAuditService.auditEvent(
+      nodeRef,
+      getName(),
+      userName,
+      null,
+      true,
+      false
+    );
+  }
 }

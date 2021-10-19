@@ -20,74 +20,72 @@ package org.alfresco.query;
 
 /**
  * Stores paging details based on a PagingRequest.
- * 
+ *
  * @author steveglover
  *
  */
-public class PageDetails
-{
-    private boolean hasMoreItems = false;
-    private int pageSize;
-    private int skipCount;
-    private int maxItems;
-    private int end;
+public class PageDetails {
 
-    public PageDetails(int pageSize, boolean hasMoreItems, int skipCount, int maxItems, int end)
-    {
-        super();
-        this.hasMoreItems = hasMoreItems;
-        this.pageSize = pageSize;
-        this.skipCount = skipCount;
-        this.maxItems = maxItems;
-        this.end = end;
-    }
+  private boolean hasMoreItems = false;
+  private int pageSize;
+  private int skipCount;
+  private int maxItems;
+  private int end;
 
-    public int getSkipCount()
-    {
-        return skipCount;
-    }
+  public PageDetails(
+    int pageSize,
+    boolean hasMoreItems,
+    int skipCount,
+    int maxItems,
+    int end
+  ) {
+    super();
+    this.hasMoreItems = hasMoreItems;
+    this.pageSize = pageSize;
+    this.skipCount = skipCount;
+    this.maxItems = maxItems;
+    this.end = end;
+  }
 
-    public int getMaxItems()
-    {
-        return maxItems;
-    }
+  public int getSkipCount() {
+    return skipCount;
+  }
 
-    public int getEnd()
-    {
-        return end;
-    }
+  public int getMaxItems() {
+    return maxItems;
+  }
 
-    public boolean hasMoreItems()
-    {
-        return hasMoreItems;
-    }
+  public int getEnd() {
+    return end;
+  }
 
-    public int getPageSize()
-    {
-        return pageSize;
+  public boolean hasMoreItems() {
+    return hasMoreItems;
+  }
+
+  public int getPageSize() {
+    return pageSize;
+  }
+
+  public static PageDetails getPageDetails(
+    PagingRequest pagingRequest,
+    int totalSize
+  ) {
+    int skipCount = pagingRequest.getSkipCount();
+    int maxItems = pagingRequest.getMaxItems();
+    int end = skipCount + maxItems;
+    int pageSize = -1;
+    if (end < 0 || end > totalSize) {
+      // overflow or greater than the total
+      end = totalSize;
+      pageSize = end - skipCount;
+    } else {
+      pageSize = maxItems;
     }
-    
-    public static PageDetails getPageDetails(PagingRequest pagingRequest, int totalSize)
-    {
-        int skipCount = pagingRequest.getSkipCount();
-        int maxItems = pagingRequest.getMaxItems();
-        int end = skipCount + maxItems;
-        int pageSize = -1;
-        if(end < 0 || end > totalSize)
-        {
-            // overflow or greater than the total
-            end = totalSize;
-            pageSize = end - skipCount;
-        }
-        else
-        {
-            pageSize = maxItems;
-        }
-        if(pageSize < 0)
-        {
-            pageSize = 0;
-        }
-        boolean hasMoreItems = end < totalSize;
-        return new PageDetails(pageSize, hasMoreItems, skipCount, maxItems, end);
+    if (pageSize < 0) {
+      pageSize = 0;
     }
+    boolean hasMoreItems = end < totalSize;
+    return new PageDetails(pageSize, hasMoreItems, skipCount, maxItems, end);
+  }
 }

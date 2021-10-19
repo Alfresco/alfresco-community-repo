@@ -36,38 +36,37 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public interface RecordsManagementActionCondition
-{
-    /**
-     * Get the name of the action condition
-     *
-     * @return  String  action condition name
-     */
-    String getBeanName();
+public interface RecordsManagementActionCondition {
+  /**
+   * Get the name of the action condition
+   *
+   * @return  String  action condition name
+   */
+  String getBeanName();
 
-    /**
-     * Get the label of the action condition
-     *
-     * @return  String  action condition label
-     */
-    String getLabel();
+  /**
+   * Get the label of the action condition
+   *
+   * @return  String  action condition label
+   */
+  String getLabel();
 
-    /**
-     * Get the description of the action condition
-     *
-     * @return  String  action condition description
-     */
-    String getDescription();
+  /**
+   * Get the description of the action condition
+   *
+   * @return  String  action condition description
+   */
+  String getDescription();
 
-    /**
-     *
-     * @return The records management action condition definition
-     */
-    RecordsManagementActionConditionDefinition getRecordsManagementActionConditionDefinition();
+  /**
+   *
+   * @return The records management action condition definition
+   */
+  RecordsManagementActionConditionDefinition getRecordsManagementActionConditionDefinition();
 
-    /**
-     *
-     * @return <code>true</code> if the condition is public, <code>false</code> otherwise
-     */
-    boolean isPublicCondition();
+  /**
+   *
+   * @return <code>true</code> if the condition is public, <code>false</code> otherwise
+   */
+  boolean isPublicCondition();
 }

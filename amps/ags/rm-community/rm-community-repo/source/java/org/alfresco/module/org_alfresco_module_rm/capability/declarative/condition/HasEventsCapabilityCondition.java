@@ -36,25 +36,24 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class HasEventsCapabilityCondition extends AbstractCapabilityCondition
-{
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
-        boolean result = false;
+public class HasEventsCapabilityCondition extends AbstractCapabilityCondition {
 
-        if (dispositionService.isDisposableItem(nodeRef))
-        {
-            DispositionAction da = dispositionService.getNextDispositionAction(nodeRef);
-            if (da != null)
-            {
-                result = (!da.getEventCompletionDetails().isEmpty());
-            }
-        }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  public boolean evaluateImpl(NodeRef nodeRef) {
+    boolean result = false;
 
-        return result;
+    if (dispositionService.isDisposableItem(nodeRef)) {
+      DispositionAction da = dispositionService.getNextDispositionAction(
+        nodeRef
+      );
+      if (da != null) {
+        result = (!da.getEventCompletionDetails().isEmpty());
+      }
     }
+
+    return result;
+  }
 }

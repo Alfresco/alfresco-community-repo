@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.patch.compatibility;
 import static org.alfresco.repo.module.ModuleVersionNumber.VERSION_ZERO;
 
 import java.io.Serializable;
-
 import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl;
 import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
@@ -42,7 +41,6 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 /**
  * Module patch component base class.
  *
@@ -50,188 +48,198 @@ import org.slf4j.LoggerFactory;
  * @since 2.1
  */
 @Deprecated
-public abstract class ModulePatchComponent extends AbstractModuleComponent
-{
-    private static final String REGISTRY_PATH_MODULES = "modules";
-    private static final String REGISTRY_PROPERTY_INSTALLED_VERSION = "installedVersion";
-    private static final String REGISTRY_PROPERTY_CURRENT_VERSION = "currentVersion";
-    
-    /** logger */
-    protected static final Logger LOGGER = LoggerFactory.getLogger(ModulePatchComponent.class);
+public abstract class ModulePatchComponent extends AbstractModuleComponent {
 
-    /** Retrying transaction helper */
-    protected RetryingTransactionHelper retryingTransactionHelper;
+  private static final String REGISTRY_PATH_MODULES = "modules";
+  private static final String REGISTRY_PROPERTY_INSTALLED_VERSION =
+    "installedVersion";
+  private static final String REGISTRY_PROPERTY_CURRENT_VERSION =
+    "currentVersion";
 
-    /** Behaviour filter */
-    protected BehaviourFilter behaviourFilter;
+  /** logger */
+  protected static final Logger LOGGER = LoggerFactory.getLogger(
+    ModulePatchComponent.class
+  );
 
-    /** module patch executer */
-    protected ModulePatchExecuterImpl modulePatchExecuter;
+  /** Retrying transaction helper */
+  protected RetryingTransactionHelper retryingTransactionHelper;
 
-    /** Registry service */
-    protected RegistryService registryService;
-    
-    /**
-     * @param retryingTransactionHelper retrying transaction helper
-     */
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
-    }
+  /** Behaviour filter */
+  protected BehaviourFilter behaviourFilter;
 
-    /**
-     * @param behaviourFilter   behaviour filter
-     */
-    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
-    {
-        this.behaviourFilter = behaviourFilter;
-    }
+  /** module patch executer */
+  protected ModulePatchExecuterImpl modulePatchExecuter;
 
-    /**
-     * @param modulePatchExecuter   module patch executer
-     */
-    public void setModulePatchExecuter(ModulePatchExecuterImpl modulePatchExecuter)
-    {
-        this.modulePatchExecuter = modulePatchExecuter;
-    }
+  /** Registry service */
+  protected RegistryService registryService;
 
-    /**
-     * @param registryService   Registry service
-     */
-    public void setRegistryService(RegistryService registryService)
-    {
-        this.registryService = registryService;
-    }
+  /**
+   * @param retryingTransactionHelper retrying transaction helper
+   */
+  public void setRetryingTransactionHelper(
+    RetryingTransactionHelper retryingTransactionHelper
+  ) {
+    this.retryingTransactionHelper = retryingTransactionHelper;
+  }
 
-    /**
-     * Init method
-     */
-    @Override
-    public void init()
-    {
-        super.init();
-        modulePatchExecuter.getDependsOn().add(this);
-    }
+  /**
+   * @param behaviourFilter   behaviour filter
+   */
+  public void setBehaviourFilter(BehaviourFilter behaviourFilter) {
+    this.behaviourFilter = behaviourFilter;
+  }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
-     */
-    @Override
-    protected void executeInternal()
-    {
-        //Get the new module version
-        String moduleId = modulePatchExecuter.getModuleId();
-        ModuleVersionNumber moduleNewVersionNumber = moduleService.getModule(moduleId).getModuleVersionNumber();
+  /**
+   * @param modulePatchExecuter   module patch executer
+   */
+  public void setModulePatchExecuter(
+    ModulePatchExecuterImpl modulePatchExecuter
+  ) {
+    this.modulePatchExecuter = modulePatchExecuter;
+  }
 
-        // Get the module details from the registry
-        ModuleVersionNumber moduleCurrentVersionNumber = getModuleVersionNumber(REGISTRY_PROPERTY_CURRENT_VERSION,
-                moduleId);
-        // Get the module patch component name
-        String moduleName = getName();
-        if (moduleCurrentVersionNumber.equals(VERSION_ZERO) ||
-                moduleCurrentVersionNumber.equals(moduleNewVersionNumber))   // No previous record of it
-        {
-            LOGGER.info("Module patch component '{}' is skipped, no previous version found.", moduleName);
-        }
-        else
-        {
-            if (isVersionLaterThan(moduleCurrentVersionNumber, moduleNewVersionNumber))
-            {
-                LOGGER.info("Module patch component '{}' is skipped for upgrade from version {} to version {}",
-                        moduleName, moduleCurrentVersionNumber, moduleNewVersionNumber);
-            }
-            else
-            {
-                try
-                {
-                    LOGGER.info("Module patch component '{}' is executing ...", moduleName);
+  /**
+   * @param registryService   Registry service
+   */
+  public void setRegistryService(RegistryService registryService) {
+    this.registryService = registryService;
+  }
 
-                    // execute path within an isolated transaction
-                    retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+  /**
+   * Init method
+   */
+  @Override
+  public void init() {
+    super.init();
+    modulePatchExecuter.getDependsOn().add(this);
+  }
 
-                    {
-                        @Override
-                        public Void execute()
-                        {
-                            behaviourFilter.disableBehaviour();
-                            try
-                            {
-                                executePatch();
-                            }
-                            finally
-                            {
-                                behaviourFilter.enableBehaviour();
-                            }
-                            return null;
-                        }
+  /**
+   * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
+   */
+  @Override
+  protected void executeInternal() {
+    //Get the new module version
+    String moduleId = modulePatchExecuter.getModuleId();
+    ModuleVersionNumber moduleNewVersionNumber = moduleService
+      .getModule(moduleId)
+      .getModuleVersionNumber();
 
-                    }, false, true);
+    // Get the module details from the registry
+    ModuleVersionNumber moduleCurrentVersionNumber = getModuleVersionNumber(
+      REGISTRY_PROPERTY_CURRENT_VERSION,
+      moduleId
+    );
+    // Get the module patch component name
+    String moduleName = getName();
+    if (
+      moduleCurrentVersionNumber.equals(VERSION_ZERO) ||
+      moduleCurrentVersionNumber.equals(moduleNewVersionNumber)
+    ) { // No previous record of it
+      LOGGER.info(
+        "Module patch component '{}' is skipped, no previous version found.",
+        moduleName
+      );
+    } else {
+      if (
+        isVersionLaterThan(moduleCurrentVersionNumber, moduleNewVersionNumber)
+      ) {
+        LOGGER.info(
+          "Module patch component '{}' is skipped for upgrade from version {} to version {}",
+          moduleName,
+          moduleCurrentVersionNumber,
+          moduleNewVersionNumber
+        );
+      } else {
+        try {
+          LOGGER.info(
+            "Module patch component '{}' is executing ...",
+            moduleName
+          );
 
-                    LOGGER.info(" ... completed module patch '{}'", moduleName);
-
+          // execute path within an isolated transaction
+          retryingTransactionHelper.doInTransaction(
+            new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+              @Override
+              public Void execute() {
+                behaviourFilter.disableBehaviour();
+                try {
+                  executePatch();
+                } finally {
+                  behaviourFilter.enableBehaviour();
                 }
-                catch (Exception exception)
-                {
-                    // record the exception otherwise it gets swallowed
-                    LOGGER.info("  ... error encountered.  {}", exception.getMessage(), exception);
-                    throw exception;
-                }
-            }
+                return null;
+              }
+            },
+            false,
+            true
+          );
+
+          LOGGER.info(" ... completed module patch '{}'", moduleName);
+        } catch (Exception exception) {
+          // record the exception otherwise it gets swallowed
+          LOGGER.info(
+            "  ... error encountered.  {}",
+            exception.getMessage(),
+            exception
+          );
+          throw exception;
         }
+      }
+    }
+  }
+
+  /**
+   * Helper method to get the ModuleVersionNumber.
+   */
+  private ModuleVersionNumber getModuleVersionNumber(
+    String registryProperty,
+    String moduleId
+  ) {
+    RegistryKey moduleKeyVersion = new RegistryKey(
+      ModuleComponentHelper.URI_MODULES_1_0,
+      new String[] { REGISTRY_PATH_MODULES, moduleId, registryProperty }
+    );
+    Serializable moduleVersion =
+      this.registryService.getProperty(moduleKeyVersion);
+
+    if (moduleVersion == null) {
+      return VERSION_ZERO;
+    } else {
+      return new ModuleVersionNumber(moduleVersion.toString());
+    }
+  }
+
+  /**
+   * Helper method to determine if this is an upgrade from a version that already includes the early (v2.0, v2.1)
+   * patches.
+   *
+   */
+  private boolean isVersionLaterThan(
+    ModuleVersionNumber moduleCurrentVersionNumber,
+    ModuleVersionNumber moduleNewVersionNumber
+  ) {
+    // assume that the v2.0 and v2.1 patches should be run
+    boolean versionLaterThan = false;
+
+    // if this is an upgrade as opposed to a fresh install
+    if (moduleCurrentVersionNumber.compareTo(moduleNewVersionNumber) < 0) {
+      // if the installed version is later than the minimum version number of this patch
+      ModuleVersionNumber minVersion = this.getAppliesFromVersionNumber();
+      if (moduleCurrentVersionNumber.compareTo(minVersion) >= 0) {
+        versionLaterThan = true;
+      }
+    }
+    // v2.0 and v2.1 patches should not be run when both the current and the new version numbers are equals
+    else {
+      versionLaterThan = true;
     }
 
-    /**
-     * Helper method to get the ModuleVersionNumber.
-     */
-    private ModuleVersionNumber getModuleVersionNumber(String registryProperty, String moduleId)
-    {
-        RegistryKey moduleKeyVersion = new RegistryKey(ModuleComponentHelper.URI_MODULES_1_0,
-                new String[]{REGISTRY_PATH_MODULES, moduleId, registryProperty});
-        Serializable moduleVersion = this.registryService.getProperty(moduleKeyVersion);
+    return versionLaterThan;
+  }
 
-        if (moduleVersion == null)
-        {
-            return VERSION_ZERO;
-        }
-        else
-        {
-            return new ModuleVersionNumber(moduleVersion.toString());
-        }
-
-    }
-
-    /**
-     * Helper method to determine if this is an upgrade from a version that already includes the early (v2.0, v2.1)
-     * patches.
-     *
-     */
-    private boolean isVersionLaterThan(ModuleVersionNumber moduleCurrentVersionNumber,
-                                       ModuleVersionNumber moduleNewVersionNumber)
-    {
-        // assume that the v2.0 and v2.1 patches should be run
-        boolean versionLaterThan = false;
-
-        // if this is an upgrade as opposed to a fresh install
-        if (moduleCurrentVersionNumber.compareTo(moduleNewVersionNumber) < 0)
-        {
-            // if the installed version is later than the minimum version number of this patch
-            ModuleVersionNumber minVersion = this.getAppliesFromVersionNumber();
-            if (moduleCurrentVersionNumber.compareTo(minVersion) >= 0)
-            {
-                versionLaterThan = true;
-            }
-        }
-        // v2.0 and v2.1 patches should not be run when both the current and the new version numbers are equals
-        else
-        {
-            versionLaterThan =true;
-        }
-
-        return  versionLaterThan;
-    }
-
-    /**
-     * Execute patch work.
-     */
-    protected abstract void executePatch();
+  /**
+   * Execute patch work.
+   */
+  protected abstract void executePatch();
 }

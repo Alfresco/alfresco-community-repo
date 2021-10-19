@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,7 +26,6 @@
 package org.alfresco.rest.api.nodes;
 
 import java.util.List;
-
 import org.alfresco.rest.api.Tags;
 import org.alfresco.rest.api.model.Tag;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -37,45 +36,57 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
-@RelationshipResource(name = "tags", entityResource = NodesEntityResource.class, title = "Document or folder tags")
-public class NodeTagsRelation implements RelationshipResourceAction.Create<Tag>, RelationshipResourceAction.Delete, RelationshipResourceAction.Read<Tag>, InitializingBean
-{
-	private Tags tags;
+@RelationshipResource(
+  name = "tags",
+  entityResource = NodesEntityResource.class,
+  title = "Document or folder tags"
+)
+public class NodeTagsRelation
+  implements
+    RelationshipResourceAction.Create<Tag>,
+    RelationshipResourceAction.Delete,
+    RelationshipResourceAction.Read<Tag>,
+    InitializingBean {
 
-	public void setTags(Tags tags)
-	{
-		this.tags = tags;
-	}
+  private Tags tags;
 
-	@Override
-    public void afterPropertiesSet()
-    {
-        ParameterCheck.mandatory("tags", this.tags);
-    }
+  public void setTags(Tags tags) {
+    this.tags = tags;
+  }
 
-	/**
-	 * Add the tag to the node with id 'nodeId'.
-	 * 
-	 */
-	@Override
-	@WebApiDescription(title="Adds one or more tags to the node with id 'nodeId'.")
-    public List<Tag> create(String nodeId, List<Tag> tagsToCreate, Parameters parameters)
-	{
-	    return tags.addTags(nodeId, tagsToCreate);
-	}
+  @Override
+  public void afterPropertiesSet() {
+    ParameterCheck.mandatory("tags", this.tags);
+  }
 
-	@Override
-	@WebApiDescription(title="Remove the tag from the node with id 'nodeId'.")
-	public void delete(String nodeId, String tagId, Parameters parameters)
-	{
-		tags.deleteTag(nodeId, tagId);
-	}
+  /**
+   * Add the tag to the node with id 'nodeId'.
+   *
+   */
+  @Override
+  @WebApiDescription(
+    title = "Adds one or more tags to the node with id 'nodeId'."
+  )
+  public List<Tag> create(
+    String nodeId,
+    List<Tag> tagsToCreate,
+    Parameters parameters
+  ) {
+    return tags.addTags(nodeId, tagsToCreate);
+  }
 
-	@Override
-	@WebApiDescription(title="A paged list of tags on the node 'nodeId'.")
-	public CollectionWithPagingInfo<Tag> readAll(String nodeId, Parameters params)
-	{
-		return tags.getTags(nodeId, params);
-	}
-	
+  @Override
+  @WebApiDescription(title = "Remove the tag from the node with id 'nodeId'.")
+  public void delete(String nodeId, String tagId, Parameters parameters) {
+    tags.deleteTag(nodeId, tagId);
+  }
+
+  @Override
+  @WebApiDescription(title = "A paged list of tags on the node 'nodeId'.")
+  public CollectionWithPagingInfo<Tag> readAll(
+    String nodeId,
+    Parameters params
+  ) {
+    return tags.getTags(nodeId, params);
+  }
 }

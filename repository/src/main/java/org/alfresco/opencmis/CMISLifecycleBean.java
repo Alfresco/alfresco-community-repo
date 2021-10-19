@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,9 +26,7 @@
 package org.alfresco.opencmis;
 
 import java.util.HashMap;
-
 import javax.servlet.ServletContext;
-
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.springframework.beans.factory.DisposableBean;
@@ -37,41 +35,39 @@ import org.springframework.web.context.ServletContextAware;
 
 /**
  * This bean controls the lifecycle of the CMIS factory.
- * 
+ *
  * @author florian.mueller
  */
-public class CMISLifecycleBean implements ServletContextAware, InitializingBean, DisposableBean
-{
-    private ServletContext servletContext;
-    private CmisServiceFactory factory;
+public class CMISLifecycleBean
+  implements ServletContextAware, InitializingBean, DisposableBean {
 
-    @Override
-    public void setServletContext(ServletContext servletContext)
-    {
-        this.servletContext = servletContext;
-    }
+  private ServletContext servletContext;
+  private CmisServiceFactory factory;
 
-    public void setCmisServiceFactory(CmisServiceFactory factory)
-    {
-        this.factory = factory;
-    }
+  @Override
+  public void setServletContext(ServletContext servletContext) {
+    this.servletContext = servletContext;
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        if (factory != null && servletContext != null)
-        {
-            factory.init(new HashMap<String, String>());
-            servletContext.setAttribute(CmisRepositoryContextListener.SERVICES_FACTORY, factory);
-        }
-    }
+  public void setCmisServiceFactory(CmisServiceFactory factory) {
+    this.factory = factory;
+  }
 
-    @Override
-    public void destroy() throws Exception
-    {
-        if (factory != null)
-        {
-            factory.destroy();
-        }
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    if (factory != null && servletContext != null) {
+      factory.init(new HashMap<String, String>());
+      servletContext.setAttribute(
+        CmisRepositoryContextListener.SERVICES_FACTORY,
+        factory
+      );
     }
+  }
+
+  @Override
+  public void destroy() throws Exception {
+    if (factory != null) {
+      factory.destroy();
+    }
+  }
 }

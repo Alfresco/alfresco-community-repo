@@ -23,6 +23,4 @@ package org.alfresco.util.testing.category;
  * have not been added to a test suite is not clear. Investigation Jira tickets should also be created when marking
  * these tests.
  */
-public interface NeverRunsTests extends NonBuildTests
-{
-}
+public interface NeverRunsTests extends NonBuildTests {}

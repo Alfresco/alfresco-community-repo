@@ -30,10 +30,8 @@ import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_PERS
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import java.util.Collections;
-
 import com.google.common.collect.ImmutableMap;
-
+import java.util.Collections;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.v0.service.RMAuditService;
 import org.alfresco.test.AlfrescoTest;
@@ -48,10 +46,13 @@ import org.testng.annotations.Test;
  * @author Rodica Sutu
  * @since 2.7
  */
-public class AuditUserEventsTests extends BaseRMRestTest
-{
-    private final String PREFIX = generateTestPrefix(AuditUserEventsTests.class);
+public class AuditUserEventsTests extends BaseRMRestTest {
+
+    private final String PREFIX = generateTestPrefix(
+        AuditUserEventsTests.class
+    );
     private UserModel createUser;
+
     @Autowired
     private RMAuditService rmAuditService;
 
@@ -62,21 +63,35 @@ public class AuditUserEventsTests extends BaseRMRestTest
      */
     @Test
     @AlfrescoTest(jira = "RM-6223")
-    public void createUserEventIsAudited()
-    {
+    public void createUserEventIsAudited() {
         rmAuditService.clearAuditLog();
         STEP("Create a new user.");
         String userName = "auditCreateUser" + PREFIX;
         createUser = getDataUser().createUser(userName);
 
-        STEP("Check the audit log contains the entry for the created user event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_PERSON, getAdminUser(), userName,
-                Collections.singletonList(ImmutableMap.of("new", userName, "previous", "", "name", "User Name")));
+        STEP(
+            "Check the audit log contains the entry for the created user event."
+        );
+        rmAuditService.checkAuditLogForEvent(
+            getAdminUser(),
+            CREATE_PERSON,
+            getAdminUser(),
+            userName,
+            Collections.singletonList(
+                ImmutableMap.of(
+                    "new",
+                    userName,
+                    "previous",
+                    "",
+                    "name",
+                    "User Name"
+                )
+            )
+        );
     }
 
-    @AfterClass (alwaysRun = true)
-    public void cleanUp()
-    {
+    @AfterClass(alwaysRun = true)
+    public void cleanUp() {
         //delete the created user
         getDataUser().deleteUser(createUser);
     }

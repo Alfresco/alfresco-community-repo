@@ -33,21 +33,20 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 /**
  * Types API
  */
-public interface Types
-{
-    /**
-     * Lists types
-     *
-     * @param params
-     * @return Collection of types
-     */
-    CollectionWithPagingInfo<Type> listTypes(Parameters params);
+public interface Types {
+  /**
+   * Lists types
+   *
+   * @param params
+   * @return Collection of types
+   */
+  CollectionWithPagingInfo<Type> listTypes(Parameters params);
 
-    /**
-     * Gets a type by id
-     *
-     * @param typeId
-     * @return type
-     */
-    Type getType(String typeId);
+  /**
+   * Gets a type by id
+   *
+   * @param typeId
+   * @return type
+   */
+  Type getType(String typeId);
 }

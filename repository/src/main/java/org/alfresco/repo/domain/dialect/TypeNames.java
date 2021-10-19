@@ -25,10 +25,10 @@
  */
 package org.alfresco.repo.domain.dialect;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.TreeMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This class maps a type to names. Associations
@@ -63,101 +63,97 @@ import java.util.Iterator;
  * Class copied from patched hibernate 3.2.6
  * @since 6.0
  */
-@SuppressWarnings({"rawtypes", "unchecked"})
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class TypeNames {
 
-    private HashMap weighted = new HashMap();
-    private HashMap defaults = new HashMap();
+  private HashMap weighted = new HashMap();
+  private HashMap defaults = new HashMap();
 
-    /**
-     * get default type name for specified type
-     * @param typecode the type key
-     * @return the default type name associated with specified key
-     */
-    public String get(int typecode) throws IllegalArgumentException
-    {
-        String result = (String) defaults.get( new Integer(typecode) );
-        if (result == null)
-        {
-            throw new IllegalArgumentException("No Dialect mapping for JDBC type: " + typecode);
+  /**
+   * get default type name for specified type
+   * @param typecode the type key
+   * @return the default type name associated with specified key
+   */
+  public String get(int typecode) throws IllegalArgumentException {
+    String result = (String) defaults.get(new Integer(typecode));
+    if (result == null) {
+      throw new IllegalArgumentException(
+        "No Dialect mapping for JDBC type: " + typecode
+      );
+    }
+    return result;
+  }
+
+  /**
+   * get type name for specified type and size
+   * @param typecode the type key
+   * @param size the SQL length
+   * @param scale the SQL scale
+   * @param precision the SQL precision
+   * @return the associated name with smallest capacity >= size,
+   * if available and the default type name otherwise
+   */
+  public String get(int typecode, int size, int precision, int scale)
+    throws IllegalArgumentException {
+    Map map = (Map) weighted.get(new Integer(typecode));
+    if (map != null && map.size() > 0) {
+      // iterate entries ordered by capacity to find first fit
+      Iterator entries = map.entrySet().iterator();
+      while (entries.hasNext()) {
+        Map.Entry entry = (Map.Entry) entries.next();
+        if (size <= ((Integer) entry.getKey()).intValue()) {
+          return replace((String) entry.getValue(), size, precision, scale);
         }
-        return result;
+      }
     }
+    return replace(get(typecode), size, precision, scale);
+  }
 
-    /**
-     * get type name for specified type and size
-     * @param typecode the type key
-     * @param size the SQL length
-     * @param scale the SQL scale
-     * @param precision the SQL precision
-     * @return the associated name with smallest capacity >= size,
-     * if available and the default type name otherwise
-     */
-    public String get(int typecode, int size, int precision, int scale) throws IllegalArgumentException
-    {
-        Map map = (Map) weighted.get( new Integer(typecode) );
-        if ( map!=null && map.size()>0 )
-        {
-            // iterate entries ordered by capacity to find first fit
-            Iterator entries = map.entrySet().iterator();
-            while ( entries.hasNext() )
-            {
-                Map.Entry entry = (Map.Entry)entries.next();
-                if ( size <= ( (Integer) entry.getKey() ).intValue() )
-                {
-                    return replace( (String) entry.getValue(), size, precision, scale );
-                }
-            }
-        }
-        return replace( get(typecode), size, precision, scale );
-    }
+  private static String replace(
+    String type,
+    int size,
+    int precision,
+    int scale
+  ) {
+    type = replaceOnce(type, "$s", Integer.toString(scale));
+    type = replaceOnce(type, "$l", Integer.toString(size));
+    return replaceOnce(type, "$p", Integer.toString(precision));
+  }
 
-    private static String replace(String type, int size, int precision, int scale)
-    {
-        type = replaceOnce(type, "$s", Integer.toString(scale) );
-        type = replaceOnce(type, "$l", Integer.toString(size) );
-        return replaceOnce(type, "$p", Integer.toString(precision) );
+  /**
+   * set a type name for specified type key and capacity
+   * @param typecode the type key
+   */
+  public void put(int typecode, int capacity, String value) {
+    TreeMap map = (TreeMap) weighted.get(new Integer(typecode));
+    if (map == null) { // add new ordered map
+      map = new TreeMap();
+      weighted.put(new Integer(typecode), map);
     }
+    map.put(new Integer(capacity), value);
+  }
 
-    /**
-     * set a type name for specified type key and capacity
-     * @param typecode the type key
-     */
-    public void put(int typecode, int capacity, String value)
-    {
-        TreeMap map = (TreeMap)weighted.get( new Integer(typecode) );
-        if (map == null)
-        {// add new ordered map
-            map = new TreeMap();
-            weighted.put( new Integer(typecode), map );
-        }
-        map.put(new Integer(capacity), value);
-    }
+  /**
+   * set a default type name for specified type key
+   * @param typecode the type key
+   */
+  public void put(int typecode, String value) {
+    defaults.put(new Integer(typecode), value);
+  }
 
-    /**
-     * set a default type name for specified type key
-     * @param typecode the type key
-     */
-    public void put(int typecode, String value)
-    {
-        defaults.put( new Integer(typecode), value );
+  private static String replaceOnce(
+    String template,
+    String placeholder,
+    String replacement
+  ) {
+    int loc = template == null ? -1 : template.indexOf(placeholder);
+    if (loc < 0) {
+      return template;
+    } else {
+      return new StringBuffer(template.substring(0, loc))
+        .append(replacement)
+        .append(template.substring(loc + placeholder.length()))
+        .toString();
     }
-
-    private static String replaceOnce(String template, String placeholder, String replacement)
-    {
-        int loc = template == null ? -1 : template.indexOf( placeholder );
-        if ( loc < 0 )
-        {
-            return template;
-        }
-        else
-            {
-            return new StringBuffer( template.substring( 0, loc ) )
-                    .append( replacement )
-                    .append( template.substring( loc + placeholder.length() ) )
-                    .toString();
-        }
-    }
+  }
 }
-
-

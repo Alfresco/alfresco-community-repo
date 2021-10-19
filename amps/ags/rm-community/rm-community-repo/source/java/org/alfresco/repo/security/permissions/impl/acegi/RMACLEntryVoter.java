@@ -28,7 +28,6 @@
 package org.alfresco.repo.security.permissions.impl.acegi;
 
 import java.lang.reflect.Method;
-
 import org.alfresco.service.cmr.security.OwnableService;
 
 /**
@@ -38,23 +37,19 @@ import org.alfresco.service.cmr.security.OwnableService;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RMACLEntryVoter extends ACLEntryVoter
-{
-    public void setOwnableService(OwnableService ownableService)
-    {
-        boolean exists = false;
-        Method[] declaredMethods = ACLEntryVoter.class.getDeclaredMethods();
-        for (Method method : declaredMethods)
-        {
-            if (method.getName().equals("setOwnableService"))
-            {
-                exists = true;
-                break;
-            }
-        }
-        if (exists)
-        {
-            super.setOwnableService(ownableService);
-        }
+public class RMACLEntryVoter extends ACLEntryVoter {
+
+  public void setOwnableService(OwnableService ownableService) {
+    boolean exists = false;
+    Method[] declaredMethods = ACLEntryVoter.class.getDeclaredMethods();
+    for (Method method : declaredMethods) {
+      if (method.getName().equals("setOwnableService")) {
+        exists = true;
+        break;
+      }
     }
+    if (exists) {
+      super.setOwnableService(ownableService);
+    }
+  }
 }

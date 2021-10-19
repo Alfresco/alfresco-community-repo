@@ -29,58 +29,55 @@ package org.alfresco.module.org_alfresco_module_rm.test.util.bdt;
 import static org.junit.Assert.assertEquals;
 
 import java.text.MessageFormat;
-
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 
 /**
  * Expected value.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.5
  */
-public class ExpectedValue<T>
-{
-    private static final String MESSAGE = "Expected value outcome \"{0}\" was not observed.";
-    
-    private T expectedValue;
-    private Evaluation<T> evaluation;
-    private BehaviourTest test;
-    
-    public ExpectedValue(BehaviourTest test, T value)
-    {
-        this.expectedValue = value;
-        this.test = test;
-    }
-    
-    public ExpectedValue<T> from(Evaluation<T> evaluation)
-    {
-        this.evaluation = evaluation;
-        return this;
-    }
-    
-    public BehaviourTest because(String message)
-    {
-        T actualValue = (T)AuthenticationUtil.runAs(() -> 
-        {
-            return test.getRetryingTransactionHelper().doInTransaction(() -> 
-            {
-                return evaluation.eval();
-            });
-        }, 
-        test.getAsUser());        
-        
-        if (message != null)
-        {
-            message = MessageFormat.format(MESSAGE, message);
-        }
-        
-        assertEquals(message, expectedValue, actualValue);
-        
-        return test;
+public class ExpectedValue<T> {
+
+  private static final String MESSAGE =
+    "Expected value outcome \"{0}\" was not observed.";
+
+  private T expectedValue;
+  private Evaluation<T> evaluation;
+  private BehaviourTest test;
+
+  public ExpectedValue(BehaviourTest test, T value) {
+    this.expectedValue = value;
+    this.test = test;
+  }
+
+  public ExpectedValue<T> from(Evaluation<T> evaluation) {
+    this.evaluation = evaluation;
+    return this;
+  }
+
+  public BehaviourTest because(String message) {
+    T actualValue = (T) AuthenticationUtil.runAs(
+      () -> {
+        return test
+          .getRetryingTransactionHelper()
+          .doInTransaction(() -> {
+            return evaluation.eval();
+          });
+      },
+      test.getAsUser()
+    );
+
+    if (message != null) {
+      message = MessageFormat.format(MESSAGE, message);
     }
 
-    public interface Evaluation<T>
-    {
-        T eval() throws Exception;
-    }
+    assertEquals(message, expectedValue, actualValue);
+
+    return test;
+  }
+
+  public interface Evaluation<T> {
+    T eval() throws Exception;
+  }
 }

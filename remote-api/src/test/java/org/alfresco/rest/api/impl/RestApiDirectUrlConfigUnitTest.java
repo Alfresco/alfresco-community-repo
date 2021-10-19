@@ -40,93 +40,128 @@ import org.junit.Test;
  *
  * @author Sara Aspery
  */
-public class RestApiDirectUrlConfigUnitTest
-{
-    private static final Boolean ENABLED = Boolean.TRUE;
-    private static final Boolean DISABLED = Boolean.FALSE;
+public class RestApiDirectUrlConfigUnitTest {
 
-    private static final Long DEFAULT_EXPIRY_TIME_IN_SECS = 20L;
+  private static final Boolean ENABLED = Boolean.TRUE;
+  private static final Boolean DISABLED = Boolean.FALSE;
 
-    private RestApiDirectUrlConfig restApiDirectUrlConfig;
+  private static final Long DEFAULT_EXPIRY_TIME_IN_SECS = 20L;
 
-    @Before
-    public void setup()
-    {
-        this.restApiDirectUrlConfig = new RestApiDirectUrlConfig();
-        SystemWideDirectUrlConfig sysConfig = new SystemWideDirectUrlConfig();
-        sysConfig.setEnabled(ENABLED);
-        sysConfig.setDefaultExpiryTimeInSec(30L);
-        sysConfig.setMaxExpiryTimeInSec(300L);
-        restApiDirectUrlConfig.setSystemWideDirectUrlConfig(sysConfig);
-    }
+  private RestApiDirectUrlConfig restApiDirectUrlConfig;
 
-    @Test
-    public void testValidConfig_RemainsEnabled()
-    {
-        setupDirectAccessConfig(ENABLED, DEFAULT_EXPIRY_TIME_IN_SECS);
+  @Before
+  public void setup() {
+    this.restApiDirectUrlConfig = new RestApiDirectUrlConfig();
+    SystemWideDirectUrlConfig sysConfig = new SystemWideDirectUrlConfig();
+    sysConfig.setEnabled(ENABLED);
+    sysConfig.setDefaultExpiryTimeInSec(30L);
+    sysConfig.setMaxExpiryTimeInSec(300L);
+    restApiDirectUrlConfig.setSystemWideDirectUrlConfig(sysConfig);
+  }
 
-        assertTrue("Expected REST API direct URLs to be enabled", restApiDirectUrlConfig.isEnabled());
-        restApiDirectUrlConfig.validate();
-        assertTrue("Expected REST API direct URLs to be enabled", restApiDirectUrlConfig.isEnabled());
-    }
+  @Test
+  public void testValidConfig_RemainsEnabled() {
+    setupDirectAccessConfig(ENABLED, DEFAULT_EXPIRY_TIME_IN_SECS);
 
-    @Test
-    public void testValidConfig_RemainsDisabled()
-    {
-        setupDirectAccessConfig(DISABLED, DEFAULT_EXPIRY_TIME_IN_SECS);
+    assertTrue(
+      "Expected REST API direct URLs to be enabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+    restApiDirectUrlConfig.validate();
+    assertTrue(
+      "Expected REST API direct URLs to be enabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+  }
 
-        assertFalse("Expected REST API direct URLs to be disabled", restApiDirectUrlConfig.isEnabled());
-        restApiDirectUrlConfig.validate();
-        assertFalse("Expected REST API direct URLs to be disabled", restApiDirectUrlConfig.isEnabled());
-    }
+  @Test
+  public void testValidConfig_RemainsDisabled() {
+    setupDirectAccessConfig(DISABLED, DEFAULT_EXPIRY_TIME_IN_SECS);
 
-    @Test
-    public void testValidConfig_DefaultExpiryTimeMissing()
-    {
-        setupDirectAccessConfig(ENABLED, null);
+    assertFalse(
+      "Expected REST API direct URLs to be disabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+    restApiDirectUrlConfig.validate();
+    assertFalse(
+      "Expected REST API direct URLs to be disabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+  }
 
-        assertNull("Expected REST API default expiry time to be null", restApiDirectUrlConfig.getDefaultExpiryTimeInSec());
-        restApiDirectUrlConfig.validate();
-        Long expectedDefaultExpiryTime = restApiDirectUrlConfig.getSysWideDefaultExpiryTimeInSec();
-        assertEquals("Expected REST API default expiry time to be set to the system-wide default", expectedDefaultExpiryTime, restApiDirectUrlConfig.getDefaultExpiryTimeInSec());
-        assertTrue("Expected REST API direct URLs to be enabled", restApiDirectUrlConfig.isEnabled());
-    }
+  @Test
+  public void testValidConfig_DefaultExpiryTimeMissing() {
+    setupDirectAccessConfig(ENABLED, null);
 
-    @Test
-    public void testInvalidConfig_DefaultExpiryTimeZero()
-    {
-        setupDirectAccessConfig(ENABLED, 0L);
+    assertNull(
+      "Expected REST API default expiry time to be null",
+      restApiDirectUrlConfig.getDefaultExpiryTimeInSec()
+    );
+    restApiDirectUrlConfig.validate();
+    Long expectedDefaultExpiryTime = restApiDirectUrlConfig.getSysWideDefaultExpiryTimeInSec();
+    assertEquals(
+      "Expected REST API default expiry time to be set to the system-wide default",
+      expectedDefaultExpiryTime,
+      restApiDirectUrlConfig.getDefaultExpiryTimeInSec()
+    );
+    assertTrue(
+      "Expected REST API direct URLs to be enabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+  }
 
-        assertTrue("Expected REST API direct URLs to be enabled", restApiDirectUrlConfig.isEnabled());
-        restApiDirectUrlConfig.validate();
-        assertFalse("Expected REST API direct URLs to be disabled", restApiDirectUrlConfig.isEnabled());
-    }
+  @Test
+  public void testInvalidConfig_DefaultExpiryTimeZero() {
+    setupDirectAccessConfig(ENABLED, 0L);
 
-    @Test
-    public void testInvalidConfig_DefaultExpiryTimeNegative()
-    {
-        setupDirectAccessConfig(ENABLED, -1L);
+    assertTrue(
+      "Expected REST API direct URLs to be enabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+    restApiDirectUrlConfig.validate();
+    assertFalse(
+      "Expected REST API direct URLs to be disabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+  }
 
-        assertTrue("Expected REST API direct URLs to be enabled", restApiDirectUrlConfig.isEnabled());
-        restApiDirectUrlConfig.validate();
-        assertFalse("Expected REST API direct URLs to be disabled", restApiDirectUrlConfig.isEnabled());
-    }
+  @Test
+  public void testInvalidConfig_DefaultExpiryTimeNegative() {
+    setupDirectAccessConfig(ENABLED, -1L);
 
-    @Test
-    public void testInvalidConfig_DefaultExpiryTimeExceedsSystemMax()
-    {
-        Long systemMax = restApiDirectUrlConfig.getSysWideMaxExpiryTimeInSec();
-        setupDirectAccessConfig(ENABLED, systemMax + 1);
+    assertTrue(
+      "Expected REST API direct URLs to be enabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+    restApiDirectUrlConfig.validate();
+    assertFalse(
+      "Expected REST API direct URLs to be disabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+  }
 
-        assertTrue("Expected REST API direct URLs to be enabled", restApiDirectUrlConfig.isEnabled());
-        restApiDirectUrlConfig.validate();
-        assertFalse("Expected REST API direct URLs to be disabled", restApiDirectUrlConfig.isEnabled());
-    }
+  @Test
+  public void testInvalidConfig_DefaultExpiryTimeExceedsSystemMax() {
+    Long systemMax = restApiDirectUrlConfig.getSysWideMaxExpiryTimeInSec();
+    setupDirectAccessConfig(ENABLED, systemMax + 1);
 
-    /* Helper method to set system-wide direct access url configuration settings */
-    private void setupDirectAccessConfig(Boolean isEnabled, Long defaultExpiryTime)
-    {
-        restApiDirectUrlConfig.setEnabled(isEnabled);
-        restApiDirectUrlConfig.setDefaultExpiryTimeInSec(defaultExpiryTime);
-    }
+    assertTrue(
+      "Expected REST API direct URLs to be enabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+    restApiDirectUrlConfig.validate();
+    assertFalse(
+      "Expected REST API direct URLs to be disabled",
+      restApiDirectUrlConfig.isEnabled()
+    );
+  }
+
+  /* Helper method to set system-wide direct access url configuration settings */
+  private void setupDirectAccessConfig(
+    Boolean isEnabled,
+    Long defaultExpiryTime
+  ) {
+    restApiDirectUrlConfig.setEnabled(isEnabled);
+    restApiDirectUrlConfig.setDefaultExpiryTimeInSec(defaultExpiryTime);
+  }
 }

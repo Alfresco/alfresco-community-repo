@@ -38,7 +38,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Map;
-
 import org.alfresco.repo.bulkimport.BulkImportParameters;
 import org.alfresco.repo.bulkimport.BulkImportParameters.ExistingFileMode;
 import org.alfresco.repo.web.scripts.bulkimport.AbstractBulkFileSystemImportWebScript.BulkImportParametersExtractor;
@@ -47,206 +46,238 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 import org.springframework.extensions.webscripts.WebScriptException;
 
-public class BulkImportParametersExtractorTest
-{
-    private static final String TEST_NODE_REF = "workspace://SpacesStore/this-is-just-a-test-ref";
-    private static final String TEST_MISSING_NODE_REF = "workspace://SpacesStore/this-is-just-a-not-existing-test-ref";
-    private static final Integer DEFAULT_BATCH_SIZE = 1234;
-    private static final Integer DEFAULT_NUMBER_OF_THREADS = 4321;
+public class BulkImportParametersExtractorTest {
 
-    @Test
-    public void shouldExtractTargetRef() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF));
+  private static final String TEST_NODE_REF =
+    "workspace://SpacesStore/this-is-just-a-test-ref";
+  private static final String TEST_MISSING_NODE_REF =
+    "workspace://SpacesStore/this-is-just-a-not-existing-test-ref";
+  private static final Integer DEFAULT_BATCH_SIZE = 1234;
+  private static final Integer DEFAULT_NUMBER_OF_THREADS = 4321;
 
-        final BulkImportParameters params = extractor.extract();
+  @Test
+  public void shouldExtractTargetRef() throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(PARAMETER_TARGET_NODEREF, TEST_NODE_REF)
+    );
 
-        assertNotNull(params);
-        assertNotNull(params.getTarget());
-        assertEquals(TEST_NODE_REF, params.getTarget().toString());
+    final BulkImportParameters params = extractor.extract();
+
+    assertNotNull(params);
+    assertNotNull(params.getTarget());
+    assertEquals(TEST_NODE_REF, params.getTarget().toString());
+  }
+
+  @Test
+  public void shouldFallbackToDefaultValues() throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(PARAMETER_TARGET_NODEREF, TEST_NODE_REF)
+    );
+
+    final BulkImportParameters params = extractor.extract();
+
+    assertEquals(DEFAULT_BATCH_SIZE, params.getBatchSize());
+    assertEquals(DEFAULT_NUMBER_OF_THREADS, params.getNumThreads());
+    assertFalse(params.isDisableRulesService());
+    assertEquals(ExistingFileMode.SKIP, params.getExistingFileMode());
+    assertNull(params.getLoggingInterval());
+  }
+
+  @Test
+  public void shouldExtractDisableFolderRulesFlagWhenSetToTrue()
+    throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(
+        PARAMETER_TARGET_NODEREF,
+        TEST_NODE_REF,
+        PARAMETER_DISABLE_RULES,
+        "true"
+      )
+    );
+
+    final BulkImportParameters params = extractor.extract();
+
+    assertTrue(params.isDisableRulesService());
+  }
+
+  @Test
+  public void shouldExtractDisableFolderRulesFlagWhenSetToFalse()
+    throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(
+        PARAMETER_TARGET_NODEREF,
+        TEST_NODE_REF,
+        PARAMETER_DISABLE_RULES,
+        "false"
+      )
+    );
+
+    final BulkImportParameters params = extractor.extract();
+
+    assertFalse(params.isDisableRulesService());
+  }
+
+  @Test
+  public void shouldExtractDisableFolderRulesFlagWhenSetToNotBooleanValue()
+    throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(
+        PARAMETER_TARGET_NODEREF,
+        TEST_NODE_REF,
+        PARAMETER_DISABLE_RULES,
+        "unknown"
+      )
+    );
+
+    final BulkImportParameters params = extractor.extract();
+
+    assertFalse(params.isDisableRulesService());
+  }
+
+  @Test
+  public void shouldPropagateFileNotFoundExceptionWhenTargetIsNotFound() {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(PARAMETER_TARGET_NODEREF, TEST_MISSING_NODE_REF)
+    );
+
+    assertThrows(FileNotFoundException.class, extractor::extract);
+  }
+
+  @Test
+  public void shouldExtractValidBatchSize() throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(PARAMETER_TARGET_NODEREF, TEST_NODE_REF, PARAMETER_BATCH_SIZE, "1")
+    );
+
+    final BulkImportParameters params = extractor.extract();
+
+    assertEquals(Integer.valueOf(1), params.getBatchSize());
+  }
+
+  @Test
+  public void shouldFailWithWebScriptExceptionWhenInvalidBatchSizeIsRequested()
+    throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(
+        PARAMETER_TARGET_NODEREF,
+        TEST_NODE_REF,
+        PARAMETER_BATCH_SIZE,
+        "not-a-number"
+      )
+    );
+
+    try {
+      extractor.extract();
+    } catch (WebScriptException e) {
+      assertNotNull(e.getMessage());
+      assertTrue(e.getMessage().contains(PARAMETER_BATCH_SIZE));
+      return;
     }
 
-    @Test
-    public void shouldFallbackToDefaultValues() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF));
+    fail("Expected exception to be thrown.");
+  }
 
-        final BulkImportParameters params = extractor.extract();
+  @Test
+  public void shouldFailWithWebScriptExceptionWhenNegativeBatchSizeIsRequested()
+    throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(
+        PARAMETER_TARGET_NODEREF,
+        TEST_NODE_REF,
+        PARAMETER_BATCH_SIZE,
+        "-1"
+      )
+    );
 
-        assertEquals(DEFAULT_BATCH_SIZE, params.getBatchSize());
-        assertEquals(DEFAULT_NUMBER_OF_THREADS, params.getNumThreads());
-        assertFalse(params.isDisableRulesService());
-        assertEquals(ExistingFileMode.SKIP, params.getExistingFileMode());
-        assertNull(params.getLoggingInterval());
+    try {
+      extractor.extract();
+    } catch (WebScriptException e) {
+      assertNotNull(e.getMessage());
+      assertTrue(e.getMessage().contains(PARAMETER_BATCH_SIZE));
+      return;
     }
 
-    @Test
-    public void shouldExtractDisableFolderRulesFlagWhenSetToTrue() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_DISABLE_RULES, "true"
-                                                                             ));
+    fail("Expected exception to be thrown.");
+  }
 
-        final BulkImportParameters params = extractor.extract();
+  @Test
+  public void shouldExtractValidNumberOfThreads() throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(
+        PARAMETER_TARGET_NODEREF,
+        TEST_NODE_REF,
+        PARAMETER_NUM_THREADS,
+        "1"
+      )
+    );
 
-        assertTrue(params.isDisableRulesService());
+    final BulkImportParameters params = extractor.extract();
+
+    assertEquals(Integer.valueOf(1), params.getNumThreads());
+  }
+
+  @Test
+  public void shouldFailWithWebScriptExceptionWhenInvalidNumberOfThreadsIsRequested()
+    throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(
+        PARAMETER_TARGET_NODEREF,
+        TEST_NODE_REF,
+        PARAMETER_NUM_THREADS,
+        "not-a-number"
+      )
+    );
+
+    try {
+      extractor.extract();
+    } catch (WebScriptException e) {
+      assertNotNull(e.getMessage());
+      assertTrue(e.getMessage().contains(PARAMETER_NUM_THREADS));
+      return;
     }
 
-    @Test
-    public void shouldExtractDisableFolderRulesFlagWhenSetToFalse() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_DISABLE_RULES, "false"
-                                                                             ));
+    fail("Expected exception to be thrown.");
+  }
 
-        final BulkImportParameters params = extractor.extract();
+  @Test
+  public void shouldFailWithWebScriptExceptionWhenNegativeNumberOfThreadsIsRequested()
+    throws FileNotFoundException {
+    final BulkImportParametersExtractor extractor = givenExtractor(
+      Map.of(
+        PARAMETER_TARGET_NODEREF,
+        TEST_NODE_REF,
+        PARAMETER_NUM_THREADS,
+        "-1"
+      )
+    );
 
-        assertFalse(params.isDisableRulesService());
+    try {
+      extractor.extract();
+    } catch (WebScriptException e) {
+      assertNotNull(e.getMessage());
+      assertTrue(e.getMessage().contains(PARAMETER_NUM_THREADS));
+      return;
     }
 
-    @Test
-    public void shouldExtractDisableFolderRulesFlagWhenSetToNotBooleanValue() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_DISABLE_RULES, "unknown"
-                                                                             ));
+    fail("Expected exception to be thrown.");
+  }
 
-        final BulkImportParameters params = extractor.extract();
+  private BulkImportParametersExtractor givenExtractor(
+    Map<String, String> params
+  ) {
+    return new BulkImportParametersExtractor(
+      params::get,
+      this::testRefCreator,
+      DEFAULT_BATCH_SIZE,
+      DEFAULT_NUMBER_OF_THREADS
+    );
+  }
 
-        assertFalse(params.isDisableRulesService());
+  private NodeRef testRefCreator(String nodeRef, String path)
+    throws FileNotFoundException {
+    if (TEST_MISSING_NODE_REF.equals(nodeRef)) {
+      throw new FileNotFoundException(new NodeRef(nodeRef));
     }
-
-    @Test
-    public void shouldPropagateFileNotFoundExceptionWhenTargetIsNotFound()
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_MISSING_NODE_REF));
-
-        assertThrows(FileNotFoundException.class, extractor::extract);
-    }
-
-    @Test
-    public void shouldExtractValidBatchSize() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_BATCH_SIZE, "1"));
-
-        final BulkImportParameters params = extractor.extract();
-
-        assertEquals(Integer.valueOf(1), params.getBatchSize());
-    }
-
-    @Test
-    public void shouldFailWithWebScriptExceptionWhenInvalidBatchSizeIsRequested() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_BATCH_SIZE, "not-a-number"));
-
-        try
-        {
-            extractor.extract();
-        } catch (WebScriptException e)
-        {
-            assertNotNull(e.getMessage());
-            assertTrue(e.getMessage().contains(PARAMETER_BATCH_SIZE));
-            return;
-        }
-
-        fail("Expected exception to be thrown.");
-    }
-
-    @Test
-    public void shouldFailWithWebScriptExceptionWhenNegativeBatchSizeIsRequested() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_BATCH_SIZE, "-1"));
-
-        try
-        {
-            extractor.extract();
-        } catch (WebScriptException e)
-        {
-            assertNotNull(e.getMessage());
-            assertTrue(e.getMessage().contains(PARAMETER_BATCH_SIZE));
-            return;
-        }
-
-        fail("Expected exception to be thrown.");
-    }
-
-    @Test
-    public void shouldExtractValidNumberOfThreads() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_NUM_THREADS, "1"));
-
-        final BulkImportParameters params = extractor.extract();
-
-        assertEquals(Integer.valueOf(1), params.getNumThreads());
-    }
-
-    @Test
-    public void shouldFailWithWebScriptExceptionWhenInvalidNumberOfThreadsIsRequested() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_NUM_THREADS, "not-a-number"));
-
-        try
-        {
-            extractor.extract();
-        } catch (WebScriptException e)
-        {
-            assertNotNull(e.getMessage());
-            assertTrue(e.getMessage().contains(PARAMETER_NUM_THREADS));
-            return;
-        }
-
-        fail("Expected exception to be thrown.");
-    }
-
-    @Test
-    public void shouldFailWithWebScriptExceptionWhenNegativeNumberOfThreadsIsRequested() throws FileNotFoundException
-    {
-        final BulkImportParametersExtractor extractor = givenExtractor(Map.of(
-                PARAMETER_TARGET_NODEREF, TEST_NODE_REF,
-                PARAMETER_NUM_THREADS, "-1"));
-
-        try
-        {
-            extractor.extract();
-        } catch (WebScriptException e)
-        {
-            assertNotNull(e.getMessage());
-            assertTrue(e.getMessage().contains(PARAMETER_NUM_THREADS));
-            return;
-        }
-
-        fail("Expected exception to be thrown.");
-    }
-
-    private BulkImportParametersExtractor givenExtractor(Map<String, String> params)
-    {
-
-        return new BulkImportParametersExtractor(params::get, this::testRefCreator, DEFAULT_BATCH_SIZE, DEFAULT_NUMBER_OF_THREADS);
-    }
-
-    private NodeRef testRefCreator(String nodeRef, String path) throws FileNotFoundException
-    {
-        if (TEST_MISSING_NODE_REF.equals(nodeRef))
-        {
-            throw new FileNotFoundException(new NodeRef(nodeRef));
-        }
-        return new NodeRef(nodeRef);
-    }
-
+    return new NodeRef(nodeRef);
+  }
 }

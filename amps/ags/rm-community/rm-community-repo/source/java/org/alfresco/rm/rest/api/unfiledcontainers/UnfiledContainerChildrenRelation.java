@@ -38,7 +38,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
@@ -69,7 +68,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
-
 /**
  * Unfiled container children relation
  *
@@ -77,160 +75,229 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  * @author Ana Bozianu
  * @since 2.6
  */
-@RelationshipResource(name="children", entityResource = UnfiledContainerEntityResource.class, title = "Children of an unfiled container")
-public class UnfiledContainerChildrenRelation implements RelationshipResourceAction.Read<UnfiledContainerChild>,
-                                                 RelationshipResourceAction.Create<UnfiledContainerChild>,
-                                                 MultiPartRelationshipResourceAction.Create<UnfiledContainerChild>
-{
+@RelationshipResource(
+  name = "children",
+  entityResource = UnfiledContainerEntityResource.class,
+  title = "Children of an unfiled container"
+)
+public class UnfiledContainerChildrenRelation
+  implements
+    RelationshipResourceAction.Read<UnfiledContainerChild>,
+    RelationshipResourceAction.Create<UnfiledContainerChild>,
+    MultiPartRelationshipResourceAction.Create<UnfiledContainerChild> {
 
-    private final static Set<String> LIST_UNFILED_CONTAINER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER, UnfiledChild.PARAM_IS_RECORD, RMNode.PARAM_NODE_TYPE}));
+  private static final Set<String> LIST_UNFILED_CONTAINER_CHILDREN_EQUALS_QUERY_PROPERTIES = new HashSet<>(
+    Arrays.asList(
+      new String[] {
+        UnfiledChild.PARAM_IS_UNFILED_RECORD_FOLDER,
+        UnfiledChild.PARAM_IS_RECORD,
+        RMNode.PARAM_NODE_TYPE,
+      }
+    )
+  );
 
-    private FilePlanComponentsApiUtils apiUtils;
-    private SearchTypesFactory searchTypesFactory;
-    private FileFolderService fileFolderService;
-    private ApiNodesModelFactory nodesModelFactory;
-    private TransactionService transactionService;
+  private FilePlanComponentsApiUtils apiUtils;
+  private SearchTypesFactory searchTypesFactory;
+  private FileFolderService fileFolderService;
+  private ApiNodesModelFactory nodesModelFactory;
+  private TransactionService transactionService;
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
+
+  public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory) {
+    this.searchTypesFactory = searchTypesFactory;
+  }
+
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
+
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
+
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
+
+  @Override
+  @WebApiDescription(
+    title = "Return a paged list of unfiled container children for the container identified by 'unfiledContainerId'"
+  )
+  public CollectionWithPagingInfo<UnfiledContainerChild> readAll(
+    String unfiledContainerId,
+    Parameters parameters
+  ) {
+    // validate parameters
+    checkNotBlank("unfiledContainerId", unfiledContainerId);
+    mandatory("parameters", parameters);
+    NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(
+      unfiledContainerId,
+      RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER
+    );
+
+    // list unfiled record folders and records
+    Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesForUnfiledEndpoint(
+      parameters,
+      LIST_UNFILED_CONTAINER_CHILDREN_EQUALS_QUERY_PROPERTIES
+    );
+
+    List<FilterProp> filterProps = apiUtils.getListChildrenFilterProps(
+      parameters,
+      LIST_UNFILED_CONTAINER_CHILDREN_EQUALS_QUERY_PROPERTIES
+    );
+
+    final PagingResults<FileInfo> pagingResults = fileFolderService.list(
+      parentNodeRef,
+      null,
+      searchTypeQNames,
+      null,
+      apiUtils.getSortProperties(parameters),
+      filterProps,
+      Util.getPagingRequest(parameters.getPaging())
+    );
+
+    final List<FileInfo> page = pagingResults.getPage();
+    Map<String, UserInfo> mapUserInfo = new HashMap<>();
+    List<UnfiledContainerChild> nodes = new AbstractList<UnfiledContainerChild>() {
+      @Override
+      public UnfiledContainerChild get(int index) {
+        FileInfo info = page.get(index);
+        return nodesModelFactory.createUnfiledContainerChild(
+          info,
+          parameters,
+          mapUserInfo,
+          true
+        );
+      }
+
+      @Override
+      public int size() {
+        return page.size();
+      }
+    };
+
+    UnfiledContainer sourceEntity = null;
+    if (parameters.includeSource()) {
+      FileInfo info = fileFolderService.getFileInfo(parentNodeRef);
+      sourceEntity =
+        nodesModelFactory.createUnfiledContainer(
+          info,
+          parameters,
+          mapUserInfo,
+          true
+        );
     }
 
-    public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory)
-    {
-        this.searchTypesFactory = searchTypesFactory;
-    }
+    return CollectionWithPagingInfo.asPaged(
+      parameters.getPaging(),
+      nodes,
+      pagingResults.hasMoreItems(),
+      pagingResults.getTotalResultCount().getFirst(),
+      sourceEntity
+    );
+  }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
+  @Override
+  @WebApiDescription(
+    title = "Create one (or more) nodes as children of a unfiled container identified by 'unfiledContainerId'"
+  )
+  public List<UnfiledContainerChild> create(
+    String unfiledContainerId,
+    final List<UnfiledContainerChild> nodeInfos,
+    Parameters parameters
+  ) {
+    checkNotBlank("unfiledContainerId", unfiledContainerId);
+    mandatory("nodeInfos", nodeInfos);
+    mandatory("parameters", parameters);
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
+    final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(
+      unfiledContainerId,
+      RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER
+    );
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
-
-    @Override
-    @WebApiDescription(title = "Return a paged list of unfiled container children for the container identified by 'unfiledContainerId'")
-    public CollectionWithPagingInfo<UnfiledContainerChild> readAll(String unfiledContainerId, Parameters parameters)
-    {
-        // validate parameters
-        checkNotBlank("unfiledContainerId", unfiledContainerId);
-        mandatory("parameters", parameters);
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-
-        // list unfiled record folders and records
-        Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesForUnfiledEndpoint(parameters, LIST_UNFILED_CONTAINER_CHILDREN_EQUALS_QUERY_PROPERTIES);
-
-        List<FilterProp> filterProps = apiUtils.getListChildrenFilterProps(parameters, LIST_UNFILED_CONTAINER_CHILDREN_EQUALS_QUERY_PROPERTIES);
-
-        final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef,
-                null,
-                searchTypeQNames,
-                null,
-                apiUtils.getSortProperties(parameters),
-                filterProps,
-                Util.getPagingRequest(parameters.getPaging()));
-
-        final List<FileInfo> page = pagingResults.getPage();
-        Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<UnfiledContainerChild> nodes = new AbstractList<UnfiledContainerChild>()
-        {
-            @Override
-            public UnfiledContainerChild get(int index)
-            {
-                FileInfo info = page.get(index);
-                return nodesModelFactory.createUnfiledContainerChild(info, parameters, mapUserInfo, true);
-            }
-
-            @Override
-            public int size()
-            {
-                return page.size();
-            }
-        };
-
-        UnfiledContainer sourceEntity = null;
-        if (parameters.includeSource())
-        {
-            FileInfo info = fileFolderService.getFileInfo(parentNodeRef);
-            sourceEntity = nodesModelFactory.createUnfiledContainer(info, parameters, mapUserInfo, true);
+    // Create the nodes
+    RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>() {
+      public List<NodeRef> execute() {
+        List<NodeRef> createdNodes = new LinkedList<>();
+        for (UnfiledContainerChild nodeInfo : nodeInfos) {
+          NodeRef newNodeRef = apiUtils.createRMNode(
+            parentNodeRef,
+            nodeInfo,
+            parameters
+          );
+          createdNodes.add(newNodeRef);
         }
+        return createdNodes;
+      }
+    };
+    List<NodeRef> createdNodes = transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(callback, false, true);
 
-        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), nodes, pagingResults.hasMoreItems(),
-                pagingResults.getTotalResultCount().getFirst(), sourceEntity);
+    // Get the nodes info
+    List<UnfiledContainerChild> result = new LinkedList<>();
+    Map<String, UserInfo> mapUserInfo = new HashMap<>();
+    for (NodeRef newNodeRef : createdNodes) {
+      FileInfo info = fileFolderService.getFileInfo(newNodeRef);
+      apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
+      result.add(
+        nodesModelFactory.createUnfiledContainerChild(
+          info,
+          parameters,
+          mapUserInfo,
+          false
+        )
+      );
     }
 
-    @Override
-    @WebApiDescription(title="Create one (or more) nodes as children of a unfiled container identified by 'unfiledContainerId'")
-    public List<UnfiledContainerChild> create(String unfiledContainerId, final List<UnfiledContainerChild> nodeInfos, Parameters parameters)
-    {
-        checkNotBlank("unfiledContainerId", unfiledContainerId);
-        mandatory("nodeInfos", nodeInfos);
-        mandatory("parameters", parameters);
+    return result;
+  }
 
-        final NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
+  @Override
+  @WebApiDescription(
+    title = "Upload file content and meta-data into a unfiled record container identified by 'unfiledContainerId'."
+  )
+  @WebApiParam(
+    name = "formData",
+    title = "A single form data",
+    description = "A single form data which holds FormFields."
+  )
+  public UnfiledContainerChild create(
+    String unfiledContainerId,
+    FormData formData,
+    Parameters parameters,
+    WithResponse withResponse
+  ) {
+    checkNotBlank("unfiledContainerId", unfiledContainerId);
+    mandatory("formData", formData);
+    mandatory("parameters", parameters);
 
-        // Create the nodes
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
-            public List<NodeRef> execute()
-            {
-                List<NodeRef> createdNodes = new LinkedList<>();
-                for (UnfiledContainerChild nodeInfo : nodeInfos)
-                {
-                    NodeRef newNodeRef = apiUtils.createRMNode(parentNodeRef, nodeInfo, parameters);
-                    createdNodes.add(newNodeRef);
-                }
-                return createdNodes;
-            }
-        };
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+    UploadInfo uploadInfo = new UploadInfo(formData);
 
-        // Get the nodes info
-        List<UnfiledContainerChild> result = new LinkedList<>();
-        Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        for(NodeRef newNodeRef : createdNodes)
-        {
-            FileInfo info = fileFolderService.getFileInfo(newNodeRef);
-            apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
-            result.add(nodesModelFactory.createUnfiledContainerChild(info, parameters, mapUserInfo, false));
-        }
+    NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(
+      unfiledContainerId,
+      RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER
+    );
+    RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>() {
+      public NodeRef execute() {
+        return apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);
+      }
+    };
+    NodeRef newNode = transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(callback, false, true);
 
-        return result;
-    }
-
-    @Override
-    @WebApiDescription(title = "Upload file content and meta-data into a unfiled record container identified by 'unfiledContainerId'.")
-    @WebApiParam(name = "formData", title = "A single form data", description = "A single form data which holds FormFields.")
-    public UnfiledContainerChild create(String unfiledContainerId, FormData formData, Parameters parameters, WithResponse withResponse)
-    {
-        checkNotBlank("unfiledContainerId", unfiledContainerId);
-        mandatory("formData", formData);
-        mandatory("parameters", parameters);
-
-        UploadInfo uploadInfo = new UploadInfo(formData);
-
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(unfiledContainerId, RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
-        RetryingTransactionCallback<NodeRef> callback = new RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute()
-            {
-                return apiUtils.uploadRecord(parentNodeRef, uploadInfo, parameters);
-            }
-        };
-        NodeRef newNode = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
-
-        // Get file info for response
-        FileInfo info = fileFolderService.getFileInfo(newNode);
-        apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
-        return nodesModelFactory.createUnfiledContainerChild(info, parameters, null, false);
-    }
+    // Get file info for response
+    FileInfo info = fileFolderService.getFileInfo(newNode);
+    apiUtils.postActivity(info, parentNodeRef, ActivityType.FILE_ADDED);
+    return nodesModelFactory.createUnfiledContainerChild(
+      info,
+      parameters,
+      null,
+      false
+    );
+  }
 }

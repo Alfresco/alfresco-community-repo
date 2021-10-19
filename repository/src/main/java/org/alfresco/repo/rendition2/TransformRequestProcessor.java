@@ -26,6 +26,8 @@
 package org.alfresco.repo.rendition2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -36,112 +38,119 @@ import org.apache.camel.Processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import java.io.IOException;
-import java.util.Map;
-
 /**
  * Transform Request processor executes transformation based on TransformRequest event.
  *
  * @author aepure
  */
-public class TransformRequestProcessor implements Processor
-{
-    private static Log logger = LogFactory.getLog(RenditionEventProcessor.class);
+public class TransformRequestProcessor implements Processor {
 
-    private RenditionService2Impl renditionService2;
-    private ObjectMapper messagingObjectMapper;
-    private TransactionService transactionService;
+  private static Log logger = LogFactory.getLog(RenditionEventProcessor.class);
 
-    public void setRenditionService2(RenditionService2Impl renditionService2)
-    {
-        this.renditionService2 = renditionService2;
+  private RenditionService2Impl renditionService2;
+  private ObjectMapper messagingObjectMapper;
+  private TransactionService transactionService;
+
+  public void setRenditionService2(RenditionService2Impl renditionService2) {
+    this.renditionService2 = renditionService2;
+  }
+
+  public void setMessagingObjectMapper(ObjectMapper messagingObjectMapper) {
+    this.messagingObjectMapper = messagingObjectMapper;
+  }
+
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
+
+  @Override
+  public void process(Exchange exchange) throws Exception {
+    String body = (String) exchange.getMessage().getBody();
+
+    if (logger.isDebugEnabled()) {
+      logger.info(
+        "Processing message [thread=" +
+        Thread.currentThread().getId() +
+        ", body=" +
+        body +
+        "]"
+      );
     }
-
-    public void setMessagingObjectMapper(ObjectMapper messagingObjectMapper)
-    {
-        this.messagingObjectMapper = messagingObjectMapper;
+    if (body == null || body.isEmpty()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Exchange message is null or empty");
+      }
+      return;
     }
-
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
+    try {
+      TransformRequest event;
+      try {
+        event = messagingObjectMapper.readValue(body, TransformRequest.class);
+      } catch (IOException e) {
+        logger.error("Failed to unmarshal event [" + body + "]", e);
+        throw new AlfrescoRuntimeException(
+          "Failed to unmarshal event, skipping processing of this event."
+        );
+      }
+      processEvent(event);
+    } catch (Exception e) {
+      logger.error("Failed to process transform request event: " + body, e);
     }
+  }
 
-    @Override public void process(Exchange exchange) throws Exception
-    {
-        String body = (String) exchange.getMessage().getBody();
+  private void validateEvent(TransformRequest event) {
+    ParameterCheck.mandatory("event", event);
+    ParameterCheck.mandatoryString("requestId", event.getRequestId());
+    ParameterCheck.mandatoryString("nodeRef", event.getNodeRef());
+    ParameterCheck.mandatoryString(
+      "targetMediaType",
+      event.getTargetMediaType()
+    );
+    ParameterCheck.mandatoryString("replyQueue", event.getReplyQueue());
+  }
 
-        if (logger.isDebugEnabled())
-        {
-            logger.info("Processing message [thread=" + Thread.currentThread().getId() + ", body=" + body + "]");
-        }
-        if (body == null || body.isEmpty())
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Exchange message is null or empty");
-            }
-            return;
-        }
-        try
-        {
-            TransformRequest event;
-            try
-            {
-                event = messagingObjectMapper.readValue(body, TransformRequest.class);
-            }
-            catch (IOException e)
-            {
-                logger.error("Failed to unmarshal event [" + body + "]", e);
-                throw new AlfrescoRuntimeException("Failed to unmarshal event, skipping processing of this event.");
-            }
-            processEvent(event);
-        }
-        catch (Exception e)
-        {
-            logger.error("Failed to process transform request event: " + body, e);
-        }
-    }
+  private void processEvent(TransformRequest event) {
+    validateEvent(event);
 
-    private void validateEvent(TransformRequest event)
-    {
-        ParameterCheck.mandatory("event", event);
-        ParameterCheck.mandatoryString("requestId", event.getRequestId());
-        ParameterCheck.mandatoryString("nodeRef", event.getNodeRef());
-        ParameterCheck.mandatoryString("targetMediaType", event.getTargetMediaType());
-        ParameterCheck.mandatoryString("replyQueue", event.getReplyQueue());
-    }
+    String transformName = event.getTransformName();
+    String targetMediaType = event.getTargetMediaType();
+    Map<String, String> transformOptions = event.getTransformOptions();
+    String clientData = event.getClientData();
+    String replyQueue = processReplyQueue(event.getReplyQueue());
+    String requestId = event.getRequestId();
 
-    private void processEvent(TransformRequest event)
-    {
-        validateEvent(event);
+    TransformDefinition transformDefinition = new TransformDefinition(
+      transformName,
+      targetMediaType,
+      transformOptions,
+      clientData,
+      replyQueue,
+      requestId,
+      null
+    );
 
-        String transformName = event.getTransformName();
-        String targetMediaType = event.getTargetMediaType();
-        Map<String, String> transformOptions = event.getTransformOptions();
-        String clientData = event.getClientData();
-        String replyQueue = processReplyQueue(event.getReplyQueue());
-        String requestId = event.getRequestId();
+    NodeRef nodeRef = new NodeRef(event.getNodeRef());
 
-        TransformDefinition transformDefinition = new TransformDefinition(transformName, targetMediaType, transformOptions,
-            clientData, replyQueue, requestId, null);
+    AuthenticationUtil.runAs(
+      (AuthenticationUtil.RunAsWork<Void>) () ->
+        transactionService
+          .getRetryingTransactionHelper()
+          .doInTransaction(() -> {
+            renditionService2.transform(nodeRef, transformDefinition);
 
-        NodeRef nodeRef = new NodeRef(event.getNodeRef());
+            return null;
+          }),
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
 
-        AuthenticationUtil.runAs(
-            (AuthenticationUtil.RunAsWork<Void>) () -> transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
-                renditionService2.transform(nodeRef, transformDefinition);
-
-                return null;
-            }), AuthenticationUtil.getSystemUserName());
-    }
-
-    String processReplyQueue(String replyQueue)
-    {
-        // Strip "jms:" or "queue://" prefix from the reply queue if provided, it is the responsibility of the
-        // TransformReply Provider to specify the proper protocol of the replyQueue.
-        return replyQueue.startsWith("jms:") ?
-            replyQueue.substring("jms:".length()) :
-            replyQueue.startsWith("queue://") ? replyQueue.substring("queue://".length()) : replyQueue;
-    }
+  String processReplyQueue(String replyQueue) {
+    // Strip "jms:" or "queue://" prefix from the reply queue if provided, it is the responsibility of the
+    // TransformReply Provider to specify the proper protocol of the replyQueue.
+    return replyQueue.startsWith("jms:")
+      ? replyQueue.substring("jms:".length())
+      : replyQueue.startsWith("queue://")
+        ? replyQueue.substring("queue://".length())
+        : replyQueue;
+  }
 }

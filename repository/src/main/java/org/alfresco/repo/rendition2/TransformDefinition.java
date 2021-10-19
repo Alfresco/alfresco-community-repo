@@ -40,79 +40,95 @@ import java.util.Map;
  *
  * @author adavis
  */
-public class TransformDefinition extends RenditionDefinition2Impl
-{
-    public static final String TRANSFORM_NAMESPACE = "transform:";
+public class TransformDefinition extends RenditionDefinition2Impl {
 
-    private final String clientData;
-    private final String replyQueue;
-    private final String requestId;
-    private String errorMessage;
+  public static final String TRANSFORM_NAMESPACE = "transform:";
 
-    /**
-     * Constructor where the same targetMimetype and transformOptions are used in multiple calls. In such a case, how or
-     * if the transform will take place, will be cached against the transformName.
-     */
-    public TransformDefinition(String transformName, String targetMimetype, Map<String, String> transformOptions,
-                               String clientData, String replyQueue, String requestId,
-                               RenditionDefinitionRegistry2Impl registry)
-    {
-        super(convertToRenditionName(transformName), targetMimetype, transformOptions, registry);
-        this.clientData = clientData;
-        this.replyQueue = replyQueue;
-        this.requestId = requestId;
-        this.errorMessage = null;
-    }
+  private final String clientData;
+  private final String replyQueue;
+  private final String requestId;
+  private String errorMessage;
 
-    /**
-     * Constructor where the targetMimetype and transformOptions are unlikely to be repeated.
-     */
-    public TransformDefinition(String targetMimetype, Map<String, String> transformOptions,
-                               String clientData, String replyQueue, String requestId)
-    {
-        this(null, targetMimetype, transformOptions, clientData, replyQueue, requestId, null);
-    }
+  /**
+   * Constructor where the same targetMimetype and transformOptions are used in multiple calls. In such a case, how or
+   * if the transform will take place, will be cached against the transformName.
+   */
+  public TransformDefinition(
+    String transformName,
+    String targetMimetype,
+    Map<String, String> transformOptions,
+    String clientData,
+    String replyQueue,
+    String requestId,
+    RenditionDefinitionRegistry2Impl registry
+  ) {
+    super(
+      convertToRenditionName(transformName),
+      targetMimetype,
+      transformOptions,
+      registry
+    );
+    this.clientData = clientData;
+    this.replyQueue = replyQueue;
+    this.requestId = requestId;
+    this.errorMessage = null;
+  }
 
-    public static String convertToRenditionName(String transformName)
-    {
-        return transformName == null ? null : TRANSFORM_NAMESPACE+transformName;
-    }
+  /**
+   * Constructor where the targetMimetype and transformOptions are unlikely to be repeated.
+   */
+  public TransformDefinition(
+    String targetMimetype,
+    Map<String, String> transformOptions,
+    String clientData,
+    String replyQueue,
+    String requestId
+  ) {
+    this(
+      null,
+      targetMimetype,
+      transformOptions,
+      clientData,
+      replyQueue,
+      requestId,
+      null
+    );
+  }
 
-    public String getTransformName()
-    {
-        String renditionName = getRenditionName();
-        return getTransformName(renditionName);
-    }
+  public static String convertToRenditionName(String transformName) {
+    return transformName == null ? null : TRANSFORM_NAMESPACE + transformName;
+  }
 
-    public static String getTransformName(String renditionName)
-    {
-        return renditionName == null || !renditionName.startsWith(TRANSFORM_NAMESPACE)
-                ? null
-                : renditionName.substring(TRANSFORM_NAMESPACE.length());
-    }
+  public String getTransformName() {
+    String renditionName = getRenditionName();
+    return getTransformName(renditionName);
+  }
 
-    public String getClientData()
-    {
-        return clientData;
-    }
+  public static String getTransformName(String renditionName) {
+    return (
+        renditionName == null || !renditionName.startsWith(TRANSFORM_NAMESPACE)
+      )
+      ? null
+      : renditionName.substring(TRANSFORM_NAMESPACE.length());
+  }
 
-    public String getReplyQueue()
-    {
-        return replyQueue;
-    }
+  public String getClientData() {
+    return clientData;
+  }
 
-    public String getRequestId()
-    {
-        return requestId;
-    }
+  public String getReplyQueue() {
+    return replyQueue;
+  }
 
-    public String getErrorMessage()
-    {
-        return errorMessage;
-    }
+  public String getRequestId() {
+    return requestId;
+  }
 
-    public void setErrorMessage(String errorMessage)
-    {
-        this.errorMessage = errorMessage;
-    }
+  public String getErrorMessage() {
+    return errorMessage;
+  }
+
+  public void setErrorMessage(String errorMessage) {
+    this.errorMessage = errorMessage;
+  }
 }

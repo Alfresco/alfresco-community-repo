@@ -33,10 +33,10 @@ import org.alfresco.repo.rendition.RenditionPreventionRegistry;
  *
  * Based on the deprecated RenditionPreventedException which contained the deprecated RenditionDefinition.
  */
-public class RenditionService2PreventedException extends RenditionService2Exception
-{
-    public RenditionService2PreventedException(String message)
-    {
-        super(message);
-    }
+public class RenditionService2PreventedException
+  extends RenditionService2Exception {
+
+  public RenditionService2PreventedException(String message) {
+    super(message);
+  }
 }

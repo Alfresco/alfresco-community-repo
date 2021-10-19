@@ -32,181 +32,173 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * Test class for LogAdapter.
- * 
+ *
  * @author Alan Davis
  */
-public class LogAdapterTest
-{
-    @Mock
-    Log log;
-    
-    LogAdapter adapter;
-    
-    Throwable throwable;
+public class LogAdapterTest {
 
-    @Before
-    public void setUp() throws Exception
-    {
-        MockitoAnnotations.initMocks(this);
-        
-        adapter = new LogAdapter(log) { };
-        throwable = new Exception();
-    }
+  @Mock
+  Log log;
 
-    @Test
-    public void traceTest()
-    {
-        adapter.trace("");
-        adapter.trace("", throwable);
-        verify(log).trace("", null);
-        verify(log).trace("", throwable);
-        
-        when(log.isTraceEnabled()).thenReturn(true);
-        assertTrue("", adapter.isTraceEnabled());
-        
-        when(log.isTraceEnabled()).thenReturn(false);
-        assertFalse("", adapter.isTraceEnabled());
-    }
+  LogAdapter adapter;
 
-    @Test
-    public void debugTest()
-    {
-        adapter.debug("");
-        adapter.debug("", throwable);
-        verify(log).debug("", null);
-        verify(log).debug("", throwable);
-        
-        when(log.isDebugEnabled()).thenReturn(true);
-        assertTrue("", adapter.isDebugEnabled());
-        
-        when(log.isDebugEnabled()).thenReturn(false);
-        assertFalse("", adapter.isDebugEnabled());
-    }
+  Throwable throwable;
 
-    @Test
-    public void infoTest()
-    {
-        adapter.info("");
-        adapter.info("", throwable);
-        verify(log).info("", null);
-        verify(log).info("", throwable);
-        
-        when(log.isInfoEnabled()).thenReturn(true);
-        assertTrue("", adapter.isInfoEnabled());
-        
-        when(log.isInfoEnabled()).thenReturn(false);
-        assertFalse("", adapter.isInfoEnabled());
-    }
+  @Before
+  public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
 
-    @Test
-    public void warnTest()
-    {
-        adapter.warn("");
-        adapter.warn("", throwable);
-        verify(log).warn("", null);
-        verify(log).warn("", throwable);
-        
-        when(log.isWarnEnabled()).thenReturn(true);
-        assertTrue("", adapter.isWarnEnabled());
-        
-        when(log.isWarnEnabled()).thenReturn(false);
-        assertFalse("", adapter.isWarnEnabled());
-    }
+    adapter = new LogAdapter(log) {};
+    throwable = new Exception();
+  }
 
-    @Test
-    public void errorTest()
-    {
-        adapter.error("");
-        adapter.error("", throwable);
-        verify(log).error("", null);
-        verify(log).error("", throwable);
-        
-        when(log.isErrorEnabled()).thenReturn(true);
-        assertTrue("", adapter.isErrorEnabled());
-        
-        when(log.isErrorEnabled()).thenReturn(false);
-        assertFalse("", adapter.isErrorEnabled());
-    }
+  @Test
+  public void traceTest() {
+    adapter.trace("");
+    adapter.trace("", throwable);
+    verify(log).trace("", null);
+    verify(log).trace("", throwable);
 
-    @Test
-    public void fatalTest()
-    {
-        adapter.fatal("");
-        adapter.fatal("", throwable);
-        verify(log).fatal("", null);
-        verify(log).fatal("", throwable);
-        
-        when(log.isFatalEnabled()).thenReturn(true);
-        assertTrue("", adapter.isFatalEnabled());
-        
-        when(log.isFatalEnabled()).thenReturn(false);
-        assertFalse("", adapter.isFatalEnabled());
-    }
-    
-    @Test
-    public void nullTest()
-    {
-        adapter = new LogAdapter(null) { };
+    when(log.isTraceEnabled()).thenReturn(true);
+    assertTrue("", adapter.isTraceEnabled());
 
-        adapter.trace("");
-        adapter.trace("", throwable);
-        adapter.debug("");
-        adapter.debug("", throwable);
-        adapter.info("");
-        adapter.info("", throwable);
-        adapter.warn("");
-        adapter.warn("", throwable);
-        adapter.error("");
-        adapter.error("", throwable);
-        adapter.fatal("");
-        adapter.fatal("", throwable);
-        verify(log, times(0)).trace("", null);
-        verify(log, times(0)).trace("", throwable);
-        verify(log, times(0)).debug("", null);
-        verify(log, times(0)).debug("", throwable);
-        verify(log, times(0)).info("", null);
-        verify(log, times(0)).info("", throwable);
-        verify(log, times(0)).warn("", null);
-        verify(log, times(0)).warn("", throwable);
-        verify(log, times(0)).error("", null);
-        verify(log, times(0)).error("", throwable);
-        verify(log, times(0)).fatal("", null);
-        verify(log, times(0)).fatal("", throwable);
-        
-        when(log.isTraceEnabled()).thenReturn(true);
-        assertFalse("", adapter.isTraceEnabled());
-        
-        when(log.isTraceEnabled()).thenReturn(false);
-        assertFalse("", adapter.isTraceEnabled());
-        
-        when(log.isDebugEnabled()).thenReturn(true);
-        assertFalse("", adapter.isDebugEnabled());
-        
-        when(log.isDebugEnabled()).thenReturn(false);
-        assertFalse("", adapter.isDebugEnabled());
-        
-        when(log.isInfoEnabled()).thenReturn(true);
-        assertFalse("", adapter.isInfoEnabled());
-        
-        when(log.isInfoEnabled()).thenReturn(false);
-        assertFalse("", adapter.isInfoEnabled());
-        
-        when(log.isWarnEnabled()).thenReturn(true);
-        assertFalse("", adapter.isWarnEnabled());
-        
-        when(log.isWarnEnabled()).thenReturn(false);
-        assertFalse("", adapter.isWarnEnabled());
-        
-        when(log.isErrorEnabled()).thenReturn(true);
-        assertFalse("", adapter.isErrorEnabled());
-        
-        when(log.isErrorEnabled()).thenReturn(false);
-        assertFalse("", adapter.isErrorEnabled());
-        
-        when(log.isFatalEnabled()).thenReturn(true);
-        assertFalse("", adapter.isFatalEnabled());
-        
-        when(log.isFatalEnabled()).thenReturn(false);
-        assertFalse("", adapter.isFatalEnabled());
-    }
+    when(log.isTraceEnabled()).thenReturn(false);
+    assertFalse("", adapter.isTraceEnabled());
+  }
+
+  @Test
+  public void debugTest() {
+    adapter.debug("");
+    adapter.debug("", throwable);
+    verify(log).debug("", null);
+    verify(log).debug("", throwable);
+
+    when(log.isDebugEnabled()).thenReturn(true);
+    assertTrue("", adapter.isDebugEnabled());
+
+    when(log.isDebugEnabled()).thenReturn(false);
+    assertFalse("", adapter.isDebugEnabled());
+  }
+
+  @Test
+  public void infoTest() {
+    adapter.info("");
+    adapter.info("", throwable);
+    verify(log).info("", null);
+    verify(log).info("", throwable);
+
+    when(log.isInfoEnabled()).thenReturn(true);
+    assertTrue("", adapter.isInfoEnabled());
+
+    when(log.isInfoEnabled()).thenReturn(false);
+    assertFalse("", adapter.isInfoEnabled());
+  }
+
+  @Test
+  public void warnTest() {
+    adapter.warn("");
+    adapter.warn("", throwable);
+    verify(log).warn("", null);
+    verify(log).warn("", throwable);
+
+    when(log.isWarnEnabled()).thenReturn(true);
+    assertTrue("", adapter.isWarnEnabled());
+
+    when(log.isWarnEnabled()).thenReturn(false);
+    assertFalse("", adapter.isWarnEnabled());
+  }
+
+  @Test
+  public void errorTest() {
+    adapter.error("");
+    adapter.error("", throwable);
+    verify(log).error("", null);
+    verify(log).error("", throwable);
+
+    when(log.isErrorEnabled()).thenReturn(true);
+    assertTrue("", adapter.isErrorEnabled());
+
+    when(log.isErrorEnabled()).thenReturn(false);
+    assertFalse("", adapter.isErrorEnabled());
+  }
+
+  @Test
+  public void fatalTest() {
+    adapter.fatal("");
+    adapter.fatal("", throwable);
+    verify(log).fatal("", null);
+    verify(log).fatal("", throwable);
+
+    when(log.isFatalEnabled()).thenReturn(true);
+    assertTrue("", adapter.isFatalEnabled());
+
+    when(log.isFatalEnabled()).thenReturn(false);
+    assertFalse("", adapter.isFatalEnabled());
+  }
+
+  @Test
+  public void nullTest() {
+    adapter = new LogAdapter(null) {};
+
+    adapter.trace("");
+    adapter.trace("", throwable);
+    adapter.debug("");
+    adapter.debug("", throwable);
+    adapter.info("");
+    adapter.info("", throwable);
+    adapter.warn("");
+    adapter.warn("", throwable);
+    adapter.error("");
+    adapter.error("", throwable);
+    adapter.fatal("");
+    adapter.fatal("", throwable);
+    verify(log, times(0)).trace("", null);
+    verify(log, times(0)).trace("", throwable);
+    verify(log, times(0)).debug("", null);
+    verify(log, times(0)).debug("", throwable);
+    verify(log, times(0)).info("", null);
+    verify(log, times(0)).info("", throwable);
+    verify(log, times(0)).warn("", null);
+    verify(log, times(0)).warn("", throwable);
+    verify(log, times(0)).error("", null);
+    verify(log, times(0)).error("", throwable);
+    verify(log, times(0)).fatal("", null);
+    verify(log, times(0)).fatal("", throwable);
+
+    when(log.isTraceEnabled()).thenReturn(true);
+    assertFalse("", adapter.isTraceEnabled());
+
+    when(log.isTraceEnabled()).thenReturn(false);
+    assertFalse("", adapter.isTraceEnabled());
+
+    when(log.isDebugEnabled()).thenReturn(true);
+    assertFalse("", adapter.isDebugEnabled());
+
+    when(log.isDebugEnabled()).thenReturn(false);
+    assertFalse("", adapter.isDebugEnabled());
+
+    when(log.isInfoEnabled()).thenReturn(true);
+    assertFalse("", adapter.isInfoEnabled());
+
+    when(log.isInfoEnabled()).thenReturn(false);
+    assertFalse("", adapter.isInfoEnabled());
+
+    when(log.isWarnEnabled()).thenReturn(true);
+    assertFalse("", adapter.isWarnEnabled());
+
+    when(log.isWarnEnabled()).thenReturn(false);
+    assertFalse("", adapter.isWarnEnabled());
+
+    when(log.isErrorEnabled()).thenReturn(true);
+    assertFalse("", adapter.isErrorEnabled());
+
+    when(log.isErrorEnabled()).thenReturn(false);
+    assertFalse("", adapter.isErrorEnabled());
+
+    when(log.isFatalEnabled()).thenReturn(true);
+    assertFalse("", adapter.isFatalEnabled());
+
+    when(log.isFatalEnabled()).thenReturn(false);
+    assertFalse("", adapter.isFatalEnabled());
+  }
 }

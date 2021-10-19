@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.web.scripts.solr.SOLRSerializer.SOLRTypeConverter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -41,84 +40,116 @@ import org.json.JSONObject;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-public class SOLRSerializerTest
-{
-    @Test
-    public void testDateSerializer()
-    {
-        SOLRTypeConverter typeConverter = new SOLRTypeConverter(null);
+public class SOLRSerializerTest {
 
-        trip(typeConverter, "1912-01-01T00:40:00-06:00", "1912-01-01T06:40:00.000Z");
-        trip(typeConverter, "1812-01-01T00:40:00-06:00", "1812-01-01T06:40:00.000Z");
-        trip(typeConverter, "1845-01-01T00:40:00-06:00", "1845-01-01T06:40:00.000Z");
-        trip(typeConverter, "1846-01-01T00:40:00-06:00", "1846-01-01T06:40:00.000Z");
-        trip(typeConverter, "1847-01-01T00:40:00-06:00", "1847-01-01T06:40:00.000Z");
-        trip(typeConverter, "1848-01-01T00:40:00-06:00", "1848-01-01T06:40:00.000Z");
+  @Test
+  public void testDateSerializer() {
+    SOLRTypeConverter typeConverter = new SOLRTypeConverter(null);
 
+    trip(
+      typeConverter,
+      "1912-01-01T00:40:00-06:00",
+      "1912-01-01T06:40:00.000Z"
+    );
+    trip(
+      typeConverter,
+      "1812-01-01T00:40:00-06:00",
+      "1812-01-01T06:40:00.000Z"
+    );
+    trip(
+      typeConverter,
+      "1845-01-01T00:40:00-06:00",
+      "1845-01-01T06:40:00.000Z"
+    );
+    trip(
+      typeConverter,
+      "1846-01-01T00:40:00-06:00",
+      "1846-01-01T06:40:00.000Z"
+    );
+    trip(
+      typeConverter,
+      "1847-01-01T00:40:00-06:00",
+      "1847-01-01T06:40:00.000Z"
+    );
+    trip(
+      typeConverter,
+      "1848-01-01T00:40:00-06:00",
+      "1848-01-01T06:40:00.000Z"
+    );
+  }
+
+  private void trip(SOLRTypeConverter typeConverter, String iso, String zulu) {
+    Date testDate = ISO8601DateFormat.parse(iso);
+    String strDate = typeConverter.INSTANCE.convert(String.class, testDate);
+    assertEquals(zulu, strDate);
+  }
+
+  /**
+   * Test SOLR Serialization including values with special characters for ChildAssociationRef
+   */
+  @Test
+  public void testChildAssociationRefToJSONString() {
+    SOLRSerializer solrSerializer = new SOLRSerializer();
+    solrSerializer.setDictionaryService(Mockito.mock(DictionaryService.class));
+    solrSerializer.setNamespaceService(Mockito.mock(NamespaceService.class));
+    solrSerializer.init();
+
+    // Create a Child QName including special character \
+    QName childQName = QName.createQName("hello", "wo\rld");
+
+    ChildAssociationRef childAssociationRef = new ChildAssociationRef(
+      ContentModel.ASSOC_CONTAINS,
+      new NodeRef("workspace://SpacesStore/parent"),
+      childQName,
+      new NodeRef("workspace://SpacesStore/child")
+    );
+    String validJsonString = solrSerializer.serializeToJSONString(
+      childAssociationRef
+    );
+    String jsonObjectString = String.format(
+      "{ \"key\": \"%s\" }",
+      validJsonString
+    );
+
+    try {
+      new JSONObject(jsonObjectString);
+    } catch (JSONException e) {
+      assertTrue(
+        "JSON String " + jsonObjectString + " is not a valid JSON",
+        false
+      );
     }
+  }
 
-    private void trip(SOLRTypeConverter typeConverter, String iso, String zulu)
-    {
-        Date testDate = ISO8601DateFormat.parse(iso);
-        String strDate = typeConverter.INSTANCE.convert(String.class, testDate);
-        assertEquals(zulu, strDate);
+  /**
+   * Test SOLR Serialization including values with special characters for AssociationRef
+   */
+  @Test
+  public void testAssociationRefToJSONString() {
+    SOLRSerializer solrSerializer = new SOLRSerializer();
+    solrSerializer.setDictionaryService(Mockito.mock(DictionaryService.class));
+    solrSerializer.setNamespaceService(Mockito.mock(NamespaceService.class));
+    solrSerializer.init();
+    AssociationRef associationRef = new AssociationRef(
+      new NodeRef("workspace://SpacesStore/wo\rld"),
+      ContentModel.ASSOC_ATTACHMENTS,
+      new NodeRef("workspace://SpacesStore/hello")
+    );
+    String validJsonString = solrSerializer.serializeToJSONString(
+      associationRef
+    );
+    String jsonObjectString = String.format(
+      "{ \"key\": \"%s\" }",
+      validJsonString
+    );
+
+    try {
+      new JSONObject(jsonObjectString);
+    } catch (JSONException e) {
+      assertTrue(
+        "JSON String " + jsonObjectString + " is not a valid JSON",
+        false
+      );
     }
-
-    /**
-     * Test SOLR Serialization including values with special characters for ChildAssociationRef
-     */
-    @Test
-    public void testChildAssociationRefToJSONString()
-    {
-        SOLRSerializer solrSerializer = new SOLRSerializer();
-        solrSerializer.setDictionaryService(Mockito.mock(DictionaryService.class));
-        solrSerializer.setNamespaceService(Mockito.mock(NamespaceService.class));
-        solrSerializer.init();
-        
-        // Create a Child QName including special character \
-        QName childQName = QName.createQName("hello", "wo\rld");
-        
-        ChildAssociationRef childAssociationRef = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
-                new NodeRef("workspace://SpacesStore/parent"), childQName,
-                new NodeRef("workspace://SpacesStore/child"));
-        String validJsonString = solrSerializer.serializeToJSONString(childAssociationRef);
-        String jsonObjectString = String.format("{ \"key\": \"%s\" }", validJsonString);
-        
-        try
-        {
-            new JSONObject(jsonObjectString);
-        }
-        catch (JSONException e)
-        {
-            assertTrue("JSON String " + jsonObjectString + " is not a valid JSON", false);
-        }
-    }
-
-    /**
-     * Test SOLR Serialization including values with special characters for AssociationRef
-     */
-    @Test
-    public void testAssociationRefToJSONString()
-    {
-        SOLRSerializer solrSerializer = new SOLRSerializer();
-        solrSerializer.setDictionaryService(Mockito.mock(DictionaryService.class));
-        solrSerializer.setNamespaceService(Mockito.mock(NamespaceService.class));
-        solrSerializer.init();
-        AssociationRef associationRef = new AssociationRef(
-                new NodeRef("workspace://SpacesStore/wo\rld"),
-                ContentModel.ASSOC_ATTACHMENTS,
-                new NodeRef("workspace://SpacesStore/hello"));
-        String validJsonString = solrSerializer.serializeToJSONString(associationRef);
-        String jsonObjectString = String.format("{ \"key\": \"%s\" }", validJsonString);
-        
-        try
-        {
-            new JSONObject(jsonObjectString);
-        }
-        catch (JSONException e)
-        {
-            assertTrue("JSON String " + jsonObjectString + " is not a valid JSON", false);
-        }
-    }
-
+  }
 }

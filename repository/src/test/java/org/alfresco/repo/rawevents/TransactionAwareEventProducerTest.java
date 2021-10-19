@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.rawevents;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.rawevents.types.EventType;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -34,8 +35,6 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
@@ -43,74 +42,92 @@ import org.springframework.beans.factory.annotation.Qualifier;
  *
  * @author Cristian Turlica
  */
-public class TransactionAwareEventProducerTest extends BaseSpringTest
-{
-    @Autowired
-    private RetryingTransactionHelper retryingTransactionHelper;
-    @Autowired
-    private CamelContext camelContext;
-    @Autowired
-    private TransactionAwareEventProducer eventProducer;
-    @Autowired
-    @Qualifier("alfrescoEventObjectMapper")
-    private ObjectMapper messagingObjectMapper;
+public class TransactionAwareEventProducerTest extends BaseSpringTest {
 
-    @Test
-    public void send() throws Exception
-    {
-        String endpointUri = getMockEndpointUri();
+  @Autowired
+  private RetryingTransactionHelper retryingTransactionHelper;
 
-        MockEndpoint mockEndpoint = camelContext.getEndpoint(endpointUri, MockEndpoint.class);
-        mockEndpoint.setAssertPeriod(500);
+  @Autowired
+  private CamelContext camelContext;
 
-        String stringMessage = "stringMessage";
-        OnContentUpdatePolicyEvent objectMessage = new OnContentUpdatePolicyEvent();
-        objectMessage.setId(GUID.generate());
-        objectMessage.setType(EventType.CONTENT_UPDATED.toString());
-        objectMessage.setTimestamp(System.currentTimeMillis());
+  @Autowired
+  private TransactionAwareEventProducer eventProducer;
 
-        retryingTransactionHelper.doInTransaction(() -> {
-            eventProducer.send(endpointUri, stringMessage);
+  @Autowired
+  @Qualifier("alfrescoEventObjectMapper")
+  private ObjectMapper messagingObjectMapper;
 
-            // Assert that the endpoint didn't receive any message
-            // Event is sent only on transaction commit.
-            mockEndpoint.setExpectedCount(0);
-            mockEndpoint.assertIsSatisfied();
+  @Test
+  public void send() throws Exception {
+    String endpointUri = getMockEndpointUri();
 
-            eventProducer.send(endpointUri, objectMessage);
+    MockEndpoint mockEndpoint = camelContext.getEndpoint(
+      endpointUri,
+      MockEndpoint.class
+    );
+    mockEndpoint.setAssertPeriod(500);
 
-            // Assert that the endpoint didn't receive any message
-            // Event is sent only on transaction commit.
-            mockEndpoint.setExpectedCount(0);
-            mockEndpoint.assertIsSatisfied();
+    String stringMessage = "stringMessage";
+    OnContentUpdatePolicyEvent objectMessage = new OnContentUpdatePolicyEvent();
+    objectMessage.setId(GUID.generate());
+    objectMessage.setType(EventType.CONTENT_UPDATED.toString());
+    objectMessage.setTimestamp(System.currentTimeMillis());
 
-            return null;
-        });
+    retryingTransactionHelper.doInTransaction(() -> {
+      eventProducer.send(endpointUri, stringMessage);
 
-        // Assert that the endpoint received 2 messages
-        mockEndpoint.setExpectedCount(2);
-        mockEndpoint.assertIsSatisfied();
+      // Assert that the endpoint didn't receive any message
+      // Event is sent only on transaction commit.
+      mockEndpoint.setExpectedCount(0);
+      mockEndpoint.assertIsSatisfied();
 
-        // Get the sent string message
-        String stringMessageSent = (String) mockEndpoint.getExchanges().get(0).getIn().getBody();
+      eventProducer.send(endpointUri, objectMessage);
 
-        assertNotNull(stringMessageSent);
-        assertEquals(stringMessage, stringMessageSent);
+      // Assert that the endpoint didn't receive any message
+      // Event is sent only on transaction commit.
+      mockEndpoint.setExpectedCount(0);
+      mockEndpoint.assertIsSatisfied();
 
-        // Get the sent json marshaled object message
-        String jsonMessageSent = (String) mockEndpoint.getExchanges().get(1).getIn().getBody();
-        assertNotNull(jsonMessageSent);
+      return null;
+    });
 
-        OnContentUpdatePolicyEvent objectMessageSent = messagingObjectMapper.readValue(jsonMessageSent, OnContentUpdatePolicyEvent.class);
+    // Assert that the endpoint received 2 messages
+    mockEndpoint.setExpectedCount(2);
+    mockEndpoint.assertIsSatisfied();
 
-        assertNotNull(objectMessageSent);
-        assertEquals(objectMessage.getId(), objectMessageSent.getId());
-        assertEquals(objectMessage.getType(), objectMessageSent.getType());
-        assertEquals(objectMessage.getTimestamp(), objectMessageSent.getTimestamp());
-    }
+    // Get the sent string message
+    String stringMessageSent = (String) mockEndpoint
+      .getExchanges()
+      .get(0)
+      .getIn()
+      .getBody();
 
-    private String getMockEndpointUri()
-    {
-        return "mock:" + this.getClass().getSimpleName() + "_" + GUID.generate();
-    }
+    assertNotNull(stringMessageSent);
+    assertEquals(stringMessage, stringMessageSent);
+
+    // Get the sent json marshaled object message
+    String jsonMessageSent = (String) mockEndpoint
+      .getExchanges()
+      .get(1)
+      .getIn()
+      .getBody();
+    assertNotNull(jsonMessageSent);
+
+    OnContentUpdatePolicyEvent objectMessageSent = messagingObjectMapper.readValue(
+      jsonMessageSent,
+      OnContentUpdatePolicyEvent.class
+    );
+
+    assertNotNull(objectMessageSent);
+    assertEquals(objectMessage.getId(), objectMessageSent.getId());
+    assertEquals(objectMessage.getType(), objectMessageSent.getType());
+    assertEquals(
+      objectMessage.getTimestamp(),
+      objectMessageSent.getTimestamp()
+    );
+  }
+
+  private String getMockEndpointUri() {
+    return "mock:" + this.getClass().getSimpleName() + "_" + GUID.generate();
+  }
 }

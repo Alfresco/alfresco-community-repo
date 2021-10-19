@@ -38,9 +38,10 @@ import org.springframework.stereotype.Component;
  * @since 2.6
  */
 @Component
-public class UserTrashcanAPI extends BaseAPI
-{
-    private static final String EMPTY_TRASHCAN = "{0}archive/workspace/SpacesStore";
+public class UserTrashcanAPI extends BaseAPI {
+
+    private static final String EMPTY_TRASHCAN =
+        "{0}archive/workspace/SpacesStore";
 
     /**
      * Clears the trashcan for the current user
@@ -49,10 +50,10 @@ public class UserTrashcanAPI extends BaseAPI
      * @param password the password
      * @throws AssertionError if emptying the trashcan fails.
      */
-    public void emptyTrashcan(String username, String password)
-    {
-        assertNotNull("Emptying trashcan failed for user " + username,
-                    doDeleteRequest(username, password, EMPTY_TRASHCAN));
+    public void emptyTrashcan(String username, String password) {
+        assertNotNull(
+            "Emptying trashcan failed for user " + username,
+            doDeleteRequest(username, password, EMPTY_TRASHCAN)
+        );
     }
-
 }

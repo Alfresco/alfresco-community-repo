@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,7 +29,6 @@ package org.alfresco.repo.transfer;
 import java.io.InputStream;
 import java.io.Writer;
 import java.nio.channels.Channels;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -43,139 +42,191 @@ import org.alfresco.service.cmr.transfer.TransferProgress.Status;
 
 /**
  * @author brian
- * 
+ *
  */
-public class RepoTransferProgressMonitorImpl extends AbstractTransferProgressMonitor
-{
-    private NodeService nodeService;
-    private ContentService contentService;
+public class RepoTransferProgressMonitorImpl
+  extends AbstractTransferProgressMonitor {
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#getProgress(java.lang.String)
-     */
-    public TransferProgress getProgressInternal(final String transferId)
-    {
-        NodeRef nodeRef = getTransferRecord(transferId);
+  private NodeService nodeService;
+  private ContentService contentService;
 
-        TransferProgress progress = new TransferProgress();
-        progress.setStatus(TransferProgress.Status.valueOf((String) nodeService.getProperty(nodeRef,
-                TransferModel.PROP_TRANSFER_STATUS)));
-        progress.setCurrentPosition((Integer) nodeService.getProperty(nodeRef,
-                TransferModel.PROP_PROGRESS_POSITION));
-        progress.setEndPosition((Integer) nodeService.getProperty(nodeRef,
-                TransferModel.PROP_PROGRESS_ENDPOINT));
-        progress.setError((Throwable) nodeService.getProperty(nodeRef,
-                TransferModel.PROP_TRANSFER_ERROR));
-        return progress;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.repo.transfer.TransferProgressMonitor#getProgress(java.lang.String)
+   */
+  public TransferProgress getProgressInternal(final String transferId) {
+    NodeRef nodeRef = getTransferRecord(transferId);
 
-    public void storeError(final String transferId, final Throwable ex)
-    {
-        NodeRef nodeRef = getTransferRecord(transferId);
-        // Write the exception onto the transfer record
-        nodeService.setProperty(nodeRef, TransferModel.PROP_TRANSFER_ERROR, ex);
-    }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int)
-     */
-    public void updateProgressInternal(final String transferId, final int currPos)
-    {
-        NodeRef nodeRef = getTransferRecord(transferId);
-        testCancelled(nodeRef);
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, new Integer(currPos));
-    }
+    TransferProgress progress = new TransferProgress();
+    progress.setStatus(
+      TransferProgress.Status.valueOf(
+        (String) nodeService.getProperty(
+          nodeRef,
+          TransferModel.PROP_TRANSFER_STATUS
+        )
+      )
+    );
+    progress.setCurrentPosition(
+      (Integer) nodeService.getProperty(
+        nodeRef,
+        TransferModel.PROP_PROGRESS_POSITION
+      )
+    );
+    progress.setEndPosition(
+      (Integer) nodeService.getProperty(
+        nodeRef,
+        TransferModel.PROP_PROGRESS_ENDPOINT
+      )
+    );
+    progress.setError(
+      (Throwable) nodeService.getProperty(
+        nodeRef,
+        TransferModel.PROP_TRANSFER_ERROR
+      )
+    );
+    return progress;
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int, int)
-     */
-    public void updateProgressInternal(final String transferId, final int currPos, final int endPos)
-    {
-        NodeRef nodeRef = getTransferRecord(transferId);
-        testCancelled(nodeRef);
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_POSITION, new Integer(currPos));
-        nodeService.setProperty(nodeRef, TransferModel.PROP_PROGRESS_ENDPOINT, new Integer(endPos));
-    }
+  public void storeError(final String transferId, final Throwable ex) {
+    NodeRef nodeRef = getTransferRecord(transferId);
+    // Write the exception onto the transfer record
+    nodeService.setProperty(nodeRef, TransferModel.PROP_TRANSFER_ERROR, ex);
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateStatus(java.lang.String,
-     * org.alfresco.service.cmr.transfer.TransferProgress.Status)
-     */
-    public void updateStatusInternal(final String transferId, final Status status)
-    {
-        NodeRef nodeRef = getTransferRecord(transferId);
-        nodeService.setProperty(nodeRef, TransferModel.PROP_TRANSFER_STATUS, status.toString());
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int)
+   */
+  public void updateProgressInternal(
+    final String transferId,
+    final int currPos
+  ) {
+    NodeRef nodeRef = getTransferRecord(transferId);
+    testCancelled(nodeRef);
+    nodeService.setProperty(
+      nodeRef,
+      TransferModel.PROP_PROGRESS_POSITION,
+      new Integer(currPos)
+    );
+  }
 
-    private void testCancelled(NodeRef transferRecord) throws TransferFatalException
-    {
-        Status currentStatus = Status.valueOf((String)nodeService.getProperty(transferRecord, TransferModel.PROP_TRANSFER_STATUS));
-        if (Status.CANCELLED.equals(currentStatus))
-        {
-            throw new TransferFatalException(MSG_TRANSFER_CANCELLED, new Object[] { transferRecord.toString() });
-        }
-    }
-    
-    private NodeRef getTransferRecord(String transferId) throws TransferException
-    {
-        NodeRef nodeRef = new NodeRef(transferId);
-        if (!nodeService.exists(nodeRef) || !nodeService.getType(nodeRef).equals(TransferModel.TYPE_TRANSFER_RECORD))
-        {
-            throw new TransferException(MSG_TRANSFER_NOT_FOUND, new Object[] { transferId });
-        }
-        return nodeRef;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int, int)
+   */
+  public void updateProgressInternal(
+    final String transferId,
+    final int currPos,
+    final int endPos
+  ) {
+    NodeRef nodeRef = getTransferRecord(transferId);
+    testCancelled(nodeRef);
+    nodeService.setProperty(
+      nodeRef,
+      TransferModel.PROP_PROGRESS_POSITION,
+      new Integer(currPos)
+    );
+    nodeService.setProperty(
+      nodeRef,
+      TransferModel.PROP_PROGRESS_ENDPOINT,
+      new Integer(endPos)
+    );
+  }
 
-    public InputStream getLogInputStream(String transferId)
-            throws TransferException
-    {
-        NodeRef transferRecord = getTransferRecord(transferId);
-        
-        ContentReader reader = contentService.getReader(transferRecord, ContentModel.PROP_CONTENT); 
-        
-        if(reader != null)
-        {
-            return reader.getContentInputStream();
-        }
-        else
-        {
-            return null;
-        }
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateStatus(java.lang.String,
+   * org.alfresco.service.cmr.transfer.TransferProgress.Status)
+   */
+  public void updateStatusInternal(
+    final String transferId,
+    final Status status
+  ) {
+    NodeRef nodeRef = getTransferRecord(transferId);
+    nodeService.setProperty(
+      nodeRef,
+      TransferModel.PROP_TRANSFER_STATUS,
+      status.toString()
+    );
+  }
 
-    /**
-     * @param nodeService
-     *            the nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+  private void testCancelled(NodeRef transferRecord)
+    throws TransferFatalException {
+    Status currentStatus = Status.valueOf(
+      (String) nodeService.getProperty(
+        transferRecord,
+        TransferModel.PROP_TRANSFER_STATUS
+      )
+    );
+    if (Status.CANCELLED.equals(currentStatus)) {
+      throw new TransferFatalException(
+        MSG_TRANSFER_CANCELLED,
+        new Object[] { transferRecord.toString() }
+      );
     }
+  }
 
-    /**
-     * @param contentService
-     *            the contentService to set
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
+  private NodeRef getTransferRecord(String transferId)
+    throws TransferException {
+    NodeRef nodeRef = new NodeRef(transferId);
+    if (
+      !nodeService.exists(nodeRef) ||
+      !nodeService.getType(nodeRef).equals(TransferModel.TYPE_TRANSFER_RECORD)
+    ) {
+      throw new TransferException(
+        MSG_TRANSFER_NOT_FOUND,
+        new Object[] { transferId }
+      );
     }
+    return nodeRef;
+  }
 
-    @Override
-    protected Writer createUnderlyingLogWriter(String transferId)
-    {
-        NodeRef node = new NodeRef(transferId);
-        ContentWriter contentWriter = contentService.getWriter(node, ContentModel.PROP_CONTENT, true);
-        contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
-        contentWriter.setEncoding("UTF-8");
-        return Channels.newWriter(contentWriter.getWritableChannel(), "UTF-8");
+  public InputStream getLogInputStream(String transferId)
+    throws TransferException {
+    NodeRef transferRecord = getTransferRecord(transferId);
+
+    ContentReader reader = contentService.getReader(
+      transferRecord,
+      ContentModel.PROP_CONTENT
+    );
+
+    if (reader != null) {
+      return reader.getContentInputStream();
+    } else {
+      return null;
     }
+  }
+
+  /**
+   * @param nodeService
+   *            the nodeService to set
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * @param contentService
+   *            the contentService to set
+   */
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
+
+  @Override
+  protected Writer createUnderlyingLogWriter(String transferId) {
+    NodeRef node = new NodeRef(transferId);
+    ContentWriter contentWriter = contentService.getWriter(
+      node,
+      ContentModel.PROP_CONTENT,
+      true
+    );
+    contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+    contentWriter.setEncoding("UTF-8");
+    return Channels.newWriter(contentWriter.getWritableChannel(), "UTF-8");
+  }
 }

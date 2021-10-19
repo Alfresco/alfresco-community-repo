@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -47,32 +46,42 @@ import org.alfresco.service.namespace.QName;
  * @since 2.1
  */
 @BehaviourBean
-public class CreatePersonAuditEvent extends AuditEvent implements OnCreateNodePolicy
-{
-    /** Node Service */
-    private NodeService nodeService;
+public class CreatePersonAuditEvent
+  extends AuditEvent
+  implements OnCreateNodePolicy {
 
-    /**
-     * Sets the node service
-     *
-     * @param nodeService nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /** Node Service */
+  private NodeService nodeService;
 
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @Override
-    @Behaviour(kind = BehaviourKind.CLASS, type = "cm:person")
-    public void onCreateNode(ChildAssociationRef childAssocRef)
-    {
-        Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_USERNAME,
-                    nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_USERNAME));
+  /**
+   * Sets the node service
+   *
+   * @param nodeService nodeService to set
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName(), null, auditProperties);
-    }
+  /**
+   * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+   */
+  @Override
+  @Behaviour(kind = BehaviourKind.CLASS, type = "cm:person")
+  public void onCreateNode(ChildAssociationRef childAssocRef) {
+    Map<QName, Serializable> auditProperties = new HashMap<>();
+    auditProperties.put(
+      ContentModel.PROP_USERNAME,
+      nodeService.getProperty(
+        childAssocRef.getChildRef(),
+        ContentModel.PROP_USERNAME
+      )
+    );
+
+    recordsManagementAuditService.auditEvent(
+      childAssocRef.getChildRef(),
+      getName(),
+      null,
+      auditProperties
+    );
+  }
 }

@@ -45,55 +45,64 @@ import org.mockito.Mock;
 
 /**
  * Version record aspect unit tests
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3.1
  */
-public class VersionRecordAspectUnitTest extends BaseUnitTest
-{
-    /** service mocks */
-    private @Mock VersionHistory mockedVersionHistory;
-    private @Mock Version mockedVersion;    
-    private @Mock VersionService mockedVersionService;
-    private @Mock RelationshipService mockedRelationshipService;
-    
-    /** test object */
-    private @InjectMocks VersionRecordAspect versionRecordAspect;
-    
-    /**
-     * given that there is no recorded version
-     * before delete of record
-     * then nothing happens
-     */
-    @Test
-    public void beforeDeleteNoVersionNodeRef()
-    {
-        NodeRef nodeRef = generateNodeRef();
-        
-        when(mockedRecordableVersionService.getRecordedVersion(nodeRef))
-            .thenReturn(null);
-        
-        versionRecordAspect.beforeDeleteNode(nodeRef);
-        
-        verify(mockedNodeService, never()).getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL);        
-        verify(mockedRecordableVersionService, never()).destroyRecordedVersion(any(Version.class));        
-    }
-     
-    /**
-     * given that there is a recorded version
-     * before delete of record
-     * then the version is marked as destroyed
-     */
-    @Test
-    public void beforeDeleteMarkVersionDestroyed()
-    {
-        NodeRef nodeRef = generateNodeRef();
-        
-        when(mockedRecordableVersionService.getRecordedVersion(nodeRef))
-            .thenReturn(mockedVersion);
-        
-        versionRecordAspect.beforeDeleteNode(nodeRef);
-           
-        verify(mockedRecordableVersionService).destroyRecordedVersion(mockedVersion); 
-    }
+public class VersionRecordAspectUnitTest extends BaseUnitTest {
+
+  /** service mocks */
+  @Mock
+  private VersionHistory mockedVersionHistory;
+
+  @Mock
+  private Version mockedVersion;
+
+  @Mock
+  private VersionService mockedVersionService;
+
+  @Mock
+  private RelationshipService mockedRelationshipService;
+
+  /** test object */
+  @InjectMocks
+  private VersionRecordAspect versionRecordAspect;
+
+  /**
+   * given that there is no recorded version
+   * before delete of record
+   * then nothing happens
+   */
+  @Test
+  public void beforeDeleteNoVersionNodeRef() {
+    NodeRef nodeRef = generateNodeRef();
+
+    when(mockedRecordableVersionService.getRecordedVersion(nodeRef))
+      .thenReturn(null);
+
+    versionRecordAspect.beforeDeleteNode(nodeRef);
+
+    verify(mockedNodeService, never())
+      .getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL);
+    verify(mockedRecordableVersionService, never())
+      .destroyRecordedVersion(any(Version.class));
+  }
+
+  /**
+   * given that there is a recorded version
+   * before delete of record
+   * then the version is marked as destroyed
+   */
+  @Test
+  public void beforeDeleteMarkVersionDestroyed() {
+    NodeRef nodeRef = generateNodeRef();
+
+    when(mockedRecordableVersionService.getRecordedVersion(nodeRef))
+      .thenReturn(mockedVersion);
+
+    versionRecordAspect.beforeDeleteNode(nodeRef);
+
+    verify(mockedRecordableVersionService)
+      .destroyRecordedVersion(mockedVersion);
+  }
 }

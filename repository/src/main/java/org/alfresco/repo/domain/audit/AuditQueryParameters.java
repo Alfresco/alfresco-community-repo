@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,144 +29,131 @@ import java.util.Date;
 
 /**
  * Query parameters for <b>alf_audit_entry</b> table.
- * 
+ *
  * @author Derek Hulley
  * @since 3.2
  */
-public class AuditQueryParameters
-{
-    private boolean forward;
-    private Long auditAppNameId;
-    private Long auditUserId;
-    private Long auditFromId;
-    private Long auditToId;
-    private Long auditFromTime;
-    private Long auditToTime;
-    private Long searchKeyId;
-    private Long searchValueId;
-    
-    public AuditQueryParameters()
-    {
-    }
-    
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder(512);
-        sb.append("AuditEntryParameters")
-          .append("[ forward=").append(forward)
-          .append(", auditAppNameId=").append(auditAppNameId)
-          .append(", auditUserId=").append(auditUserId)
-          .append(", auditFromId=").append(auditFromId == null ? null : auditFromId)
-          .append(", auditToId=").append(auditToId == null ? null : auditToId)
-          .append(", auditFromTime=").append(auditFromTime == null ? null : new Date(auditFromTime))
-          .append(", auditToTime=").append(auditToTime == null ? null : new Date(auditToTime))
-          .append(", searchKeyId=").append(searchKeyId)
-          .append(", searchValueId=").append(searchValueId)
-          .append("]");
-        return sb.toString();
-    }
+public class AuditQueryParameters {
 
-    public boolean isForward()
-    {
-        return forward;
-    }
+  private boolean forward;
+  private Long auditAppNameId;
+  private Long auditUserId;
+  private Long auditFromId;
+  private Long auditToId;
+  private Long auditFromTime;
+  private Long auditToTime;
+  private Long searchKeyId;
+  private Long searchValueId;
 
-    public void setForward(boolean forward)
-    {
-        this.forward = forward;
-    }
-    
-    public boolean isForwardTrue()
-    {
-        return true;
-    }
+  public AuditQueryParameters() {}
 
-    public Long getAuditAppNameId()
-    {
-        return auditAppNameId;
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(512);
+    sb
+      .append("AuditEntryParameters")
+      .append("[ forward=")
+      .append(forward)
+      .append(", auditAppNameId=")
+      .append(auditAppNameId)
+      .append(", auditUserId=")
+      .append(auditUserId)
+      .append(", auditFromId=")
+      .append(auditFromId == null ? null : auditFromId)
+      .append(", auditToId=")
+      .append(auditToId == null ? null : auditToId)
+      .append(", auditFromTime=")
+      .append(auditFromTime == null ? null : new Date(auditFromTime))
+      .append(", auditToTime=")
+      .append(auditToTime == null ? null : new Date(auditToTime))
+      .append(", searchKeyId=")
+      .append(searchKeyId)
+      .append(", searchValueId=")
+      .append(searchValueId)
+      .append("]");
+    return sb.toString();
+  }
 
-    public void setAuditAppNameId(Long auditAppNameId)
-    {
-        this.auditAppNameId = auditAppNameId;
-    }
+  public boolean isForward() {
+    return forward;
+  }
 
-    public Long getAuditUserId()
-    {
-        return auditUserId;
-    }
+  public void setForward(boolean forward) {
+    this.forward = forward;
+  }
 
-    public void setAuditUserId(Long auditUserId)
-    {
-        this.auditUserId = auditUserId;
-    }
+  public boolean isForwardTrue() {
+    return true;
+  }
 
-    public Long getAuditFromTime()
-    {
-        return auditFromTime;
-    }
+  public Long getAuditAppNameId() {
+    return auditAppNameId;
+  }
 
-    public Long getAuditFromId()
-    {
-        return auditFromId;
-    }
+  public void setAuditAppNameId(Long auditAppNameId) {
+    this.auditAppNameId = auditAppNameId;
+  }
 
-    public void setAuditFromId(Long auditFromId)
-    {
-        this.auditFromId = auditFromId;
-    }
+  public Long getAuditUserId() {
+    return auditUserId;
+  }
 
-    public Long getAuditToId()
-    {
-        return auditToId;
-    }
+  public void setAuditUserId(Long auditUserId) {
+    this.auditUserId = auditUserId;
+  }
 
-    public void setAuditToId(Long auditToId)
-    {
-        this.auditToId = auditToId;
-    }
+  public Long getAuditFromTime() {
+    return auditFromTime;
+  }
 
-    public void setAuditFromTime(Long from)
-    {
-        this.auditFromTime = from;
-    }
+  public Long getAuditFromId() {
+    return auditFromId;
+  }
 
-    public Long getAuditToTime()
-    {
-        return auditToTime;
-    }
+  public void setAuditFromId(Long auditFromId) {
+    this.auditFromId = auditFromId;
+  }
 
-    public void setAuditToTime(Long to)
-    {
-        this.auditToTime = to;
-    }
+  public Long getAuditToId() {
+    return auditToId;
+  }
 
-    public Long getSearchKeyId()
-    {
-        return searchKeyId;
-    }
+  public void setAuditToId(Long auditToId) {
+    this.auditToId = auditToId;
+  }
 
-    public void setSearchKeyId(Long searchKeyId)
-    {
-        this.searchKeyId = searchKeyId;
-    }
+  public void setAuditFromTime(Long from) {
+    this.auditFromTime = from;
+  }
 
-    public Long getSearchValueId()
-    {
-        return searchValueId;
-    }
+  public Long getAuditToTime() {
+    return auditToTime;
+  }
 
-    public void setSearchValueId(Long searchValueId)
-    {
-        this.searchValueId = searchValueId;
-    }
-    
-    /**
-     * @return              Returns <tt>true</tt> if this object includes a key- or value-based search
-     */
-    public boolean isKeyOrValueSearch()
-    {
-        return searchKeyId != null || searchValueId != null;
-    }
+  public void setAuditToTime(Long to) {
+    this.auditToTime = to;
+  }
+
+  public Long getSearchKeyId() {
+    return searchKeyId;
+  }
+
+  public void setSearchKeyId(Long searchKeyId) {
+    this.searchKeyId = searchKeyId;
+  }
+
+  public Long getSearchValueId() {
+    return searchValueId;
+  }
+
+  public void setSearchValueId(Long searchValueId) {
+    this.searchValueId = searchValueId;
+  }
+
+  /**
+   * @return              Returns <tt>true</tt> if this object includes a key- or value-based search
+   */
+  public boolean isKeyOrValueSearch() {
+    return searchKeyId != null || searchValueId != null;
+  }
 }

@@ -41,72 +41,99 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class MoveRecordActionTest extends BaseRMTestCase
-{
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+public class MoveRecordActionTest extends BaseRMTestCase {
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-    public void testMoveRecordAction()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // Create a new folder in a collaboration site
-                NodeRef testFolder = fileFolderService.create(dmFolder, "myTestFolder", ContentModel.TYPE_FOLDER).getNodeRef();
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-                // Create a document so that the user has the write permissions for that document
-                NodeRef document = fileFolderService.create(testFolder, "moveFile.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+  public void testMoveRecordAction() {
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() {
+          // Create a new folder in a collaboration site
+          NodeRef testFolder = fileFolderService
+            .create(dmFolder, "myTestFolder", ContentModel.TYPE_FOLDER)
+            .getNodeRef();
 
-                // Create destination folder
-                String destination = fileFolderService.create(testFolder, "newDest", ContentModel.TYPE_FOLDER).getNodeRef().toString();
+          // Create a document so that the user has the write permissions for that document
+          NodeRef document = fileFolderService
+            .create(testFolder, "moveFile.txt", ContentModel.TYPE_CONTENT)
+            .getNodeRef();
 
-                // Create a record from that document
-                Action createAction = actionService.createAction(CreateRecordAction.NAME);
-                createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
-                actionService.executeAction(createAction, document);
+          // Create destination folder
+          String destination = fileFolderService
+            .create(testFolder, "newDest", ContentModel.TYPE_FOLDER)
+            .getNodeRef()
+            .toString();
 
-                // Check if the document is a record now
-                assertTrue(recordService.isRecord(document));
+          // Create a record from that document
+          Action createAction = actionService.createAction(
+            CreateRecordAction.NAME
+          );
+          createAction.setParameterValue(
+            CreateRecordAction.PARAM_FILE_PLAN,
+            filePlan
+          );
+          actionService.executeAction(createAction, document);
 
-                // The record should have the original location information
-                assertNotNull(nodeService.getProperty(document, PROP_RECORD_ORIGINATING_LOCATION));
+          // Check if the document is a record now
+          assertTrue(recordService.isRecord(document));
 
-                // Check the parents. In this case the document should have two parents (doclib and fileplan)
-                assertEquals(nodeService.getParentAssocs(document).size(), 2);
+          // The record should have the original location information
+          assertNotNull(
+            nodeService.getProperty(document, PROP_RECORD_ORIGINATING_LOCATION)
+          );
 
-                // Check the number of children of dmFolder before move
-                assertEquals(nodeService.getChildAssocs(testFolder).size(), 2);
+          // Check the parents. In this case the document should have two parents (doclib and fileplan)
+          assertEquals(nodeService.getParentAssocs(document).size(), 2);
 
-                // Move the record
-                Action moveRecordAction = actionService.createAction(MoveDmRecordAction.NAME);
-                moveRecordAction.setParameterValue(MoveDmRecordAction.PARAM_TARGET_NODE_REF, destination);
-                actionService.executeAction(moveRecordAction, document);
+          // Check the number of children of dmFolder before move
+          assertEquals(nodeService.getChildAssocs(testFolder).size(), 2);
 
-                // Check the number of children of dmFolder after move
-                assertEquals(nodeService.getChildAssocs(testFolder).size(), 1);
+          // Move the record
+          Action moveRecordAction = actionService.createAction(
+            MoveDmRecordAction.NAME
+          );
+          moveRecordAction.setParameterValue(
+            MoveDmRecordAction.PARAM_TARGET_NODE_REF,
+            destination
+          );
+          actionService.executeAction(moveRecordAction, document);
 
-                // Check the new document parent
-                ChildAssociationRef parent1 = nodeService.getParentAssocs(document).get(0);
-                ChildAssociationRef parent2 = nodeService.getParentAssocs(document).get(1);
-                NodeRef newDocParent = (parent1.isPrimary() ? parent2 : parent1).getParentRef();
-                assertEquals(destination, newDocParent.toString());
+          // Check the number of children of dmFolder after move
+          assertEquals(nodeService.getChildAssocs(testFolder).size(), 1);
 
-                // Check if the original location information has been updated
-                assertEquals((NodeRef) nodeService.getProperty(document, PROP_RECORD_ORIGINATING_LOCATION), newDocParent);
+          // Check the new document parent
+          ChildAssociationRef parent1 = nodeService
+            .getParentAssocs(document)
+            .get(0);
+          ChildAssociationRef parent2 = nodeService
+            .getParentAssocs(document)
+            .get(1);
+          NodeRef newDocParent =
+            (parent1.isPrimary() ? parent2 : parent1).getParentRef();
+          assertEquals(destination, newDocParent.toString());
 
-                return null;
-            }
-        },
-        dmCollaborator);
-    }
+          // Check if the original location information has been updated
+          assertEquals(
+            (NodeRef) nodeService.getProperty(
+              document,
+              PROP_RECORD_ORIGINATING_LOCATION
+            ),
+            newDocParent
+          );
+
+          return null;
+        }
+      },
+      dmCollaborator
+    );
+  }
 }

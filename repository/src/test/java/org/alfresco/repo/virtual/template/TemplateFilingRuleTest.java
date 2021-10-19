@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -34,56 +34,73 @@ import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 
-public class TemplateFilingRuleTest extends VirtualizationIntegrationTest
-{
-    @Test
-    public void testFilingSubPath_specialCharacters() throws Exception
-    {
-        NodeRef vfNodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                    "Template 6 With Spaces",
-                                                    TEST_TEMPLATE_5_JSON_SYS_PATH);
+public class TemplateFilingRuleTest extends VirtualizationIntegrationTest {
 
-        NodeRef sfpNodeRef = nodeService.getChildByName(vfNodeRef,
-                                                        ContentModel.ASSOC_CONTAINS,
-                                                        "SpecialFilingPath5");
+  @Test
+  public void testFilingSubPath_specialCharacters() throws Exception {
+    NodeRef vfNodeRef = createVirtualizedFolder(
+      testRootFolder.getNodeRef(),
+      "Template 6 With Spaces",
+      TEST_TEMPLATE_5_JSON_SYS_PATH
+    );
 
-        Reference sfpReference = Reference.fromNodeRef(sfpNodeRef);
-        ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(environment);
+    NodeRef sfpNodeRef = nodeService.getChildByName(
+      vfNodeRef,
+      ContentModel.ASSOC_CONTAINS,
+      "SpecialFilingPath5"
+    );
 
-        VirtualFolderDefinition structure = sfpReference.execute(applyTemplateMethod);
+    Reference sfpReference = Reference.fromNodeRef(sfpNodeRef);
+    ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(
+      environment
+    );
 
-        FilingRule filingRule = structure.getFilingRule();
+    VirtualFolderDefinition structure = sfpReference.execute(
+      applyTemplateMethod
+    );
 
-        assertTrue(filingRule instanceof TemplateFilingRule);
+    FilingRule filingRule = structure.getFilingRule();
 
-        NodeRef fn = filingRule.filingNodeRefFor(new FilingParameters(sfpReference));
-        assertNull(fn);
-        createFolder(vfNodeRef,
-                     "Space Sub Folder");
-        fn = filingRule.filingNodeRefFor(new FilingParameters(sfpReference));
-        assertNotNull(fn);
-    }
+    assertTrue(filingRule instanceof TemplateFilingRule);
 
-    @Test
-    public void testFilingPath_specialCharacters() throws Exception
-    {
-        NodeRef vfNodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
-                                                    "Template 6 With Spaces",
-                                                    TEST_TEMPLATE_5_JSON_SYS_PATH);
+    NodeRef fn = filingRule.filingNodeRefFor(
+      new FilingParameters(sfpReference)
+    );
+    assertNull(fn);
+    createFolder(vfNodeRef, "Space Sub Folder");
+    fn = filingRule.filingNodeRefFor(new FilingParameters(sfpReference));
+    assertNotNull(fn);
+  }
 
-        NodeRef sfpNodeRef = nodeService.getChildByName(vfNodeRef,
-                                                        ContentModel.ASSOC_CONTAINS,
-                                                        "SpecialFilingPath4");
+  @Test
+  public void testFilingPath_specialCharacters() throws Exception {
+    NodeRef vfNodeRef = createVirtualizedFolder(
+      testRootFolder.getNodeRef(),
+      "Template 6 With Spaces",
+      TEST_TEMPLATE_5_JSON_SYS_PATH
+    );
 
-        Reference sfpReference = Reference.fromNodeRef(sfpNodeRef);
-        ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(environment);
+    NodeRef sfpNodeRef = nodeService.getChildByName(
+      vfNodeRef,
+      ContentModel.ASSOC_CONTAINS,
+      "SpecialFilingPath4"
+    );
 
-        VirtualFolderDefinition structure = sfpReference.execute(applyTemplateMethod);
+    Reference sfpReference = Reference.fromNodeRef(sfpNodeRef);
+    ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(
+      environment
+    );
 
-        FilingRule filingRule = structure.getFilingRule();
-        assertTrue(filingRule instanceof TemplateFilingRule);
+    VirtualFolderDefinition structure = sfpReference.execute(
+      applyTemplateMethod
+    );
 
-        NodeRef fn = filingRule.filingNodeRefFor(new FilingParameters(sfpReference));
-        assertNotNull(fn);
-    }
+    FilingRule filingRule = structure.getFilingRule();
+    assertTrue(filingRule instanceof TemplateFilingRule);
+
+    NodeRef fn = filingRule.filingNodeRefFor(
+      new FilingParameters(sfpReference)
+    );
+    assertNotNull(fn);
+  }
 }

@@ -33,18 +33,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * @author Roy Wetherall
  */
-public class FolderOpenClosedEvaluator extends BaseEvaluator
-{
-    private boolean expected = true;
+public class FolderOpenClosedEvaluator extends BaseEvaluator {
 
-    public void setExpected(boolean expected)
-    {
-        this.expected = expected;
-    }
+  private boolean expected = true;
 
-    @Override
-    protected boolean evaluateImpl(NodeRef nodeRef)
-    {
-        return (recordFolderService.isRecordFolderClosed(nodeRef) == expected);
-    }
+  public void setExpected(boolean expected) {
+    this.expected = expected;
+  }
+
+  @Override
+  protected boolean evaluateImpl(NodeRef nodeRef) {
+    return (recordFolderService.isRecordFolderClosed(nodeRef) == expected);
+  }
 }

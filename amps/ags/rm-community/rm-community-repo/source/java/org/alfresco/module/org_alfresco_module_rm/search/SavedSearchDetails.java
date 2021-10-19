@@ -84,237 +84,254 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  */
 // Not @AlfrescoPublicApi at the moment as it requires RecordsManagementSearchServiceImpl which is not public API.
-public class SavedSearchDetails extends ReportDetails
-{
-    // JSON label values
-    public static final String SITE_ID = "siteid";
-    public static final String NAME = "name";
-    public static final String DESCRIPTION = "description";
-    public static final String SEARCH = "search";
-    public static final String PUBLIC = "public";
-    public static final String REPORT = "report";
-    public static final String SEARCHPARAMS = "searchparams";
+public class SavedSearchDetails extends ReportDetails {
 
-    // JSON values for backwards compatibility
-    public static final String QUERY = "query";
-    public static final String SORT = "sort";
-    public static final String PARAMS = "params";
+  // JSON label values
+  public static final String SITE_ID = "siteid";
+  public static final String NAME = "name";
+  public static final String DESCRIPTION = "description";
+  public static final String SEARCH = "search";
+  public static final String PUBLIC = "public";
+  public static final String REPORT = "report";
+  public static final String SEARCHPARAMS = "searchparams";
 
-    private static final String DEFAULT_SITE_ID = "rm";
+  // JSON values for backwards compatibility
+  public static final String QUERY = "query";
+  public static final String SORT = "sort";
+  public static final String PARAMS = "params";
 
-    /** Site id */
-	private String siteId;
+  private static final String DEFAULT_SITE_ID = "rm";
 
-	/** Indicates whether the saved search is public or not */
-	private boolean isPublic = true;
+  /** Site id */
+  private String siteId;
 
-	/** Indicates whether the saved search is a report */
-	private boolean isReport = false;
+  /** Indicates whether the saved search is public or not */
+  private boolean isPublic = true;
 
-	/** Helper method to link to search node ref if provided */
-	private NodeRef nodeRef = null;
+  /** Indicates whether the saved search is a report */
+  private boolean isReport = false;
 
-    /** Namespace service */
-    NamespaceService namespaceService;
+  /** Helper method to link to search node ref if provided */
+  private NodeRef nodeRef = null;
 
-    /** Records management search service */
-    RecordsManagementSearchServiceImpl searchService;
+  /** Namespace service */
+  NamespaceService namespaceService;
 
-    /** Saves search details compatibility */
-    private SavedSearchDetailsCompatibility compatibility;
+  /** Records management search service */
+  RecordsManagementSearchServiceImpl searchService;
 
-	/**
-	 *
-	 * @param jsonString
-	 * @return
-	 */
-	/*package*/ static SavedSearchDetails createFromJSON(String jsonString, NamespaceService namespaceService, RecordsManagementSearchServiceImpl searchService, NodeRef nodeRef)
-	{
-	    try
-	    {
-    	    JSONObject search = new JSONObject(jsonString);
+  /** Saves search details compatibility */
+  private SavedSearchDetailsCompatibility compatibility;
 
-    	    // Get the site id
-    	    String siteId = DEFAULT_SITE_ID;
-    	    if (search.has(SITE_ID))
-    	    {
-    	        siteId = search.getString(SITE_ID);
-    	    }
+  /**
+   *
+   * @param jsonString
+   * @return
+   */
+  /*package*/static SavedSearchDetails createFromJSON(
+    String jsonString,
+    NamespaceService namespaceService,
+    RecordsManagementSearchServiceImpl searchService,
+    NodeRef nodeRef
+  ) {
+    try {
+      JSONObject search = new JSONObject(jsonString);
 
-    	    // Get the name
-    	    if (!search.has(NAME))
-    	    {
-    	        throw new AlfrescoRuntimeException("Can not create saved search details from json, because required name is not present. " + jsonString);
-    	    }
-    	    String name = search.getString(NAME);
+      // Get the site id
+      String siteId = DEFAULT_SITE_ID;
+      if (search.has(SITE_ID)) {
+        siteId = search.getString(SITE_ID);
+      }
 
-    	    // Get the description
-    	    String description = "";
-    	    if (search.has(DESCRIPTION))
-    	    {
-    	        description = search.getString(DESCRIPTION);
-                String translated = I18NUtil.getMessage(description);
-                if (translated != null)
-                {
-                    description = translated;
-                }
-    	    }
+      // Get the name
+      if (!search.has(NAME)) {
+        throw new AlfrescoRuntimeException(
+          "Can not create saved search details from json, because required name is not present. " +
+          jsonString
+        );
+      }
+      String name = search.getString(NAME);
 
-    	    // Get the query
-    	    String query = null;
-    	    if (!search.has(SEARCH))
-    	    {
-    	        // We are probably dealing with a "old" style saved search
-    	        if (search.has(PARAMS))
-    	        {
-    	            String oldParams = search.getString(PARAMS);
-    	            query = SavedSearchDetailsCompatibility.getSearchFromParams(oldParams);
-    	        }
-    	        else
-    	        {
-    	            throw new AlfrescoRuntimeException("Can not create saved search details from json, because required search is not present. " + jsonString);
-    	        }
+      // Get the description
+      String description = "";
+      if (search.has(DESCRIPTION)) {
+        description = search.getString(DESCRIPTION);
+        String translated = I18NUtil.getMessage(description);
+        if (translated != null) {
+          description = translated;
+        }
+      }
 
-    	    }
-    	    else
-    	    {
-    	        query = search.getString(SEARCH);
-    	    }
+      // Get the query
+      String query = null;
+      if (!search.has(SEARCH)) {
+        // We are probably dealing with a "old" style saved search
+        if (search.has(PARAMS)) {
+          String oldParams = search.getString(PARAMS);
+          query =
+            SavedSearchDetailsCompatibility.getSearchFromParams(oldParams);
+        } else {
+          throw new AlfrescoRuntimeException(
+            "Can not create saved search details from json, because required search is not present. " +
+            jsonString
+          );
+        }
+      } else {
+        query = search.getString(SEARCH);
+      }
 
-    	    // Get the search parameters
-            RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
-            if (search.has(SEARCHPARAMS))
-            {
-                searchParameters = RecordsManagementSearchParameters.createFromJSON(search.getJSONObject(SEARCHPARAMS), namespaceService);
-            }
-            else
-            {
-                // See if we are dealing with the old style of saved search
-                if (search.has(PARAMS))
-                {
-                    String oldParams = search.getString(PARAMS);
-                    String oldSort = search.getString(SORT);
-                    searchParameters = SavedSearchDetailsCompatibility.createSearchParameters(oldParams, oldSort, namespaceService);
-                }
-            }
+      // Get the search parameters
+      RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
+      if (search.has(SEARCHPARAMS)) {
+        searchParameters =
+          RecordsManagementSearchParameters.createFromJSON(
+            search.getJSONObject(SEARCHPARAMS),
+            namespaceService
+          );
+      } else {
+        // See if we are dealing with the old style of saved search
+        if (search.has(PARAMS)) {
+          String oldParams = search.getString(PARAMS);
+          String oldSort = search.getString(SORT);
+          searchParameters =
+            SavedSearchDetailsCompatibility.createSearchParameters(
+              oldParams,
+              oldSort,
+              namespaceService
+            );
+        }
+      }
 
-    	    // Determine whether the saved query is public or not
-    	    boolean isPublic = true;
-    	    if (search.has(PUBLIC))
-    	    {
-    	        isPublic = search.getBoolean(PUBLIC);
-    	    }
+      // Determine whether the saved query is public or not
+      boolean isPublic = true;
+      if (search.has(PUBLIC)) {
+        isPublic = search.getBoolean(PUBLIC);
+      }
 
-    	    // Determine whether the saved query is a report or not
-    	    boolean isReport = false;
-    	    if (search.has(REPORT))
-    	    {
-    	        isReport = search.getBoolean(REPORT);
-    	    }
+      // Determine whether the saved query is a report or not
+      boolean isReport = false;
+      if (search.has(REPORT)) {
+        isReport = search.getBoolean(REPORT);
+      }
 
-    	    // Create the saved search details object
-    	    SavedSearchDetails savedSearchDetails = new SavedSearchDetails(siteId, name, description, query, searchParameters, isPublic, isReport, namespaceService, searchService);
-    	    savedSearchDetails.nodeRef = nodeRef;
-    	    return savedSearchDetails;
-	    }
-	    catch (JSONException exception)
-	    {
-	        throw new AlfrescoRuntimeException("Can not create saved search details from json. " + jsonString, exception);
-	    }
-	}
-
-	/**
-	 * @param siteId
-	 * @param name
-	 * @param description
-	 * @param isPublic
-	 */
-	/*package*/ SavedSearchDetails(
-	        String siteId,
-	        String name,
-	        String description,
-	        String serach,
-	        RecordsManagementSearchParameters searchParameters,
-	        boolean isPublic,
-	        boolean isReport,
-	        NamespaceService namespaceService,
-	        RecordsManagementSearchServiceImpl searchService)
-	{
-	    super(name, description, serach, searchParameters);
-
-        ParameterCheck.mandatory("siteId", siteId);
-        ParameterCheck.mandatory("namespaceService", namespaceService);
-        ParameterCheck.mandatory("searchService", searchService);
-
-	    this.siteId = siteId;
-		this.isPublic = isPublic;
-		this.isReport = isReport;
-		this.namespaceService = namespaceService;
-		this.compatibility = new SavedSearchDetailsCompatibility(this, namespaceService, searchService);
-		this.searchService = searchService;
-	}
-
-	/**
-	 * @return
-	 */
-	public String getSiteId()
-	{
-		return siteId;
-	}
-
-	/**
-	 * @return
-	 */
-	public boolean isPublic()
-	{
-		return isPublic;
-	}
-
-	/**
-	 * @return
-	 */
-	public boolean isReport()
-    {
-        return isReport;
+      // Create the saved search details object
+      SavedSearchDetails savedSearchDetails = new SavedSearchDetails(
+        siteId,
+        name,
+        description,
+        query,
+        searchParameters,
+        isPublic,
+        isReport,
+        namespaceService,
+        searchService
+      );
+      savedSearchDetails.nodeRef = nodeRef;
+      return savedSearchDetails;
+    } catch (JSONException exception) {
+      throw new AlfrescoRuntimeException(
+        "Can not create saved search details from json. " + jsonString,
+        exception
+      );
     }
+  }
 
-	public SavedSearchDetailsCompatibility getCompatibility()
-	{
-	    return compatibility;
-	}
+  /**
+   * @param siteId
+   * @param name
+   * @param description
+   * @param isPublic
+   */
+  /*package*/SavedSearchDetails(
+    String siteId,
+    String name,
+    String description,
+    String serach,
+    RecordsManagementSearchParameters searchParameters,
+    boolean isPublic,
+    boolean isReport,
+    NamespaceService namespaceService,
+    RecordsManagementSearchServiceImpl searchService
+  ) {
+    super(name, description, serach, searchParameters);
+    ParameterCheck.mandatory("siteId", siteId);
+    ParameterCheck.mandatory("namespaceService", namespaceService);
+    ParameterCheck.mandatory("searchService", searchService);
 
-	/**
-	 * @return NodeRef search node ref, null if not set
-	 */
-	public NodeRef getNodeRef()
-	{
-	    return nodeRef;
-	}
+    this.siteId = siteId;
+    this.isPublic = isPublic;
+    this.isReport = isReport;
+    this.namespaceService = namespaceService;
+    this.compatibility =
+      new SavedSearchDetailsCompatibility(
+        this,
+        namespaceService,
+        searchService
+      );
+    this.searchService = searchService;
+  }
 
-	/**
-	 * @return
-	 */
-	public String toJSONString()
-	{
-	    try
-	    {
-    	    JSONObject jsonObject = new JSONObject();
-    	    jsonObject.put(SITE_ID, siteId);
-    	    jsonObject.put(NAME, name);
-    	    jsonObject.put(DESCRIPTION, description);
-    	    jsonObject.put(SEARCH, search);
-    	    jsonObject.put(SEARCHPARAMS, searchParameters.toJSONObject(namespaceService));
-    	    jsonObject.put(PUBLIC, isPublic);
+  /**
+   * @return
+   */
+  public String getSiteId() {
+    return siteId;
+  }
 
-    	    // Add full query for backward compatibility
-    	    jsonObject.put(QUERY, searchService.buildQueryString(search, searchParameters));
-    	    jsonObject.put(SORT, compatibility.getSort());
+  /**
+   * @return
+   */
+  public boolean isPublic() {
+    return isPublic;
+  }
 
-    	    return jsonObject.toString();
-	    }
-	    catch (JSONException exception)
-	    {
-	        throw new AlfrescoRuntimeException("Can not convert saved search details into JSON.", exception);
-	    }
-	}
+  /**
+   * @return
+   */
+  public boolean isReport() {
+    return isReport;
+  }
+
+  public SavedSearchDetailsCompatibility getCompatibility() {
+    return compatibility;
+  }
+
+  /**
+   * @return NodeRef search node ref, null if not set
+   */
+  public NodeRef getNodeRef() {
+    return nodeRef;
+  }
+
+  /**
+   * @return
+   */
+  public String toJSONString() {
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(SITE_ID, siteId);
+      jsonObject.put(NAME, name);
+      jsonObject.put(DESCRIPTION, description);
+      jsonObject.put(SEARCH, search);
+      jsonObject.put(
+        SEARCHPARAMS,
+        searchParameters.toJSONObject(namespaceService)
+      );
+      jsonObject.put(PUBLIC, isPublic);
+
+      // Add full query for backward compatibility
+      jsonObject.put(
+        QUERY,
+        searchService.buildQueryString(search, searchParameters)
+      );
+      jsonObject.put(SORT, compatibility.getSort());
+
+      return jsonObject.toString();
+    } catch (JSONException exception) {
+      throw new AlfrescoRuntimeException(
+        "Can not convert saved search details into JSON.",
+        exception
+      );
+    }
+  }
 }

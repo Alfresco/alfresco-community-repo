@@ -32,7 +32,6 @@ import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,57 +46,59 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordedVersionConfigPost extends AbstractRmWebScript
-{
-    /** Constant for recorded version parameter */
-    public static final String RECORDED_VERSION = "recordedVersion";
+public class RecordedVersionConfigPost extends AbstractRmWebScript {
 
-    /** Recordable version config service */
-    private RecordableVersionConfigService recordableVersionConfigService;
+  /** Constant for recorded version parameter */
+  public static final String RECORDED_VERSION = "recordedVersion";
 
-    /**
-     * Gets the recordable version config service
-     *
-     * @return The recordable version config service
-     */
-    protected RecordableVersionConfigService getRecordableVersionConfigService()
-    {
-        return this.recordableVersionConfigService;
-    }
+  /** Recordable version config service */
+  private RecordableVersionConfigService recordableVersionConfigService;
 
-    /**
-     * Sets the recordable version config service
-     *
-     * @param recordableVersionConfigService The recordable version config service
-     */
-    public void setRecordableVersionConfigService(RecordableVersionConfigService recordableVersionConfigService)
-    {
-        this.recordableVersionConfigService = recordableVersionConfigService;
-    }
+  /**
+   * Gets the recordable version config service
+   *
+   * @return The recordable version config service
+   */
+  protected RecordableVersionConfigService getRecordableVersionConfigService() {
+    return this.recordableVersionConfigService;
+  }
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *          org.springframework.extensions.webscripts.Status,
-     *          org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        NodeRef nodeRef = parseRequestForNodeRef(req);
-        String policy = getRecordableVersionPolicy(req);
-        getRecordableVersionConfigService().setVersion(nodeRef, policy);
-        return new HashMap<>(1);
-    }
+  /**
+   * Sets the recordable version config service
+   *
+   * @param recordableVersionConfigService The recordable version config service
+   */
+  public void setRecordableVersionConfigService(
+    RecordableVersionConfigService recordableVersionConfigService
+  ) {
+    this.recordableVersionConfigService = recordableVersionConfigService;
+  }
 
-    /**
-     * Gets the recordable version policy from the request
-     *
-     * @param req  The webscript request
-     * @return The recordable version policy
-     */
-    private String getRecordableVersionPolicy(WebScriptRequest req)
-    {
-        JSONObject requestContent = getRequestContentAsJSONObject(req);
-        return getStringValueFromJSONObject(requestContent, RECORDED_VERSION);
-    }
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+   *          org.springframework.extensions.webscripts.Status,
+   *          org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    NodeRef nodeRef = parseRequestForNodeRef(req);
+    String policy = getRecordableVersionPolicy(req);
+    getRecordableVersionConfigService().setVersion(nodeRef, policy);
+    return new HashMap<>(1);
+  }
+
+  /**
+   * Gets the recordable version policy from the request
+   *
+   * @param req  The webscript request
+   * @return The recordable version policy
+   */
+  private String getRecordableVersionPolicy(WebScriptRequest req) {
+    JSONObject requestContent = getRequestContentAsJSONObject(req);
+    return getStringValueFromJSONObject(requestContent, RECORDED_VERSION);
+  }
 }

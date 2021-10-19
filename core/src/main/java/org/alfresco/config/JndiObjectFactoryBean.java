@@ -19,50 +19,39 @@
 package org.alfresco.config;
 
 import java.sql.Connection;
-
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
  * An extended version of JndiObjectFactoryBean that actually tests a JNDI data source before falling back to its
  * default object. Allows continued backward compatibility with old-style datasource configuration.
- * 
+ *
  * @author dward
  */
-public class JndiObjectFactoryBean extends org.springframework.jndi.JndiObjectFactoryBean
-{
+public class JndiObjectFactoryBean
+  extends org.springframework.jndi.JndiObjectFactoryBean {
 
-    @Override
-    protected Object lookup() throws NamingException
-    {
-        Object candidate = super.lookup();
-        if (candidate instanceof DataSource)
-        {
-            Connection con = null;
-            try
-            {
-                con = ((DataSource) candidate).getConnection();
-            }
-            catch (Exception e)
-            {
-                NamingException e1 = new NamingException("Unable to get connection from " + getJndiName());
-                e1.setRootCause(e);
-                throw e1;
-            }
-            finally
-            {
-                try
-                {
-                    if (con != null)
-                    {
-                        con.close();
-                    }
-                }
-                catch (Exception e)
-                {
-                }
-            }
-        }
-        return candidate;
+  @Override
+  protected Object lookup() throws NamingException {
+    Object candidate = super.lookup();
+    if (candidate instanceof DataSource) {
+      Connection con = null;
+      try {
+        con = ((DataSource) candidate).getConnection();
+      } catch (Exception e) {
+        NamingException e1 = new NamingException(
+          "Unable to get connection from " + getJndiName()
+        );
+        e1.setRootCause(e);
+        throw e1;
+      } finally {
+        try {
+          if (con != null) {
+            con.close();
+          }
+        } catch (Exception e) {}
+      }
     }
+    return candidate;
+  }
 }

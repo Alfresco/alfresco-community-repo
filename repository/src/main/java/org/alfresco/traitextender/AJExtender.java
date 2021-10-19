@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-
 import java.util.concurrent.ConcurrentHashMap;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -71,660 +70,615 @@ import org.aspectj.lang.reflect.MethodSignature;
  * there are inconsistencies between {@link ExtensionPoint}s and {@link Extend}
  * annotated methods (egg. an annotated method can not be mapped to a method in
  * the indicated extension by signature matching).
- * 
+ *
  * @author Bogdan Horje
  */
-public class AJExtender
-{
-    private static final Object[] SAFE_NULL_ARGS = new Object[0];
+public class AJExtender {
 
-    private static Log logger = LogFactory.getLog(AJExtender.class);
+  private static final Object[] SAFE_NULL_ARGS = new Object[0];
 
-    private static ConcurrentHashMap.KeySetView<ExtensionRoute, Boolean> oneTimeLogSet = null;
+  private static Log logger = LogFactory.getLog(AJExtender.class);
 
-    /**
-     *  
-     */
-    private static final ThreadLocal<Stack<Boolean>> ajPointsLocalEnabled = new ThreadLocal<Stack<Boolean>>()
-    {
-        protected Stack<Boolean> initialValue()
-        {
-            Stack<Boolean> enablementStack = new Stack<Boolean>();
-            enablementStack.push(true);
-            return enablementStack;
-        };
-    };
+  private static ConcurrentHashMap.KeySetView<ExtensionRoute, Boolean> oneTimeLogSet =
+    null;
 
-    /**
-     * @author Bogdan Horje
-     */
-    static class ProceedingContext
-    {
-        final Extend extend;
-
-        final ProceedingJoinPoint proceedingJoinPoint;
-
-        ProceedingContext(Extend extend, ProceedingJoinPoint proceedingJoinPoint)
-        {
-            super();
-            this.extend = extend;
-            this.proceedingJoinPoint = proceedingJoinPoint;
-        }
-
+  /**
+   *
+   */
+  private static final ThreadLocal<Stack<Boolean>> ajPointsLocalEnabled = new ThreadLocal<Stack<Boolean>>() {
+    protected Stack<Boolean> initialValue() {
+      Stack<Boolean> enablementStack = new Stack<Boolean>();
+      enablementStack.push(true);
+      return enablementStack;
     }
+  };
 
-    private static final ThreadLocal<Stack<ProceedingContext>> ajLocalProceedingJoinPoints = new ThreadLocal<Stack<ProceedingContext>>()
-    {
-        protected java.util.Stack<ProceedingContext> initialValue()
-        {
-            return new Stack<>();
-        };
-    };
+  /**
+   * @author Bogdan Horje
+   */
+  static class ProceedingContext {
+
+    final Extend extend;
+
+    final ProceedingJoinPoint proceedingJoinPoint;
+
+    ProceedingContext(Extend extend, ProceedingJoinPoint proceedingJoinPoint) {
+      super();
+      this.extend = extend;
+      this.proceedingJoinPoint = proceedingJoinPoint;
+    }
+  }
+
+  private static final ThreadLocal<Stack<ProceedingContext>> ajLocalProceedingJoinPoints = new ThreadLocal<Stack<ProceedingContext>>() {
+    protected java.util.Stack<ProceedingContext> initialValue() {
+      return new Stack<>();
+    }
+  };
+
+  /**
+   * Implementors are aspectJ extension ignoring closures. When executing
+   * {@link ExtensionBypass}es using {@link AJExtender#run(ExtensionBypass)} or
+   * {@link AJExtender#run(ExtensionBypass, Class[])} the {@link #run()}
+   * method code will ignore extension overrides.
+   *
+   * @author Bogdan Horje
+   */
+  public static interface ExtensionBypass<R> {
+    R run() throws Throwable;
+  }
+
+  /**
+   * Thrown-exception or stored error resulted compiling inconsistencies found
+   * during aspectJ extensible classes compilation.
+   *
+   * @see {@link AJExtender#compile(Class)}
+   * @author Bogdan Horje
+   */
+  interface AJExtensibleCompilingError {
+    String getShortMessage();
+  }
+
+  /**
+   * Thrown or stored on compiling inconsistencies found during aspectJ
+   * extensible classes compilation.
+   *
+   * @see {@link AJExtender#compile(Class)}
+   * @author Bogdan Horje
+   */
+  static class AJExtensibleCompilingException
+    extends Exception
+    implements AJExtensibleCompilingError {
 
     /**
-     * Implementors are aspectJ extension ignoring closures. When executing
-     * {@link ExtensionBypass}es using {@link AJExtender#run(ExtensionBypass)} or
-     * {@link AJExtender#run(ExtensionBypass, Class[])} the {@link #run()}
-     * method code will ignore extension overrides.
      *
-     * @author Bogdan Horje
      */
-    public static interface ExtensionBypass<R>
-    {
-        R run() throws Throwable;
+    private static final long serialVersionUID = 1L;
+
+    AJExtensibleCompilingException() {
+      super();
     }
 
-    /**
-     * Thrown-exception or stored error resulted compiling inconsistencies found
-     * during aspectJ extensible classes compilation.
-     *
-     * @see {@link AJExtender#compile(Class)}
-     * @author Bogdan Horje
-     */
-    interface AJExtensibleCompilingError
-    {
-        String getShortMessage();
+    AJExtensibleCompilingException(
+      String message,
+      Throwable cause,
+      boolean enableSuppression,
+      boolean writableStackTrace
+    ) {
+      super(message, cause, enableSuppression, writableStackTrace);
     }
 
-    /**
-     * Thrown or stored on compiling inconsistencies found during aspectJ
-     * extensible classes compilation.
-     *
-     * @see {@link AJExtender#compile(Class)}
-     * @author Bogdan Horje
-     */
-    static class AJExtensibleCompilingException extends Exception implements AJExtensibleCompilingError
-    {
-
-        /**
-         * 
-         */
-        private static final long serialVersionUID = 1L;
-
-        AJExtensibleCompilingException()
-        {
-            super();
-        }
-
-        AJExtensibleCompilingException(String message, Throwable cause, boolean enableSuppression,
-                    boolean writableStackTrace)
-        {
-            super(message,
-                  cause,
-                  enableSuppression,
-                  writableStackTrace);
-        }
-
-        AJExtensibleCompilingException(String message, Throwable cause)
-        {
-            super(message,
-                  cause);
-        }
-
-        AJExtensibleCompilingException(String message)
-        {
-            super(message);
-        }
-
-        AJExtensibleCompilingException(Throwable cause)
-        {
-            super(cause);
-        }
-
-        @Override
-        public String getShortMessage()
-        {
-            return getMessage();
-        }
-
+    AJExtensibleCompilingException(String message, Throwable cause) {
+      super(message, cause);
     }
 
-    /**
-     * Signals the existence of extension methods that are not matched with
-     * same-signature methods through {@link Extend} annotations within
-     * {@link Extensible}.
-     *
-     * @author Bogdan Horje
-     */
-    static class AJDanglingExtensionError implements AJExtensibleCompilingError
-    {
-        private Method danglingMethod;
-
-        private Extend extendDeclaration;
-
-        AJDanglingExtensionError(Method danglingMethod, Extend extendDeclaration)
-        {
-            super();
-            this.danglingMethod = danglingMethod;
-            this.extendDeclaration = extendDeclaration;
-        }
-
-        @Override
-        public String getShortMessage()
-        {
-            return "Dangling extension method " + danglingMethod + " " + extendDeclaration;
-        }
+    AJExtensibleCompilingException(String message) {
+      super(message);
     }
 
-    /**
-     * An {@link Extensible} sub class compilation result containing all
-     * {@link Extend} mapped routes, not routed or dangling methods within the
-     * give extensible class and/or possible compilation errors.
-     *
-     * @author Bogdan Horje
-     */
-    static class CompiledExtensible
-    {
-        private Class<? extends Extensible> extensible;
-
-        private Map<Method, ExtensionRoute> routedMethods = new HashMap<>();
-
-        private Map<Method, ExtensionRoute> notRoutedMethods = new HashMap<>();
-
-        private List<AJExtensibleCompilingError> errors = new LinkedList<>();
-
-        CompiledExtensible(Class<? extends Extensible> extensible)
-        {
-            super();
-            this.extensible = extensible;
-        }
-
-        Class<? extends Extensible> getExtensible()
-        {
-            return this.extensible;
-        }
-
-        void add(AJExtensibleCompilingError error)
-        {
-            this.errors.add(error);
-        }
-
-        boolean hasErrors()
-        {
-            return !errors.isEmpty();
-        }
-
-        String getErrorsString()
-        {
-            StringBuilder builder = new StringBuilder();
-
-            for (AJExtensibleCompilingError error : errors)
-            {
-                builder.append(error.getShortMessage());
-                builder.append("\n");
-            }
-
-            return builder.toString();
-        }
-
-        List<AJExtensibleCompilingError> getErrors()
-        {
-            return this.errors;
-        }
-
-        void add(ExtensionRoute route)
-        {
-            if (route.extensionMethod == null)
-            {
-                notRoutedMethods.remove(route.extendedMethod);
-                routedMethods.put(route.extendedMethod,
-                                  route);
-            }
-            else if (!routedMethods.containsKey(route.extendedMethod))
-            {
-                routedMethods.put(route.extendedMethod,
-                                  route);
-            }
-        }
-
-        Collection<ExtensionRoute> getAllNotRouted()
-        {
-            return notRoutedMethods.values();
-        }
-
-        int getExtendedMethodCount()
-        {
-            return routedMethods.size() + notRoutedMethods.size();
-        }
-
-        String getInfo()
-        {
-            return extensible.getName() + "{ " + routedMethods.size() + " routed methods; " + notRoutedMethods.size()
-                        + " not routed methods;" + errors.size() + " errors}";
-        }
+    AJExtensibleCompilingException(Throwable cause) {
+      super(cause);
     }
 
-    /**
-     * Encapsulates extended-method to extension-method mapping information.
-     *
-     * @author Bogdan Horje
-     */
-    static class ExtensionRoute
-    {
-        final Extend extendAnnotation;
+    @Override
+    public String getShortMessage() {
+      return getMessage();
+    }
+  }
 
-        final Method extendedMethod;
+  /**
+   * Signals the existence of extension methods that are not matched with
+   * same-signature methods through {@link Extend} annotations within
+   * {@link Extensible}.
+   *
+   * @author Bogdan Horje
+   */
+  static class AJDanglingExtensionError implements AJExtensibleCompilingError {
 
-        final Method extensionMethod;
+    private Method danglingMethod;
 
-        ExtensionRoute(Extend extendAnnotation, Method traitMethod)
-        {
-            this(extendAnnotation,
-                 traitMethod,
-                 null);
-        }
+    private Extend extendDeclaration;
 
-        ExtensionRoute(Extend extendAnnotation, Method extendedMethod, Method extensionMethod)
-        {
-            super();
-            ParameterCheck.mandatory("extendAnnotation",
-                                     extendAnnotation);
-            ParameterCheck.mandatory("traitMethod",
-                                     extendedMethod);
-
-            this.extendAnnotation = extendAnnotation;
-            this.extendedMethod = extendedMethod;
-            this.extensionMethod = extensionMethod;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (obj instanceof ExtensionRoute)
-            {
-                ExtensionRoute route = (ExtensionRoute) obj;
-                return extendAnnotation.traitAPI().equals(route.extendAnnotation.traitAPI())
-                            && extendAnnotation.extensionAPI().equals(route.extendAnnotation.extensionAPI())
-                            && extendedMethod.equals(route.extendedMethod)
-                            && ((extensionMethod == null && route.extensionMethod == null) || (extensionMethod != null && extensionMethod
-                                        .equals(route.extensionMethod)));
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        @Override
-        public String toString()
-        {
-            String extensionString = "NOT ROUTED";
-
-            if (extensionMethod != null)
-            {
-                Class<?> exDeclClass = extendedMethod.getDeclaringClass();
-                extensionString = extensionMethod.toGenericString() + "#" + exDeclClass;
-            }
-
-            return extendAnnotation.toString() + "\t\n[" + extendedMethod.toGenericString() + " -> " + extensionString
-                        + "]";
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return extendAnnotation.hashCode();
-        }
+    AJDanglingExtensionError(Method danglingMethod, Extend extendDeclaration) {
+      super();
+      this.danglingMethod = danglingMethod;
+      this.extendDeclaration = extendDeclaration;
     }
 
-    /**
-     * @return <code>true</code> if aspectJ routed extensions are enabled on the
-     *         call stack of the current thread
-     */
-    static boolean areAJPointsEnabled()
-    {
-        return ajPointsLocalEnabled.get().peek();
+    @Override
+    public String getShortMessage() {
+      return (
+        "Dangling extension method " + danglingMethod + " " + extendDeclaration
+      );
+    }
+  }
+
+  /**
+   * An {@link Extensible} sub class compilation result containing all
+   * {@link Extend} mapped routes, not routed or dangling methods within the
+   * give extensible class and/or possible compilation errors.
+   *
+   * @author Bogdan Horje
+   */
+  static class CompiledExtensible {
+
+    private Class<? extends Extensible> extensible;
+
+    private Map<Method, ExtensionRoute> routedMethods = new HashMap<>();
+
+    private Map<Method, ExtensionRoute> notRoutedMethods = new HashMap<>();
+
+    private List<AJExtensibleCompilingError> errors = new LinkedList<>();
+
+    CompiledExtensible(Class<? extends Extensible> extensible) {
+      super();
+      this.extensible = extensible;
     }
 
-    /**
-     * Pushes a new enabled state of the aspectJ routed extensions on the
-     * current thread execution stack.
-     */
-    static void enableAJPoints()
-    {
-        ajPointsLocalEnabled.get().push(true);
+    Class<? extends Extensible> getExtensible() {
+      return this.extensible;
     }
 
-    /**
-     * Pops the current aspectJ routed extensions enablement state from the
-     * current thread execution stack.
-     */
-    static void revertAJPoints()
-    {
-        ajPointsLocalEnabled.get().pop();
+    void add(AJExtensibleCompilingError error) {
+      this.errors.add(error);
     }
 
-    /**
-     * Exception throwing extension-bypass closure runner method. <br>
-     * Sets up adequate call contexts to avoid exception calling and than
-     * delegates to the given closure.
-     * 
-     * @param closure
-     * @return
-     * @throws Throwable
-     */
-    static <R> R throwableRun(AJExtender.ExtensionBypass<R> closure) throws Throwable
-    {
-        try
-        {
-            AJExtender.ajPointsLocalEnabled.get().push(false);
-            return closure.run();
-
-        }
-        finally
-        {
-            AJExtender.ajPointsLocalEnabled.get().pop();
-        }
+    boolean hasErrors() {
+      return !errors.isEmpty();
     }
 
-    /**
-     * Extension-bypass closure runner method. <br>
-     * Sets up adequate call contexts to avoid exception calling and than
-     * delegates to the given closure.<br>
-     * Only the given exTypes exceptions will be passed on to the calling
-     * context, all others will be wrapped as
-     * {@link UndeclaredThrowableException}s.
-     * 
-     * @param closure
-     * @param exTypes
-     * @return
-     * @throws Throwable
-     */
-    public static <R> R run(AJExtender.ExtensionBypass<R> closure, Class<?>[] exTypes) throws Throwable
-    {
-        try
-        {
-            return throwableRun(closure);
-        }
-        catch (Error | RuntimeException error)
-        {
-            throw error;
-        }
-        catch (Throwable error)
-        {
-            throw asCheckThrowable(error,
-                                   exTypes);
-        }
+    String getErrorsString() {
+      StringBuilder builder = new StringBuilder();
+
+      for (AJExtensibleCompilingError error : errors) {
+        builder.append(error.getShortMessage());
+        builder.append("\n");
+      }
+
+      return builder.toString();
     }
 
-    static Throwable asCheckThrowable(Throwable error, Class<?>... checkedThrowableTypes)
-    {
-        Class<? extends Throwable> errorClass = error.getClass();
-        for (int i = 0; i < checkedThrowableTypes.length; i++)
-        {
-            if (errorClass.equals(checkedThrowableTypes[i]))
-            {
-                return error;
-            }
-        }
-        return new UndeclaredThrowableException(error);
+    List<AJExtensibleCompilingError> getErrors() {
+      return this.errors;
     }
 
-    /**
-     * Extension-bypass closure runner method. <br>
-     * Sets up adequate call contexts to avoid exception calling and than
-     * delegates to the given closure.
-     * 
-     * @param closure
-     * @return
-     */
-    public static <R> R run(AJExtender.ExtensionBypass<R> closure)
-    {
-        try
-        {
-            return throwableRun(closure);
-        }
-        catch (Error | RuntimeException error)
-        {
-            throw error;
-        }
-        catch (Throwable error)
-        {
-            throw new UndeclaredThrowableException(error);
-        }
+    void add(ExtensionRoute route) {
+      if (route.extensionMethod == null) {
+        notRoutedMethods.remove(route.extendedMethod);
+        routedMethods.put(route.extendedMethod, route);
+      } else if (!routedMethods.containsKey(route.extendedMethod)) {
+        routedMethods.put(route.extendedMethod, route);
+      }
     }
 
-    /**
-     * Logs each method routing path once per session.
-     * 
-     * @param logger
-     * @param route
-     */
-    static void oneTimeLiveLog(Log logger, ExtensionRoute route)
-    {
-        synchronized (AJExtender.class)
-        {
-            if (oneTimeLogSet == null)
-            {
-                oneTimeLogSet = ConcurrentHashMap.newKeySet();
-            }
-        }
-
-        synchronized (oneTimeLogSet)
-        {
-            if (oneTimeLogSet.contains(route))
-            {
-                return;
-            }
-            else
-            {
-                logger.debug(route.toString());
-                oneTimeLogSet.add(route);
-            }
-        }
+    Collection<ExtensionRoute> getAllNotRouted() {
+      return notRoutedMethods.values();
     }
 
-    /**
-     * @param extensible
-     * @return a compilation result containing all {@link Extend} mapped routes,
-     *         not routed or dangling methods within the give extensible class.
-     * @throws AJExtensibleCompilingException
-     */
-    static CompiledExtensible compile(Class<? extends Extensible> extensible) throws AJExtensibleCompilingException
-    {
-        logger.info("Compiling extensible " + extensible);
-
-        CompiledExtensible compiledExtensible = new CompiledExtensible(extensible);
-
-        List<Method> methods = new ArrayList<>();
-        Class<?> extendDeclaring = extensible;
-        while (extendDeclaring != null)
-        {
-            Method[] declaredMethods = extendDeclaring.getDeclaredMethods();
-            methods.addAll(Arrays.asList(declaredMethods));
-            extendDeclaring = extendDeclaring.getSuperclass();
-        }
-        Set<Extend> extendDeclarations = new HashSet<>();
-        Set<Method> routedExtensionMethods = new HashSet<>();
-        for (Method method : methods)
-        {
-
-            Extend extend = method.getAnnotation(Extend.class);
-            if (extend != null)
-            {
-                try
-                {
-                    extendDeclarations.add(extend);
-                    Class<?> extensionAPI = extend.extensionAPI();
-                    Method extensionMethod = extensionAPI.getMethod(method.getName(),
-                                                                    method.getParameterTypes());
-                    compiledExtensible.add(new ExtensionRoute(extend,
-                                                              method,
-                                                              extensionMethod));
-                    routedExtensionMethods.add(extensionMethod);
-                }
-                catch (NoSuchMethodException error)
-                {
-                    AJExtensibleCompilingException ajCompilingError = new AJExtensibleCompilingException("No route for "
-                                                                                                                     + method.toGenericString()
-                                                                                                                     + " @"
-                                                                                                                     + extend,
-                                                                                                         error);
-                    compiledExtensible.add(ajCompilingError);
-                }
-                catch (SecurityException error)
-                {
-                    AJExtensibleCompilingException ajCompilingError = new AJExtensibleCompilingException("Access denined to route for "
-                                                                                                                     + method.toGenericString()
-                                                                                                                     + " @"
-                                                                                                                     + extend,
-                                                                                                         error);
-                    compiledExtensible.add(ajCompilingError);
-                }
-            }
-
-        }
-
-        final Set<Method> allObjectMethods = new HashSet<>(Arrays.asList(Object.class.getMethods()));
-
-        for (Extend extend : extendDeclarations)
-        {
-            Class<?> extension = extend.extensionAPI();
-
-            Set<Method> allExtensionMethods = new HashSet<>(Arrays.asList(extension.getMethods()));
-            allExtensionMethods.removeAll(allObjectMethods);
-            allExtensionMethods.removeAll(routedExtensionMethods);
-            if (!allExtensionMethods.isEmpty())
-            {
-                for (Method method : allExtensionMethods)
-                {
-                    compiledExtensible.add(new AJDanglingExtensionError(method,
-                                                                        extend));
-                }
-            }
-        }
-
-        logger.info(compiledExtensible.getInfo());
-
-        return compiledExtensible;
+    int getExtendedMethodCount() {
+      return routedMethods.size() + notRoutedMethods.size();
     }
 
-    /**
-     * Around advice helper that matches the advised method with its
-     * corresponding extension method, sets up aspectJ call contexts (egg. the
-     * local-proceed context) and delegates to the extension method.
-     * 
-     * @param thisJoinPoint
-     * @param extensible
-     * @param extendAnnotation
-     * @param extension
-     * @return the result of the extended method
-     */
-    static Object extendAroundAdvice(JoinPoint thisJoinPoint, Extensible extensible, Extend extendAnnotation,
-                Object extension)
-    {
+    String getInfo() {
+      return (
+        extensible.getName() +
+        "{ " +
+        routedMethods.size() +
+        " routed methods; " +
+        notRoutedMethods.size() +
+        " not routed methods;" +
+        errors.size() +
+        " errors}"
+      );
+    }
+  }
 
-        MethodSignature ms = (MethodSignature) thisJoinPoint.getSignature();
-        Method method = ms.getMethod();
-        try
-        {
-            ajLocalProceedingJoinPoints.get().push(new ProceedingContext(extendAnnotation,
-                                                                         (ProceedingJoinPoint) thisJoinPoint));
+  /**
+   * Encapsulates extended-method to extension-method mapping information.
+   *
+   * @author Bogdan Horje
+   */
+  static class ExtensionRoute {
 
-            Method extensionMethod = extension.getClass().getMethod(method.getName(),
-                                                                    method.getParameterTypes());
-            if (logger.isDebugEnabled())
-            {
-                oneTimeLiveLog(AJExtender.logger,
-                               new ExtensionRoute(extendAnnotation,
-                                                  method,
-                                                  extensionMethod));
-            }
+    final Extend extendAnnotation;
 
-            return extensionMethod.invoke(extension,
-                                          thisJoinPoint.getArgs());
-        }
-        catch (IllegalAccessException error)
-        {
-            throw new InvalidExtension("Ivalid extension : " + error.getMessage(),
-                                       error);
-        }
-        catch (IllegalArgumentException error)
-        {
-            throw new InvalidExtension("Ivalid extension : " + error.getMessage(),
-                                       error);
-        }
-        catch (InvocationTargetException error)
-        {
-            Throwable targetException = error.getTargetException();
-            if (targetException instanceof RuntimeException)
-            {
-                throw (RuntimeException) targetException;
-            }
-            else
-            {
-                throw new ExtensionTargetException(targetException);
-            }
-        }
-        catch (NoSuchMethodException error)
-        {
-            throw new InvalidExtension("Ivalid extension : " + error.getMessage(),
-                                       error);
-        }
-        catch (SecurityException error)
-        {
-            throw new InvalidExtension("Ivalid extension : " + error.getMessage(),
-                                       error);
-        }
-        finally
-        {
-            ajLocalProceedingJoinPoints.get().pop();
-        }
+    final Method extendedMethod;
 
+    final Method extensionMethod;
+
+    ExtensionRoute(Extend extendAnnotation, Method traitMethod) {
+      this(extendAnnotation, traitMethod, null);
     }
 
-    /**
-     * @param method
-     * @return <code>true</code> if the given method has the same signature as
-     *         the currently aspectJ extension-overridden method
-     */
-    static boolean isLocalProceeder(Method method)
-    {
-        if (!ajLocalProceedingJoinPoints.get().isEmpty())
-        {
-            ProceedingContext proceedingCotext = ajLocalProceedingJoinPoints.get().peek();
-            MethodSignature ms = (MethodSignature) proceedingCotext.proceedingJoinPoint.getSignature();
-            Method jpMethod = ms.getMethod();
-            return jpMethod.getName().endsWith(method.getName()) && Arrays.equals(jpMethod.getParameterTypes(),
-                                                                                  method.getParameterTypes());
-        }
-        else
-        {
-            return false;
-        }
+    ExtensionRoute(
+      Extend extendAnnotation,
+      Method extendedMethod,
+      Method extensionMethod
+    ) {
+      super();
+      ParameterCheck.mandatory("extendAnnotation", extendAnnotation);
+      ParameterCheck.mandatory("traitMethod", extendedMethod);
+
+      this.extendAnnotation = extendAnnotation;
+      this.extendedMethod = extendedMethod;
+      this.extensionMethod = extensionMethod;
     }
 
-    /**
-     * Calls the currently overridden method in local-proceed context - proceeds
-     * with the aspectJ join point saved on the current call stack.<br>
-     * 
-     * @param args
-     * @throws Throwable
-     */
-    static Object localProceed(Object[] args) throws Throwable
-    {
-        ProceedingContext proceedingCotext = ajLocalProceedingJoinPoints.get().peek();
-        Object[] safeArgs = args == null ? SAFE_NULL_ARGS : args;
-        return proceedingCotext.proceedingJoinPoint.proceed(safeArgs);
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof ExtensionRoute) {
+        ExtensionRoute route = (ExtensionRoute) obj;
+        return (
+          extendAnnotation
+            .traitAPI()
+            .equals(route.extendAnnotation.traitAPI()) &&
+          extendAnnotation
+            .extensionAPI()
+            .equals(route.extendAnnotation.extensionAPI()) &&
+          extendedMethod.equals(route.extendedMethod) &&
+          (
+            (extensionMethod == null && route.extensionMethod == null) ||
+            (
+              extensionMethod != null &&
+              extensionMethod.equals(route.extensionMethod)
+            )
+          )
+        );
+      } else {
+        return false;
+      }
     }
+
+    @Override
+    public String toString() {
+      String extensionString = "NOT ROUTED";
+
+      if (extensionMethod != null) {
+        Class<?> exDeclClass = extendedMethod.getDeclaringClass();
+        extensionString = extensionMethod.toGenericString() + "#" + exDeclClass;
+      }
+
+      return (
+        extendAnnotation.toString() +
+        "\t\n[" +
+        extendedMethod.toGenericString() +
+        " -> " +
+        extensionString +
+        "]"
+      );
+    }
+
+    @Override
+    public int hashCode() {
+      return extendAnnotation.hashCode();
+    }
+  }
+
+  /**
+   * @return <code>true</code> if aspectJ routed extensions are enabled on the
+   *         call stack of the current thread
+   */
+  static boolean areAJPointsEnabled() {
+    return ajPointsLocalEnabled.get().peek();
+  }
+
+  /**
+   * Pushes a new enabled state of the aspectJ routed extensions on the
+   * current thread execution stack.
+   */
+  static void enableAJPoints() {
+    ajPointsLocalEnabled.get().push(true);
+  }
+
+  /**
+   * Pops the current aspectJ routed extensions enablement state from the
+   * current thread execution stack.
+   */
+  static void revertAJPoints() {
+    ajPointsLocalEnabled.get().pop();
+  }
+
+  /**
+   * Exception throwing extension-bypass closure runner method. <br>
+   * Sets up adequate call contexts to avoid exception calling and than
+   * delegates to the given closure.
+   *
+   * @param closure
+   * @return
+   * @throws Throwable
+   */
+  static <R> R throwableRun(AJExtender.ExtensionBypass<R> closure)
+    throws Throwable {
+    try {
+      AJExtender.ajPointsLocalEnabled.get().push(false);
+      return closure.run();
+    } finally {
+      AJExtender.ajPointsLocalEnabled.get().pop();
+    }
+  }
+
+  /**
+   * Extension-bypass closure runner method. <br>
+   * Sets up adequate call contexts to avoid exception calling and than
+   * delegates to the given closure.<br>
+   * Only the given exTypes exceptions will be passed on to the calling
+   * context, all others will be wrapped as
+   * {@link UndeclaredThrowableException}s.
+   *
+   * @param closure
+   * @param exTypes
+   * @return
+   * @throws Throwable
+   */
+  public static <R> R run(
+    AJExtender.ExtensionBypass<R> closure,
+    Class<?>[] exTypes
+  ) throws Throwable {
+    try {
+      return throwableRun(closure);
+    } catch (Error | RuntimeException error) {
+      throw error;
+    } catch (Throwable error) {
+      throw asCheckThrowable(error, exTypes);
+    }
+  }
+
+  static Throwable asCheckThrowable(
+    Throwable error,
+    Class<?>... checkedThrowableTypes
+  ) {
+    Class<? extends Throwable> errorClass = error.getClass();
+    for (int i = 0; i < checkedThrowableTypes.length; i++) {
+      if (errorClass.equals(checkedThrowableTypes[i])) {
+        return error;
+      }
+    }
+    return new UndeclaredThrowableException(error);
+  }
+
+  /**
+   * Extension-bypass closure runner method. <br>
+   * Sets up adequate call contexts to avoid exception calling and than
+   * delegates to the given closure.
+   *
+   * @param closure
+   * @return
+   */
+  public static <R> R run(AJExtender.ExtensionBypass<R> closure) {
+    try {
+      return throwableRun(closure);
+    } catch (Error | RuntimeException error) {
+      throw error;
+    } catch (Throwable error) {
+      throw new UndeclaredThrowableException(error);
+    }
+  }
+
+  /**
+   * Logs each method routing path once per session.
+   *
+   * @param logger
+   * @param route
+   */
+  static void oneTimeLiveLog(Log logger, ExtensionRoute route) {
+    synchronized (AJExtender.class) {
+      if (oneTimeLogSet == null) {
+        oneTimeLogSet = ConcurrentHashMap.newKeySet();
+      }
+    }
+
+    synchronized (oneTimeLogSet) {
+      if (oneTimeLogSet.contains(route)) {
+        return;
+      } else {
+        logger.debug(route.toString());
+        oneTimeLogSet.add(route);
+      }
+    }
+  }
+
+  /**
+   * @param extensible
+   * @return a compilation result containing all {@link Extend} mapped routes,
+   *         not routed or dangling methods within the give extensible class.
+   * @throws AJExtensibleCompilingException
+   */
+  static CompiledExtensible compile(Class<? extends Extensible> extensible)
+    throws AJExtensibleCompilingException {
+    logger.info("Compiling extensible " + extensible);
+
+    CompiledExtensible compiledExtensible = new CompiledExtensible(extensible);
+
+    List<Method> methods = new ArrayList<>();
+    Class<?> extendDeclaring = extensible;
+    while (extendDeclaring != null) {
+      Method[] declaredMethods = extendDeclaring.getDeclaredMethods();
+      methods.addAll(Arrays.asList(declaredMethods));
+      extendDeclaring = extendDeclaring.getSuperclass();
+    }
+    Set<Extend> extendDeclarations = new HashSet<>();
+    Set<Method> routedExtensionMethods = new HashSet<>();
+    for (Method method : methods) {
+      Extend extend = method.getAnnotation(Extend.class);
+      if (extend != null) {
+        try {
+          extendDeclarations.add(extend);
+          Class<?> extensionAPI = extend.extensionAPI();
+          Method extensionMethod = extensionAPI.getMethod(
+            method.getName(),
+            method.getParameterTypes()
+          );
+          compiledExtensible.add(
+            new ExtensionRoute(extend, method, extensionMethod)
+          );
+          routedExtensionMethods.add(extensionMethod);
+        } catch (NoSuchMethodException error) {
+          AJExtensibleCompilingException ajCompilingError = new AJExtensibleCompilingException(
+            "No route for " + method.toGenericString() + " @" + extend,
+            error
+          );
+          compiledExtensible.add(ajCompilingError);
+        } catch (SecurityException error) {
+          AJExtensibleCompilingException ajCompilingError = new AJExtensibleCompilingException(
+            "Access denined to route for " +
+            method.toGenericString() +
+            " @" +
+            extend,
+            error
+          );
+          compiledExtensible.add(ajCompilingError);
+        }
+      }
+    }
+
+    final Set<Method> allObjectMethods = new HashSet<>(
+      Arrays.asList(Object.class.getMethods())
+    );
+
+    for (Extend extend : extendDeclarations) {
+      Class<?> extension = extend.extensionAPI();
+
+      Set<Method> allExtensionMethods = new HashSet<>(
+        Arrays.asList(extension.getMethods())
+      );
+      allExtensionMethods.removeAll(allObjectMethods);
+      allExtensionMethods.removeAll(routedExtensionMethods);
+      if (!allExtensionMethods.isEmpty()) {
+        for (Method method : allExtensionMethods) {
+          compiledExtensible.add(new AJDanglingExtensionError(method, extend));
+        }
+      }
+    }
+
+    logger.info(compiledExtensible.getInfo());
+
+    return compiledExtensible;
+  }
+
+  /**
+   * Around advice helper that matches the advised method with its
+   * corresponding extension method, sets up aspectJ call contexts (egg. the
+   * local-proceed context) and delegates to the extension method.
+   *
+   * @param thisJoinPoint
+   * @param extensible
+   * @param extendAnnotation
+   * @param extension
+   * @return the result of the extended method
+   */
+  static Object extendAroundAdvice(
+    JoinPoint thisJoinPoint,
+    Extensible extensible,
+    Extend extendAnnotation,
+    Object extension
+  ) {
+    MethodSignature ms = (MethodSignature) thisJoinPoint.getSignature();
+    Method method = ms.getMethod();
+    try {
+      ajLocalProceedingJoinPoints
+        .get()
+        .push(
+          new ProceedingContext(
+            extendAnnotation,
+            (ProceedingJoinPoint) thisJoinPoint
+          )
+        );
+
+      Method extensionMethod = extension
+        .getClass()
+        .getMethod(method.getName(), method.getParameterTypes());
+      if (logger.isDebugEnabled()) {
+        oneTimeLiveLog(
+          AJExtender.logger,
+          new ExtensionRoute(extendAnnotation, method, extensionMethod)
+        );
+      }
+
+      return extensionMethod.invoke(extension, thisJoinPoint.getArgs());
+    } catch (IllegalAccessException error) {
+      throw new InvalidExtension(
+        "Ivalid extension : " + error.getMessage(),
+        error
+      );
+    } catch (IllegalArgumentException error) {
+      throw new InvalidExtension(
+        "Ivalid extension : " + error.getMessage(),
+        error
+      );
+    } catch (InvocationTargetException error) {
+      Throwable targetException = error.getTargetException();
+      if (targetException instanceof RuntimeException) {
+        throw (RuntimeException) targetException;
+      } else {
+        throw new ExtensionTargetException(targetException);
+      }
+    } catch (NoSuchMethodException error) {
+      throw new InvalidExtension(
+        "Ivalid extension : " + error.getMessage(),
+        error
+      );
+    } catch (SecurityException error) {
+      throw new InvalidExtension(
+        "Ivalid extension : " + error.getMessage(),
+        error
+      );
+    } finally {
+      ajLocalProceedingJoinPoints.get().pop();
+    }
+  }
+
+  /**
+   * @param method
+   * @return <code>true</code> if the given method has the same signature as
+   *         the currently aspectJ extension-overridden method
+   */
+  static boolean isLocalProceeder(Method method) {
+    if (!ajLocalProceedingJoinPoints.get().isEmpty()) {
+      ProceedingContext proceedingCotext = ajLocalProceedingJoinPoints
+        .get()
+        .peek();
+      MethodSignature ms = (MethodSignature) proceedingCotext.proceedingJoinPoint.getSignature();
+      Method jpMethod = ms.getMethod();
+      return (
+        jpMethod.getName().endsWith(method.getName()) &&
+        Arrays.equals(jpMethod.getParameterTypes(), method.getParameterTypes())
+      );
+    } else {
+      return false;
+    }
+  }
+
+  /**
+   * Calls the currently overridden method in local-proceed context - proceeds
+   * with the aspectJ join point saved on the current call stack.<br>
+   *
+   * @param args
+   * @throws Throwable
+   */
+  static Object localProceed(Object[] args) throws Throwable {
+    ProceedingContext proceedingCotext = ajLocalProceedingJoinPoints
+      .get()
+      .peek();
+    Object[] safeArgs = args == null ? SAFE_NULL_ARGS : args;
+    return proceedingCotext.proceedingJoinPoint.proceed(safeArgs);
+  }
 }

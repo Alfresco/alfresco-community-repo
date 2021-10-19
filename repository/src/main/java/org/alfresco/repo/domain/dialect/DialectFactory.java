@@ -38,9 +38,9 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * @author Alfresco
  * @since 6.0
  */
-public class DialectFactory
-{
-    /**
+public class DialectFactory {
+
+  /**
      * Builds an appropriate Dialect instance.
      * <p/>
      * The JDBC driver, the database name and version
@@ -55,79 +55,118 @@ public class DialectFactory
      *
      * @return The appropriate dialect.
      */
-    public static Dialect buildDialect(String databaseName, int databaseMajorVersion, String driverName)
-    {
-        if ( databaseName == null ) {
-            throw new IllegalArgumentException("Database name must be explicitly set");
-        }
-
-        DatabaseDialectMapper mapper = MAPPERS.get(driverName) != null ?
-                MAPPERS.get(driverName) : MAPPERS.get(databaseName);
-        if ( mapper == null )
-        {
-            throw new IllegalArgumentException( "Dialect must be explicitly set for database: " + databaseName );
-        }
-
-        String dialectName = mapper.getDialectClass( databaseMajorVersion );
-        return buildDialect( dialectName );
+  public static Dialect buildDialect(
+    String databaseName,
+    int databaseMajorVersion,
+    String driverName
+  ) {
+    if (databaseName == null) {
+      throw new IllegalArgumentException(
+        "Database name must be explicitly set"
+      );
     }
 
-    /**
-     * Returns a dialect instance given the name of the class to use.
-     *
-     * @param dialectName The name of the dialect class.
-     *
-     * @return The dialect instance.
-     */
-    public static Dialect buildDialect(String dialectName)
-    {
-        try
-        {
-            return ( Dialect ) Class.forName( dialectName ).newInstance();
-        }
-        catch ( ClassNotFoundException cnfe )
-        {
-            throw new IllegalArgumentException( "Dialect class not found: " + dialectName );
-        }
-        catch ( Exception e )
-        {
-            throw new AlfrescoRuntimeException( "Could not instantiate dialect class", e );
-        }
+    DatabaseDialectMapper mapper = MAPPERS.get(driverName) != null
+      ? MAPPERS.get(driverName)
+      : MAPPERS.get(databaseName);
+    if (mapper == null) {
+      throw new IllegalArgumentException(
+        "Dialect must be explicitly set for database: " + databaseName
+      );
     }
 
-    /**
-     * For a given database product name, instances of
-     * DatabaseDialectMapper know which Dialect to use for different versions.
-     */
-    public static interface DatabaseDialectMapper {
-        public String getDialectClass(int majorVersion);
+    String dialectName = mapper.getDialectClass(databaseMajorVersion);
+    return buildDialect(dialectName);
+  }
+
+  /**
+   * Returns a dialect instance given the name of the class to use.
+   *
+   * @param dialectName The name of the dialect class.
+   *
+   * @return The dialect instance.
+   */
+  public static Dialect buildDialect(String dialectName) {
+    try {
+      return (Dialect) Class.forName(dialectName).newInstance();
+    } catch (ClassNotFoundException cnfe) {
+      throw new IllegalArgumentException(
+        "Dialect class not found: " + dialectName
+      );
+    } catch (Exception e) {
+      throw new AlfrescoRuntimeException(
+        "Could not instantiate dialect class",
+        e
+      );
+    }
+  }
+
+  /**
+   * For a given database product name, instances of
+   * DatabaseDialectMapper know which Dialect to use for different versions.
+   */
+  public static interface DatabaseDialectMapper {
+    public String getDialectClass(int majorVersion);
+  }
+
+  /**
+   * A simple DatabaseDialectMapper for dialects which are independent
+   * of the underlying database product version.
+   */
+  public static class VersionInsensitiveMapper
+    implements DatabaseDialectMapper {
+
+    private String dialectClassName;
+
+    public VersionInsensitiveMapper(String dialectClassName) {
+      this.dialectClassName = dialectClassName;
     }
 
-    /**
-     * A simple DatabaseDialectMapper for dialects which are independent
-     * of the underlying database product version.
-     */
-    public static class VersionInsensitiveMapper implements DatabaseDialectMapper {
-        private String dialectClassName;
-
-        public VersionInsensitiveMapper(String dialectClassName) {
-            this.dialectClassName = dialectClassName;
-        }
-
-        public String getDialectClass(int majorVersion) {
-            return dialectClassName;
-        }
+    public String getDialectClass(int majorVersion) {
+      return dialectClassName;
     }
+  }
 
-    // TODO : this is the stuff it'd be nice to move to a properties file or some other easily user-editable place
-    private static final Map<String, VersionInsensitiveMapper> MAPPERS = new HashMap<String, DialectFactory.VersionInsensitiveMapper>();
-    static {
-        // detectors...
-        MAPPERS.put( "PostgreSQL", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.PostgreSQLDialect" ) );
-        MAPPERS.put( "MariaDB", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.MySQLInnoDBDialect" ) );
-        MAPPERS.put( "MySQL", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.MySQLInnoDBDialect" ) );
-        MAPPERS.put( "Microsoft SQL Server Database", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.SQLServerDialect" ) );
-        MAPPERS.put( "Microsoft SQL Server", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.SQLServerDialect" ) );
-        MAPPERS.put( "Oracle", new VersionInsensitiveMapper( "org.alfresco.repo.domain.dialect.Oracle9Dialect" ) );
-    }
+  // TODO : this is the stuff it'd be nice to move to a properties file or some other easily user-editable place
+  private static final Map<String, VersionInsensitiveMapper> MAPPERS = new HashMap<String, DialectFactory.VersionInsensitiveMapper>();
+
+  static {
+    // detectors...
+    MAPPERS.put(
+      "PostgreSQL",
+      new VersionInsensitiveMapper(
+        "org.alfresco.repo.domain.dialect.PostgreSQLDialect"
+      )
+    );
+    MAPPERS.put(
+      "MariaDB",
+      new VersionInsensitiveMapper(
+        "org.alfresco.repo.domain.dialect.MySQLInnoDBDialect"
+      )
+    );
+    MAPPERS.put(
+      "MySQL",
+      new VersionInsensitiveMapper(
+        "org.alfresco.repo.domain.dialect.MySQLInnoDBDialect"
+      )
+    );
+    MAPPERS.put(
+      "Microsoft SQL Server Database",
+      new VersionInsensitiveMapper(
+        "org.alfresco.repo.domain.dialect.SQLServerDialect"
+      )
+    );
+    MAPPERS.put(
+      "Microsoft SQL Server",
+      new VersionInsensitiveMapper(
+        "org.alfresco.repo.domain.dialect.SQLServerDialect"
+      )
+    );
+    MAPPERS.put(
+      "Oracle",
+      new VersionInsensitiveMapper(
+        "org.alfresco.repo.domain.dialect.Oracle9Dialect"
+      )
+    );
+  }
 }

@@ -32,20 +32,18 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertTrue;
 
 import java.util.List;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
-public class AutomaticDispositionTest extends BaseRMRestTest
-{
+public class AutomaticDispositionTest extends BaseRMRestTest {
+
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
 
@@ -57,39 +55,56 @@ public class AutomaticDispositionTest extends BaseRMRestTest
      * Then the record will be automatically cut off
      */
     @Test(enabled = false)
-    public void testAutomaticCutOff() throws Exception
-    {
-        STEP("Create record category with retention schedule and apply it to records.");
-        categoryWithRSOnRecords = createRootCategory(getRandomName("categoryWithRSOnRecords"));
-        dispositionScheduleService.createCategoryRetentionSchedule(categoryWithRSOnRecords.getName(), true);
+    public void testAutomaticCutOff() throws Exception {
+        STEP(
+            "Create record category with retention schedule and apply it to records."
+        );
+        categoryWithRSOnRecords =
+            createRootCategory(getRandomName("categoryWithRSOnRecords"));
+        dispositionScheduleService.createCategoryRetentionSchedule(
+            categoryWithRSOnRecords.getName(),
+            true
+        );
 
         STEP("Add retention schedule cut off step with immediate period.");
-        dispositionScheduleService.addCutOffImmediatelyStep(categoryWithRSOnRecords.getName());
+        dispositionScheduleService.addCutOffImmediatelyStep(
+            categoryWithRSOnRecords.getName()
+        );
 
         STEP("Create a record folder with a record");
-        RecordCategoryChild recordFolder = createRecordFolder(categoryWithRSOnRecords.getId(), getRandomName
-                ("recordFolder"));
-        Record record = createElectronicRecord(recordFolder.getId(), getRandomName("elRecord"));
+        RecordCategoryChild recordFolder = createRecordFolder(
+            categoryWithRSOnRecords.getId(),
+            getRandomName("recordFolder")
+        );
+        Record record = createElectronicRecord(
+            recordFolder.getId(),
+            getRandomName("elRecord")
+        );
 
-        STEP("Complete the record and wait upon to 5 minutes for automatic job to execute");
+        STEP(
+            "Complete the record and wait upon to 5 minutes for automatic job to execute"
+        );
         completeRecord(record.getId());
 
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
-        List<String> aspects = recordsAPI.getRecord(record.getId()).getAspectNames();
+        List<String> aspects = recordsAPI
+            .getRecord(record.getId())
+            .getAspectNames();
         int count = 0;
-        while (!aspects.contains(CUT_OFF_ASPECT) && count < 30)
-        {
+        while (!aspects.contains(CUT_OFF_ASPECT) && count < 30) {
             // sleep .. allowing the job time to execute
             Thread.sleep(10000);
             count++;
             aspects = recordsAPI.getRecord(record.getId()).getAspectNames();
         }
-        assertTrue(aspects.contains(CUT_OFF_ASPECT), "Record should now be cut off");
+        assertTrue(
+            aspects.contains(CUT_OFF_ASPECT),
+            "Record should now be cut off"
+        );
     }
 
-    @AfterClass (alwaysRun = true)
-    public void deleteCategory()
-    {
+    @AfterClass(alwaysRun = true)
+    public void deleteCategory() {
         deleteRecordCategory(categoryWithRSOnRecords.getId());
     }
 }

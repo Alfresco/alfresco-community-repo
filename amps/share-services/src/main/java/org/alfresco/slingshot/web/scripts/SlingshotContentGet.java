@@ -22,10 +22,7 @@ package org.alfresco.slingshot.web.scripts;
 
 import java.io.IOException;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
-import org.alfresco.sync.repo.Client;
-import org.alfresco.sync.repo.Client.ClientType;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -34,6 +31,8 @@ import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.sync.repo.Client;
+import org.alfresco.sync.repo.Client.ClientType;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
@@ -49,87 +48,94 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  *
  * @author Kevin Roast
  */
-public class SlingshotContentGet extends ContentGet
-{
-    protected SiteService siteService;
-    private ActivityPoster poster;
-    private RetryingTransactionHelper transactionHelper;
+public class SlingshotContentGet extends ContentGet {
 
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
-    }
+  protected SiteService siteService;
+  private ActivityPoster poster;
+  private RetryingTransactionHelper transactionHelper;
 
-    public void setPoster(ActivityPoster poster)
-    {
-        this.poster = poster;
-    }
+  public void setSiteService(SiteService siteService) {
+    this.siteService = siteService;
+  }
 
-    public void setTransactionHelper(RetryingTransactionHelper transactionHelper)
-    {
-        this.transactionHelper = transactionHelper;
-    }
+  public void setPoster(ActivityPoster poster) {
+    this.poster = poster;
+  }
 
+  public void setTransactionHelper(
+    RetryingTransactionHelper transactionHelper
+  ) {
+    this.transactionHelper = transactionHelper;
+  }
 
-    @Override
-    public void execute(final WebScriptRequest req, final WebScriptResponse res) throws IOException
-    {
-        // are we downloading content as an attachment?
-        if (Boolean.valueOf(req.getParameter("a")))
-        {
-            // is this    private ActivityPoster poster; node part of a Site context?
-            Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-            String storeType = templateVars.get("store_type");
-            String storeId = templateVars.get("store_id");
-            String nodeId = templateVars.get("id");
+  @Override
+  public void execute(final WebScriptRequest req, final WebScriptResponse res)
+    throws IOException {
+    // are we downloading content as an attachment?
+    if (Boolean.valueOf(req.getParameter("a"))) {
+      // is this    private ActivityPoster poster; node part of a Site context?
+      Map<String, String> templateVars = req
+        .getServiceMatch()
+        .getTemplateVars();
+      String storeType = templateVars.get("store_type");
+      String storeId = templateVars.get("store_id");
+      String nodeId = templateVars.get("id");
 
-            // create the NodeRef and ensure it is valid
-            if (storeType != null && storeId != null && nodeId != null)
-            {
-                // MNT-16380
-                String nodeIdTmp = nodeId;
-                if (nodeId.contains("/"))
-                {
-                    nodeIdTmp = nodeId.substring(0, nodeId.indexOf('/'));
-                }
-                final NodeRef nodeRef = new NodeRef(storeType, storeId, nodeIdTmp);
-                SiteInfo site = null;
-                try
-                {
-                    site = this.siteService.getSite(nodeRef);
-                }
-                catch (AccessDeniedException ade)
-                {
-                    // We don't have access to the site, don't post any permissions
-                }
-                if (site != null)
-                {
-                    // found a valid parent Site - gather the details to post an Activity
-                    String filename = templateVars.get("filename");
-                    if (filename == null || filename.length() == 0)
-                    {
-                        filename = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                        if (nodeId.contains("/"))
-                        {
-                            filename = nodeId.substring(nodeId.lastIndexOf("/") + 1);
-                        }
-                    }
-                    final String strFilename = filename;
-                    final String siteName = site.getShortName();
-                    transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-                    {
-                        @Override
-                        public Void execute() throws Throwable
-                        {
-                            // post an activity - mirror the mechanism as if from the Share application
-                            poster.postFileFolderActivity(ActivityPoster.DOWNLOADED, null, null,
-                                    siteName, null, nodeRef, strFilename, "documentlibrary", Client.asType(ClientType.webclient), null);
-                            return null;
-                        }
-                    }, false, true);
-                }
-            }
+      // create the NodeRef and ensure it is valid
+      if (storeType != null && storeId != null && nodeId != null) {
+        // MNT-16380
+        String nodeIdTmp = nodeId;
+        if (nodeId.contains("/")) {
+          nodeIdTmp = nodeId.substring(0, nodeId.indexOf('/'));
         }
-        super.execute(req, res);
+        final NodeRef nodeRef = new NodeRef(storeType, storeId, nodeIdTmp);
+        SiteInfo site = null;
+        try {
+          site = this.siteService.getSite(nodeRef);
+        } catch (AccessDeniedException ade) {
+          // We don't have access to the site, don't post any permissions
+        }
+        if (site != null) {
+          // found a valid parent Site - gather the details to post an Activity
+          String filename = templateVars.get("filename");
+          if (filename == null || filename.length() == 0) {
+            filename =
+              (String) this.nodeService.getProperty(
+                  nodeRef,
+                  ContentModel.PROP_NAME
+                );
+            if (nodeId.contains("/")) {
+              filename = nodeId.substring(nodeId.lastIndexOf("/") + 1);
+            }
+          }
+          final String strFilename = filename;
+          final String siteName = site.getShortName();
+          transactionHelper.doInTransaction(
+            new RetryingTransactionCallback<Void>() {
+              @Override
+              public Void execute() throws Throwable {
+                // post an activity - mirror the mechanism as if from the Share application
+                poster.postFileFolderActivity(
+                  ActivityPoster.DOWNLOADED,
+                  null,
+                  null,
+                  siteName,
+                  null,
+                  nodeRef,
+                  strFilename,
+                  "documentlibrary",
+                  Client.asType(ClientType.webclient),
+                  null
+                );
+                return null;
+              }
+            },
+            false,
+            true
+          );
+        }
+      }
     }
+    super.execute(req, res);
+  }
 }

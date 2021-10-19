@@ -38,52 +38,52 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
-{
-    /** Parameter names */
-    public static final String PARAM_CLOSE_PARENT = "closeParent";
+public class CloseRecordFolderAction extends RMActionExecuterAbstractBase {
 
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
-    {
-        if (eligibleForAction(actionedUponNodeRef))
-        {
-            // do the work of creating the record as the system user
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
-                @Override
-                public Void doWork()
-                {
-                    getRecordFolderService().closeRecordFolder(actionedUponNodeRef);
+  /** Parameter names */
+  public static final String PARAM_CLOSE_PARENT = "closeParent";
 
-                    return null;
-                }
-            });
+  /**
+   * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+   *      org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  protected void executeImpl(Action action, final NodeRef actionedUponNodeRef) {
+    if (eligibleForAction(actionedUponNodeRef)) {
+      // do the work of creating the record as the system user
+      AuthenticationUtil.runAsSystem(
+        new RunAsWork<Void>() {
+          @Override
+          public Void doWork() {
+            getRecordFolderService().closeRecordFolder(actionedUponNodeRef);
+
+            return null;
+          }
         }
+      );
     }
+  }
 
-    /**
-     * Helper method to check the actioned upon node reference to decide to execute the action
-     * The preconditions are:
-     *  - The node must exist
-     *  - The node must not be frozen
-     *
-     * @param actionedUponNodeRef node reference
-     * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
-     */
-    private boolean eligibleForAction(NodeRef actionedUponNodeRef)
-    {
-        boolean result = false;
-        if (getNodeService().exists(actionedUponNodeRef) &&
-                !getFreezeService().isFrozen(actionedUponNodeRef) &&
-                !TYPE_UNFILED_RECORD_FOLDER.equals(getNodeService().getType(actionedUponNodeRef)))
-        {
-            result = true;
-        }
-        return result;
+  /**
+   * Helper method to check the actioned upon node reference to decide to execute the action
+   * The preconditions are:
+   *  - The node must exist
+   *  - The node must not be frozen
+   *
+   * @param actionedUponNodeRef node reference
+   * @return Return true if the node reference passes all the preconditions for executing the action, false otherwise
+   */
+  private boolean eligibleForAction(NodeRef actionedUponNodeRef) {
+    boolean result = false;
+    if (
+      getNodeService().exists(actionedUponNodeRef) &&
+      !getFreezeService().isFrozen(actionedUponNodeRef) &&
+      !TYPE_UNFILED_RECORD_FOLDER.equals(
+        getNodeService().getType(actionedUponNodeRef)
+      )
+    ) {
+      result = true;
     }
+    return result;
+  }
 }

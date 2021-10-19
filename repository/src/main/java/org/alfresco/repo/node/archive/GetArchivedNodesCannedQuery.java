@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,7 +29,6 @@ package org.alfresco.repo.node.archive;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
@@ -42,117 +41,138 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Canned query for archived nodes.
- * 
+ *
  * @author Jamal Kaabi-Mofrad
  * @since 4.2
  */
-public class GetArchivedNodesCannedQuery extends AbstractCannedQueryPermissions<ArchivedNodeEntity>
-{
-    private Log logger = LogFactory.getLog(GetArchivedNodesCannedQuery.class);
+public class GetArchivedNodesCannedQuery
+  extends AbstractCannedQueryPermissions<ArchivedNodeEntity> {
 
-    private static final String QUERY_NAMESPACE = "alfresco.query.archivednodes";
-    private static final String QUERY_SELECT_GET_ARCHIVED_NODES = "select_GetArchivedNodesCannedQuery";
-    private static final String QUERY_SELECT_COUNT_ARCHIVED_NODES = "select_CountAllArchivedNodes";
+  private Log logger = LogFactory.getLog(GetArchivedNodesCannedQuery.class);
 
-    private CannedQueryDAO cannedQueryDAO;
-    private NodeDAO nodeDAO;
+  private static final String QUERY_NAMESPACE = "alfresco.query.archivednodes";
+  private static final String QUERY_SELECT_GET_ARCHIVED_NODES =
+    "select_GetArchivedNodesCannedQuery";
+  private static final String QUERY_SELECT_COUNT_ARCHIVED_NODES =
+    "select_CountAllArchivedNodes";
 
-    public GetArchivedNodesCannedQuery(CannedQueryDAO cannedQueryDAO, NodeDAO nodeDAO,
-                MethodSecurityBean<ArchivedNodeEntity> methodSecurity, CannedQueryParameters params)
-    {
-        super(params, methodSecurity);
-        this.cannedQueryDAO = cannedQueryDAO;
-        this.nodeDAO = nodeDAO;
+  private CannedQueryDAO cannedQueryDAO;
+  private NodeDAO nodeDAO;
 
+  public GetArchivedNodesCannedQuery(
+    CannedQueryDAO cannedQueryDAO,
+    NodeDAO nodeDAO,
+    MethodSecurityBean<ArchivedNodeEntity> methodSecurity,
+    CannedQueryParameters params
+  ) {
+    super(params, methodSecurity);
+    this.cannedQueryDAO = cannedQueryDAO;
+    this.nodeDAO = nodeDAO;
+  }
+
+  @Override
+  protected List<ArchivedNodeEntity> queryAndFilter(
+    CannedQueryParameters parameters
+  ) {
+    Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+
+    Object paramBeanObj = parameters.getParameterBean();
+    if (paramBeanObj == null) throw new NullPointerException(
+      "Null GetArchivedNodes query params"
+    );
+
+    // Get parameters
+    GetArchivedNodesCannedQueryParams paramBean = (GetArchivedNodesCannedQueryParams) paramBeanObj;
+
+    if (
+      paramBean.getParentNodeId() == null || paramBean.getParentNodeId() < 0
+    ) {
+      return Collections.emptyList();
     }
 
-    @Override
-    protected List<ArchivedNodeEntity> queryAndFilter(CannedQueryParameters parameters)
-    {
-        Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+    int offset = parameters.getPageDetails().getSkipResults();
+    int limit = parameters.getPageDetails().getPageSize();
 
-        Object paramBeanObj = parameters.getParameterBean();
-        if (paramBeanObj == null)
-            throw new NullPointerException("Null GetArchivedNodes query params");
+    // note: refer to SQL for specific DB filtering and sorting
+    List<ArchivedNodeEntity> results = cannedQueryDAO.executeQuery(
+      QUERY_NAMESPACE,
+      QUERY_SELECT_GET_ARCHIVED_NODES,
+      paramBean,
+      offset,
+      limit
+    );
 
-        // Get parameters
-        GetArchivedNodesCannedQueryParams paramBean = (GetArchivedNodesCannedQueryParams) paramBeanObj;
-
-        if (paramBean.getParentNodeId() == null || paramBean.getParentNodeId() < 0)
-        {
-            return Collections.emptyList();
-        }
-
-        int offset = parameters.getPageDetails().getSkipResults();
-        int limit = parameters.getPageDetails().getPageSize();
-
-        // note: refer to SQL for specific DB filtering and sorting
-        List<ArchivedNodeEntity> results = cannedQueryDAO.executeQuery(QUERY_NAMESPACE,
-                    QUERY_SELECT_GET_ARCHIVED_NODES, paramBean, offset, limit);
-
-        List<NodeRef> nodeRefs = new ArrayList<NodeRef>(results.size());
-        for (ArchivedNodeEntity entity : results)
-        {
-            nodeRefs.add(entity.getNodeRef());
-        }
-
-        // preload the node for later when we want to get the properties of the node
-        preload(nodeRefs);
-
-        if (start != null)
-        {
-            logger.debug("Base query: " + nodeRefs.size() + " in "
-                        + (System.currentTimeMillis() - start) + " msecs");
-        }
-
-        return results;
-
+    List<NodeRef> nodeRefs = new ArrayList<NodeRef>(results.size());
+    for (ArchivedNodeEntity entity : results) {
+      nodeRefs.add(entity.getNodeRef());
     }
 
-    private void preload(List<NodeRef> nodeRefs)
-    {
-        Long start = (logger.isTraceEnabled() ? System.currentTimeMillis() : null);
+    // preload the node for later when we want to get the properties of the node
+    preload(nodeRefs);
 
-        nodeDAO.cacheNodes(nodeRefs);
-
-        if (start != null)
-        {
-            logger.trace("Pre-load: " + nodeRefs.size() + " in "
-                        + (System.currentTimeMillis() - start) + " msecs");
-        }
+    if (start != null) {
+      logger.debug(
+        "Base query: " +
+        nodeRefs.size() +
+        " in " +
+        (System.currentTimeMillis() - start) +
+        " msecs"
+      );
     }
 
-    @Override
-    protected Pair<Integer, Integer> getTotalResultCount(List<ArchivedNodeEntity> results)
-    {
-        Object paramBeanObj = super.getParameters().getParameterBean();
-        if (paramBeanObj == null)
-        {
-            throw new NullPointerException(
-                "Required parameters not provided for GetArchivedNodes canned query, unexpected null value for query params");
-        }
+    return results;
+  }
 
-        GetArchivedNodesCannedQueryParams paramBean = (GetArchivedNodesCannedQueryParams) paramBeanObj;
-        if (paramBean.getParentNodeId() == null)
-        {
-            throw new NullPointerException(
-                "Required parameters not provided for GetArchivedNodes canned queryUnexpected null value for parentNodeId");
-        }
+  private void preload(List<NodeRef> nodeRefs) {
+    Long start = (logger.isTraceEnabled() ? System.currentTimeMillis() : null);
 
-        Long totalResultCountLongValue = cannedQueryDAO.executeCountQuery(QUERY_NAMESPACE, QUERY_SELECT_COUNT_ARCHIVED_NODES, paramBean);
+    nodeDAO.cacheNodes(nodeRefs);
 
-        int totalResultCount = totalResultCountLongValue.intValue();
-        if (totalResultCount < 0)
-        {
-            totalResultCount = Integer.MAX_VALUE;
-        }
+    if (start != null) {
+      logger.trace(
+        "Pre-load: " +
+        nodeRefs.size() +
+        " in " +
+        (System.currentTimeMillis() - start) +
+        " msecs"
+      );
+    }
+  }
 
-        return new Pair<>(totalResultCount, totalResultCount);
+  @Override
+  protected Pair<Integer, Integer> getTotalResultCount(
+    List<ArchivedNodeEntity> results
+  ) {
+    Object paramBeanObj = super.getParameters().getParameterBean();
+    if (paramBeanObj == null) {
+      throw new NullPointerException(
+        "Required parameters not provided for GetArchivedNodes canned query, unexpected null value for query params"
+      );
     }
 
-    @Override
-    protected boolean isApplyPostQueryPaging()
-    {
-        return false;
+    GetArchivedNodesCannedQueryParams paramBean = (GetArchivedNodesCannedQueryParams) paramBeanObj;
+    if (paramBean.getParentNodeId() == null) {
+      throw new NullPointerException(
+        "Required parameters not provided for GetArchivedNodes canned queryUnexpected null value for parentNodeId"
+      );
     }
+
+    Long totalResultCountLongValue = cannedQueryDAO.executeCountQuery(
+      QUERY_NAMESPACE,
+      QUERY_SELECT_COUNT_ARCHIVED_NODES,
+      paramBean
+    );
+
+    int totalResultCount = totalResultCountLongValue.intValue();
+    if (totalResultCount < 0) {
+      totalResultCount = Integer.MAX_VALUE;
+    }
+
+    return new Pair<>(totalResultCount, totalResultCount);
+  }
+
+  @Override
+  protected boolean isApplyPostQueryPaging() {
+    return false;
+  }
 }

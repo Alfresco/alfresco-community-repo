@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,64 +29,61 @@ package org.alfresco.repo.virtual.template;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-public class FilingData
-{
-    private NodeRef filingNodeRef;
+public class FilingData {
 
-    private QName assocTypeQName;
+  private NodeRef filingNodeRef;
 
-    private QName assocQName;
+  private QName assocTypeQName;
 
-    private QName nodeTypeQName;
+  private QName assocQName;
 
-    private Set<QName> aspects;
+  private QName nodeTypeQName;
 
-    private Map<QName, Serializable> properties;
+  private Set<QName> aspects;
 
-    public FilingData(NodeRef filingNodeRef, QName assocTypeQName, QName assocQName, QName nodeTypeQName,
-                Set<QName> aspects, Map<QName, Serializable> properties)
-    {
-        super();
-        this.filingNodeRef = filingNodeRef;
-        this.assocTypeQName = assocTypeQName;
-        this.assocQName = assocQName;
-        this.nodeTypeQName = nodeTypeQName;
-        this.aspects = aspects;
-        this.properties = properties;
-    }
+  private Map<QName, Serializable> properties;
 
-    public Set<QName> getAspects()
-    {
-        return aspects;
-    }
+  public FilingData(
+    NodeRef filingNodeRef,
+    QName assocTypeQName,
+    QName assocQName,
+    QName nodeTypeQName,
+    Set<QName> aspects,
+    Map<QName, Serializable> properties
+  ) {
+    super();
+    this.filingNodeRef = filingNodeRef;
+    this.assocTypeQName = assocTypeQName;
+    this.assocQName = assocQName;
+    this.nodeTypeQName = nodeTypeQName;
+    this.aspects = aspects;
+    this.properties = properties;
+  }
 
-    public NodeRef getFilingNodeRef()
-    {
-        return filingNodeRef;
-    }
+  public Set<QName> getAspects() {
+    return aspects;
+  }
 
-    public QName getAssocTypeQName()
-    {
-        return assocTypeQName;
-    }
+  public NodeRef getFilingNodeRef() {
+    return filingNodeRef;
+  }
 
-    public QName getAssocQName()
-    {
-        return assocQName;
-    }
+  public QName getAssocTypeQName() {
+    return assocTypeQName;
+  }
 
-    public QName getNodeTypeQName()
-    {
-        return nodeTypeQName;
-    }
+  public QName getAssocQName() {
+    return assocQName;
+  }
 
-    public Map<QName, Serializable> getProperties()
-    {
-        return properties;
-    }
+  public QName getNodeTypeQName() {
+    return nodeTypeQName;
+  }
 
+  public Map<QName, Serializable> getProperties() {
+    return properties;
+  }
 }

@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -55,189 +54,195 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Neil McErlean
  * @author Tuna Aksoy
  */
-public class CustomRefsGet extends AbstractRmWebScript
-{
-    /** Constants */
-    private static final String REFERENCE_TYPE = "referenceType";
-    private static final String REF_ID = "refId";
-    private static final String LABEL = "label";
-    private static final String SOURCE = "source";
-    private static final String TARGET = "target";
-    private static final String PARENT_REF = "parentRef";
-    private static final String CHILD_REF = "childRef";
-    private static final String SOURCE_REF = "sourceRef";
-    private static final String TARGET_REF = "targetRef";
-    private static final String CUSTOM_REFS_FROM = "customRefsFrom";
-    private static final String CUSTOM_REFS_TO = "customRefsTo";
-    private static final String NODE_NAME = "nodeName";
-    private static final String NODE_TITLE = "nodeTitle";
+public class CustomRefsGet extends AbstractRmWebScript {
 
-    /** Relationship service */
-    private RelationshipService relationshipService;
+  /** Constants */
+  private static final String REFERENCE_TYPE = "referenceType";
+  private static final String REF_ID = "refId";
+  private static final String LABEL = "label";
+  private static final String SOURCE = "source";
+  private static final String TARGET = "target";
+  private static final String PARENT_REF = "parentRef";
+  private static final String CHILD_REF = "childRef";
+  private static final String SOURCE_REF = "sourceRef";
+  private static final String TARGET_REF = "targetRef";
+  private static final String CUSTOM_REFS_FROM = "customRefsFrom";
+  private static final String CUSTOM_REFS_TO = "customRefsTo";
+  private static final String NODE_NAME = "nodeName";
+  private static final String NODE_TITLE = "nodeTitle";
 
-    /** Capability service */
-    private CapabilityService capabilityService;
+  /** Relationship service */
+  private RelationshipService relationshipService;
 
-    /**
-     * Gets the relationship service instance
-     *
-     * @return The relationship service instance
-     */
-    protected RelationshipService getRelationshipService()
-    {
-        return this.relationshipService;
-    }
+  /** Capability service */
+  private CapabilityService capabilityService;
 
-    /**
-     * Sets the relationship service instance
-     *
-     * @param relationshipService The relationship service instance
-     */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
-        this.relationshipService = relationshipService;
-    }
+  /**
+   * Gets the relationship service instance
+   *
+   * @return The relationship service instance
+   */
+  protected RelationshipService getRelationshipService() {
+    return this.relationshipService;
+  }
 
-    /**
-     * Gets the capability service instance
-     *
-     * @return The capability service instance
-     */
-    protected CapabilityService getCapabilityService()
-    {
-        return this.capabilityService;
-    }
+  /**
+   * Sets the relationship service instance
+   *
+   * @param relationshipService The relationship service instance
+   */
+  public void setRelationshipService(RelationshipService relationshipService) {
+    this.relationshipService = relationshipService;
+  }
 
-    /**
-     * Sets the capability service instance
-     *
-     * @param capabilityService Capability service instance
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
-        this.capabilityService = capabilityService;
-    }
+  /**
+   * Gets the capability service instance
+   *
+   * @return The capability service instance
+   */
+  protected CapabilityService getCapabilityService() {
+    return this.capabilityService;
+  }
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<>(4);
-        NodeRef nodeRef = parseRequestForNodeRef(req);
-        model.put(NODE_NAME, getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME));
-        model.put(NODE_TITLE, getNodeService().getProperty(nodeRef, ContentModel.PROP_TITLE));
-        model.put(CUSTOM_REFS_FROM, getOutwardReferences(nodeRef));
-        model.put(CUSTOM_REFS_TO, getInwardReferenceData(nodeRef));
-        return model;
-    }
+  /**
+   * Sets the capability service instance
+   *
+   * @param capabilityService Capability service instance
+   */
+  public void setCapabilityService(CapabilityService capabilityService) {
+    this.capabilityService = capabilityService;
+  }
 
-    /**
-     * Gets all the references that come 'out' from this node
-     *
-     * @param nodeRef Node reference
-     * @return All the references that come 'out' from this node
-     */
-    private List<Map<String, String>> getOutwardReferences(NodeRef nodeRef)
-    {
-        List<Map<String, String>> outwardReferenceData = new ArrayList<>();
-        Set<Relationship> relationships = getRelationshipService().getRelationshipsFrom(nodeRef);
-        outwardReferenceData.addAll(getRelationshipData(relationships));
-        return outwardReferenceData;
-    }
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+   *      org.springframework.extensions.webscripts.Status,
+   *      org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, Object> model = new HashMap<>(4);
+    NodeRef nodeRef = parseRequestForNodeRef(req);
+    model.put(
+      NODE_NAME,
+      getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME)
+    );
+    model.put(
+      NODE_TITLE,
+      getNodeService().getProperty(nodeRef, ContentModel.PROP_TITLE)
+    );
+    model.put(CUSTOM_REFS_FROM, getOutwardReferences(nodeRef));
+    model.put(CUSTOM_REFS_TO, getInwardReferenceData(nodeRef));
+    return model;
+  }
 
-    /**
-     * Gets all the references that come 'in' to this node
-     *
-     * @param nodeRef Node reference
-     * @return All the references that come 'in' to this node
-     */
-    private List<Map<String, String>> getInwardReferenceData(NodeRef nodeRef)
-    {
-        List<Map<String, String>> inwardReferenceData = new ArrayList<>();
-        Set<Relationship> relationships = getRelationshipService().getRelationshipsTo(nodeRef);
-        inwardReferenceData.addAll(getRelationshipData(relationships));
-        return inwardReferenceData;
-    }
+  /**
+   * Gets all the references that come 'out' from this node
+   *
+   * @param nodeRef Node reference
+   * @return All the references that come 'out' from this node
+   */
+  private List<Map<String, String>> getOutwardReferences(NodeRef nodeRef) {
+    List<Map<String, String>> outwardReferenceData = new ArrayList<>();
+    Set<Relationship> relationships = getRelationshipService()
+      .getRelationshipsFrom(nodeRef);
+    outwardReferenceData.addAll(getRelationshipData(relationships));
+    return outwardReferenceData;
+  }
 
-    /**
-     * Creates relationship data for the ftl template
-     *
-     * @param relationships The relationships
-     * @return The relationship data
-     */
-    private List<Map<String, String>> getRelationshipData(Set<Relationship> relationships)
-    {
-        List<Map<String, String>> relationshipData = new ArrayList<>();
+  /**
+   * Gets all the references that come 'in' to this node
+   *
+   * @param nodeRef Node reference
+   * @return All the references that come 'in' to this node
+   */
+  private List<Map<String, String>> getInwardReferenceData(NodeRef nodeRef) {
+    List<Map<String, String>> inwardReferenceData = new ArrayList<>();
+    Set<Relationship> relationships = getRelationshipService()
+      .getRelationshipsTo(nodeRef);
+    inwardReferenceData.addAll(getRelationshipData(relationships));
+    return inwardReferenceData;
+  }
 
-        for (Relationship relationship : relationships)
-        {
-            String uniqueName = relationship.getUniqueName();
-            RelationshipDefinition relationshipDefinition = getRelationshipService().getRelationshipDefinition(uniqueName);
+  /**
+   * Creates relationship data for the ftl template
+   *
+   * @param relationships The relationships
+   * @return The relationship data
+   */
+  private List<Map<String, String>> getRelationshipData(
+    Set<Relationship> relationships
+  ) {
+    List<Map<String, String>> relationshipData = new ArrayList<>();
 
-            NodeRef source = relationship.getSource();
-            NodeRef target = relationship.getTarget();
+    for (Relationship relationship : relationships) {
+      String uniqueName = relationship.getUniqueName();
+      RelationshipDefinition relationshipDefinition = getRelationshipService()
+        .getRelationshipDefinition(uniqueName);
 
-            if (relationshipDefinition != null && hasView(source) && hasView(target))
-            {
-                Map<String, String> data = new HashMap<>();
+      NodeRef source = relationship.getSource();
+      NodeRef target = relationship.getTarget();
 
-                RelationshipType type = relationshipDefinition.getType();
-                RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
+      if (
+        relationshipDefinition != null && hasView(source) && hasView(target)
+      ) {
+        Map<String, String> data = new HashMap<>();
 
-                if (RelationshipType.BIDIRECTIONAL.equals(type))
-                {
-                    data.put(LABEL, displayName.getSourceText());
-                    data.put(SOURCE_REF, source.toString());
-                    data.put(TARGET_REF, target.toString());
-                }
-                else if (RelationshipType.PARENTCHILD.equals(type))
-                {
-                    data.put(SOURCE, displayName.getSourceText());
-                    data.put(TARGET, displayName.getTargetText());
-                    data.put(PARENT_REF, source.toString());
-                    data.put(CHILD_REF, target.toString());
-                }
-                else
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("Unsupported relationship type '")
-                        .append(type)
-                        .append("'.");
+        RelationshipType type = relationshipDefinition.getType();
+        RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
 
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, sb.toString());
-                }
+        if (RelationshipType.BIDIRECTIONAL.equals(type)) {
+          data.put(LABEL, displayName.getSourceText());
+          data.put(SOURCE_REF, source.toString());
+          data.put(TARGET_REF, target.toString());
+        } else if (RelationshipType.PARENTCHILD.equals(type)) {
+          data.put(SOURCE, displayName.getSourceText());
+          data.put(TARGET, displayName.getTargetText());
+          data.put(PARENT_REF, source.toString());
+          data.put(CHILD_REF, target.toString());
+        } else {
+          StringBuilder sb = new StringBuilder();
+          sb
+            .append("Unsupported relationship type '")
+            .append(type)
+            .append("'.");
 
-                data.put(REFERENCE_TYPE, type.toString().toLowerCase());
-                data.put(REF_ID, uniqueName);
-
-                relationshipData.add(data);
-            }
-
+          throw new WebScriptException(
+            Status.STATUS_BAD_REQUEST,
+            sb.toString()
+          );
         }
 
-        return relationshipData;
+        data.put(REFERENCE_TYPE, type.toString().toLowerCase());
+        data.put(REF_ID, uniqueName);
+
+        relationshipData.add(data);
+      }
     }
 
-    /**
-     * Determines whether the current user has view capabilities on the given node.
-     *
-     * @param  nodeRef Node reference
-     * @return boolean <code>true</code> if current user has view capability, <code>false</code> otherwise
-     */
-    private boolean hasView(NodeRef nodeRef)
-    {
-        boolean result = false;
+    return relationshipData;
+  }
 
-        Capability viewRecordCapability = getCapabilityService().getCapability(ViewRecordsCapability.NAME);
-        if (AccessStatus.ALLOWED.equals(viewRecordCapability.hasPermission(nodeRef)))
-        {
-            result = true;
-        }
+  /**
+   * Determines whether the current user has view capabilities on the given node.
+   *
+   * @param  nodeRef Node reference
+   * @return boolean <code>true</code> if current user has view capability, <code>false</code> otherwise
+   */
+  private boolean hasView(NodeRef nodeRef) {
+    boolean result = false;
 
-        return result;
+    Capability viewRecordCapability = getCapabilityService()
+      .getCapability(ViewRecordsCapability.NAME);
+    if (
+      AccessStatus.ALLOWED.equals(viewRecordCapability.hasPermission(nodeRef))
+    ) {
+      result = true;
     }
+
+    return result;
+  }
 }

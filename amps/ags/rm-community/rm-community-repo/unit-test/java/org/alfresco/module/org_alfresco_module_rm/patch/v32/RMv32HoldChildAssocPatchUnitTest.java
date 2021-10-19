@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -54,77 +53,83 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * RM V3.2 Hold child assoc patch unit test
- * 
+ *
  * @author Ross Gale
  * @since 3.2
  */
-public class RMv32HoldChildAssocPatchUnitTest
-{
-    @Mock
-    private QNameDAO qNameDAO;
+public class RMv32HoldChildAssocPatchUnitTest {
 
-    @Mock
-    private NodeService nodeService;
+  @Mock
+  private QNameDAO qNameDAO;
 
-    @Mock
-    private FilePlanService filePlanService;
+  @Mock
+  private NodeService nodeService;
 
-    @Mock
-    private HoldService holdService;
+  @Mock
+  private FilePlanService filePlanService;
 
-    @InjectMocks
-    private RMv32HoldChildAssocPatch patch;
+  @Mock
+  private HoldService holdService;
 
-    private NodeRef filePlanRef, holdRef, heldItemRef;
+  @InjectMocks
+  private RMv32HoldChildAssocPatch patch;
 
-    private Set<NodeRef> fileplans;
+  private NodeRef filePlanRef, holdRef, heldItemRef;
 
-    private List<NodeRef> holds;
+  private Set<NodeRef> fileplans;
 
-    @Mock
-    private ChildAssociationRef childAssociationRef;
+  private List<NodeRef> holds;
 
-    private List<ChildAssociationRef> childAssocs;
+  @Mock
+  private ChildAssociationRef childAssociationRef;
 
-    @Before
-    public void setUp()
-    {
-        MockitoAnnotations.initMocks(this);
-        filePlanRef = new NodeRef("workspace://SpacesStore/filePlan");
-        holdRef = new NodeRef("workspace://SpacesStore/hold");
-        heldItemRef = new NodeRef("workspace://SpacesStore/heldItem");
-        fileplans = new HashSet<>();
-        fileplans.add(filePlanRef);
-        holds = new ArrayList<>();
-        holds.add(holdRef);
-        childAssocs = new ArrayList<>();
-        childAssocs.add(childAssociationRef);
-    }
+  private List<ChildAssociationRef> childAssocs;
 
-    /**
-     * Test held items are removed from a hold and re-add to make sure the association is correct
-     */
-    @Test
-    public void testAHoldIsRemovedAndReplacedDuringUpgrade()
-    {
-        when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS)).thenReturn(new Pair(ASSOC_FROZEN_CONTENT,null));
-        when(filePlanService.getFilePlans()).thenReturn(fileplans);
-        when(holdService.getHolds(filePlanRef)).thenReturn(holds);
-        when(nodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, ASSOC_FROZEN_RECORDS)).thenReturn(childAssocs);
-        when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
-        patch.applyInternal();
-        verify(holdService, times(1)).removeFromHold(holdRef, heldItemRef);
-        verify(holdService, times(1)).addToHold(holdRef, heldItemRef);
-    }
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+    filePlanRef = new NodeRef("workspace://SpacesStore/filePlan");
+    holdRef = new NodeRef("workspace://SpacesStore/hold");
+    heldItemRef = new NodeRef("workspace://SpacesStore/heldItem");
+    fileplans = new HashSet<>();
+    fileplans.add(filePlanRef);
+    holds = new ArrayList<>();
+    holds.add(holdRef);
+    childAssocs = new ArrayList<>();
+    childAssocs.add(childAssociationRef);
+  }
 
-    /**
-     * Test patch doesnt run without an association added during rm site creation
-     */
-    @Test
-    public void testAHoldIsntRemovedAndReplacedDuringUpgradeWithNoRmSite()
-    {
-        when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS)).thenReturn(null);
-        patch.applyInternal();
-        verify(qNameDAO, never()).updateQName(ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_CONTENT);
-    }
+  /**
+   * Test held items are removed from a hold and re-add to make sure the association is correct
+   */
+  @Test
+  public void testAHoldIsRemovedAndReplacedDuringUpgrade() {
+    when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS))
+      .thenReturn(new Pair(ASSOC_FROZEN_CONTENT, null));
+    when(filePlanService.getFilePlans()).thenReturn(fileplans);
+    when(holdService.getHolds(filePlanRef)).thenReturn(holds);
+    when(
+      nodeService.getChildAssocs(
+        holdRef,
+        ASSOC_FROZEN_CONTENT,
+        ASSOC_FROZEN_RECORDS
+      )
+    )
+      .thenReturn(childAssocs);
+    when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
+    patch.applyInternal();
+    verify(holdService, times(1)).removeFromHold(holdRef, heldItemRef);
+    verify(holdService, times(1)).addToHold(holdRef, heldItemRef);
+  }
+
+  /**
+   * Test patch doesnt run without an association added during rm site creation
+   */
+  @Test
+  public void testAHoldIsntRemovedAndReplacedDuringUpgradeWithNoRmSite() {
+    when(qNameDAO.getQName(ASSOC_FROZEN_RECORDS)).thenReturn(null);
+    patch.applyInternal();
+    verify(qNameDAO, never())
+      .updateQName(ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_CONTENT);
+  }
 }

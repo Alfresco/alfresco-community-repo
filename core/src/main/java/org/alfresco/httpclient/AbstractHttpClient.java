@@ -20,7 +20,6 @@ package org.alfresco.httpclient;
 
 import java.io.IOException;
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
@@ -38,172 +37,159 @@ import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public abstract class AbstractHttpClient implements AlfrescoHttpClient
-{
-    private static final Log logger = LogFactory.getLog(AlfrescoHttpClient.class);
-    
-    public static final String ALFRESCO_DEFAULT_BASE_URL = "/alfresco";
-    
-    public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
-    
-    // Remote Server access
-    protected HttpClient httpClient = null;
-    
-    private String baseUrl = ALFRESCO_DEFAULT_BASE_URL;
+public abstract class AbstractHttpClient implements AlfrescoHttpClient {
 
-    public AbstractHttpClient(HttpClient httpClient)
-    {
-        this.httpClient = httpClient;
-    }
-    
-    protected HttpClient getHttpClient()
-    {
-        return httpClient;
-    }
-    
-    /**
-     * @return the baseUrl
-     */
-    public String getBaseUrl()
-    {
-        return baseUrl;
-    }
+  private static final Log logger = LogFactory.getLog(AlfrescoHttpClient.class);
 
-    /**
-     * @param baseUrl the baseUrl to set
-     */
-    public void setBaseUrl(String baseUrl)
-    {
-        this.baseUrl = baseUrl;
-    }
+  public static final String ALFRESCO_DEFAULT_BASE_URL = "/alfresco";
 
-    private boolean isRedirect(HttpMethod method)
-    {
-        switch (method.getStatusCode()) {
-        case HttpStatus.SC_MOVED_TEMPORARILY:
-        case HttpStatus.SC_MOVED_PERMANENTLY:
-        case HttpStatus.SC_SEE_OTHER:
-        case HttpStatus.SC_TEMPORARY_REDIRECT:
-            if (method.getFollowRedirects()) {
-                return true;
-            } else {
-                return false;
-            }
-        default:
-            return false;
+  public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
+
+  // Remote Server access
+  protected HttpClient httpClient = null;
+
+  private String baseUrl = ALFRESCO_DEFAULT_BASE_URL;
+
+  public AbstractHttpClient(HttpClient httpClient) {
+    this.httpClient = httpClient;
+  }
+
+  protected HttpClient getHttpClient() {
+    return httpClient;
+  }
+
+  /**
+   * @return the baseUrl
+   */
+  public String getBaseUrl() {
+    return baseUrl;
+  }
+
+  /**
+   * @param baseUrl the baseUrl to set
+   */
+  public void setBaseUrl(String baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+  private boolean isRedirect(HttpMethod method) {
+    switch (method.getStatusCode()) {
+      case HttpStatus.SC_MOVED_TEMPORARILY:
+      case HttpStatus.SC_MOVED_PERMANENTLY:
+      case HttpStatus.SC_SEE_OTHER:
+      case HttpStatus.SC_TEMPORARY_REDIRECT:
+        if (method.getFollowRedirects()) {
+          return true;
+        } else {
+          return false;
         }
+      default:
+        return false;
     }
-    
-    /**
-     * Send Request to the repository
-     */
-    protected HttpMethod sendRemoteRequest(Request req) throws AuthenticationException, IOException
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("");
-            logger.debug("* Request: " + req.getMethod() + " " + req.getFullUri() + (req.getBody() == null ? "" : "\n" + new String(req.getBody(), "UTF-8")));
-        }
+  }
 
-        HttpMethod method = createMethod(req);
-
-        // execute method
-        executeMethod(method);
-
-        // Deal with redirect
-        if(isRedirect(method))
-        {
-            Header locationHeader = method.getResponseHeader("location");
-            if (locationHeader != null)
-            {
-                String redirectLocation = locationHeader.getValue();
-                method.setURI(new URI(redirectLocation, true));
-                httpClient.executeMethod(method);
-            }
-        }
-
-        return method;
-    }
-    
-    protected long executeMethod(HttpMethod method) throws HttpException, IOException
-    {
-        // execute method
-
-        long startTime = System.currentTimeMillis();
-
-        // TODO: Pool, and sent host configuration and state on execution
-        getHttpClient().executeMethod(method);
-
-        return System.currentTimeMillis() - startTime;
+  /**
+   * Send Request to the repository
+   */
+  protected HttpMethod sendRemoteRequest(Request req)
+    throws AuthenticationException, IOException {
+    if (logger.isDebugEnabled()) {
+      logger.debug("");
+      logger.debug(
+        "* Request: " +
+        req.getMethod() +
+        " " +
+        req.getFullUri() +
+        (req.getBody() == null ? "" : "\n" + new String(req.getBody(), "UTF-8"))
+      );
     }
 
-    protected HttpMethod createMethod(Request req) throws IOException
-    {
-        StringBuilder url = new StringBuilder(128);
-        url.append(baseUrl);
-        url.append("/service/");
-        url.append(req.getFullUri());
+    HttpMethod method = createMethod(req);
 
-        // construct method
-        HttpMethod httpMethod = null;
-        String method = req.getMethod();
-        if(method.equalsIgnoreCase("GET"))
-        {
-            GetMethod get = new GetMethod(url.toString());
-            httpMethod = get;
-            httpMethod.setFollowRedirects(true);
-        }
-        else if(method.equalsIgnoreCase("POST"))
-        {
-            PostMethod post = new PostMethod(url.toString());
-            httpMethod = post;
-            ByteArrayRequestEntity requestEntity = new ByteArrayRequestEntity(req.getBody(), req.getType());
-            if (req.getBody().length > DEFAULT_SAVEPOST_BUFFER)
-            {
-                post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
-            }
-            post.setRequestEntity(requestEntity);
-            // Note: not able to automatically follow redirects for POST, this is handled by sendRemoteRequest
-        }
-        else if(method.equalsIgnoreCase("HEAD"))
-        {
-            HeadMethod head = new HeadMethod(url.toString());
-            httpMethod = head;
-            httpMethod.setFollowRedirects(true);
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("Http Method " + method + " not supported");
-        }
+    // execute method
+    executeMethod(method);
 
-        if (req.getHeaders() != null)
-        {
-            for (Map.Entry<String, String> header : req.getHeaders().entrySet())
-            {
-                httpMethod.setRequestHeader(header.getKey(), header.getValue());
-            }
-        }
-        
-        return httpMethod;
+    // Deal with redirect
+    if (isRedirect(method)) {
+      Header locationHeader = method.getResponseHeader("location");
+      if (locationHeader != null) {
+        String redirectLocation = locationHeader.getValue();
+        method.setURI(new URI(redirectLocation, true));
+        httpClient.executeMethod(method);
+      }
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.httpclient.AlfrescoHttpClient#close()
-     */
-    @Override
-    public void close()
-    {
-       if(httpClient != null)
-       {
-           HttpConnectionManager connectionManager = httpClient.getHttpConnectionManager();
-           if(connectionManager instanceof MultiThreadedHttpConnectionManager)
-           {
-               ((MultiThreadedHttpConnectionManager)connectionManager).shutdown();
-           }
-       }
-        
-    }
-    
-    
+    return method;
+  }
 
+  protected long executeMethod(HttpMethod method)
+    throws HttpException, IOException {
+    // execute method
+
+    long startTime = System.currentTimeMillis();
+
+    // TODO: Pool, and sent host configuration and state on execution
+    getHttpClient().executeMethod(method);
+
+    return System.currentTimeMillis() - startTime;
+  }
+
+  protected HttpMethod createMethod(Request req) throws IOException {
+    StringBuilder url = new StringBuilder(128);
+    url.append(baseUrl);
+    url.append("/service/");
+    url.append(req.getFullUri());
+
+    // construct method
+    HttpMethod httpMethod = null;
+    String method = req.getMethod();
+    if (method.equalsIgnoreCase("GET")) {
+      GetMethod get = new GetMethod(url.toString());
+      httpMethod = get;
+      httpMethod.setFollowRedirects(true);
+    } else if (method.equalsIgnoreCase("POST")) {
+      PostMethod post = new PostMethod(url.toString());
+      httpMethod = post;
+      ByteArrayRequestEntity requestEntity = new ByteArrayRequestEntity(
+        req.getBody(),
+        req.getType()
+      );
+      if (req.getBody().length > DEFAULT_SAVEPOST_BUFFER) {
+        post
+          .getParams()
+          .setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
+      }
+      post.setRequestEntity(requestEntity);
+      // Note: not able to automatically follow redirects for POST, this is handled by sendRemoteRequest
+    } else if (method.equalsIgnoreCase("HEAD")) {
+      HeadMethod head = new HeadMethod(url.toString());
+      httpMethod = head;
+      httpMethod.setFollowRedirects(true);
+    } else {
+      throw new AlfrescoRuntimeException(
+        "Http Method " + method + " not supported"
+      );
+    }
+
+    if (req.getHeaders() != null) {
+      for (Map.Entry<String, String> header : req.getHeaders().entrySet()) {
+        httpMethod.setRequestHeader(header.getKey(), header.getValue());
+      }
+    }
+
+    return httpMethod;
+  }
+
+  /* (non-Javadoc)
+   * @see org.alfresco.httpclient.AlfrescoHttpClient#close()
+   */
+  @Override
+  public void close() {
+    if (httpClient != null) {
+      HttpConnectionManager connectionManager = httpClient.getHttpConnectionManager();
+      if (connectionManager instanceof MultiThreadedHttpConnectionManager) {
+        ((MultiThreadedHttpConnectionManager) connectionManager).shutdown();
+      }
+    }
+  }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
@@ -48,129 +47,155 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 @Category(LuceneTests.class)
-public class ApplyTemplateMethodTest extends VirtualizationIntegrationTest
-{
-    @Category(RedundantTests.class)
-    @Test
-    public void testExecute_vanillaISO9075ActualPath() throws Exception
-    {
-        ChildAssociationRef iso9075FolderAssoc = createFolder(testRootFolder.getNodeRef(),
-                                                              "Acutal ISO9075 Node");
-        NodeRef iso9075Folder = iso9075FolderAssoc.getChildRef();
+public class ApplyTemplateMethodTest extends VirtualizationIntegrationTest {
 
-        NewVirtualReferenceMethod newVirtualReferenceMethod = new NewVirtualReferenceMethod(TEST_TEMPLATE_5_JSON_SYS_PATH,
-                                                                                            "/",
-                                                                                            iso9075Folder,
-                                                                                            VANILLA_PROCESSOR_JS_CLASSPATH);
+  @Category(RedundantTests.class)
+  @Test
+  public void testExecute_vanillaISO9075ActualPath() throws Exception {
+    ChildAssociationRef iso9075FolderAssoc = createFolder(
+      testRootFolder.getNodeRef(),
+      "Acutal ISO9075 Node"
+    );
+    NodeRef iso9075Folder = iso9075FolderAssoc.getChildRef();
 
-        ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(environment);
+    NewVirtualReferenceMethod newVirtualReferenceMethod = new NewVirtualReferenceMethod(
+      TEST_TEMPLATE_5_JSON_SYS_PATH,
+      "/",
+      iso9075Folder,
+      VANILLA_PROCESSOR_JS_CLASSPATH
+    );
 
-        Reference ref = Protocols.VANILLA.protocol.dispatch(newVirtualReferenceMethod,
-                                                            null);
-        VirtualFolderDefinition structure = ref.execute(applyTemplateMethod);
+    ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(
+      environment
+    );
 
-        VirtualFolderDefinition sfp5 = structure.findChildByName("SpecialFilingPath5");
-        VirtualQuery query = sfp5.getQuery();
+    Reference ref = Protocols.VANILLA.protocol.dispatch(
+      newVirtualReferenceMethod,
+      null
+    );
+    VirtualFolderDefinition structure = ref.execute(applyTemplateMethod);
 
-        assertEquals("(PATH:'/app:company_home/cm:TestFolder/cm:Acutal_x0020_ISO9075_x0020_Node/cm:Space_x0020_Sub_x0020_Folder/*')  and =cm:description:'SpecialFilingPath_5'",
-                     query.getQueryString());
+    VirtualFolderDefinition sfp5 = structure.findChildByName(
+      "SpecialFilingPath5"
+    );
+    VirtualQuery query = sfp5.getQuery();
 
-        ChildAssociationRef iso9075SubFolderAssoc = createFolder(iso9075Folder,
-                                                                 "Space Sub Folder");
+    assertEquals(
+      "(PATH:'/app:company_home/cm:TestFolder/cm:Acutal_x0020_ISO9075_x0020_Node/cm:Space_x0020_Sub_x0020_Folder/*')  and =cm:description:'SpecialFilingPath_5'",
+      query.getQueryString()
+    );
 
-        ChildAssociationRef someContentAssoc = createContent(iso9075SubFolderAssoc.getChildRef(),
-                                                             "someContent");
+    ChildAssociationRef iso9075SubFolderAssoc = createFolder(
+      iso9075Folder,
+      "Space Sub Folder"
+    );
 
-        nodeService.setProperty(someContentAssoc.getChildRef(),
-                                ContentModel.PROP_DESCRIPTION,
-                                "SpecialFilingPath_5");
+    ChildAssociationRef someContentAssoc = createContent(
+      iso9075SubFolderAssoc.getChildRef(),
+      "someContent"
+    );
 
-        // check query for validity
-        SearchParameters searchParameters = new SearchParameters();
-        
-        searchParameters.setQuery(query.getQueryString());
-        searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        searchParameters.setLanguage(query.getLanguage());
-        
-        /* Code commented out as part of REPO-2028
-         * If this test needs to be reactivated, please refactor this to use the prepareMocks/resetMocks methods
-         */ 
-        // ResultSet qresult = searchService.query(searchParameters);
-        // assertEquals(1, qresult.getNumberFound());
+    nodeService.setProperty(
+      someContentAssoc.getChildRef(),
+      ContentModel.PROP_DESCRIPTION,
+      "SpecialFilingPath_5"
+    );
 
-    }
+    // check query for validity
+    SearchParameters searchParameters = new SearchParameters();
 
-    @Test
-    public void testExecute_virtualSysClasspath() throws Exception
-    {
-        ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(environment);
+    searchParameters.setQuery(query.getQueryString());
+    searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+    searchParameters.setLanguage(query.getLanguage());
+    /* Code commented out as part of REPO-2028
+     * If this test needs to be reactivated, please refactor this to use the prepareMocks/resetMocks methods
+     */
+    // ResultSet qresult = searchService.query(searchParameters);
+    // assertEquals(1, qresult.getNumberFound());
 
-        NewVirtualReferenceMethod newVirtualReferenceMethod = new NewVirtualReferenceMethod(TEST_TEMPLATE_1_JS_SYS_PATH,
-                                                                                            "/",
-                                                                                            rootNodeRef,
-                                                                                            null);
-        Reference ref = Protocols.VIRTUAL.protocol.dispatch(newVirtualReferenceMethod,
-                                                            null);
-        VirtualFolderDefinition structure = ref.execute(applyTemplateMethod);
+  }
 
-        String templateName = structure.getName();
-        assertEquals("template1_name",
-                     templateName);
+  @Test
+  public void testExecute_virtualSysClasspath() throws Exception {
+    ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(
+      environment
+    );
 
-        List<VirtualFolderDefinition> children = structure.getChildren();
-        assertEquals(3,
-                     children.size());
+    NewVirtualReferenceMethod newVirtualReferenceMethod = new NewVirtualReferenceMethod(
+      TEST_TEMPLATE_1_JS_SYS_PATH,
+      "/",
+      rootNodeRef,
+      null
+    );
+    Reference ref = Protocols.VIRTUAL.protocol.dispatch(
+      newVirtualReferenceMethod,
+      null
+    );
+    VirtualFolderDefinition structure = ref.execute(applyTemplateMethod);
 
-        VirtualFolderDefinition child1 = structure.findChildByName("My Documents");
-        assertTrue(child1 != null);
+    String templateName = structure.getName();
+    assertEquals("template1_name", templateName);
 
-        VirtualFolderDefinition child2 = structure.findChildByName("Recent Documents");
-        assertTrue(child2 != null);
+    List<VirtualFolderDefinition> children = structure.getChildren();
+    assertEquals(3, children.size());
 
-        VirtualFolderDefinition child3 = structure.findChildByName("Other Documents");
-        assertTrue(child3 != null);
+    VirtualFolderDefinition child1 = structure.findChildByName("My Documents");
+    assertTrue(child1 != null);
 
-    }
+    VirtualFolderDefinition child2 = structure.findChildByName(
+      "Recent Documents"
+    );
+    assertTrue(child2 != null);
 
-    @Test
-    public void testExecute_vanillaRepositoryJSON() throws Exception
-    {
-        ChildAssociationRef templateAssoc = createContent(testRootFolder.getNodeRef(),
-                                                          "template1.json",
-                                                          ApplyTemplateMethodTest.class
-                                                                      .getResourceAsStream(TEST_TEMPLATE_1_JSON_NAME),
-                                                          MimetypeMap.MIMETYPE_JSON,
-                                                          StandardCharsets.UTF_8.name());
-        ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(environment);
+    VirtualFolderDefinition child3 = structure.findChildByName(
+      "Other Documents"
+    );
+    assertTrue(child3 != null);
+  }
 
-        NewVirtualReferenceMethod newVirtualReferenceMethod = new NewVirtualReferenceMethod(templateAssoc.getChildRef(),
-                                                                                            "/",
-                                                                                            virtualFolder1NodeRef,
-                                                                                            VANILLA_PROCESSOR_JS_CLASSPATH);
-        Reference ref = Protocols.VANILLA.protocol.dispatch(newVirtualReferenceMethod,
-                                                            null);
-        VirtualFolderDefinition structure = ref.execute(applyTemplateMethod);
+  @Test
+  public void testExecute_vanillaRepositoryJSON() throws Exception {
+    ChildAssociationRef templateAssoc = createContent(
+      testRootFolder.getNodeRef(),
+      "template1.json",
+      ApplyTemplateMethodTest.class.getResourceAsStream(
+          TEST_TEMPLATE_1_JSON_NAME
+        ),
+      MimetypeMap.MIMETYPE_JSON,
+      StandardCharsets.UTF_8.name()
+    );
+    ApplyTemplateMethod applyTemplateMethod = new ApplyTemplateMethod(
+      environment
+    );
 
-        String templateName = structure.getName();
-        assertEquals("Test",
-                     templateName);
+    NewVirtualReferenceMethod newVirtualReferenceMethod = new NewVirtualReferenceMethod(
+      templateAssoc.getChildRef(),
+      "/",
+      virtualFolder1NodeRef,
+      VANILLA_PROCESSOR_JS_CLASSPATH
+    );
+    Reference ref = Protocols.VANILLA.protocol.dispatch(
+      newVirtualReferenceMethod,
+      null
+    );
+    VirtualFolderDefinition structure = ref.execute(applyTemplateMethod);
 
-        List<VirtualFolderDefinition> children = structure.getChildren();
-        assertEquals(2,
-                     children.size());
+    String templateName = structure.getName();
+    assertEquals("Test", templateName);
 
-        VirtualFolderDefinition child1 = structure.findChildByName("Node1");
-        assertTrue(child1 != null);
+    List<VirtualFolderDefinition> children = structure.getChildren();
+    assertEquals(2, children.size());
 
-        VirtualFolderDefinition child2 = structure.findChildByName("Node2");
-        assertTrue(child2 != null);
+    VirtualFolderDefinition child1 = structure.findChildByName("Node1");
+    assertTrue(child1 != null);
 
-    }
+    VirtualFolderDefinition child2 = structure.findChildByName("Node2");
+    assertTrue(child2 != null);
+  }
 
-    @Category(RedundantTests.class)
-    @Test
-    public void testExecuteRepositoryJS() throws Exception
-    {
-        // TODO:
-    }
+  @Category(RedundantTests.class)
+  @Test
+  public void testExecuteRepositoryJS() throws Exception {
+    // TODO:
+  }
 }

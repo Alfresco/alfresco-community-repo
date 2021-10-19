@@ -56,113 +56,129 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Ana Bozianu
  * @since 2.6
  */
-@EntityResource(name="files", title = "Files")
-public class FilesEntityResource implements InitializingBean
-{
-    private ApiNodesModelFactory nodesModelFactory;
-    private FilePlanComponentsApiUtils apiUtils;
-    private AuthenticationUtil authenticationUtil;
-    private FilePlanService filePlanService;
-    private FileFolderService fileFolderService;
-    private RecordService recordService;
-    private TransactionService transactionService;
+@EntityResource(name = "files", title = "Files")
+public class FilesEntityResource implements InitializingBean {
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
-    }
+  private ApiNodesModelFactory nodesModelFactory;
+  private FilePlanComponentsApiUtils apiUtils;
+  private AuthenticationUtil authenticationUtil;
+  private FilePlanService filePlanService;
+  private FileFolderService fileFolderService;
+  private RecordService recordService;
+  private TransactionService transactionService;
 
-    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
-    {
-        this.authenticationUtil = authenticationUtil;
-    }
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
 
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
+  public void setAuthenticationUtil(AuthenticationUtil authenticationUtil) {
+    this.authenticationUtil = authenticationUtil;
+  }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
 
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
+  public void setRecordService(RecordService recordService) {
+    this.recordService = recordService;
+  }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
 
-    @Operation("declare")
-    @WebApiDescription(title = "Declare as record", description="Declare a file as record.")
-    public Record declareAsRecord(String fileId, Void body, Parameters parameters, WithResponse withResponse)
-    {
-        // Get fileplan
-        NodeRef filePlan = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork()
-            {
-                return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            }
-        });
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 
-        // default false (if not provided)
-        boolean hideRecord = Boolean.valueOf(parameters.getParameter(Record.PARAM_HIDE_RECORD));
-
-        // Get record folder, if provided
-        final NodeRef targetRecordFolder = extractAndValidateTargetRecordFolder(parameters);
-
-        // Create the record
-        NodeRef file = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, fileId);
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                recordService.createRecord(filePlan, file, targetRecordFolder, !hideRecord);
-                if (targetRecordFolder != null)
-                {
-                    recordService.file(file);
-                }
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
-
-        // Return record state
-        FileInfo info = fileFolderService.getFileInfo(file);
-        return nodesModelFactory.createRecord(info, parameters, null, false);
-    }
-
-    /* Helper method to determine the target record folder, if given */
-    private NodeRef extractAndValidateTargetRecordFolder(Parameters parameters)
-    {
-        // Get record folder, if provided
-        NodeRef targetParent = null;
-        final String targetParentId = parameters.getParameter(RMNode.PARAM_PARENT_ID);
-        if (targetParentId != null)
-        {
-            targetParent = apiUtils.lookupAndValidateNodeType(targetParentId, RecordsManagementModel.TYPE_RECORD_FOLDER);
+  @Operation("declare")
+  @WebApiDescription(
+    title = "Declare as record",
+    description = "Declare a file as record."
+  )
+  public Record declareAsRecord(
+    String fileId,
+    Void body,
+    Parameters parameters,
+    WithResponse withResponse
+  ) {
+    // Get fileplan
+    NodeRef filePlan = authenticationUtil.runAsSystem(
+      new RunAsWork<NodeRef>() {
+        @Override
+        public NodeRef doWork() {
+          return filePlanService.getFilePlanBySiteId(
+            FilePlanService.DEFAULT_RM_SITE_ID
+          );
         }
-        return targetParent;
-    }
+      }
+    );
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
-        ParameterCheck.mandatory("authenticationUtil", authenticationUtil);
-        ParameterCheck.mandatory("filePlanService", filePlanService);
-        ParameterCheck.mandatory("fileFolderService", fileFolderService);
-        ParameterCheck.mandatory("recordService", recordService);
+    // default false (if not provided)
+    boolean hideRecord = Boolean.valueOf(
+      parameters.getParameter(Record.PARAM_HIDE_RECORD)
+    );
+
+    // Get record folder, if provided
+    final NodeRef targetRecordFolder = extractAndValidateTargetRecordFolder(
+      parameters
+    );
+
+    // Create the record
+    NodeRef file = new NodeRef(
+      StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+      fileId
+    );
+    RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
+      public Void execute() {
+        recordService.createRecord(
+          filePlan,
+          file,
+          targetRecordFolder,
+          !hideRecord
+        );
+        if (targetRecordFolder != null) {
+          recordService.file(file);
+        }
+        return null;
+      }
+    };
+    transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(callback, false, true);
+
+    // Return record state
+    FileInfo info = fileFolderService.getFileInfo(file);
+    return nodesModelFactory.createRecord(info, parameters, null, false);
+  }
+
+  /* Helper method to determine the target record folder, if given */
+  private NodeRef extractAndValidateTargetRecordFolder(Parameters parameters) {
+    // Get record folder, if provided
+    NodeRef targetParent = null;
+    final String targetParentId = parameters.getParameter(
+      RMNode.PARAM_PARENT_ID
+    );
+    if (targetParentId != null) {
+      targetParent =
+        apiUtils.lookupAndValidateNodeType(
+          targetParentId,
+          RecordsManagementModel.TYPE_RECORD_FOLDER
+        );
     }
+    return targetParent;
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    ParameterCheck.mandatory("nodesModelFactory", nodesModelFactory);
+    ParameterCheck.mandatory("authenticationUtil", authenticationUtil);
+    ParameterCheck.mandatory("filePlanService", filePlanService);
+    ParameterCheck.mandatory("fileFolderService", fileFolderService);
+    ParameterCheck.mandatory("recordService", recordService);
+  }
 }

@@ -28,43 +28,40 @@ package org.alfresco.repo.site;
 
 import org.alfresco.service.cmr.site.SiteInfo;
 
-public class AbstractSiteMembership
-{
-    protected final SiteInfo siteInfo;
-    protected final String id;  // contains both userId and authority Id
-    protected final String role;
+public class AbstractSiteMembership {
 
-    public AbstractSiteMembership(SiteInfo siteInfo, String id, String role)
-    {
-        if (siteInfo == null)
-        {
-            throw new java.lang.IllegalArgumentException();
-        }
-        if (id == null)
-        {
-            throw new java.lang.IllegalArgumentException("Id required building site membership");
-        }
-        if (role == null)
-        {
-            throw new java.lang.IllegalArgumentException("Role required building site membership");
-        }
-        this.siteInfo = siteInfo;
-        this.id = id;
-        this.role = role;
-    }
+  protected final SiteInfo siteInfo;
+  protected final String id; // contains both userId and authority Id
+  protected final String role;
 
-    public String getId()
-    {
-        return id;
+  public AbstractSiteMembership(SiteInfo siteInfo, String id, String role) {
+    if (siteInfo == null) {
+      throw new java.lang.IllegalArgumentException();
     }
+    if (id == null) {
+      throw new java.lang.IllegalArgumentException(
+        "Id required building site membership"
+      );
+    }
+    if (role == null) {
+      throw new java.lang.IllegalArgumentException(
+        "Role required building site membership"
+      );
+    }
+    this.siteInfo = siteInfo;
+    this.id = id;
+    this.role = role;
+  }
 
-    public SiteInfo getSiteInfo()
-    {
-        return siteInfo;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public String getRole()
-    {
-        return role;
-    }
+  public SiteInfo getSiteInfo() {
+    return siteInfo;
+  }
+
+  public String getRole() {
+    return role;
+  }
 }

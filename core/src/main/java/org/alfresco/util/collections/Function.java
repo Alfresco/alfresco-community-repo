@@ -20,19 +20,18 @@
 package org.alfresco.util.collections;
 
 /**
- * 
+ *
  * @author Nick Smith
  * @since 4.0
  *
  * @param <F> From type
  * @param <T> To type
  */
-public interface Function<F, T>
-{
-    /**
-     * Converts a value of type F to a result of type T.
-     * @param value F
-     * @return T
-     */
-    T apply(F value);
+public interface Function<F, T> {
+  /**
+   * Converts a value of type F to a result of type T.
+   * @param value F
+   * @return T
+   */
+  T apply(F value);
 }

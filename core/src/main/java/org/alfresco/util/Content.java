@@ -22,54 +22,52 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-
 /**
  * Content
- * 
+ *
  * @author dcaruana
  */
-public interface Content
-{
-    /**
-     * Gets content as a string
-     * 
-     * @return  content as a string
-     * @throws IOException
-     */
-    public String getContent() throws IOException;
+public interface Content {
+  /**
+   * Gets content as a string
+   *
+   * @return  content as a string
+   * @throws IOException
+   */
+  public String getContent() throws IOException;
 
-    /**
-     * Gets the content mimetype
-     * 
-     * @return mimetype
-     */
-    public String getMimetype();
-    
-    /**
-     * Gets the content encoding
-     * 
-     * @return  encoding
-     */
-    public String getEncoding();
-    
-    /**
-     * Gets the content length (in bytes)
-     * 
-     * @return  length
-     */
-    public long getSize();
+  /**
+   * Gets the content mimetype
+   *
+   * @return mimetype
+   */
+  public String getMimetype();
 
-    /**
-     * Gets the content input stream
-     * 
-     * @return  input stream
-     */
-    public InputStream getInputStream();
+  /**
+   * Gets the content encoding
+   *
+   * @return  encoding
+   */
+  public String getEncoding();
 
-    /**
-     * Gets the content reader (which is sensitive to encoding)
-     * 
-     * @return Reader
-     */
-    public Reader getReader() throws IOException;
+  /**
+   * Gets the content length (in bytes)
+   *
+   * @return  length
+   */
+  public long getSize();
+
+  /**
+   * Gets the content input stream
+   *
+   * @return  input stream
+   */
+  public InputStream getInputStream();
+
+  /**
+   * Gets the content reader (which is sensitive to encoding)
+   *
+   * @return Reader
+   */
+  public Reader getReader() throws IOException;
 }

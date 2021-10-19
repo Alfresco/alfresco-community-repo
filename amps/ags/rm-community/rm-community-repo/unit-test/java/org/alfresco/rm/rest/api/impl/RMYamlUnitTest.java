@@ -37,14 +37,13 @@ import org.junit.Test;
  * @since 2.6
  *
  */
-public class RMYamlUnitTest extends BaseYamlUnitTest
-{
-    private static String RM_COMMUNITY_YAML_FILES_PATH = "../rm-community-rest-api-explorer/src/main/webapp/definitions";
+public class RMYamlUnitTest extends BaseYamlUnitTest {
 
-    @Test
-    public void validateYamlFile() throws Exception
-    {
-        validateYamlFiles(getYamlFilesList(RM_COMMUNITY_YAML_FILES_PATH));
-    }
+  private static String RM_COMMUNITY_YAML_FILES_PATH =
+    "../rm-community-rest-api-explorer/src/main/webapp/definitions";
+
+  @Test
+  public void validateYamlFile() throws Exception {
+    validateYamlFiles(getYamlFilesList(RM_COMMUNITY_YAML_FILES_PATH));
+  }
 }
-

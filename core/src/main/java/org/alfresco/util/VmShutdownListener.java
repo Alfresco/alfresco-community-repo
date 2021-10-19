@@ -27,57 +27,55 @@ import org.apache.commons.logging.LogFactory;
  * VM shutdown status has been activated.
  * <p>
  * <b>NOTE: </b> In order to prevent a proliferation of shutdown hooks,
- *      it is advisable to use instances as singletons only. 
+ *      it is advisable to use instances as singletons only.
  * <p>
  * This component should be used by long-running, but interruptable processes.
- * 
+ *
  * @author Derek Hulley
  */
-public class VmShutdownListener
-{
-    private Log logger;
-    private volatile boolean vmShuttingDown;
-    
-    /**
-     * Constructs this instance to listen to the VM shutdown call.
-     *
-     */
-    public VmShutdownListener(final String name)
-    {
-        logger = LogFactory.getLog(VmShutdownListener.class);
-        
-        vmShuttingDown = false;
-        Runnable shutdownRunnable = new Runnable()
-        {
-            public void run()
-            {
-                vmShuttingDown = true;
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("VM shutdown detected by listener " + name);
-                }
-            };  
-        };
-        Thread shutdownThread = new Thread(shutdownRunnable, "ShutdownListener-" + name);
-        Runtime.getRuntime().addShutdownHook(shutdownThread);
-    }
+public class VmShutdownListener {
 
-    /**
-     * @return Returns true if the VM shutdown signal was detected.
-     */
-    public boolean isVmShuttingDown()
-    {
-        return vmShuttingDown;
-    }
+  private Log logger;
+  private volatile boolean vmShuttingDown;
 
-    /**
-     * Message carrier to break out of loops using the callback.
-     * 
-     * @author Derek Hulley
-     * @since 3.2.1
-     */
-    public static class VmShutdownException extends RuntimeException
-    {
-        private static final long serialVersionUID = -5876107469054587072L;
-    }
+  /**
+   * Constructs this instance to listen to the VM shutdown call.
+   *
+   */
+  public VmShutdownListener(final String name) {
+    logger = LogFactory.getLog(VmShutdownListener.class);
+
+    vmShuttingDown = false;
+    Runnable shutdownRunnable = new Runnable() {
+      public void run() {
+        vmShuttingDown = true;
+        if (logger.isDebugEnabled()) {
+          logger.debug("VM shutdown detected by listener " + name);
+        }
+      }
+    };
+    Thread shutdownThread = new Thread(
+      shutdownRunnable,
+      "ShutdownListener-" + name
+    );
+    Runtime.getRuntime().addShutdownHook(shutdownThread);
+  }
+
+  /**
+   * @return Returns true if the VM shutdown signal was detected.
+   */
+  public boolean isVmShuttingDown() {
+    return vmShuttingDown;
+  }
+
+  /**
+   * Message carrier to break out of loops using the callback.
+   *
+   * @author Derek Hulley
+   * @since 3.2.1
+   */
+  public static class VmShutdownException extends RuntimeException {
+
+    private static final long serialVersionUID = -5876107469054587072L;
+  }
 }

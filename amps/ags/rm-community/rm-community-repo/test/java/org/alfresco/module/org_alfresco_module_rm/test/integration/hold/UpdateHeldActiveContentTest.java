@@ -43,171 +43,199 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Claudia Agache
  * @since 3.2
  */
-public class UpdateHeldActiveContentTest extends BaseRMTestCase
-{
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+public class UpdateHeldActiveContentTest extends BaseRMTestCase {
 
-    /**
-     * Given active content on hold
-     * When I try to delete the content
-     * Then I am not successful
-     */
-    public void testDeleteHeldDocument()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            public void given()
-            {
-                // create a hold
-                NodeRef hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-                // add the active content to hold
-                holdService.addToHold(hold, dmDocument);
-            }
+  /**
+   * Given active content on hold
+   * When I try to delete the content
+   * Then I am not successful
+   */
+  public void testDeleteHeldDocument() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        public void given() {
+          // create a hold
+          NodeRef hold = holdService.createHold(
+            filePlan,
+            GUID.generate(),
+            GUID.generate(),
+            GUID.generate()
+          );
 
-            public void when()
-            {
-                try
-                {
-                    fileFolderService.delete(dmDocument);
-                    fail("Expected PermissionDeniedException to be thrown");
-                }
-                catch (PermissionDeniedException pde)
-                {
-                    assertTrue(pde.getMessage().contains(I18NUtil.getMessage("rm.hold.delete-frozen-node")));
-                }
-            }
-        });
-    }
+          // add the active content to hold
+          holdService.addToHold(hold, dmDocument);
+        }
 
-    /**
-     * Given active content on hold
-     * When I try to copy the content
-     * Then I am not successful
-     */
-    public void testCopyHeldDocument()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
-            public void given()
-            {
-                // create a hold
-                NodeRef hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+        public void when() {
+          try {
+            fileFolderService.delete(dmDocument);
+            fail("Expected PermissionDeniedException to be thrown");
+          } catch (PermissionDeniedException pde) {
+            assertTrue(
+              pde
+                .getMessage()
+                .contains(I18NUtil.getMessage("rm.hold.delete-frozen-node"))
+            );
+          }
+        }
+      }
+    );
+  }
 
-                // add the active content to hold
-                holdService.addToHold(hold, dmDocument);
-            }
+  /**
+   * Given active content on hold
+   * When I try to copy the content
+   * Then I am not successful
+   */
+  public void testCopyHeldDocument() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(AccessDeniedException.class) {
+        public void given() {
+          // create a hold
+          NodeRef hold = holdService.createHold(
+            filePlan,
+            GUID.generate(),
+            GUID.generate(),
+            GUID.generate()
+          );
 
-            public void when() throws FileNotFoundException
-            {
-                fileFolderService.copy(dmDocument, dmFolder1, null);
-            }
-        });
-    }
+          // add the active content to hold
+          holdService.addToHold(hold, dmDocument);
+        }
 
-    /**
-     * Given active content on hold
-     * When I try to move the content
-     * Then I am not successful
-     */
-    public void testMoveHeldDocument()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            public void given()
-            {
-                // create a hold
-                NodeRef hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+        public void when() throws FileNotFoundException {
+          fileFolderService.copy(dmDocument, dmFolder1, null);
+        }
+      }
+    );
+  }
 
-                // add the active content to hold
-                holdService.addToHold(hold, dmDocument);
-            }
+  /**
+   * Given active content on hold
+   * When I try to move the content
+   * Then I am not successful
+   */
+  public void testMoveHeldDocument() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        public void given() {
+          // create a hold
+          NodeRef hold = holdService.createHold(
+            filePlan,
+            GUID.generate(),
+            GUID.generate(),
+            GUID.generate()
+          );
 
-            public void when() throws FileNotFoundException
-            {
-                try
-                {
-                    fileFolderService.move(dmDocument, dmFolder1, null);
-                    fail("Expected PermissionDeniedException to be thrown");
-                }
-                catch (PermissionDeniedException pde)
-                {
-                    assertTrue(pde.getMessage().contains(I18NUtil.getMessage("rm.hold.move-frozen-node")));
-                }
-            }
-        });
-    }
+          // add the active content to hold
+          holdService.addToHold(hold, dmDocument);
+        }
 
-    /**
-     * Given active content on hold
-     * When I try to edit the properties
-     * Or perform an action that edits the properties
-     * Then I am not successful
-     */
-    public void testUpdateHeldDocumentProperties()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            public void given()
-            {
-                // create a hold
-                NodeRef hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+        public void when() throws FileNotFoundException {
+          try {
+            fileFolderService.move(dmDocument, dmFolder1, null);
+            fail("Expected PermissionDeniedException to be thrown");
+          } catch (PermissionDeniedException pde) {
+            assertTrue(
+              pde
+                .getMessage()
+                .contains(I18NUtil.getMessage("rm.hold.move-frozen-node"))
+            );
+          }
+        }
+      }
+    );
+  }
 
-                // add the active content to hold
-                holdService.addToHold(hold, dmDocument);
-            }
+  /**
+   * Given active content on hold
+   * When I try to edit the properties
+   * Or perform an action that edits the properties
+   * Then I am not successful
+   */
+  public void testUpdateHeldDocumentProperties() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        public void given() {
+          // create a hold
+          NodeRef hold = holdService.createHold(
+            filePlan,
+            GUID.generate(),
+            GUID.generate(),
+            GUID.generate()
+          );
 
-            public void when()
-            {
-                try
-                {
-                    nodeService.setProperty(dmDocument, ContentModel.PROP_DESCRIPTION, "description");
-                    fail("Expected PermissionDeniedException to be thrown");
-                }
-                catch (PermissionDeniedException pde)
-                {
-                    assertTrue(pde.getMessage().contains(I18NUtil.getMessage("rm.hold.update-frozen-node")));
-                }
-            }
-        });
-    }
+          // add the active content to hold
+          holdService.addToHold(hold, dmDocument);
+        }
 
-    /**
-     * Given active content on hold
-     * When I try to update the content
-     * Then I am not successful
-     */
-    public void testUpdateHeldDocumentContent()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            public void given()
-            {
-                // create a hold
-                NodeRef hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+        public void when() {
+          try {
+            nodeService.setProperty(
+              dmDocument,
+              ContentModel.PROP_DESCRIPTION,
+              "description"
+            );
+            fail("Expected PermissionDeniedException to be thrown");
+          } catch (PermissionDeniedException pde) {
+            assertTrue(
+              pde
+                .getMessage()
+                .contains(I18NUtil.getMessage("rm.hold.update-frozen-node"))
+            );
+          }
+        }
+      }
+    );
+  }
 
-                // add the active content to hold
-                holdService.addToHold(hold, dmDocument);
-            }
+  /**
+   * Given active content on hold
+   * When I try to update the content
+   * Then I am not successful
+   */
+  public void testUpdateHeldDocumentContent() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        public void given() {
+          // create a hold
+          NodeRef hold = holdService.createHold(
+            filePlan,
+            GUID.generate(),
+            GUID.generate(),
+            GUID.generate()
+          );
 
-            public void when()
-            {
-                try
-                {
-                    ContentData content = (ContentData) nodeService.getProperty(dmDocument, PROP_CONTENT);
-                    nodeService.setProperty(dmDocument, PROP_CONTENT, ContentData.setMimetype(content,
-                            MimetypeMap.MIMETYPE_TEXT_PLAIN));
-                    fail("Expected PermissionDeniedException to be thrown");
-                }
-                catch (PermissionDeniedException pde)
-                {
-                    assertTrue(pde.getMessage().contains(I18NUtil.getMessage("rm.hold.update-frozen-node")));
-                }
-            }
-        });
-    }
+          // add the active content to hold
+          holdService.addToHold(hold, dmDocument);
+        }
+
+        public void when() {
+          try {
+            ContentData content = (ContentData) nodeService.getProperty(
+              dmDocument,
+              PROP_CONTENT
+            );
+            nodeService.setProperty(
+              dmDocument,
+              PROP_CONTENT,
+              ContentData.setMimetype(content, MimetypeMap.MIMETYPE_TEXT_PLAIN)
+            );
+            fail("Expected PermissionDeniedException to be thrown");
+          } catch (PermissionDeniedException pde) {
+            assertTrue(
+              pde
+                .getMessage()
+                .contains(I18NUtil.getMessage("rm.hold.update-frozen-node"))
+            );
+          }
+        }
+      }
+    );
+  }
 }

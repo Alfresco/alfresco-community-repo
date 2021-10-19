@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -40,57 +40,57 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ActivitiPriorityPropertyHandlerTest
-{
-    private static ActivitiPriorityPropertyHandler handler;
-    private @Mock
-    Task task;
-    private TypeDefinition type = null;
-    private QName key = null;
+public class ActivitiPriorityPropertyHandlerTest {
 
-    @BeforeClass
-    public static void setUp()
-    {
-        handler = new ActivitiPriorityPropertyHandler();
-        MessageService messageService = mock(MessageService.class);
-        handler.setMessageService(messageService);
-    }
+  private static ActivitiPriorityPropertyHandler handler;
 
-    @Test
-    public void handleTaskPropertySetsValidIntPriority()
-    {
-        for (int priority = 1; priority <= 3; priority++)
-        {
-            Object result = handler.handleTaskProperty(task, type, key, priority);
-            assertEquals(WorkflowPropertyHandler.DO_NOT_ADD, result);
-            verify(task).setPriority(priority);
-        }
-    }
+  @Mock
+  private Task task;
 
-    @Test
-    public void handleTaskPropertySetsValidStringPriority()
-    {
-        for (int priority = 1; priority <= 3; priority++)
-        {
-            Object result = handler.handleTaskProperty(task, type, key, "" + priority);
-            assertEquals(WorkflowPropertyHandler.DO_NOT_ADD, result);
-            verify(task).setPriority(priority);
-        }
-    }
+  private TypeDefinition type = null;
+  private QName key = null;
 
-    @Test(expected = org.alfresco.service.cmr.workflow.WorkflowException.class)
-    public void handleTaskPropertyDoesNotSetInvalidStringPriority()
-    {
-        String priority = "Not an integer";
-        handler.handleTaskProperty(task, type, key, priority);
-        fail("The method should throw an exception and not reach here.");
-    }
+  @BeforeClass
+  public static void setUp() {
+    handler = new ActivitiPriorityPropertyHandler();
+    MessageService messageService = mock(MessageService.class);
+    handler.setMessageService(messageService);
+  }
 
-    @Test(expected = org.alfresco.service.cmr.workflow.WorkflowException.class)
-    public void handleTaskPropertyDoesNotSetInvalidClassPriority()
-    {
-        Long priority = 2l;
-        handler.handleTaskProperty(task, type, key, priority);
-        fail("The method should throw an exception and not reach here.");
+  @Test
+  public void handleTaskPropertySetsValidIntPriority() {
+    for (int priority = 1; priority <= 3; priority++) {
+      Object result = handler.handleTaskProperty(task, type, key, priority);
+      assertEquals(WorkflowPropertyHandler.DO_NOT_ADD, result);
+      verify(task).setPriority(priority);
     }
+  }
+
+  @Test
+  public void handleTaskPropertySetsValidStringPriority() {
+    for (int priority = 1; priority <= 3; priority++) {
+      Object result = handler.handleTaskProperty(
+        task,
+        type,
+        key,
+        "" + priority
+      );
+      assertEquals(WorkflowPropertyHandler.DO_NOT_ADD, result);
+      verify(task).setPriority(priority);
+    }
+  }
+
+  @Test(expected = org.alfresco.service.cmr.workflow.WorkflowException.class)
+  public void handleTaskPropertyDoesNotSetInvalidStringPriority() {
+    String priority = "Not an integer";
+    handler.handleTaskProperty(task, type, key, priority);
+    fail("The method should throw an exception and not reach here.");
+  }
+
+  @Test(expected = org.alfresco.service.cmr.workflow.WorkflowException.class)
+  public void handleTaskPropertyDoesNotSetInvalidClassPriority() {
+    Long priority = 2l;
+    handler.handleTaskProperty(task, type, key, priority);
+    fail("The method should throw an exception and not reach here.");
+  }
 }

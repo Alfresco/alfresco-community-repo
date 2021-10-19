@@ -32,12 +32,12 @@ package org.alfresco.rest.rm.community.model.custom;
  * @author Rodica Sutu
  * @since 2.6
  */
-public enum CustomDefinitions
-{
+public enum CustomDefinitions {
     ATTACHMENT("Attachment"),
     MESSAGE("Message"),
     NEXT_VERSION("Next Version"),
     RENDITION("Rendition");
+
     /**
      * The name of custom reference.
      */
@@ -46,8 +46,7 @@ public enum CustomDefinitions
     /**
      * Private constructor.
      */
-    CustomDefinitions(String definition)
-    {
+    CustomDefinitions(String definition) {
         this.definition = definition;
     }
 
@@ -56,8 +55,7 @@ public enum CustomDefinitions
      *
      * @return The value of custom reference.
      */
-    public String getDefinition()
-    {
+    public String getDefinition() {
         return definition;
     }
 }

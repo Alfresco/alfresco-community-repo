@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,138 +28,116 @@ package org.alfresco.service.cmr.workflow;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 @AlfrescoPublicApi
-public class WorkflowInstanceQuery
-{
-    public enum DatePosition
-    {
-        BEFORE, AFTER
-    }
+public class WorkflowInstanceQuery {
 
-    private String workflowDefinitionId;
-    private Boolean active = null;
-    private Date startBefore;
-    private Date startAfter;
-    private Date endBefore;
-    private Date endAfter;
-    private List<String> excludedDefinitions;
-    private String engine;
+  public enum DatePosition {
+    BEFORE,
+    AFTER,
+  }
 
-    // Custom properties
-    // Value for Date property must be Map<DatePosition, Date>
-    private Map<QName, Object> customProps;
+  private String workflowDefinitionId;
+  private Boolean active = null;
+  private Date startBefore;
+  private Date startAfter;
+  private Date endBefore;
+  private Date endAfter;
+  private List<String> excludedDefinitions;
+  private String engine;
 
-    public WorkflowInstanceQuery()
-    {
-        // Default
-    }
+  // Custom properties
+  // Value for Date property must be Map<DatePosition, Date>
+  private Map<QName, Object> customProps;
 
-    public WorkflowInstanceQuery(String workflowDefinitionId)
-    {
-        this.workflowDefinitionId = workflowDefinitionId;
-    }
+  public WorkflowInstanceQuery() {
+    // Default
+  }
 
-    public WorkflowInstanceQuery(Boolean active)
-    {
-        this.active = active;
-    }
+  public WorkflowInstanceQuery(String workflowDefinitionId) {
+    this.workflowDefinitionId = workflowDefinitionId;
+  }
 
-    public WorkflowInstanceQuery(String workflowDefinitionId, Boolean active)
-    {
-        this.workflowDefinitionId = workflowDefinitionId;
-        this.active = active;
-    }
+  public WorkflowInstanceQuery(Boolean active) {
+    this.active = active;
+  }
 
-    public Boolean getActive()
-    {
-        return active;
-    }
+  public WorkflowInstanceQuery(String workflowDefinitionId, Boolean active) {
+    this.workflowDefinitionId = workflowDefinitionId;
+    this.active = active;
+  }
 
-    public void setActive(Boolean active)
-    {
-        this.active = active;
-    }
+  public Boolean getActive() {
+    return active;
+  }
 
-    public Date getStartBefore()
-    {
-        return startBefore;
-    }
+  public void setActive(Boolean active) {
+    this.active = active;
+  }
 
-    public void setStartBefore(Date startBefore)
-    {
-        this.startBefore = startBefore;
-    }
+  public Date getStartBefore() {
+    return startBefore;
+  }
 
-    public Date getStartAfter()
-    {
-        return startAfter;
-    }
+  public void setStartBefore(Date startBefore) {
+    this.startBefore = startBefore;
+  }
 
-    public void setStartAfter(Date startAfter)
-    {
-        this.startAfter = startAfter;
-    }
+  public Date getStartAfter() {
+    return startAfter;
+  }
 
-    public Date getEndBefore()
-    {
-        return endBefore;
-    }
+  public void setStartAfter(Date startAfter) {
+    this.startAfter = startAfter;
+  }
 
-    public void setEndBefore(Date endBefore)
-    {
-        this.endBefore = endBefore;
-    }
+  public Date getEndBefore() {
+    return endBefore;
+  }
 
-    public Date getEndAfter()
-    {
-        return endAfter;
-    }
+  public void setEndBefore(Date endBefore) {
+    this.endBefore = endBefore;
+  }
 
-    public void setEndAfter(Date endAfter)
-    {
-        this.endAfter = endAfter;
-    }
+  public Date getEndAfter() {
+    return endAfter;
+  }
 
-    public Map<QName, Object> getCustomProps()
-    {
-        return customProps;
-    }
+  public void setEndAfter(Date endAfter) {
+    this.endAfter = endAfter;
+  }
 
-    public void setCustomProps(Map<QName, Object> customProps)
-    {
-        this.customProps = customProps;
-    }
+  public Map<QName, Object> getCustomProps() {
+    return customProps;
+  }
 
-    public String getWorkflowDefinitionId()
-    {
-        return workflowDefinitionId;
-    }
+  public void setCustomProps(Map<QName, Object> customProps) {
+    this.customProps = customProps;
+  }
 
-    public void setWorkflowDefinitionId(String workflowDefinitionId)
-    {
-        this.workflowDefinitionId = workflowDefinitionId;
-    }
+  public String getWorkflowDefinitionId() {
+    return workflowDefinitionId;
+  }
 
-    public List<String> getExcludedDefinitions()
-    {
-        return excludedDefinitions;
-    }
+  public void setWorkflowDefinitionId(String workflowDefinitionId) {
+    this.workflowDefinitionId = workflowDefinitionId;
+  }
 
-    public void setExcludedDefinitions(List<String> excludedDefinitions)
-    {
-        this.excludedDefinitions = excludedDefinitions;
-    }
-    
-    public void setEngineId(String engine) {
-		this.engine = engine;
-	}
-    
-    public String getEngineId() {
-		return engine;
-	}
+  public List<String> getExcludedDefinitions() {
+    return excludedDefinitions;
+  }
 
+  public void setExcludedDefinitions(List<String> excludedDefinitions) {
+    this.excludedDefinitions = excludedDefinitions;
+  }
+
+  public void setEngineId(String engine) {
+    this.engine = engine;
+  }
+
+  public String getEngineId() {
+    return engine;
+  }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -30,9 +30,7 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.util.List;
 import java.util.Set;
-
 import javax.transaction.UserTransaction;
-
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -50,202 +48,175 @@ import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class FileSourceImporter implements ImporterJobSPI
-{
-    private static Log s_logger = LogFactory.getLog(FileSourceImporter.class);
-    
-    private ImporterService importerService;
+public class FileSourceImporter implements ImporterJobSPI {
 
-    private String fileLocation;
+  private static Log s_logger = LogFactory.getLog(FileSourceImporter.class);
 
-    private AuthenticationContext authenticationContext;
+  private ImporterService importerService;
 
-    private StoreRef storeRef;
+  private String fileLocation;
 
-    private String path;
+  private AuthenticationContext authenticationContext;
 
-    private boolean clearAllChildren;
+  private StoreRef storeRef;
 
-    private NodeService nodeService;
+  private String path;
 
-    private SearchService searchService;
+  private boolean clearAllChildren;
 
-    private NamespacePrefixResolver namespacePrefixResolver;
+  private NodeService nodeService;
 
-    private TransactionService transactionService;
+  private SearchService searchService;
 
-    private Set<SimpleCache> caches;
+  private NamespacePrefixResolver namespacePrefixResolver;
 
-    public FileSourceImporter()
-    {
-        super();
-    }
+  private TransactionService transactionService;
 
-    public void setImporterService(ImporterService importerService)
-    {
-        this.importerService = importerService;
-    }
+  private Set<SimpleCache> caches;
 
-    public void setFileLocation(String fileLocation)
-    {
-        this.fileLocation = fileLocation;
-    }
+  public FileSourceImporter() {
+    super();
+  }
 
-    public void setClearAllChildren(boolean clearAllChildren)
-    {
-        this.clearAllChildren = clearAllChildren;
-    }
+  public void setImporterService(ImporterService importerService) {
+    this.importerService = importerService;
+  }
 
-    public void setPath(String path)
-    {
-        this.path = path;
-    }
+  public void setFileLocation(String fileLocation) {
+    this.fileLocation = fileLocation;
+  }
 
-    public void setStoreRef(String storeRef)
-    {
-        this.storeRef = new StoreRef(storeRef);
-    }
+  public void setClearAllChildren(boolean clearAllChildren) {
+    this.clearAllChildren = clearAllChildren;
+  }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+  public void setPath(String path) {
+    this.path = path;
+  }
 
-    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
-    {
-        this.namespacePrefixResolver = namespacePrefixResolver;
-    }
+  public void setStoreRef(String storeRef) {
+    this.storeRef = new StoreRef(storeRef);
+  }
 
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 
-    public void setCaches(Set<SimpleCache> caches)
-    {
-        this.caches = caches;
-    }
+  public void setNamespacePrefixResolver(
+    NamespacePrefixResolver namespacePrefixResolver
+  ) {
+    this.namespacePrefixResolver = namespacePrefixResolver;
+  }
 
-    public void setAuthenticationContext(AuthenticationContext authenticationContext)
-    {
-        this.authenticationContext = authenticationContext;
-    }
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
+  public void setCaches(Set<SimpleCache> caches) {
+    this.caches = caches;
+  }
 
-    @SuppressWarnings("unchecked")
-    public void doImport()
-    {
-        UserTransaction userTransaction = null;
-        try
-        {
-            long start = System.nanoTime();
-            userTransaction = transactionService.getUserTransaction();
-            userTransaction.begin();
-            authenticationContext.setSystemUserAsCurrentUser();
-            if (clearAllChildren)
-            {
-                List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(storeRef), path, null,
-                        namespacePrefixResolver, false);
-                for (NodeRef ref : refs)
-                {
-                    for (ChildAssociationRef car : nodeService.getChildAssocs(ref))
-                    {
-                        nodeService.deleteNode(car.getChildRef());
-                    }
-                }
-            }
+  public void setAuthenticationContext(
+    AuthenticationContext authenticationContext
+  ) {
+    this.authenticationContext = authenticationContext;
+  }
 
-            if (caches != null)
-            {
-                for (SimpleCache cache : caches)
-                {
+  public void setSearchService(SearchService searchService) {
+    this.searchService = searchService;
+  }
 
-                    cache.clear();
-                }
-            }
-
-            Reader reader = new BufferedReader(new FileReader(fileLocation));
-
-            Location location = new Location(storeRef);
-            location.setPath(path);
-
-            importerService.importView(reader, location, REPLACE_BINDING, null);
-            reader.close();
-
-            if (caches != null)
-            {
-                for (SimpleCache cache : caches)
-                {
-                    cache.clear();
-                }
-            }
-
-            userTransaction.commit();
-            long end = System.nanoTime();
-            s_logger.info("Imported "+fileLocation+ " in "+((end-start)/1e9f) + " seconds");
+  @SuppressWarnings("unchecked")
+  public void doImport() {
+    UserTransaction userTransaction = null;
+    try {
+      long start = System.nanoTime();
+      userTransaction = transactionService.getUserTransaction();
+      userTransaction.begin();
+      authenticationContext.setSystemUserAsCurrentUser();
+      if (clearAllChildren) {
+        List<NodeRef> refs = searchService.selectNodes(
+          nodeService.getRootNode(storeRef),
+          path,
+          null,
+          namespacePrefixResolver,
+          false
+        );
+        for (NodeRef ref : refs) {
+          for (ChildAssociationRef car : nodeService.getChildAssocs(ref)) {
+            nodeService.deleteNode(car.getChildRef());
+          }
         }
-        catch (Throwable t)
-        {
-            try
-            {
-                if (userTransaction != null)
-                {
-                    userTransaction.rollback();
-                }
-            }
-            catch (Exception ex)
-            {
-            }
-            try
-            {
-                authenticationContext.clearCurrentSecurityContext();
-            }
-            catch (Exception ex)
-            {
-            }
-            throw new ExportSourceImporterException("Failed to import", t);
+      }
+
+      if (caches != null) {
+        for (SimpleCache cache : caches) {
+          cache.clear();
         }
-        finally
-        {
-            authenticationContext.clearCurrentSecurityContext();
+      }
+
+      Reader reader = new BufferedReader(new FileReader(fileLocation));
+
+      Location location = new Location(storeRef);
+      location.setPath(path);
+
+      importerService.importView(reader, location, REPLACE_BINDING, null);
+      reader.close();
+
+      if (caches != null) {
+        for (SimpleCache cache : caches) {
+          cache.clear();
         }
+      }
+
+      userTransaction.commit();
+      long end = System.nanoTime();
+      s_logger.info(
+        "Imported " +
+        fileLocation +
+        " in " +
+        ((end - start) / 1e9f) +
+        " seconds"
+      );
+    } catch (Throwable t) {
+      try {
+        if (userTransaction != null) {
+          userTransaction.rollback();
+        }
+      } catch (Exception ex) {}
+      try {
+        authenticationContext.clearCurrentSecurityContext();
+      } catch (Exception ex) {}
+      throw new ExportSourceImporterException("Failed to import", t);
+    } finally {
+      authenticationContext.clearCurrentSecurityContext();
+    }
+  }
+
+  private static ImporterBinding REPLACE_BINDING = new ImporterBinding() {
+    @Override
+    public UUID_BINDING getUUIDBinding() {
+      return UUID_BINDING.UPDATE_EXISTING;
     }
 
-    private static ImporterBinding REPLACE_BINDING = new ImporterBinding()
-    {
-        @Override
-        public UUID_BINDING getUUIDBinding()
-        {
-            return UUID_BINDING.UPDATE_EXISTING;
-        }
+    @Override
+    public String getValue(String key) {
+      return null;
+    }
 
-        @Override
-        public String getValue(String key)
-        {
-            return null;
-        }
+    @Override
+    public boolean allowReferenceWithinTransaction() {
+      return false;
+    }
 
-        @Override
-        public boolean allowReferenceWithinTransaction()
-        {
-            return false;
-        }
+    @Override
+    public QName[] getExcludedClasses() {
+      return null;
+    }
 
-        @Override
-        public QName[] getExcludedClasses()
-        {
-            return null;
-        }
-        
-        @Override
-        public ImporterContentCache getImportConentCache()
-        {
-            return null;
-        }
-    };
-
+    @Override
+    public ImporterContentCache getImportConentCache() {
+      return null;
+    }
+  };
 }

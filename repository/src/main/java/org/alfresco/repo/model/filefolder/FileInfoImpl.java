@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,7 +28,6 @@ package org.alfresco.repo.model.filefolder;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -38,154 +37,147 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Common file information implementation.
- * 
+ *
  * @author Derek Hulley
  */
-public class FileInfoImpl implements FileInfo
-{
-    private static final long serialVersionUID = 1915018521764853537L;
+public class FileInfoImpl implements FileInfo {
 
-    private NodeRef nodeRef;
-    private NodeRef linkNodeRef;
-    private boolean isFolder;
-    private boolean isLink;
-    private boolean isHidden;
-    private Map<QName, Serializable> properties;
-    private QName typeQName;
+  private static final long serialVersionUID = 1915018521764853537L;
 
-    /**
-     * Package-level constructor
-     */
-    /* package */ FileInfoImpl(
-            NodeRef nodeRef,
-            QName typeQName,
-            boolean isFolder,
-            boolean isHidden,
-            Map<QName, Serializable> properties)
-    {
-        this.nodeRef = nodeRef;
-        this.typeQName = typeQName;
-        
-        this.isFolder = isFolder;
-        this.properties = properties;
-        this.isHidden = isHidden;
-        
-        // Check if this is a link node
-        if ( properties.containsKey( ContentModel.PROP_LINK_DESTINATION))
-        {
-        	isLink = true;
-        	linkNodeRef = (NodeRef) properties.get( ContentModel.PROP_LINK_DESTINATION);
-        }
-    }
-    
-    /**
-     * @see #getNodeRef()
-     * @see NodeRef#equals(Object)
-     */
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (obj == null)
-        {
-            return false;
-        }
-        else if (this == obj)
-        {
-            return true;
-        }
-        else if (obj instanceof FileInfoImpl == false)
-        {
-            return false;
-        }
-        FileInfoImpl that = (FileInfoImpl) obj;
-        return (this.getNodeRef().equals(that.getNodeRef()));
-    }
+  private NodeRef nodeRef;
+  private NodeRef linkNodeRef;
+  private boolean isFolder;
+  private boolean isLink;
+  private boolean isHidden;
+  private Map<QName, Serializable> properties;
+  private QName typeQName;
 
-    void setHidden(boolean isHidden)
-    {
-        this.isHidden = isHidden;
-    }
+  /**
+   * Package-level constructor
+   */
+  /* package */FileInfoImpl(
+    NodeRef nodeRef,
+    QName typeQName,
+    boolean isFolder,
+    boolean isHidden,
+    Map<QName, Serializable> properties
+  ) {
+    this.nodeRef = nodeRef;
+    this.typeQName = typeQName;
 
-    /**
-     * @see #getNodeRef()
-     * @see NodeRef#hashCode()
-     */
-    @Override
-    public int hashCode()
-    {
-        return getNodeRef().hashCode();
-    }
+    this.isFolder = isFolder;
+    this.properties = properties;
+    this.isHidden = isHidden;
 
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder(80);
-        sb.append("FileInfo")
-          .append("[name=").append(getName())
-          .append(", isFolder=").append(isFolder)
-          .append(", nodeRef=").append(nodeRef);
-        
-        if ( isLink())
-        {
-        	sb.append(", linkref=");
-        	sb.append(linkNodeRef);
-        }
-        
-        sb.append("]");
-        return sb.toString();
+    // Check if this is a link node
+    if (properties.containsKey(ContentModel.PROP_LINK_DESTINATION)) {
+      isLink = true;
+      linkNodeRef =
+        (NodeRef) properties.get(ContentModel.PROP_LINK_DESTINATION);
     }
-    
-    public NodeRef getNodeRef()
-    {
-        return nodeRef;
+  }
+
+  /**
+   * @see #getNodeRef()
+   * @see NodeRef#equals(Object)
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    } else if (this == obj) {
+      return true;
+    } else if (obj instanceof FileInfoImpl == false) {
+      return false;
+    }
+    FileInfoImpl that = (FileInfoImpl) obj;
+    return (this.getNodeRef().equals(that.getNodeRef()));
+  }
+
+  void setHidden(boolean isHidden) {
+    this.isHidden = isHidden;
+  }
+
+  /**
+   * @see #getNodeRef()
+   * @see NodeRef#hashCode()
+   */
+  @Override
+  public int hashCode() {
+    return getNodeRef().hashCode();
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(80);
+    sb
+      .append("FileInfo")
+      .append("[name=")
+      .append(getName())
+      .append(", isFolder=")
+      .append(isFolder)
+      .append(", nodeRef=")
+      .append(nodeRef);
+
+    if (isLink()) {
+      sb.append(", linkref=");
+      sb.append(linkNodeRef);
     }
 
-    public boolean isFolder()
-    {
-        return isFolder;
-    }
+    sb.append("]");
+    return sb.toString();
+  }
 
-    public boolean isLink()
-    {
-    	return isLink;
-    }
-  
-    public boolean isHidden() {
-    	return isHidden;
-    }
+  public NodeRef getNodeRef() {
+    return nodeRef;
+  }
 
-    public NodeRef getLinkNodeRef()
-    {
-    	return linkNodeRef;
-    }
-    
-    public String getName()
-    {
-        return (String) properties.get(ContentModel.PROP_NAME);
-    }
+  public boolean isFolder() {
+    return isFolder;
+  }
 
-    public Date getCreatedDate()
-    {
-        return DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_CREATED));
-    }
+  public boolean isLink() {
+    return isLink;
+  }
 
-    public Date getModifiedDate()
-    {
-        return DefaultTypeConverter.INSTANCE.convert(Date.class, properties.get(ContentModel.PROP_MODIFIED));
-    }
-    
-    public ContentData getContentData()
-    {
-        return DefaultTypeConverter.INSTANCE.convert(ContentData.class, properties.get(ContentModel.PROP_CONTENT));
-    }
+  public boolean isHidden() {
+    return isHidden;
+  }
 
-    public Map<QName, Serializable> getProperties()
-    {
-        return properties;
-    }
-    
-    public QName getType()
-    {
-        return typeQName;
-    }
+  public NodeRef getLinkNodeRef() {
+    return linkNodeRef;
+  }
+
+  public String getName() {
+    return (String) properties.get(ContentModel.PROP_NAME);
+  }
+
+  public Date getCreatedDate() {
+    return DefaultTypeConverter.INSTANCE.convert(
+      Date.class,
+      properties.get(ContentModel.PROP_CREATED)
+    );
+  }
+
+  public Date getModifiedDate() {
+    return DefaultTypeConverter.INSTANCE.convert(
+      Date.class,
+      properties.get(ContentModel.PROP_MODIFIED)
+    );
+  }
+
+  public ContentData getContentData() {
+    return DefaultTypeConverter.INSTANCE.convert(
+      ContentData.class,
+      properties.get(ContentModel.PROP_CONTENT)
+    );
+  }
+
+  public Map<QName, Serializable> getProperties() {
+    return properties;
+  }
+
+  public QName getType() {
+    return typeQName;
+  }
 }

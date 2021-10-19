@@ -38,28 +38,23 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * rmv:versionsable aspect behaviour bean implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3
  */
-@BehaviourBean
-(
-   defaultType="rmv:versionable"
-)
-public class VersionableAspect extends BaseBehaviourBean
-{       
-    /**
-     * Copy callback.
-     * 
-     * Cutoff aspect should not be copied.
-     */
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
-    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
-    {
-        return new DoNothingCopyBehaviourCallback();
-    }    
+@BehaviourBean(defaultType = "rmv:versionable")
+public class VersionableAspect extends BaseBehaviourBean {
+
+  /**
+   * Copy callback.
+   *
+   * Cutoff aspect should not be copied.
+   */
+  @Behaviour(kind = BehaviourKind.CLASS, policy = "alf:getCopyCallback")
+  public CopyBehaviourCallback getCopyCallback(
+    QName classRef,
+    CopyDetails copyDetails
+  ) {
+    return new DoNothingCopyBehaviourCallback();
+  }
 }

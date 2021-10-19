@@ -22,155 +22,200 @@
  */
 package org.alfresco.repo.web.scripts.solr;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
+import static org.junit.Assert.assertEquals;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
-import static org.junit.Assert.assertEquals;
+public class SOLRAuthenticationFilterTest {
 
-public class SOLRAuthenticationFilterTest
-{
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void testSharedSecretNotConfigured() throws Exception
-    {
-        SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
-        filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.SECRET.name());
-        filter.afterPropertiesSet();
-    }
+  @Test(expected = AlfrescoRuntimeException.class)
+  public void testSharedSecretNotConfigured() throws Exception {
+    SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
+    filter.setSecureComms(
+      SOLRAuthenticationFilter.SecureCommsType.SECRET.name()
+    );
+    filter.afterPropertiesSet();
+  }
 
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void testSharedHeaderNotConfigured() throws Exception
-    {
-        SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
-        filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.SECRET.name());
-        filter.setSharedSecret("shared-secret");
-        filter.setSharedSecretHeader("");
-        filter.afterPropertiesSet();
-    }
+  @Test(expected = AlfrescoRuntimeException.class)
+  public void testSharedHeaderNotConfigured() throws Exception {
+    SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
+    filter.setSecureComms(
+      SOLRAuthenticationFilter.SecureCommsType.SECRET.name()
+    );
+    filter.setSharedSecret("shared-secret");
+    filter.setSharedSecretHeader("");
+    filter.afterPropertiesSet();
+  }
 
-    @Test
-    public void testHTTPSFilterAndSharedSecretSet() throws Exception
-    {
-        String headerKey = "test-header";
-        String sharedSecret = "shared-secret";
-        SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
-        filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.HTTPS.name());
-        filter.setSharedSecret(sharedSecret);
-        filter.setSharedSecretHeader(headerKey);
-        filter.afterPropertiesSet();
+  @Test
+  public void testHTTPSFilterAndSharedSecretSet() throws Exception {
+    String headerKey = "test-header";
+    String sharedSecret = "shared-secret";
+    SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
+    filter.setSecureComms(
+      SOLRAuthenticationFilter.SecureCommsType.HTTPS.name()
+    );
+    filter.setSharedSecret(sharedSecret);
+    filter.setSharedSecretHeader(headerKey);
+    filter.afterPropertiesSet();
 
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-        Mockito.when(request.getHeader(headerKey)).thenReturn(sharedSecret);
-        Mockito.when(request.isSecure()).thenReturn(true);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(request.getHeader(headerKey)).thenReturn(sharedSecret);
+    Mockito.when(request.isSecure()).thenReturn(true);
 
-        FilterChain chain = Mockito.mock(FilterChain.class);
+    FilterChain chain = Mockito.mock(FilterChain.class);
 
-        filter.doFilter(Mockito.mock(ServletContext.class), request, response, chain);
-        Mockito.verify(chain, Mockito.times(1)).doFilter(request, response);
-    }
+    filter.doFilter(
+      Mockito.mock(ServletContext.class),
+      request,
+      response,
+      chain
+    );
+    Mockito.verify(chain, Mockito.times(1)).doFilter(request, response);
+  }
 
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void testHTTPSFilterAndInsecureRequest() throws Exception
-    {
-        SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
-        filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.HTTPS.name());
-        filter.afterPropertiesSet();
+  @Test(expected = AlfrescoRuntimeException.class)
+  public void testHTTPSFilterAndInsecureRequest() throws Exception {
+    SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
+    filter.setSecureComms(
+      SOLRAuthenticationFilter.SecureCommsType.HTTPS.name()
+    );
+    filter.afterPropertiesSet();
 
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-        Mockito.when(request.isSecure()).thenReturn(false);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(request.isSecure()).thenReturn(false);
 
-        FilterChain chain = Mockito.mock(FilterChain.class);
+    FilterChain chain = Mockito.mock(FilterChain.class);
 
-        filter.doFilter(Mockito.mock(ServletContext.class), request, response, chain);
-    }
+    filter.doFilter(
+      Mockito.mock(ServletContext.class),
+      request,
+      response,
+      chain
+    );
+  }
 
-    @Test
-    public void testNoAuthentication() throws Exception
-    {
-        SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
-        filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.NONE.name());
-        filter.afterPropertiesSet();
+  @Test
+  public void testNoAuthentication() throws Exception {
+    SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
+    filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.NONE.name());
+    filter.afterPropertiesSet();
 
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
 
-        FilterChain chain = Mockito.mock(FilterChain.class);
+    FilterChain chain = Mockito.mock(FilterChain.class);
 
-        filter.doFilter(Mockito.mock(ServletContext.class), request, response, chain);
-        Mockito.verify(chain, Mockito.times(1)).doFilter(request, response);
-    }
+    filter.doFilter(
+      Mockito.mock(ServletContext.class),
+      request,
+      response,
+      chain
+    );
+    Mockito.verify(chain, Mockito.times(1)).doFilter(request, response);
+  }
 
-    @Test
-    public void testSharedSecretFilter() throws Exception
-    {
-        String headerKey = "test-header";
-        String sharedSecret = "shared-secret";
-        SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
-        filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.SECRET.name());
-        filter.setSharedSecret(sharedSecret);
-        filter.setSharedSecretHeader(headerKey);
-        filter.afterPropertiesSet();
+  @Test
+  public void testSharedSecretFilter() throws Exception {
+    String headerKey = "test-header";
+    String sharedSecret = "shared-secret";
+    SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
+    filter.setSecureComms(
+      SOLRAuthenticationFilter.SecureCommsType.SECRET.name()
+    );
+    filter.setSharedSecret(sharedSecret);
+    filter.setSharedSecretHeader(headerKey);
+    filter.afterPropertiesSet();
 
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-        Mockito.when(request.getHeader(headerKey)).thenReturn(sharedSecret);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(request.getHeader(headerKey)).thenReturn(sharedSecret);
 
-        FilterChain chain = Mockito.mock(FilterChain.class);
+    FilterChain chain = Mockito.mock(FilterChain.class);
 
-        filter.doFilter(Mockito.mock(ServletContext.class), request, response, chain);
-        Mockito.verify(chain, Mockito.times(1)).doFilter(request, response);
-    }
+    filter.doFilter(
+      Mockito.mock(ServletContext.class),
+      request,
+      response,
+      chain
+    );
+    Mockito.verify(chain, Mockito.times(1)).doFilter(request, response);
+  }
 
-    @Test
-    public void testSharedSecretDontMatch() throws Exception
-    {
-        String headerKey = "test-header";
-        String sharedSecret = "shared-secret";
-        SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
-        filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.SECRET.name());
-        filter.setSharedSecret(sharedSecret);
-        filter.setSharedSecretHeader(headerKey);
-        filter.afterPropertiesSet();
+  @Test
+  public void testSharedSecretDontMatch() throws Exception {
+    String headerKey = "test-header";
+    String sharedSecret = "shared-secret";
+    SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
+    filter.setSecureComms(
+      SOLRAuthenticationFilter.SecureCommsType.SECRET.name()
+    );
+    filter.setSharedSecret(sharedSecret);
+    filter.setSharedSecretHeader(headerKey);
+    filter.afterPropertiesSet();
 
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-        Mockito.when(request.getHeader(headerKey)).thenReturn("wrong-secret");
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(request.getHeader(headerKey)).thenReturn("wrong-secret");
 
-        FilterChain chain = Mockito.mock(FilterChain.class);
+    FilterChain chain = Mockito.mock(FilterChain.class);
 
-        filter.doFilter(Mockito.mock(ServletContext.class), request, response, chain);
-        Mockito.verify(chain, Mockito.times(0)).doFilter(request, response);
-        Mockito.verify(response).sendError(Mockito.eq(HttpServletResponse.SC_FORBIDDEN), Mockito.anyString());
-    }
+    filter.doFilter(
+      Mockito.mock(ServletContext.class),
+      request,
+      response,
+      chain
+    );
+    Mockito.verify(chain, Mockito.times(0)).doFilter(request, response);
+    Mockito
+      .verify(response)
+      .sendError(
+        Mockito.eq(HttpServletResponse.SC_FORBIDDEN),
+        Mockito.anyString()
+      );
+  }
 
-    @Test
-    public void testSharedHeaderNotPresent() throws Exception
-    {
-        String headerKey = "test-header";
-        String sharedSecret = "shared-secret";
-        SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
-        filter.setSecureComms(SOLRAuthenticationFilter.SecureCommsType.SECRET.name());
-        filter.setSharedSecret(sharedSecret);
-        filter.setSharedSecretHeader(headerKey);
-        filter.afterPropertiesSet();
+  @Test
+  public void testSharedHeaderNotPresent() throws Exception {
+    String headerKey = "test-header";
+    String sharedSecret = "shared-secret";
+    SOLRAuthenticationFilter filter = new SOLRAuthenticationFilter();
+    filter.setSecureComms(
+      SOLRAuthenticationFilter.SecureCommsType.SECRET.name()
+    );
+    filter.setSharedSecret(sharedSecret);
+    filter.setSharedSecretHeader(headerKey);
+    filter.afterPropertiesSet();
 
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
 
-        FilterChain chain = Mockito.mock(FilterChain.class);
+    FilterChain chain = Mockito.mock(FilterChain.class);
 
-        filter.doFilter(Mockito.mock(ServletContext.class), request, response, chain);
-        Mockito.verify(chain, Mockito.times(0)).doFilter(request, response);
-        Mockito.verify(response).sendError(Mockito.eq(HttpServletResponse.SC_FORBIDDEN), Mockito.anyString());
-    }
+    filter.doFilter(
+      Mockito.mock(ServletContext.class),
+      request,
+      response,
+      chain
+    );
+    Mockito.verify(chain, Mockito.times(0)).doFilter(request, response);
+    Mockito
+      .verify(response)
+      .sendError(
+        Mockito.eq(HttpServletResponse.SC_FORBIDDEN),
+        Mockito.anyString()
+      );
+  }
 }

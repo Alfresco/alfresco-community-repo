@@ -28,14 +28,12 @@ package org.alfresco.rest.rm.community.util;
 
 import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryObject;
 
-import java.io.IOException;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
-
+import java.io.IOException;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -47,22 +45,22 @@ import org.slf4j.LoggerFactory;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class PojoUtility
-{
+public class PojoUtility {
+
     /**
      * Logger for the class.
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(PojoUtility.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        PojoUtility.class
+    );
 
     /** Private constructor to prevent instantiation. */
-    private PojoUtility()
-    {}
+    private PojoUtility() {}
 
     /**
      * see {@link #toJson(Object, Class, Class)}
      */
-    public static String toJson(Object model)
-    {
+    public static String toJson(Object model) {
         mandatoryObject("model", model);
 
         return toJson(model, null, null);
@@ -77,14 +75,16 @@ public class PojoUtility
      * @return The converted java object as JSON string
      * @throws JsonProcessingException  Throws exceptions if the given object doesn't match to the POJO class model
      */
-    public static String toJson(Object model, Class<?> target, Class<?> mixinSource)
-    {
+    public static String toJson(
+        Object model,
+        Class<?> target,
+        Class<?> mixinSource
+    ) {
         mandatoryObject("model", model);
 
         ObjectMapper mapper = new ObjectMapper();
 
-        if (target != null && mixinSource != null)
-        {
+        if (target != null && mixinSource != null) {
             //inject the "mix-in" annotations  from FilePlanComponentMix to
             // FilePlanComponent POJO class when converting to json
             mapper.addMixIn(target, mixinSource);
@@ -94,12 +94,11 @@ public class PojoUtility
         mapper.setSerializationInclusion(Include.NON_NULL);
 
         //return the json object
-        try
-        {
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(model);
-        }
-        catch (JsonProcessingException error)
-        {
+        try {
+            return mapper
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(model);
+        } catch (JsonProcessingException error) {
             return error.toString();
         }
     }
@@ -112,20 +111,16 @@ public class PojoUtility
      * @return The converted java object
      * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
      */
-    public static <T> T jsonToObject(JSONObject json, Class<T> classz)
-    {
+    public static <T> T jsonToObject(JSONObject json, Class<T> classz) {
         mandatoryObject("model", classz);
         mandatoryObject("jsonObject", json);
 
         ObjectMapper mapper = new ObjectMapper();
 
         T obj = null;
-        try
-        {
+        try {
             obj = mapper.readValue(json.toString(), classz);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             LOGGER.error("Unable to convert the json into a java object.", e);
         }
 
@@ -140,27 +135,25 @@ public class PojoUtility
      * @return The list of converted java objects
      * @throws JsonProcessingException Throws exceptions if the given object doesn't match to the POJO class model
      */
-    public static <T> List<T> jsonToObject(JSONArray json, Class<T> classz)
-    {
-
+    public static <T> List<T> jsonToObject(JSONArray json, Class<T> classz) {
         mandatoryObject("model", classz);
         mandatoryObject("jsonObject", json);
 
         ObjectMapper mapper = new ObjectMapper();
 
-        CollectionType collectionType = mapper.getTypeFactory().constructCollectionType(List.class, classz);
+        CollectionType collectionType = mapper
+            .getTypeFactory()
+            .constructCollectionType(List.class, classz);
         List<T> asList = null;
-        try
-        {
+        try {
             asList = mapper.readValue(json.toString(), collectionType);
+        } catch (IOException e) {
+            LOGGER.error(
+                "Unable to convert the json array into a java collection.",
+                e
+            );
         }
-        catch (IOException e)
-        {
-            LOGGER.error("Unable to convert the json array into a java collection.", e);
-        }
-
 
         return asList;
     }
-
 }

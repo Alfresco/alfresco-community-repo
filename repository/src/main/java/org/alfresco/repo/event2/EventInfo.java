@@ -33,66 +33,56 @@ import java.time.ZonedDateTime;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class EventInfo
-{
-    private String id;
-    private String txnId;
-    private String principal;
-    private ZonedDateTime timestamp;
-    private URI source;
+public class EventInfo {
 
-    public String getId()
-    {
-        return id;
-    }
+  private String id;
+  private String txnId;
+  private String principal;
+  private ZonedDateTime timestamp;
+  private URI source;
 
-    public EventInfo setId(String id)
-    {
-        this.id = id;
-        return this;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public String getTxnId()
-    {
-        return txnId;
-    }
+  public EventInfo setId(String id) {
+    this.id = id;
+    return this;
+  }
 
-    public EventInfo setTxnId(String txnId)
-    {
-        this.txnId = txnId;
-        return this;
-    }
+  public String getTxnId() {
+    return txnId;
+  }
 
-    public String getPrincipal()
-    {
-        return principal;
-    }
+  public EventInfo setTxnId(String txnId) {
+    this.txnId = txnId;
+    return this;
+  }
 
-    public EventInfo setPrincipal(String principal)
-    {
-        this.principal = principal;
-        return this;
-    }
+  public String getPrincipal() {
+    return principal;
+  }
 
-    public ZonedDateTime getTimestamp()
-    {
-        return timestamp;
-    }
+  public EventInfo setPrincipal(String principal) {
+    this.principal = principal;
+    return this;
+  }
 
-    public EventInfo setTimestamp(ZonedDateTime timestamp)
-    {
-        this.timestamp = timestamp;
-        return this;
-    }
+  public ZonedDateTime getTimestamp() {
+    return timestamp;
+  }
 
-    public URI getSource()
-    {
-        return source;
-    }
+  public EventInfo setTimestamp(ZonedDateTime timestamp) {
+    this.timestamp = timestamp;
+    return this;
+  }
 
-    public EventInfo setSource(URI source)
-    {
-        this.source = source;
-        return this;
-    }
+  public URI getSource() {
+    return source;
+  }
+
+  public EventInfo setSource(URI source) {
+    this.source = source;
+    return this;
+  }
 }

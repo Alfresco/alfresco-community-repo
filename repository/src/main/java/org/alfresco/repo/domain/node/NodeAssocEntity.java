@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,155 +26,139 @@
 package org.alfresco.repo.domain.node;
 
 import java.util.List;
-
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Bean for <b>alf_node_assoc</b> table.
- * 
+ *
  * @author Derek Hulley
  * @since 3.4
  */
-public class NodeAssocEntity
-{
-    private Long id;
-    private Long version;
-    private NodeEntity sourceNode;
-    private NodeEntity targetNode;
-    private Long typeQNameId;
-    private int assocIndex;
-    private List<Long> typeQNameIds;
+public class NodeAssocEntity {
 
-    // Supplemental query-related parameters
-    private Long propertyQNameId;
-    private NodePropertyValue propertyValue;
+  private Long id;
+  private Long version;
+  private NodeEntity sourceNode;
+  private NodeEntity targetNode;
+  private Long typeQNameId;
+  private int assocIndex;
+  private List<Long> typeQNameIds;
 
-    /**
-     * Required default constructor
-     */
-    public NodeAssocEntity()
-    {
-    }
-        
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder(512);
-        sb.append("NodeAssocEntity")
-          .append("[ ID=").append(id)
-          .append(", sourceNode=").append(sourceNode)
-          .append(", targetNode=").append(targetNode)
-          .append(", typeQNameId=").append(typeQNameId)
-          .append(", assocIndex=").append(assocIndex)
-          .append(", typeQNameIds=").append(typeQNameIds)
-          .append("]");
-        return sb.toString();
-    }
-    
-    /**
-     * Helper method to fetch the association reference
-     */
-    public AssociationRef getAssociationRef(QNameDAO qnameDAO)
-    {
-        QName assocTypeQName = qnameDAO.getQName(typeQNameId).getSecond();
-        AssociationRef assocRef = new AssociationRef(
-                id,
-                sourceNode.getNodeRef(),
-                assocTypeQName,
-                targetNode.getNodeRef());
-        return assocRef;
-    }
+  // Supplemental query-related parameters
+  private Long propertyQNameId;
+  private NodePropertyValue propertyValue;
 
-    public Long getId()
-    {
-        return id;
-    }
+  /**
+   * Required default constructor
+   */
+  public NodeAssocEntity() {}
 
-    public void setId(Long id)
-    {
-        this.id = id;
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(512);
+    sb
+      .append("NodeAssocEntity")
+      .append("[ ID=")
+      .append(id)
+      .append(", sourceNode=")
+      .append(sourceNode)
+      .append(", targetNode=")
+      .append(targetNode)
+      .append(", typeQNameId=")
+      .append(typeQNameId)
+      .append(", assocIndex=")
+      .append(assocIndex)
+      .append(", typeQNameIds=")
+      .append(typeQNameIds)
+      .append("]");
+    return sb.toString();
+  }
 
-    public Long getVersion()
-    {
-        return version;
-    }
+  /**
+   * Helper method to fetch the association reference
+   */
+  public AssociationRef getAssociationRef(QNameDAO qnameDAO) {
+    QName assocTypeQName = qnameDAO.getQName(typeQNameId).getSecond();
+    AssociationRef assocRef = new AssociationRef(
+      id,
+      sourceNode.getNodeRef(),
+      assocTypeQName,
+      targetNode.getNodeRef()
+    );
+    return assocRef;
+  }
 
-    public void setVersion(Long version)
-    {
-        this.version = version;
-    }
+  public Long getId() {
+    return id;
+  }
 
-    public NodeEntity getSourceNode()
-    {
-        return sourceNode;
-    }
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-    public void setSourceNode(NodeEntity sourceNode)
-    {
-        this.sourceNode = sourceNode;
-    }
+  public Long getVersion() {
+    return version;
+  }
 
-    public NodeEntity getTargetNode()
-    {
-        return targetNode;
-    }
+  public void setVersion(Long version) {
+    this.version = version;
+  }
 
-    public void setTargetNode(NodeEntity targetNode)
-    {
-        this.targetNode = targetNode;
-    }
+  public NodeEntity getSourceNode() {
+    return sourceNode;
+  }
 
-    public Long getTypeQNameId()
-    {
-        return typeQNameId;
-    }
+  public void setSourceNode(NodeEntity sourceNode) {
+    this.sourceNode = sourceNode;
+  }
 
-    public void setTypeQNameId(Long typeQNameId)
-    {
-        this.typeQNameId = typeQNameId;
-    }
+  public NodeEntity getTargetNode() {
+    return targetNode;
+  }
 
-    public int getAssocIndex()
-    {
-        return assocIndex;
-    }
+  public void setTargetNode(NodeEntity targetNode) {
+    this.targetNode = targetNode;
+  }
 
-    public void setAssocIndex(int assocIndex)
-    {
-        this.assocIndex = assocIndex;
-    }
+  public Long getTypeQNameId() {
+    return typeQNameId;
+  }
 
-    public List<Long> getTypeQNameIds()
-    {
-        return typeQNameIds;
-    }
+  public void setTypeQNameId(Long typeQNameId) {
+    this.typeQNameId = typeQNameId;
+  }
 
-    public void setTypeQNameIds(List<Long> typeQNameIds)
-    {
-        this.typeQNameIds = typeQNameIds;
-    }
+  public int getAssocIndex() {
+    return assocIndex;
+  }
 
-    public Long getPropertyQNameId()
-    {
-        return propertyQNameId;
-    }
+  public void setAssocIndex(int assocIndex) {
+    this.assocIndex = assocIndex;
+  }
 
-    public void setPropertyQNameId(Long propertyQNameId)
-    {
-        this.propertyQNameId = propertyQNameId;
-    }
+  public List<Long> getTypeQNameIds() {
+    return typeQNameIds;
+  }
 
-    public NodePropertyValue getPropertyValue()
-    {
-        return propertyValue;
-    }
+  public void setTypeQNameIds(List<Long> typeQNameIds) {
+    this.typeQNameIds = typeQNameIds;
+  }
 
-    public void setPropertyValue(NodePropertyValue propertyValue)
-    {
-        this.propertyValue = propertyValue;
-    }
+  public Long getPropertyQNameId() {
+    return propertyQNameId;
+  }
 
+  public void setPropertyQNameId(Long propertyQNameId) {
+    this.propertyQNameId = propertyQNameId;
+  }
+
+  public NodePropertyValue getPropertyValue() {
+    return propertyValue;
+  }
+
+  public void setPropertyValue(NodePropertyValue propertyValue) {
+    this.propertyValue = propertyValue;
+  }
 }

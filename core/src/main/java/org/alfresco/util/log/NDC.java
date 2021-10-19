@@ -21,57 +21,50 @@ package org.alfresco.util.log;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
 /**
  * A stand in for the org.apache.log4j.NDC class that avoids introducing runtime dependencies against the otherwise
  * optional log4j.
- * 
+ *
  * @author dward
  */
-public class NDC
-{
-    private static Log logger = LogFactory.getLog(NDC.class);
-    
-    /** Log4J delegate for NDC */
-    private static NDCDelegate ndcDelegate;
+public class NDC {
 
-    static
-    {
-        if (logger.isDebugEnabled())
-        {
-            try
-            {
-                ndcDelegate = (NDCDelegate) Class.forName("org.alfresco.util.log.log4j.Log4JNDC").newInstance();
-            }
-            catch (Throwable e)
-            {
-                // We just ignore it
-            }
-        }
-    }
+  private static Log logger = LogFactory.getLog(NDC.class);
 
-    /**
-     * Push new diagnostic context information for the current thread.
-     * 
-     * @param message
-     *            The new diagnostic context information.
-     */
-    public static void push(String message)
-    {
-        if (ndcDelegate != null)
-        {
-            ndcDelegate.push(message);
-        }
-    }
+  /** Log4J delegate for NDC */
+  private static NDCDelegate ndcDelegate;
 
-    /**
-     * Remove the diagnostic context for this thread.
-     */
-    static public void remove()
-    {
-        if (ndcDelegate != null)
-        {
-            ndcDelegate.remove();
-        }
+  static {
+    if (logger.isDebugEnabled()) {
+      try {
+        ndcDelegate =
+          (NDCDelegate) Class
+            .forName("org.alfresco.util.log.log4j.Log4JNDC")
+            .newInstance();
+      } catch (Throwable e) {
+        // We just ignore it
+      }
     }
+  }
+
+  /**
+   * Push new diagnostic context information for the current thread.
+   *
+   * @param message
+   *            The new diagnostic context information.
+   */
+  public static void push(String message) {
+    if (ndcDelegate != null) {
+      ndcDelegate.push(message);
+    }
+  }
+
+  /**
+   * Remove the diagnostic context for this thread.
+   */
+  public static void remove() {
+    if (ndcDelegate != null) {
+      ndcDelegate.remove();
+    }
+  }
 }

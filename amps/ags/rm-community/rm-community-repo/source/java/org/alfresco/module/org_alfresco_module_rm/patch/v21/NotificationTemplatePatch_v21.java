@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -49,78 +48,97 @@ import org.alfresco.service.namespace.QName;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class NotificationTemplatePatch_v21 extends RMv21PatchComponent
-{
-    /** Email template path */
-    private static final String PATH_REJECTED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-rejected-email.ftl";
+public class NotificationTemplatePatch_v21 extends RMv21PatchComponent {
 
-    /** Reject template config node id*/
-    private static final String CONFIG_NODEID = "record_rejected_template";
+  /** Email template path */
+  private static final String PATH_REJECTED =
+    "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-rejected-email.ftl";
 
-    /** Records management notification helper */
-    private RecordsManagementNotificationHelper notificationHelper;
+  /** Reject template config node id*/
+  private static final String CONFIG_NODEID = "record_rejected_template";
 
-    /** Node service */
-    private NodeService nodeService;
+  /** Records management notification helper */
+  private RecordsManagementNotificationHelper notificationHelper;
 
-    /** Content service */
-    private ContentService contentService;
+  /** Node service */
+  private NodeService nodeService;
 
-    /**
-     * @param notificationHelper    notification helper
-     */
-    public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
-    {
-        this.notificationHelper = notificationHelper;
+  /** Content service */
+  private ContentService contentService;
+
+  /**
+   * @param notificationHelper    notification helper
+   */
+  public void setNotificationHelper(
+    RecordsManagementNotificationHelper notificationHelper
+  ) {
+    this.notificationHelper = notificationHelper;
+  }
+
+  /**
+   * @param nodeService   node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * @param contentService    content service
+   */
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
+
+  @Override
+  protected void executePatch() {
+    NodeRef nodeRef = new NodeRef(
+      StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+      CONFIG_NODEID
+    );
+    // get the parent node
+    NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
+    if (
+      !nodeService.exists(nodeRef) && nodeService.exists(supersededTemplate)
+    ) {
+      NodeRef parent = nodeService
+        .getPrimaryParent(supersededTemplate)
+        .getParentRef();
+
+      // build the node properties
+      Map<QName, Serializable> props = new HashMap<>(4);
+      props.put(
+        ContentModel.PROP_DESCRIPTION,
+        "Record superseded email template."
+      );
+      props.put(ContentModel.PROP_TITLE, "record-rejected-email.ftl");
+      props.put(ContentModel.PROP_NAME, "record-rejected-email.ftl");
+      props.put(ContentModel.PROP_NODE_UUID, "record_rejected_template");
+
+      // get the assoc qname
+      QName assocQName = QName.createQName(
+        NamespaceService.CONTENT_MODEL_1_0_URI,
+        QName.createValidLocalName("record-rejected-email.ftl")
+      );
+
+      // create the node
+      ChildAssociationRef node = nodeService.createNode(
+        parent,
+        ContentModel.ASSOC_CONTAINS,
+        assocQName,
+        ContentModel.TYPE_CONTENT,
+        props
+      );
+
+      // put the content
+      ContentWriter writer = contentService.getWriter(
+        node.getChildRef(),
+        ContentModel.PROP_CONTENT,
+        true
+      );
+      InputStream is = getClass()
+        .getClassLoader()
+        .getResourceAsStream(PATH_REJECTED);
+      writer.putContent(is);
     }
-
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
-     * @param contentService    content service
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
-
-    @Override
-    protected void executePatch()
-    {
-        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
-        // get the parent node
-        NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
-        if (!nodeService.exists(nodeRef) && nodeService.exists(supersededTemplate))
-        {
-            NodeRef parent = nodeService.getPrimaryParent(supersededTemplate).getParentRef();
-
-            // build the node properties
-            Map<QName, Serializable> props = new HashMap<>(4);
-            props.put(ContentModel.PROP_DESCRIPTION, "Record superseded email template.");
-            props.put(ContentModel.PROP_TITLE, "record-rejected-email.ftl");
-            props.put(ContentModel.PROP_NAME, "record-rejected-email.ftl");
-            props.put(ContentModel.PROP_NODE_UUID, "record_rejected_template");
-
-            // get the assoc qname
-            QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName("record-rejected-email.ftl"));
-
-            // create the node
-            ChildAssociationRef node = nodeService.createNode(parent,
-                    ContentModel.ASSOC_CONTAINS,
-                    assocQName,
-                    ContentModel.TYPE_CONTENT,
-                    props);
-
-            // put the content
-            ContentWriter writer = contentService.getWriter(node.getChildRef(), ContentModel.PROP_CONTENT, true);
-            InputStream is = getClass().getClassLoader().getResourceAsStream(PATH_REJECTED);
-            writer.putContent(is);
-        }
-    }
+  }
 }

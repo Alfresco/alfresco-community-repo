@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -41,98 +41,82 @@ import org.alfresco.service.cmr.security.PermissionService;
  *
  * @author Bogdan Horje
  */
-public class CoreAPIFacet implements AlfrescoAPIFacet
-{
+public class CoreAPIFacet implements AlfrescoAPIFacet {
 
-    private ScriptService scriptService;
+  private ScriptService scriptService;
 
-    private NodeService nodeService;
+  private NodeService nodeService;
 
-    private ContentService contentService;
+  private ContentService contentService;
 
-    private SearchService searchService;
+  private SearchService searchService;
 
-    private DictionaryService dictionaryService;
+  private DictionaryService dictionaryService;
 
-    private FileFolderService fileFolderService;
+  private FileFolderService fileFolderService;
 
-    private PermissionService permissionService;
+  private PermissionService permissionService;
 
-    public void setScriptService(ScriptService scriptService)
-    {
-        this.scriptService = scriptService;
-    }
+  public void setScriptService(ScriptService scriptService) {
+    this.scriptService = scriptService;
+  }
 
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
 
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
+  public void setSearchService(SearchService searchService) {
+    this.searchService = searchService;
+  }
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
+  public void setDictionaryService(DictionaryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
 
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
+  public void setPermissionService(PermissionService permissionService) {
+    this.permissionService = permissionService;
+  }
 
-    @Override
-    public ScriptService getScriptService()
-    {
-        return scriptService;
-    }
+  @Override
+  public ScriptService getScriptService() {
+    return scriptService;
+  }
 
-    @Override
-    public NodeService getNodeService()
-    {
-        return nodeService;
-    }
+  @Override
+  public NodeService getNodeService() {
+    return nodeService;
+  }
 
-    @Override
-    public ContentService getContentService()
-    {
-        return contentService;
-    }
+  @Override
+  public ContentService getContentService() {
+    return contentService;
+  }
 
-    @Override
-    public SearchService getSearchService()
-    {
-        return searchService;
-    }
+  @Override
+  public SearchService getSearchService() {
+    return searchService;
+  }
 
-    @Override
-    public DictionaryService getDictionaryService()
-    {
-        return dictionaryService;
-    }
+  @Override
+  public DictionaryService getDictionaryService() {
+    return dictionaryService;
+  }
 
-    @Override
-    public FileFolderService getFileFolderService()
-    {
-        return fileFolderService;
-    }
+  @Override
+  public FileFolderService getFileFolderService() {
+    return fileFolderService;
+  }
 
-    @Override
-    public PermissionService getPermissionService()
-    {
-        return permissionService;
-    }
-
+  @Override
+  public PermissionService getPermissionService() {
+    return permissionService;
+  }
 }

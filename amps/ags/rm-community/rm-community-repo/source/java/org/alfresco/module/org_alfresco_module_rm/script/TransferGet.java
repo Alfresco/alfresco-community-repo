@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.io.File;
 import java.io.IOException;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -53,55 +52,69 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  * @author Gavin Cornwell
  */
 @Deprecated
-public class TransferGet extends BaseTransferWebScript
-{
-    /** Logger */
-    private static Log logger = LogFactory.getLog(TransferGet.class);
+public class TransferGet extends BaseTransferWebScript {
 
-    /** Content Streamer */
-    private ContentStreamer contentStreamer;
+  /** Logger */
+  private static Log logger = LogFactory.getLog(TransferGet.class);
 
-    /**
-     * @param contentStreamer
-     */
-    public void setContentStreamer(ContentStreamer contentStreamer)
-    {
-        this.contentStreamer = contentStreamer;
+  /** Content Streamer */
+  private ContentStreamer contentStreamer;
+
+  /**
+   * @param contentStreamer
+   */
+  public void setContentStreamer(ContentStreamer contentStreamer) {
+    this.contentStreamer = contentStreamer;
+  }
+
+  @Override
+  protected File executeTransfer(
+    NodeRef transferNode,
+    WebScriptRequest req,
+    WebScriptResponse res,
+    Status status,
+    Cache cache
+  ) throws IOException {
+    // get all 'transferred' nodes
+    NodeRef[] itemsToTransfer = getTransferNodes(transferNode);
+
+    // setup the ACP parameters
+    ExporterCrawlerParameters params = new ExporterCrawlerParameters();
+    params.setCrawlSelf(true);
+    params.setCrawlChildNodes(true);
+    params.setExportFrom(new Location(itemsToTransfer));
+    QName[] excludedAspects = new QName[] {
+      RenditionModel.ASPECT_RENDITIONED,
+      ContentModel.ASPECT_THUMBNAILED,
+      RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
+      RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH,
+    };
+    params.setExcludeAspects(excludedAspects);
+
+    // create an archive of all the nodes to transfer
+    File tempFile = createACP(params, ZIP_EXTENSION, true);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug(
+        "Creating transfer archive for " +
+        itemsToTransfer.length +
+        " items into file: " +
+        tempFile.getAbsolutePath()
+      );
     }
 
-    @Override
-    protected File executeTransfer(NodeRef transferNode,
-                WebScriptRequest req, WebScriptResponse res,
-                Status status, Cache cache) throws IOException
-    {
-        // get all 'transferred' nodes
-        NodeRef[] itemsToTransfer = getTransferNodes(transferNode);
+    // stream the archive back to the client as an attachment (forcing save as)
+    contentStreamer.streamContent(
+      req,
+      res,
+      tempFile,
+      null,
+      true,
+      tempFile.getName(),
+      null
+    );
 
-        // setup the ACP parameters
-        ExporterCrawlerParameters params = new ExporterCrawlerParameters();
-        params.setCrawlSelf(true);
-        params.setCrawlChildNodes(true);
-        params.setExportFrom(new Location(itemsToTransfer));
-        QName[] excludedAspects = new QName[] {
-                    RenditionModel.ASPECT_RENDITIONED,
-                    ContentModel.ASPECT_THUMBNAILED,
-                    RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
-                    RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH};
-        params.setExcludeAspects(excludedAspects);
-
-        // create an archive of all the nodes to transfer
-        File tempFile = createACP(params, ZIP_EXTENSION, true);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Creating transfer archive for " + itemsToTransfer.length +
-                        " items into file: " + tempFile.getAbsolutePath());
-        }
-
-        // stream the archive back to the client as an attachment (forcing save as)
-        contentStreamer.streamContent(req, res, tempFile, null, true, tempFile.getName(), null);
-
-        // return the temp file for deletion
-        return tempFile;
-    }
+    // return the temp file for deletion
+    return tempFile;
+  }
 }

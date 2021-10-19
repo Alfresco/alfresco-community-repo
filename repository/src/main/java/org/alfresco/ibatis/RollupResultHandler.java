@@ -98,161 +98,177 @@ import org.apache.ibatis.session.ResultHandler;
  * @author Derek Hulley, janv
  * @since 4.0
  */
-public class RollupResultHandler implements ResultHandler
-{
-    private final String[] keyProperties;
-    private final String collectionProperty;
-    private final ResultHandler resultHandler;
-    private final int maxResults;
-    
-    private Object[] lastKeyValues;
-    private List<Object> rawResults;
-    private int resultCount;
-    
-    private Configuration configuration;
-    
-    /**
-     * @param keyProperties         the properties that make up the unique key
-     * @param collectionProperty    the property mapped using a nested <b>ResultMap</b>
-     * @param resultHandler         the result handler that will receive the rolled-up results
-     */
-    public RollupResultHandler(Configuration configuration, String[] keyProperties, String collectionProperty, ResultHandler resultHandler)
-    {
-        this(configuration, keyProperties, collectionProperty, resultHandler, Integer.MAX_VALUE);
+public class RollupResultHandler implements ResultHandler {
+
+  private final String[] keyProperties;
+  private final String collectionProperty;
+  private final ResultHandler resultHandler;
+  private final int maxResults;
+
+  private Object[] lastKeyValues;
+  private List<Object> rawResults;
+  private int resultCount;
+
+  private Configuration configuration;
+
+  /**
+   * @param keyProperties         the properties that make up the unique key
+   * @param collectionProperty    the property mapped using a nested <b>ResultMap</b>
+   * @param resultHandler         the result handler that will receive the rolled-up results
+   */
+  public RollupResultHandler(
+    Configuration configuration,
+    String[] keyProperties,
+    String collectionProperty,
+    ResultHandler resultHandler
+  ) {
+    this(
+      configuration,
+      keyProperties,
+      collectionProperty,
+      resultHandler,
+      Integer.MAX_VALUE
+    );
+  }
+
+  /**
+   * @param keyProperties         the properties that make up the unique key
+   * @param collectionProperty    the property mapped using a nested <b>ResultMap</b>
+   * @param resultHandler         the result handler that will receive the rolled-up results
+   * @param maxResults            the maximum number of results to retrieve (-1 for no limit).
+   *                              Make sure that the query result limit is large enough to produce this
+   *                              at least this number of results
+   */
+  public RollupResultHandler(
+    Configuration configuration,
+    String[] keyProperties,
+    String collectionProperty,
+    ResultHandler resultHandler,
+    int maxResults
+  ) {
+    if (keyProperties == null || keyProperties.length == 0) {
+      throw new IllegalArgumentException(
+        "RollupRowHandler can only be used with at least one key property."
+      );
+    }
+    if (collectionProperty == null) {
+      throw new IllegalArgumentException(
+        "RollupRowHandler must have a collection property."
+      );
+    }
+    this.configuration = configuration;
+    this.keyProperties = keyProperties;
+    this.collectionProperty = collectionProperty;
+    this.resultHandler = resultHandler;
+    this.maxResults = maxResults;
+    this.rawResults = new ArrayList<Object>(100);
+  }
+
+  public void handleResult(ResultContext context) {
+    // Shortcut if we have processed enough results
+    if (maxResults > 0 && resultCount >= maxResults) {
+      return;
     }
 
-    /**
-     * @param keyProperties         the properties that make up the unique key
-     * @param collectionProperty    the property mapped using a nested <b>ResultMap</b>
-     * @param resultHandler         the result handler that will receive the rolled-up results
-     * @param maxResults            the maximum number of results to retrieve (-1 for no limit).
-     *                              Make sure that the query result limit is large enough to produce this
-     *                              at least this number of results
-     */
-    public RollupResultHandler(Configuration configuration, String[] keyProperties, String collectionProperty, ResultHandler resultHandler, int maxResults)
-    {
-        if (keyProperties == null || keyProperties.length == 0)
-        {
-            throw new IllegalArgumentException("RollupRowHandler can only be used with at least one key property.");
-        }
-        if (collectionProperty == null)
-        {
-            throw new IllegalArgumentException("RollupRowHandler must have a collection property.");
-        }
-        this.configuration = configuration;
-        this.keyProperties = keyProperties;
-        this.collectionProperty = collectionProperty;
-        this.resultHandler = resultHandler;
-        this.maxResults = maxResults;
-        this.rawResults = new ArrayList<Object>(100);
+    Object valueObject = context.getResultObject();
+    MetaObject probe = configuration.newMetaObject(valueObject);
+
+    // Check if the key has changed
+    if (lastKeyValues == null) {
+      lastKeyValues = getKeyValues(probe);
+      resultCount = 0;
     }
-    
-    public void handleResult(ResultContext context)
-    {
-        // Shortcut if we have processed enough results
-        if (maxResults > 0 && resultCount >= maxResults)
-        {
-            return;
-        }
-        
-        Object valueObject = context.getResultObject();
-        MetaObject probe = configuration.newMetaObject(valueObject);
-        
-        // Check if the key has changed
-        if (lastKeyValues == null)
-        {
-            lastKeyValues = getKeyValues(probe);
-            resultCount = 0;
-        }
-        // Check if it has changed
-        Object[] currentKeyValues = getKeyValues(probe);
-        if (!Arrays.deepEquals(lastKeyValues, currentKeyValues))
-        {
-            // Key has changed, so handle the results
-            Object resultObject = coalesceResults(configuration, rawResults, collectionProperty);
-            if (resultObject != null)
-            {
-                DefaultResultContext resultContext = new DefaultResultContext();
-                resultContext.nextResultObject(resultObject);
-                
-                resultHandler.handleResult(resultContext);
-                resultCount++;
-            }
-            rawResults.clear();
-            lastKeyValues = currentKeyValues;
-        }
-        // Add the new value to the results for next time
-        rawResults.add(valueObject);
-        // Done
+    // Check if it has changed
+    Object[] currentKeyValues = getKeyValues(probe);
+    if (!Arrays.deepEquals(lastKeyValues, currentKeyValues)) {
+      // Key has changed, so handle the results
+      Object resultObject = coalesceResults(
+        configuration,
+        rawResults,
+        collectionProperty
+      );
+      if (resultObject != null) {
+        DefaultResultContext resultContext = new DefaultResultContext();
+        resultContext.nextResultObject(resultObject);
+
+        resultHandler.handleResult(resultContext);
+        resultCount++;
+      }
+      rawResults.clear();
+      lastKeyValues = currentKeyValues;
     }
-    
-    /**
-     * Client code <b>must</b> call this method once the query returns so that the final results
-     * can be passed to the inner RowHandler.  If a query is limited by size, then it is
-     * possible that the unprocessed results represent an incomplete final object; in this case
-     * it would be best to ignore the last results.  If the query is complete (i.e. all results
-     * are returned) then this method should be called.
-     * <p>
-     * If you want X results and each result is made up of N rows (on average), then set the query
-     * limit to: <br/>
-     *   L = X * (N+1)<br/>
-     * and don't call this method.
-     */
-    public void processLastResults()
-    {
-        // Shortcut if we have processed enough results
-        if (maxResults > 0 && resultCount >= maxResults)
-        {
-            return;
-        }
-        // Handle any outstanding results
-        Object resultObject = coalesceResults(configuration, rawResults, collectionProperty);
-        if (resultObject != null)
-        {
-            DefaultResultContext resultContext = new DefaultResultContext();
-            resultContext.nextResultObject(resultObject);
-            
-            resultHandler.handleResult(resultContext);
-            resultCount++;
-            rawResults.clear();                         // Stop it from being used again
-        }
+    // Add the new value to the results for next time
+    rawResults.add(valueObject);
+    // Done
+  }
+
+  /**
+   * Client code <b>must</b> call this method once the query returns so that the final results
+   * can be passed to the inner RowHandler.  If a query is limited by size, then it is
+   * possible that the unprocessed results represent an incomplete final object; in this case
+   * it would be best to ignore the last results.  If the query is complete (i.e. all results
+   * are returned) then this method should be called.
+   * <p>
+   * If you want X results and each result is made up of N rows (on average), then set the query
+   * limit to: <br/>
+   *   L = X * (N+1)<br/>
+   * and don't call this method.
+   */
+  public void processLastResults() {
+    // Shortcut if we have processed enough results
+    if (maxResults > 0 && resultCount >= maxResults) {
+      return;
     }
-    
-    @SuppressWarnings("unchecked")
-    private static Object coalesceResults(Configuration configuration, List<Object> valueObjects, String collectionProperty)
-    {
-        // Take the first result as the base value
-        Object resultObject = null;
-        MetaObject probe = null;
-        Collection<Object> collection = null;
-        for (Object object : valueObjects)
-        {
-            if (collection == null)
-            {
-                resultObject = object;
-                probe = configuration.newMetaObject(resultObject);
-                collection = (Collection<Object>) probe.getValue(collectionProperty);
-            }
-            else
-            {
-                Collection<?> addedValues = (Collection<Object>) probe.getValue(collectionProperty);
-                collection.addAll(addedValues);
-            }
-        }
-        // Done
-        return resultObject;
+    // Handle any outstanding results
+    Object resultObject = coalesceResults(
+      configuration,
+      rawResults,
+      collectionProperty
+    );
+    if (resultObject != null) {
+      DefaultResultContext resultContext = new DefaultResultContext();
+      resultContext.nextResultObject(resultObject);
+
+      resultHandler.handleResult(resultContext);
+      resultCount++;
+      rawResults.clear(); // Stop it from being used again
     }
-    
-    /**
-     * @return          Returns the values for the {@link RollupResultHandler#keyProperties}
-     */
-    private Object[] getKeyValues(MetaObject probe)
-    {
-        Object[] keyValues = new Object[keyProperties.length];
-        for (int i = 0; i < keyProperties.length; i++)
-        {
-            keyValues[i] = probe.getValue(keyProperties[i]);
-        }
-        return keyValues;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Object coalesceResults(
+    Configuration configuration,
+    List<Object> valueObjects,
+    String collectionProperty
+  ) {
+    // Take the first result as the base value
+    Object resultObject = null;
+    MetaObject probe = null;
+    Collection<Object> collection = null;
+    for (Object object : valueObjects) {
+      if (collection == null) {
+        resultObject = object;
+        probe = configuration.newMetaObject(resultObject);
+        collection = (Collection<Object>) probe.getValue(collectionProperty);
+      } else {
+        Collection<?> addedValues = (Collection<Object>) probe.getValue(
+          collectionProperty
+        );
+        collection.addAll(addedValues);
+      }
     }
+    // Done
+    return resultObject;
+  }
+
+  /**
+   * @return          Returns the values for the {@link RollupResultHandler#keyProperties}
+   */
+  private Object[] getKeyValues(MetaObject probe) {
+    Object[] keyValues = new Object[keyProperties.length];
+    for (int i = 0; i < keyProperties.length; i++) {
+      keyValues[i] = probe.getValue(keyProperties[i]);
+    }
+    return keyValues;
+  }
 }

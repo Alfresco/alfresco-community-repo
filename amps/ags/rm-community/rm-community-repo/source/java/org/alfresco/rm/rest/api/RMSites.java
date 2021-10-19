@@ -38,38 +38,37 @@ import org.alfresco.rm.rest.api.model.RMSite;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public interface RMSites extends Sites
-{
-    /**
-     * Creates RM site
-     *
-     * @param site
-     * @param parameters
-     * @return
-     */
-    RMSite createRMSite(RMSite site, Parameters parameters);
+public interface RMSites extends Sites {
+  /**
+   * Creates RM site
+   *
+   * @param site
+   * @param parameters
+   * @return
+   */
+  RMSite createRMSite(RMSite site, Parameters parameters);
 
-    /**
-     * Gets RM site
-     * @param siteId
-     * @return
-     */
-    RMSite getRMSite(String siteId);
+  /**
+   * Gets RM site
+   * @param siteId
+   * @return
+   */
+  RMSite getRMSite(String siteId);
 
-    /**
-     * Updates RM site
-     * @param siteId
-     * @param site
-     * @param parameters
-     * @return
-     */
-    RMSite updateRMSite(String siteId, SiteUpdate site, Parameters parameters);
+  /**
+   * Updates RM site
+   * @param siteId
+   * @param site
+   * @param parameters
+   * @return
+   */
+  RMSite updateRMSite(String siteId, SiteUpdate site, Parameters parameters);
 
-    /**
-     * Deletes RM site
-     *
-     * @param siteId
-     * @param parameters
-     */
-    void deleteRMSite(String siteId, Parameters parameters);
+  /**
+   * Deletes RM site
+   *
+   * @param siteId
+   * @param parameters
+   */
+  void deleteRMSite(String siteId, Parameters parameters);
 }

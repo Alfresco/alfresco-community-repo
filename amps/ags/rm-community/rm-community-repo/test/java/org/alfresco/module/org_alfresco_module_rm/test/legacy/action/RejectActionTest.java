@@ -38,87 +38,102 @@ import org.alfresco.service.cmr.action.Action;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RejectActionTest extends BaseRMTestCase
-{
-    /** Reject reason */
-    private final String REJECT_REASON = "rejectReason:Not valid!£$%^&*()_+";
+public class RejectActionTest extends BaseRMTestCase {
 
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+  /** Reject reason */
+  private final String REJECT_REASON = "rejectReason:Not valid!£$%^&*()_+";
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-    public void testRejectAction()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // Create a record from the document
-                Action createAction = actionService.createAction(CreateRecordAction.NAME);
-                createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
-                actionService.executeAction(createAction, dmDocument);
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-                // Check if the document is a record now
-                assertTrue(recordService.isRecord(dmDocument));
+  public void testRejectAction() {
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() {
+          // Create a record from the document
+          Action createAction = actionService.createAction(
+            CreateRecordAction.NAME
+          );
+          createAction.setParameterValue(
+            CreateRecordAction.PARAM_FILE_PLAN,
+            filePlan
+          );
+          actionService.executeAction(createAction, dmDocument);
 
-                // The record should have the original location information
-                assertNotNull(nodeService.getProperty(dmDocument, PROP_RECORD_ORIGINATING_LOCATION));
+          // Check if the document is a record now
+          assertTrue(recordService.isRecord(dmDocument));
 
-                // Check the parents. In this case the document should have two parents (doclib and fileplan)
-                assertTrue(nodeService.getParentAssocs(dmDocument).size() == 2);
+          // The record should have the original location information
+          assertNotNull(
+            nodeService.getProperty(
+              dmDocument,
+              PROP_RECORD_ORIGINATING_LOCATION
+            )
+          );
 
-                return null;
-            }
-        },
-        dmCollaborator);
+          // Check the parents. In this case the document should have two parents (doclib and fileplan)
+          assertTrue(nodeService.getParentAssocs(dmDocument).size() == 2);
 
-        doTestInTransaction(new FailureTest("Cannot reject a record without a reason.", IllegalArgumentException.class)
-        {
-            public void run()
-            {
-                // The test should fail if the reject reason is not supplied
-                Action rejectAction = actionService.createAction(RejectAction.NAME);
-                actionService.executeAction(rejectAction, dmDocument);
-            }
-        },
-        dmCollaborator);
+          return null;
+        }
+      },
+      dmCollaborator
+    );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // Create the reject action and add the reject reason
-                Action rejectAction = actionService.createAction(RejectAction.NAME);
-                rejectAction.setParameterValue(RejectAction.PARAM_REASON, REJECT_REASON);
-                actionService.executeAction(rejectAction, dmDocument);
+    doTestInTransaction(
+      new FailureTest(
+        "Cannot reject a record without a reason.",
+        IllegalArgumentException.class
+      ) {
+        public void run() {
+          // The test should fail if the reject reason is not supplied
+          Action rejectAction = actionService.createAction(RejectAction.NAME);
+          actionService.executeAction(rejectAction, dmDocument);
+        }
+      },
+      dmCollaborator
+    );
 
-                // The "record" aspect should be removed
-                assertFalse(nodeService.hasAspect(dmDocument, ASPECT_RECORD));
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() {
+          // Create the reject action and add the reject reason
+          Action rejectAction = actionService.createAction(RejectAction.NAME);
+          rejectAction.setParameterValue(
+            RejectAction.PARAM_REASON,
+            REJECT_REASON
+          );
+          actionService.executeAction(rejectAction, dmDocument);
 
-                // The "file plan component" should be removed
-                assertFalse(nodeService.hasAspect(dmDocument, ASPECT_FILE_PLAN_COMPONENT));
+          // The "record" aspect should be removed
+          assertFalse(nodeService.hasAspect(dmDocument, ASPECT_RECORD));
 
-                // The "identifier" property should be removed
-                assertNull(nodeService.getProperty(dmDocument, PROP_IDENTIFIER));
+          // The "file plan component" should be removed
+          assertFalse(
+            nodeService.hasAspect(dmDocument, ASPECT_FILE_PLAN_COMPONENT)
+          );
 
-                // The record should be removed from the file plan
-                assertTrue(nodeService.getParentAssocs(dmDocument).size() == 1);
+          // The "identifier" property should be removed
+          assertNull(nodeService.getProperty(dmDocument, PROP_IDENTIFIER));
 
-                // The extended reader information should be removed
-                assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
-                assertTrue(extendedSecurityService.getReaders(dmDocument).isEmpty());
+          // The record should be removed from the file plan
+          assertTrue(nodeService.getParentAssocs(dmDocument).size() == 1);
 
-                return null;
-            }
-        },
-        dmCollaborator);
-    }
+          // The extended reader information should be removed
+          assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
+          assertTrue(extendedSecurityService.getReaders(dmDocument).isEmpty());
+
+          return null;
+        }
+      },
+      dmCollaborator
+    );
+  }
 }

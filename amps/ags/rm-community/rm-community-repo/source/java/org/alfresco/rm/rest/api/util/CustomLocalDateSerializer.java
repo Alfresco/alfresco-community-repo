@@ -26,12 +26,10 @@
  */
 package org.alfresco.rm.rest.api.util;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
+import java.io.IOException;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -42,32 +40,33 @@ import org.joda.time.format.ISODateTimeFormat;
  * @author Rodica Sutu
  * @since 3.0
  */
-public class CustomLocalDateSerializer extends StdSerializer<LocalDate>
-{
-    /** Local date format yyyy-MM-dd*/
-    private final static DateTimeFormatter DATE_FORMAT = ISODateTimeFormat.date();
+public class CustomLocalDateSerializer extends StdSerializer<LocalDate> {
 
-    public CustomLocalDateSerializer()
-    {
-        super(LocalDate.class);
-    }
+  /** Local date format yyyy-MM-dd*/
+  private static final DateTimeFormatter DATE_FORMAT = ISODateTimeFormat.date();
 
-    protected CustomLocalDateSerializer(Class<LocalDate> t)
-    {
-        super(t);
-    }
+  public CustomLocalDateSerializer() {
+    super(LocalDate.class);
+  }
 
-    /**
-     * Custom serialize method to convert the org.joda.time.LocalDate into string value using the DATE_FORMAT
-     *
-     * @param value local date value
-     * @param jgen
-     * @param provider
-     * @throws IOException
-     */
-    @Override
-    public void serialize(LocalDate value, JsonGenerator jgen, SerializerProvider provider) throws IOException
-    {
-        jgen.writeString(DATE_FORMAT.print(value));
-    }
+  protected CustomLocalDateSerializer(Class<LocalDate> t) {
+    super(t);
+  }
+
+  /**
+   * Custom serialize method to convert the org.joda.time.LocalDate into string value using the DATE_FORMAT
+   *
+   * @param value local date value
+   * @param jgen
+   * @param provider
+   * @throws IOException
+   */
+  @Override
+  public void serialize(
+    LocalDate value,
+    JsonGenerator jgen,
+    SerializerProvider provider
+  ) throws IOException {
+    jgen.writeString(DATE_FORMAT.print(value));
+  }
 }

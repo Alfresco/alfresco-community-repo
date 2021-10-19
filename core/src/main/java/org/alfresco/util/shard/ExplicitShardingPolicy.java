@@ -20,94 +20,88 @@ package org.alfresco.util.shard;
 
 import java.util.LinkedList;
 import java.util.List;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Common ACL based index sharding behaviour for SOLR and the repository
- * 
+ *
  * @author Andy
  */
-public class ExplicitShardingPolicy
-{
-    private int numShards;
+public class ExplicitShardingPolicy {
 
-    private int replicationFactor;
+  private int numShards;
 
-    private int numNodes;
+  private int replicationFactor;
 
-    public ExplicitShardingPolicy(int numShards, int replicationFactor, int numNodes)
-    {
-        this.numShards = numShards;
-        this.replicationFactor = replicationFactor;
-        this.numNodes = numNodes;
+  private int numNodes;
+
+  public ExplicitShardingPolicy(
+    int numShards,
+    int replicationFactor,
+    int numNodes
+  ) {
+    this.numShards = numShards;
+    this.replicationFactor = replicationFactor;
+    this.numNodes = numNodes;
+  }
+
+  public boolean configurationIsValid() {
+    if ((numShards * replicationFactor) % numNodes != 0) {
+      return false;
     }
 
-    public boolean configurationIsValid()
-    {
-        if ((numShards * replicationFactor) % numNodes != 0)
-        {
-            return false;
-        }
-
-        int shardsPerNode = numShards * replicationFactor / numNodes;
-        if ((shardsPerNode > numShards) || (shardsPerNode < 1))
-        {
-            return false;
-        }
-
-        return true;
+    int shardsPerNode = numShards * replicationFactor / numNodes;
+    if ((shardsPerNode > numShards) || (shardsPerNode < 1)) {
+      return false;
     }
 
-    public List<Integer> getShardIdsForNode(int nodeInstance)
-    {
-        LinkedList<Integer> shardIds = new LinkedList<Integer>();
-        int test = 0;
-        for (int replica = 0; replica < replicationFactor; replica++)
-        {
-            for (int shard = replica; shard < numShards + replica; shard++)
-            {
-                if (test % numNodes == nodeInstance - 1)
-                {
-                    // This algorithm fails for some sets of parameters. (See SEARCH-1785)
-                    if (shardIds.contains(shard % numShards))
-                    {
-                        throw new AlfrescoRuntimeException("Sharding configuration not supported - unable to create shard list for node " + nodeInstance
-                                + " (shards:" + numShards + ", replication:" + replicationFactor + ", nodes:" + numNodes + ")."
-                                + " Please set up the shards manually or use a different sharding configuration.");
-                    }
-                    shardIds.add(shard % numShards);
-                }
-                test++;
+    return true;
+  }
+
+  public List<Integer> getShardIdsForNode(int nodeInstance) {
+    LinkedList<Integer> shardIds = new LinkedList<Integer>();
+    int test = 0;
+    for (int replica = 0; replica < replicationFactor; replica++) {
+      for (int shard = replica; shard < numShards + replica; shard++) {
+        if (test % numNodes == nodeInstance - 1) {
+          // This algorithm fails for some sets of parameters. (See SEARCH-1785)
+          if (shardIds.contains(shard % numShards)) {
+            throw new AlfrescoRuntimeException(
+              "Sharding configuration not supported - unable to create shard list for node " +
+              nodeInstance +
+              " (shards:" +
+              numShards +
+              ", replication:" +
+              replicationFactor +
+              ", nodes:" +
+              numNodes +
+              ")." +
+              " Please set up the shards manually or use a different sharding configuration."
+            );
+          }
+          shardIds.add(shard % numShards);
+        }
+        test++;
+      }
+    }
+    return shardIds;
+  }
+
+  public List<Integer> getNodeInstancesForShardId(int shardId) {
+    LinkedList<Integer> nodeInstances = new LinkedList<Integer>();
+    for (int nodeInstance = 1; nodeInstance <= numNodes; nodeInstance++) {
+      int test = 0;
+      for (int replica = 0; replica < replicationFactor; replica++) {
+        for (int shard = replica; shard < numShards + replica; shard++) {
+          if (test % numNodes == nodeInstance - 1) {
+            if (shard % numShards == shardId) {
+              nodeInstances.add(nodeInstance);
             }
-
+          }
+          test++;
         }
-        return shardIds;
+      }
     }
-
-    public List<Integer> getNodeInstancesForShardId(int shardId)
-    {
-        LinkedList<Integer> nodeInstances = new LinkedList<Integer>();
-        for (int nodeInstance = 1; nodeInstance <= numNodes; nodeInstance++)
-        {
-            int test = 0;
-            for (int replica = 0; replica < replicationFactor; replica++)
-            {
-                for (int shard = replica; shard < numShards + replica; shard++)
-                {
-                    if (test % numNodes == nodeInstance - 1)
-                    {
-                        if(shard % numShards == shardId)
-                        {
-                            nodeInstances.add(nodeInstance);
-                        }
-                    }
-                    test++;
-                }
-
-            }
-        }
-        return nodeInstances;
-    }
-
+    return nodeInstances;
+  }
 }

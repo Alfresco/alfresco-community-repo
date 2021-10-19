@@ -27,10 +27,9 @@ package org.alfresco.repo.domain.schema.script;
 
 /**
  * Defines a statement executor.
- * 
+ *
  * @author Cristian Turlica
  */
-public interface StatementExecutor
-{
-    void execute() throws Exception;
+public interface StatementExecutor {
+  void execute() throws Exception;
 }

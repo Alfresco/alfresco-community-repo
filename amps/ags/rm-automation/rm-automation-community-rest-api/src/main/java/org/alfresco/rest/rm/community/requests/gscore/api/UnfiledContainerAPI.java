@@ -38,16 +38,13 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.http.ContentType;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.http.ContentType;
-
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
@@ -62,21 +59,19 @@ import org.alfresco.rest.rm.community.util.UnfiledContainerChildMixin;
  * @author Ana Bozianu
  * @since 2.6
  */
-public class UnfiledContainerAPI extends RMModelRequest
-{
+public class UnfiledContainerAPI extends RMModelRequest {
+
     /**
      * @param rmRestWrapper RM REST Wrapper
      */
-    public UnfiledContainerAPI(RMRestWrapper rmRestWrapper)
-    {
+    public UnfiledContainerAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
     /**
      * see {@link #getUnfiledContainer(String, String)}
      */
-    public UnfiledContainer getUnfiledContainer(String unfiledContainerId)
-    {
+    public UnfiledContainer getUnfiledContainer(String unfiledContainerId) {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
         return getUnfiledContainer(unfiledContainerId, EMPTY);
@@ -96,23 +91,30 @@ public class UnfiledContainerAPI extends RMModelRequest
      *  <li>{@code unfiledContainerId} does not exist</li>
      * </ul>
      */
-    public UnfiledContainer getUnfiledContainer(String unfiledContainerId, String parameters)
-    {
+    public UnfiledContainer getUnfiledContainer(
+        String unfiledContainerId,
+        String parameters
+    ) {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return getRmRestWrapper().processModel(UnfiledContainer.class, simpleRequest(
-                GET,
-                "unfiled-containers/{unfiledContainerId}?{parameters}",
-                unfiledContainerId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                UnfiledContainer.class,
+                simpleRequest(
+                    GET,
+                    "unfiled-containers/{unfiledContainerId}?{parameters}",
+                    unfiledContainerId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #getUnfiledContainerChildren(String)} (String, String)}
      */
-    public UnfiledContainerChildCollection getUnfiledContainerChildren(String unfiledContainerId)
-    {
+    public UnfiledContainerChildCollection getUnfiledContainerChildren(
+        String unfiledContainerId
+    ) {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
         return getUnfiledContainerChildren(unfiledContainerId, EMPTY);
@@ -131,27 +133,42 @@ public class UnfiledContainerAPI extends RMModelRequest
      *  <li>{@code unfiledContainerId} does not exist</li>
      *</ul>
      */
-    public UnfiledContainerChildCollection getUnfiledContainerChildren(String unfiledContainerId, String parameters)
-    {
+    public UnfiledContainerChildCollection getUnfiledContainerChildren(
+        String unfiledContainerId,
+        String parameters
+    ) {
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return getRmRestWrapper().processModels(UnfiledContainerChildCollection.class, simpleRequest(
-            GET,
-            "unfiled-containers/{unfiledContainerId}/children?{parameters}",
-            unfiledContainerId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModels(
+                UnfiledContainerChildCollection.class,
+                simpleRequest(
+                    GET,
+                    "unfiled-containers/{unfiledContainerId}/children?{parameters}",
+                    unfiledContainerId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #createUnfiledContainerChild(UnfiledContainerChild, String, String)}
      */
-    public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId)
-    {
-        mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
+    public UnfiledContainerChild createUnfiledContainerChild(
+        UnfiledContainerChild unfiledContainerChildModel,
+        String unfiledContainerId
+    ) {
+        mandatoryObject(
+            "unfiledContainerChildModel",
+            unfiledContainerChildModel
+        );
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return createUnfiledContainerChild(unfiledContainerChildModel, unfiledContainerId, EMPTY);
+        return createUnfiledContainerChild(
+            unfiledContainerChildModel,
+            unfiledContainerId,
+            EMPTY
+        );
     }
 
     /**
@@ -171,18 +188,28 @@ public class UnfiledContainerAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public UnfiledContainerChild createUnfiledContainerChild(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, String parameters)
-    {
-        mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
+    public UnfiledContainerChild createUnfiledContainerChild(
+        UnfiledContainerChild unfiledContainerChildModel,
+        String unfiledContainerId,
+        String parameters
+    ) {
+        mandatoryObject(
+            "unfiledContainerChildModel",
+            unfiledContainerChildModel
+        );
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return getRmRestWrapper().processModel(UnfiledContainerChild.class, requestWithBody(
-                POST,
-                toJson(unfiledContainerChildModel),
-                "unfiled-containers/{unfiledContainerId}/children?{parameters}",
-                unfiledContainerId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                UnfiledContainerChild.class,
+                requestWithBody(
+                    POST,
+                    toJson(unfiledContainerChildModel),
+                    "unfiled-containers/{unfiledContainerId}/children?{parameters}",
+                    unfiledContainerId,
+                    parameters
+                )
+            );
     }
 
     /**
@@ -194,14 +221,22 @@ public class UnfiledContainerAPI extends RMModelRequest
      * @return newly created {@link UnfiledContainerChild}
      * @throws RuntimeException for invalid recordModel JSON strings
      */
-    public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledContainerChildModel, String unfiledContainerId, File unfiledContainerChildContent)
-    {
-        mandatoryObject("unfiledContainerChildModel", unfiledContainerChildModel);
-        mandatoryObject("unfiledContainerChildContent", unfiledContainerChildContent);
+    public UnfiledContainerChild uploadRecord(
+        UnfiledContainerChild unfiledContainerChildModel,
+        String unfiledContainerId,
+        File unfiledContainerChildContent
+    ) {
+        mandatoryObject(
+            "unfiledContainerChildModel",
+            unfiledContainerChildModel
+        );
+        mandatoryObject(
+            "unfiledContainerChildContent",
+            unfiledContainerChildContent
+        );
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        if (!unfiledContainerChildModel.getNodeType().equals(CONTENT_TYPE))
-        {
+        if (!unfiledContainerChildModel.getNodeType().equals(CONTENT_TYPE)) {
             fail("Only electronic records are supported");
         }
 
@@ -211,36 +246,57 @@ public class UnfiledContainerAPI extends RMModelRequest
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
         JsonNode root;
-        try
-        {
-            root = new ObjectMapper().readTree(toJson(unfiledContainerChildModel, UnfiledContainerChild.class, UnfiledContainerChildMixin.class));
-        }
-        catch (IOException e)
-        {
+        try {
+            root =
+                new ObjectMapper()
+                    .readTree(
+                        toJson(
+                            unfiledContainerChildModel,
+                            UnfiledContainerChild.class,
+                            UnfiledContainerChildMixin.class
+                        )
+                    );
+        } catch (IOException e) {
             throw new RuntimeException("Failed to convert model to JSON.", e);
         }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
-        while (fieldNames.hasNext())
-        {
+        while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
-            builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
+            builder.addMultiPart(
+                fieldName,
+                root.get(fieldName).asText(),
+                ContentType.JSON.name()
+            );
         }
-        builder.addMultiPart("filedata", unfiledContainerChildContent, ContentType.BINARY.name());
+        builder.addMultiPart(
+            "filedata",
+            unfiledContainerChildContent,
+            ContentType.BINARY.name()
+        );
 
         // create node with given content
-        return createUnfiledContainerChild(unfiledContainerChildModel, unfiledContainerId);
+        return createUnfiledContainerChild(
+            unfiledContainerChildModel,
+            unfiledContainerId
+        );
     }
 
     /**
      * see {@link #updateUnfiledContainer(UnfiledContainer, String, String)
      */
-    public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId)
-    {
+    public UnfiledContainer updateUnfiledContainer(
+        UnfiledContainer unfiledContainerModel,
+        String unfiledContainerId
+    ) {
         mandatoryObject("unfiledContainerModel", unfiledContainerModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return updateUnfiledContainer(unfiledContainerModel, unfiledContainerId, EMPTY);
+        return updateUnfiledContainer(
+            unfiledContainerModel,
+            unfiledContainerId,
+            EMPTY
+        );
     }
 
     /**
@@ -260,18 +316,24 @@ public class UnfiledContainerAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public UnfiledContainer updateUnfiledContainer(UnfiledContainer unfiledContainerModel, String unfiledContainerId, String parameters)
-    {
+    public UnfiledContainer updateUnfiledContainer(
+        UnfiledContainer unfiledContainerModel,
+        String unfiledContainerId,
+        String parameters
+    ) {
         mandatoryObject("unfiledContainerModel", unfiledContainerModel);
         mandatoryString("unfiledContainerId", unfiledContainerId);
 
-        return getRmRestWrapper().processModel(UnfiledContainer.class, requestWithBody(
-                PUT,
-                toJson(unfiledContainerModel),
-                "unfiled-containers/{unfiledContainerId}?{parameters}",
-                unfiledContainerId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                UnfiledContainer.class,
+                requestWithBody(
+                    PUT,
+                    toJson(unfiledContainerModel),
+                    "unfiled-containers/{unfiledContainerId}?{parameters}",
+                    unfiledContainerId,
+                    parameters
+                )
+            );
     }
-
 }

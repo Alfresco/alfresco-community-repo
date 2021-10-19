@@ -25,15 +25,6 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import javax.mail.Header;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,6 +32,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.mail.Header;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * @deprecated OOTB extractors have being moved to T-Engines.
@@ -73,91 +72,101 @@ import java.util.Set;
  * @author adavis
  */
 @Deprecated
-public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
-        implements MetadataExtractorPropertyMappingOverride
-{
-    static String RM_URI = "http://www.alfresco.org/model/recordsmanagement/1.0";
-    static String DOD_URI = "http://www.alfresco.org/model/dod5015/1.0";
+public class RFC822MetadataExtracter
+  extends AbstractMappingMetadataExtracter
+  implements MetadataExtractorPropertyMappingOverride {
 
-    static final String RECORD = "record";
-    static final String DOD_5015_RECORD = "dod5015record";
+  static String RM_URI = "http://www.alfresco.org/model/recordsmanagement/1.0";
+  static String DOD_URI = "http://www.alfresco.org/model/dod5015/1.0";
 
-    static final QName ASPECT_RECORD = QName.createQName(RM_URI, RECORD);
-    static final QName ASPECT_DOD_5015_RECORD = QName.createQName(DOD_URI, DOD_5015_RECORD);
+  static final String RECORD = "record";
+  static final String DOD_5015_RECORD = "dod5015record";
 
-    private static Log logger = LogFactory.getLog(RFC822MetadataExtracter.class);
+  static final QName ASPECT_RECORD = QName.createQName(RM_URI, RECORD);
+  static final QName ASPECT_DOD_5015_RECORD = QName.createQName(
+    DOD_URI,
+    DOD_5015_RECORD
+  );
 
-    private static final HashSet<String> SUPPORTED_MIMETYPES =
-            new HashSet<>(Arrays.asList(new String[] { MimetypeMap.MIMETYPE_RFC822 }));
+  private static Log logger = LogFactory.getLog(RFC822MetadataExtracter.class);
 
-    public RFC822MetadataExtracter()
-    {
-        super(SUPPORTED_MIMETYPES);
-    }
+  private static final HashSet<String> SUPPORTED_MIMETYPES = new HashSet<>(
+    Arrays.asList(new String[] { MimetypeMap.MIMETYPE_RFC822 })
+  );
 
-    private NodeService nodeService;
+  public RFC822MetadataExtracter() {
+    super(SUPPORTED_MIMETYPES);
+  }
 
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  private NodeService nodeService;
 
-    @Override
-    protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
-    {
-        logger.error("RFC822MetadataExtracter.extractRaw should not have been called, " +
-                "as the extraction should have taken place in a T-Engine.");
-        return Collections.emptyMap(); // will result in no updates.
-    }
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-    /**
-     * Back door for RM
-     * @return Map
-     */
-    public final Map<String, Set<QName>> getCurrentMapping()
-    {
-        return super.getMapping();
-    }
+  @Override
+  protected Map<String, Serializable> extractRaw(ContentReader reader)
+    throws Throwable {
+    logger.error(
+      "RFC822MetadataExtracter.extractRaw should not have been called, " +
+      "as the extraction should have taken place in a T-Engine."
+    );
+    return Collections.emptyMap(); // will result in no updates.
+  }
 
-    @Override
-    public boolean match(String sourceMimetype)
-    {
-        // When RM overrides the "extracter.RFC822" bean with its own class 'this' will be a sub class.
-        return SUPPORTED_MIMETYPES.contains(sourceMimetype) && this.getClass() != RFC822MetadataExtracter.class;
-    }
+  /**
+   * Back door for RM
+   * @return Map
+   */
+  public final Map<String, Set<QName>> getCurrentMapping() {
+    return super.getMapping();
+  }
 
-    @Override
-    // Only include system properties depending on RM / DOD aspects on this nodeRef
-    public Map<String, Set<String>> getExtractMapping(NodeRef nodeRef)
-    {
-        Map<String, Set<QName>> customMapping = getMapping();
-        HashMap<String, Set<String>> mapping = new HashMap<>(customMapping.size());
+  @Override
+  public boolean match(String sourceMimetype) {
+    // When RM overrides the "extracter.RFC822" bean with its own class 'this' will be a sub class.
+    return (
+      SUPPORTED_MIMETYPES.contains(sourceMimetype) &&
+      this.getClass() != RFC822MetadataExtracter.class
+    );
+  }
 
-        boolean isARecord = nodeService.hasAspect(nodeRef, ASPECT_RECORD);
-        boolean isADodRecord = nodeService.hasAspect(nodeRef, ASPECT_DOD_5015_RECORD);
+  @Override
+  // Only include system properties depending on RM / DOD aspects on this nodeRef
+  public Map<String, Set<String>> getExtractMapping(NodeRef nodeRef) {
+    Map<String, Set<QName>> customMapping = getMapping();
+    HashMap<String, Set<String>> mapping = new HashMap<>(customMapping.size());
 
-        for (Map.Entry<String, Set<QName>> entry : customMapping.entrySet())
-        {
-            Set<QName> customSystemProperties = entry.getValue();
-            HashSet<String> systemProperties = new HashSet<>(customSystemProperties.size());
-            String documentProperty = entry.getKey();
+    boolean isARecord = nodeService.hasAspect(nodeRef, ASPECT_RECORD);
+    boolean isADodRecord = nodeService.hasAspect(
+      nodeRef,
+      ASPECT_DOD_5015_RECORD
+    );
 
-            for (QName customSystemProperty : customSystemProperties)
-            {
-                String uri = customSystemProperty.getNamespaceURI();
-                boolean rmProperty = RM_URI.equals(uri);
-                boolean dodProperty = DOD_URI.equals(uri);
-                if ((rmProperty && isARecord) || (dodProperty && isADodRecord) || (!rmProperty && !dodProperty))
-                {
-                    systemProperties.add(customSystemProperty.toString());
-                }
-            }
-            if (!systemProperties.isEmpty())
-            {
-                mapping.put(documentProperty, systemProperties);
-            }
+    for (Map.Entry<String, Set<QName>> entry : customMapping.entrySet()) {
+      Set<QName> customSystemProperties = entry.getValue();
+      HashSet<String> systemProperties = new HashSet<>(
+        customSystemProperties.size()
+      );
+      String documentProperty = entry.getKey();
+
+      for (QName customSystemProperty : customSystemProperties) {
+        String uri = customSystemProperty.getNamespaceURI();
+        boolean rmProperty = RM_URI.equals(uri);
+        boolean dodProperty = DOD_URI.equals(uri);
+        if (
+          (rmProperty && isARecord) ||
+          (dodProperty && isADodRecord) ||
+          (!rmProperty && !dodProperty)
+        ) {
+          systemProperties.add(customSystemProperty.toString());
         }
-
-        return mapping;
+      }
+      if (!systemProperties.isEmpty()) {
+        mapping.put(documentProperty, systemProperties);
+      }
     }
+
+    return mapping;
+  }
 }

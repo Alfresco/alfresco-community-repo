@@ -30,13 +30,12 @@ package org.alfresco.repo.event2.filter;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public interface EventFilter<T>
-{
-    /**
-     * Indicates whether the given object should be excluded or not.
-     *
-     * @param obj the object to be checked against filters
-     * @return true if it is excluded, otherwise false
-     */
-    boolean isExcluded(T obj);
+public interface EventFilter<T> {
+  /**
+   * Indicates whether the given object should be excluded or not.
+   *
+   * @param obj the object to be checked against filters
+   * @return true if it is excluded, otherwise false
+   */
+  boolean isExcluded(T obj);
 }

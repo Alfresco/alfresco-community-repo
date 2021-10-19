@@ -37,17 +37,15 @@ import org.alfresco.util.ParameterCheck;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class IsRecordCondition extends AbstractCapabilityCondition
-{
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
+public class IsRecordCondition extends AbstractCapabilityCondition {
 
-        return recordService.isRecord(nodeRef);
-    }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  public boolean evaluateImpl(NodeRef nodeRef) {
+    ParameterCheck.mandatory("nodeRef", nodeRef);
 
+    return recordService.isRecord(nodeRef);
+  }
 }

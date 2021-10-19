@@ -30,11 +30,10 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 
 import io.restassured.RestAssured;
-
 import org.alfresco.rest.core.RMRestProperties;
 import org.alfresco.rest.core.RMRestWrapper;
-import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
+import org.alfresco.rest.rm.community.requests.gscore.api.ActionsExecutionAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilePlanAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.FilesAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RMSiteAPI;
@@ -54,18 +53,25 @@ import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledRecordFolderAPI
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class GSCoreAPI extends RMModelRequest
-{
+public class GSCoreAPI extends RMModelRequest {
+
     /**
      * Constructor
      *
      * @param rmRestWrapper RM REST Wrapper
      * @param rmRestProperties RM REST Properties
      */
-    public GSCoreAPI(RMRestWrapper rmRestWrapper, RMRestProperties rmRestProperties)
-    {
+    public GSCoreAPI(
+        RMRestWrapper rmRestWrapper,
+        RMRestProperties rmRestProperties
+    ) {
         super(rmRestWrapper);
-        RestAssured.baseURI = format("%s://%s", rmRestProperties.getScheme(), rmRestProperties.getServer());
+        RestAssured.baseURI =
+            format(
+                "%s://%s",
+                rmRestProperties.getScheme(),
+                rmRestProperties.getServer()
+            );
         RestAssured.port = parseInt(rmRestProperties.getPort());
         RestAssured.basePath = rmRestProperties.getRestRmPath();
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
@@ -76,9 +82,8 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link RMSiteAPI}
      */
-    public RMSiteAPI usingRMSite()
-    {
-      return new RMSiteAPI(getRmRestWrapper());
+    public RMSiteAPI usingRMSite() {
+        return new RMSiteAPI(getRmRestWrapper());
     }
 
     /**
@@ -86,8 +91,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link FilePlanAPI}
      */
-    public FilePlanAPI usingFilePlans()
-    {
+    public FilePlanAPI usingFilePlans() {
         return new FilePlanAPI(getRmRestWrapper());
     }
 
@@ -96,8 +100,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link RecordCategoryAPI}
      */
-    public RecordCategoryAPI usingRecordCategory()
-    {
+    public RecordCategoryAPI usingRecordCategory() {
         return new RecordCategoryAPI(getRmRestWrapper());
     }
 
@@ -106,8 +109,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link RecordFolderAPI}
      */
-    public RecordFolderAPI usingRecordFolder()
-    {
+    public RecordFolderAPI usingRecordFolder() {
         return new RecordFolderAPI(getRmRestWrapper());
     }
 
@@ -116,8 +118,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link RecordsAPI}
      */
-    public RecordsAPI usingRecords()
-    {
+    public RecordsAPI usingRecords() {
         return new RecordsAPI(getRmRestWrapper());
     }
 
@@ -126,8 +127,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link FilesAPI}
      */
-    public FilesAPI usingFiles()
-    {
+    public FilesAPI usingFiles() {
         return new FilesAPI(getRmRestWrapper());
     }
 
@@ -136,8 +136,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link TransferContainerAPI}
      */
-    public TransferContainerAPI usingTransferContainer()
-    {
+    public TransferContainerAPI usingTransferContainer() {
         return new TransferContainerAPI(getRmRestWrapper());
     }
 
@@ -146,8 +145,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link TransferAPI}
      */
-    public TransferAPI usingTransfer()
-    {
+    public TransferAPI usingTransfer() {
         return new TransferAPI(getRmRestWrapper());
     }
 
@@ -156,8 +154,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link UnfiledContainerAPI}
      */
-    public UnfiledContainerAPI usingUnfiledContainers()
-    {
+    public UnfiledContainerAPI usingUnfiledContainers() {
         return new UnfiledContainerAPI(getRmRestWrapper());
     }
 
@@ -166,8 +163,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link UnfiledRecordFolderAPI}
      */
-    public UnfiledRecordFolderAPI usingUnfiledRecordFolder()
-    {
+    public UnfiledRecordFolderAPI usingUnfiledRecordFolder() {
         return new UnfiledRecordFolderAPI(getRmRestWrapper());
     }
 
@@ -176,8 +172,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link RMUserAPI}
      */
-    public RMUserAPI usingRMUser()
-    {
+    public RMUserAPI usingRMUser() {
         return new RMUserAPI(getRmRestWrapper());
     }
 
@@ -186,8 +181,7 @@ public class GSCoreAPI extends RMModelRequest
      *
      * @return {@link ActionsExecutionAPI}
      */
-    public ActionsExecutionAPI usingActionsExecutionsAPI()
-    {
+    public ActionsExecutionAPI usingActionsExecutionsAPI() {
         return new ActionsExecutionAPI(getRmRestWrapper());
     }
 }

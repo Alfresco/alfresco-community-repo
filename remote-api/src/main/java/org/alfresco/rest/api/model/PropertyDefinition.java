@@ -26,122 +26,102 @@
 package org.alfresco.rest.api.model;
 
 import java.util.List;
+
 /**
  * Represents a property of the node definition.
  *
  * @author gfertuso
  */
-public class PropertyDefinition
-{
-    private String id;
-    private String title;
-    private String description;
-    private String defaultValue;
-    private String dataType;
-    private Boolean isMultiValued;
-    private Boolean isMandatory;
-    private Boolean isMandatoryEnforced;
-    private Boolean isProtected;
-    private List<ConstraintDefinition> constraints;
+public class PropertyDefinition {
 
-    public String getId() 
-    {
-        return id;
-    }
+  private String id;
+  private String title;
+  private String description;
+  private String defaultValue;
+  private String dataType;
+  private Boolean isMultiValued;
+  private Boolean isMandatory;
+  private Boolean isMandatoryEnforced;
+  private Boolean isProtected;
+  private List<ConstraintDefinition> constraints;
 
-    public void setId(String id) 
-    {
-        this.id = id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public String getTitle() 
-    {
-        return title;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public void setTitle(String title) 
-    {
-        this.title = title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getDescription() 
-    {
-        return description;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public void setDescription(String description) 
-    {
-        this.description = description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public String getDefaultValue() 
-    {
-        return defaultValue;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setDefaultValue(String defaultValue)
-    {
-        this.defaultValue = defaultValue;
-    }
+  public String getDefaultValue() {
+    return defaultValue;
+  }
 
-    public String getDataType()
-    {
-        return dataType;
-    }
+  public void setDefaultValue(String defaultValue) {
+    this.defaultValue = defaultValue;
+  }
 
-    public void setDataType(String dataType)
-    {
-        this.dataType = dataType;
-    }
+  public String getDataType() {
+    return dataType;
+  }
 
-    public boolean getIsProtected()
-    {
-        return isProtected;
-    }
+  public void setDataType(String dataType) {
+    this.dataType = dataType;
+  }
 
-    public void setIsProtected(boolean isProtected)
-    {
-        this.isProtected = isProtected;
-    }
+  public boolean getIsProtected() {
+    return isProtected;
+  }
 
-    public List<ConstraintDefinition> getConstraints()
-    {
-        return constraints;
-    }
+  public void setIsProtected(boolean isProtected) {
+    this.isProtected = isProtected;
+  }
 
-    public void setConstraints(List<ConstraintDefinition> constraints)
-    {
-        this.constraints = constraints;
-    }
+  public List<ConstraintDefinition> getConstraints() {
+    return constraints;
+  }
 
-    public boolean getIsMultiValued() 
-    {
-        return isMultiValued;
-    }
+  public void setConstraints(List<ConstraintDefinition> constraints) {
+    this.constraints = constraints;
+  }
 
-    public void setIsMultiValued(boolean isMultiValued) 
-    {
-        this.isMultiValued = isMultiValued;
-    }
+  public boolean getIsMultiValued() {
+    return isMultiValued;
+  }
 
-    public boolean getIsMandatory() 
-    {
-        return isMandatory;
-    }
+  public void setIsMultiValued(boolean isMultiValued) {
+    this.isMultiValued = isMultiValued;
+  }
 
-    public void setIsMandatory(boolean isMandatory) 
-    {
-        this.isMandatory = isMandatory;
-    }
+  public boolean getIsMandatory() {
+    return isMandatory;
+  }
 
-    public boolean getIsMandatoryEnforced() 
-    {
-        return isMandatoryEnforced;
-    }
+  public void setIsMandatory(boolean isMandatory) {
+    this.isMandatory = isMandatory;
+  }
 
-    public void setIsMandatoryEnforced(boolean isMandatoryEnforced) 
-    {
-        this.isMandatoryEnforced = isMandatoryEnforced;
-    }
-    
+  public boolean getIsMandatoryEnforced() {
+    return isMandatoryEnforced;
+  }
+
+  public void setIsMandatoryEnforced(boolean isMandatoryEnforced) {
+    this.isMandatoryEnforced = isMandatoryEnforced;
+  }
 }

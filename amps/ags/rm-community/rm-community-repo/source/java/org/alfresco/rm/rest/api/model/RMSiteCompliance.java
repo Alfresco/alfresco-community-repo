@@ -33,8 +33,7 @@ package org.alfresco.rm.rest.api.model;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public enum RMSiteCompliance
-{
-    STANDARD,
-    DOD5015
+public enum RMSiteCompliance {
+  STANDARD,
+  DOD5015,
 }

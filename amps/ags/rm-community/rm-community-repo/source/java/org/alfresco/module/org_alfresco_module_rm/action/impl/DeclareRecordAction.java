@@ -41,46 +41,43 @@ import org.alfresco.util.ParameterCheck;
  *
  * @author Roy Wetherall
  */
-public class DeclareRecordAction extends RMActionExecuterAbstractBase
-{
-    private static final String MISSING_PROPERTIES = "missingProperties";
-    
-    /** action name */
-    public static final String NAME = "declareRecord";
+public class DeclareRecordAction extends RMActionExecuterAbstractBase {
 
-    /** Record service */
-    private RecordService recordService;
+  private static final String MISSING_PROPERTIES = "missingProperties";
 
-    /**
-     * Sets the record service
-     *
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
+  /** action name */
+  public static final String NAME = "declareRecord";
+
+  /** Record service */
+  private RecordService recordService;
+
+  /**
+   * Sets the record service
+   *
+   * @param recordService record service
+   */
+  public void setRecordService(RecordService recordService) {
+    this.recordService = recordService;
+  }
+
+  /**
+   * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  protected void executeImpl(
+    final Action action,
+    final NodeRef actionedUponNodeRef
+  ) {
+    ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
+    try {
+      recordService.complete(actionedUponNodeRef);
+    } catch (RecordMissingMetadataException e) {
+      action.setParameterValue(
+        ActionExecuterAbstractBase.PARAM_RESULT,
+        MISSING_PROPERTIES
+      );
+    } catch (IntegrityException e) {
+      // IntegrityException is deliberately ignored here, there should be no action taken
     }
-
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
-    {
-        ParameterCheck.mandatory("actionedUponNodeRef", actionedUponNodeRef);
-        try
-        {
-            recordService.complete(actionedUponNodeRef);
-        }
-        catch (RecordMissingMetadataException e)
-        {
-            action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, MISSING_PROPERTIES);
-        }
-        catch (IntegrityException e)
-        {
-            // IntegrityException is deliberately ignored here, there should be no action taken
-        }
-
-    }
-    
+  }
 }

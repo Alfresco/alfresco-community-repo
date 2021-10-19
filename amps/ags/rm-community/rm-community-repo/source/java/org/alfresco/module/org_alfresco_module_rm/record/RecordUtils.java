@@ -37,7 +37,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -50,81 +49,91 @@ import org.alfresco.service.namespace.QName;
  * @author Tuna Aksoy
  * @since 2.4
  */
-public class RecordUtils
-{
-    private RecordUtils()
-    {
-        // Will not be called
+public class RecordUtils {
+
+  private RecordUtils() {
+    // Will not be called
+  }
+
+  /**
+   * Utility method that generates a record identifier and adds the new identifier to the record's name
+   *
+   * @param record the record to generate the identifier for
+   */
+  public static void generateRecordIdentifier(
+    NodeService nodeService,
+    IdentifierService identifierService,
+    NodeRef record
+  ) {
+    if (nodeService.getProperty(record, PROP_IDENTIFIER) == null) {
+      // get the record id
+      String recordId = identifierService.generateIdentifier(
+        ASPECT_RECORD,
+        nodeService.getPrimaryParent(record).getParentRef()
+      );
+
+      // get the record name
+      String name = (String) nodeService.getProperty(
+        record,
+        ContentModel.PROP_NAME
+      );
+
+      // add the properties to the record
+      Map<QName, Serializable> props = new HashMap<>();
+      props.put(PROP_IDENTIFIER, recordId);
+      props.put(PROP_ORIGIONAL_NAME, name);
+      nodeService.addProperties(record, props);
     }
 
-    /**
-     * Utility method that generates a record identifier and adds the new identifier to the record's name
-     * 
-     * @param record the record to generate the identifier for
-     */
-    public static void generateRecordIdentifier(NodeService nodeService, IdentifierService identifierService, NodeRef record)
-    {
-        if(nodeService.getProperty(record, PROP_IDENTIFIER) == null)
-        {
-            // get the record id
-            String recordId = identifierService.generateIdentifier(ASPECT_RECORD,
-                    nodeService.getPrimaryParent(record).getParentRef());
+    // append the identifier to the name even if it's been randomly generated or it was already set
+    appendIdentifierToName(nodeService, record);
+  }
 
-            // get the record name
-            String name = (String)nodeService.getProperty(record, ContentModel.PROP_NAME);
+  /**
+   * Appends the record identifier to the name of the record
+   *
+   * @param nodeRef The node reference of the record.
+   */
+  public static void appendIdentifierToName(
+    NodeService nodeService,
+    NodeRef nodeRef
+  ) {
+    mandatory("nodeService", nodeService);
+    mandatory("nodeRef", nodeRef);
 
-            // add the properties to the record
-            Map<QName, Serializable> props = new HashMap<>();
-            props.put(PROP_IDENTIFIER, recordId);
-            props.put(PROP_ORIGIONAL_NAME, name);
-            nodeService.addProperties(record, props);
-        }
-
-        // append the identifier to the name even if it's been randomly generated or it was already set
-        appendIdentifierToName(nodeService, record);
+    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT)) {
+      return;
     }
 
-    /**
-     * Appends the record identifier to the name of the record
-     *
-     * @param nodeRef The node reference of the record.
-     */
-    public static void appendIdentifierToName(NodeService nodeService, NodeRef nodeRef)
-    {
-        mandatory("nodeService", nodeService);
-        mandatory("nodeRef", nodeRef);
+    // get the record id
+    String recordId = (String) nodeService.getProperty(
+      nodeRef,
+      PROP_IDENTIFIER
+    );
 
-        if(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
-        {
-            return;
-        }
+    if (isNotBlank(recordId)) {
+      // get the record name
+      String name = (String) nodeService.getProperty(
+        nodeRef,
+        ContentModel.PROP_NAME
+      );
 
-        // get the record id
-        String recordId = (String) nodeService.getProperty(nodeRef, PROP_IDENTIFIER);
+      // skip this step if the record name already contains the identifier
+      if (name.contains(" (" + recordId + ")")) {
+        return;
+      }
 
-        if (isNotBlank(recordId))
-        {
-            // get the record name
-            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+      // rename the record
+      int dotIndex = name.lastIndexOf('.');
+      String prefix = name;
+      String postfix = "";
+      if (dotIndex > 0) {
+        prefix = name.substring(0, dotIndex);
+        postfix = name.substring(dotIndex);
+      }
+      String recordName = prefix + " (" + recordId + ")" + postfix;
 
-            // skip this step if the record name already contains the identifier
-            if(name.contains(" (" + recordId + ")"))
-            {
-                return;
-            }
-
-            // rename the record
-            int dotIndex = name.lastIndexOf('.');
-            String prefix = name;
-            String postfix = "";
-            if (dotIndex > 0)
-            {
-                prefix = name.substring(0, dotIndex);
-                postfix = name.substring(dotIndex);
-            }
-            String recordName = prefix + " (" + recordId + ")" + postfix;
-
-            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, recordName);
-        }
+      nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, recordName);
     }
+  }
 }

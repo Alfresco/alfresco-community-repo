@@ -32,14 +32,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Cutoff indicator
- * 
+ *
  * @author Roy Wetherall
  */
-public class TrueEvaluator extends BaseEvaluator
-{       
-    @Override
-    protected boolean evaluateImpl(NodeRef nodeRef)
-    {
-        return true;
-    }
+public class TrueEvaluator extends BaseEvaluator {
+
+  @Override
+  protected boolean evaluateImpl(NodeRef nodeRef) {
+    return true;
+  }
 }

@@ -65,146 +65,140 @@ import org.springframework.core.io.Resource;
  *    config/ibatis/#resource.dialect#/SqlMap-DOG.xml == RESOURCE 1
  *    config/ibatis/#resource.dialect#/SqlMap-CAT.xml == RESOURCE 3
  * </pre>
- * 
+ *
  * @author Derek Hulley
  * @since 3.2 (Mobile)
  */
-public class HierarchicalResourceLoader extends DefaultResourceLoader implements InitializingBean
-{
-    public static final String DEFAULT_DIALECT_PLACEHOLDER = "#resource.dialect#";
-    public static final String DEFAULT_DIALECT_REGEX = "\\#resource\\.dialect\\#";
-    
-    private String dialectBaseClass;
-    private String dialectClass;
-    
-    /**
-     * Create a new HierarchicalResourceLoader.
-     */
-    public HierarchicalResourceLoader()
-    {
-        super();
+public class HierarchicalResourceLoader
+  extends DefaultResourceLoader
+  implements InitializingBean {
+
+  public static final String DEFAULT_DIALECT_PLACEHOLDER = "#resource.dialect#";
+  public static final String DEFAULT_DIALECT_REGEX = "\\#resource\\.dialect\\#";
+
+  private String dialectBaseClass;
+  private String dialectClass;
+
+  /**
+   * Create a new HierarchicalResourceLoader.
+   */
+  public HierarchicalResourceLoader() {
+    super();
+  }
+
+  /**
+   * Set the class to be used during hierarchical dialect replacement.  Searches for the
+   * configuration location will not go further up the hierarchy than this class.
+   *
+   * @param className     the name of the class or interface
+   */
+  public void setDialectBaseClass(String className) {
+    this.dialectBaseClass = className;
+  }
+
+  public void setDialectClass(String className) {
+    this.dialectClass = className;
+  }
+
+  public void afterPropertiesSet() throws Exception {
+    PropertyCheck.mandatory(this, "dialectBaseClass", dialectBaseClass);
+    PropertyCheck.mandatory(this, "dialectClass", dialectClass);
+  }
+
+  /**
+   * Get a resource using the defined class hierarchy as a search path.
+   *
+   * @param location          the location including a {@link #DEFAULT_DIALECT_PLACEHOLDER placeholder}
+   * @return                  a resource found by successive searches using class name replacement, or
+   *                          <tt>null</tt> if not found.
+   */
+  @SuppressWarnings("unchecked")
+  @Override
+  public Resource getResource(String location) {
+    if (dialectClass == null || dialectBaseClass == null) {
+      return super.getResource(location);
     }
 
-    /**
-     * Set the class to be used during hierarchical dialect replacement.  Searches for the
-     * configuration location will not go further up the hierarchy than this class.
-     * 
-     * @param className     the name of the class or interface
-     */
-    public void setDialectBaseClass(String className)
-    {
-        this.dialectBaseClass = className;
+    // If a property value has not been substituted, extract the property name and load from system
+    String dialectBaseClassStr = dialectBaseClass;
+    if (!PropertyCheck.isValidPropertyString(dialectBaseClass)) {
+      String prop = PropertyCheck.getPropertyName(dialectBaseClass);
+      dialectBaseClassStr = System.getProperty(prop, dialectBaseClass);
     }
-    
-    public void setDialectClass(String className)
-    {
-        this.dialectClass = className;
+    String dialectClassStr = dialectClass;
+    if (!PropertyCheck.isValidPropertyString(dialectClass)) {
+      String prop = PropertyCheck.getPropertyName(dialectClass);
+      dialectClassStr = System.getProperty(prop, dialectClass);
     }
 
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "dialectBaseClass", dialectBaseClass);
-        PropertyCheck.mandatory(this, "dialectClass", dialectClass);
+    Class<?> dialectBaseClazz;
+    try {
+      dialectBaseClazz = Class.forName(dialectBaseClassStr);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(
+        "Dialect base class not found: " + dialectBaseClassStr
+      );
     }
-    
-    /**
-     * Get a resource using the defined class hierarchy as a search path.
-     * 
-     * @param location          the location including a {@link #DEFAULT_DIALECT_PLACEHOLDER placeholder}
-     * @return                  a resource found by successive searches using class name replacement, or
-     *                          <tt>null</tt> if not found.
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    public Resource getResource(String location)
-    {
-        if (dialectClass == null || dialectBaseClass == null)
-        {
-            return super.getResource(location);
-        }
-        
-        // If a property value has not been substituted, extract the property name and load from system
-        String dialectBaseClassStr = dialectBaseClass;
-        if (!PropertyCheck.isValidPropertyString(dialectBaseClass))
-        {
-            String prop = PropertyCheck.getPropertyName(dialectBaseClass);
-            dialectBaseClassStr = System.getProperty(prop, dialectBaseClass);
-        }
-        String dialectClassStr = dialectClass;
-        if (!PropertyCheck.isValidPropertyString(dialectClass))
-        {
-            String prop = PropertyCheck.getPropertyName(dialectClass);
-            dialectClassStr = System.getProperty(prop, dialectClass);
-        }
+    Class<?> dialectClazz;
+    try {
+      dialectClazz = Class.forName(dialectClassStr);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException("Dialect class not found: " + dialectClassStr);
+    }
+    // Ensure that we are dealing with classes and not interfaces
+    if (!Object.class.isAssignableFrom(dialectBaseClazz)) {
+      throw new RuntimeException(
+        "Dialect base class must be derived from java.lang.Object: " +
+        dialectBaseClazz.getName()
+      );
+    }
+    if (!Object.class.isAssignableFrom(dialectClazz)) {
+      throw new RuntimeException(
+        "Dialect class must be derived from java.lang.Object: " +
+        dialectClazz.getName()
+      );
+    }
+    // We expect these to be in the same hierarchy
+    if (!dialectBaseClazz.isAssignableFrom(dialectClazz)) {
+      throw new RuntimeException(
+        "Non-existent HierarchicalResourceLoader hierarchy: " +
+        dialectBaseClazz.getName() +
+        " is not a superclass of " +
+        dialectClazz
+      );
+    }
 
-        Class<?> dialectBaseClazz;
-        try
-        {
-            dialectBaseClazz = Class.forName(dialectBaseClassStr);
-        }
-        catch (ClassNotFoundException e)
-        {
-            throw new RuntimeException("Dialect base class not found: " + dialectBaseClassStr);
-        }
-        Class<?> dialectClazz;
-        try
-        {
-            dialectClazz = Class.forName(dialectClassStr);
-        }
-        catch (ClassNotFoundException e)
-        {
-            throw new RuntimeException("Dialect class not found: " + dialectClassStr);
-        }
-        // Ensure that we are dealing with classes and not interfaces
-        if (!Object.class.isAssignableFrom(dialectBaseClazz))
-        {
-            throw new RuntimeException(
-                    "Dialect base class must be derived from java.lang.Object: " +
-                    dialectBaseClazz.getName());
-        }
-        if (!Object.class.isAssignableFrom(dialectClazz))
-        {
-            throw new RuntimeException(
-                    "Dialect class must be derived from java.lang.Object: " +
-                    dialectClazz.getName());
-        }
-        // We expect these to be in the same hierarchy
-        if (!dialectBaseClazz.isAssignableFrom(dialectClazz))
-        {
-            throw new RuntimeException(
-                    "Non-existent HierarchicalResourceLoader hierarchy: " +
-                    dialectBaseClazz.getName() + " is not a superclass of " + dialectClazz);
-        }
-        
-        Class<? extends Object> clazz = dialectClazz;
-        Resource resource = null;
-        while (resource == null)
-        {
-            // Do replacement
-            String newLocation = location.replaceAll(DEFAULT_DIALECT_REGEX, clazz.getName());
-            resource = super.getResource(newLocation);
-            if (resource != null && resource.exists())
-            {
-                // Found
-                break;
-            }
-            // Not found
-            resource = null;
-            // Are we at the base class?
-            if (clazz.equals(dialectBaseClazz))
-            {
-                // We don't go any further
-                break;
-            }
-            // Move up the hierarchy
-            clazz = clazz.getSuperclass();
-            if (clazz == null)
-            {
-                throw new RuntimeException(
-                        "Non-existent HierarchicalResourceLoaderBean hierarchy: " +
-                        dialectBaseClazz.getName() + " is not a superclass of " + dialectClazz);
-            }
-        }
-        return resource;
+    Class<? extends Object> clazz = dialectClazz;
+    Resource resource = null;
+    while (resource == null) {
+      // Do replacement
+      String newLocation = location.replaceAll(
+        DEFAULT_DIALECT_REGEX,
+        clazz.getName()
+      );
+      resource = super.getResource(newLocation);
+      if (resource != null && resource.exists()) {
+        // Found
+        break;
+      }
+      // Not found
+      resource = null;
+      // Are we at the base class?
+      if (clazz.equals(dialectBaseClazz)) {
+        // We don't go any further
+        break;
+      }
+      // Move up the hierarchy
+      clazz = clazz.getSuperclass();
+      if (clazz == null) {
+        throw new RuntimeException(
+          "Non-existent HierarchicalResourceLoaderBean hierarchy: " +
+          dialectBaseClazz.getName() +
+          " is not a superclass of " +
+          dialectClazz
+        );
+      }
     }
+    return resource;
+  }
 }

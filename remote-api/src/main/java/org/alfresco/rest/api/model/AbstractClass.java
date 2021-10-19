@@ -26,172 +26,172 @@
 
 package org.alfresco.rest.api.model;
 
+import java.util.List;
+import java.util.Objects;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.QName;
 
-import java.util.List;
-import java.util.Objects;
+public abstract class AbstractClass
+  extends ClassDefinition
+  implements Comparable<AbstractClass> {
 
-public abstract class AbstractClass extends ClassDefinition implements Comparable<AbstractClass>
-{
-    protected String id;
-    protected String title;
-    protected String description;
-    protected String parentId;
-    protected Boolean isContainer = null;
-    protected Boolean isArchive = null;
-    protected Boolean includedInSupertypeQuery = null;
-    protected List<String> mandatoryAspects = null;
-    protected List<Association> associations = null;
-    protected Model model;
+  protected String id;
+  protected String title;
+  protected String description;
+  protected String parentId;
+  protected Boolean isContainer = null;
+  protected Boolean isArchive = null;
+  protected Boolean includedInSupertypeQuery = null;
+  protected List<String> mandatoryAspects = null;
+  protected List<Association> associations = null;
+  protected Model model;
 
-    public String getId()
-    {
-        return id;
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public String getTitle() {
+    return this.title;
+  }
+
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  public String getDescription() {
+    return this.description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getParentId() {
+    return parentId;
+  }
+
+  public void setParentId(String parentId) {
+    this.parentId = parentId;
+  }
+
+  public Model getModel() {
+    return model;
+  }
+
+  public void setModel(Model model) {
+    this.model = model;
+  }
+
+  public Boolean getIsContainer() {
+    return isContainer;
+  }
+
+  public void setIsContainer(Boolean isContainer) {
+    this.isContainer = isContainer;
+  }
+
+  public Boolean getIsArchive() {
+    return isArchive;
+  }
+
+  public void setIsArchive(Boolean isArchive) {
+    this.isArchive = isArchive;
+  }
+
+  public Boolean getIncludedInSupertypeQuery() {
+    return includedInSupertypeQuery;
+  }
+
+  public void setIncludedInSupertypeQuery(Boolean includedInSupertypeQuery) {
+    this.includedInSupertypeQuery = includedInSupertypeQuery;
+  }
+
+  public List<String> getMandatoryAspects() {
+    return mandatoryAspects;
+  }
+
+  public void setMandatoryAspects(List<String> mandatoryAspects) {
+    this.mandatoryAspects = mandatoryAspects;
+  }
+
+  public List<Association> getAssociations() {
+    return associations;
+  }
+
+  public void setAssociations(List<Association> associations) {
+    this.associations = associations;
+  }
+
+  String getParentNameAsString(QName parentQName) {
+    if (parentQName != null) {
+      return parentQName.toPrefixString();
     }
+    return null;
+  }
 
-    public void setId(String id)
-    {
-        this.id = id;
+  Model getModelInfo(
+    org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition,
+    MessageLookup messageLookup
+  ) {
+    final ModelDefinition modelDefinition = classDefinition.getModel();
+    final String prefix = classDefinition
+      .getName()
+      .toPrefixString()
+      .split(":")[0];
+
+    final NamespaceDefinition namespaceDefinition = modelDefinition
+      .getNamespaces()
+      .stream()
+      .filter(definition -> definition.getPrefix().equals(prefix))
+      .findFirst()
+      .get();
+
+    final String modelId = modelDefinition.getName().toPrefixString();
+    final String author = modelDefinition.getAuthor();
+    final String description = modelDefinition.getDescription(messageLookup);
+
+    return new Model(
+      modelId,
+      author,
+      description,
+      namespaceDefinition.getUri(),
+      namespaceDefinition.getPrefix()
+    );
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+      id,
+      title,
+      description,
+      parentId,
+      properties,
+      isContainer,
+      isArchive,
+      includedInSupertypeQuery,
+      mandatoryAspects,
+      associations,
+      model
+    );
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
+    return super.equals(obj);
+  }
 
-    public String getTitle()
-    {
-        return this.title;
-    }
-
-    public void setTitle(String title)
-    {
-        this.title = title;
-    }
-
-    public String getDescription()
-    {
-        return this.description;
-    }
-
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
-
-    public String getParentId()
-    {
-        return parentId;
-    }
-
-    public void setParentId(String parentId)
-    {
-        this.parentId = parentId;
-    }
-
-    public Model getModel()
-    {
-        return model;
-    }
-
-    public void setModel(Model model)
-    {
-        this.model = model;
-    }
-
-    public Boolean getIsContainer()
-    {
-        return isContainer;
-    }
-
-    public void setIsContainer(Boolean isContainer)
-    {
-        this.isContainer = isContainer;
-    }
-
-    public Boolean getIsArchive()
-    {
-        return isArchive;
-    }
-
-    public void setIsArchive(Boolean isArchive)
-    {
-        this.isArchive = isArchive;
-    }
-
-    public Boolean getIncludedInSupertypeQuery()
-    {
-        return includedInSupertypeQuery;
-    }
-
-    public void setIncludedInSupertypeQuery(Boolean includedInSupertypeQuery)
-    {
-        this.includedInSupertypeQuery = includedInSupertypeQuery;
-    }
-
-    public List<String> getMandatoryAspects()
-    {
-        return mandatoryAspects;
-    }
-
-    public void setMandatoryAspects(List<String> mandatoryAspects)
-    {
-        this.mandatoryAspects = mandatoryAspects;
-    }
-
-    public List<Association> getAssociations()
-    {
-        return associations;
-    }
-
-    public void setAssociations(List<Association> associations)
-    {
-        this.associations = associations;
-    }
-
-    String getParentNameAsString(QName parentQName)
-    {
-        if (parentQName != null)
-        {
-            return parentQName.toPrefixString();
-        }
-        return null;
-    }
-
-    Model getModelInfo(org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, MessageLookup messageLookup)
-    {
-        final ModelDefinition modelDefinition  = classDefinition.getModel();
-        final String prefix = classDefinition.getName().toPrefixString().split(":")[0];
-
-        final NamespaceDefinition namespaceDefinition = modelDefinition.getNamespaces().stream()
-                .filter(definition -> definition.getPrefix().equals(prefix))
-                .findFirst()
-                .get();
-
-        final String modelId = modelDefinition.getName().toPrefixString();
-        final String author = modelDefinition.getAuthor();
-        final String description = modelDefinition.getDescription(messageLookup);
-
-        return new Model(modelId, author, description, namespaceDefinition.getUri(), namespaceDefinition.getPrefix());
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(id, title, description, parentId, properties, isContainer, isArchive, includedInSupertypeQuery, mandatoryAspects, associations, model);
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
-            return true;
-        }
-        return super.equals(obj);
-    }
-
-    @Override
-    public int compareTo(AbstractClass other)
-    {
-        return this.id.compareTo(other.getId());
-    }
+  @Override
+  public int compareTo(AbstractClass other) {
+    return this.id.compareTo(other.getId());
+  }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,44 +29,37 @@ package org.alfresco.repo.security.authority;
  * @author Andy
  *
  */
-public class AuthorityBridgeLink
-{
-    private String childName;
-    
-    private String parentName;
+public class AuthorityBridgeLink {
 
-    /**
-     * @return the childName
-     */
-    public String getChildName()
-    {
-        return childName;
-    }
+  private String childName;
 
-    /**
-     * @param childName the childName to set
-     */
-    public void setChildName(String childName)
-    {
-        this.childName = childName;
-    }
+  private String parentName;
 
-    /**
-     * @return the parentName
-     */
-    public String getParentName()
-    {
-        return parentName;
-    }
+  /**
+   * @return the childName
+   */
+  public String getChildName() {
+    return childName;
+  }
 
-    /**
-     * @param parentName the parentName to set
-     */
-    public void setParentName(String parentName)
-    {
-        this.parentName = parentName;
-    }
-    
-    
-    
+  /**
+   * @param childName the childName to set
+   */
+  public void setChildName(String childName) {
+    this.childName = childName;
+  }
+
+  /**
+   * @return the parentName
+   */
+  public String getParentName() {
+    return parentName;
+  }
+
+  /**
+   * @param parentName the parentName to set
+   */
+  public void setParentName(String parentName) {
+    this.parentName = parentName;
+  }
 }

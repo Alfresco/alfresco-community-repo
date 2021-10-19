@@ -30,31 +30,29 @@ import org.apache.log4j.NDC;
 /**
  * A stand in for the org.apache.log4j.NDC class that avoids introducing runtime dependencies against the otherwise
  * optional log4j.
- * 
+ *
  * @author dward
  */
-public class Log4JNDC implements NDCDelegate
-{
-    // Force resolution of the log4j NDC class by the classloader (thus forcing an error if unavailable)
-    @SuppressWarnings("unused")
-    private static final Class<?> NDC_REF = NDC.class;
+public class Log4JNDC implements NDCDelegate {
 
-    /**
-     * Push new diagnostic context information for the current thread.
-     * 
-     * @param message
-     *            The new diagnostic context information.
-     */
-    public void push(String message)
-    {
-        NDC.push(message);
-    }
+  // Force resolution of the log4j NDC class by the classloader (thus forcing an error if unavailable)
+  @SuppressWarnings("unused")
+  private static final Class<?> NDC_REF = NDC.class;
 
-    /**
-     * Remove the diagnostic context for this thread.
-     */
-    public void remove()
-    {
-        NDC.remove();
-    }
+  /**
+   * Push new diagnostic context information for the current thread.
+   *
+   * @param message
+   *            The new diagnostic context information.
+   */
+  public void push(String message) {
+    NDC.push(message);
+  }
+
+  /**
+   * Remove the diagnostic context for this thread.
+   */
+  public void remove() {
+    NDC.remove();
+  }
 }

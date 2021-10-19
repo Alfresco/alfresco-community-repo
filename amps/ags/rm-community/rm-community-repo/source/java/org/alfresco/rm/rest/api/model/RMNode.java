@@ -27,12 +27,10 @@
 
 package org.alfresco.rm.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.alfresco.rest.api.model.Assoc;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.UserInfo;
@@ -45,196 +43,170 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Ana Bozianu
  * @since 2.6
  */
-public abstract class RMNode
-{
-    public static final String PARAM_ID = "id";
-    public static final String PARAM_PARENT_ID = "parentId";
-    public static final String PARAM_NAME = "name";
-    public static final String PARAM_NODE_TYPE = "nodeType";
-    public static final String PARAM_CREATED_AT = "createdAt";
-    public static final String PARAM_MODIFIED_AT = "modifiedAt";
-    public static final String PARAM_CREATED_BY_USER = "createdByUser";
-    public static final String PARAM_MODIFIED_BY_USER = "modifiedByUser";
+public abstract class RMNode {
 
-    public static final String PARAM_ASPECT_NAMES = "aspectNames";
-    public static final String PARAM_PROPERTIES = "properties";
-    public static final String PARAM_PATH = "path";
-    public static final String PARAM_ALLOWABLE_OPERATIONS = "allowableOperations";
-    public static final String PARAM_AUTO_RENAME = "autoRename";
-    
-    public static final String PARAM_ISPRIMARY = "isPrimary";
-    
-    public static final String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
-    
-    public static final String PARAM_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
-    public static final String PARAM_IS_CLOSED = "isClosed";
-    public static final String PARAM_INCLUDE_ASSOCIATION = "association";
-    
-    public static final String FILE_PLAN_TYPE = "rma:filePlan";
-    public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
-    public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";
-    public static final String RECORD_TYPE = "rma:record"; // generic record type
-    public static final String UNFILED_RECORD_FOLDER_TYPE = "rma:unfiledRecordFolder";
-    public static final String TRANSFER_TYPE = "rma:transfer";
-    public static final String TRANSFER_CONTAINER_TYPE = "rma:transferContainer";
-    public static final String UNFILED_CONTAINER_TYPE = "rma:unfiledRecordContainer";
-    public static final String FOLDER_TYPE = "cm:folder";
-    public static final String CONTENT_TYPE = "cm:content";
-    public static final String NON_ELECTRONIC_RECORD_TYPE = "rma:nonElectronicDocument";
+  public static final String PARAM_ID = "id";
+  public static final String PARAM_PARENT_ID = "parentId";
+  public static final String PARAM_NAME = "name";
+  public static final String PARAM_NODE_TYPE = "nodeType";
+  public static final String PARAM_CREATED_AT = "createdAt";
+  public static final String PARAM_MODIFIED_AT = "modifiedAt";
+  public static final String PARAM_CREATED_BY_USER = "createdByUser";
+  public static final String PARAM_MODIFIED_BY_USER = "modifiedByUser";
 
-    // required properties
-    protected NodeRef nodeRef;
-    protected NodeRef parentNodeRef;
-    protected String name;
-    protected String nodeType;
+  public static final String PARAM_ASPECT_NAMES = "aspectNames";
+  public static final String PARAM_PROPERTIES = "properties";
+  public static final String PARAM_PATH = "path";
+  public static final String PARAM_ALLOWABLE_OPERATIONS = "allowableOperations";
+  public static final String PARAM_AUTO_RENAME = "autoRename";
 
-    protected Date createdAt;
-    protected Date modifiedAt;
-    protected UserInfo createdByUser;
-    protected UserInfo modifiedByUser;
+  public static final String PARAM_ISPRIMARY = "isPrimary";
 
-    // optional properties
-    protected List<String> aspectNames;
-    protected Map<String, Object> properties;
-    protected PathInfo path;
-    protected List<String> allowableOperations;
-    protected Assoc association;
+  public static final String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
 
-    public RMNode()
-    {
+  public static final String PARAM_HAS_RETENTION_SCHEDULE =
+    "hasRetentionSchedule";
+  public static final String PARAM_IS_CLOSED = "isClosed";
+  public static final String PARAM_INCLUDE_ASSOCIATION = "association";
 
-    }
+  public static final String FILE_PLAN_TYPE = "rma:filePlan";
+  public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
+  public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";
+  public static final String RECORD_TYPE = "rma:record"; // generic record type
+  public static final String UNFILED_RECORD_FOLDER_TYPE =
+    "rma:unfiledRecordFolder";
+  public static final String TRANSFER_TYPE = "rma:transfer";
+  public static final String TRANSFER_CONTAINER_TYPE = "rma:transferContainer";
+  public static final String UNFILED_CONTAINER_TYPE =
+    "rma:unfiledRecordContainer";
+  public static final String FOLDER_TYPE = "cm:folder";
+  public static final String CONTENT_TYPE = "cm:content";
+  public static final String NON_ELECTRONIC_RECORD_TYPE =
+    "rma:nonElectronicDocument";
 
-    @JsonProperty ("id")
-    @UniqueId
-    public NodeRef getNodeRef()
-    {
-        return nodeRef;
-    }
+  // required properties
+  protected NodeRef nodeRef;
+  protected NodeRef parentNodeRef;
+  protected String name;
+  protected String nodeType;
 
-    public void setNodeRef(NodeRef nodeRef)
-    {
-        this.nodeRef = nodeRef;
-    }
+  protected Date createdAt;
+  protected Date modifiedAt;
+  protected UserInfo createdByUser;
+  protected UserInfo modifiedByUser;
 
-    public NodeRef getParentId()
-    {
-        return parentNodeRef;
-    }
+  // optional properties
+  protected List<String> aspectNames;
+  protected Map<String, Object> properties;
+  protected PathInfo path;
+  protected List<String> allowableOperations;
+  protected Assoc association;
 
-    public void setParentId(NodeRef parentNodeRef)
-    {
-        this.parentNodeRef = parentNodeRef;
-    }
+  public RMNode() {}
 
-    public String getName()
-    {
-        return name;
-    }
+  @JsonProperty("id")
+  @UniqueId
+  public NodeRef getNodeRef() {
+    return nodeRef;
+  }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+  public void setNodeRef(NodeRef nodeRef) {
+    this.nodeRef = nodeRef;
+  }
 
-    public String getNodeType()
-    {
-        return nodeType;
-    }
+  public NodeRef getParentId() {
+    return parentNodeRef;
+  }
 
-    public void setNodeType(String nodeType)
-    {
-        this.nodeType = nodeType;
-    }
+  public void setParentId(NodeRef parentNodeRef) {
+    this.parentNodeRef = parentNodeRef;
+  }
 
-    public Date getCreatedAt()
-    {
-        return createdAt;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public void setCreatedAt(Date createdAt)
-    {
-        this.createdAt = createdAt;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public Date getModifiedAt()
-    {
-        return modifiedAt;
-    }
+  public String getNodeType() {
+    return nodeType;
+  }
 
-    public void setModifiedAt(Date modifiedAt)
-    {
-        this.modifiedAt = modifiedAt;
-    }
+  public void setNodeType(String nodeType) {
+    this.nodeType = nodeType;
+  }
 
-    public UserInfo getCreatedByUser()
-    {
-        return createdByUser;
-    }
+  public Date getCreatedAt() {
+    return createdAt;
+  }
 
-    public void setCreatedByUser(UserInfo createdByUser)
-    {
-        this.createdByUser = createdByUser;
-    }
+  public void setCreatedAt(Date createdAt) {
+    this.createdAt = createdAt;
+  }
 
-    public UserInfo getModifiedByUser()
-    {
-        return modifiedByUser;
-    }
+  public Date getModifiedAt() {
+    return modifiedAt;
+  }
 
-    public void setModifiedByUser(UserInfo modifiedByUser)
-    {
-        this.modifiedByUser = modifiedByUser;
-    }
+  public void setModifiedAt(Date modifiedAt) {
+    this.modifiedAt = modifiedAt;
+  }
 
-    public List<String> getAspectNames()
-    {
-        return aspectNames;
-    }
+  public UserInfo getCreatedByUser() {
+    return createdByUser;
+  }
 
-    public void setAspectNames(List<String> aspectNames)
-    {
-        this.aspectNames = aspectNames;
-    }
+  public void setCreatedByUser(UserInfo createdByUser) {
+    this.createdByUser = createdByUser;
+  }
 
-    public Map<String, Object> getProperties()
-    {
-        return properties;
-    }
+  public UserInfo getModifiedByUser() {
+    return modifiedByUser;
+  }
 
-    public void setProperties(Map<String, Object> properties)
-    {
-        this.properties = properties;
-    }
+  public void setModifiedByUser(UserInfo modifiedByUser) {
+    this.modifiedByUser = modifiedByUser;
+  }
 
-    public PathInfo getPath()
-    {
-        return path;
-    }
+  public List<String> getAspectNames() {
+    return aspectNames;
+  }
 
-    public void setPath(PathInfo path)
-    {
-        this.path = path;
-    }
+  public void setAspectNames(List<String> aspectNames) {
+    this.aspectNames = aspectNames;
+  }
 
-    public List<String> getAllowableOperations()
-    {
-        return allowableOperations;
-    }
+  public Map<String, Object> getProperties() {
+    return properties;
+  }
 
-    public void setAllowableOperations(List<String> allowableOperations)
-    {
-        this.allowableOperations = allowableOperations;
-    }
+  public void setProperties(Map<String, Object> properties) {
+    this.properties = properties;
+  }
 
-    public Assoc getAssociation()
-    {
-        return association;
-    }
+  public PathInfo getPath() {
+    return path;
+  }
 
-    public void setAssociation(Assoc association)
-    {
-        this.association = association;
-    }
+  public void setPath(PathInfo path) {
+    this.path = path;
+  }
 
+  public List<String> getAllowableOperations() {
+    return allowableOperations;
+  }
+
+  public void setAllowableOperations(List<String> allowableOperations) {
+    this.allowableOperations = allowableOperations;
+  }
+
+  public Assoc getAssociation() {
+    return association;
+  }
+
+  public void setAssociation(Assoc association) {
+    this.association = association;
+  }
 }

@@ -48,93 +48,97 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @Category(NeverRunsTests.class)
 @ContextConfiguration(locations = "/test-messaging-context.xml")
-public class CamelRoutesTest
-{
-    @EndpointInject("mock:result1")
-    protected MockEndpoint resultEndpoint1;
-    
-    @EndpointInject("mock:result2")
-    protected MockEndpoint resultEndpoint2;
-    
-    @EndpointInject("mock:dlq")
-    protected MockEndpoint dlqEndpoint;
-    
-    @Autowired
-    protected CamelContext camelContext;
-    
-    @Produce("direct-vm:alfresco.test.1")
-    protected ProducerTemplate template1;
+public class CamelRoutesTest {
 
-    @Produce("direct-vm:alfresco.test.2")
-    protected ProducerTemplate template2;
+  @EndpointInject("mock:result1")
+  protected MockEndpoint resultEndpoint1;
 
-    @Produce("direct-vm:alfresco.default")
-    protected ProducerTemplate template3;
+  @EndpointInject("mock:result2")
+  protected MockEndpoint resultEndpoint2;
 
-    @Produce("direct-vm:alfresco.test.transacted")
-    protected ProducerTemplate template4;
+  @EndpointInject("mock:dlq")
+  protected MockEndpoint dlqEndpoint;
 
-    @Autowired
-    protected MockExceptionProcessor messagingExceptionProcessor;
+  @Autowired
+  protected CamelContext camelContext;
 
-    @Autowired
-    protected MockConsumer mockConsumer;
+  @Produce("direct-vm:alfresco.test.1")
+  protected ProducerTemplate template1;
 
-    @Autowired
-    protected MockExceptionThrowingConsumer mockExceptionThrowingConsumer;
+  @Produce("direct-vm:alfresco.test.2")
+  protected ProducerTemplate template2;
 
-    @Test
-    public void testMessageRouteXmlDefined() throws Exception {
-        String expectedBody = "<matched.>";
+  @Produce("direct-vm:alfresco.default")
+  protected ProducerTemplate template3;
 
-        resultEndpoint1.expectedBodiesReceived(expectedBody);
+  @Produce("direct-vm:alfresco.test.transacted")
+  protected ProducerTemplate template4;
 
-        template1.sendBody(expectedBody);
+  @Autowired
+  protected MockExceptionProcessor messagingExceptionProcessor;
 
-        resultEndpoint1.assertIsSatisfied();
-    }
+  @Autowired
+  protected MockConsumer mockConsumer;
 
-    @Test
-    public void testMessageRoutePackageDefined() throws Exception {
-        String expectedBody = "<matched.>";
+  @Autowired
+  protected MockExceptionThrowingConsumer mockExceptionThrowingConsumer;
 
-        resultEndpoint2.expectedBodiesReceived(expectedBody);
+  @Test
+  public void testMessageRouteXmlDefined() throws Exception {
+    String expectedBody = "<matched.>";
 
-        template2.sendBody(expectedBody);
+    resultEndpoint1.expectedBodiesReceived(expectedBody);
 
-        resultEndpoint2.assertIsSatisfied();
-    }
+    template1.sendBody(expectedBody);
 
-    @Test
-    public void testMessageRouteXmlOverride() throws Exception {
-        String expectedBody = "<matched.>";
+    resultEndpoint1.assertIsSatisfied();
+  }
 
-        dlqEndpoint.expectedBodiesReceived(expectedBody);
+  @Test
+  public void testMessageRoutePackageDefined() throws Exception {
+    String expectedBody = "<matched.>";
 
-        template3.sendBody(expectedBody);
+    resultEndpoint2.expectedBodiesReceived(expectedBody);
 
-        dlqEndpoint.assertIsSatisfied();
-    }
+    template2.sendBody(expectedBody);
 
-    @Test
-    public void testTransactedRoute() throws Exception {
-        String expectedBody = "<matched.>";
+    resultEndpoint2.assertIsSatisfied();
+  }
 
-        template4.sendBody(expectedBody);
+  @Test
+  public void testMessageRouteXmlOverride() throws Exception {
+    String expectedBody = "<matched.>";
 
-        // Wait for Camel and ActiveMQ to process
-        Thread.sleep(2000);
+    dlqEndpoint.expectedBodiesReceived(expectedBody);
 
-        // Test that our exception processor received the error
-        assertNotNull(messagingExceptionProcessor.getLastError());
-        assertTrue(messagingExceptionProcessor.getLastError().getClass().equals(
-                IllegalArgumentException.class));
+    template3.sendBody(expectedBody);
 
-        // Check that an error was thrown the first time
-        assertTrue(mockExceptionThrowingConsumer.isErrorThrown());
-        assertNull(mockExceptionThrowingConsumer.getLastMessage());
+    dlqEndpoint.assertIsSatisfied();
+  }
 
-        // Check that the message was re-delivered to a second consumer
-        assertEquals(expectedBody, mockConsumer.getLastMessage());
-    }
+  @Test
+  public void testTransactedRoute() throws Exception {
+    String expectedBody = "<matched.>";
+
+    template4.sendBody(expectedBody);
+
+    // Wait for Camel and ActiveMQ to process
+    Thread.sleep(2000);
+
+    // Test that our exception processor received the error
+    assertNotNull(messagingExceptionProcessor.getLastError());
+    assertTrue(
+      messagingExceptionProcessor
+        .getLastError()
+        .getClass()
+        .equals(IllegalArgumentException.class)
+    );
+
+    // Check that an error was thrown the first time
+    assertTrue(mockExceptionThrowingConsumer.isErrorThrown());
+    assertNull(mockExceptionThrowingConsumer.getLastMessage());
+
+    // Check that the message was re-delivered to a second consumer
+    assertEquals(expectedBody, mockConsumer.getLastMessage());
+  }
 }

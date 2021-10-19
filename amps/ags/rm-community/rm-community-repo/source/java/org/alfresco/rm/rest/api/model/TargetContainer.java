@@ -29,35 +29,31 @@ package org.alfresco.rm.rest.api.model;
 
 /**
  * A target container object
- * 
+ *
  * @author Ana Bozianu
  * @since 2.6
  */
-public class TargetContainer
-{
-    String targetParentId;
+public class TargetContainer {
 
-    public TargetContainer()
-    {
-        //Default constructor
-    }
+  String targetParentId;
 
-    public String getTargetParentId()
-    {
-        return targetParentId;
-    }
+  public TargetContainer() {
+    //Default constructor
+  }
 
-    public void setTargetParentId(String targetParentId)
-    {
-        this.targetParentId = targetParentId;
-    }
+  public String getTargetParentId() {
+    return targetParentId;
+  }
 
-    @Override
-    public String toString()
-    {
-        final StringBuilder sb = new StringBuilder("TargetContainer{");
-        sb.append("targetParentId=").append(targetParentId);
-        sb.append('}');
-        return sb.toString();
-    }
+  public void setTargetParentId(String targetParentId) {
+    this.targetParentId = targetParentId;
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("TargetContainer{");
+    sb.append("targetParentId=").append(targetParentId);
+    sb.append('}');
+    return sb.toString();
+  }
 }

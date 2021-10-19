@@ -39,86 +39,96 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Ramona Popa
  * @since 2.6
  */
-public class UpdateRecordAspectsTest extends BaseRMTestCase
-{
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+public class UpdateRecordAspectsTest extends BaseRMTestCase {
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-    /**
-     * RM-4926
-     * RM specific aspects can be removed only by System user
-     */
-    public void testRemoveRMAspectsFromElectronicRecord() throws Exception
-    {
-        final NodeRef record = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                // create file plan structure and a record
-                NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                NodeRef recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-                return recordService.createRecordFromContent(recordFolder, GUID.generate(), TYPE_CONTENT, null, null);
-            }
-        });
+  /**
+   * RM-4926
+   * RM specific aspects can be removed only by System user
+   */
+  public void testRemoveRMAspectsFromElectronicRecord() throws Exception {
+    final NodeRef record = doTestInTransaction(
+      new Test<NodeRef>() {
+        @Override
+        public NodeRef run() {
+          // create file plan structure and a record
+          NodeRef rc = filePlanService.createRecordCategory(
+            filePlan,
+            GUID.generate()
+          );
+          NodeRef recordFolder = recordFolderService.createRecordFolder(
+            rc,
+            GUID.generate()
+          );
 
-        doTestInTransaction(new FailureTest(IntegrityException.class)
-        {
-            @Override
-            public void run()
-            {
-                nodeService.removeAspect(record, ASPECT_RECORD);
-            }
-        });
+          return recordService.createRecordFromContent(
+            recordFolder,
+            GUID.generate(),
+            TYPE_CONTENT,
+            null,
+            null
+          );
+        }
+      }
+    );
 
-        doTestInTransaction(new FailureTest(IntegrityException.class)
-        {
-            @Override
-            public void run()
-            {
-                nodeService.removeAspect(record, ASPECT_FILE_PLAN_COMPONENT);
-            }
-        });
+    doTestInTransaction(
+      new FailureTest(IntegrityException.class) {
+        @Override
+        public void run() {
+          nodeService.removeAspect(record, ASPECT_RECORD);
+        }
+      }
+    );
 
-        doTestInTransaction(new FailureTest(IntegrityException.class)
-        {
-            @Override
-            public void run()
-            {
-                nodeService.removeAspect(record, ASPECT_RECORD_COMPONENT_ID);
-            }
-        });
+    doTestInTransaction(
+      new FailureTest(IntegrityException.class) {
+        @Override
+        public void run() {
+          nodeService.removeAspect(record, ASPECT_FILE_PLAN_COMPONENT);
+        }
+      }
+    );
 
-        doTestInTransaction(new FailureTest(IntegrityException.class)
-        {
-            @Override
-            public void run()
-            {
-                nodeService.removeAspect(record, ASPECT_COMMON_RECORD_DETAILS);
-            }
-        });
+    doTestInTransaction(
+      new FailureTest(IntegrityException.class) {
+        @Override
+        public void run() {
+          nodeService.removeAspect(record, ASPECT_RECORD_COMPONENT_ID);
+        }
+      }
+    );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                nodeService.removeAspect(record, ASPECT_RECORD);
-                nodeService.removeAspect(record, ASPECT_FILE_PLAN_COMPONENT);
-                nodeService.removeAspect(record, ASPECT_RECORD_COMPONENT_ID);
-                nodeService.removeAspect(record, ASPECT_COMMON_RECORD_DETAILS);
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-    }
+    doTestInTransaction(
+      new FailureTest(IntegrityException.class) {
+        @Override
+        public void run() {
+          nodeService.removeAspect(record, ASPECT_COMMON_RECORD_DETAILS);
+        }
+      }
+    );
+
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          nodeService.removeAspect(record, ASPECT_RECORD);
+          nodeService.removeAspect(record, ASPECT_FILE_PLAN_COMPONENT);
+          nodeService.removeAspect(record, ASPECT_RECORD_COMPONENT_ID);
+          nodeService.removeAspect(record, ASPECT_COMMON_RECORD_DETAILS);
+          return null;
+        }
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
 }

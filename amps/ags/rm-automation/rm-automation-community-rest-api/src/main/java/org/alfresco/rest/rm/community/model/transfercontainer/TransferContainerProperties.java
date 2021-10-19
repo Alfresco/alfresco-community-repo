@@ -31,15 +31,13 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_IDENTIFIER;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_ROOT_NODE_REF;
 
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for Transfer Container properties
@@ -52,21 +50,20 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransferContainerProperties extends TestModel
-{
+public class TransferContainerProperties extends TestModel {
+
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true, value = PROPERTIES_IDENTIFIER)
+    @JsonProperty(required = true, value = PROPERTIES_IDENTIFIER)
     private String identifier;
 
     /************************/
     /** Optional parameters */
     /************************/
-    @JsonProperty (PROPERTIES_ROOT_NODE_REF)
+    @JsonProperty(PROPERTIES_ROOT_NODE_REF)
     private String rootNodeRef;
 
-    @JsonProperty (PROPERTIES_COUNT)
+    @JsonProperty(PROPERTIES_COUNT)
     private Integer count;
-
 }

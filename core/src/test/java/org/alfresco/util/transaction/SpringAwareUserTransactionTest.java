@@ -20,13 +20,10 @@ package org.alfresco.util.transaction;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
-
 import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
-
 import junit.framework.TestCase;
-
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.TransactionDefinition;
@@ -36,450 +33,446 @@ import org.springframework.transaction.support.DefaultTransactionStatus;
 
 /**
  * @see org.alfresco.util.transaction.SpringAwareUserTransaction
- * 
+ *
  * @author Derek Hulley
  */
-public class SpringAwareUserTransactionTest extends TestCase
-{
-    private DummyTransactionManager transactionManager;
-    private FailingTransactionManager failingTransactionManager;
-    private UserTransaction txn;
-    
-    public SpringAwareUserTransactionTest()
-    {
-        super();
-    }
-    
-    @Override
-    protected void setUp() throws Exception
-    {
-        transactionManager = new DummyTransactionManager();
-        failingTransactionManager = new FailingTransactionManager();
-        txn = getTxn();
-    }
-    
-    private UserTransaction getTxn()
-    {
-        return new SpringAwareUserTransaction(
-                transactionManager,
-                false,
-                TransactionDefinition.ISOLATION_DEFAULT,
-                TransactionDefinition.PROPAGATION_REQUIRED,
-                TransactionDefinition.TIMEOUT_DEFAULT);
-    }
-    
-    public void testSetUp() throws Exception
-    {
-        assertNotNull(transactionManager);
-        assertNotNull(txn);
-    }
-    
-    private void checkNoStatusOnThread()
-    {
-        try
-        {
-            TransactionAspectSupport.currentTransactionStatus();
-            fail("Spring transaction info is present outside of transaction boundaries");
-        }
-        catch (NoTransactionException e)
-        {
-            // expected
-        }
-    }
-    
-    public void testNoTxnStatus() throws Exception
-    {
-        checkNoStatusOnThread();
-        assertEquals("Transaction status is not correct",
-                Status.STATUS_NO_TRANSACTION,
-                txn.getStatus());
-        assertEquals("Transaction manager not set up correctly",
-                txn.getStatus(),
-                transactionManager.getStatus());
-    }
+public class SpringAwareUserTransactionTest extends TestCase {
 
-    public void testSimpleTxnWithCommit() throws Throwable
-    {
-        testNoTxnStatus();
-        try
-        {
-            txn.begin();
-            assertEquals("Transaction status is not correct",
-                    Status.STATUS_ACTIVE,
-                    txn.getStatus());
-            assertEquals("Transaction manager not called correctly",
-                    txn.getStatus(),
-                    transactionManager.getStatus());
+  private DummyTransactionManager transactionManager;
+  private FailingTransactionManager failingTransactionManager;
+  private UserTransaction txn;
 
-            txn.commit();
-            assertEquals("Transaction status is not correct",
-                    Status.STATUS_COMMITTED,
-                    txn.getStatus());
-            assertEquals("Transaction manager not called correctly",
-                    txn.getStatus(),
-                    transactionManager.getStatus());
-        }
-        catch (Throwable e)
-        {
-            // unexpected exception - attempt a cleanup
-            try
-            {
-                txn.rollback();
-            }
-            catch (Throwable ee)
-            {
-                e.printStackTrace();
-            }
-            throw e;
-        }
-        checkNoStatusOnThread();
-    }
-    
-    public void testSimpleTxnWithRollback() throws Exception
-    {
-        testNoTxnStatus();
-        try
-        {
-            txn.begin();
+  public SpringAwareUserTransactionTest() {
+    super();
+  }
 
-            throw new Exception("Blah");
-        }
-        catch (Throwable e)
-        {
-            txn.rollback();
-        }
-        assertEquals("Transaction status is not correct",
-                Status.STATUS_ROLLEDBACK,
-                txn.getStatus());
-        assertEquals("Transaction manager not called correctly",
-                txn.getStatus(),
-                transactionManager.getStatus());
-        checkNoStatusOnThread();
-    }
-    
-    public void testNoBeginCommit() throws Exception
-    {
-        testNoTxnStatus();
-        try
-        {
-            txn.commit();
-            fail("Failed to detected no begin");
-        }
-        catch (IllegalStateException e)
-        {
-            // expected
-        }
-        checkNoStatusOnThread();
-    }
-    
-    public void testPostRollbackCommitDetection() throws Exception
-    {
-        testNoTxnStatus();
+  @Override
+  protected void setUp() throws Exception {
+    transactionManager = new DummyTransactionManager();
+    failingTransactionManager = new FailingTransactionManager();
+    txn = getTxn();
+  }
 
-        txn.begin();
+  private UserTransaction getTxn() {
+    return new SpringAwareUserTransaction(
+      transactionManager,
+      false,
+      TransactionDefinition.ISOLATION_DEFAULT,
+      TransactionDefinition.PROPAGATION_REQUIRED,
+      TransactionDefinition.TIMEOUT_DEFAULT
+    );
+  }
+
+  public void testSetUp() throws Exception {
+    assertNotNull(transactionManager);
+    assertNotNull(txn);
+  }
+
+  private void checkNoStatusOnThread() {
+    try {
+      TransactionAspectSupport.currentTransactionStatus();
+      fail(
+        "Spring transaction info is present outside of transaction boundaries"
+      );
+    } catch (NoTransactionException e) {
+      // expected
+    }
+  }
+
+  public void testNoTxnStatus() throws Exception {
+    checkNoStatusOnThread();
+    assertEquals(
+      "Transaction status is not correct",
+      Status.STATUS_NO_TRANSACTION,
+      txn.getStatus()
+    );
+    assertEquals(
+      "Transaction manager not set up correctly",
+      txn.getStatus(),
+      transactionManager.getStatus()
+    );
+  }
+
+  public void testSimpleTxnWithCommit() throws Throwable {
+    testNoTxnStatus();
+    try {
+      txn.begin();
+      assertEquals(
+        "Transaction status is not correct",
+        Status.STATUS_ACTIVE,
+        txn.getStatus()
+      );
+      assertEquals(
+        "Transaction manager not called correctly",
+        txn.getStatus(),
+        transactionManager.getStatus()
+      );
+
+      txn.commit();
+      assertEquals(
+        "Transaction status is not correct",
+        Status.STATUS_COMMITTED,
+        txn.getStatus()
+      );
+      assertEquals(
+        "Transaction manager not called correctly",
+        txn.getStatus(),
+        transactionManager.getStatus()
+      );
+    } catch (Throwable e) {
+      // unexpected exception - attempt a cleanup
+      try {
         txn.rollback();
-        try
-        {
-            txn.commit();
-            fail("Failed to detect rolled back txn");
-        }
-        catch (RollbackException e)
-        {
-            // expected
-        }
-        checkNoStatusOnThread();
+      } catch (Throwable ee) {
+        e.printStackTrace();
+      }
+      throw e;
     }
-    
-    public void testPostSetRollbackOnlyCommitDetection() throws Exception
-    {
-        testNoTxnStatus();
+    checkNoStatusOnThread();
+  }
 
-        txn.begin();
-        txn.setRollbackOnly();
-        try
-        {
-            txn.commit();
-            fail("Failed to detect set rollback");
-        }
-        catch (RollbackException e)
-        {
-            // expected
-            txn.rollback();
-        }
-        checkNoStatusOnThread();
+  public void testSimpleTxnWithRollback() throws Exception {
+    testNoTxnStatus();
+    try {
+      txn.begin();
+
+      throw new Exception("Blah");
+    } catch (Throwable e) {
+      txn.rollback();
     }
-    
-    public void testMismatchedBeginCommit() throws Exception
-    {
-        UserTransaction txn1 = getTxn();
-        UserTransaction txn2 = getTxn();
+    assertEquals(
+      "Transaction status is not correct",
+      Status.STATUS_ROLLEDBACK,
+      txn.getStatus()
+    );
+    assertEquals(
+      "Transaction manager not called correctly",
+      txn.getStatus(),
+      transactionManager.getStatus()
+    );
+    checkNoStatusOnThread();
+  }
 
-        testNoTxnStatus();
-
-        txn1.begin();
-        txn2.begin();
-        
-        txn2.commit();
-        txn1.commit();
-        
-        checkNoStatusOnThread();
-        
-        txn1 = getTxn();
-        txn2 = getTxn();
-        
-        txn1.begin();
-        txn2.begin();
-        
-        try
-        {
-            txn1.commit();
-            fail("Failure to detect mismatched transaction begin/commit");
-        }
-        catch (RuntimeException e)
-        {
-            // expected
-        }
-        txn2.commit();
-        txn1.commit();
-
-        checkNoStatusOnThread();
+  public void testNoBeginCommit() throws Exception {
+    testNoTxnStatus();
+    try {
+      txn.commit();
+      fail("Failed to detected no begin");
+    } catch (IllegalStateException e) {
+      // expected
     }
+    checkNoStatusOnThread();
+  }
+
+  public void testPostRollbackCommitDetection() throws Exception {
+    testNoTxnStatus();
+
+    txn.begin();
+    txn.rollback();
+    try {
+      txn.commit();
+      fail("Failed to detect rolled back txn");
+    } catch (RollbackException e) {
+      // expected
+    }
+    checkNoStatusOnThread();
+  }
+
+  public void testPostSetRollbackOnlyCommitDetection() throws Exception {
+    testNoTxnStatus();
+
+    txn.begin();
+    txn.setRollbackOnly();
+    try {
+      txn.commit();
+      fail("Failed to detect set rollback");
+    } catch (RollbackException e) {
+      // expected
+      txn.rollback();
+    }
+    checkNoStatusOnThread();
+  }
+
+  public void testMismatchedBeginCommit() throws Exception {
+    UserTransaction txn1 = getTxn();
+    UserTransaction txn2 = getTxn();
+
+    testNoTxnStatus();
+
+    txn1.begin();
+    txn2.begin();
+
+    txn2.commit();
+    txn1.commit();
+
+    checkNoStatusOnThread();
+
+    txn1 = getTxn();
+    txn2 = getTxn();
+
+    txn1.begin();
+    txn2.begin();
+
+    try {
+      txn1.commit();
+      fail("Failure to detect mismatched transaction begin/commit");
+    } catch (RuntimeException e) {
+      // expected
+    }
+    txn2.commit();
+    txn1.commit();
+
+    checkNoStatusOnThread();
+  }
+
+  /**
+   * Test for leaked transactions (no guarantee it will succeed due to reliance
+   * on garbage collector), so disabled by default.
+   *
+   * Also, if it succeeds, transaction call stack tracing will be enabled
+   * potentially hitting the performance of all subsequent tests.
+   *
+   * @throws Exception
+   */
+  public void xtestLeakedTransactionLogging() throws Exception {
+    assertFalse(SpringAwareUserTransaction.isCallStackTraced());
+
+    TrxThread t1 = new TrxThread();
+    t1.start();
+    System.gc();
+    Thread.sleep(1000);
+
+    TrxThread t2 = new TrxThread();
+    t2.start();
+    System.gc();
+    Thread.sleep(1000);
+
+    assertTrue(SpringAwareUserTransaction.isCallStackTraced());
+
+    TrxThread t3 = new TrxThread();
+    t3.start();
+    System.gc();
+    Thread.sleep(3000);
+    System.gc();
+    Thread.sleep(3000);
+  }
+
+  private class TrxThread extends Thread {
+
+    public void run() {
+      try {
+        getTrx();
+      } catch (Exception e) {}
+    }
+
+    public void getTrx() throws Exception {
+      UserTransaction txn = getTxn();
+      txn.begin();
+      txn = null;
+    }
+  }
+
+  public void testConnectionPoolException() throws Exception {
+    testNoTxnStatus();
+    txn = getFailingTxn();
+    try {
+      txn.begin();
+      fail("ConnectionPoolException should be thrown.");
+    } catch (ConnectionPoolException cpe) {
+      // Expected fail
+    }
+  }
+
+  private UserTransaction getFailingTxn() {
+    return new SpringAwareUserTransaction(
+      failingTransactionManager,
+      false,
+      TransactionDefinition.ISOLATION_DEFAULT,
+      TransactionDefinition.PROPAGATION_REQUIRED,
+      TransactionDefinition.TIMEOUT_DEFAULT
+    );
+  }
+
+  public void testTransactionListenerOrder() throws Throwable {
+    testNoTxnStatus();
+    try {
+      txn.begin();
+      StringBuffer buffer = new StringBuffer();
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("5x", buffer),
+        5
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("0a", buffer),
+        0
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("0e", buffer),
+        0
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("0d", buffer),
+        0
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("0b", buffer),
+        0
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("0c", buffer),
+        0
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("4x", buffer),
+        4
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("1x", buffer),
+        -1
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("3a", buffer),
+        3
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("3e", buffer),
+        3
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("3d", buffer),
+        3
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("3b", buffer),
+        3
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("3c", buffer),
+        3
+      );
+      TransactionSupportUtil.bindListener(
+        new TestTransactionListener("2x", buffer),
+        -2
+      );
+      txn.commit();
+      assertEquals("0a0e0d0b0c2x1x3a3e3d3b3c4x5x", buffer.toString());
+    } catch (Exception e) {
+      try {
+        txn.rollback();
+      } catch (Exception ee) {
+        e.addSuppressed(ee);
+      }
+      throw e;
+    }
+    checkNoStatusOnThread();
+  }
+
+  private static class TestTransactionListener
+    extends TransactionListenerAdapter {
+
+    private final String name;
+    private final StringBuffer buffer;
+
+    public TestTransactionListener(String name, StringBuffer buffer) {
+      Objects.requireNonNull(name);
+      Objects.requireNonNull(buffer);
+      this.name = name;
+      this.buffer = buffer;
+    }
+
+    @Override
+    public void beforeCommit(boolean readOnly) {
+      buffer.append(name);
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj instanceof TestTransactionListener) {
+        return name.equals(((TestTransactionListener) obj).getName());
+      }
+      return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return name.hashCode();
+    }
+  }
+
+  /**
+   * Used to check that the transaction manager is being called correctly
+   *
+   * @author Derek Hulley
+   */
+  @SuppressWarnings("serial")
+  private static class DummyTransactionManager
+    extends AbstractPlatformTransactionManager {
+
+    private int status = Status.STATUS_NO_TRANSACTION;
+    private Object txn = new Object();
 
     /**
-     * Test for leaked transactions (no guarantee it will succeed due to reliance
-     * on garbage collector), so disabled by default.
-     * 
-     * Also, if it succeeds, transaction call stack tracing will be enabled
-     * potentially hitting the performance of all subsequent tests.
-     * 
-     * @throws Exception
+     * @return Returns one of the {@link Status Status.STATUS_XXX} constants
      */
-    public void xtestLeakedTransactionLogging() throws Exception
-    {
-        assertFalse(SpringAwareUserTransaction.isCallStackTraced());
-        
-        TrxThread t1 = new TrxThread();
-        t1.start();
-        System.gc();
-        Thread.sleep(1000);
+    public int getStatus() {
+      return status;
+    }
 
-        TrxThread t2 = new TrxThread();
-        t2.start();
-        System.gc();
-        Thread.sleep(1000);
-        
-        assertTrue(SpringAwareUserTransaction.isCallStackTraced());
-        
-        TrxThread t3 = new TrxThread();
-        t3.start();
-        System.gc();
-        Thread.sleep(3000);
-        System.gc();
-        Thread.sleep(3000);
+    protected void doBegin(Object arg0, TransactionDefinition arg1) {
+      status = Status.STATUS_ACTIVE;
     }
-    
-    private class TrxThread extends Thread
-    {
-        public void run()
-        {
-            try
-            {
-                getTrx();
-            }
-            catch (Exception e) {}
-        }
-        
-        public void getTrx() throws Exception
-        {
-            UserTransaction txn = getTxn();
-            txn.begin();
-            txn = null;
-        }
+
+    protected void doCommit(DefaultTransactionStatus arg0) {
+      status = Status.STATUS_COMMITTED;
     }
-    
-    public void testConnectionPoolException() throws Exception
-    {
-        testNoTxnStatus();
-        txn = getFailingTxn();
-        try
-        {
-            txn.begin();
-            fail("ConnectionPoolException should be thrown.");
-        }
-        catch (ConnectionPoolException cpe)
-        {
-            // Expected fail
-        }
+
+    protected Object doGetTransaction() {
+      return txn;
     }
-    
-    private UserTransaction getFailingTxn()
-    {
-        return new SpringAwareUserTransaction(
-                failingTransactionManager,
-                false,
-                TransactionDefinition.ISOLATION_DEFAULT,
-                TransactionDefinition.PROPAGATION_REQUIRED,
-                TransactionDefinition.TIMEOUT_DEFAULT);
+
+    protected void doRollback(DefaultTransactionStatus arg0) {
+      status = Status.STATUS_ROLLEDBACK;
     }
-    
-    public void testTransactionListenerOrder() throws Throwable
-    {
-        testNoTxnStatus();
-        try
-        {
-            txn.begin();
-            StringBuffer buffer = new StringBuffer();
-            TransactionSupportUtil.bindListener(new TestTransactionListener("5x", buffer), 5);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("0a", buffer), 0);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("0e", buffer), 0);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("0d", buffer), 0);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("0b", buffer), 0);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("0c", buffer), 0);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("4x", buffer), 4);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("1x", buffer), -1);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("3a", buffer), 3);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("3e", buffer), 3);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("3d", buffer), 3);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("3b", buffer), 3);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("3c", buffer), 3);
-            TransactionSupportUtil.bindListener(new TestTransactionListener("2x", buffer), -2);
-            txn.commit();
-            assertEquals("0a0e0d0b0c2x1x3a3e3d3b3c4x5x", buffer.toString());
-        }
-        catch (Exception e)
-        {
-            try
-            {
-                txn.rollback();
-            }
-            catch (Exception ee)
-            {
-                e.addSuppressed(ee);
-            }
-            throw e;
-        }
-        checkNoStatusOnThread();
-    }
-    
-    private static class TestTransactionListener extends TransactionListenerAdapter
-    {
-        private final String name;
-        private final StringBuffer buffer;
-        
-        public TestTransactionListener(String name, StringBuffer buffer)
-        {
-            Objects.requireNonNull(name);
-            Objects.requireNonNull(buffer);
-            this.name = name;
-            this.buffer = buffer;
-        }
-        
-        @Override
-        public void beforeCommit(boolean readOnly)
-        {
-            buffer.append(name);
-        }
-        
-        public String getName()
-        {
-            return name;
-        }
-        
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (obj instanceof TestTransactionListener)
-            {
-                return name.equals(((TestTransactionListener) obj).getName());
-            }
-            return false;
-        }
-        
-        @Override
-        public int hashCode()
-        {
-            return name.hashCode();
-        }
-    }
-    
+  }
+
+  /**
+   * Throws {@link NoSuchElementException} on begin()
+   *
+   * @author alex.mukha
+   */
+  private static class FailingTransactionManager
+    extends AbstractPlatformTransactionManager {
+
+    private static final long serialVersionUID = 1L;
+    private int status = Status.STATUS_NO_TRANSACTION;
+    private Object txn = new Object();
+
     /**
-     * Used to check that the transaction manager is being called correctly
-     * 
-     * @author Derek Hulley
+     * @return Returns one of the {@link Status Status.STATUS_XXX} constants
      */
-    @SuppressWarnings("serial")
-    private static class DummyTransactionManager extends AbstractPlatformTransactionManager
-    {
-        private int status = Status.STATUS_NO_TRANSACTION;
-        private Object txn = new Object();
-        
-        /**
-         * @return Returns one of the {@link Status Status.STATUS_XXX} constants
-         */
-        public int getStatus()
-        {
-            return status;
-        }
-
-        protected void doBegin(Object arg0, TransactionDefinition arg1)
-        {
-            status = Status.STATUS_ACTIVE;
-        }
-
-        protected void doCommit(DefaultTransactionStatus arg0)
-        {
-            status = Status.STATUS_COMMITTED;
-        }
-
-        protected Object doGetTransaction()
-        {
-            return txn;
-        }
-
-        protected void doRollback(DefaultTransactionStatus arg0)
-        {
-            status = Status.STATUS_ROLLEDBACK;
-        }
+    @SuppressWarnings("unused")
+    public int getStatus() {
+      return status;
     }
-    
-    /**
-     * Throws {@link NoSuchElementException} on begin()
-     * 
-     * @author alex.mukha
-     */
-    private static class FailingTransactionManager extends AbstractPlatformTransactionManager
-    {
-        private static final long serialVersionUID = 1L;
-        private int status = Status.STATUS_NO_TRANSACTION;
-        private Object txn = new Object();
-        
-        /**
-         * @return Returns one of the {@link Status Status.STATUS_XXX} constants
-         */
-        @SuppressWarnings("unused")
-        public int getStatus()
-        {
-            return status;
-        }
 
-        protected void doBegin(Object arg0, TransactionDefinition arg1)
-        {
-            throw new CannotCreateTransactionException("Test exception.");
-        }
-
-        protected void doCommit(DefaultTransactionStatus arg0)
-        {
-            status = Status.STATUS_COMMITTED;
-        }
-
-        protected Object doGetTransaction()
-        {
-            return txn;
-        }
-
-        protected void doRollback(DefaultTransactionStatus arg0)
-        {
-            status = Status.STATUS_ROLLEDBACK;
-        }
+    protected void doBegin(Object arg0, TransactionDefinition arg1) {
+      throw new CannotCreateTransactionException("Test exception.");
     }
+
+    protected void doCommit(DefaultTransactionStatus arg0) {
+      status = Status.STATUS_COMMITTED;
+    }
+
+    protected Object doGetTransaction() {
+      return txn;
+    }
+
+    protected void doRollback(DefaultTransactionStatus arg0) {
+      status = Status.STATUS_ROLLEDBACK;
+    }
+  }
 }

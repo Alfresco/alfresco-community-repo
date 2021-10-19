@@ -35,6 +35,4 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.6
  */
 @AlfrescoPublicApi
-public interface QueryField
-{
-}
+public interface QueryField {}

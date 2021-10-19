@@ -37,75 +37,79 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 /**
  * Test class for MNT 19114, wiki page can not be created under RM site
  */
-public class MNT19114Test extends BaseRMTestCase
-{
-    public static final String PARENT_NODE = "RMSite";
-    public static final String DOCUMENT_LIBRARY_FOLDER_TYPE = "documentLibrary";
-    public static final String SURF_CONFIG_FOLDER_TYPE = "surfConfigFolder";
-    public static final String WIKI_PAGE_FOLDER_TYPE = "wikiPage";
+public class MNT19114Test extends BaseRMTestCase {
 
-    @Override
-    protected boolean isRMSiteTest()
-    {
-        return true;
-    }
+  public static final String PARENT_NODE = "RMSite";
+  public static final String DOCUMENT_LIBRARY_FOLDER_TYPE = "documentLibrary";
+  public static final String SURF_CONFIG_FOLDER_TYPE = "surfConfigFolder";
+  public static final String WIKI_PAGE_FOLDER_TYPE = "wikiPage";
 
-    /**
-     * Given a RM site and two folder type children
-     * When creating a third folder type child as a Wiki page
-     * The page will be created and no exception will be thrown.
-     */
-    public void testCreateWikiPageInRmSite() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            NodeRef wikiPage;
+  @Override
+  protected boolean isRMSiteTest() {
+    return true;
+  }
 
-            public void given()
-            {
-                // Creating a Records Management site
-                siteService.createSite("rmSite", PARENT_NODE, generate(), generate(), SiteVisibility.PUBLIC, TYPE_RM_SITE);
+  /**
+   * Given a RM site and two folder type children
+   * When creating a third folder type child as a Wiki page
+   * The page will be created and no exception will be thrown.
+   */
+  public void testCreateWikiPageInRmSite() throws Exception {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        NodeRef wikiPage;
 
-                // Adding two immediate folder type children
-                getSiteContainer(
-                        PARENT_NODE,
-                        DOCUMENT_LIBRARY_FOLDER_TYPE,
-                        true,
-                        siteService,
-                        transactionService,
-                        taggingService);
-                getSiteContainer(
-                        PARENT_NODE,
-                        SURF_CONFIG_FOLDER_TYPE,
-                        true,
-                        siteService,
-                        transactionService,
-                        taggingService);
-            }
+        public void given() {
+          // Creating a Records Management site
+          siteService.createSite(
+            "rmSite",
+            PARENT_NODE,
+            generate(),
+            generate(),
+            SiteVisibility.PUBLIC,
+            TYPE_RM_SITE
+          );
 
-            public void when() throws Exception
-            {
+          // Adding two immediate folder type children
+          getSiteContainer(
+            PARENT_NODE,
+            DOCUMENT_LIBRARY_FOLDER_TYPE,
+            true,
+            siteService,
+            transactionService,
+            taggingService
+          );
+          getSiteContainer(
+            PARENT_NODE,
+            SURF_CONFIG_FOLDER_TYPE,
+            true,
+            siteService,
+            transactionService,
+            taggingService
+          );
+        }
 
-                wikiPage = getSiteContainer(
-                        PARENT_NODE,
-                        WIKI_PAGE_FOLDER_TYPE,
-                        true,
-                        siteService,
-                        transactionService,
-                        taggingService);
+        public void when() throws Exception {
+          wikiPage =
+            getSiteContainer(
+              PARENT_NODE,
+              WIKI_PAGE_FOLDER_TYPE,
+              true,
+              siteService,
+              transactionService,
+              taggingService
+            );
+        }
 
-            }
+        public void then() throws Exception {
+          // Check if the new folder type wiki page has been created
+          assertEquals(true, nodeService.exists(wikiPage));
+        }
 
-            public void then() throws Exception
-            {
-                // Check if the new folder type wiki page has been created
-                assertEquals(true, nodeService.exists(wikiPage));
-            }
-
-            public void after()
-            {
-                siteService.deleteSite(PARENT_NODE);
-            }
-        });
-    }
+        public void after() {
+          siteService.deleteSite(PARENT_NODE);
+        }
+      }
+    );
+  }
 }

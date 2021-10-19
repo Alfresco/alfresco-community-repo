@@ -25,104 +25,121 @@
  */
 package org.alfresco.service.cmr.search;
 
-import java.util.List;
-
-import org.alfresco.api.AlfrescoPublicApi;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Parameters used for search hightlighting that apply to all fields
  */
 
 @AlfrescoPublicApi
-public class GeneralHighlightParameters extends HighlightParameters
-{
-    private final Integer maxAnalyzedChars;
-    private final Boolean usePhraseHighlighter;
+public class GeneralHighlightParameters extends HighlightParameters {
 
-    private final List<FieldHighlightParameters> fields;
+  private final Integer maxAnalyzedChars;
+  private final Boolean usePhraseHighlighter;
 
-    @JsonCreator
-    public GeneralHighlightParameters(
-                @JsonProperty("snippetCount") Integer snippetCount,
-                @JsonProperty("fragmentSize") Integer fragmentSize,
-                @JsonProperty("mergeContiguous") Boolean mergeContiguous,
-                @JsonProperty("prefix") String prefix,
-                @JsonProperty("postfix") String postfix,
-                @JsonProperty("maxAnalyzedChars") Integer maxAnalyzedChars,
-                @JsonProperty("usePhraseHighlighter") Boolean usePhraseHighlighter,
-                @JsonProperty("fields") List<FieldHighlightParameters> fields)
-    {
-        super(snippetCount, fragmentSize, mergeContiguous, prefix, postfix);
-        this.maxAnalyzedChars = maxAnalyzedChars;
-        this.usePhraseHighlighter = usePhraseHighlighter;
-        this.fields = fields;
-    }
+  private final List<FieldHighlightParameters> fields;
 
-    @Override
-    public String toString()
-    {
-        return "GeneralHighlightParameters{" +
-                    "snippetCount=" + snippetCount +
-                    ", fragmentSize=" + fragmentSize +
-                    ", mergeContiguous=" + mergeContiguous +
-                    ", prefix='" + prefix + '\'' +
-                    ", postfix='" + postfix + '\'' +
-                    ", maxAnalyzedChars=" + maxAnalyzedChars +
-                    ", usePhraseHighlighter=" + usePhraseHighlighter +
-                    ", fields=" + fields +
-                    '}';
-    }
+  @JsonCreator
+  public GeneralHighlightParameters(
+    @JsonProperty("snippetCount") Integer snippetCount,
+    @JsonProperty("fragmentSize") Integer fragmentSize,
+    @JsonProperty("mergeContiguous") Boolean mergeContiguous,
+    @JsonProperty("prefix") String prefix,
+    @JsonProperty("postfix") String postfix,
+    @JsonProperty("maxAnalyzedChars") Integer maxAnalyzedChars,
+    @JsonProperty("usePhraseHighlighter") Boolean usePhraseHighlighter,
+    @JsonProperty("fields") List<FieldHighlightParameters> fields
+  ) {
+    super(snippetCount, fragmentSize, mergeContiguous, prefix, postfix);
+    this.maxAnalyzedChars = maxAnalyzedChars;
+    this.usePhraseHighlighter = usePhraseHighlighter;
+    this.fields = fields;
+  }
 
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
-            return false;
-        if (!super.equals(o))
-            return false;
+  @Override
+  public String toString() {
+    return (
+      "GeneralHighlightParameters{" +
+      "snippetCount=" +
+      snippetCount +
+      ", fragmentSize=" +
+      fragmentSize +
+      ", mergeContiguous=" +
+      mergeContiguous +
+      ", prefix='" +
+      prefix +
+      '\'' +
+      ", postfix='" +
+      postfix +
+      '\'' +
+      ", maxAnalyzedChars=" +
+      maxAnalyzedChars +
+      ", usePhraseHighlighter=" +
+      usePhraseHighlighter +
+      ", fields=" +
+      fields +
+      '}'
+    );
+  }
 
-        GeneralHighlightParameters that = (GeneralHighlightParameters) o;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    if (!super.equals(o)) return false;
 
-        if (getMaxAnalyzedChars() != null ? !getMaxAnalyzedChars().equals(that.getMaxAnalyzedChars()) : that.getMaxAnalyzedChars() != null)
-            return false;
-        if (getUsePhraseHighlighter() != null ?
-                    !getUsePhraseHighlighter().equals(that.getUsePhraseHighlighter()) :
-                    that.getUsePhraseHighlighter() != null)
-            return false;
-        if (getFields() != null ? !getFields().equals(that.getFields()) : that.getFields() != null)
-            return false;
+    GeneralHighlightParameters that = (GeneralHighlightParameters) o;
 
-        return true;
-    }
+    if (
+      getMaxAnalyzedChars() != null
+        ? !getMaxAnalyzedChars().equals(that.getMaxAnalyzedChars())
+        : that.getMaxAnalyzedChars() != null
+    ) return false;
+    if (
+      getUsePhraseHighlighter() != null
+        ? !getUsePhraseHighlighter().equals(that.getUsePhraseHighlighter())
+        : that.getUsePhraseHighlighter() != null
+    ) return false;
+    if (
+      getFields() != null
+        ? !getFields().equals(that.getFields())
+        : that.getFields() != null
+    ) return false;
 
-    @Override
-    public int hashCode()
-    {
-        int result = super.hashCode();
-        result = 31 * result + (getMaxAnalyzedChars() != null ? getMaxAnalyzedChars().hashCode() : 0);
-        result = 31 * result + (getUsePhraseHighlighter() != null ? getUsePhraseHighlighter().hashCode() : 0);
-        result = 31 * result + (getFields() != null ? getFields().hashCode() : 0);
-        return result;
-    }
+    return true;
+  }
 
-    public Integer getMaxAnalyzedChars()
-    {
-        return maxAnalyzedChars;
-    }
+  @Override
+  public int hashCode() {
+    int result = super.hashCode();
+    result =
+      31 *
+      result +
+      (getMaxAnalyzedChars() != null ? getMaxAnalyzedChars().hashCode() : 0);
+    result =
+      31 *
+      result +
+      (
+        getUsePhraseHighlighter() != null
+          ? getUsePhraseHighlighter().hashCode()
+          : 0
+      );
+    result = 31 * result + (getFields() != null ? getFields().hashCode() : 0);
+    return result;
+  }
 
-    public Boolean getUsePhraseHighlighter()
-    {
-        return usePhraseHighlighter;
-    }
+  public Integer getMaxAnalyzedChars() {
+    return maxAnalyzedChars;
+  }
 
-    public List<FieldHighlightParameters> getFields()
-    {
-        return fields;
-    }
+  public Boolean getUsePhraseHighlighter() {
+    return usePhraseHighlighter;
+  }
 
+  public List<FieldHighlightParameters> getFields() {
+    return fields;
+  }
 }

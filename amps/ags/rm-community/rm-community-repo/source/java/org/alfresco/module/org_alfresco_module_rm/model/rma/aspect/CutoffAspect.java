@@ -42,24 +42,19 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:cutOff"
-)
-public class CutoffAspect extends BaseBehaviourBean
-{
-    /**
-     * Copy callback.
-     * 
-     * Cutoff aspect should not be copied.
-     */
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
-    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
-    {
-        return new DoNothingCopyBehaviourCallback();
-    }
+@BehaviourBean(defaultType = "rma:cutOff")
+public class CutoffAspect extends BaseBehaviourBean {
+
+  /**
+   * Copy callback.
+   *
+   * Cutoff aspect should not be copied.
+   */
+  @Behaviour(kind = BehaviourKind.CLASS, policy = "alf:getCopyCallback")
+  public CopyBehaviourCallback getCopyCallback(
+    QName classRef,
+    CopyDetails copyDetails
+  ) {
+    return new DoNothingCopyBehaviourCallback();
+  }
 }

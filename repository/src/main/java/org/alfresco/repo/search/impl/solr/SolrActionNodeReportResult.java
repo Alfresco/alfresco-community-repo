@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.repo.search.impl.AbstractJSONAPIResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,62 +42,47 @@ import org.slf4j.LoggerFactory;
  * @author aborroy
  * @since 6.2
  */
-public class SolrActionNodeReportResult extends AbstractJSONAPIResult
-{
-    private static final Logger LOGGER = LoggerFactory.getLogger(SolrActionNodeReportResult.class);
-    
-    /**
-     * Parses the JSON to set this Java Object values
-     * @param json JSONObject returned by SOLR API
-     */
-    public SolrActionNodeReportResult(JSONObject json)
-    {
-        try 
-        {
-            processJson(json);
-        }
-        catch (NullPointerException | JSONException e)
-        {
-           LOGGER.info(e.getMessage());
-        }
+public class SolrActionNodeReportResult extends AbstractJSONAPIResult {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    SolrActionNodeReportResult.class
+  );
+
+  /**
+   * Parses the JSON to set this Java Object values
+   * @param json JSONObject returned by SOLR API
+   */
+  public SolrActionNodeReportResult(JSONObject json) {
+    try {
+      processJson(json);
+    } catch (NullPointerException | JSONException e) {
+      LOGGER.info(e.getMessage());
     }
-    
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.search.impl.lucene.AbstractSolrActionAPIResult#processCoresInfoJson(org.json.JSONObject)
-     */
-    @Override
-    protected void processCoresInfoJson(JSONObject json) throws JSONException
-    {
+  }
 
-        List<String> cores = new ArrayList<>();
-        Map<String, Map<String, Object>> coresInfo = new HashMap<>();
-        
-        if (json.has("report")) 
-        {
-        
-            if (json.has("report")) 
-            {
-            
-                JSONObject coreList = json.getJSONObject("report");
-                JSONArray coreNameList = coreList.names();
-                for(int i = 0; i < coreNameList.length(); i++)
-                {
-                    
-                    String coreName = String.valueOf(coreNameList.get(i));
-                    JSONObject core = coreList.getJSONObject(coreName);
-                    cores.add(coreName);
-                    
-                    coresInfo.put(coreName, getPropertyValueMap(core));
-                    
-                }
+  /* (non-Javadoc)
+   * @see org.alfresco.repo.search.impl.lucene.AbstractSolrActionAPIResult#processCoresInfoJson(org.json.JSONObject)
+   */
+  @Override
+  protected void processCoresInfoJson(JSONObject json) throws JSONException {
+    List<String> cores = new ArrayList<>();
+    Map<String, Map<String, Object>> coresInfo = new HashMap<>();
 
-            }
+    if (json.has("report")) {
+      if (json.has("report")) {
+        JSONObject coreList = json.getJSONObject("report");
+        JSONArray coreNameList = coreList.names();
+        for (int i = 0; i < coreNameList.length(); i++) {
+          String coreName = String.valueOf(coreNameList.get(i));
+          JSONObject core = coreList.getJSONObject(coreName);
+          cores.add(coreName);
 
+          coresInfo.put(coreName, getPropertyValueMap(core));
         }
-        
-        this.cores = cores;
-        this.coresInfo = coresInfo;
-        
+      }
     }
-    
+
+    this.cores = cores;
+    this.coresInfo = coresInfo;
+  }
 }

@@ -33,79 +33,77 @@ import java.util.Objects;
  *
  * @author adavis
  */
-public class RenditionDefinition2Impl implements RenditionDefinition2
-{
-    private final String renditionName;
-    private final String targetMimetype;
-    private final Map<String, String> transformOptions;
-    private final boolean dynamicallyLoaded;
+public class RenditionDefinition2Impl implements RenditionDefinition2 {
 
-    /**
-     * Constructor used by statically (e.g. XML Spring beans) defined renditions.
-     */
-    public RenditionDefinition2Impl(String renditionName, String targetMimetype, Map<String, String> transformOptions,
-                                    RenditionDefinitionRegistry2Impl registry)
-    {
-        this(renditionName, targetMimetype, transformOptions, false, registry);
-    }
+  private final String renditionName;
+  private final String targetMimetype;
+  private final Map<String, String> transformOptions;
+  private final boolean dynamicallyLoaded;
 
-    /**
-     * Constructor used by dynamically defined renditions that may be changed without restarting.
-     */
-    public RenditionDefinition2Impl(String renditionName, String targetMimetype, Map<String, String> transformOptions,
-                                    boolean dynamicallyLoaded, RenditionDefinitionRegistry2Impl registry)
-    {
-        this.renditionName = renditionName;
-        this.targetMimetype = targetMimetype;
-        this.transformOptions = transformOptions;
-        this.dynamicallyLoaded = dynamicallyLoaded;
-        if (registry != null)
-        {
-            registry.register(this);
-        }
-    }
+  /**
+   * Constructor used by statically (e.g. XML Spring beans) defined renditions.
+   */
+  public RenditionDefinition2Impl(
+    String renditionName,
+    String targetMimetype,
+    Map<String, String> transformOptions,
+    RenditionDefinitionRegistry2Impl registry
+  ) {
+    this(renditionName, targetMimetype, transformOptions, false, registry);
+  }
 
-    public boolean isDynamicallyLoaded()
-    {
-        return dynamicallyLoaded;
+  /**
+   * Constructor used by dynamically defined renditions that may be changed without restarting.
+   */
+  public RenditionDefinition2Impl(
+    String renditionName,
+    String targetMimetype,
+    Map<String, String> transformOptions,
+    boolean dynamicallyLoaded,
+    RenditionDefinitionRegistry2Impl registry
+  ) {
+    this.renditionName = renditionName;
+    this.targetMimetype = targetMimetype;
+    this.transformOptions = transformOptions;
+    this.dynamicallyLoaded = dynamicallyLoaded;
+    if (registry != null) {
+      registry.register(this);
     }
+  }
 
-    @Override
-    public String getRenditionName()
-    {
-        return renditionName;
-    }
+  public boolean isDynamicallyLoaded() {
+    return dynamicallyLoaded;
+  }
 
-    @Override
-    public String getTargetMimetype()
-    {
-        return targetMimetype;
-    }
+  @Override
+  public String getRenditionName() {
+    return renditionName;
+  }
 
-    @Override
-    public Map<String, String> getTransformOptions()
-    {
-        return transformOptions;
-    }
+  @Override
+  public String getTargetMimetype() {
+    return targetMimetype;
+  }
 
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
-            return true;
-        }
-        if (!(o instanceof RenditionDefinition2Impl))
-        {
-            return false;
-        }
-        RenditionDefinition2Impl that = (RenditionDefinition2Impl) o;
-        return Objects.equals(renditionName, that.renditionName);
-    }
+  @Override
+  public Map<String, String> getTransformOptions() {
+    return transformOptions;
+  }
 
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(renditionName);
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (!(o instanceof RenditionDefinition2Impl)) {
+      return false;
+    }
+    RenditionDefinition2Impl that = (RenditionDefinition2Impl) o;
+    return Objects.equals(renditionName, that.renditionName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(renditionName);
+  }
 }

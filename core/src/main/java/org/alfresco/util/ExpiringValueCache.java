@@ -24,70 +24,63 @@ import java.io.Serializable;
  * Simple cache of a single Object value.
  * <p>
  * The object placed in the cache will automatically be discarded after a timeout value.
- * 
+ *
  * @author Kevin Roast
  */
-public class ExpiringValueCache<T> implements Serializable
-{
-    private static final long serialVersionUID = 1036233352030777619L;
-    
-    // default is to discard cached object after 1 minute
-    private final static long TIMEOUT_DEFAULT = 1000L*60L;
-    
-    private long timeout = TIMEOUT_DEFAULT;
-    private long snapshot = 0;
-    private T value;
-    
-    /**
-     * Default constructor.
-     * 
-     * Uses the default timeout of 1 minute.
-     */
-    public ExpiringValueCache()
-    {
+public class ExpiringValueCache<T> implements Serializable {
+
+  private static final long serialVersionUID = 1036233352030777619L;
+
+  // default is to discard cached object after 1 minute
+  private static final long TIMEOUT_DEFAULT = 1000L * 60L;
+
+  private long timeout = TIMEOUT_DEFAULT;
+  private long snapshot = 0;
+  private T value;
+
+  /**
+   * Default constructor.
+   *
+   * Uses the default timeout of 1 minute.
+   */
+  public ExpiringValueCache() {}
+
+  /**
+   * Constructor
+   *
+   * @param timeout   Timeout in milliseconds before cached value is discarded
+   */
+  public ExpiringValueCache(long timeout) {
+    this.timeout = timeout;
+  }
+
+  /**
+   * Put a value into the cache. The item will be return from the associated get() method
+   * until the timeout expires then null will be returned.
+   *
+   * @param value     The object to store in the cache
+   */
+  public void put(T value) {
+    this.value = value;
+    this.snapshot = System.currentTimeMillis();
+  }
+
+  /**
+   * Get the cached object. The set item will be returned until it expires, then null will be returned.
+   *
+   * @return cached object or null if not set or expired.
+   */
+  public T get() {
+    if (snapshot + timeout < System.currentTimeMillis()) {
+      this.value = null;
     }
-    
-    /**
-     * Constructor
-     * 
-     * @param timeout   Timeout in milliseconds before cached value is discarded
-     */
-    public ExpiringValueCache(long timeout)
-    {
-        this.timeout = timeout; 
-    }
-    
-    /**
-     * Put a value into the cache. The item will be return from the associated get() method
-     * until the timeout expires then null will be returned.
-     * 
-     * @param value     The object to store in the cache
-     */
-    public void put(T value)
-    {
-        this.value = value;
-        this.snapshot = System.currentTimeMillis();
-    }
-    
-    /**
-     * Get the cached object. The set item will be returned until it expires, then null will be returned.
-     *  
-     * @return cached object or null if not set or expired.
-     */
-    public T get()
-    {
-        if (snapshot + timeout < System.currentTimeMillis())
-        {
-            this.value = null;
-        }
-        return this.value;
-    }
-    
-    /**
-     * Clear the cache value
-     */
-    public void clear()
-    {
-        this.value = null;
-    }
+    return this.value;
+  }
+
+  /**
+   * Clear the cache value
+   */
+  public void clear() {
+    this.value = null;
+  }
 }

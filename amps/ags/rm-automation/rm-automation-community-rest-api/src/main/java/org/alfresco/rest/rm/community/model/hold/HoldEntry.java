@@ -28,7 +28,6 @@ package org.alfresco.rest.rm.community.model.hold;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,12 +44,12 @@ import org.alfresco.utility.model.TestModel;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonIgnoreProperties (ignoreUnknown = true)
-public class HoldEntry extends TestModel
-{
-    @JsonProperty (required = true)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class HoldEntry extends TestModel {
+
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String nodeRef;
 }

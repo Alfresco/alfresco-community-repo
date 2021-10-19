@@ -27,12 +27,25 @@
 package org.alfresco.rest.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.alfresco.rest.api.ClassDefinitionMapper;
-import org.alfresco.rest.api.model.AssociationSource;
-import org.alfresco.rest.api.model.Association;
 import org.alfresco.rest.api.model.AbstractClass;
-import org.alfresco.rest.api.model.PropertyDefinition;
+import org.alfresco.rest.api.model.Association;
+import org.alfresco.rest.api.model.AssociationSource;
 import org.alfresco.rest.api.model.ClassDefinition;
+import org.alfresco.rest.api.model.PropertyDefinition;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -47,379 +60,383 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
-import java.util.Collection;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
 public class AbstractClassImpl<T extends AbstractClass> {
-    static String PARAM_MODEL_IDS = "modelId";
-    static String PARAM_PARENT_IDS = "parentId";
-    static String PARAM_NAMESPACE_URI = "namespaceUri";
-    static String PARAM_INCLUDE_SUBASPECTS = "INCLUDESUBASPECTS";
-    static String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
-    static String PARAM_INCLUDE_PROPERTIES = "properties";
-    static String PARAM_INCLUDE_MANDATORY_ASPECTS = "mandatoryAspects";
-    static String PARAM_INCLUDE_ASSOCIATIONS = "associations";
-    static List<String> ALL_PROPERTIES = ImmutableList.of(PARAM_INCLUDE_PROPERTIES, PARAM_INCLUDE_MANDATORY_ASPECTS, PARAM_INCLUDE_ASSOCIATIONS);
 
-    private DictionaryService dictionaryService;
-    private NamespacePrefixResolver namespaceService;
-    private ClassDefinitionMapper classDefinitionMapper;
+  static String PARAM_MODEL_IDS = "modelId";
+  static String PARAM_PARENT_IDS = "parentId";
+  static String PARAM_NAMESPACE_URI = "namespaceUri";
+  static String PARAM_INCLUDE_SUBASPECTS = "INCLUDESUBASPECTS";
+  static String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
+  static String PARAM_INCLUDE_PROPERTIES = "properties";
+  static String PARAM_INCLUDE_MANDATORY_ASPECTS = "mandatoryAspects";
+  static String PARAM_INCLUDE_ASSOCIATIONS = "associations";
+  static List<String> ALL_PROPERTIES = ImmutableList.of(
+    PARAM_INCLUDE_PROPERTIES,
+    PARAM_INCLUDE_MANDATORY_ASPECTS,
+    PARAM_INCLUDE_ASSOCIATIONS
+  );
 
-    AbstractClassImpl(DictionaryService dictionaryService, NamespacePrefixResolver namespaceService, ClassDefinitionMapper classDefinitionMapper)
-    {
-        this.dictionaryService = dictionaryService;
-        this.namespaceService = namespaceService;
-        this.classDefinitionMapper = classDefinitionMapper;
+  private DictionaryService dictionaryService;
+  private NamespacePrefixResolver namespaceService;
+  private ClassDefinitionMapper classDefinitionMapper;
+
+  AbstractClassImpl(
+    DictionaryService dictionaryService,
+    NamespacePrefixResolver namespaceService,
+    ClassDefinitionMapper classDefinitionMapper
+  ) {
+    this.dictionaryService = dictionaryService;
+    this.namespaceService = namespaceService;
+    this.classDefinitionMapper = classDefinitionMapper;
+  }
+
+  public CollectionWithPagingInfo<T> createPagedResult(
+    List<T> list,
+    Paging paging
+  ) {
+    int skipCount = paging.getSkipCount();
+    int maxItems = paging.getMaxItems();
+    int totalItems = list.size();
+
+    Collections.sort(list);
+
+    if (skipCount >= totalItems) {
+      List<T> empty = Collections.emptyList();
+      return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+    } else {
+      int end = Math.min(skipCount + maxItems, totalItems);
+      boolean hasMoreItems = totalItems > end;
+      list = list.subList(skipCount, end);
+      return CollectionWithPagingInfo.asPaged(
+        paging,
+        list,
+        hasMoreItems,
+        totalItems
+      );
+    }
+  }
+
+  public boolean filterByNamespace(ModelApiFilter query, QName qName) {
+    //System aspect/type is not allowed
+    if (qName.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI)) {
+      return false;
+    }
+    if (query != null && query.getMatchedPrefix() != null) {
+      return Pattern.matches(query.getMatchedPrefix(), qName.getNamespaceURI());
+    }
+    if (query != null && query.getNotMatchedPrefix() != null) {
+      return !Pattern.matches(
+        query.getNotMatchedPrefix(),
+        qName.getNamespaceURI()
+      );
+    }
+    return true;
+  }
+
+  public ModelApiFilter getQuery(Query queryParameters) {
+    if (queryParameters != null) {
+      ClassQueryWalker propertyWalker = new ClassQueryWalker();
+      QueryHelper.walk(queryParameters, propertyWalker);
+
+      return ModelApiFilter
+        .builder()
+        .withModelId(propertyWalker.getModelIds())
+        .withParentIds(propertyWalker.getParentIds())
+        .withMatchPrefix(propertyWalker.getMatchedPrefix())
+        .withNotMatchPrefix(propertyWalker.getNotMatchedPrefix())
+        .build();
+    }
+    return null;
+  }
+
+  void validateListParam(Set<String> listParam, String paramName) {
+    if (listParam.isEmpty()) {
+      throw new IllegalArgumentException(
+        StringUtils.capitalize(paramName) + "s filter list cannot be empty."
+      );
     }
 
-    public CollectionWithPagingInfo<T> createPagedResult(List<T> list, Paging paging)
-    {
-        int skipCount = paging.getSkipCount();
-        int maxItems = paging.getMaxItems();
-        int totalItems = list.size();
+    listParam
+      .stream()
+      .filter(StringUtils::isBlank)
+      .findAny()
+      .ifPresent(qName -> {
+        throw new IllegalArgumentException(
+          StringUtils.capitalize(paramName) + " cannot be empty (i.e. '')"
+        );
+      });
+  }
 
-        Collections.sort(list);
+  protected Set<Pair<QName, Boolean>> parseModelIds(
+    Set<String> modelIds,
+    String apiSuffix
+  ) {
+    return modelIds
+      .stream()
+      .map(modelId -> {
+        QName qName = null;
+        boolean filterIncludeSubClass = false;
 
-        if (skipCount >= totalItems)
-        {
-            List<T> empty = Collections.emptyList();
-            return CollectionWithPagingInfo.asPaged(paging, empty, false, totalItems);
+        int idx = modelId.lastIndexOf(' ');
+        if (idx > 0) {
+          String suffix = modelId.substring(idx);
+          if (suffix.equalsIgnoreCase(" " + apiSuffix)) {
+            filterIncludeSubClass = true;
+            modelId = modelId.substring(0, idx);
+          }
         }
-        else
-        {
-            int end = Math.min(skipCount + maxItems, totalItems);
-            boolean hasMoreItems = totalItems > end;
-            list = list.subList(skipCount, end);
-            return CollectionWithPagingInfo.asPaged(paging, list, hasMoreItems, totalItems);
+
+        try {
+          qName = QName.createQName(modelId, this.namespaceService);
+        } catch (Exception ex) {
+          throw new InvalidArgumentException(
+            modelId + " isn't a valid QName. " + ex.getMessage()
+          );
         }
+
+        if (qName == null) throw new InvalidArgumentException(
+          modelId + " isn't a valid QName. "
+        );
+
+        return new Pair<>(qName, filterIncludeSubClass);
+      })
+      .collect(Collectors.toSet());
+  }
+
+  public T constructFromFilters(
+    T abstractClass,
+    org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition,
+    List<String> includes
+  ) {
+    if (includes != null && includes.contains(PARAM_INCLUDE_PROPERTIES)) {
+      List<PropertyDefinition> properties = Collections.emptyList();
+      ClassDefinition _classDefinition =
+        this.classDefinitionMapper.fromDictionaryClassDefinition(
+            classDefinition,
+            dictionaryService
+          );
+      if (_classDefinition.getProperties() != null) {
+        properties = _classDefinition.getProperties();
+      }
+      abstractClass.setProperties(properties);
     }
 
-    public boolean filterByNamespace(ModelApiFilter query, QName qName)
-    {
-        //System aspect/type is not allowed
-        if (qName.getNamespaceURI().equals(NamespaceService.SYSTEM_MODEL_1_0_URI))
-        {
-            return false;
-        }
-        if (query != null && query.getMatchedPrefix() != null)
-        {
-            return Pattern.matches(query.getMatchedPrefix(), qName.getNamespaceURI());
-        }
-        if (query != null && query.getNotMatchedPrefix() != null)
-        {
-            return  !Pattern.matches(query.getNotMatchedPrefix(), qName.getNamespaceURI());
-        }
-        return  true;
+    if (includes != null && includes.contains(PARAM_INCLUDE_ASSOCIATIONS)) {
+      List<Association> associations = getAssociations(
+        classDefinition.getAssociations()
+      );
+      abstractClass.setAssociations(associations);
     }
 
-    public ModelApiFilter getQuery(Query queryParameters)
-    {
-        if (queryParameters != null)
-        {
-            ClassQueryWalker propertyWalker = new ClassQueryWalker();
-            QueryHelper.walk(queryParameters, propertyWalker);
-
-            return ModelApiFilter.builder()
-                    .withModelId(propertyWalker.getModelIds())
-                    .withParentIds(propertyWalker.getParentIds())
-                    .withMatchPrefix(propertyWalker.getMatchedPrefix())
-                    .withNotMatchPrefix(propertyWalker.getNotMatchedPrefix())
-                    .build();
-        }
-        return null;
+    if (
+      includes != null && includes.contains(PARAM_INCLUDE_MANDATORY_ASPECTS)
+    ) {
+      if (classDefinition.getDefaultAspectNames() != null) {
+        List<String> aspects = classDefinition
+          .getDefaultAspectNames()
+          .stream()
+          .map(QName::toPrefixString)
+          .collect(Collectors.toList());
+        abstractClass.setMandatoryAspects(aspects);
+      }
     }
 
-    void validateListParam(Set<String> listParam, String paramName)
-    {
-        if (listParam.isEmpty())
-        {
-            throw new IllegalArgumentException(StringUtils.capitalize(paramName) + "s filter list cannot be empty.");
-        }
+    abstractClass.setIsContainer(classDefinition.isContainer());
+    abstractClass.setIsArchive(classDefinition.getArchive());
+    abstractClass.setIncludedInSupertypeQuery(
+      classDefinition.getIncludedInSuperTypeQuery()
+    );
+    return abstractClass;
+  }
 
-        listParam.stream()
-                .filter(StringUtils::isBlank)
-                .findAny()
-                .ifPresent(qName -> {
-                    throw new IllegalArgumentException(StringUtils.capitalize(paramName) + " cannot be empty (i.e. '')");
-                });
+  List<Association> getAssociations(
+    Map<QName, AssociationDefinition> associationDefinitionMap
+  ) {
+    Collection<AssociationDefinition> associationDefinitions = associationDefinitionMap.values();
+
+    if (associationDefinitions.size() == 0) return Collections.emptyList();
+
+    List<Association> associations = new ArrayList<Association>();
+
+    for (AssociationDefinition definition : associationDefinitions) {
+      Association association = new Association();
+
+      association.setId(definition.getName().toPrefixString());
+      association.setTitle(definition.getTitle());
+      association.setDescription(definition.getDescription());
+      association.setIsChild(definition.isChild());
+      association.setIsProtected(definition.isProtected());
+
+      AssociationSource source = new AssociationSource();
+
+      String sourceRole = definition.getSourceRoleName() != null
+        ? definition.getSourceRoleName().toPrefixString()
+        : null;
+      source.setRole(sourceRole);
+
+      String sourceClass = definition.getSourceClass() != null
+        ? definition.getSourceClass().getName().toPrefixString()
+        : null;
+      source.setCls(sourceClass);
+
+      source.setIsMany(definition.isSourceMany());
+      source.setIsMandatory(definition.isSourceMandatory());
+
+      AssociationSource target = new AssociationSource();
+      String targetRole = definition.getTargetRoleName() != null
+        ? definition.getTargetRoleName().toPrefixString()
+        : null;
+      target.setRole(targetRole);
+
+      String targetClass = definition.getTargetClass() != null
+        ? definition.getTargetClass().getName().toPrefixString()
+        : null;
+      target.setCls(targetClass);
+
+      target.setIsMany(definition.isTargetMany());
+      target.setIsMandatory(definition.isTargetMandatory());
+      target.setIsMandatoryEnforced(definition.isTargetMandatoryEnforced());
+
+      association.setSource(source);
+      association.setTarget(target);
+      associations.add(association);
     }
 
+    return associations;
+  }
 
-    protected Set<Pair<QName,Boolean>> parseModelIds(Set<String> modelIds, String apiSuffix)
-    {
-        return modelIds.stream().map(modelId ->
-        {
-            QName qName = null;
-            boolean filterIncludeSubClass = false;
+  public static <T> Predicate<T> distinctByKey(
+    Function<? super T, ?> keyExtractor
+  ) {
+    Map<Object, Boolean> seen = new ConcurrentHashMap<>();
+    return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+  }
 
-            int idx = modelId.lastIndexOf(' ');
-            if (idx > 0)
-            {
-                String suffix = modelId.substring(idx);
-                if (suffix.equalsIgnoreCase(" " + apiSuffix))
-                {
-                    filterIncludeSubClass = true;
-                    modelId = modelId.substring(0, idx);
-                }
-            }
+  public static class ClassQueryWalker extends MapBasedQueryWalker {
 
-            try
-            {
-                qName = QName.createQName(modelId, this.namespaceService);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidArgumentException(modelId + " isn't a valid QName. " + ex.getMessage());
-            }
+    private Set<String> modelIds = null;
+    private Set<String> parentIds = null;
+    private String notMatchedPrefix = null;
+    private String matchedPrefix = null;
 
-            if (qName == null)
-                throw new InvalidArgumentException(modelId + " isn't a valid QName. ");
-
-            return new Pair<>(qName, filterIncludeSubClass);
-        }).collect(Collectors.toSet());
+    public ClassQueryWalker() {
+      super(
+        new HashSet<>(Arrays.asList(PARAM_MODEL_IDS, PARAM_PARENT_IDS)),
+        new HashSet<>(Collections.singleton(PARAM_NAMESPACE_URI))
+      );
     }
 
+    @Override
+    public void in(
+      String propertyName,
+      boolean negated,
+      String... propertyValues
+    ) {
+      if (negated) {
+        throw new InvalidArgumentException(
+          "Cannot use NOT for " + propertyName
+        );
+      }
 
-    public T constructFromFilters(T abstractClass, org.alfresco.service.cmr.dictionary.ClassDefinition classDefinition, List<String> includes) {
+      if (propertyName.equalsIgnoreCase(PARAM_MODEL_IDS)) {
+        modelIds = new HashSet<>(Arrays.asList(propertyValues));
+      }
 
-        if (includes != null && includes.contains(PARAM_INCLUDE_PROPERTIES))
-        {
-            List<PropertyDefinition> properties = Collections.emptyList();
-            ClassDefinition _classDefinition = this.classDefinitionMapper.fromDictionaryClassDefinition(classDefinition, dictionaryService);
-            if (_classDefinition.getProperties() != null)
-            {
-                properties = _classDefinition.getProperties();
-            }
-            abstractClass.setProperties(properties);
-        }
-
-        if (includes != null && includes.contains(PARAM_INCLUDE_ASSOCIATIONS))
-        {
-            List<Association> associations = getAssociations(classDefinition.getAssociations());
-            abstractClass.setAssociations(associations);
-        }
-
-        if (includes != null && includes.contains(PARAM_INCLUDE_MANDATORY_ASPECTS))
-        {
-            if (classDefinition.getDefaultAspectNames() != null)
-            {
-                List<String> aspects = classDefinition.getDefaultAspectNames().stream().map(QName::toPrefixString).collect(Collectors.toList());
-                abstractClass.setMandatoryAspects(aspects);
-            }
-        }
-
-        abstractClass.setIsContainer(classDefinition.isContainer());
-        abstractClass.setIsArchive(classDefinition.getArchive());
-        abstractClass.setIncludedInSupertypeQuery(classDefinition.getIncludedInSuperTypeQuery());
-        return  abstractClass;
+      if (propertyName.equalsIgnoreCase(PARAM_PARENT_IDS)) {
+        parentIds = new HashSet<>(Arrays.asList(propertyValues));
+      }
     }
 
-    List<Association> getAssociations(Map<QName, AssociationDefinition> associationDefinitionMap)
-    {
-        Collection<AssociationDefinition> associationDefinitions = associationDefinitionMap.values();
-
-        if (associationDefinitions.size() == 0)
-            return Collections.emptyList();
-
-        List<Association> associations = new ArrayList<Association>();
-
-        for (AssociationDefinition definition : associationDefinitions)
-        {
-            Association association = new Association();
-
-            association.setId(definition.getName().toPrefixString());
-            association.setTitle(definition.getTitle());
-            association.setDescription(definition.getDescription());
-            association.setIsChild(definition.isChild());
-            association.setIsProtected(definition.isProtected());
-
-            AssociationSource source = new AssociationSource();
-
-            String sourceRole = definition.getSourceRoleName() != null ? definition.getSourceRoleName().toPrefixString() : null;
-            source.setRole(sourceRole);
-
-            String sourceClass = definition.getSourceClass() != null ? definition.getSourceClass().getName().toPrefixString() : null;
-            source.setCls(sourceClass);
-
-            source.setIsMany(definition.isSourceMany());
-            source.setIsMandatory(definition.isSourceMandatory());
-
-            AssociationSource target = new AssociationSource();
-            String targetRole = definition.getTargetRoleName() != null ? definition.getTargetRoleName().toPrefixString() : null;
-            target.setRole(targetRole);
-
-            String targetClass = definition.getTargetClass() != null ? definition.getTargetClass().getName().toPrefixString() : null;
-            target.setCls(targetClass);
-
-            target.setIsMany(definition.isTargetMany());
-            target.setIsMandatory(definition.isTargetMandatory());
-            target.setIsMandatoryEnforced(definition.isTargetMandatoryEnforced());
-
-            association.setSource(source);
-            association.setTarget(target);
-            associations.add(association);
-        }
-
-        return associations;
+    @Override
+    public void matches(String property, String value, boolean negated) {
+      if (negated && property.equals(PARAM_NAMESPACE_URI)) {
+        notMatchedPrefix = value;
+      } else if (property.equals(PARAM_NAMESPACE_URI)) {
+        matchedPrefix = value;
+      }
     }
 
-    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
-        return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+    public Set<String> getModelIds() {
+      return this.modelIds;
     }
 
-    public static class ClassQueryWalker extends MapBasedQueryWalker
-    {
-        private Set<String> modelIds = null;
-        private Set<String> parentIds = null;
-        private String notMatchedPrefix = null;
-        private String matchedPrefix = null;
-
-        public ClassQueryWalker()
-        {
-            super(new HashSet<>(Arrays.asList(PARAM_MODEL_IDS, PARAM_PARENT_IDS)), new HashSet<>(Collections.singleton(PARAM_NAMESPACE_URI)));
-        }
-
-        @Override
-        public void in(String propertyName, boolean negated, String... propertyValues)
-        {
-            if (negated)
-            {
-                throw new InvalidArgumentException("Cannot use NOT for " + propertyName);
-            }
-
-            if (propertyName.equalsIgnoreCase(PARAM_MODEL_IDS))
-            {
-                modelIds = new HashSet<>(Arrays.asList(propertyValues));
-            }
-
-            if (propertyName.equalsIgnoreCase(PARAM_PARENT_IDS))
-            {
-                parentIds = new HashSet<>(Arrays.asList(propertyValues));
-            }
-        }
-
-        @Override
-        public void matches(String property, String value, boolean negated)
-        {
-            if (negated && property.equals(PARAM_NAMESPACE_URI))
-            {
-                notMatchedPrefix = value;
-            }
-            else if (property.equals(PARAM_NAMESPACE_URI))
-            {
-                matchedPrefix = value;
-            }
-        }
-
-        public Set<String> getModelIds()
-        {
-            return this.modelIds;
-        }
-
-        public Set<String> getParentIds()
-        {
-            return this.parentIds;
-        }
-
-        public String getNotMatchedPrefix()
-        {
-            return this.notMatchedPrefix;
-        }
-
-        public String getMatchedPrefix()
-        {
-            return this.matchedPrefix;
-        }
+    public Set<String> getParentIds() {
+      return this.parentIds;
     }
 
-    public static class ModelApiFilter
-    {
-        private Set<String> modelIds;
-        private Set<String> parentIds;
-        private String matchedPrefix;
-        private String notMatchedPrefix;
-
-        public ModelApiFilter()
-        {
-        }
-
-        public Set<String> getModelIds()
-        {
-            return modelIds;
-        }
-
-        public String getMatchedPrefix()
-        {
-            return matchedPrefix;
-        }
-
-        public String getNotMatchedPrefix()
-        {
-            return notMatchedPrefix;
-        }
-
-        public Set<String> getParentIds()
-        {
-            return parentIds;
-        }
-
-        public static ModelApiFilterBuilder builder()
-        {
-            return new ModelApiFilterBuilder();
-        }
-
-        public static class ModelApiFilterBuilder
-        {
-            private Set<String> modelIds;
-            private Set<String> parentIds;
-            private String matchedPrefix;
-            private String notMatchedPrefix;
-
-            public ModelApiFilterBuilder withModelId(Set<String> modelIds)
-            {
-                this.modelIds = modelIds;
-                return this;
-            }
-
-            public ModelApiFilterBuilder withParentIds(Set<String> parentIds)
-            {
-                this.parentIds = parentIds;
-                return this;
-            }
-
-            public ModelApiFilterBuilder withMatchPrefix(String matchedPrefix)
-            {
-                this.matchedPrefix = matchedPrefix;
-                return this;
-            }
-
-            public ModelApiFilterBuilder withNotMatchPrefix(String notMatchedPrefix)
-            {
-                this.notMatchedPrefix = notMatchedPrefix;
-                return this;
-            }
-
-            public ModelApiFilter build()
-            {
-                ModelApiFilter modelApiFilter = new ModelApiFilter();
-                modelApiFilter.modelIds = modelIds;
-                modelApiFilter.parentIds = parentIds;
-                modelApiFilter.matchedPrefix = matchedPrefix;
-                modelApiFilter.notMatchedPrefix = notMatchedPrefix;
-                return modelApiFilter;
-            }
-        }
+    public String getNotMatchedPrefix() {
+      return this.notMatchedPrefix;
     }
+
+    public String getMatchedPrefix() {
+      return this.matchedPrefix;
+    }
+  }
+
+  public static class ModelApiFilter {
+
+    private Set<String> modelIds;
+    private Set<String> parentIds;
+    private String matchedPrefix;
+    private String notMatchedPrefix;
+
+    public ModelApiFilter() {}
+
+    public Set<String> getModelIds() {
+      return modelIds;
+    }
+
+    public String getMatchedPrefix() {
+      return matchedPrefix;
+    }
+
+    public String getNotMatchedPrefix() {
+      return notMatchedPrefix;
+    }
+
+    public Set<String> getParentIds() {
+      return parentIds;
+    }
+
+    public static ModelApiFilterBuilder builder() {
+      return new ModelApiFilterBuilder();
+    }
+
+    public static class ModelApiFilterBuilder {
+
+      private Set<String> modelIds;
+      private Set<String> parentIds;
+      private String matchedPrefix;
+      private String notMatchedPrefix;
+
+      public ModelApiFilterBuilder withModelId(Set<String> modelIds) {
+        this.modelIds = modelIds;
+        return this;
+      }
+
+      public ModelApiFilterBuilder withParentIds(Set<String> parentIds) {
+        this.parentIds = parentIds;
+        return this;
+      }
+
+      public ModelApiFilterBuilder withMatchPrefix(String matchedPrefix) {
+        this.matchedPrefix = matchedPrefix;
+        return this;
+      }
+
+      public ModelApiFilterBuilder withNotMatchPrefix(String notMatchedPrefix) {
+        this.notMatchedPrefix = notMatchedPrefix;
+        return this;
+      }
+
+      public ModelApiFilter build() {
+        ModelApiFilter modelApiFilter = new ModelApiFilter();
+        modelApiFilter.modelIds = modelIds;
+        modelApiFilter.parentIds = parentIds;
+        modelApiFilter.matchedPrefix = matchedPrefix;
+        modelApiFilter.notMatchedPrefix = notMatchedPrefix;
+        return modelApiFilter;
+      }
+    }
+  }
 }

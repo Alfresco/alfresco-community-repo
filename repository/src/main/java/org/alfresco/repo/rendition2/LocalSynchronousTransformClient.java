@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
+import java.util.Map;
 import org.alfresco.repo.content.transform.LocalTransform;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
@@ -36,8 +37,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.util.Map;
-
 /**
  * Request synchronous transforms.
  *
@@ -45,104 +44,142 @@ import java.util.Map;
  *
  * @author adavis
  */
-public class LocalSynchronousTransformClient implements SynchronousTransformClient, InitializingBean
-{
-    private static final String TRANSFORM = "Local synchronous transform ";
-    private static Log logger = LogFactory.getLog(LocalTransformClient.class);
+public class LocalSynchronousTransformClient
+  implements SynchronousTransformClient, InitializingBean {
 
-    private LocalTransformServiceRegistry localTransformServiceRegistry;
+  private static final String TRANSFORM = "Local synchronous transform ";
+  private static Log logger = LogFactory.getLog(LocalTransformClient.class);
 
-    public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
-    {
-        this.localTransformServiceRegistry = localTransformServiceRegistry;
+  private LocalTransformServiceRegistry localTransformServiceRegistry;
+
+  public void setLocalTransformServiceRegistry(
+    LocalTransformServiceRegistry localTransformServiceRegistry
+  ) {
+    this.localTransformServiceRegistry = localTransformServiceRegistry;
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    PropertyCheck.mandatory(
+      this,
+      "localTransformServiceRegistry",
+      localTransformServiceRegistry
+    );
+  }
+
+  @Override
+  public boolean isSupported(
+    String sourceMimetype,
+    long sourceSizeInBytes,
+    String contentUrl,
+    String targetMimetype,
+    Map<String, String> actualOptions,
+    String transformName,
+    NodeRef sourceNodeRef
+  ) {
+    String renditionName = TransformDefinition.convertToRenditionName(
+      transformName
+    );
+    LocalTransform transform = localTransformServiceRegistry.getLocalTransform(
+      sourceMimetype,
+      sourceSizeInBytes,
+      targetMimetype,
+      actualOptions,
+      renditionName
+    );
+
+    if (logger.isDebugEnabled()) {
+      logger.debug(
+        TRANSFORM +
+        renditionName +
+        " from " +
+        sourceMimetype +
+        (transform == null ? " is unsupported" : " is supported")
+      );
     }
+    return transform != null;
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "localTransformServiceRegistry", localTransformServiceRegistry);
+  @Override
+  public void transform(
+    ContentReader reader,
+    ContentWriter writer,
+    Map<String, String> actualOptions,
+    String transformName,
+    NodeRef sourceNodeRef
+  ) {
+    String renditionName = TransformDefinition.convertToRenditionName(
+      transformName
+    );
+    try {
+      if (reader == null) {
+        throw new IllegalArgumentException("The content reader must be set");
+      }
+      if (!reader.exists()) {
+        throw new IllegalArgumentException(
+          "sourceNodeRef " + sourceNodeRef + " has no content."
+        );
+      }
+
+      String sourceMimetype = reader.getMimetype();
+      long sourceSizeInBytes = reader.getSize();
+      if (sourceMimetype == null) {
+        throw new IllegalArgumentException(
+          "The content reader mimetype must be set"
+        );
+      }
+
+      String targetMimetype = writer.getMimetype();
+      if (targetMimetype == null) {
+        throw new IllegalArgumentException(
+          "The content writer mimetype must be set"
+        );
+      }
+
+      LocalTransform transform = localTransformServiceRegistry.getLocalTransform(
+        sourceMimetype,
+        sourceSizeInBytes,
+        targetMimetype,
+        actualOptions,
+        renditionName
+      );
+
+      if (transform == null) {
+        throw new UnsupportedTransformationException(
+          "Transformation of " +
+          sourceMimetype +
+          (sourceSizeInBytes > 0 ? " size " + sourceSizeInBytes : "") +
+          " to " +
+          targetMimetype +
+          " unsupported"
+        );
+      }
+
+      if (logger.isDebugEnabled()) {
+        logger.debug(TRANSFORM + "requested " + renditionName);
+      }
+
+      transform.transform(
+        reader,
+        writer,
+        actualOptions,
+        renditionName,
+        sourceNodeRef
+      );
+
+      if (logger.isDebugEnabled()) {
+        logger.debug(TRANSFORM + "created " + renditionName);
+      }
+    } catch (Exception e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(TRANSFORM + "failed " + renditionName, e);
+      }
+      throw e;
     }
+  }
 
-    @Override
-    public boolean isSupported(String sourceMimetype, long sourceSizeInBytes, String contentUrl, String targetMimetype,
-                               Map<String, String> actualOptions, String transformName, NodeRef sourceNodeRef)
-    {
-        String renditionName = TransformDefinition.convertToRenditionName(transformName);
-        LocalTransform transform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
-                sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug(TRANSFORM + renditionName + " from " + sourceMimetype +
-                    (transform == null ? " is unsupported" : " is supported"));
-        }
-        return transform != null;
-    }
-
-    @Override
-    public void transform(ContentReader reader, ContentWriter writer, Map<String, String> actualOptions,
-                          String transformName, NodeRef sourceNodeRef)
-    {
-        String renditionName = TransformDefinition.convertToRenditionName(transformName);
-        try
-        {
-            if (reader == null)
-            {
-                throw new IllegalArgumentException("The content reader must be set");
-            }
-            if (!reader.exists())
-            {
-                throw new IllegalArgumentException("sourceNodeRef "+sourceNodeRef+" has no content.");
-            }
-
-            String sourceMimetype = reader.getMimetype();
-            long sourceSizeInBytes = reader.getSize();
-            if (sourceMimetype == null)
-            {
-                throw new IllegalArgumentException("The content reader mimetype must be set");
-            }
-
-            String targetMimetype = writer.getMimetype();
-            if (targetMimetype == null)
-            {
-                throw new IllegalArgumentException("The content writer mimetype must be set");
-            }
-
-            LocalTransform transform = localTransformServiceRegistry.getLocalTransform(sourceMimetype,
-                    sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
-
-            if (transform == null)
-            {
-                throw new UnsupportedTransformationException("Transformation of " + sourceMimetype +
-                        (sourceSizeInBytes > 0 ? " size "+sourceSizeInBytes : "")+ " to " + targetMimetype +
-                        " unsupported");
-            }
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(TRANSFORM + "requested " + renditionName);
-            }
-
-            transform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(TRANSFORM + "created " + renditionName);
-            }
-        }
-        catch (Exception e)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug(TRANSFORM + "failed " + renditionName, e);
-            }
-            throw e;
-        }
-    }
-
-    @Override
-    public String getName()
-    {
-        return "Local";
-    }
+  @Override
+  public String getName() {
+    return "Local";
+  }
 }

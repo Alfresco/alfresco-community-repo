@@ -35,27 +35,27 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RecordCreationException extends AlfrescoRuntimeException
-{
-    private static final long serialVersionUID = 1331453363788941681L;
+public class RecordCreationException extends AlfrescoRuntimeException {
 
-    public RecordCreationException(String msgId, Throwable cause)
-    {
-        super(msgId, cause);
-    }
+  private static final long serialVersionUID = 1331453363788941681L;
 
-    public RecordCreationException(String msgId, Object[] msgParams, Throwable cause)
-    {
-        super(msgId, msgParams, cause);
-    }
+  public RecordCreationException(String msgId, Throwable cause) {
+    super(msgId, cause);
+  }
 
-    public RecordCreationException(String msgId, Object[] msgParams)
-    {
-        super(msgId, msgParams);
-    }
+  public RecordCreationException(
+    String msgId,
+    Object[] msgParams,
+    Throwable cause
+  ) {
+    super(msgId, msgParams, cause);
+  }
 
-    public RecordCreationException(String msgId)
-    {
-        super(msgId);
-    }
+  public RecordCreationException(String msgId, Object[] msgParams) {
+    super(msgId, msgParams);
+  }
+
+  public RecordCreationException(String msgId) {
+    super(msgId);
+  }
 }

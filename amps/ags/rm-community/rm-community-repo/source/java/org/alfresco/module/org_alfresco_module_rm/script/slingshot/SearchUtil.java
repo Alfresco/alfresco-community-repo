@@ -30,11 +30,9 @@ import static org.alfresco.model.ContentModel.ASSOC_CHILDREN;
 import static org.alfresco.model.ContentModel.TYPE_CONTAINER;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,57 +45,62 @@ import org.alfresco.service.namespace.QName;
  * @author Ross Gale
  * @since 2.7
  */
-public class SearchUtil
-{
-    /**
-     * Node service
-     */
-    protected NodeService nodeService;
+public class SearchUtil {
 
-    /**
-     * Setter for node service
-     *
-     * @param nodeService Node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+  /**
+   * Node service
+   */
+  protected NodeService nodeService;
+
+  /**
+   * Setter for node service
+   *
+   * @param nodeService Node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * Use a container node ref and return the nodeIds of the contents
+   *
+   * @param nodeRef container
+   * @return list of nodeIds
+   */
+  protected Set<String> retrieveAllNodeIds(NodeRef nodeRef) {
+    List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(
+      nodeRef
+    );
+    return childAssocRefs
+      .stream()
+      .map(assoc -> assoc.getChildRef().getId())
+      .collect(Collectors.toSet());
+  }
+
+  /**
+   * Helper method to get the classification reason root container.
+   * The method creates the container if it doesn't already exist.
+   *
+   * @return reference to the classification reason root container
+   */
+  protected NodeRef getRootContainer(QName container) {
+    NodeRef rootNodeRef = nodeService.getRootNode(
+      STORE_REF_WORKSPACE_SPACESSTORE
+    );
+    List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(
+      rootNodeRef,
+      ASSOC_CHILDREN,
+      container
+    );
+
+    if (assocRefs.isEmpty()) {
+      return nodeService
+        .createNode(rootNodeRef, ASSOC_CHILDREN, container, TYPE_CONTAINER)
+        .getChildRef();
+    } else if (assocRefs.size() != 1) {
+      throw new AlfrescoRuntimeException("Only one container is allowed.");
+    } else {
+      return assocRefs.iterator().next().getChildRef();
     }
-
-    /**
-     * Use a container node ref and return the nodeIds of the contents
-     *
-     * @param nodeRef container
-     * @return list of nodeIds
-     */
-    protected Set<String> retrieveAllNodeIds(NodeRef nodeRef)
-    {
-        List<ChildAssociationRef> childAssocRefs = nodeService.getChildAssocs(nodeRef);
-        return childAssocRefs.stream().map(assoc -> assoc.getChildRef().getId()).collect(Collectors.toSet());
-    }
-
-    /**
-     * Helper method to get the classification reason root container.
-     * The method creates the container if it doesn't already exist.
-     *
-     * @return reference to the classification reason root container
-     */
-    protected NodeRef getRootContainer(QName container)
-    {
-        NodeRef rootNodeRef = nodeService.getRootNode(STORE_REF_WORKSPACE_SPACESSTORE);
-        List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(rootNodeRef, ASSOC_CHILDREN, container);
-
-        if (assocRefs.isEmpty())
-        {
-            return nodeService.createNode(rootNodeRef, ASSOC_CHILDREN, container, TYPE_CONTAINER).getChildRef();
-        }
-        else if (assocRefs.size() != 1)
-        {
-            throw new AlfrescoRuntimeException("Only one container is allowed.");
-        }
-        else
-        {
-            return assocRefs.iterator().next().getChildRef();
-        }
-    }
+  }
 }

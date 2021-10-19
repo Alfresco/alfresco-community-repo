@@ -25,20 +25,15 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
+import java.io.Serializable;
 import org.json.simple.JSONObject;
 
-import java.io.Serializable;
+public class Avatar implements Serializable, ExpectedComparison {
 
-public class Avatar implements Serializable, ExpectedComparison
-{
-    @Override
-    public void expected(Object other)
-    {
+  @Override
+  public void expected(Object other) {}
 
-    }
-
-    public static Avatar parseAvatar(JSONObject entry)
-    {
-        return new Avatar();
-    }
+  public static Avatar parseAvatar(JSONObject entry) {
+    return new Avatar();
+  }
 }

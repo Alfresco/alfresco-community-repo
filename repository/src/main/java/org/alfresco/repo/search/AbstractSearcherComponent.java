@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,7 +27,6 @@ package org.alfresco.repo.search;
 
 import java.io.Serializable;
 import java.util.List;
-
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -41,38 +40,58 @@ import org.alfresco.util.SearchLanguageConversion;
 
 /**
  * Provides basic searcher support
- * 
+ *
  * @author Andy Hind
  */
-public abstract class AbstractSearcherComponent implements SearchService
-{
-    /**
-     * Not implemented, but will eventually map directly to
-     * {@link SearchLanguageConversion}.
-     */
-    protected String translateQuery(String fromLanguage, String toLangage, String query)
-    {
-        throw new UnsupportedOperationException();
-    }
+public abstract class AbstractSearcherComponent implements SearchService {
 
-    public ResultSet query(StoreRef store, String language, String query)
-    {
-        return query(store, language, query, null);
-    }
+  /**
+   * Not implemented, but will eventually map directly to
+   * {@link SearchLanguageConversion}.
+   */
+  protected String translateQuery(
+    String fromLanguage,
+    String toLangage,
+    String query
+  ) {
+    throw new UnsupportedOperationException();
+  }
 
-    public List<NodeRef> selectNodes(NodeRef contextNodeRef, String xpath, QueryParameterDefinition[] parameters,
-            NamespacePrefixResolver namespacePrefixResolver, boolean followAllParentLinks)
-            throws InvalidNodeRefException, XPathException
-    {
-        return selectNodes(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks,
-                SearchService.LANGUAGE_XPATH);
-    }
+  public ResultSet query(StoreRef store, String language, String query) {
+    return query(store, language, query, null);
+  }
 
-    public List<Serializable> selectProperties(NodeRef contextNodeRef, String xpath,
-            QueryParameterDefinition[] parameters, NamespacePrefixResolver namespacePrefixResolver,
-            boolean followAllParentLinks) throws InvalidNodeRefException, XPathException
-    {
-        return selectProperties(contextNodeRef, xpath, parameters, namespacePrefixResolver, followAllParentLinks,
-                SearchService.LANGUAGE_XPATH);
-    }
+  public List<NodeRef> selectNodes(
+    NodeRef contextNodeRef,
+    String xpath,
+    QueryParameterDefinition[] parameters,
+    NamespacePrefixResolver namespacePrefixResolver,
+    boolean followAllParentLinks
+  ) throws InvalidNodeRefException, XPathException {
+    return selectNodes(
+      contextNodeRef,
+      xpath,
+      parameters,
+      namespacePrefixResolver,
+      followAllParentLinks,
+      SearchService.LANGUAGE_XPATH
+    );
+  }
+
+  public List<Serializable> selectProperties(
+    NodeRef contextNodeRef,
+    String xpath,
+    QueryParameterDefinition[] parameters,
+    NamespacePrefixResolver namespacePrefixResolver,
+    boolean followAllParentLinks
+  ) throws InvalidNodeRefException, XPathException {
+    return selectProperties(
+      contextNodeRef,
+      xpath,
+      parameters,
+      namespacePrefixResolver,
+      followAllParentLinks,
+      SearchService.LANGUAGE_XPATH
+    );
+  }
 }

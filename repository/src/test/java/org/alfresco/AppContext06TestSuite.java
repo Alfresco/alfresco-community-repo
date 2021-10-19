@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -42,13 +42,13 @@ import org.junit.runners.Suite;
  * </p>
  */
 @RunWith(Categories.class)
-@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
-@Suite.SuiteClasses({
+@Categories.ExcludeCategory({ DBTests.class, NonBuildTests.class })
+@Suite.SuiteClasses(
+  {
     // Requires a running ActiveMQ
     org.alfresco.repo.rawevents.EventBehaviourTest.class,
     org.alfresco.repo.rawevents.TransactionAwareEventProducerTest.class,
     org.alfresco.repo.event2.RepoEvent2ITSuite.class,
-
     // Requires running transformers
     org.alfresco.transform.client.registry.LocalTransformServiceRegistryConfigTest.class,
     org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
@@ -56,7 +56,6 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,
     org.alfresco.repo.rendition2.LocalRenditionTest.class,
     org.alfresco.repo.rendition2.NoneRenditionTest.class,
-
     org.alfresco.repo.solr.SOLRTrackingComponentTest.class,
     org.alfresco.repo.tagging.TaggingServiceImplTest.class,
     org.alfresco.repo.transaction.AlfrescoTransactionSupportTest.class,
@@ -70,9 +69,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.search.SearcherComponentTest.class,
     org.alfresco.repo.blog.BlogServiceImplTest.class,
     org.alfresco.repo.action.scheduled.ScheduledPersistedActionServiceTest.class,
-
-    org.alfresco.repo.rendition2.RenditionDefinitionTest.class
-})
-public class AppContext06TestSuite
-{
-}
+    org.alfresco.repo.rendition2.RenditionDefinitionTest.class,
+  }
+)
+public class AppContext06TestSuite {}

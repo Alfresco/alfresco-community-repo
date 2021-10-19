@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,104 +32,92 @@ import org.alfresco.service.namespace.QName;
 /**
  * @author andyh
  */
-public class BaseArgumentDefinition implements ArgumentDefinition
-{
-    private Multiplicity multiplicity;
+public class BaseArgumentDefinition implements ArgumentDefinition {
 
-    private String name;
-    
-    private QName type;
-    
-    private boolean mandatory;
-    
-    public BaseArgumentDefinition(Multiplicity multiplicity, String name, QName type, boolean mandatory)
-    {
-        this.multiplicity = multiplicity;
-        this.name = name;
-        this.type = type;
-        this.mandatory = mandatory;
-    }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getMutiplicity()
-     */
-    public Multiplicity getMutiplicity()
-    {
-        return multiplicity;
-    }
+  private Multiplicity multiplicity;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getName()
-     */
-    public String getName()
-    {
-        return name;
-    }
+  private String name;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getType()
-     */
-    public QName getType()
-    {
-        return type;
-    }
+  private QName type;
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#isMandatory()
-     */
-    public boolean isMandatory()
-    {
-       return mandatory;
-    }
+  private boolean mandatory;
 
-    public String toString()
-    {
-        StringBuilder builder = new StringBuilder();
-        builder.append("BaseArgumentDefinition[");
-        builder.append("name=").append(getName()).append(", ");
-        builder.append("multiplicity=").append(getMutiplicity()).append(", ");
-        builder.append("mandatory=").append(isMandatory()).append(", ");
-        builder.append("type=").append(getType());
-        builder.append("] ");
-        return builder.toString();
-    }
+  public BaseArgumentDefinition(
+    Multiplicity multiplicity,
+    String name,
+    QName type,
+    boolean mandatory
+  ) {
+    this.multiplicity = multiplicity;
+    this.name = name;
+    this.type = type;
+    this.mandatory = mandatory;
+  }
 
-    @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        return result;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getMutiplicity()
+   */
+  public Multiplicity getMutiplicity() {
+    return multiplicity;
+  }
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        final BaseArgumentDefinition other = (BaseArgumentDefinition) obj;
-        if (name == null)
-        {
-            if (other.name != null)
-                return false;
-        }
-        else if (!name.equals(other.name))
-            return false;
-        return true;
-    }
- 
-    
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getName()
+   */
+  public String getName() {
+    return name;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#getType()
+   */
+  public QName getType() {
+    return type;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.repo.search.impl.querymodel.ArgumentDefinition#isMandatory()
+   */
+  public boolean isMandatory() {
+    return mandatory;
+  }
+
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("BaseArgumentDefinition[");
+    builder.append("name=").append(getName()).append(", ");
+    builder.append("multiplicity=").append(getMutiplicity()).append(", ");
+    builder.append("mandatory=").append(isMandatory()).append(", ");
+    builder.append("type=").append(getType());
+    builder.append("] ");
+    return builder.toString();
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    final BaseArgumentDefinition other = (BaseArgumentDefinition) obj;
+    if (name == null) {
+      if (other.name != null) return false;
+    } else if (!name.equals(other.name)) return false;
+    return true;
+  }
 }

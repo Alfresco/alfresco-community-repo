@@ -32,265 +32,348 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.junit.Test;
 
-public class EventConsolidatorUnitTest
-{
-    private NodeResourceHelper nodeResourceHelper = mock(NodeResourceHelper.class);
-    
-    @Test
-    public void testGetMappedAspectsBeforeRemovedAndAddedEmpty()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        
-        Set<String> currentAspects = new HashSet<>();
-        currentAspects.add("cm:geographic");
-        currentAspects.add("cm:auditable");
+public class EventConsolidatorUnitTest {
 
-        Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(currentAspects);
+  private NodeResourceHelper nodeResourceHelper = mock(
+    NodeResourceHelper.class
+  );
 
-        assertEquals(0, mappedAspectsBefore.size());
-    }
+  @Test
+  public void testGetMappedAspectsBeforeRemovedAndAddedEmpty() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
 
-    @Test
-    public void testGetMappedAspectsBefore_AspectRemoved()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    Set<String> currentAspects = new HashSet<>();
+    currentAspects.add("cm:geographic");
+    currentAspects.add("cm:auditable");
 
-        Set<String> currentAspects = new HashSet<>();
-        currentAspects.add("cm:geographic");
-        currentAspects.add("cm:auditable");
+    Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(
+      currentAspects
+    );
 
-        Set<String> removed = new HashSet<>();
-        Set<String> added = new HashSet<>();
-        removed.add("cm:contains");
+    assertEquals(0, mappedAspectsBefore.size());
+  }
 
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())).thenReturn(removed);
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())).thenReturn(added);
+  @Test
+  public void testGetMappedAspectsBefore_AspectRemoved() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
-        Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(currentAspects);
+    Set<String> currentAspects = new HashSet<>();
+    currentAspects.add("cm:geographic");
+    currentAspects.add("cm:auditable");
 
-        assertEquals(3, mappedAspectsBefore.size());
-    }
+    Set<String> removed = new HashSet<>();
+    Set<String> added = new HashSet<>();
+    removed.add("cm:contains");
 
-    @Test
-    public void testGetMappedAspectsBefore_AspectAdded()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())
+    )
+      .thenReturn(removed);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())
+    )
+      .thenReturn(added);
 
-        Set<String> currentAspects = new HashSet<>();
-        currentAspects.add("cm:geographic");
-        currentAspects.add("cm:auditable");
+    Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(
+      currentAspects
+    );
 
-        Set<String> removed = new HashSet<>();
-        Set<String> added = new HashSet<>();
-        added.add("cm:auditable");
+    assertEquals(3, mappedAspectsBefore.size());
+  }
 
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())).thenReturn(removed);
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())).thenReturn(added);
+  @Test
+  public void testGetMappedAspectsBefore_AspectAdded() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
-        Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(currentAspects);
+    Set<String> currentAspects = new HashSet<>();
+    currentAspects.add("cm:geographic");
+    currentAspects.add("cm:auditable");
 
-        assertEquals(1, mappedAspectsBefore.size());
-    }
+    Set<String> removed = new HashSet<>();
+    Set<String> added = new HashSet<>();
+    added.add("cm:auditable");
 
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())
+    )
+      .thenReturn(removed);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())
+    )
+      .thenReturn(added);
 
-    @Test
-    public void testGetMappedAspectsBefore_AspectAddedAndRemoved()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(
+      currentAspects
+    );
 
-        Set<String> currentAspects = new HashSet<>();
-        currentAspects.add("cm:geographic");
-        currentAspects.add("cm:auditable");
+    assertEquals(1, mappedAspectsBefore.size());
+  }
 
-        Set<String> removed = new HashSet<>();
-        removed.add("cm:contains");
-        Set<String> added = new HashSet<>();
-        added.add("cm:contains");
-        
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())).thenReturn(removed);
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())).thenReturn(added);
-        
-        Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(currentAspects);
-        
-        assertEquals(2, mappedAspectsBefore.size());
-    }
+  @Test
+  public void testGetMappedAspectsBefore_AspectAddedAndRemoved() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
-    @Test
-    public void testGetMappedAspectsBefore_AspectRemovedAndAdded()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+    Set<String> currentAspects = new HashSet<>();
+    currentAspects.add("cm:geographic");
+    currentAspects.add("cm:auditable");
 
-        Set<String> currentAspects = new HashSet<>();
-        currentAspects.add("cm:geographic");
-        currentAspects.add("cm:auditable");
-        currentAspects.add("cm:contains");
-        
-        Set<String> removed = new HashSet<>();
-        removed.add("cm:contains");
-        Set<String> added = new HashSet<>();
-        added.add("cm:contains");
-        
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())).thenReturn(removed);
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())).thenReturn(added);
-        
-        Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(currentAspects);
-        
-        assertEquals(0, mappedAspectsBefore.size());
-    }
+    Set<String> removed = new HashSet<>();
+    removed.add("cm:contains");
+    Set<String> added = new HashSet<>();
+    added.add("cm:contains");
 
-    @Test
-    public void testGetMappedAspectsBefore_AspectAddedTwiceRemovedOnce()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())
+    )
+      .thenReturn(removed);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())
+    )
+      .thenReturn(added);
 
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(
+      currentAspects
+    );
 
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+    assertEquals(2, mappedAspectsBefore.size());
+  }
 
-        Set<String> currentAspects = new HashSet<>();
-        currentAspects.add("cm:geographic");
-        currentAspects.add("cm:auditable");
-        currentAspects.add("cm:contains");
-        
-        Set<String> removed = new HashSet<>();
-        Set<String> added = new HashSet<>();
-        added.add("cm:contains");
-        
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())).thenReturn(removed);
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())).thenReturn(added);
-        
-        Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(currentAspects);
-        
-        assertEquals(2, mappedAspectsBefore.size());
-    }
+  @Test
+  public void testGetMappedAspectsBefore_AspectRemovedAndAdded() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
+    Set<String> currentAspects = new HashSet<>();
+    currentAspects.add("cm:geographic");
+    currentAspects.add("cm:auditable");
+    currentAspects.add("cm:contains");
 
-    @Test
-    public void testGetMappedAspectsBefore_AspectRemovedTwiceAddedOnce()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
+    Set<String> removed = new HashSet<>();
+    removed.add("cm:contains");
+    Set<String> added = new HashSet<>();
+    added.add("cm:contains");
 
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())
+    )
+      .thenReturn(removed);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())
+    )
+      .thenReturn(added);
 
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+    Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(
+      currentAspects
+    );
 
-        Set<String> currentAspects = new HashSet<>();
-        currentAspects.add("cm:geographic");
-        currentAspects.add("cm:auditable");
-        currentAspects.add("cm:contains");
+    assertEquals(0, mappedAspectsBefore.size());
+  }
 
-        Set<String> removed = new HashSet<>();
-        removed.add("cm:contains");
-        Set<String> added = new HashSet<>();
-        added.add("cm:contains");
-        
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())).thenReturn(removed);
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())).thenReturn(added);
-        
-        Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(currentAspects);
-        
-        assertEquals(2, mappedAspectsBefore.size());
-    }
-    
-    @Test
-    public void testGetMappedAspectsBefore_FilteredAspectAdded()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.addAspect(ContentModel.ASPECT_COPIEDFROM);
+  @Test
+  public void testGetMappedAspectsBefore_AspectAddedTwiceRemovedOnce() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
 
-        Set<String> currentAspects = new HashSet<>();
-        currentAspects.add("cm:geographic");
-        currentAspects.add("cm:auditable");
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
-        Set<String> removed = new HashSet<>();
-        Set<String> added = new HashSet<>();
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())).thenReturn(removed);
-        when(nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())).thenReturn(added);
+    Set<String> currentAspects = new HashSet<>();
+    currentAspects.add("cm:geographic");
+    currentAspects.add("cm:auditable");
+    currentAspects.add("cm:contains");
 
-        Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(currentAspects);
-        
-        assertEquals(0, mappedAspectsBefore.size());
-    }
+    Set<String> removed = new HashSet<>();
+    Set<String> added = new HashSet<>();
+    added.add("cm:contains");
 
-    @Test
-    public void testAddAspect()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
-        
-        assertEquals(1, eventConsolidator.getAspectsAdded().size());
-        assertEquals(0, eventConsolidator.getAspectsRemoved().size());
-        assertTrue(eventConsolidator.getAspectsAdded().contains(ContentModel.ASSOC_CONTAINS));
-    }
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())
+    )
+      .thenReturn(removed);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())
+    )
+      .thenReturn(added);
 
-    @Test
-    public void testRemoveAspect()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+    Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(
+      currentAspects
+    );
 
-        assertEquals(0, eventConsolidator.getAspectsAdded().size());
-        assertEquals(1, eventConsolidator.getAspectsRemoved().size());
-        assertTrue(eventConsolidator.getAspectsRemoved().contains(ContentModel.ASSOC_CONTAINS));
-    }
+    assertEquals(2, mappedAspectsBefore.size());
+  }
 
-    @Test
-    public void testAddAspectRemoveAspect()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+  @Test
+  public void testGetMappedAspectsBefore_AspectRemovedTwiceAddedOnce() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
 
-        assertEquals(0, eventConsolidator.getAspectsAdded().size());
-        assertEquals(0, eventConsolidator.getAspectsRemoved().size());
-    }
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
 
-    @Test
-    public void testRemoveAspectAddAspect()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
 
-        assertEquals(0, eventConsolidator.getAspectsAdded().size());
-        assertEquals(0, eventConsolidator.getAspectsRemoved().size());
-    }
+    Set<String> currentAspects = new HashSet<>();
+    currentAspects.add("cm:geographic");
+    currentAspects.add("cm:auditable");
+    currentAspects.add("cm:contains");
 
-    @Test
-    public void testAddAspectTwiceRemoveAspectOnce()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    Set<String> removed = new HashSet<>();
+    removed.add("cm:contains");
+    Set<String> added = new HashSet<>();
+    added.add("cm:contains");
 
-        assertEquals(1, eventConsolidator.getAspectsAdded().size());
-        assertEquals(0, eventConsolidator.getAspectsRemoved().size());
-        assertTrue(eventConsolidator.getAspectsAdded().contains(ContentModel.ASSOC_CONTAINS));
-    }
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())
+    )
+      .thenReturn(removed);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())
+    )
+      .thenReturn(added);
 
-    @Test
-    public void testAddAspectOnceRemoveAspectTwice()
-    {
-        EventConsolidator eventConsolidator = new EventConsolidator(nodeResourceHelper);
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
-        eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+    Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(
+      currentAspects
+    );
 
-        assertEquals(0, eventConsolidator.getAspectsAdded().size());
-        assertEquals(1, eventConsolidator.getAspectsRemoved().size());
-        assertTrue(eventConsolidator.getAspectsRemoved().contains(ContentModel.ASSOC_CONTAINS));
-    }
+    assertEquals(2, mappedAspectsBefore.size());
+  }
+
+  @Test
+  public void testGetMappedAspectsBefore_FilteredAspectAdded() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.addAspect(ContentModel.ASPECT_COPIEDFROM);
+
+    Set<String> currentAspects = new HashSet<>();
+    currentAspects.add("cm:geographic");
+    currentAspects.add("cm:auditable");
+
+    Set<String> removed = new HashSet<>();
+    Set<String> added = new HashSet<>();
+
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsRemoved())
+    )
+      .thenReturn(removed);
+    when(
+      nodeResourceHelper.mapToNodeAspects(eventConsolidator.getAspectsAdded())
+    )
+      .thenReturn(added);
+
+    Set<String> mappedAspectsBefore = eventConsolidator.getMappedAspectsBefore(
+      currentAspects
+    );
+
+    assertEquals(0, mappedAspectsBefore.size());
+  }
+
+  @Test
+  public void testAddAspect() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+
+    assertEquals(1, eventConsolidator.getAspectsAdded().size());
+    assertEquals(0, eventConsolidator.getAspectsRemoved().size());
+    assertTrue(
+      eventConsolidator.getAspectsAdded().contains(ContentModel.ASSOC_CONTAINS)
+    );
+  }
+
+  @Test
+  public void testRemoveAspect() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+
+    assertEquals(0, eventConsolidator.getAspectsAdded().size());
+    assertEquals(1, eventConsolidator.getAspectsRemoved().size());
+    assertTrue(
+      eventConsolidator
+        .getAspectsRemoved()
+        .contains(ContentModel.ASSOC_CONTAINS)
+    );
+  }
+
+  @Test
+  public void testAddAspectRemoveAspect() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+
+    assertEquals(0, eventConsolidator.getAspectsAdded().size());
+    assertEquals(0, eventConsolidator.getAspectsRemoved().size());
+  }
+
+  @Test
+  public void testRemoveAspectAddAspect() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+
+    assertEquals(0, eventConsolidator.getAspectsAdded().size());
+    assertEquals(0, eventConsolidator.getAspectsRemoved().size());
+  }
+
+  @Test
+  public void testAddAspectTwiceRemoveAspectOnce() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+
+    assertEquals(1, eventConsolidator.getAspectsAdded().size());
+    assertEquals(0, eventConsolidator.getAspectsRemoved().size());
+    assertTrue(
+      eventConsolidator.getAspectsAdded().contains(ContentModel.ASSOC_CONTAINS)
+    );
+  }
+
+  @Test
+  public void testAddAspectOnceRemoveAspectTwice() {
+    EventConsolidator eventConsolidator = new EventConsolidator(
+      nodeResourceHelper
+    );
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.addAspect(ContentModel.ASSOC_CONTAINS);
+    eventConsolidator.removeAspect(ContentModel.ASSOC_CONTAINS);
+
+    assertEquals(0, eventConsolidator.getAspectsAdded().size());
+    assertEquals(1, eventConsolidator.getAspectsRemoved().size());
+    assertTrue(
+      eventConsolidator
+        .getAspectsRemoved()
+        .contains(ContentModel.ASSOC_CONTAINS)
+    );
+  }
 }

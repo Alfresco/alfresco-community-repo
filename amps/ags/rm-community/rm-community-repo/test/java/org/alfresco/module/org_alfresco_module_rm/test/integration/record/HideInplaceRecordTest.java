@@ -37,71 +37,69 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class HideInplaceRecordTest extends BaseRMTestCase
-{
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
-     */
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+public class HideInplaceRecordTest extends BaseRMTestCase {
 
-    /**
-     * Tests hiding inplace records
-     */
-    public void testHideInplaceRecord()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            public void given()
-            {
-                // Check that the document is not a record
-                assertFalse(recordService.isRecord(dmDocument));
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
+   */
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-                // Check that the record has one parent association
-                assertEquals(1, nodeService.getParentAssocs(dmDocument).size());
+  /**
+   * Tests hiding inplace records
+   */
+  public void testHideInplaceRecord() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        public void given() {
+          // Check that the document is not a record
+          assertFalse(recordService.isRecord(dmDocument));
 
-                // Declare the document as a record
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception
-                    {
-                        // Declare record
-                        recordService.createRecord(filePlan, dmDocument);
+          // Check that the record has one parent association
+          assertEquals(1, nodeService.getParentAssocs(dmDocument).size());
 
-                        return null;
-                    }
-                 }, dmCollaborator);
+          // Declare the document as a record
+          AuthenticationUtil.runAs(
+            new RunAsWork<Void>() {
+              public Void doWork() throws Exception {
+                // Declare record
+                recordService.createRecord(filePlan, dmDocument);
 
-                // Check that the document is a record
-                assertTrue(recordService.isRecord(dmDocument));
+                return null;
+              }
+            },
+            dmCollaborator
+          );
 
-                // Check that the record has two parent associations
-                assertEquals(2, nodeService.getParentAssocs(dmDocument).size());
-            }
+          // Check that the document is a record
+          assertTrue(recordService.isRecord(dmDocument));
 
-            public void when()
-            {
-                // Hide the document
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception
-                    {
-                        // Hide record
-                        inplaceRecordService.hideRecord(dmDocument);
+          // Check that the record has two parent associations
+          assertEquals(2, nodeService.getParentAssocs(dmDocument).size());
+        }
 
-                        return null;
-                    }
-                 }, dmCollaborator);
-            }
+        public void when() {
+          // Hide the document
+          AuthenticationUtil.runAs(
+            new RunAsWork<Void>() {
+              public Void doWork() throws Exception {
+                // Hide record
+                inplaceRecordService.hideRecord(dmDocument);
 
-            public void then()
-            {
-                // Check that the record has one parent association
-                assertEquals(1, nodeService.getParentAssocs(dmDocument).size());
-            }
-        });
-    }
+                return null;
+              }
+            },
+            dmCollaborator
+          );
+        }
+
+        public void then() {
+          // Check that the record has one parent association
+          assertEquals(1, nodeService.getParentAssocs(dmDocument).size());
+        }
+      }
+    );
+  }
 }

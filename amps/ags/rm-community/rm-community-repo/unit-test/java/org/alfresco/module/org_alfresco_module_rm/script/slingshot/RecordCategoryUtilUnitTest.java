@@ -48,85 +48,93 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * Tests for methods in the RecordsCategoryUtil class
- * 
+ *
  * @author Ross Gale
  * @since 2.7
  */
-public class RecordCategoryUtilUnitTest
-{
-    @Mock
-    private NodeService nodeService;
+public class RecordCategoryUtilUnitTest {
 
-    @Mock
-    private ChildAssocElement element;
+  @Mock
+  private NodeService nodeService;
 
-    @Mock
-    private ChildAssociationRef childAssociationRef;
+  @Mock
+  private ChildAssocElement element;
 
-    @InjectMocks
-    private RecordCategoryUtil recordCategoryUtil;
+  @Mock
+  private ChildAssociationRef childAssociationRef;
 
-    private Path path;
+  @InjectMocks
+  private RecordCategoryUtil recordCategoryUtil;
 
-    private NodeRef recordNodeRef;
+  private Path path;
 
-    private NodeRef recordFolderNodeRef;
+  private NodeRef recordNodeRef;
 
-    private NodeRef categoryNodeRef;
+  private NodeRef recordFolderNodeRef;
 
-    @Before
-    public void setUp()
-    {
-        MockitoAnnotations.initMocks(this);
-        recordNodeRef = new NodeRef("test://recordNode/");
-        recordFolderNodeRef = new NodeRef("test://recordFolderNode/");
-        categoryNodeRef = new NodeRef("test://categoryNode/");
-        path = new Path();
-        path.append(element);
-        when(nodeService.getType(recordFolderNodeRef)).thenReturn(TYPE_RECORD_FOLDER);
-        when(nodeService.getType(recordNodeRef)).thenReturn(TYPE_NON_ELECTRONIC_DOCUMENT);
-        when(nodeService.getPath(recordNodeRef)).thenReturn(path);
-        when(nodeService.getPath(recordFolderNodeRef)).thenReturn(path);
-        when(element.getRef()).thenReturn(childAssociationRef);
-        when(childAssociationRef.getChildRef()).thenReturn(categoryNodeRef);
-        when(nodeService.getType(categoryNodeRef)).thenReturn(TYPE_RECORD_CATEGORY);
-        when(nodeService.getProperty(categoryNodeRef, PROP_IDENTIFIER)).thenReturn("RecordCategoryId");
-    }
+  private NodeRef categoryNodeRef;
 
-    /**
-     * Tests an id is returned from a valid node ref
-     */
-    @Test
-    public void testGetIdFromNodeRef()
-    {
-        assertEquals("RecordCategoryId",recordCategoryUtil.getCategoryIdFromNodeId(recordNodeRef,false));
-    }
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+    recordNodeRef = new NodeRef("test://recordNode/");
+    recordFolderNodeRef = new NodeRef("test://recordFolderNode/");
+    categoryNodeRef = new NodeRef("test://categoryNode/");
+    path = new Path();
+    path.append(element);
+    when(nodeService.getType(recordFolderNodeRef))
+      .thenReturn(TYPE_RECORD_FOLDER);
+    when(nodeService.getType(recordNodeRef))
+      .thenReturn(TYPE_NON_ELECTRONIC_DOCUMENT);
+    when(nodeService.getPath(recordNodeRef)).thenReturn(path);
+    when(nodeService.getPath(recordFolderNodeRef)).thenReturn(path);
+    when(element.getRef()).thenReturn(childAssociationRef);
+    when(childAssociationRef.getChildRef()).thenReturn(categoryNodeRef);
+    when(nodeService.getType(categoryNodeRef)).thenReturn(TYPE_RECORD_CATEGORY);
+    when(nodeService.getProperty(categoryNodeRef, PROP_IDENTIFIER))
+      .thenReturn("RecordCategoryId");
+  }
 
-    /**
-     * Tests an id can be returned for a non record with the correct option selected
-     */
-    @Test
-    public void testGetIdFromNodeRefReturnsForNonRecordWhenOptionSelected()
-    {
-        assertEquals("RecordCategoryId", recordCategoryUtil.getCategoryIdFromNodeId(recordFolderNodeRef, true));
-    }
+  /**
+   * Tests an id is returned from a valid node ref
+   */
+  @Test
+  public void testGetIdFromNodeRef() {
+    assertEquals(
+      "RecordCategoryId",
+      recordCategoryUtil.getCategoryIdFromNodeId(recordNodeRef, false)
+    );
+  }
 
-    /**
-     * Tests no id is returned for a folder if option isn't selected
-     */
-    @Test
-    public void testGetIdFromNodeRefReturnsNullForNonRecordWhenOptionSelected()
-    {
-        assertNull(recordCategoryUtil.getCategoryIdFromNodeId(recordFolderNodeRef,false));
-    }
+  /**
+   * Tests an id can be returned for a non record with the correct option selected
+   */
+  @Test
+  public void testGetIdFromNodeRefReturnsForNonRecordWhenOptionSelected() {
+    assertEquals(
+      "RecordCategoryId",
+      recordCategoryUtil.getCategoryIdFromNodeId(recordFolderNodeRef, true)
+    );
+  }
 
-    /**
-     * Tests no id is returned when a categories isn't found on the path
-     */
-    @Test
-    public void testGetIdFromNodeRefReturnsNullWithNoCategory()
-    {
-        when(nodeService.getPath(recordNodeRef)).thenReturn(new Path());
-        assertNull(recordCategoryUtil.getCategoryIdFromNodeId(recordNodeRef, false));
-    }
+  /**
+   * Tests no id is returned for a folder if option isn't selected
+   */
+  @Test
+  public void testGetIdFromNodeRefReturnsNullForNonRecordWhenOptionSelected() {
+    assertNull(
+      recordCategoryUtil.getCategoryIdFromNodeId(recordFolderNodeRef, false)
+    );
+  }
+
+  /**
+   * Tests no id is returned when a categories isn't found on the path
+   */
+  @Test
+  public void testGetIdFromNodeRefReturnsNullWithNoCategory() {
+    when(nodeService.getPath(recordNodeRef)).thenReturn(new Path());
+    assertNull(
+      recordCategoryUtil.getCategoryIdFromNodeId(recordNodeRef, false)
+    );
+  }
 }

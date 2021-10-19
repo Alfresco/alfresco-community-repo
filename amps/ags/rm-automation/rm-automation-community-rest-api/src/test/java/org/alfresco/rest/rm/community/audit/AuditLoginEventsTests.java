@@ -32,7 +32,6 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.util.List;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.v0.service.RMAuditService;
@@ -47,9 +46,9 @@ import org.testng.annotations.Test;
  * @author Claudia Agache
  * @since 2.7
  */
-@AlfrescoTest (jira = "RM-5234")
-public class AuditLoginEventsTests extends BaseRMRestTest
-{
+@AlfrescoTest(jira = "RM-5234")
+public class AuditLoginEventsTests extends BaseRMRestTest {
+
     @Autowired
     private RMAuditService rmAuditService;
 
@@ -59,38 +58,62 @@ public class AuditLoginEventsTests extends BaseRMRestTest
      * Then the audit log contains only the entries for the Login unsuccessful event
      */
     @Test
-    public void filterByLoginUnsuccessful() throws Exception
-    {
+    public void filterByLoginUnsuccessful() throws Exception {
         rmAuditService.clearAuditLog();
-        restClient.authenticateUser(new UserModel(getAdminUser().getUsername(), "InvalidPassword"));
+        restClient.authenticateUser(
+            new UserModel(getAdminUser().getUsername(), "InvalidPassword")
+        );
         restClient.withCoreAPI().getSites();
 
         STEP("Get the list of audit entries for the login unsuccessful event.");
-        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(),
-                LOGIN_UNSUCCESSFUL);
+        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(
+            getAdminUser(),
+            LOGIN_UNSUCCESSFUL
+        );
 
-        STEP("Check the audit log contains only the entries for the login unsuccessful event.");
-        assertTrue("The list of events is not filtered by " + LOGIN_UNSUCCESSFUL.event,
-                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(LOGIN_UNSUCCESSFUL.eventDisplayName)));
+        STEP(
+            "Check the audit log contains only the entries for the login unsuccessful event."
+        );
+        assertTrue(
+            "The list of events is not filtered by " + LOGIN_UNSUCCESSFUL.event,
+            auditEntries
+                .stream()
+                .allMatch(auditEntry ->
+                    auditEntry
+                        .getEvent()
+                        .equals(LOGIN_UNSUCCESSFUL.eventDisplayName)
+                )
+        );
     }
-    
+
     /**
      * Given I have tried to login using valid credentials
      * When I view the RM audit filtered by Login successful event
      * Then the audit log contains only the entries for the Login successful event
      */
     @Test
-    public void filterByLoginSuccessful() throws Exception
-    {
+    public void filterByLoginSuccessful() throws Exception {
         restClient.authenticateUser(getAdminUser());
         restClient.withCoreAPI().getSites();
 
         STEP("Get the list of audit entries for the login successful event.");
-        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(),
-                LOGIN_SUCCESSFUL);
+        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(
+            getAdminUser(),
+            LOGIN_SUCCESSFUL
+        );
 
-        STEP("Check the audit log contains only the entries for the login successful event.");
-        assertTrue("The list of events is not filtered by " + LOGIN_SUCCESSFUL.event,
-                auditEntries.stream().allMatch(auditEntry -> auditEntry.getEvent().equals(LOGIN_SUCCESSFUL.eventDisplayName)));
+        STEP(
+            "Check the audit log contains only the entries for the login successful event."
+        );
+        assertTrue(
+            "The list of events is not filtered by " + LOGIN_SUCCESSFUL.event,
+            auditEntries
+                .stream()
+                .allMatch(auditEntry ->
+                    auditEntry
+                        .getEvent()
+                        .equals(LOGIN_SUCCESSFUL.eventDisplayName)
+                )
+        );
     }
 }

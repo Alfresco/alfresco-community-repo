@@ -25,159 +25,178 @@
  */
 package org.alfresco.service.cmr.search;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * POJO class representing Stats request
  */
-public class StatsRequestParameters
-{
-    private final String field;
-    private final String label;
-    private final List<Float> percentiles;
-    private final Boolean min;
-    private final Boolean max;
-    private final Boolean sum;
-    private final Boolean countValues;
-    private final Boolean missing;
-    private final Boolean sumOfSquares;
-    private final Boolean mean;
-    private final Boolean stddev;
-    private final Boolean distinctValues;
-    private final Boolean countDistinct;
-    private final Boolean cardinality;
-    private final Float cardinalityAccuracy;
-    private final List<String> excludeFilters;
+public class StatsRequestParameters {
 
-    @JsonCreator
-    public StatsRequestParameters(
-                 @JsonProperty("field") String field,
-                 @JsonProperty("label") String label,
-                 @JsonProperty("percentiles") List<Float> percentiles,
-                 @JsonProperty("min") Boolean min,
-                 @JsonProperty("max") Boolean max,
-                 @JsonProperty("sum") Boolean sum,
-                 @JsonProperty("countValues") Boolean countValues,
-                 @JsonProperty("missing") Boolean missing,
-                 @JsonProperty("sumOfSquares") Boolean sumOfSquares,
-                 @JsonProperty("mean") Boolean mean,
-                 @JsonProperty("stddev") Boolean stddev,
-                 @JsonProperty("distinctValues") Boolean distinctValues,
-                 @JsonProperty("countDistinct") Boolean countDistinct,
-                 @JsonProperty("cardinality") Boolean cardinality,
-                 @JsonProperty("cardinalityAccuracy") Float cardinalityAccuracy,
-                 @JsonProperty("excludeFilters") List<String> excludeFilters)
-    {
-        this.field = field;
-        this.label = label;
-        this.percentiles = percentiles == null? Collections.emptyList():percentiles;
+  private final String field;
+  private final String label;
+  private final List<Float> percentiles;
+  private final Boolean min;
+  private final Boolean max;
+  private final Boolean sum;
+  private final Boolean countValues;
+  private final Boolean missing;
+  private final Boolean sumOfSquares;
+  private final Boolean mean;
+  private final Boolean stddev;
+  private final Boolean distinctValues;
+  private final Boolean countDistinct;
+  private final Boolean cardinality;
+  private final Float cardinalityAccuracy;
+  private final List<String> excludeFilters;
 
-        this.min = min == null?true:min;
-        this.max = max == null?true:max;
-        this.sum = sum == null?true:sum;
-        this.countValues = countValues == null?true:countValues;
-        this.missing = missing == null?true:missing;
-        this.sumOfSquares = sumOfSquares == null?true:sumOfSquares;
-        this.mean = mean == null?true:mean;
-        this.stddev = stddev == null?true:stddev;
+  @JsonCreator
+  public StatsRequestParameters(
+    @JsonProperty("field") String field,
+    @JsonProperty("label") String label,
+    @JsonProperty("percentiles") List<Float> percentiles,
+    @JsonProperty("min") Boolean min,
+    @JsonProperty("max") Boolean max,
+    @JsonProperty("sum") Boolean sum,
+    @JsonProperty("countValues") Boolean countValues,
+    @JsonProperty("missing") Boolean missing,
+    @JsonProperty("sumOfSquares") Boolean sumOfSquares,
+    @JsonProperty("mean") Boolean mean,
+    @JsonProperty("stddev") Boolean stddev,
+    @JsonProperty("distinctValues") Boolean distinctValues,
+    @JsonProperty("countDistinct") Boolean countDistinct,
+    @JsonProperty("cardinality") Boolean cardinality,
+    @JsonProperty("cardinalityAccuracy") Float cardinalityAccuracy,
+    @JsonProperty("excludeFilters") List<String> excludeFilters
+  ) {
+    this.field = field;
+    this.label = label;
+    this.percentiles =
+      percentiles == null ? Collections.emptyList() : percentiles;
 
-        this.distinctValues = distinctValues == null?false:distinctValues;
-        this.countDistinct = countDistinct == null?false:countDistinct;
-        this.cardinality = cardinality == null?false:cardinality;
-        this.cardinalityAccuracy = cardinalityAccuracy == null?0.3f:cardinalityAccuracy;
-        this.excludeFilters = excludeFilters == null? Collections.emptyList():excludeFilters;
-    }
+    this.min = min == null ? true : min;
+    this.max = max == null ? true : max;
+    this.sum = sum == null ? true : sum;
+    this.countValues = countValues == null ? true : countValues;
+    this.missing = missing == null ? true : missing;
+    this.sumOfSquares = sumOfSquares == null ? true : sumOfSquares;
+    this.mean = mean == null ? true : mean;
+    this.stddev = stddev == null ? true : stddev;
 
-    public String getField()
-    {
-        return field;
-    }
+    this.distinctValues = distinctValues == null ? false : distinctValues;
+    this.countDistinct = countDistinct == null ? false : countDistinct;
+    this.cardinality = cardinality == null ? false : cardinality;
+    this.cardinalityAccuracy =
+      cardinalityAccuracy == null ? 0.3f : cardinalityAccuracy;
+    this.excludeFilters =
+      excludeFilters == null ? Collections.emptyList() : excludeFilters;
+  }
 
-    public String getLabel()
-    {
-        return label;
-    }
+  public String getField() {
+    return field;
+  }
 
-    public List<Float> getPercentiles()
-    {
-        return percentiles;
-    }
+  public String getLabel() {
+    return label;
+  }
 
-    public Boolean getDistinctValues()
-    {
-        return distinctValues;
-    }
+  public List<Float> getPercentiles() {
+    return percentiles;
+  }
 
-    public Boolean getCountDistinct()
-    {
-        return countDistinct;
-    }
+  public Boolean getDistinctValues() {
+    return distinctValues;
+  }
 
-    public Boolean getCardinality()
-    {
-        return cardinality;
-    }
+  public Boolean getCountDistinct() {
+    return countDistinct;
+  }
 
-    public Float getCardinalityAccuracy()
-    {
-        return cardinalityAccuracy;
-    }
+  public Boolean getCardinality() {
+    return cardinality;
+  }
 
-    public List<String> getExcludeFilters()
-    {
-        return excludeFilters;
-    }
+  public Float getCardinalityAccuracy() {
+    return cardinalityAccuracy;
+  }
 
-    public Boolean getMin()
-    {
-        return min;
-    }
+  public List<String> getExcludeFilters() {
+    return excludeFilters;
+  }
 
-    public Boolean getMax()
-    {
-        return max;
-    }
+  public Boolean getMin() {
+    return min;
+  }
 
-    public Boolean getSum()
-    {
-        return sum;
-    }
+  public Boolean getMax() {
+    return max;
+  }
 
-    public Boolean getCountValues()
-    {
-        return countValues;
-    }
+  public Boolean getSum() {
+    return sum;
+  }
 
-    public Boolean getMissing()
-    {
-        return missing;
-    }
+  public Boolean getCountValues() {
+    return countValues;
+  }
 
-    public Boolean getSumOfSquares()
-    {
-        return sumOfSquares;
-    }
+  public Boolean getMissing() {
+    return missing;
+  }
 
-    public Boolean getMean()
-    {
-        return mean;
-    }
+  public Boolean getSumOfSquares() {
+    return sumOfSquares;
+  }
 
-    public Boolean getStddev()
-    {
-        return stddev;
-    }
+  public Boolean getMean() {
+    return mean;
+  }
 
-    @Override
-    public String toString()
-    {
-        return "StatsRequestParameters{" + "field='" + field + '\'' + ", label='" + label + '\'' + ", percentiles=" + percentiles + ", min=" + min
-                    + ", max=" + max + ", sum=" + sum + ", countValues=" + countValues + ", missing=" + missing + ", sumOfSquares=" + sumOfSquares + ", mean="
-                    + mean + ", stddev=" + stddev + ", distinctValues=" + distinctValues + ", countDistinct=" + countDistinct + ", cardinality="
-                    + cardinality + ", cardinalityAccuracy=" + cardinalityAccuracy + ", excludeFilters=" + excludeFilters + '}';
-    }
+  public Boolean getStddev() {
+    return stddev;
+  }
+
+  @Override
+  public String toString() {
+    return (
+      "StatsRequestParameters{" +
+      "field='" +
+      field +
+      '\'' +
+      ", label='" +
+      label +
+      '\'' +
+      ", percentiles=" +
+      percentiles +
+      ", min=" +
+      min +
+      ", max=" +
+      max +
+      ", sum=" +
+      sum +
+      ", countValues=" +
+      countValues +
+      ", missing=" +
+      missing +
+      ", sumOfSquares=" +
+      sumOfSquares +
+      ", mean=" +
+      mean +
+      ", stddev=" +
+      stddev +
+      ", distinctValues=" +
+      distinctValues +
+      ", countDistinct=" +
+      countDistinct +
+      ", cardinality=" +
+      cardinality +
+      ", cardinalityAccuracy=" +
+      cardinalityAccuracy +
+      ", excludeFilters=" +
+      excludeFilters +
+      '}'
+    );
+  }
 }

@@ -28,7 +28,6 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -43,133 +42,122 @@ import org.alfresco.util.Pair;
  *
  * @see RecordsManagementModel
  */
-public class RMContainerCacheManager implements RecordsManagementModel
-{
-    /** node service */
-    private NodeService nodeService;
+public class RMContainerCacheManager implements RecordsManagementModel {
 
-    /** root records management cache */
-    private SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> cache;
+  /** node service */
+  private NodeService nodeService;
 
-    /**
-     * @param nodeService
-     *            node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+  /** root records management cache */
+  private SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> cache;
+
+  /**
+   * @param nodeService
+   *            node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * @param cache
+   */
+  public void setCache(
+    SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> cache
+  ) {
+    this.cache = cache;
+  }
+
+  /**
+   * Verifies if there is cached nodes for supplied storeRef
+   *
+   * @param storeRef
+   * @return true if there are cached nodes, false otherwise
+   */
+  public boolean isCached(StoreRef storeRef) {
+    Pair<StoreRef, String> key = getKey(storeRef);
+    Set<NodeRef> values = cache.get(key);
+    boolean isCached = (values != null && !values.isEmpty());
+    if (!isCached) {
+      cache.remove(key);
     }
+    return isCached;
+  }
 
-    /**
-     * @param cache
-     */
-    public void setCache(SimpleCache<Pair<StoreRef, String>, Set<NodeRef>> cache)
-    {
-        this.cache = cache;
+  /**
+   * Obtains the cached nodes for supplied storeRef
+   *
+   * @param storeRef
+   * @return a set containing the cached nodes
+   */
+  public Set<NodeRef> get(StoreRef storeRef) {
+    return cache.get(getKey(storeRef));
+  }
+
+  /**
+   * Caches the supplied node
+   *
+   * @param nodeRef
+   */
+  public void add(NodeRef nodeRef) {
+    if (
+      nodeRef != null &&
+      nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT)
+    ) {
+      Set<NodeRef> entries;
+      Pair<StoreRef, String> key = getKey(nodeRef.getStoreRef());
+
+      if (cache.contains(key)) {
+        entries = this.cache.get(key);
+      } else {
+        entries = new HashSet<>();
+      }
+
+      if (!entries.contains(nodeRef)) {
+        entries.add(nodeRef);
+      }
+
+      if (entries.size() > 0) {
+        cache.put(key, entries);
+      }
     }
+  }
 
-    /**
-     * Verifies if there is cached nodes for supplied storeRef
-     *
-     * @param storeRef
-     * @return true if there are cached nodes, false otherwise
-     */
-    public boolean isCached(StoreRef storeRef)
-    {
-        Pair<StoreRef, String> key = getKey(storeRef);
-        Set<NodeRef> values = cache.get(key);
-        boolean isCached = (values != null && !values.isEmpty());
-        if (!isCached)
-        {
+  /**
+   * Removes the supplied entry from the cache
+   *
+   * @param nodeRef
+   */
+  public void remove(NodeRef nodeRef) {
+    if (nodeRef != null) {
+      if (nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT)) {
+        Pair<StoreRef, String> key = getKey(nodeRef.getStoreRef());
+        if (cache.contains(key)) {
+          cache.get(key).remove(nodeRef);
+          if (cache.get(key).size() == 0) {
             cache.remove(key);
+          }
         }
-        return isCached;
+      }
     }
+  }
 
-    /**
-     * Obtains the cached nodes for supplied storeRef
-     *
-     * @param storeRef
-     * @return a set containing the cached nodes
-     */
-    public Set<NodeRef> get(StoreRef storeRef)
-    {
-        return cache.get(getKey(storeRef));
-    }
+  /**
+   * Resets the cache entries
+   */
+  public void reset() {
+    this.cache.clear();
+  }
 
-    /**
-     * Caches the supplied node
-     *
-     * @param nodeRef
-     */
-    public void add(NodeRef nodeRef)
-    {
-        if (nodeRef != null && nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT))
-        {
-            Set<NodeRef> entries;
-            Pair<StoreRef, String> key = getKey(nodeRef.getStoreRef());
-
-            if (cache.contains(key))
-            {
-                entries = this.cache.get(key);
-            }
-            else
-            {
-                entries = new HashSet<>();
-            }
-
-            if (!entries.contains(nodeRef))
-            {
-                entries.add(nodeRef);
-            }
-
-            if (entries.size() > 0)
-            {
-                cache.put(key, entries);
-            }
-        }
-    }
-
-    /**
-     * Removes the supplied entry from the cache
-     *
-     * @param nodeRef
-     */
-    public void remove(NodeRef nodeRef)
-    {
-        if (nodeRef != null)
-        {
-            if (nodeService.hasAspect(nodeRef, ASPECT_RECORDS_MANAGEMENT_ROOT))
-            {
-                Pair<StoreRef, String> key = getKey(nodeRef.getStoreRef());
-                if (cache.contains(key))
-                {
-                    cache.get(key).remove(nodeRef);
-                    if (cache.get(key).size() == 0)
-                    {
-                        cache.remove(key);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Resets the cache entries
-     */
-    public void reset()
-    {
-        this.cache.clear();
-    }
-
-    /**
-     * Builds the cache key using the supplied storeRef
-     *
-     * @param storeRef
-     * @return a pair corresponding to the cache key
-     */
-    private Pair<StoreRef, String> getKey(StoreRef storeRef)
-    {
-        return new Pair<StoreRef, String>(storeRef, ASPECT_RECORDS_MANAGEMENT_ROOT.toString());
-    }
+  /**
+   * Builds the cache key using the supplied storeRef
+   *
+   * @param storeRef
+   * @return a pair corresponding to the cache key
+   */
+  private Pair<StoreRef, String> getKey(StoreRef storeRef) {
+    return new Pair<StoreRef, String>(
+      storeRef,
+      ASPECT_RECORDS_MANAGEMENT_ROOT.toString()
+    );
+  }
 }

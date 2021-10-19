@@ -44,44 +44,43 @@ import org.mockito.InjectMocks;
  * @author Mihai Cozma
  * @since 2.4
  */
-public class HoldContainerTypeUnitTest extends BaseUnitTest
-{
-    /** test object */
-    private @InjectMocks HoldContainerType holdContainerType;
+public class HoldContainerTypeUnitTest extends BaseUnitTest {
 
-    /**
-     * Given that we try to add a non "rma:hold" type to hold container,
-     * Then IntegrityException is thrown.
-     */
-    @Test (expected = IntegrityException.class)
-    public void testAddNonHoldTypeToHoldContainer()
-    {
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_HOLD)).thenReturn(false);
-        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+  /** test object */
+  @InjectMocks
+  private HoldContainerType holdContainerType;
 
-        NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
-        when(mockedChildAssoc.getParentRef()).thenReturn(holdContainer);
-        holdContainerType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
+  /**
+   * Given that we try to add a non "rma:hold" type to hold container,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testAddNonHoldTypeToHoldContainer() {
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_HOLD)).thenReturn(false);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
-    /**
-     * Given that we try to add "rma:hold" type to hold container,
-     * Then the operation is successful.
-     */
-    @Test
-    public void testAddHoldTypeToHoldContainer()
-    {
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_HOLD)).thenReturn(true);
-        NodeRef holdFolder= AlfMock.generateNodeRef(mockedNodeService, type);
+    NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
+    ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+    when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+    when(mockedChildAssoc.getParentRef()).thenReturn(holdContainer);
+    holdContainerType.onCreateChildAssociation(mockedChildAssoc, true);
+  }
 
-        NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(holdFolder);
-        when(mockedChildAssoc.getParentRef()).thenReturn(holdContainer);
-        holdContainerType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
+  /**
+   * Given that we try to add "rma:hold" type to hold container,
+   * Then the operation is successful.
+   */
+  @Test
+  public void testAddHoldTypeToHoldContainer() {
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_HOLD)).thenReturn(true);
+    NodeRef holdFolder = AlfMock.generateNodeRef(mockedNodeService, type);
+
+    NodeRef holdContainer = generateNodeRef(TYPE_HOLD_CONTAINER, true);
+    ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+    when(mockedChildAssoc.getChildRef()).thenReturn(holdFolder);
+    when(mockedChildAssoc.getParentRef()).thenReturn(holdContainer);
+    holdContainerType.onCreateChildAssociation(mockedChildAssoc, true);
+  }
 }

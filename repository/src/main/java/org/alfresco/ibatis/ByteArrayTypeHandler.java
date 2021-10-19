@@ -35,117 +35,102 @@ import org.apache.ibatis.type.TypeHandler;
 
 /**
  * MyBatis 3.x TypeHandler for <tt>_byte[]</tt> to <b>BLOB</b> types.
- * 
+ *
  * @author sglover
  * @since 5.0
  */
-public class ByteArrayTypeHandler implements TypeHandler
-{
-    /**
-     * @throws DeserializationException if the object could not be deserialized
-     */
-    public Object getResult(ResultSet rs, String columnName) throws SQLException
-    {
-        byte[] ret = null;
-        try
-        {
-            byte[] bytes = rs.getBytes(columnName);
-            if(bytes != null && !rs.wasNull())
-            {
-                ret = bytes;
-            }
-        }
-        catch (Throwable e)
-        {
-            throw new DeserializationException(e);
-        }
-        return ret;
-    }
+public class ByteArrayTypeHandler implements TypeHandler {
 
-    @Override
-    public Object getResult(ResultSet rs, int columnIndex) throws SQLException
-    {
-        byte[] ret = null;
-        try
-        {
-            byte[] bytes = rs.getBytes(columnIndex);
-            if(bytes != null && !rs.wasNull())
-            {
-                ret = bytes;
-            }
-        }
-        catch (Throwable e)
-        {
-            throw new DeserializationException(e);
-        }
-        return ret;
+  /**
+   * @throws DeserializationException if the object could not be deserialized
+   */
+  public Object getResult(ResultSet rs, String columnName) throws SQLException {
+    byte[] ret = null;
+    try {
+      byte[] bytes = rs.getBytes(columnName);
+      if (bytes != null && !rs.wasNull()) {
+        ret = bytes;
+      }
+    } catch (Throwable e) {
+      throw new DeserializationException(e);
     }
+    return ret;
+  }
 
-    public void setParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType) throws SQLException
-    {
-        if (parameter == null)
-        {
-            ps.setNull(i, Types.BINARY);
-        }
-        else
-        {
-            try
-            {
-                ps.setBytes(i, (byte[])parameter);
-            }
-            catch (Throwable e)
-            {
-                throw new SerializationException(e);
-            }
-        }
+  @Override
+  public Object getResult(ResultSet rs, int columnIndex) throws SQLException {
+    byte[] ret = null;
+    try {
+      byte[] bytes = rs.getBytes(columnIndex);
+      if (bytes != null && !rs.wasNull()) {
+        ret = bytes;
+      }
+    } catch (Throwable e) {
+      throw new DeserializationException(e);
     }
-    
-    public Object getResult(CallableStatement cs, int columnIndex) throws SQLException 
-    {
-        throw new UnsupportedOperationException("Unsupported");
-    }
+    return ret;
+  }
 
-    /**
-     * @return          Returns the value given
-     */
-    public Object valueOf(String s)
-    {
-        return s;
+  public void setParameter(
+    PreparedStatement ps,
+    int i,
+    Object parameter,
+    JdbcType jdbcType
+  ) throws SQLException {
+    if (parameter == null) {
+      ps.setNull(i, Types.BINARY);
+    } else {
+      try {
+        ps.setBytes(i, (byte[]) parameter);
+      } catch (Throwable e) {
+        throw new SerializationException(e);
+      }
     }
-    
-    /**
-     * Marker exception to allow deserialization issues to be dealt with by calling code.
-     * If this exception remains uncaught, it will be very difficult to find and rectify
-     * the data issue.
-     * 
-     * @author sglover
-     * @since 5.0
-     */
-    public static class DeserializationException extends RuntimeException
-    {
-        private static final long serialVersionUID = 4673487701048985340L;
+  }
 
-        public DeserializationException(Throwable cause)
-        {
-            super(cause);
-        }
-    }
-    
-    /**
-     * Marker exception to allow serialization issues to be dealt with by calling code.
-     * Unlike with {@link DeserializationException deserialization}, it is not important
-     * to handle this exception neatly.
-     *   
-     * @author sglover
-     * @since 5.0
-     */
-    public static class SerializationException extends RuntimeException
-    {
-        private static final long serialVersionUID = 962957884262870228L;
+  public Object getResult(CallableStatement cs, int columnIndex)
+    throws SQLException {
+    throw new UnsupportedOperationException("Unsupported");
+  }
 
-        public SerializationException(Throwable cause)
-        {
-            super(cause);
-        }
+  /**
+   * @return          Returns the value given
+   */
+  public Object valueOf(String s) {
+    return s;
+  }
+
+  /**
+   * Marker exception to allow deserialization issues to be dealt with by calling code.
+   * If this exception remains uncaught, it will be very difficult to find and rectify
+   * the data issue.
+   *
+   * @author sglover
+   * @since 5.0
+   */
+  public static class DeserializationException extends RuntimeException {
+
+    private static final long serialVersionUID = 4673487701048985340L;
+
+    public DeserializationException(Throwable cause) {
+      super(cause);
     }
+  }
+
+  /**
+   * Marker exception to allow serialization issues to be dealt with by calling code.
+   * Unlike with {@link DeserializationException deserialization}, it is not important
+   * to handle this exception neatly.
+   *
+   * @author sglover
+   * @since 5.0
+   */
+  public static class SerializationException extends RuntimeException {
+
+    private static final long serialVersionUID = 962957884262870228L;
+
+    public SerializationException(Throwable cause) {
+      super(cause);
+    }
+  }
 }

@@ -25,13 +25,12 @@
  */
 package org.alfresco.repo.rendition2;
 
+import java.util.Collections;
 import org.alfresco.util.testing.category.DebugTests;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import java.util.Collections;
 
 /**
  * Repeats quick file rendition tests with local transforms disabled.
@@ -39,53 +38,46 @@ import java.util.Collections;
  *
  * @author adavis
  */
-public class NoneRenditionTest extends AbstractRenditionTest
-{
-    @BeforeClass
-    public static void before()
-    {
-        AbstractRenditionIntegrationTest.before();
-        none();
-    }
+public class NoneRenditionTest extends AbstractRenditionTest {
 
-    @AfterClass
-    public static void after()
-    {
-        AbstractRenditionIntegrationTest.after();
-    }
+  @BeforeClass
+  public static void before() {
+    AbstractRenditionIntegrationTest.before();
+    none();
+  }
 
-    @Test
-    @Override
-    public void testTasRestApiRenditions() throws Exception
-    {
-        internalTestTasRestApiRenditions(0, 0);
-    }
+  @AfterClass
+  public static void after() {
+    AbstractRenditionIntegrationTest.after();
+  }
 
-    @Category(DebugTests.class)
-    @Test
-    @Override
-    public void testAllSourceExtensions() throws Exception
-    {
-        internalTestAllSourceExtensions(0, 0, Collections.emptyList());
-    }
+  @Test
+  @Override
+  public void testTasRestApiRenditions() throws Exception {
+    internalTestTasRestApiRenditions(0, 0);
+  }
 
-    @Test
-    @Override
-    public void testGifRenditions() throws Exception
-    {
-        internalTestGifRenditions(0, 0);
-    }
+  @Category(DebugTests.class)
+  @Test
+  @Override
+  public void testAllSourceExtensions() throws Exception {
+    internalTestAllSourceExtensions(0, 0, Collections.emptyList());
+  }
 
-    @Test
-    @Override
-    public void testSelectedMetadataExtracts() throws Exception
-    {
-        internalTestSelectedMetadataExtracts(7, 7);
-    }
+  @Test
+  @Override
+  public void testGifRenditions() throws Exception {
+    internalTestGifRenditions(0, 0);
+  }
 
-    @Test
-    public void testAllTransformServiceConfigRenditions() throws Exception
-    {
-        internalTestTasRestApiRenditions(0, 0);
-    }
+  @Test
+  @Override
+  public void testSelectedMetadataExtracts() throws Exception {
+    internalTestSelectedMetadataExtracts(7, 7);
+  }
+
+  @Test
+  public void testAllTransformServiceConfigRenditions() throws Exception {
+    internalTestTasRestApiRenditions(0, 0);
+  }
 }

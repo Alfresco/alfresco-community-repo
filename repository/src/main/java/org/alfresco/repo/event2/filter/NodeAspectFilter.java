@@ -28,7 +28,6 @@ package org.alfresco.repo.event2.filter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -36,23 +35,23 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class NodeAspectFilter extends AbstractNodeEventFilter
-{
-    private final List<String> nodeAspectsBlackList;
+public class NodeAspectFilter extends AbstractNodeEventFilter {
 
-    public NodeAspectFilter(String filteredNodeAspects)
-    {
-        this.nodeAspectsBlackList = parseFilterList(filteredNodeAspects);
-    }
+  private final List<String> nodeAspectsBlackList;
 
-    @Override
-    public Set<QName> getExcludedTypes()
-    {
-        Set<QName> result = new HashSet<>();
+  public NodeAspectFilter(String filteredNodeAspects) {
+    this.nodeAspectsBlackList = parseFilterList(filteredNodeAspects);
+  }
 
-        // add node aspects defined in repository.properties/alfresco-global.properties
-        nodeAspectsBlackList.forEach(nodeAspect -> result.addAll(expandTypeDef(nodeAspect)));
+  @Override
+  public Set<QName> getExcludedTypes() {
+    Set<QName> result = new HashSet<>();
 
-        return result;
-    }
+    // add node aspects defined in repository.properties/alfresco-global.properties
+    nodeAspectsBlackList.forEach(nodeAspect ->
+      result.addAll(expandTypeDef(nodeAspect))
+    );
+
+    return result;
+  }
 }

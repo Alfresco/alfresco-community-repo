@@ -38,60 +38,59 @@ import org.springframework.lang.NonNull;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class EventFilterRegistry implements BeanFactoryAware
-{
-    private static final Log LOGGER = LogFactory.getLog(EventFilterRegistry.class);
+public class EventFilterRegistry implements BeanFactoryAware {
 
-    private BeanFactory beanFactory;
+  private static final Log LOGGER = LogFactory.getLog(
+    EventFilterRegistry.class
+  );
 
-    @Override
-    public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException
-    {
-        this.beanFactory = beanFactory;
+  private BeanFactory beanFactory;
+
+  @Override
+  public void setBeanFactory(@NonNull BeanFactory beanFactory)
+    throws BeansException {
+    this.beanFactory = beanFactory;
+  }
+
+  /**
+   * Return the filter bean instance that uniquely matches the given object type.
+   *
+   * @param filterClass the event filter type that the bean must match
+   * @return an instance of the filter bean matching the required type
+   * @throws NoSuchBeanDefinitionException - if no bean of the given type was found
+   */
+  public <F extends EventFilter<?>> F getFilter(
+    String beanName,
+    Class<F> filterClass
+  ) {
+    try {
+      return beanFactory.getBean(beanName, filterClass);
+    } catch (Exception ex) {
+      LOGGER.error(ex);
+      throw ex;
     }
+  }
 
-    /**
-     * Return the filter bean instance that uniquely matches the given object type.
-     *
-     * @param filterClass the event filter type that the bean must match
-     * @return an instance of the filter bean matching the required type
-     * @throws NoSuchBeanDefinitionException - if no bean of the given type was found
-     */
-    public <F extends EventFilter<?>> F getFilter(String beanName, Class<F> filterClass)
-    {
-        try
-        {
-            return beanFactory.getBean(beanName, filterClass);
-        }
-        catch (Exception ex)
-        {
-            LOGGER.error(ex);
-            throw ex;
-        }
-    }
+  public NodeTypeFilter getNodeTypeFilter() {
+    return getFilter("event2NodeTypeFilter", NodeTypeFilter.class);
+  }
 
-    public NodeTypeFilter getNodeTypeFilter()
-    {
-        return getFilter("event2NodeTypeFilter", NodeTypeFilter.class);
-    }
+  public NodeAspectFilter getNodeAspectFilter() {
+    return getFilter("event2NodeAspectFilter", NodeAspectFilter.class);
+  }
 
-    public NodeAspectFilter getNodeAspectFilter()
-    {
-        return getFilter("event2NodeAspectFilter", NodeAspectFilter.class);
-    }
+  public NodePropertyFilter getNodePropertyFilter() {
+    return getFilter("event2NodePropertyFilter", NodePropertyFilter.class);
+  }
 
-    public NodePropertyFilter getNodePropertyFilter()
-    {
-        return getFilter("event2NodePropertyFilter", NodePropertyFilter.class);
-    }
+  public ChildAssociationTypeFilter getChildAssociationTypeFilter() {
+    return getFilter(
+      "event2ChildAssociationTypeFilter",
+      ChildAssociationTypeFilter.class
+    );
+  }
 
-    public ChildAssociationTypeFilter getChildAssociationTypeFilter()
-    {
-        return getFilter("event2ChildAssociationTypeFilter", ChildAssociationTypeFilter.class);
-    }
-
-    public EventUserFilter getEventUserFilter()
-    {
-        return getFilter("event2UserFilter", EventUserFilter.class);
-    }
+  public EventUserFilter getEventUserFilter() {
+    return getFilter("event2UserFilter", EventUserFilter.class);
+  }
 }

@@ -32,57 +32,47 @@ package org.alfresco.module.org_alfresco_module_rm.query;
  * @author Tom Page
  * @since 2.5.0.4
  */
-public class NodeRefEntity
-{
-    private Long num;
-    private String protocol;
-    private String identifier;
-    private String uuid;
+public class NodeRefEntity {
 
-    /**
-     * Default constructor.
-     */
-    public NodeRefEntity()
-    {
-    }
+  private Long num;
+  private String protocol;
+  private String identifier;
+  private String uuid;
 
-    public Long getNum()
-    {
-        return num;
-    }
+  /**
+   * Default constructor.
+   */
+  public NodeRefEntity() {}
 
-    public void setNum(Long num)
-    {
-        this.num = num;
-    }
+  public Long getNum() {
+    return num;
+  }
 
-    public String getProtocol()
-    {
-        return protocol;
-    }
+  public void setNum(Long num) {
+    this.num = num;
+  }
 
-    public void setProtocol(String protocol)
-    {
-        this.protocol = protocol;
-    }
+  public String getProtocol() {
+    return protocol;
+  }
 
-    public String getIdentifier()
-    {
-        return identifier;
-    }
+  public void setProtocol(String protocol) {
+    this.protocol = protocol;
+  }
 
-    public void setIdentifier(String identifier)
-    {
-        this.identifier = identifier;
-    }
+  public String getIdentifier() {
+    return identifier;
+  }
 
-    public String getUuid()
-    {
-        return uuid;
-    }
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
+  }
 
-    public void setUuid(String uuid)
-    {
-        this.uuid = uuid;
-    }
+  public String getUuid() {
+    return uuid;
+  }
+
+  public void setUuid(String uuid) {
+    this.uuid = uuid;
+  }
 }

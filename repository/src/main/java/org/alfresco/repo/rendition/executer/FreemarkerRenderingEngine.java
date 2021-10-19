@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,7 +29,6 @@ package org.alfresco.repo.rendition.executer;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
-
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,88 +46,98 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
  * @deprecated The RenditionService is being replace by the simpler async RenditionService2.
  */
 @Deprecated
-public class FreemarkerRenderingEngine
-            extends BaseTemplateRenderingEngine
-{
-    public static final String NAME = "freemarkerRenderingEngine";
-    private static final String PARAM_IMAGE_RESOLVER = "image_resolver";
+public class FreemarkerRenderingEngine extends BaseTemplateRenderingEngine {
 
-    /**
-     * The name of the source node as it appears in the model supplied to the freemarker template
-     */
-    public static final String KEY_NODE = "node";
+  public static final String NAME = "freemarkerRenderingEngine";
+  private static final String PARAM_IMAGE_RESOLVER = "image_resolver";
 
-    private Repository repository;
-    private ServiceRegistry serviceRegistry;
+  /**
+   * The name of the source node as it appears in the model supplied to the freemarker template
+   */
+  public static final String KEY_NODE = "node";
 
+  private Repository repository;
+  private ServiceRegistry serviceRegistry;
 
-    /*
-     * @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine#
-     * getParameterDefinitions()
-     */
-    @Override
-    protected Collection<ParameterDefinition> getParameterDefinitions()
-    {
-        Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
-        paramList.add(new ParameterDefinitionImpl(
-                PARAM_IMAGE_RESOLVER,
-                DataTypeDefinition.ANY,
-                false,
-                getParamDisplayLabel(PARAM_IMAGE_RESOLVER)));
-        return paramList;
-    }
+  /*
+   * @seeorg.alfresco.repo.rendition.executer.AbstractRenderingEngine#
+   * getParameterDefinitions()
+   */
+  @Override
+  protected Collection<ParameterDefinition> getParameterDefinitions() {
+    Collection<ParameterDefinition> paramList = super.getParameterDefinitions();
+    paramList.add(
+      new ParameterDefinitionImpl(
+        PARAM_IMAGE_RESOLVER,
+        DataTypeDefinition.ANY,
+        false,
+        getParamDisplayLabel(PARAM_IMAGE_RESOLVER)
+      )
+    );
+    return paramList;
+  }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  protected Object buildModel(RenderingContext context) {
+    // The templateNode can be null.
+    NodeRef companyHome = repository.getCompanyHome();
+    NodeRef templateNode = getTemplateNode(context);
+    Map<String, Serializable> paramMap = context.getCheckedParam(
+      PARAM_MODEL,
+      Map.class
+    );
+    TemplateImageResolver imgResolver = context.getCheckedParam(
+      PARAM_IMAGE_RESOLVER,
+      TemplateImageResolver.class
+    );
 
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    protected Object buildModel(RenderingContext context)
-    {
-        // The templateNode can be null.
-        NodeRef companyHome = repository.getCompanyHome();
-        NodeRef templateNode = getTemplateNode(context);
-        Map<String, Serializable> paramMap = context.getCheckedParam(PARAM_MODEL, Map.class);
-        TemplateImageResolver imgResolver = context.getCheckedParam(PARAM_IMAGE_RESOLVER, 
-                TemplateImageResolver.class);
-        
-        // The fully authenticated user below is the username of the person who logged in and
-        // who requested the execution of the current rendition. This will not be the
-        // same person as the current user as renditions are executed by the system user.
-        String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        NodeRef person = serviceRegistry.getPersonService().getPerson(fullyAuthenticatedUser);
-        
-        NodeRef userHome = repository.getUserHome(person);
-        Map<String, Object> model = getTemplateService().buildDefaultModel(person, companyHome, 
-                userHome, templateNode, imgResolver);
+    // The fully authenticated user below is the username of the person who logged in and
+    // who requested the execution of the current rendition. This will not be the
+    // same person as the current user as renditions are executed by the system user.
+    String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
+    NodeRef person = serviceRegistry
+      .getPersonService()
+      .getPerson(fullyAuthenticatedUser);
 
-        TemplateNode sourceTemplateNode = new TemplateNode(context.getSourceNode(), serviceRegistry, imgResolver);
-        // TODO Add xml dom here.
-        // model.put("xml", NodeModel.wrap(null));
-        model.put(KEY_NODE, sourceTemplateNode);
-        if (paramMap != null)
-            model.putAll(paramMap);
-        return model;
-    }
+    NodeRef userHome = repository.getUserHome(person);
+    Map<String, Object> model = getTemplateService()
+      .buildDefaultModel(
+        person,
+        companyHome,
+        userHome,
+        templateNode,
+        imgResolver
+      );
 
-    @Override
-    protected String getTemplateType()
-    {
-        return "freemarker";
-    }
+    TemplateNode sourceTemplateNode = new TemplateNode(
+      context.getSourceNode(),
+      serviceRegistry,
+      imgResolver
+    );
+    // TODO Add xml dom here.
+    // model.put("xml", NodeModel.wrap(null));
+    model.put(KEY_NODE, sourceTemplateNode);
+    if (paramMap != null) model.putAll(paramMap);
+    return model;
+  }
 
-    /**
-     * @param repository the repository to set
-     */
-    public void setRepositoryHelper(Repository repository)
-    {
-        this.repository = repository;
-    }
+  @Override
+  protected String getTemplateType() {
+    return "freemarker";
+  }
 
-    /**
-     * @param serviceRegistry the serviceRegistry to set
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        this.serviceRegistry = serviceRegistry;
-    }
+  /**
+   * @param repository the repository to set
+   */
+  public void setRepositoryHelper(Repository repository) {
+    this.repository = repository;
+  }
+
+  /**
+   * @param serviceRegistry the serviceRegistry to set
+   */
+  public void setServiceRegistry(ServiceRegistry serviceRegistry) {
+    this.serviceRegistry = serviceRegistry;
+  }
 }

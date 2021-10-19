@@ -40,130 +40,128 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public abstract class AuditableActionExecuterAbstractBase extends ActionExecuterAbstractBase implements ApplicationContextAware
-{
-    /** Indicates whether the action is auditable or not */
-    private boolean auditable = true;
+public abstract class AuditableActionExecuterAbstractBase
+  extends ActionExecuterAbstractBase
+  implements ApplicationContextAware {
 
-    /** Indicates whether the action is audited immediately or not */
-    private boolean auditedImmediately = false;
+  /** Indicates whether the action is auditable or not */
+  private boolean auditable = true;
 
-    /** Application context */
-    private ApplicationContext applicationContext;
+  /** Indicates whether the action is audited immediately or not */
+  private boolean auditedImmediately = false;
 
-    /** Records management audit service */
-    private RecordsManagementAuditService auditService;
+  /** Application context */
+  private ApplicationContext applicationContext;
 
-    /**
-     * @return True if auditable, false otherwise
-     */
-    protected boolean isAuditable()
-    {
-        return this.auditable;
+  /** Records management audit service */
+  private RecordsManagementAuditService auditService;
+
+  /**
+   * @return True if auditable, false otherwise
+   */
+  protected boolean isAuditable() {
+    return this.auditable;
+  }
+
+  /**
+   * @return True if audited immediately, false otherwise
+   */
+  protected boolean isAuditedImmediately() {
+    return this.auditedImmediately;
+  }
+
+  /**
+   * @return Application context
+   */
+  protected ApplicationContext getApplicationContext() {
+    return this.applicationContext;
+  }
+
+  /**
+   * @param auditable true if auditable, false otherwise
+   */
+  public void setAuditable(boolean auditable) {
+    this.auditable = auditable;
+  }
+
+  /**
+   * @param auditedImmediately true if to be audited immediately, false to be audited after transaction commits
+   */
+  public void setAuditedImmediately(boolean auditedImmediately) {
+    this.auditedImmediately = auditedImmediately;
+  }
+
+  /**
+   * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+   */
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) {
+    this.applicationContext = applicationContext;
+  }
+
+  /**
+   * @return  records management audit service
+   */
+  private RecordsManagementAuditService getAuditService() {
+    if (auditService == null) {
+      auditService =
+        (RecordsManagementAuditService) getApplicationContext()
+          .getBean("recordsManagementAuditService");
+    }
+    return auditService;
+  }
+
+  /**
+   * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#init()
+   */
+  @Override
+  public void init() {
+    if (!(this instanceof RecordsManagementAction)) {
+      super.init();
     }
 
-    /**
-     * @return True if audited immediately, false otherwise
-     */
-    protected boolean isAuditedImmediately()
-    {
-        return this.auditedImmediately;
+    if (isAuditable()) {
+      // get the details of the action
+      String name = getActionDefinition().getName();
+      String title = getActionDefinition().getTitle();
+      if (title == null || title.isEmpty()) {
+        // default to name if no title available
+        title = name;
+      }
+
+      // register audit event
+      getAuditService().registerAuditEvent(name, title);
+    }
+  }
+
+  /**
+   * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#execute(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  public void execute(Action action, NodeRef actionedUponNodeRef) {
+    // audit the execution of the action
+    if (isAuditable()) {
+      if (isAuditedImmediately()) {
+        // To be audited immediately before the action is executed, eg. to audit before actionedUponNodeRef gets deleted during the execution.
+        getAuditService()
+          .auditEvent(
+            actionedUponNodeRef,
+            this.getActionDefinition().getName(),
+            null,
+            null,
+            true
+          );
+      } else {
+        // To be stacked up with other audit entries and audited after the transaction commits.
+        getAuditService()
+          .auditEvent(
+            actionedUponNodeRef,
+            this.getActionDefinition().getName()
+          );
+      }
     }
 
-    /**
-     * @return Application context
-     */
-    protected ApplicationContext getApplicationContext()
-    {
-        return this.applicationContext;
-    }
-
-    /**
-     * @param auditable true if auditable, false otherwise
-     */
-    public void setAuditable(boolean auditable)
-    {
-        this.auditable = auditable;
-    }
-
-    /**
-     * @param auditedImmediately true if to be audited immediately, false to be audited after transaction commits
-     */
-    public void setAuditedImmediately(boolean auditedImmediately)
-    {
-        this.auditedImmediately = auditedImmediately;
-    }
-
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext)
-    {
-        this.applicationContext = applicationContext;
-    }
-
-    /**
-     * @return  records management audit service
-     */
-    private RecordsManagementAuditService getAuditService()
-    {
-        if (auditService == null)
-        {
-            auditService = (RecordsManagementAuditService) getApplicationContext().getBean("recordsManagementAuditService");
-        }
-        return auditService;
-    }
-
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#init()
-     */
-    @Override
-    public void init()
-    {
-        if (!(this instanceof RecordsManagementAction))
-        {
-            super.init();
-        }
-
-        if (isAuditable())
-        {
-            // get the details of the action
-            String name = getActionDefinition().getName();
-            String title = getActionDefinition().getTitle();
-            if (title == null || title.isEmpty())
-            {
-                // default to name if no title available
-                title = name;
-            }
-
-            // register audit event
-            getAuditService().registerAuditEvent(name, title);
-        }
-    }
-
-	/**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#execute(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public void execute(Action action, NodeRef actionedUponNodeRef)
-    {
-        // audit the execution of the action
-        if (isAuditable())
-        {
-            if (isAuditedImmediately())
-            {
-                // To be audited immediately before the action is executed, eg. to audit before actionedUponNodeRef gets deleted during the execution.
-                getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName(), null, null, true);
-            }
-            else
-            {
-                // To be stacked up with other audit entries and audited after the transaction commits.
-                getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName());
-            }
-        }
-
-        // execute the action
-        super.execute(action, actionedUponNodeRef);
-    }
+    // execute the action
+    super.execute(action, actionedUponNodeRef);
+  }
 }

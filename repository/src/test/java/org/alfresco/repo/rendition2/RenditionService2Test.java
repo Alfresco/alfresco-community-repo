@@ -25,7 +25,20 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -45,22 +58,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
 
 /**
  * Tests the RenditionService2 in a Community context where we only have local transformers.
@@ -70,217 +68,278 @@ import static org.mockito.Mockito.*;
  * @author adavis
  */
 @RunWith(MockitoJUnitRunner.class)
-public class RenditionService2Test
-{
-    private static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();;
+public class RenditionService2Test {
 
-    private RenditionService2Impl renditionService2;
-    private RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2;
+  private static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
-    @Mock private TransformClient transformClient;
-    @Mock private TransactionService transactionService;
-    @Mock private NodeService nodeService;
-    @Mock private ContentService contentService;
-    @Mock private RenditionPreventionRegistry renditionPreventionRegistry;
-    @Mock private ContentData contentData;
-    @Mock private PolicyComponent policyComponent;
-    @Mock private BehaviourFilter behaviourFilter;
-    @Mock private RuleService ruleService;
-    @Mock private TransformServiceRegistryImpl transformServiceRegistry;
-    @Mock private TransformReplyProvider transformReplyProvider;
-    @Mock private AsynchronousExtractor asynchronousExtractor;
+  private RenditionService2Impl renditionService2;
+  private RenditionDefinitionRegistry2Impl renditionDefinitionRegistry2;
 
-    private NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
-    private NodeRef nodeRefMissing = new NodeRef("workspace://spacesStore/bad-test-id");
-    private static final String TEST_RENDITION = "testRendition";
-    private static final String JPEG = "image/jpeg";
-    private String contentUrl = "test-content-url";
+  @Mock
+  private TransformClient transformClient;
 
-    private static final String CLIENT_DATA = "some_clientData";
-    private static final String REPLY_QUEUE = "some_replyQueue";
-    private static final String REQUEST_ID = "some_requestId";
-    private static final TransformDefinition TEST_TRANSFORM = new TransformDefinition(JPEG, Collections.singletonMap("a", "A"), CLIENT_DATA, REPLY_QUEUE, REQUEST_ID);
-    private boolean failureCalled;
+  @Mock
+  private TransactionService transactionService;
 
-    @Before
-    public void setup() throws Exception
-    {
-        renditionService2 = new RenditionService2Impl()
-        {
-            @Override
-            public void failure(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, int transformContentHashCode)
-            {
-                failureCalled = true;
-            }
-        };
-        renditionDefinitionRegistry2 = new RenditionDefinitionRegistry2Impl();
-        renditionDefinitionRegistry2.setTransformServiceRegistry(transformServiceRegistry);
-        renditionDefinitionRegistry2.setRenditionConfigDir("");
-        renditionDefinitionRegistry2.setTimeoutDefault("120000");
-        renditionDefinitionRegistry2.setJsonObjectMapper(JSON_OBJECT_MAPPER);
-        renditionDefinitionRegistry2.setCronExpression(null); // just read it once
+  @Mock
+  private NodeService nodeService;
 
-        when(nodeService.exists(nodeRef)).thenReturn(true);
-        when(nodeService.exists(nodeRefMissing)).thenReturn(false);
-        when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT)).thenReturn(contentData);
-        when(contentData.getContentUrl()).thenReturn(contentUrl);
+  @Mock
+  private ContentService contentService;
 
-        doAnswer(invocation ->
-        {
-            Object[] args = invocation.getArguments();
-            NodeRef sourceNodeRef = (NodeRef) args[0];
-            RenditionDefinition2 renditionDefinition = (RenditionDefinition2) args[1];
-            int sourceContentHashCode = (int) args[3];
-            if (!(renditionDefinition instanceof TransformDefinition))
-            {
-                sourceContentHashCode += 1;  // Change the hashcode so that we don't actually try to create a rendition.
-            }
-            renditionService2.consume(sourceNodeRef, null, renditionDefinition, sourceContentHashCode);
-            return null;
-        }).when(transformClient).transform(any(), any(), nullable(String.class), anyInt());
+  @Mock
+  private RenditionPreventionRegistry renditionPreventionRegistry;
 
-        renditionService2.setTransactionService(transactionService);
-        renditionService2.setNodeService(nodeService);
-        renditionService2.setContentService(contentService);
-        renditionService2.setRenditionPreventionRegistry(renditionPreventionRegistry);
-        renditionService2.setRenditionDefinitionRegistry2(renditionDefinitionRegistry2);
-        renditionService2.setTransformClient(transformClient);
-        renditionService2.setPolicyComponent(policyComponent);
-        renditionService2.setBehaviourFilter(behaviourFilter);
-        renditionService2.setRuleService(ruleService);
-        renditionService2.setTransactionService(transactionService);
-        renditionService2.setRenditionRequestSheduler(new RenditionRequestSchedulerMock());
-        renditionService2.setTransformReplyProvider(transformReplyProvider);
-        renditionService2.setEnabled(true);
-        renditionService2.setThumbnailsEnabled(true);
-        renditionService2.setAsynchronousExtractor(asynchronousExtractor);
+  @Mock
+  private ContentData contentData;
 
-        renditionDefinitionRegistry2.setRenditionConfigDir("alfresco/renditions/test");
-        renditionDefinitionRegistry2.afterPropertiesSet();
-        renditionService2.afterPropertiesSet();
+  @Mock
+  private PolicyComponent policyComponent;
 
-        Map<String, String> options = new HashMap<>();
-        options.put("width", "960");
-        options.put("height", "1024");
-        new RenditionDefinition2Impl(TEST_RENDITION, JPEG, options, true, renditionDefinitionRegistry2);
-    }
+  @Mock
+  private BehaviourFilter behaviourFilter;
 
-    private class RenditionRequestSchedulerMock extends PostTxnCallbackScheduler
-    {
+  @Mock
+  private RuleService ruleService;
+
+  @Mock
+  private TransformServiceRegistryImpl transformServiceRegistry;
+
+  @Mock
+  private TransformReplyProvider transformReplyProvider;
+
+  @Mock
+  private AsynchronousExtractor asynchronousExtractor;
+
+  private NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
+  private NodeRef nodeRefMissing = new NodeRef(
+    "workspace://spacesStore/bad-test-id"
+  );
+  private static final String TEST_RENDITION = "testRendition";
+  private static final String JPEG = "image/jpeg";
+  private String contentUrl = "test-content-url";
+
+  private static final String CLIENT_DATA = "some_clientData";
+  private static final String REPLY_QUEUE = "some_replyQueue";
+  private static final String REQUEST_ID = "some_requestId";
+  private static final TransformDefinition TEST_TRANSFORM = new TransformDefinition(
+    JPEG,
+    Collections.singletonMap("a", "A"),
+    CLIENT_DATA,
+    REPLY_QUEUE,
+    REQUEST_ID
+  );
+  private boolean failureCalled;
+
+  @Before
+  public void setup() throws Exception {
+    renditionService2 =
+      new RenditionService2Impl() {
         @Override
-        public void scheduleRendition(RetryingTransactionHelper.RetryingTransactionCallback callback, String uniqueId)
-        {
-            try
-            {
-                callback.execute();
-            }
-            catch (Throwable throwable)
-            {
-                throwable.printStackTrace();
-                fail("The rendition callback failed: " + throwable);
-            }
+        public void failure(
+          NodeRef sourceNodeRef,
+          RenditionDefinition2 renditionDefinition,
+          int transformContentHashCode
+        ) {
+          failureCalled = true;
         }
-    }
+      };
+    renditionDefinitionRegistry2 = new RenditionDefinitionRegistry2Impl();
+    renditionDefinitionRegistry2.setTransformServiceRegistry(
+      transformServiceRegistry
+    );
+    renditionDefinitionRegistry2.setRenditionConfigDir("");
+    renditionDefinitionRegistry2.setTimeoutDefault("120000");
+    renditionDefinitionRegistry2.setJsonObjectMapper(JSON_OBJECT_MAPPER);
+    renditionDefinitionRegistry2.setCronExpression(null); // just read it once
 
-    @Test(expected = RenditionService2Exception.class)
-    public void disabledForRenditions()
-    {
-        renditionService2.setEnabled(false);
-        renditionService2.render(nodeRef, TEST_RENDITION);
-    }
+    when(nodeService.exists(nodeRef)).thenReturn(true);
+    when(nodeService.exists(nodeRefMissing)).thenReturn(false);
+    when(nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT))
+      .thenReturn(contentData);
+    when(contentData.getContentUrl()).thenReturn(contentUrl);
 
-    @Test(expected = RenditionService2Exception.class)
-    public void disabledForTransforms()
-    {
-        renditionService2.setEnabled(false);
-        renditionService2.transform(nodeRef, TEST_TRANSFORM);
-    }
-
-    @Test(expected = RenditionService2Exception.class)
-    public void thumbnailsDisabledForRenditions()
-    {
-        renditionService2.setThumbnailsEnabled(false);
-        renditionService2.render(nodeRef, TEST_RENDITION);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void nodeRefDoesNotExistForRenditions()
-    {
-        renditionService2.render(nodeRefMissing, TEST_RENDITION);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void nodeRefDoesNotExistForTransforms()
-    {
-        renditionService2.transform(nodeRefMissing, TEST_TRANSFORM);
-    }
-
-    @Test
-    public void useLocalTransformForRenditions()
-    {
-        renditionService2.render(nodeRef, TEST_RENDITION);
-
-        verify(transformClient, times(1)).transform(any(), any(), any(), anyInt());
-        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
-        verify(transformReplyProvider, times(0)).produceTransformEvent(any(), any(), any(), anyInt());
-    }
-
-    @Test
-    public void useLocalTransformForTransforms()
-    {
-        renditionService2.transform(nodeRef, TEST_TRANSFORM);
-        verify(transformClient, times(1)).transform(any(), any(), nullable(String.class), anyInt());
-        verify(transformReplyProvider, times(1)).produceTransformEvent(any(), any(), any(), anyInt());
-
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void noTransformForRenditions()
-    {
-        doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any());
-        renditionService2.render(nodeRef, TEST_RENDITION);
-    }
-
-    @Test
-    public void noTransformForTransforms()
-    {
-        doThrow(UnsupportedOperationException.class).when(transformClient).checkSupported(any(), any(), any(), anyLong(), any());
-        renditionService2.transform(nodeRef, TEST_TRANSFORM);
-        assertTrue("failure() should be called with transform(...) if an unsupported transform rather than " +
-                "having UnsupportedOperationException thrown", failureCalled);
-    }
-
-    @Test(expected = RenditionService2PreventedException.class)
-    public void checkSourceNodeForRenditionPreventionClass()
-    {
-        when(renditionPreventionRegistry.isContentClassRegistered((QName)any())).thenReturn(true);
-        renditionService2.render(nodeRef, TEST_RENDITION);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void noDefinitionRenditions()
-    {
-        renditionService2.render(nodeRef, "doesNotExist");
-    }
-
-    @Test
-    public void renditionDefinitionsExist() throws IOException
-    {
-        renditionDefinitionRegistry2.readConfig();
-
-        Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNames();
-        for (String name: new String[] {"medium", "doclib", "imgpreview", "avatar", "avatar32", "webpreview", "pdf"})
-        {
-            assertTrue("Expected rendition "+name, renditionNames.contains(name));
+    doAnswer(invocation -> {
+        Object[] args = invocation.getArguments();
+        NodeRef sourceNodeRef = (NodeRef) args[0];
+        RenditionDefinition2 renditionDefinition = (RenditionDefinition2) args[1];
+        int sourceContentHashCode = (int) args[3];
+        if (!(renditionDefinition instanceof TransformDefinition)) {
+          sourceContentHashCode += 1; // Change the hashcode so that we don't actually try to create a rendition.
         }
-    }
+        renditionService2.consume(
+          sourceNodeRef,
+          null,
+          renditionDefinition,
+          sourceContentHashCode
+        );
+        return null;
+      })
+      .when(transformClient)
+      .transform(any(), any(), nullable(String.class), anyInt());
 
-    @Test()
-    public void overriddenRendition()
-    {
-        // Check the standard rendition doclib has been overridden by one in alfresco/renditions/test/overrideRendition.json
-        RenditionDefinition2 doclib = renditionDefinitionRegistry2.getRenditionDefinition("doclib");
-        String resizeWidth = doclib.getTransformOptions().get("resizeWidth");
-        assertEquals("doclib has not been overridden", "180", resizeWidth);
+    renditionService2.setTransactionService(transactionService);
+    renditionService2.setNodeService(nodeService);
+    renditionService2.setContentService(contentService);
+    renditionService2.setRenditionPreventionRegistry(
+      renditionPreventionRegistry
+    );
+    renditionService2.setRenditionDefinitionRegistry2(
+      renditionDefinitionRegistry2
+    );
+    renditionService2.setTransformClient(transformClient);
+    renditionService2.setPolicyComponent(policyComponent);
+    renditionService2.setBehaviourFilter(behaviourFilter);
+    renditionService2.setRuleService(ruleService);
+    renditionService2.setTransactionService(transactionService);
+    renditionService2.setRenditionRequestSheduler(
+      new RenditionRequestSchedulerMock()
+    );
+    renditionService2.setTransformReplyProvider(transformReplyProvider);
+    renditionService2.setEnabled(true);
+    renditionService2.setThumbnailsEnabled(true);
+    renditionService2.setAsynchronousExtractor(asynchronousExtractor);
+
+    renditionDefinitionRegistry2.setRenditionConfigDir(
+      "alfresco/renditions/test"
+    );
+    renditionDefinitionRegistry2.afterPropertiesSet();
+    renditionService2.afterPropertiesSet();
+
+    Map<String, String> options = new HashMap<>();
+    options.put("width", "960");
+    options.put("height", "1024");
+    new RenditionDefinition2Impl(
+      TEST_RENDITION,
+      JPEG,
+      options,
+      true,
+      renditionDefinitionRegistry2
+    );
+  }
+
+  private class RenditionRequestSchedulerMock extends PostTxnCallbackScheduler {
+
+    @Override
+    public void scheduleRendition(
+      RetryingTransactionHelper.RetryingTransactionCallback callback,
+      String uniqueId
+    ) {
+      try {
+        callback.execute();
+      } catch (Throwable throwable) {
+        throwable.printStackTrace();
+        fail("The rendition callback failed: " + throwable);
+      }
     }
+  }
+
+  @Test(expected = RenditionService2Exception.class)
+  public void disabledForRenditions() {
+    renditionService2.setEnabled(false);
+    renditionService2.render(nodeRef, TEST_RENDITION);
+  }
+
+  @Test(expected = RenditionService2Exception.class)
+  public void disabledForTransforms() {
+    renditionService2.setEnabled(false);
+    renditionService2.transform(nodeRef, TEST_TRANSFORM);
+  }
+
+  @Test(expected = RenditionService2Exception.class)
+  public void thumbnailsDisabledForRenditions() {
+    renditionService2.setThumbnailsEnabled(false);
+    renditionService2.render(nodeRef, TEST_RENDITION);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void nodeRefDoesNotExistForRenditions() {
+    renditionService2.render(nodeRefMissing, TEST_RENDITION);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void nodeRefDoesNotExistForTransforms() {
+    renditionService2.transform(nodeRefMissing, TEST_TRANSFORM);
+  }
+
+  @Test
+  public void useLocalTransformForRenditions() {
+    renditionService2.render(nodeRef, TEST_RENDITION);
+
+    verify(transformClient, times(1)).transform(any(), any(), any(), anyInt());
+    verify(transformClient, times(1))
+      .transform(any(), any(), nullable(String.class), anyInt());
+    verify(transformReplyProvider, times(0))
+      .produceTransformEvent(any(), any(), any(), anyInt());
+  }
+
+  @Test
+  public void useLocalTransformForTransforms() {
+    renditionService2.transform(nodeRef, TEST_TRANSFORM);
+    verify(transformClient, times(1))
+      .transform(any(), any(), nullable(String.class), anyInt());
+    verify(transformReplyProvider, times(1))
+      .produceTransformEvent(any(), any(), any(), anyInt());
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void noTransformForRenditions() {
+    doThrow(UnsupportedOperationException.class)
+      .when(transformClient)
+      .checkSupported(any(), any(), any(), anyLong(), any());
+    renditionService2.render(nodeRef, TEST_RENDITION);
+  }
+
+  @Test
+  public void noTransformForTransforms() {
+    doThrow(UnsupportedOperationException.class)
+      .when(transformClient)
+      .checkSupported(any(), any(), any(), anyLong(), any());
+    renditionService2.transform(nodeRef, TEST_TRANSFORM);
+    assertTrue(
+      "failure() should be called with transform(...) if an unsupported transform rather than " +
+      "having UnsupportedOperationException thrown",
+      failureCalled
+    );
+  }
+
+  @Test(expected = RenditionService2PreventedException.class)
+  public void checkSourceNodeForRenditionPreventionClass() {
+    when(renditionPreventionRegistry.isContentClassRegistered((QName) any()))
+      .thenReturn(true);
+    renditionService2.render(nodeRef, TEST_RENDITION);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void noDefinitionRenditions() {
+    renditionService2.render(nodeRef, "doesNotExist");
+  }
+
+  @Test
+  public void renditionDefinitionsExist() throws IOException {
+    renditionDefinitionRegistry2.readConfig();
+
+    Set<String> renditionNames = renditionDefinitionRegistry2.getRenditionNames();
+    for (String name : new String[] {
+      "medium",
+      "doclib",
+      "imgpreview",
+      "avatar",
+      "avatar32",
+      "webpreview",
+      "pdf",
+    }) {
+      assertTrue("Expected rendition " + name, renditionNames.contains(name));
+    }
+  }
+
+  @Test
+  public void overriddenRendition() {
+    // Check the standard rendition doclib has been overridden by one in alfresco/renditions/test/overrideRendition.json
+    RenditionDefinition2 doclib = renditionDefinitionRegistry2.getRenditionDefinition(
+      "doclib"
+    );
+    String resizeWidth = doclib.getTransformOptions().get("resizeWidth");
+    assertEquals("doclib has not been overridden", "180", resizeWidth);
+  }
 }

@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 import static org.alfresco.module.org_alfresco_module_rm.action.dm.RecordActionUtils.resolvePath;
 
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.RecordActionUtils.Services;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -51,115 +50,133 @@ import org.alfresco.service.cmr.repository.NodeService;
  *
  * @author Roy Wetherall
  */
-public class CreateRecordAction extends AuditableActionExecuterAbstractBase
-                                implements RecordsManagementModel
-{
-    /** Action name */
-    public static final String NAME = "create-record";
+public class CreateRecordAction
+  extends AuditableActionExecuterAbstractBase
+  implements RecordsManagementModel {
 
-    /** Parameter names */
-    public static final String PARAM_FILE_PLAN = "file-plan";
-    public static final String PARAM_HIDE_RECORD = "hide-record";
-    public static final String PARAM_PATH = "path";
+  /** Action name */
+  public static final String NAME = "create-record";
 
-    /**
-     * Node service
-     */
-    private NodeService nodeService;
+  /** Parameter names */
+  public static final String PARAM_FILE_PLAN = "file-plan";
+  public static final String PARAM_HIDE_RECORD = "hide-record";
+  public static final String PARAM_PATH = "path";
 
-    /**
-     * File plan service
-     */
-    private FilePlanService filePlanService;
+  /**
+   * Node service
+   */
+  private NodeService nodeService;
 
-    /**
-     * Authentication util
-     */
-    private AuthenticationUtil authenticationUtil;
+  /**
+   * File plan service
+   */
+  private FilePlanService filePlanService;
 
-    /** Record service */
-    private RecordService recordService;
+  /**
+   * Authentication util
+   */
+  private AuthenticationUtil authenticationUtil;
 
-    /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+  /** Record service */
+  private RecordService recordService;
+
+  /**
+   * @param nodeService node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * @param filePlanService file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
+
+  /**
+   * @param authenticationUtil authentication util
+   */
+  public void setAuthenticationUtil(AuthenticationUtil authenticationUtil) {
+    this.authenticationUtil = authenticationUtil;
+  }
+
+  /**
+   * @param recordService record service
+   */
+  public void setRecordService(RecordService recordService) {
+    this.recordService = recordService;
+  }
+
+  /**
+   * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  protected void executeImpl(
+    final Action action,
+    final NodeRef actionedUponNodeRef
+  ) {
+    NodeRef filePlan = (NodeRef) action.getParameterValue(PARAM_FILE_PLAN);
+
+    // resolve destination record folder if path supplied
+    NodeRef destinationRecordFolder = null;
+    String pathParameter = (String) action.getParameterValue(PARAM_PATH);
+
+    // indicate whether the record should be hidden or not (default not)
+    boolean hideRecord = false;
+    Boolean hideRecordValue =
+      ((Boolean) action.getParameterValue(PARAM_HIDE_RECORD));
+    if (hideRecordValue != null) {
+      hideRecord = hideRecordValue;
     }
 
-    /**
-     * @param filePlanService file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
+    if (pathParameter != null && !pathParameter.isEmpty()) {
+      RecordActionUtils.Services services = new Services(
+        nodeService,
+        filePlanService,
+        authenticationUtil
+      );
+      destinationRecordFolder =
+        resolvePath(services, filePlan, pathParameter, NAME);
     }
 
-    /**
-     * @param authenticationUtil authentication util
-     */
-    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
-    {
-        this.authenticationUtil = authenticationUtil;
+    synchronized (this) {
+      // create record from existing document
+      recordService.createRecord(
+        filePlan,
+        actionedUponNodeRef,
+        destinationRecordFolder,
+        !hideRecord
+      );
+
+      if (destinationRecordFolder != null) {
+        recordService.file(actionedUponNodeRef);
+      }
     }
+  }
 
-
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
-
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
-    {
-        NodeRef filePlan = (NodeRef) action.getParameterValue(PARAM_FILE_PLAN);
-
-        // resolve destination record folder if path supplied
-        NodeRef destinationRecordFolder = null;
-        String pathParameter = (String) action.getParameterValue(PARAM_PATH);
-
-        // indicate whether the record should be hidden or not (default not)
-        boolean hideRecord = false;
-        Boolean hideRecordValue = ((Boolean) action.getParameterValue(PARAM_HIDE_RECORD));
-        if (hideRecordValue != null)
-        {
-            hideRecord = hideRecordValue;
-        }
-
-        if (pathParameter != null && !pathParameter.isEmpty())
-        {
-            RecordActionUtils.Services services = new Services(nodeService, filePlanService, authenticationUtil);
-            destinationRecordFolder = resolvePath(services, filePlan, pathParameter, NAME);
-        }
-
-        synchronized (this)
-        {
-            // create record from existing document
-            recordService.createRecord(filePlan, actionedUponNodeRef, destinationRecordFolder, !hideRecord);
-
-            if (destinationRecordFolder != null)
-            {
-                recordService.file(actionedUponNodeRef);
-            }
-        }
-    }
-
-    /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-     */
-    @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> params)
-    {
-        // NOTE:  commented out for now so that it doesn't appear in the UI ... enable later when multi-file plan support is added
-        //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
-        params.add(new ParameterDefinitionImpl(PARAM_PATH, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_PATH)));
-        params.add(new ParameterDefinitionImpl(PARAM_HIDE_RECORD, DataTypeDefinition.BOOLEAN, false, getParamDisplayLabel(PARAM_HIDE_RECORD)));
-    }
+  /**
+   * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+   */
+  @Override
+  protected void addParameterDefinitions(List<ParameterDefinition> params) {
+    // NOTE:  commented out for now so that it doesn't appear in the UI ... enable later when multi-file plan support is added
+    //params.add(new ParameterDefinitionImpl(PARAM_FILE_PLAN, DataTypeDefinition.NODE_REF, false, getParamDisplayLabel(PARAM_FILE_PLAN)));
+    params.add(
+      new ParameterDefinitionImpl(
+        PARAM_PATH,
+        DataTypeDefinition.TEXT,
+        false,
+        getParamDisplayLabel(PARAM_PATH)
+      )
+    );
+    params.add(
+      new ParameterDefinitionImpl(
+        PARAM_HIDE_RECORD,
+        DataTypeDefinition.BOOLEAN,
+        false,
+        getParamDisplayLabel(PARAM_HIDE_RECORD)
+      )
+    );
+  }
 }

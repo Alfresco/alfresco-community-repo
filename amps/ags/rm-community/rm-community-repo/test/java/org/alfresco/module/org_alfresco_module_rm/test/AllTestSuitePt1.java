@@ -39,9 +39,15 @@ import org.junit.runner.RunWith;
  * @since 2.1
  */
 @RunWith(ClasspathSuite.class)
-@SuiteTypes({SuiteType.TEST_CLASSES, SuiteType.RUN_WITH_CLASSES, SuiteType.JUNIT38_TEST_CLASSES})
-@ClassnameFilters({
-
+@SuiteTypes(
+  {
+    SuiteType.TEST_CLASSES,
+    SuiteType.RUN_WITH_CLASSES,
+    SuiteType.JUNIT38_TEST_CLASSES,
+  }
+)
+@ClassnameFilters(
+  {
     // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
     "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
     "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
@@ -54,7 +60,6 @@ import org.junit.runner.RunWith;
 
     // Exclude all UnitTests
     "!.*UnitTest",
-
     // Put the test classes you want to exclude here
     "!.*DataLoadSystemTest",
     "!.*RM2072Test",
@@ -70,8 +75,7 @@ import org.junit.runner.RunWith;
     // This test is running successfully locally but not on bamboo (if executed as a single test).
     // The problem can be reproduced if the whole test suite is run locally as well.
     // Tests should not be dependant on other test classes and should run in any order without any problems.
-    "!.*EmailMapScriptTest"
-})
-public class AllTestSuitePt1
-{
-}
+    "!.*EmailMapScriptTest",
+  }
+)
+public class AllTestSuitePt1 {}

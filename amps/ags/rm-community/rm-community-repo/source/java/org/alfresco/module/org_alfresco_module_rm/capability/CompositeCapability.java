@@ -35,12 +35,11 @@ import java.util.Set;
  * @author Roy Wetherall
  * @since 2.2
  */
-public interface CompositeCapability extends Capability
-{
-    /**
-     * Get set of child capabilities.
-     * 
-     * @return  {@link Set}&lt;{@link Capability} &gt; set of child capabilities.
-     */
-    Set<Capability> getCapabilities();
+public interface CompositeCapability extends Capability {
+  /**
+   * Get set of child capabilities.
+   *
+   * @return  {@link Set}&lt;{@link Capability} &gt; set of child capabilities.
+   */
+  Set<Capability> getCapabilities();
 }

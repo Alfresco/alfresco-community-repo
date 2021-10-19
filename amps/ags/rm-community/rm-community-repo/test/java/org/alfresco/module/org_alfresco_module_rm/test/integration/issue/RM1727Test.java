@@ -42,79 +42,98 @@ import org.alfresco.util.GUID;
  * @author Tatsiana Shalima
  * @since 2.3
  */
-public class RM1727Test extends BaseRMTestCase
-{
-    private String myUser;
-    private NodeRef folder;
-    private NodeRef record;
+public class RM1727Test extends BaseRMTestCase {
 
-    private RecordsManagementNodeFormFilter nodeFormFilter;
-    private Form form;
+  private String myUser;
+  private NodeRef folder;
+  private NodeRef record;
 
-    @Override
-    protected boolean isRecordTest()
-    {
-        return true;
-    }
+  private RecordsManagementNodeFormFilter nodeFormFilter;
+  private Form form;
 
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isRecordTest() {
+    return true;
+  }
 
-    @Override
-    protected void setupTestUsersImpl(NodeRef filePlan)
-    {
-        nodeFormFilter = (RecordsManagementNodeFormFilter)applicationContext.getBean("rmNodeFormFilter");
-        //create user
-        myUser = GUID.generate();
-        createPerson(myUser);
-        //give user RM Manager role
-        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, myUser);
-        //create category > folder > record
-        NodeRef category = filePlanService.createRecordCategory(filePlan, GUID.generate());
-        folder = recordFolderService.createRecordFolder(category, GUID.generate());
-        record = recordService.createRecordFromContent(folder, GUID.generate(), TYPE_CONTENT, null, null);
-    }
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-    public void testRM1727()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                //set read and file permissions for folder
-                filePlanPermissionService.setPermission(folder, myUser, RMPermissionModel.FILING);
-                return null;
-            }
-        });
+  @Override
+  protected void setupTestUsersImpl(NodeRef filePlan) {
+    nodeFormFilter =
+      (RecordsManagementNodeFormFilter) applicationContext.getBean(
+        "rmNodeFormFilter"
+      );
+    //create user
+    myUser = GUID.generate();
+    createPerson(myUser);
+    //give user RM Manager role
+    filePlanRoleService.assignRoleToAuthority(
+      filePlan,
+      FilePlanRoleService.ROLE_RECORDS_MANAGER,
+      myUser
+    );
+    //create category > folder > record
+    NodeRef category = filePlanService.createRecordCategory(
+      filePlan,
+      GUID.generate()
+    );
+    folder = recordFolderService.createRecordFolder(category, GUID.generate());
+    record =
+      recordService.createRecordFromContent(
+        folder,
+        GUID.generate(),
+        TYPE_CONTENT,
+        null,
+        null
+      );
+  }
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                Item item = new Item("node",folder.toString());
-                item.setType("rma:recordFolder");
-                form = new Form(item);
-                nodeFormFilter.afterGenerate(folder, null, null, form, null);
-                return null;
-            }
-        }, myUser);
+  public void testRM1727() {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          //set read and file permissions for folder
+          filePlanPermissionService.setPermission(
+            folder,
+            myUser,
+            RMPermissionModel.FILING
+          );
+          return null;
+        }
+      }
+    );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                Item item = new Item("node",record.toString());
-                item.setType("rma:record");
-                form = new Form(item);
-                nodeFormFilter.afterGenerate(record, null, null, form, null);
-                return null;
-            }
-        }, myUser);
-    }
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          Item item = new Item("node", folder.toString());
+          item.setType("rma:recordFolder");
+          form = new Form(item);
+          nodeFormFilter.afterGenerate(folder, null, null, form, null);
+          return null;
+        }
+      },
+      myUser
+    );
+
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          Item item = new Item("node", record.toString());
+          item.setType("rma:record");
+          form = new Form(item);
+          nodeFormFilter.afterGenerate(record, null, null, form, null);
+          return null;
+        }
+      },
+      myUser
+    );
+  }
 }

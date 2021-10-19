@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,7 +28,6 @@ package org.alfresco.opencmis.search;
 import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.repo.search.impl.querymodel.Column;
@@ -47,263 +46,252 @@ import org.alfresco.service.namespace.QName;
 /**
  * @author andyh
  */
-public class CMISResultSetRow implements ResultSetRow
-{
-    /**
-     * The containing result set
-     */
-    private CMISResultSet resultSet;
+public class CMISResultSetRow implements ResultSetRow {
 
-    /**
-     * The current position in the containing result set
-     */
-    private int index;
+  /**
+   * The containing result set
+   */
+  private CMISResultSet resultSet;
 
-    private Map<String, Float> scores;
+  /**
+   * The current position in the containing result set
+   */
+  private int index;
 
-    private NodeService nodeService;
+  private Map<String, Float> scores;
 
-    private Map<String, NodeRef> nodeRefs;
-    
-    private Map<NodeRef, CMISNodeInfo> nodeInfos;
+  private NodeService nodeService;
 
-    private Query query;
+  private Map<String, NodeRef> nodeRefs;
 
-    private CMISDictionaryService cmisDictionaryService;
+  private Map<NodeRef, CMISNodeInfo> nodeInfos;
 
-    public CMISResultSetRow(CMISResultSet resultSet, int index, Map<String, Float> scores, NodeService nodeService,
-            Map<String, NodeRef> nodeRefs, Map<NodeRef, CMISNodeInfo> nodeInfos, Query query,
-            CMISDictionaryService cmisDictionaryService)
-    {
-        this.resultSet = resultSet;
-        this.index = index;
-        this.scores = scores;
-        this.nodeService = nodeService;
-        this.nodeRefs = nodeRefs;
-        this.query = query;
-        this.cmisDictionaryService = cmisDictionaryService;
-        this.nodeInfos = nodeInfos;
+  private Query query;
+
+  private CMISDictionaryService cmisDictionaryService;
+
+  public CMISResultSetRow(
+    CMISResultSet resultSet,
+    int index,
+    Map<String, Float> scores,
+    NodeService nodeService,
+    Map<String, NodeRef> nodeRefs,
+    Map<NodeRef, CMISNodeInfo> nodeInfos,
+    Query query,
+    CMISDictionaryService cmisDictionaryService
+  ) {
+    this.resultSet = resultSet;
+    this.index = index;
+    this.scores = scores;
+    this.nodeService = nodeService;
+    this.nodeRefs = nodeRefs;
+    this.query = query;
+    this.cmisDictionaryService = cmisDictionaryService;
+    this.nodeInfos = nodeInfos;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getIndex()
+   */
+  public int getIndex() {
+    return index;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getResultSet()
+   */
+  public ResultSet getResultSet() {
+    return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(
+      resultSet
+    );
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getScore()
+   */
+  public float getScore() {
+    float count = 0;
+    float overall = 0;
+    for (Float score : scores.values()) {
+      overall = (overall * (count / (count + 1.0f))) + (score / (count + 1.0f));
     }
+    return overall;
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getIndex()
-     */
-    public int getIndex()
-    {
-        return index;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
+   */
+  public float getScore(String selectorName) {
+    return scores.get(selectorName);
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getResultSet()
-     */
-    public ResultSet getResultSet()
-    {
-        return new ResultSetSPIWrapper<CMISResultSetRow, CMISResultSetMetaData>(resultSet);
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
+   */
+  public Map<String, Float> getScores() {
+    return scores;
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore()
-     */
-    public float getScore()
-    {
-        float count = 0;
-        float overall = 0;
-        for (Float score : scores.values())
-        {
-            overall = (overall * (count / (count + 1.0f))) + (score / (count + 1.0f));
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
+   */
+  public NodeRef getNodeRef(String selectorName) {
+    return nodeRefs.get(selectorName);
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
+   */
+  public Map<String, NodeRef> getNodeRefs() {
+    return nodeRefs;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getValue(java.lang.String)
+   */
+  public Serializable getValue(String columnName) {
+    CmisFunctionEvaluationContext context = new CmisFunctionEvaluationContext();
+    context.setCmisDictionaryService(cmisDictionaryService);
+    context.setNodeRefs(nodeRefs);
+    context.setNodeInfos(nodeInfos);
+    context.setNodeService(nodeService);
+    context.setScores(scores);
+    context.setScore(getScore());
+    for (Column column : query.getColumns()) {
+      if (column.getAlias().equals(columnName)) {
+        //When an SCORE selector is included, score must be adapted to range 0..1 due to CMIS specification
+        if (
+          column.getFunction() != null &&
+          column.getFunction().getName().equals(Score.NAME)
+        ) {
+          return getNormalisedScore();
         }
-        return overall;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
-     */
-    public float getScore(String selectorName)
-    {
-        return scores.get(selectorName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
-     */
-    public Map<String, Float> getScores()
-    {
-        return scores;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScore(java.lang.String)
-     */
-    public NodeRef getNodeRef(String selectorName)
-    {
-        return nodeRefs.get(selectorName);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getScores()
-     */
-    public Map<String, NodeRef> getNodeRefs()
-    {
-        return nodeRefs;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getValue(java.lang.String)
-     */
-    public Serializable getValue(String columnName)
-    {
-        CmisFunctionEvaluationContext context = new CmisFunctionEvaluationContext();
-        context.setCmisDictionaryService(cmisDictionaryService);
-        context.setNodeRefs(nodeRefs);
-        context.setNodeInfos(nodeInfos);
-        context.setNodeService(nodeService);
-        context.setScores(scores);
-        context.setScore(getScore());
-        for (Column column : query.getColumns())
-        {
-            if (column.getAlias().equals(columnName))
-            {
-                //When an SCORE selector is included, score must be adapted to range 0..1 due to CMIS specification
-                if (column.getFunction()!= null && column.getFunction().getName().equals(Score.NAME)) 
-                {
-                    return getNormalisedScore();
-                }
-                return column.getFunction().getValue(column.getFunctionArguments(), context);
-            }
-            // Special case for one selector - ignore any table aliases
-            // also allows look up direct and not by alias
-            // Perhaps we should add the duplicates instead
-            // TODO: check SQL 92 for single alias table behaviour for selectors
-            if (nodeRefs.size() == 1)
-            {
-                if (column.getFunction().getName().equals(PropertyAccessor.NAME))
-                {
-                    PropertyArgument arg = (PropertyArgument) column.getFunctionArguments().get(
-                            PropertyAccessor.ARG_PROPERTY);
-                    String propertyName = arg.getPropertyName();
-                    if (propertyName.equals(columnName))
-                    {
-                        return column.getFunction().getValue(column.getFunctionArguments(), context);
-                    }
-                    StringBuilder builder = new StringBuilder();
-                    builder.append(arg.getSelector()).append(".").append(propertyName);
-                    propertyName = builder.toString();
-                    if (propertyName.equals(columnName))
-                    {
-                        return column.getFunction().getValue(column.getFunctionArguments(), context);
-                    }
-                }
-            } else
-            {
-                if (column.getFunction().getName().equals(PropertyAccessor.NAME))
-                {
-                    PropertyArgument arg = (PropertyArgument) column.getFunctionArguments().get(
-                            PropertyAccessor.ARG_PROPERTY);
-                    StringBuilder builder = new StringBuilder();
-                    builder.append(arg.getSelector()).append(".").append(arg.getPropertyName());
-                    String propertyName = builder.toString();
-                    if (propertyName.equals(columnName))
-                    {
-                        return column.getFunction().getValue(column.getFunctionArguments(), context);
-                    }
-                }
-            }
+        return column
+          .getFunction()
+          .getValue(column.getFunctionArguments(), context);
+      }
+      // Special case for one selector - ignore any table aliases
+      // also allows look up direct and not by alias
+      // Perhaps we should add the duplicates instead
+      // TODO: check SQL 92 for single alias table behaviour for selectors
+      if (nodeRefs.size() == 1) {
+        if (column.getFunction().getName().equals(PropertyAccessor.NAME)) {
+          PropertyArgument arg = (PropertyArgument) column
+            .getFunctionArguments()
+            .get(PropertyAccessor.ARG_PROPERTY);
+          String propertyName = arg.getPropertyName();
+          if (propertyName.equals(columnName)) {
+            return column
+              .getFunction()
+              .getValue(column.getFunctionArguments(), context);
+          }
+          StringBuilder builder = new StringBuilder();
+          builder.append(arg.getSelector()).append(".").append(propertyName);
+          propertyName = builder.toString();
+          if (propertyName.equals(columnName)) {
+            return column
+              .getFunction()
+              .getValue(column.getFunctionArguments(), context);
+          }
         }
-        return null;
-    }
-    
-    /**
-     * CMIS Specification states that scoring results must be in a 0..1 range
-     * This function re-adapt the scores when any scoring field or expression is requested by the query. 
-     * It's a safe approach, as includes negative numbers and also paged requests.
-     * @return A value between 0 and 1
-     */
-    private float getNormalisedScore() 
-    {
-        return (float) (Math.atan(getScore()) / Math.PI) + 0.5f;  
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.cmis.search.CMISResultSetRow#getValues()
-     */
-    public Map<String, Serializable> getValues()
-    {
-        LinkedHashMap<String, Serializable> answer = new LinkedHashMap<String, Serializable>();
-        for (String column : resultSet.getMetaData().getColumnNames())
-        {
-            answer.put(column, getValue(column));
+      } else {
+        if (column.getFunction().getName().equals(PropertyAccessor.NAME)) {
+          PropertyArgument arg = (PropertyArgument) column
+            .getFunctionArguments()
+            .get(PropertyAccessor.ARG_PROPERTY);
+          StringBuilder builder = new StringBuilder();
+          builder
+            .append(arg.getSelector())
+            .append(".")
+            .append(arg.getPropertyName());
+          String propertyName = builder.toString();
+          if (propertyName.equals(columnName)) {
+            return column
+              .getFunction()
+              .getValue(column.getFunctionArguments(), context);
+          }
         }
-        return answer;
+      }
     }
+    return null;
+  }
 
-    public CMISResultSet getCMISResultSet()
-    {
-        return resultSet;
+  /**
+   * CMIS Specification states that scoring results must be in a 0..1 range
+   * This function re-adapt the scores when any scoring field or expression is requested by the query.
+   * It's a safe approach, as includes negative numbers and also paged requests.
+   * @return A value between 0 and 1
+   */
+  private float getNormalisedScore() {
+    return (float) (Math.atan(getScore()) / Math.PI) + 0.5f;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.alfresco.cmis.search.CMISResultSetRow#getValues()
+   */
+  public Map<String, Serializable> getValues() {
+    LinkedHashMap<String, Serializable> answer = new LinkedHashMap<String, Serializable>();
+    for (String column : resultSet.getMetaData().getColumnNames()) {
+      answer.put(column, getValue(column));
     }
+    return answer;
+  }
 
-    public ChildAssociationRef getChildAssocRef()
-    {
-        NodeRef nodeRef = getNodeRef();
-        return nodeService.getPrimaryParent(nodeRef);
+  public CMISResultSet getCMISResultSet() {
+    return resultSet;
+  }
+
+  public ChildAssociationRef getChildAssocRef() {
+    NodeRef nodeRef = getNodeRef();
+    return nodeService.getPrimaryParent(nodeRef);
+  }
+
+  public NodeRef getNodeRef() {
+    if (nodeRefs.size() == 1) {
+      return nodeRefs.values().iterator().next();
+    } else if (allNodeRefsEqual(nodeRefs)) {
+      return nodeRefs.values().iterator().next();
     }
+    throw new UnsupportedOperationException("Ambiguous selector");
+  }
 
-    public NodeRef getNodeRef()
-    {
-        if (nodeRefs.size() == 1)
-        {
-            return nodeRefs.values().iterator().next();
-        } else if (allNodeRefsEqual(nodeRefs))
-        {
-            return nodeRefs.values().iterator().next();
+  private boolean allNodeRefsEqual(Map<String, NodeRef> selected) {
+    NodeRef last = null;
+    for (NodeRef current : selected.values()) {
+      if (last == null) {
+        last = current;
+      } else {
+        if (!last.equals(current)) {
+          return false;
         }
-        throw new UnsupportedOperationException("Ambiguous selector");
+      }
     }
+    return true;
+  }
 
-    private boolean allNodeRefsEqual(Map<String, NodeRef> selected)
-    {
-        NodeRef last = null;
-        for (NodeRef current : selected.values())
-        {
-            if (last == null)
-            {
-                last = current;
-            } else
-            {
-                if (!last.equals(current))
-                {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+  public QName getQName() {
+    return getChildAssocRef().getQName();
+  }
 
-    public QName getQName()
-    {
-        return getChildAssocRef().getQName();
-    }
-
-    public Serializable getValue(QName qname)
-    {
-        throw new UnsupportedOperationException();
-    }
-
+  public Serializable getValue(QName qname) {
+    throw new UnsupportedOperationException();
+  }
 }

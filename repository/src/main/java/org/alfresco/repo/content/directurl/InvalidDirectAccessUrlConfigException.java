@@ -32,13 +32,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
  *
  * @author Sara Aspery
  */
-public class InvalidDirectAccessUrlConfigException extends AlfrescoRuntimeException
-{
-    private static final long serialVersionUID = -6318313836484979887L;
+public class InvalidDirectAccessUrlConfigException
+  extends AlfrescoRuntimeException {
 
-    public InvalidDirectAccessUrlConfigException(String msg)
-    {
-        super(msg);
-    }
+  private static final long serialVersionUID = -6318313836484979887L;
+
+  public InvalidDirectAccessUrlConfigException(String msg) {
+    super(msg);
+  }
 }
-

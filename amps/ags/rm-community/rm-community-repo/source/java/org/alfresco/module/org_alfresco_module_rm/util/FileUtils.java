@@ -38,27 +38,29 @@ import java.nio.charset.Charset;
  * @author Roxana Lucanu
  * @since 2.7
  */
-public class FileUtils
-{
-    /**
-     * Helper method to convert a stream to a string.
-     *
-     * @param is input stream
-     * @return {@link String}   string
-     * @throws IOException
-     */
-    public static String convertStreamToString(InputStream is) throws IOException
-    {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8"))))
-        {
-            StringBuilder sb = new StringBuilder();
-            String line = null;
+public class FileUtils {
 
-            while ((line = reader.readLine()) != null)
-            {
-                sb.append(line + "\n");
-            }
-            return sb.toString();
-        }
+  /**
+   * Helper method to convert a stream to a string.
+   *
+   * @param is input stream
+   * @return {@link String}   string
+   * @throws IOException
+   */
+  public static String convertStreamToString(InputStream is)
+    throws IOException {
+    try (
+      BufferedReader reader = new BufferedReader(
+        new InputStreamReader(is, Charset.forName("UTF-8"))
+      )
+    ) {
+      StringBuilder sb = new StringBuilder();
+      String line = null;
+
+      while ((line = reader.readLine()) != null) {
+        sb.append(line + "\n");
+      }
+      return sb.toString();
     }
+  }
 }

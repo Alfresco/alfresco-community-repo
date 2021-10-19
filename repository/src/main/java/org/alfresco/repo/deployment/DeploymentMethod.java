@@ -25,20 +25,18 @@
  */
 package org.alfresco.repo.deployment;
 
-public enum DeploymentMethod
-{
-
-    /**
-     * The deployment method was not specified.
-     */
-    DEFAULT,
-    INSTALLER,
-    DOCKER_COMPOSE,
-    HELM_CHART,
-    ANSIBLE,
-    /**
-     * The distribution zip was used to lay down the ACS artifacts
-     */
-    ZIP,
-    QUICK_START
+public enum DeploymentMethod {
+  /**
+   * The deployment method was not specified.
+   */
+  DEFAULT,
+  INSTALLER,
+  DOCKER_COMPOSE,
+  HELM_CHART,
+  ANSIBLE,
+  /**
+   * The distribution zip was used to lay down the ACS artifacts
+   */
+  ZIP,
+  QUICK_START,
 }

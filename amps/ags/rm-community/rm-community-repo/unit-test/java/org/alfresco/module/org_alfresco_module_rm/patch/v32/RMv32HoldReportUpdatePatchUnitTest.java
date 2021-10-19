@@ -34,7 +34,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -50,51 +49,60 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * RM V3.2 Hold report update patch unit test
- * 
+ *
  * @author Ramona Popa
  * @since 3.2
  */
-public class RMv32HoldReportUpdatePatchUnitTest
-{
-    @Mock
-    private NodeService mockedNodeService;
+public class RMv32HoldReportUpdatePatchUnitTest {
 
-    @Mock
-    private ContentService mockedContentService;
+  @Mock
+  private NodeService mockedNodeService;
 
-    @Mock
-    private VersionService mockedVersionService;
+  @Mock
+  private ContentService mockedContentService;
 
-    @Mock
-    private ContentWriter mockedContentWriter;
+  @Mock
+  private VersionService mockedVersionService;
 
-    @InjectMocks
-    private RMv32HoldReportUpdatePatch patch;
+  @Mock
+  private ContentWriter mockedContentWriter;
 
-    private NodeRef hold_report;
+  @InjectMocks
+  private RMv32HoldReportUpdatePatch patch;
 
-    @Before
-    public void setUp()
-    {
-        MockitoAnnotations.initMocks(this);
-        hold_report = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rmr_holdReport");
-    }
+  private NodeRef hold_report;
 
-    /**
-     * Test report content is updated after the patch is executed
-     */
-    @Test
-    public void testReportContentIsUpdatedAfterUpgrade()
-    {
-        when(mockedNodeService.exists(hold_report)).thenReturn(true);
-        when(mockedNodeService.hasAspect(hold_report, ContentModel.ASPECT_VERSIONABLE)).thenReturn(false);
-        when(mockedContentService.getWriter(hold_report, ContentModel.PROP_CONTENT, true)).thenReturn(mockedContentWriter);
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+    hold_report =
+      new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rmr_holdReport");
+  }
 
-        patch.applyInternal();
-        verify(mockedNodeService, times(1)).addAspect(hold_report, ContentModel.ASPECT_VERSIONABLE, null);
-        verify(mockedVersionService, times(1)).createVersion((NodeRef) anyObject(), anyMap());
-        verify(mockedContentWriter, times(1)).putContent((InputStream) anyObject());
-    }
+  /**
+   * Test report content is updated after the patch is executed
+   */
+  @Test
+  public void testReportContentIsUpdatedAfterUpgrade() {
+    when(mockedNodeService.exists(hold_report)).thenReturn(true);
+    when(
+      mockedNodeService.hasAspect(hold_report, ContentModel.ASPECT_VERSIONABLE)
+    )
+      .thenReturn(false);
+    when(
+      mockedContentService.getWriter(
+        hold_report,
+        ContentModel.PROP_CONTENT,
+        true
+      )
+    )
+      .thenReturn(mockedContentWriter);
+
+    patch.applyInternal();
+    verify(mockedNodeService, times(1))
+      .addAspect(hold_report, ContentModel.ASPECT_VERSIONABLE, null);
+    verify(mockedVersionService, times(1))
+      .createVersion((NodeRef) anyObject(), anyMap());
+    verify(mockedContentWriter, times(1)).putContent((InputStream) anyObject());
+  }
 }
-
-

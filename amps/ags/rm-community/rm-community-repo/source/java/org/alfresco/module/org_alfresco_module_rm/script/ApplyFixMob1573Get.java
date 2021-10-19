@@ -33,7 +33,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -61,108 +60,112 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author neilm
  */
 @Deprecated
-public class ApplyFixMob1573Get extends DeclarativeWebScript
-                                  implements RecordsManagementModel
-{
-    private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef("workspace://SpacesStore/records_management_custom_model");
+public class ApplyFixMob1573Get
+  extends DeclarativeWebScript
+  implements RecordsManagementModel {
 
-    private ContentService contentService;
-    private NamespaceService namespaceService;
+  private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef(
+    "workspace://SpacesStore/records_management_custom_model"
+  );
 
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
+  private ContentService contentService;
+  private NamespaceService namespaceService;
+
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
+
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
+
+  @Override
+  public Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    M2Model customModel = readCustomContentModel();
+    if (customModel == null) {
+      throw new AlfrescoRuntimeException(
+        "Custom content model could not be read"
+      );
     }
 
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
+    // Go through every custom reference defined in the custom model and make sure that it
+    // has many-to-many multiplicity
+    String aspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(
+      namespaceService
+    );
+    M2Aspect customAssocsAspect = customModel.getAspect(aspectName);
+
+    if (customAssocsAspect == null) {
+      throw new AlfrescoRuntimeException("Unknown aspect: " + aspectName);
     }
 
-    @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        M2Model customModel = readCustomContentModel();
-        if (customModel == null)
-        {
-            throw new AlfrescoRuntimeException("Custom content model could not be read");
-        }
-
-        // Go through every custom reference defined in the custom model and make sure that it
-        // has many-to-many multiplicity
-        String aspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(namespaceService);
-        M2Aspect customAssocsAspect = customModel.getAspect(aspectName);
-
-        if (customAssocsAspect == null)
-        {
-            throw new AlfrescoRuntimeException("Unknown aspect: "+aspectName);
-        }
-
-        for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations())
-        {
-            classAssoc.setSourceMany(true);
-            classAssoc.setTargetMany(true);
-        }
-
-        writeCustomContentModel(customModel);
-
-        Map<String, Object> model = new HashMap<>(1, 1.0f);
-    	model.put("success", true);
-
-        return model;
+    for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations()) {
+      classAssoc.setSourceMany(true);
+      classAssoc.setTargetMany(true);
     }
 
-    private M2Model readCustomContentModel()
-    {
-        ContentReader reader = contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT);
+    writeCustomContentModel(customModel);
 
-        if (!reader.exists()) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
+    Map<String, Object> model = new HashMap<>(1, 1.0f);
+    model.put("success", true);
 
-        InputStream contentIn = null;
-        M2Model deserializedModel = null;
-        try
-        {
-            contentIn = reader.getContentInputStream();
-            deserializedModel = M2Model.createModel(contentIn);
-        }
-        finally
-        {
-            try
-            {
-                if (contentIn != null)
-                {
-                    contentIn.close();
-                }
-            }
-            catch (IOException ignored)
-            {
-                // Intentionally empty.
-            }
-        }
-        return deserializedModel;
+    return model;
+  }
+
+  private M2Model readCustomContentModel() {
+    ContentReader reader = contentService.getReader(
+      RM_CUSTOM_MODEL_NODE_REF,
+      ContentModel.TYPE_CONTENT
+    );
+
+    if (!reader.exists()) {
+      throw new AlfrescoRuntimeException("RM CustomModel has no content.");
     }
 
-    private void writeCustomContentModel(M2Model deserializedModel)
-    {
-        ContentWriter writer = contentService.getWriter(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-        writer.setEncoding("UTF-8");
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        deserializedModel.toXML(baos);
-
-        String updatedModelXml;
-        try
-        {
-            updatedModelXml = baos.toString("UTF-8");
-            writer.putContent(updatedModelXml);
-            // putContent closes all resources.
-            // so we don't have to.
-        } catch (UnsupportedEncodingException uex)
-        {
-            throw new AlfrescoRuntimeException("Exception when writing custom model xml.", uex);
+    InputStream contentIn = null;
+    M2Model deserializedModel = null;
+    try {
+      contentIn = reader.getContentInputStream();
+      deserializedModel = M2Model.createModel(contentIn);
+    } finally {
+      try {
+        if (contentIn != null) {
+          contentIn.close();
         }
+      } catch (IOException ignored) {
+        // Intentionally empty.
+      }
     }
+    return deserializedModel;
+  }
+
+  private void writeCustomContentModel(M2Model deserializedModel) {
+    ContentWriter writer = contentService.getWriter(
+      RM_CUSTOM_MODEL_NODE_REF,
+      ContentModel.TYPE_CONTENT,
+      true
+    );
+    writer.setMimetype(MimetypeMap.MIMETYPE_XML);
+    writer.setEncoding("UTF-8");
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    deserializedModel.toXML(baos);
+
+    String updatedModelXml;
+    try {
+      updatedModelXml = baos.toString("UTF-8");
+      writer.putContent(updatedModelXml);
+      // putContent closes all resources.
+      // so we don't have to.
+    } catch (UnsupportedEncodingException uex) {
+      throw new AlfrescoRuntimeException(
+        "Exception when writing custom model xml.",
+        uex
+      );
+    }
+  }
 }

@@ -32,7 +32,6 @@ import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -49,120 +48,112 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Neil McErlean
  * @author Tuna Aksoy
  */
-public class CustomRefPost extends AbstractRmWebScript
-{
-    /** Constants */
-    private static final String TO_NODE = "toNode";
-    private static final String REF_ID = "refId";
+public class CustomRefPost extends AbstractRmWebScript {
 
-    /** Relationship service */
-    private RelationshipService relationshipService;
+  /** Constants */
+  private static final String TO_NODE = "toNode";
+  private static final String REF_ID = "refId";
 
-    /** Rule service */
-    private RuleService ruleService;
+  /** Relationship service */
+  private RelationshipService relationshipService;
 
-    /**
-     * Gets the relationship service instance
-     *
-     * @return The relationship service instance
-     */
-    protected RelationshipService getRelationshipService()
-    {
-        return this.relationshipService;
+  /** Rule service */
+  private RuleService ruleService;
+
+  /**
+   * Gets the relationship service instance
+   *
+   * @return The relationship service instance
+   */
+  protected RelationshipService getRelationshipService() {
+    return this.relationshipService;
+  }
+
+  /**
+   * Sets the relationship service instance
+   *
+   * @param relationshipService The relationship service instance
+   */
+  public void setRelationshipService(RelationshipService relationshipService) {
+    this.relationshipService = relationshipService;
+  }
+
+  /**
+   * Gets the rule service instance
+   *
+   * @return The rule service instance
+   */
+  protected RuleService getRuleService() {
+    return this.ruleService;
+  }
+
+  /**
+   * Sets the rule service instance
+   *
+   * @param ruleService The rule service instance
+   */
+  public void setRuleService(RuleService ruleService) {
+    this.ruleService = ruleService;
+  }
+
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+   *      org.springframework.extensions.webscripts.Status,
+   *      org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, Object> model = new HashMap<>(1);
+    try {
+      getRuleService().disableRuleType(RuleType.INBOUND);
+      addCustomRelationship(req);
+      model.put(SUCCESS, true);
+    } finally {
+      getRuleService().enableRuleType(RuleType.INBOUND);
+    }
+    return model;
+  }
+
+  /**
+   * Adds a custom relationship
+   *
+   * @param req The webscript request
+   */
+  protected void addCustomRelationship(WebScriptRequest req) {
+    JSONObject json = getRequestContentAsJSONObject(req);
+    String uniqueName = getStringValueFromJSONObject(json, REF_ID);
+    NodeRef target = getTargetNode(json);
+    NodeRef source = parseRequestForNodeRef(req);
+
+    if (uniqueName.endsWith(INVERT)) {
+      String uniqueNameStem = uniqueName.split(INVERT)[0];
+      getRelationshipService().addRelationship(uniqueNameStem, target, source);
+    } else {
+      getRelationshipService().addRelationship(uniqueName, source, target);
+    }
+  }
+
+  /**
+   * Gets the target node
+   *
+   * @param json Request content as json object
+   * @return The target node
+   */
+  private NodeRef getTargetNode(JSONObject json) {
+    String targetNodeString = getStringValueFromJSONObject(json, TO_NODE);
+    NodeRef targetNode = new NodeRef(targetNodeString);
+
+    if (!getNodeService().exists(targetNode)) {
+      throw new WebScriptException(
+        Status.STATUS_NOT_FOUND,
+        "Unable to find the target node: '" + targetNode.toString() + "'."
+      );
     }
 
-    /**
-     * Sets the relationship service instance
-     *
-     * @param relationshipService The relationship service instance
-     */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
-        this.relationshipService = relationshipService;
-    }
-
-    /**
-     * Gets the rule service instance
-     *
-     * @return The rule service instance
-     */
-    protected RuleService getRuleService()
-    {
-        return this.ruleService;
-    }
-
-    /**
-     * Sets the rule service instance
-     *
-     * @param ruleService The rule service instance
-     */
-    public void setRuleService(RuleService ruleService)
-    {
-        this.ruleService = ruleService;
-    }
-
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<>(1);
-        try
-        {
-            getRuleService().disableRuleType(RuleType.INBOUND);
-            addCustomRelationship(req);
-            model.put(SUCCESS, true);
-        }
-        finally
-        {
-            getRuleService().enableRuleType(RuleType.INBOUND);
-        }
-        return model;
-    }
-
-    /**
-     * Adds a custom relationship
-     *
-     * @param req The webscript request
-     */
-    protected void addCustomRelationship(WebScriptRequest req)
-    {
-        JSONObject json = getRequestContentAsJSONObject(req);
-        String uniqueName = getStringValueFromJSONObject(json, REF_ID);
-        NodeRef target = getTargetNode(json);
-        NodeRef source = parseRequestForNodeRef(req);
-
-        if (uniqueName.endsWith(INVERT))
-        {
-            String uniqueNameStem = uniqueName.split(INVERT)[0];
-            getRelationshipService().addRelationship(uniqueNameStem, target, source);
-        }
-        else
-        {
-            getRelationshipService().addRelationship(uniqueName, source, target);
-        }
-    }
-
-    /**
-     * Gets the target node
-     *
-     * @param json Request content as json object
-     * @return The target node
-     */
-    private NodeRef getTargetNode(JSONObject json)
-    {
-        String targetNodeString = getStringValueFromJSONObject(json, TO_NODE);
-        NodeRef targetNode = new NodeRef(targetNodeString);
-
-        if (!getNodeService().exists(targetNode))
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find the target node: '" +
-                    targetNode.toString() + "'.");
-        }
-
-        return targetNode;
-    }
+    return targetNode;
+  }
 }

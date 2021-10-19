@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -52,170 +51,166 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @author Roy Wetherall
  */
-public class RMSearchPropertiesGet extends DeclarativeWebScript
-{
-    /** Services */
-    private RecordsManagementAdminService adminService;
-    private RecordService recordService;
-    private DictionaryService dictionaryService;
-    private NamespaceService namespaceService;
-    private FilePlanService filePlanService;
+public class RMSearchPropertiesGet extends DeclarativeWebScript {
 
-    /**
-     * @param adminService  records management admin service
-     */
-    public void setAdminService(RecordsManagementAdminService adminService)
-    {
-        this.adminService = adminService;
+  /** Services */
+  private RecordsManagementAdminService adminService;
+  private RecordService recordService;
+  private DictionaryService dictionaryService;
+  private NamespaceService namespaceService;
+  private FilePlanService filePlanService;
+
+  /**
+   * @param adminService  records management admin service
+   */
+  public void setAdminService(RecordsManagementAdminService adminService) {
+    this.adminService = adminService;
+  }
+
+  /**
+   * @param recordService     record service
+   */
+  public void setRecordService(RecordService recordService) {
+    this.recordService = recordService;
+  }
+
+  /**
+   * @param dictionaryService dictionary service
+   */
+  public void setDictionaryService(DictionaryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
+
+  /**
+   * @param namespaceService  namespace service
+   */
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
+
+  /**
+   * @param filePlanService   file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
+
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+   *      org.springframework.extensions.webscripts.Status,
+   *      org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, Object> model = new HashMap<>(13);
+
+    List<Group> groups = new ArrayList<>(5);
+
+    // get the file plan
+    // TODO the file plan should be passed to this web script
+    NodeRef filePlan = filePlanService.getFilePlanBySiteId(
+      FilePlanService.DEFAULT_RM_SITE_ID
+    );
+
+    // get the record metadata aspects
+    Set<QName> aspects = recordService.getRecordMetadataAspects(filePlan);
+    for (QName aspect : aspects) {
+      Map<QName, PropertyDefinition> properties = dictionaryService.getPropertyDefs(
+        aspect
+      );
+      Property[] propObjs = new Property[properties.size()];
+      int index = 0;
+      for (PropertyDefinition propertyDefinition : properties.values()) {
+        Property propObj = new Property(propertyDefinition);
+        propObjs[index] = propObj;
+        index++;
+      }
+
+      AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
+      Group group = new Group(
+        aspect.getLocalName(),
+        aspectDefinition.getTitle(dictionaryService),
+        propObjs
+      );
+      groups.add(group);
     }
 
-    /**
-     * @param recordService     record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
+    Map<QName, PropertyDefinition> customProps = adminService.getCustomPropertyDefinitions();
+    Property[] propObjs = new Property[customProps.size()];
+    int index = 0;
+    for (PropertyDefinition propertyDefinition : customProps.values()) {
+      Property propObj = new Property(propertyDefinition);
+      propObjs[index] = propObj;
+      index++;
     }
 
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
+    Group group = new Group("rmcustom", "Custom", propObjs);
+    groups.add(group);
+
+    model.put("groups", groups);
+    return model;
+  }
+
+  public class Group {
+
+    private String id;
+    private String label;
+    private Property[] properties;
+
+    public Group(String id, String label, Property[] properties) {
+      this.id = id;
+      this.label = label;
+      this.properties = properties.clone();
     }
 
-    /**
-     * @param namespaceService  namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
+    public String getId() {
+      return id;
     }
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
+    public String getLabel() {
+      return label;
     }
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<>(13);
+    public Property[] getProperties() {
+      return properties;
+    }
+  }
 
-        List<Group> groups = new ArrayList<>(5);
+  public class Property {
 
-        // get the file plan
-        // TODO the file plan should be passed to this web script
-        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+    private String prefix;
+    private String shortName;
+    private String label;
+    private String type;
 
-        // get the record metadata aspects
-        Set<QName> aspects = recordService.getRecordMetadataAspects(filePlan);
-        for (QName aspect : aspects)
-        {
-            Map<QName, PropertyDefinition> properties = dictionaryService.getPropertyDefs(aspect);
-            Property[] propObjs = new Property[properties.size()];
-            int index = 0;
-            for (PropertyDefinition propertyDefinition : properties.values())
-            {
-                Property propObj = new Property(propertyDefinition);
-                propObjs[index] = propObj;
-                index ++;
-            }
-
-            AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
-            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(dictionaryService), propObjs);
-            groups.add(group);
-        }
-
-        Map<QName, PropertyDefinition> customProps = adminService.getCustomPropertyDefinitions();
-        Property[] propObjs = new Property[customProps.size()];
-        int index = 0;
-        for (PropertyDefinition propertyDefinition : customProps.values())
-        {
-            Property propObj = new Property(propertyDefinition);
-            propObjs[index] = propObj;
-            index ++;
-        }
-
-        Group group = new Group("rmcustom", "Custom", propObjs);
-        groups.add(group);
-
-        model.put("groups", groups);
-        return model;
+    public Property(PropertyDefinition propertyDefinition) {
+      QName qName = propertyDefinition
+        .getName()
+        .getPrefixedQName(namespaceService);
+      this.prefix = QName.splitPrefixedQName(qName.toPrefixString())[0];
+      this.shortName = qName.getLocalName();
+      this.label = propertyDefinition.getTitle(dictionaryService);
+      this.type = propertyDefinition.getDataType().getName().getLocalName();
     }
 
-    public class Group
-    {
-        private String id;
-        private String label;
-        private Property[] properties;
-
-        public Group(String id, String label, Property[] properties)
-        {
-            this.id = id;
-            this.label = label;
-            this.properties = properties.clone();
-        }
-
-        public String getId()
-        {
-            return id;
-        }
-
-        public String getLabel()
-        {
-            return label;
-        }
-
-        public Property[] getProperties()
-        {
-            return properties;
-        }
+    public String getPrefix() {
+      return prefix;
     }
 
-    public class Property
-    {
-        private String prefix;
-        private String shortName;
-        private String label;
-        private String type;
-
-        public Property(PropertyDefinition propertyDefinition)
-        {
-            QName qName = propertyDefinition.getName().getPrefixedQName(namespaceService);
-            this.prefix = QName.splitPrefixedQName(qName.toPrefixString())[0];
-            this.shortName = qName.getLocalName();
-            this.label = propertyDefinition.getTitle(dictionaryService);
-            this.type = propertyDefinition.getDataType().getName().getLocalName();
-        }
-
-        public String getPrefix()
-        {
-            return prefix;
-        }
-
-        public String getShortName()
-        {
-            return shortName;
-        }
-
-        public String getLabel()
-        {
-            return label;
-        }
-
-        public String getType()
-        {
-            return type;
-        }
+    public String getShortName() {
+      return shortName;
     }
+
+    public String getLabel() {
+      return label;
+    }
+
+    public String getType() {
+      return type;
+    }
+  }
 }

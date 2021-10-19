@@ -33,7 +33,6 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.alfresco.rest.core.v0.APIUtils;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.hold.HoldEntry;
@@ -53,13 +52,14 @@ import org.springframework.stereotype.Component;
  * @since 3.2
  */
 @Component
-public class HoldsAPI extends BaseAPI
-{
+public class HoldsAPI extends BaseAPI {
+
     public static final String HOLDS_CONTAINER = "Holds";
     /**
      * The URI to create a hold
      */
-    private static final String CREATE_HOLDS_API = "{0}type/rma:hold/formprocessor";
+    private static final String CREATE_HOLDS_API =
+        "{0}type/rma:hold/formprocessor";
 
     /**
      * The URI to add items to hold or to remove items from hold
@@ -81,8 +81,13 @@ public class HoldsAPI extends BaseAPI
      * @param description hold description
      * @return The HTTP response.
      */
-    public HttpResponse createHold(String user, String password, String holdName, String reason, String description)
-    {
+    public HttpResponse createHold(
+        String user,
+        String password,
+        String holdName,
+        String reason,
+        String description
+    ) {
         return createHold(user, password, holdName, reason, description, SC_OK);
     }
 
@@ -97,19 +102,37 @@ public class HoldsAPI extends BaseAPI
      * @param expectedStatusCode The expected return status code.
      * @return The HTTP response or throws AssertionError if the returned status code is not as expected.
      */
-    public HttpResponse createHold(String user, String password, String holdName, String reason, String description,
-                                   int expectedStatusCode)
-    {
+    public HttpResponse createHold(
+        String user,
+        String password,
+        String holdName,
+        String reason,
+        String description,
+        int expectedStatusCode
+    ) {
         // retrieve the Holds container nodeRef
-        final String parentNodeRef = getItemNodeRef(user, password, "/" + HOLDS_CONTAINER);
+        final String parentNodeRef = getItemNodeRef(
+            user,
+            password,
+            "/" + HOLDS_CONTAINER
+        );
 
         final JSONObject requestParams = new JSONObject();
-        requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
+        requestParams.put(
+            "alf_destination",
+            getNodeRefSpacesStore() + parentNodeRef
+        );
         requestParams.put("prop_cm_name", holdName);
         requestParams.put("prop_cm_description", description);
         requestParams.put("prop_rma_holdReason", reason);
 
-        return doPostJsonRequest(user, password, expectedStatusCode, requestParams, CREATE_HOLDS_API);
+        return doPostJsonRequest(
+            user,
+            password,
+            expectedStatusCode,
+            requestParams,
+            CREATE_HOLDS_API
+        );
     }
 
     /**
@@ -122,22 +145,32 @@ public class HoldsAPI extends BaseAPI
      * @param description hold description
      * @return node ref of the hold created
      */
-    public String createHoldAndGetNodeRef(String user, String password,
-                                     String holdName, String reason, String description)
-    {
-        final HttpResponse httpResponse = createHold(user, password, holdName, reason, description);
+    public String createHoldAndGetNodeRef(
+        String user,
+        String password,
+        String holdName,
+        String reason,
+        String description
+    ) {
+        final HttpResponse httpResponse = createHold(
+            user,
+            password,
+            holdName,
+            reason,
+            description
+        );
 
-        try
-        {
-           return convertHTTPResponseToJSON(httpResponse).getString("persistedObject")
-                                .replace(NODE_REF_WORKSPACE_SPACES_STORE, "");
-        }
-        catch(JSONException error)
-        {
-            LOGGER.error("Converting message body to JSON failed. Body: {}", httpResponse, error);
-        }
-        catch(ParseException error)
-        {
+        try {
+            return convertHTTPResponseToJSON(httpResponse)
+                .getString("persistedObject")
+                .replace(NODE_REF_WORKSPACE_SPACES_STORE, "");
+        } catch (JSONException error) {
+            LOGGER.error(
+                "Converting message body to JSON failed. Body: {}",
+                httpResponse,
+                error
+            );
+        } catch (ParseException error) {
             LOGGER.error("Parsing message body failed.", error);
         }
 
@@ -151,9 +184,13 @@ public class HoldsAPI extends BaseAPI
      * @param holdNodeRef the hold node ref
      * @return The HTTP Response or throws AssertionError if the request is not successful.
      */
-    public HttpResponse deleteHold(UserModel user, String holdNodeRef)
-    {
-        return deleteHold(user.getUsername(), user.getPassword(), holdNodeRef, SC_OK);
+    public HttpResponse deleteHold(UserModel user, String holdNodeRef) {
+        return deleteHold(
+            user.getUsername(),
+            user.getPassword(),
+            holdNodeRef,
+            SC_OK
+        );
     }
 
     /**
@@ -164,13 +201,23 @@ public class HoldsAPI extends BaseAPI
      * @param holdNodeRef the hold node ref
      * @return The HTTP Response or throws AssertionError if the returned status code is not as expected.
      */
-    public HttpResponse deleteHold(String username, String password, String holdNodeRef, int expectedStatusCode)
-    {
+    public HttpResponse deleteHold(
+        String username,
+        String password,
+        String holdNodeRef,
+        int expectedStatusCode
+    ) {
         JSONObject requestParams = new JSONObject();
         requestParams.put("name", "deleteHold");
         requestParams.put("nodeRef", getNodeRefSpacesStore() + holdNodeRef);
 
-        return doPostJsonRequest(username, password, expectedStatusCode, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(
+            username,
+            password,
+            expectedStatusCode,
+            requestParams,
+            RM_ACTIONS_API
+        );
     }
 
     /**
@@ -181,9 +228,12 @@ public class HoldsAPI extends BaseAPI
      * @param holdName the hold name
      * @throws AssertionError if the deletion was unsuccessful.
      */
-    public void deleteHold( String username, String password, String holdName)
-    {
-        deleteItem(username, password, String.format("/%s/%s", HOLDS_CONTAINER, holdName));
+    public void deleteHold(String username, String password, String holdName) {
+        deleteItem(
+            username,
+            password,
+            String.format("/%s/%s", HOLDS_CONTAINER, holdName)
+        );
     }
 
     /**
@@ -195,9 +245,18 @@ public class HoldsAPI extends BaseAPI
      * @param holdName    the hold name
      * @return The HTTP response
      */
-    public HttpResponse addItemToHold(String user, String password, String itemNodeRef, String holdName)
-    {
-        return addItemsToHolds(user, password, Collections.singletonList(itemNodeRef), Collections.singletonList(holdName));
+    public HttpResponse addItemToHold(
+        String user,
+        String password,
+        String itemNodeRef,
+        String holdName
+    ) {
+        return addItemsToHolds(
+            user,
+            password,
+            Collections.singletonList(itemNodeRef),
+            Collections.singletonList(holdName)
+        );
     }
 
     /**
@@ -209,12 +268,29 @@ public class HoldsAPI extends BaseAPI
      * @param holdNames    the list of holds
      * @return The HTTP response
      */
-    public HttpResponse addItemsToHolds(String user, String password, List<String> itemNodeRefs, List<String> holdNames)
-    {
-        final List<String> holdNodeRefs = holdNames.stream()
-                                                   .map(hold -> getItemNodeRef(user, password, String.format("/%s/%s", HOLDS_CONTAINER, hold)))
-                                                   .collect(Collectors.toList());
-        return addItemsToHolds(user, password, SC_OK, itemNodeRefs, holdNodeRefs);
+    public HttpResponse addItemsToHolds(
+        String user,
+        String password,
+        List<String> itemNodeRefs,
+        List<String> holdNames
+    ) {
+        final List<String> holdNodeRefs = holdNames
+            .stream()
+            .map(hold ->
+                getItemNodeRef(
+                    user,
+                    password,
+                    String.format("/%s/%s", HOLDS_CONTAINER, hold)
+                )
+            )
+            .collect(Collectors.toList());
+        return addItemsToHolds(
+            user,
+            password,
+            SC_OK,
+            itemNodeRefs,
+            holdNodeRefs
+        );
     }
 
     /**
@@ -226,11 +302,24 @@ public class HoldsAPI extends BaseAPI
      * @param holdNodeRefs the list of holds
      * @return The HTTP response
      */
-    public HttpResponse addItemsToHolds(String user, String password, int expectedStatus, List<String> itemNodeRefs,
-                                        List<String> holdNodeRefs)
-    {
-        final JSONObject requestParams = addOrRemoveToFromHoldJsonObject(itemNodeRefs, holdNodeRefs);
-        return doPostJsonRequest(user, password, expectedStatus, requestParams, RM_HOLDS_API);
+    public HttpResponse addItemsToHolds(
+        String user,
+        String password,
+        int expectedStatus,
+        List<String> itemNodeRefs,
+        List<String> holdNodeRefs
+    ) {
+        final JSONObject requestParams = addOrRemoveToFromHoldJsonObject(
+            itemNodeRefs,
+            holdNodeRefs
+        );
+        return doPostJsonRequest(
+            user,
+            password,
+            expectedStatus,
+            requestParams,
+            RM_HOLDS_API
+        );
     }
 
     /**
@@ -242,11 +331,20 @@ public class HoldsAPI extends BaseAPI
      * @param holdNodeRef the hold node ref
      * @return The error message
      */
-    public String addToHoldAndGetMessage(String user, String password, int expectedStatus, String itemNodeRef, String
-            holdNodeRef)
-    {
-        final HttpResponse httpResponse = addItemsToHolds(user, password, expectedStatus, Collections.singletonList(itemNodeRef),
-                Collections.singletonList(holdNodeRef));
+    public String addToHoldAndGetMessage(
+        String user,
+        String password,
+        int expectedStatus,
+        String itemNodeRef,
+        String holdNodeRef
+    ) {
+        final HttpResponse httpResponse = addItemsToHolds(
+            user,
+            password,
+            expectedStatus,
+            Collections.singletonList(itemNodeRef),
+            Collections.singletonList(holdNodeRef)
+        );
         return APIUtils.extractErrorMessageFromHttpResponse(httpResponse);
     }
 
@@ -257,12 +355,18 @@ public class HoldsAPI extends BaseAPI
      * @param holdNodeRefs list of hold node refs for add/remove items
      * @return JSONObject fo
      */
-    private JSONObject addOrRemoveToFromHoldJsonObject(List<String> items, List<String> holdNodeRefs)
-    {
+    private JSONObject addOrRemoveToFromHoldJsonObject(
+        List<String> items,
+        List<String> holdNodeRefs
+    ) {
         final JSONArray nodeRefs = new JSONArray();
-        items.forEach(itemNodeRef -> nodeRefs.put(getNodeRefSpacesStore() + itemNodeRef));
+        items.forEach(itemNodeRef ->
+            nodeRefs.put(getNodeRefSpacesStore() + itemNodeRef)
+        );
         final JSONArray holds = new JSONArray();
-        holdNodeRefs.forEach(holdNodeRef -> holds.put(getNodeRefSpacesStore() + holdNodeRef));
+        holdNodeRefs.forEach(holdNodeRef ->
+            holds.put(getNodeRefSpacesStore() + holdNodeRef)
+        );
         final JSONObject requestParams = new JSONObject();
         requestParams.put("nodeRefs", nodeRefs);
         requestParams.put("holds", holds);
@@ -278,9 +382,18 @@ public class HoldsAPI extends BaseAPI
      * @param holdName    the hold name
      * @return The HTTP response
      */
-    public HttpResponse removeItemFromHold(String user, String password, String itemNodeRef, String holdName)
-    {
-        return removeItemsFromHolds(user, password, Collections.singletonList(itemNodeRef), Collections.singletonList(holdName));
+    public HttpResponse removeItemFromHold(
+        String user,
+        String password,
+        String itemNodeRef,
+        String holdName
+    ) {
+        return removeItemsFromHolds(
+            user,
+            password,
+            Collections.singletonList(itemNodeRef),
+            Collections.singletonList(holdName)
+        );
     }
 
     /**
@@ -292,12 +405,29 @@ public class HoldsAPI extends BaseAPI
      * @param holdNames      the list of hold names
      * @return The HTTP response
      */
-    public HttpResponse removeItemsFromHolds(String user, String password, List<String> itemNodeRefs, List<String> holdNames)
-    {
-        final List<String> holdNodeRefs = holdNames.stream()
-                                                   .map(hold -> getItemNodeRef(user, password, String.format("/%s/%s", HOLDS_CONTAINER, hold)))
-                                                   .collect(Collectors.toList());
-        return removeItemsFromHolds(user, password, SC_OK, itemNodeRefs, holdNodeRefs);
+    public HttpResponse removeItemsFromHolds(
+        String user,
+        String password,
+        List<String> itemNodeRefs,
+        List<String> holdNames
+    ) {
+        final List<String> holdNodeRefs = holdNames
+            .stream()
+            .map(hold ->
+                getItemNodeRef(
+                    user,
+                    password,
+                    String.format("/%s/%s", HOLDS_CONTAINER, hold)
+                )
+            )
+            .collect(Collectors.toList());
+        return removeItemsFromHolds(
+            user,
+            password,
+            SC_OK,
+            itemNodeRefs,
+            holdNodeRefs
+        );
     }
 
     /**
@@ -310,11 +440,24 @@ public class HoldsAPI extends BaseAPI
      * @param holdNodeRefs   the list of hold node refs
      * @return The HTTP response
      */
-    public HttpResponse removeItemsFromHolds(String user, String password, int expectedStatus, List<String> itemNodeRefs,
-                                             List<String> holdNodeRefs)
-    {
-        final JSONObject requestParams = addOrRemoveToFromHoldJsonObject(itemNodeRefs, holdNodeRefs);
-        return doPutJsonRequest(user, password, expectedStatus, requestParams, RM_HOLDS_API);
+    public HttpResponse removeItemsFromHolds(
+        String user,
+        String password,
+        int expectedStatus,
+        List<String> itemNodeRefs,
+        List<String> holdNodeRefs
+    ) {
+        final JSONObject requestParams = addOrRemoveToFromHoldJsonObject(
+            itemNodeRefs,
+            holdNodeRefs
+        );
+        return doPutJsonRequest(
+            user,
+            password,
+            expectedStatus,
+            requestParams,
+            RM_HOLDS_API
+        );
     }
 
     /**
@@ -326,11 +469,20 @@ public class HoldsAPI extends BaseAPI
      * @param holdNodeRef the hold node ref
      * @return The error message
      */
-    public String removeFromHoldAndGetMessage(String user, String password, int expectedStatus, String itemNodeRef, String
-            holdNodeRef)
-    {
-        final HttpResponse httpResponse = removeItemsFromHolds(user, password, expectedStatus, Collections.singletonList(itemNodeRef),
-                Collections.singletonList(holdNodeRef));
+    public String removeFromHoldAndGetMessage(
+        String user,
+        String password,
+        int expectedStatus,
+        String itemNodeRef,
+        String holdNodeRef
+    ) {
+        final HttpResponse httpResponse = removeItemsFromHolds(
+            user,
+            password,
+            expectedStatus,
+            Collections.singletonList(itemNodeRef),
+            Collections.singletonList(holdNodeRef)
+        );
         return APIUtils.extractErrorMessageFromHttpResponse(httpResponse);
     }
 
@@ -345,15 +497,35 @@ public class HoldsAPI extends BaseAPI
      * @param fileOnly True if only files should be return
      * @return return a list of hold entries
      */
-    public List<HoldEntry> getHolds(String user, String password, final String itemNodeRef,
-                                    final Boolean includedInHold, final Boolean fileOnly)
-    {
-        final String parameters = (itemNodeRef != null ? "itemNodeRef=" + NODE_REF_WORKSPACE_SPACES_STORE + itemNodeRef  : "")
-                             + (includedInHold != null ? "&includedInHold=" + includedInHold : "")
-                             + (fileOnly != null ? "&fileOnly=" + fileOnly : "");
+    public List<HoldEntry> getHolds(
+        String user,
+        String password,
+        final String itemNodeRef,
+        final Boolean includedInHold,
+        final Boolean fileOnly
+    ) {
+        final String parameters =
+            (
+                itemNodeRef != null
+                    ? "itemNodeRef=" +
+                    NODE_REF_WORKSPACE_SPACES_STORE +
+                    itemNodeRef
+                    : ""
+            ) +
+            (
+                includedInHold != null
+                    ? "&includedInHold=" + includedInHold
+                    : ""
+            ) +
+            (fileOnly != null ? "&fileOnly=" + fileOnly : "");
 
-        final JSONArray holdEntries = doGetRequest(user, password,
-                MessageFormat.format(GET_RM_HOLDS, "{0}", parameters)).getJSONObject("data").getJSONArray("holds");
+        final JSONArray holdEntries = doGetRequest(
+            user,
+            password,
+            MessageFormat.format(GET_RM_HOLDS, "{0}", parameters)
+        )
+            .getJSONObject("data")
+            .getJSONArray("holds");
 
         return PojoUtility.jsonToObject(holdEntries, HoldEntry.class);
     }

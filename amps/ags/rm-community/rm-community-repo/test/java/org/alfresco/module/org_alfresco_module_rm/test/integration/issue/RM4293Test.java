@@ -39,88 +39,79 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.6
  *
  */
-public class RM4293Test  extends BaseRMTestCase
-{
-    public void testDeleteSpecialContainers()  throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-                assertNotNull(holdContainer);
+public class RM4293Test extends BaseRMTestCase {
 
-                try
-                {
-                    fileFolderService.delete(holdContainer);
-                    fail("This should have thrown an exception");
-                }
-                catch (IntegrityException e)
-                {
-                    // ("Hold Container can't be deleted.")
-                }
-                return null;
-            }
-        });
+  public void testDeleteSpecialContainers() throws Exception {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
+          assertNotNull(holdContainer);
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
-                assertNotNull(transferContainer);
-                try
-                {
-                    fileFolderService.delete(transferContainer);
-                    fail("This should have thrown an exception");
-                }
-                catch (IntegrityException e)
-                {
-                    // ("Transfer Container can't be deleted.")
-                }
-                return null;
-            }
-        });
+          try {
+            fileFolderService.delete(holdContainer);
+            fail("This should have thrown an exception");
+          } catch (IntegrityException e) {
+            // ("Hold Container can't be deleted.")
+          }
+          return null;
+        }
+      }
+    );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-                assertNotNull(unfiledRecordContainer);
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          NodeRef transferContainer = filePlanService.getTransferContainer(
+            filePlan
+          );
+          assertNotNull(transferContainer);
+          try {
+            fileFolderService.delete(transferContainer);
+            fail("This should have thrown an exception");
+          } catch (IntegrityException e) {
+            // ("Transfer Container can't be deleted.")
+          }
+          return null;
+        }
+      }
+    );
 
-                try
-                {
-                    fileFolderService.delete(unfiledRecordContainer);
-                    fail("This should have thrown an exception");
-                }
-                catch (IntegrityException e)
-                {
-                    // ("Unfiled Record Container can't be deleted.")
-                }
-                return null;
-            }
-        });
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(
+            filePlan
+          );
+          assertNotNull(unfiledRecordContainer);
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                try
-                {
-                    fileFolderService.delete(filePlan);
-                    fail("This should have thrown an exception");
-                }
-                catch (IntegrityException e)
-                {
-                    // ("FilePlan can't be deleted.")
-                }
-                return null;
-            }
-        });
-    }
+          try {
+            fileFolderService.delete(unfiledRecordContainer);
+            fail("This should have thrown an exception");
+          } catch (IntegrityException e) {
+            // ("Unfiled Record Container can't be deleted.")
+          }
+          return null;
+        }
+      }
+    );
+
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          try {
+            fileFolderService.delete(filePlan);
+            fail("This should have thrown an exception");
+          } catch (IntegrityException e) {
+            // ("FilePlan can't be deleted.")
+          }
+          return null;
+        }
+      }
+    );
+  }
 }

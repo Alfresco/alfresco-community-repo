@@ -20,25 +20,23 @@ package org.alfresco.util.cache;
 
 /**
  * Describes a new entry has been inserted in the cache.
- * 
+ *
  * @author Andy
  *
  */
-public class RefreshableCacheRefreshedEvent extends AbstractRefreshableCacheEvent
-{
+public class RefreshableCacheRefreshedEvent
+  extends AbstractRefreshableCacheEvent {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 2352511592269578075L;
+  /**
+   *
+   */
+  private static final long serialVersionUID = 2352511592269578075L;
 
-    /**
-     * @param cacheId
-     * @param key - the key/ tennant id
-     */
-    RefreshableCacheRefreshedEvent(String cacheId, String key)
-    {
-        super(cacheId, key);
-    }
-
+  /**
+   * @param cacheId
+   * @param key - the key/ tennant id
+   */
+  RefreshableCacheRefreshedEvent(String cacheId, String key) {
+    super(cacheId, key);
+  }
 }

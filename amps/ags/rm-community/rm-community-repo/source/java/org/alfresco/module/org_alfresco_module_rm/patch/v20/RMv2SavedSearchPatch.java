@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v20;
 import static org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType.DEFAULT_SITE_NAME;
 
 import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -50,76 +49,83 @@ import org.springframework.beans.factory.BeanNameAware;
  * @since 2.0
  */
 @SuppressWarnings("deprecation")
-public class RMv2SavedSearchPatch extends ModulePatchComponent
-                                  implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
-    /** Records management search service */
-    private RecordsManagementSearchService recordsManagementSearchService;
+public class RMv2SavedSearchPatch
+  extends ModulePatchComponent
+  implements BeanNameAware, RecordsManagementModel, DOD5015Model {
 
-    /** Site service */
-    private SiteService siteService;
+  /** Records management search service */
+  private RecordsManagementSearchService recordsManagementSearchService;
 
-    /** Content service */
-    private ContentService contentService;
+  /** Site service */
+  private SiteService siteService;
 
-    /**
-     * @param recordsManagementSearchService    records management search service
-     */
-    public void setRecordsManagementSearchService(RecordsManagementSearchService recordsManagementSearchService)
-    {
-        this.recordsManagementSearchService = recordsManagementSearchService;
-    }
+  /** Content service */
+  private ContentService contentService;
 
-    /**
-     * @param siteService   site service
-     */
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
-    }
+  /**
+   * @param recordsManagementSearchService    records management search service
+   */
+  public void setRecordsManagementSearchService(
+    RecordsManagementSearchService recordsManagementSearchService
+  ) {
+    this.recordsManagementSearchService = recordsManagementSearchService;
+  }
 
-    /**
-     * @param contentService    content service
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
+  /**
+   * @param siteService   site service
+   */
+  public void setSiteService(SiteService siteService) {
+    this.siteService = siteService;
+  }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
-     */
-    @Override
-    protected void executePatch()
-    {
-        if (siteService.getSite(DEFAULT_SITE_NAME) != null)
-        {
-            // get the saved searches
-            List<SavedSearchDetails> savedSearches = recordsManagementSearchService.getSavedSearches(DEFAULT_SITE_NAME);
+  /**
+   * @param contentService    content service
+   */
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
 
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("  ... updating " + savedSearches.size() + " saved searches");
-            }
+  /**
+   * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
+   */
+  @Override
+  protected void executePatch() {
+    if (siteService.getSite(DEFAULT_SITE_NAME) != null) {
+      // get the saved searches
+      List<SavedSearchDetails> savedSearches = recordsManagementSearchService.getSavedSearches(
+        DEFAULT_SITE_NAME
+      );
 
-            for (SavedSearchDetails savedSearchDetails : savedSearches)
-            {
-                // refresh the query
-                String refreshedJSON = savedSearchDetails.toJSONString();
-                NodeRef nodeRef = savedSearchDetails.getNodeRef();
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(
+          "  ... updating " + savedSearches.size() + " saved searches"
+        );
+      }
 
-                if (nodeRef != null)
-                {
-                    ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-                    writer.putContent(refreshedJSON);
+      for (SavedSearchDetails savedSearchDetails : savedSearches) {
+        // refresh the query
+        String refreshedJSON = savedSearchDetails.toJSONString();
+        NodeRef nodeRef = savedSearchDetails.getNodeRef();
 
+        if (nodeRef != null) {
+          ContentWriter writer = contentService.getWriter(
+            nodeRef,
+            ContentModel.PROP_CONTENT,
+            true
+          );
+          writer.putContent(refreshedJSON);
 
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("    ... updated saved search " + savedSearchDetails.getName() + " (nodeRef=" + nodeRef.toString() + ")");
-                    }
-                }
-            }
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+              "    ... updated saved search " +
+              savedSearchDetails.getName() +
+              " (nodeRef=" +
+              nodeRef.toString() +
+              ")"
+            );
+          }
         }
+      }
     }
+  }
 }

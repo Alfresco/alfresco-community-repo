@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -62,111 +62,126 @@ import org.springframework.context.ApplicationContext;
  * @author Alex Miller
  * @see AlfrescoPerson Consider using {@link AlfrescoPerson} instead, which will create tenants as needed when run in a Cloud build.
  */
-public class AlfrescoTenant extends AbstractRule
-{
-	public static final String ADMIN_PASSWORD = "password"; 
-	
-    private final String tenantName;
-    
-    /**
-     * Constructs the rule with a spring ApplicationContext.
-     * A GUID-generated tenant name will be used for the test tenant.
-     * 
-     * @param appContext the spring app context (needed to get at Alfresco services).
-     */
-    public AlfrescoTenant(ApplicationContext appContext)
-    {
-        this(appContext, GUID.generate());
-    }
-    
-    /**
-     * Constructs the rule with a reference to a {@link ApplicationContextInit rule} which can be used to retrieve the ApplicationContext.
-     * A GUID-generated  tenant name will be used for the test user.
-     * 
-     * @param appContextRule a rule which can be used to retrieve the spring app context.
-     */
-    public AlfrescoTenant(ApplicationContextInit appContextRule)
-    {
-        this(appContextRule, GUID.generate());
-    }
-    
-    /**
-     * Constructs the rule with a spring ApplicationContext.
-     * 
-     * @param appContext the spring app context (needed to get at Alfresco services).
-     * @param tenantName   the tenantName for the person to be created.
-     */
-    public AlfrescoTenant(ApplicationContext appContext, String tenantName)
-    {
-    	super(appContext);
-    	this.tenantName = tenantName.toLowerCase();
-    }
-    
-    /**
-     * Constructs the rule with a reference to a {@link ApplicationContextInit rule} which can be used to retrieve the ApplicationContext.
-     * 
-     * @param appContextRule a rule which can be used to retrieve the spring app context.
-     * @param tenantName   the name for the tenant to be created.
-     */
-    public AlfrescoTenant(ApplicationContextInit appContextRule, String tenantName)
-    {
-        super(appContextRule);
-        this.tenantName = tenantName.toLowerCase();
-    }
-    
-    /**
-     * Create the tenant.
-     */
-    @Override protected void before() throws Throwable
-    {
-        final ApplicationContext appCtx = getApplicationContext();
-        RetryingTransactionHelper transactionHelper = appCtx.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
-    	final TenantAdminService tenantAdminService = appCtx.getBean("tenantAdminService", TenantAdminService.class);
-        
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override public Void execute() throws Throwable
-            {
-            	tenantAdminService.createTenant(tenantName, ADMIN_PASSWORD.toCharArray());
-            	return null;
-            }
+public class AlfrescoTenant extends AbstractRule {
 
-        });
-    }
-    
-    /**
-     * Remove the tenant
-     */
-    @Override protected void after()
-    {
-        final ApplicationContext appCtx = getApplicationContext();
-        RetryingTransactionHelper transactionHelper = appCtx.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
-    	final TenantAdminService tenantAdminService = appCtx.getBean("tenantAdminService", TenantAdminService.class);
-        
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override public Void execute() throws Throwable
-            {
-                tenantAdminService.deleteTenant(tenantName);
-                return null;
-            }
-        });
-    }
+  public static final String ADMIN_PASSWORD = "password";
 
-    /**
-     * @return The tenant domain.
-     */
-	public String getTenantDomain() {
-		return tenantName;
-	}
+  private final String tenantName;
 
-	/**
-	 * Do runAsWork as the system user for this tenant.
-	 * 
-	 * @param runAsWork The work to be done as the system user of this tenant.
-	 * @return The result of the work
-	 */
-	public <T> T runAsSystem(TenantRunAsWork<T> runAsWork) {
-		return TenantUtil.runAsSystemTenant(runAsWork, tenantName);
-	}
+  /**
+   * Constructs the rule with a spring ApplicationContext.
+   * A GUID-generated tenant name will be used for the test tenant.
+   *
+   * @param appContext the spring app context (needed to get at Alfresco services).
+   */
+  public AlfrescoTenant(ApplicationContext appContext) {
+    this(appContext, GUID.generate());
+  }
+
+  /**
+   * Constructs the rule with a reference to a {@link ApplicationContextInit rule} which can be used to retrieve the ApplicationContext.
+   * A GUID-generated  tenant name will be used for the test user.
+   *
+   * @param appContextRule a rule which can be used to retrieve the spring app context.
+   */
+  public AlfrescoTenant(ApplicationContextInit appContextRule) {
+    this(appContextRule, GUID.generate());
+  }
+
+  /**
+   * Constructs the rule with a spring ApplicationContext.
+   *
+   * @param appContext the spring app context (needed to get at Alfresco services).
+   * @param tenantName   the tenantName for the person to be created.
+   */
+  public AlfrescoTenant(ApplicationContext appContext, String tenantName) {
+    super(appContext);
+    this.tenantName = tenantName.toLowerCase();
+  }
+
+  /**
+   * Constructs the rule with a reference to a {@link ApplicationContextInit rule} which can be used to retrieve the ApplicationContext.
+   *
+   * @param appContextRule a rule which can be used to retrieve the spring app context.
+   * @param tenantName   the name for the tenant to be created.
+   */
+  public AlfrescoTenant(
+    ApplicationContextInit appContextRule,
+    String tenantName
+  ) {
+    super(appContextRule);
+    this.tenantName = tenantName.toLowerCase();
+  }
+
+  /**
+   * Create the tenant.
+   */
+  @Override
+  protected void before() throws Throwable {
+    final ApplicationContext appCtx = getApplicationContext();
+    RetryingTransactionHelper transactionHelper = appCtx.getBean(
+      "retryingTransactionHelper",
+      RetryingTransactionHelper.class
+    );
+    final TenantAdminService tenantAdminService = appCtx.getBean(
+      "tenantAdminService",
+      TenantAdminService.class
+    );
+
+    transactionHelper.doInTransaction(
+      new RetryingTransactionCallback<Void>() {
+        @Override
+        public Void execute() throws Throwable {
+          tenantAdminService.createTenant(
+            tenantName,
+            ADMIN_PASSWORD.toCharArray()
+          );
+          return null;
+        }
+      }
+    );
+  }
+
+  /**
+   * Remove the tenant
+   */
+  @Override
+  protected void after() {
+    final ApplicationContext appCtx = getApplicationContext();
+    RetryingTransactionHelper transactionHelper = appCtx.getBean(
+      "retryingTransactionHelper",
+      RetryingTransactionHelper.class
+    );
+    final TenantAdminService tenantAdminService = appCtx.getBean(
+      "tenantAdminService",
+      TenantAdminService.class
+    );
+
+    transactionHelper.doInTransaction(
+      new RetryingTransactionCallback<Void>() {
+        @Override
+        public Void execute() throws Throwable {
+          tenantAdminService.deleteTenant(tenantName);
+          return null;
+        }
+      }
+    );
+  }
+
+  /**
+   * @return The tenant domain.
+   */
+  public String getTenantDomain() {
+    return tenantName;
+  }
+
+  /**
+   * Do runAsWork as the system user for this tenant.
+   *
+   * @param runAsWork The work to be done as the system user of this tenant.
+   * @return The result of the work
+   */
+  public <T> T runAsSystem(TenantRunAsWork<T> runAsWork) {
+    return TenantUtil.runAsSystemTenant(runAsWork, tenantName);
+  }
 }

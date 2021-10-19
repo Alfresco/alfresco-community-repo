@@ -30,13 +30,14 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ CreateRepoEventIT.class,
-                UpdateRepoEventIT.class,
-                DeleteRepoEventIT.class,
-                ChildAssociationRepoEventIT.class,
-                PeerAssociationRepoEventIT.class,
-                EventGeneratorTest.class
-})
-public class RepoEvent2ITSuite
-{
-}
+@SuiteClasses(
+  {
+    CreateRepoEventIT.class,
+    UpdateRepoEventIT.class,
+    DeleteRepoEventIT.class,
+    ChildAssociationRepoEventIT.class,
+    PeerAssociationRepoEventIT.class,
+    EventGeneratorTest.class,
+  }
+)
+public class RepoEvent2ITSuite {}

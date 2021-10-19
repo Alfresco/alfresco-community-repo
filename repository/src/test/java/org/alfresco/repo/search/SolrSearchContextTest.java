@@ -30,22 +30,20 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class SolrSearchContextTest
-{
+public class SolrSearchContextTest {
 
-
-    /**
-     * This test just starts up the application context with the
-     * solr-search-context.xml and common-search-scheduler-context.xml and the required property files
-     */
-    @Test
-    public void testSearchContextStartup()
-    {
-        ApplicationContext searchContext =
-                new ClassPathXmlApplicationContext(new String[] {
-                        "classpath:org/alfresco/repo/search/impl/test-solr-search-context.xml",
-                        "alfresco/subsystems/Search/solr6/common-search-scheduler-context.xml"},
-                        ApplicationContextHelper.getApplicationContext());
-
-    }
+  /**
+   * This test just starts up the application context with the
+   * solr-search-context.xml and common-search-scheduler-context.xml and the required property files
+   */
+  @Test
+  public void testSearchContextStartup() {
+    ApplicationContext searchContext = new ClassPathXmlApplicationContext(
+      new String[] {
+        "classpath:org/alfresco/repo/search/impl/test-solr-search-context.xml",
+        "alfresco/subsystems/Search/solr6/common-search-scheduler-context.xml",
+      },
+      ApplicationContextHelper.getApplicationContext()
+    );
+  }
 }

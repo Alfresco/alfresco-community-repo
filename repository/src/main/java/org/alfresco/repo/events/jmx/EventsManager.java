@@ -29,15 +29,13 @@ import org.springframework.jmx.export.annotation.ManagedResource;
 
 /**
  * MBean exposing Alfresco Events
- * 
+ *
  * @since 5.0
  * @author sglover
  *
  */
 @ManagedResource
-public class EventsManager
-{
-    public EventsManager()
-    {
-    }
+public class EventsManager {
+
+  public EventsManager() {}
 }

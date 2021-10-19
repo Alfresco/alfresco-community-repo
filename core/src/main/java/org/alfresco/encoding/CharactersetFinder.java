@@ -37,32 +37,31 @@ import java.nio.charset.Charset;
  * Where the encoding cannot be determined, it is left to the client to decide what to do.
  * Some implementations may guess and encoding or use a default guess - it is up to the
  * implementation to specify the behaviour.
- * 
+ *
  * @since 2.1
  * @author Derek Hulley
  */
-public interface CharactersetFinder
-{
-    /**
-     * Attempt to detect the character set encoding for the give input stream.  The input
-     * stream will not be altered or closed by this method, and must therefore support
-     * marking.  If the input stream available doesn't support marking, then it can be wrapped with
-     * a {@link BufferedInputStream}.
-     * <p>
-     * The current state of the stream will be restored before the method returns.
-     * 
-     * @param is                an input stream that must support marking
-     * @return                  Returns the encoding of the stream,
-     *                          or <tt>null</tt> if encoding cannot be identified
-     */
-    public Charset detectCharset(InputStream is);
-    
-    /**
-     * Attempt to detect the character set encoding for the given buffer.
-     * 
-     * @param buffer            the first <i>n</i> bytes of the character stream
-     * @return                  Returns the encoding of the buffer,
-     *                          or <tt>null</tt> if encoding cannot be identified
-     */
-    public Charset detectCharset(byte[] buffer);
+public interface CharactersetFinder {
+  /**
+   * Attempt to detect the character set encoding for the give input stream.  The input
+   * stream will not be altered or closed by this method, and must therefore support
+   * marking.  If the input stream available doesn't support marking, then it can be wrapped with
+   * a {@link BufferedInputStream}.
+   * <p>
+   * The current state of the stream will be restored before the method returns.
+   *
+   * @param is                an input stream that must support marking
+   * @return                  Returns the encoding of the stream,
+   *                          or <tt>null</tt> if encoding cannot be identified
+   */
+  public Charset detectCharset(InputStream is);
+
+  /**
+   * Attempt to detect the character set encoding for the given buffer.
+   *
+   * @param buffer            the first <i>n</i> bytes of the character stream
+   * @return                  Returns the encoding of the buffer,
+   *                          or <tt>null</tt> if encoding cannot be identified
+   */
+  public Charset detectCharset(byte[] buffer);
 }

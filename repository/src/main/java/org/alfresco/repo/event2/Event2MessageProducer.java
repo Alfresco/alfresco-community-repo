@@ -26,7 +26,6 @@
 package org.alfresco.repo.event2;
 
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.rawevents.AbstractEventProducer;
 import org.alfresco.util.PropertyCheck;
@@ -39,46 +38,50 @@ import org.springframework.beans.factory.InitializingBean;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class Event2MessageProducer extends AbstractEventProducer implements InitializingBean
-{
+public class Event2MessageProducer
+  extends AbstractEventProducer
+  implements InitializingBean {
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "producer", this.producer);
-        PropertyCheck.mandatory(this, "endpoint", this.endpoint);
-        PropertyCheck.mandatory(this, "objectMapper", this.objectMapper);
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    PropertyCheck.mandatory(this, "producer", this.producer);
+    PropertyCheck.mandatory(this, "endpoint", this.endpoint);
+    PropertyCheck.mandatory(this, "objectMapper", this.objectMapper);
 
-        if (StringUtils.isEmpty(this.endpoint))
-        {
-            throw new IllegalArgumentException("Property 'endpoint' cannot be an empty string.");
-        }
+    if (StringUtils.isEmpty(this.endpoint)) {
+      throw new IllegalArgumentException(
+        "Property 'endpoint' cannot be an empty string."
+      );
     }
+  }
 
-    public void send(Object event)
-    {
-        send(this.endpoint, null, event, null);
+  public void send(Object event) {
+    send(this.endpoint, null, event, null);
+  }
+
+  @Override
+  public void send(
+    String endpointUri,
+    ExchangePattern exchangePattern,
+    Object event,
+    Map<String, Object> headers
+  ) {
+    try {
+      if (!(event instanceof String)) {
+        event = this.objectMapper.writeValueAsString(event);
+      }
+      if (exchangePattern == null) {
+        exchangePattern = ExchangePattern.InOnly;
+      }
+
+      this.producer.sendBodyAndHeaders(
+          endpointUri,
+          exchangePattern,
+          event,
+          this.addHeaders(headers)
+        );
+    } catch (Exception e) {
+      throw new AlfrescoRuntimeException(ERROR_SENDING, e);
     }
-
-    @Override
-    public void send(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
-    {
-        try
-        {
-            if (!(event instanceof String))
-            {
-                event = this.objectMapper.writeValueAsString(event);
-            }
-            if (exchangePattern == null)
-            {
-                exchangePattern = ExchangePattern.InOnly;
-            }
-
-            this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
-        }
-        catch (Exception e)
-        {
-            throw new AlfrescoRuntimeException(ERROR_SENDING, e);
-        }
-    }
+  }
 }

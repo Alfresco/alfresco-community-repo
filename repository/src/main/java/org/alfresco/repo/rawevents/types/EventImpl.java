@@ -27,90 +27,74 @@ package org.alfresco.repo.rawevents.types;
 
 import java.util.UUID;
 
-public class EventImpl implements Event
-{
+public class EventImpl implements Event {
 
-    private String id;
-    private String type;
-    private String authenticatedUser;
-    private String executingUser;
-    private Long timestamp;
-    private int schema;
+  private String id;
+  private String type;
+  private String authenticatedUser;
+  private String executingUser;
+  private Long timestamp;
+  private int schema;
 
-    public EventImpl()
-    {
-    }
+  public EventImpl() {}
 
-    public EventImpl(String type, long timestamp)
-    {
-        this.id = UUID.randomUUID().toString();
-        this.type = type;
-        this.timestamp = timestamp;
-    }
+  public EventImpl(String type, long timestamp) {
+    this.id = UUID.randomUUID().toString();
+    this.type = type;
+    this.timestamp = timestamp;
+  }
 
-    @Override
-    public String getId()
-    {
-        return id;
-    }
+  @Override
+  public String getId() {
+    return id;
+  }
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    @Override
-    public String getType()
-    {
-        return type;
-    }
+  @Override
+  public String getType() {
+    return type;
+  }
 
-    public void setType(String type)
-    {
-        this.type = type;
-    }
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    @Override
-    public String getAuthenticatedUser()
-    {
-        return authenticatedUser;
-    }
+  @Override
+  public String getAuthenticatedUser() {
+    return authenticatedUser;
+  }
 
-    public void setAuthenticatedUser(String authenticatedUser)
-    {
-        this.authenticatedUser = authenticatedUser;
-    }
+  public void setAuthenticatedUser(String authenticatedUser) {
+    this.authenticatedUser = authenticatedUser;
+  }
 
-    @Override
-    public String getExecutingUser()
-    {
-        return executingUser;
-    }
+  @Override
+  public String getExecutingUser() {
+    return executingUser;
+  }
 
-    public void setExecutingUser(String executingUser)
-    {
-        this.executingUser = executingUser;
-    }
+  public void setExecutingUser(String executingUser) {
+    this.executingUser = executingUser;
+  }
 
-    @Override
-    public Long getTimestamp()
-    {
-        return timestamp;
-    }
+  @Override
+  public Long getTimestamp() {
+    return timestamp;
+  }
 
-    public void setTimestamp(Long timestamp)
-    {
-        this.timestamp = timestamp;
-    }
+  public void setTimestamp(Long timestamp) {
+    this.timestamp = timestamp;
+  }
 
-    @Override
-    public int getSchema()
-    {
-        return schema;
-    }
+  @Override
+  public int getSchema() {
+    return schema;
+  }
 
-    public void setSchema(int schema)
-    {
-        this.schema = schema;
-    }
+  public void setSchema(int schema) {
+    this.schema = schema;
+  }
 }

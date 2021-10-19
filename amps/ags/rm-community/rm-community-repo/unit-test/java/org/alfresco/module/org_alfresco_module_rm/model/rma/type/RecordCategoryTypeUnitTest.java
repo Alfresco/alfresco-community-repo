@@ -52,61 +52,85 @@ import org.mockito.MockitoAnnotations;
  * @since 2.6
  *
  */
-public class RecordCategoryTypeUnitTest extends BaseUnitTest
-{
-    @Mock
-    private AuthenticationUtil mockAuthenticationUtil;
+public class RecordCategoryTypeUnitTest extends BaseUnitTest {
 
-    @Mock
-    private VitalRecordService mockedVitalRecordService;
+  @Mock
+  private AuthenticationUtil mockAuthenticationUtil;
 
-    private @InjectMocks RecordCategoryType recordCategoryType;
+  @Mock
+  private VitalRecordService mockedVitalRecordService;
 
-    @Before
-    public void setup()
-    {
-        MockitoAnnotations.initMocks(this);
-        MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
-        when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
-    }
+  @InjectMocks
+  private RecordCategoryType recordCategoryType;
 
-    /**
-     * Given that we try to add types different than "rma:recordCategory" and "rma:recordFolder" to a record category,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testCreateNonAceptedTypes() throws Exception
-    {
-        NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
-        QName type = AlfMock.generateQName();
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
-        recordCategoryType.onCreateChildAssociation(childAssocRef, true);
-    }
+  @Before
+  public void setup() {
+    MockitoAnnotations.initMocks(this);
+    MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
+    when(mockedApplicationContext.getBean("dbNodeService"))
+      .thenReturn(mockedNodeService);
+  }
 
-    /**
-     * Given that we try to add "rma:recordCategory" type to a record category,
-     * Then operation is successful.
-     */
-    @Test
-    public void testCreateRecordCategory() throws Exception
-    {
-        NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
-        recordCategoryType.onCreateChildAssociation(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add types different than "rma:recordCategory" and "rma:recordFolder" to a record category,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testCreateNonAceptedTypes() throws Exception {
+    NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_CATEGORY
+    );
+    QName type = AlfMock.generateQName();
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordCategoryNodeRef,
+      nodeRef
+    );
+    recordCategoryType.onCreateChildAssociation(childAssocRef, true);
+  }
 
-    /**
-     * Given that we try to add "rma:recordFolder" type to a record category,
-     * Then operation is successful.
-     */
-    @Test
-    public void testCreateRecordFolder() throws Exception
-    {
-        NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_CATEGORY);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordCategoryNodeRef, nodeRef);
-        recordCategoryType.onCreateChildAssociation(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add "rma:recordCategory" type to a record category,
+   * Then operation is successful.
+   */
+  @Test
+  public void testCreateRecordCategory() throws Exception {
+    NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_CATEGORY
+    );
+    NodeRef nodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_CATEGORY,
+      true
+    );
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordCategoryNodeRef,
+      nodeRef
+    );
+    recordCategoryType.onCreateChildAssociation(childAssocRef, true);
+  }
+
+  /**
+   * Given that we try to add "rma:recordFolder" type to a record category,
+   * Then operation is successful.
+   */
+  @Test
+  public void testCreateRecordFolder() throws Exception {
+    NodeRef recordCategoryNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_CATEGORY
+    );
+    NodeRef nodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER,
+      true
+    );
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordCategoryNodeRef,
+      nodeRef
+    );
+    recordCategoryType.onCreateChildAssociation(childAssocRef, true);
+  }
 }

@@ -38,25 +38,27 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
-public class RelinquishHoldAction extends RMActionExecuterAbstractBase
-{
-   /** I18N */
-   private static final String MSG_NOT_HOLD_TYPE = "rm.action.not-hold-type";
+public class RelinquishHoldAction extends RMActionExecuterAbstractBase {
 
-   /**
-    * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
-    */
-   @SuppressWarnings("deprecation")
-   @Override
-   protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-   {
-      if (getFreezeService().isHold(actionedUponNodeRef))
-      {
-          getFreezeService().relinquish(actionedUponNodeRef);
-      }
-      else
-      {
-         throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NOT_HOLD_TYPE, TYPE_HOLD.toString(), actionedUponNodeRef.toString()));
-      }
-   }
+  /** I18N */
+  private static final String MSG_NOT_HOLD_TYPE = "rm.action.not-hold-type";
+
+  /**
+   * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @SuppressWarnings("deprecation")
+  @Override
+  protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+    if (getFreezeService().isHold(actionedUponNodeRef)) {
+      getFreezeService().relinquish(actionedUponNodeRef);
+    } else {
+      throw new AlfrescoRuntimeException(
+        I18NUtil.getMessage(
+          MSG_NOT_HOLD_TYPE,
+          TYPE_HOLD.toString(),
+          actionedUponNodeRef.toString()
+        )
+      );
+    }
+  }
 }

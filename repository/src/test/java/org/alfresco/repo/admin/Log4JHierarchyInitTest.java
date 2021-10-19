@@ -33,7 +33,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import junit.framework.TestCase;
-
 import org.alfresco.repo.model.filefolder.FileFolderPerformanceTester;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,61 +44,70 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @see Log4JHierarchyInit
  * @since 2.2.3
  */
-public class Log4JHierarchyInitTest extends TestCase
-{
-    private PrintStream sysErr;
-    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+public class Log4JHierarchyInitTest extends TestCase {
 
-    private static ApplicationContext ctx = new ClassPathXmlApplicationContext(
-                new String[] { "classpath:log4j/log4j-test-context.xml" });
+  private PrintStream sysErr;
+  private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
 
-    public void setUp() throws Exception
-    {
-    }
+  private static ApplicationContext ctx = new ClassPathXmlApplicationContext(
+    new String[] { "classpath:log4j/log4j-test-context.xml" }
+  );
 
-    public void testSetUp() throws Throwable
-    {
-        // Check that the bean is present
-        ctx.getBean("log4JHierarchyInit");
-        // Make sure that the default log4j.properties is being picked up
-        Log log = LogFactory.getLog("log4j.logger.org.alfresco");
-        assertFalse("Expect log level ERROR for 'org.alfresco'.", log.isWarnEnabled());
-    }
+  public void setUp() throws Exception {}
 
-    public void testAddingLog4jProperties() throws Throwable
-    {
-        Log log = LogFactory.getLog(this.getClass());
-        // We expect DEBUG to be on
-        assertTrue("DEBUG was not enabled for logger " + this.getClass(), log.isDebugEnabled());
-    }
+  public void testSetUp() throws Throwable {
+    // Check that the bean is present
+    ctx.getBean("log4JHierarchyInit");
+    // Make sure that the default log4j.properties is being picked up
+    Log log = LogFactory.getLog("log4j.logger.org.alfresco");
+    assertFalse(
+      "Expect log level ERROR for 'org.alfresco'.",
+      log.isWarnEnabled()
+    );
+  }
 
-    public void setUpStreams() throws UnsupportedEncodingException
-    {
-        sysErr = System.err;
-        System.setErr(new PrintStream(errContent, false, "UTF-8"));
-    }
+  public void testAddingLog4jProperties() throws Throwable {
+    Log log = LogFactory.getLog(this.getClass());
+    // We expect DEBUG to be on
+    assertTrue(
+      "DEBUG was not enabled for logger " + this.getClass(),
+      log.isDebugEnabled()
+    );
+  }
 
-    public void revertStreams()
-    {
-        System.setErr(sysErr);
-    }
+  public void setUpStreams() throws UnsupportedEncodingException {
+    sysErr = System.err;
+    System.setErr(new PrintStream(errContent, false, "UTF-8"));
+  }
 
-    public void testLog4jAppenderClosedError() throws Throwable
-    {
-        setUpStreams();
-        Log log = LogFactory.getLog(this.getClass());
+  public void revertStreams() {
+    System.setErr(sysErr);
+  }
 
-        Log4JHierarchyInit log4JHierarchyInit = (Log4JHierarchyInit) ctx.getBean("log4JHierarchyInit");
+  public void testLog4jAppenderClosedError() throws Throwable {
+    setUpStreams();
+    Log log = LogFactory.getLog(this.getClass());
 
-        Log log2 = LogFactory.getLog(FileFolderPerformanceTester.class);
-        log4JHierarchyInit.init();
+    Log4JHierarchyInit log4JHierarchyInit = (Log4JHierarchyInit) ctx.getBean(
+      "log4JHierarchyInit"
+    );
 
-        log2.info("test");
+    Log log2 = LogFactory.getLog(FileFolderPerformanceTester.class);
+    log4JHierarchyInit.init();
 
-        // We expect DEBUG to be on
-        assertTrue("DEBUG was not enabled for logger " + this.getClass(), log.isDebugEnabled());
-        assertFalse(errContent.toString().contains("Attempted to append to closed appender named"));
+    log2.info("test");
 
-        revertStreams();
-    }
+    // We expect DEBUG to be on
+    assertTrue(
+      "DEBUG was not enabled for logger " + this.getClass(),
+      log.isDebugEnabled()
+    );
+    assertFalse(
+      errContent
+        .toString()
+        .contains("Attempted to append to closed appender named")
+    );
+
+    revertStreams();
+  }
 }

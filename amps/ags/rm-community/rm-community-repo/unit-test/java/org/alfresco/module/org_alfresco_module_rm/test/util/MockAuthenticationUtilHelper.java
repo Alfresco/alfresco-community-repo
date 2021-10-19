@@ -43,66 +43,71 @@ import org.mockito.stubbing.Answer;
  *
  * @author tpage
  */
-public class MockAuthenticationUtilHelper
-{
-    public static final String SYSTEM_USER = "system";
-    public static final String ADMIN_USER = "admin";
-    public static final String GUEST_USER = "guest";
+public class MockAuthenticationUtilHelper {
 
-    /**
-     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
-     * permissions. If the mock is asked for details about the user then it assumes the currently authenticated user is
-     * "admin".
-     *
-     * @param mockAuthenticationUtil The mock to initialise.
-     */
-    public static void setup(AuthenticationUtil mockAuthenticationUtil)
-    {
-        setup(mockAuthenticationUtil, "admin");
-    }
+  public static final String SYSTEM_USER = "system";
+  public static final String ADMIN_USER = "admin";
+  public static final String GUEST_USER = "guest";
 
-    /**
-     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
-     * permissions.
-     *
-     * @param mockAuthenticationUtil The mock to initialise.
-     * @param fullyAuthenticatedUser The name of the user that last authenticated.
-     */
-    @SuppressWarnings("unchecked")
-    public static void setup(AuthenticationUtil mockAuthenticationUtil, String fullyAuthenticatedUser)
-    {
-        reset(mockAuthenticationUtil);
+  /**
+   * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
+   * permissions. If the mock is asked for details about the user then it assumes the currently authenticated user is
+   * "admin".
+   *
+   * @param mockAuthenticationUtil The mock to initialise.
+   */
+  public static void setup(AuthenticationUtil mockAuthenticationUtil) {
+    setup(mockAuthenticationUtil, "admin");
+  }
 
-        // just do the work
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork) invocation.getArguments()[0];
-                return work.doWork();
-            }
+  /**
+   * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
+   * permissions.
+   *
+   * @param mockAuthenticationUtil The mock to initialise.
+   * @param fullyAuthenticatedUser The name of the user that last authenticated.
+   */
+  @SuppressWarnings("unchecked")
+  public static void setup(
+    AuthenticationUtil mockAuthenticationUtil,
+    String fullyAuthenticatedUser
+  ) {
+    reset(mockAuthenticationUtil);
 
-        }).when(mockAuthenticationUtil).<Object> runAsSystem(any(RunAsWork.class));
+    // just do the work
+    doAnswer(
+      new Answer<Object>() {
+        @SuppressWarnings("rawtypes")
+        @Override
+        public Object answer(InvocationOnMock invocation) throws Throwable {
+          RunAsWork work = (RunAsWork) invocation.getArguments()[0];
+          return work.doWork();
+        }
+      }
+    )
+      .when(mockAuthenticationUtil)
+      .<Object>runAsSystem(any(RunAsWork.class));
 
-        // just do the work
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork) invocation.getArguments()[0];
-                return work.doWork();
-            }
+    // just do the work
+    doAnswer(
+      new Answer<Object>() {
+        @SuppressWarnings("rawtypes")
+        @Override
+        public Object answer(InvocationOnMock invocation) throws Throwable {
+          RunAsWork work = (RunAsWork) invocation.getArguments()[0];
+          return work.doWork();
+        }
+      }
+    )
+      .when(mockAuthenticationUtil)
+      .<Object>runAs(any(RunAsWork.class), anyString());
 
-        }).when(mockAuthenticationUtil).<Object> runAs(any(RunAsWork.class), anyString());
-
-        when(mockAuthenticationUtil.getAdminUserName()).thenReturn(ADMIN_USER);
-        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(fullyAuthenticatedUser);
-        when(mockAuthenticationUtil.getRunAsUser()).thenReturn(fullyAuthenticatedUser);
-        when(mockAuthenticationUtil.getSystemUserName()).thenReturn(SYSTEM_USER);
-        when(mockAuthenticationUtil.getGuestUserName()).thenReturn(GUEST_USER);
-    }
+    when(mockAuthenticationUtil.getAdminUserName()).thenReturn(ADMIN_USER);
+    when(mockAuthenticationUtil.getFullyAuthenticatedUser())
+      .thenReturn(fullyAuthenticatedUser);
+    when(mockAuthenticationUtil.getRunAsUser())
+      .thenReturn(fullyAuthenticatedUser);
+    when(mockAuthenticationUtil.getSystemUserName()).thenReturn(SYSTEM_USER);
+    when(mockAuthenticationUtil.getGuestUserName()).thenReturn(GUEST_USER);
+  }
 }

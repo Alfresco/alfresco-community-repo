@@ -25,45 +25,38 @@ import java.util.regex.Pattern;
  * Matches a path against a set of regular expression filters
  *
  */
-public class PatternFilter
-{
-    private List<Pattern> patterns;
-    
-    /**
-     * A list of regular expressions that represent patterns of files.
-     * 
-     * @param regexps list of regular expressions
-     * 
-     * @see String#matches(java.lang.String)
-     */
-    public void setPatterns(List<String> regexps)
-    {
-        this.patterns = new ArrayList<Pattern>(regexps.size());
-        for(String regexp : regexps)
-        {
-            this.patterns.add(Pattern.compile(regexp));
-        }
+public class PatternFilter {
+
+  private List<Pattern> patterns;
+
+  /**
+   * A list of regular expressions that represent patterns of files.
+   *
+   * @param regexps list of regular expressions
+   *
+   * @see String#matches(java.lang.String)
+   */
+  public void setPatterns(List<String> regexps) {
+    this.patterns = new ArrayList<Pattern>(regexps.size());
+    for (String regexp : regexps) {
+      this.patterns.add(Pattern.compile(regexp));
+    }
+  }
+
+  public boolean isFiltered(String path) {
+    // check against all the regular expressions
+    boolean matched = false;
+
+    for (Pattern regexp : patterns) {
+      if (!regexp.matcher(path).matches()) {
+        // it is not a match - try next one
+        continue;
+      } else {
+        matched = true;
+        break;
+      }
     }
 
-    public boolean isFiltered(String path)
-    {
-        // check against all the regular expressions
-        boolean matched = false;
-
-        for (Pattern regexp : patterns)
-        {
-            if(!regexp.matcher(path).matches())
-            {
-                // it is not a match - try next one
-                continue;
-            }
-            else
-            {
-                matched = true;
-                break;
-            }
-        }
-
-        return matched;
-    }
+    return matched;
+  }
 }

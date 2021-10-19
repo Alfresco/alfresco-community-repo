@@ -29,15 +29,13 @@ package org.alfresco.rm.rest.api.model;
 
 /**
  * Concrete class carrying general information for an unfiled container
- * 
+ *
  * @author Ana Bozianu
  * @since 2.6
  */
-public class UnfiledContainer extends RMNode
-{
-    public UnfiledContainer()
-    {
-        super();
-    }
+public class UnfiledContainer extends RMNode {
 
+  public UnfiledContainer() {
+    super();
+  }
 }

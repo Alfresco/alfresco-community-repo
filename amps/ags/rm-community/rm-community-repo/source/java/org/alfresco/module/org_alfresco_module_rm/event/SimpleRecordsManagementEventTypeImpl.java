@@ -35,75 +35,71 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
-public class SimpleRecordsManagementEventTypeImpl implements RecordsManagementEventType, BeanNameAware
-{
-    /** Display label lookup prefix */
-    protected static final String LOOKUP_PREFIX = "rmeventservice.";
+public class SimpleRecordsManagementEventTypeImpl
+  implements RecordsManagementEventType, BeanNameAware {
 
-    /** Name */
-    public static final String NAME = "rmEventType.simple";
+  /** Display label lookup prefix */
+  protected static final String LOOKUP_PREFIX = "rmeventservice.";
 
-    /** Records management event service */
-    private RecordsManagementEventService recordsManagementEventService;
+  /** Name */
+  public static final String NAME = "rmEventType.simple";
 
-    /** Name */
-    private String name;
+  /** Records management event service */
+  private RecordsManagementEventService recordsManagementEventService;
 
-    /**
-     * @return Records management event service
-     */
-    protected RecordsManagementEventService getRecordsManagementEventService()
-    {
-        return this.recordsManagementEventService;
-    }
+  /** Name */
+  private String name;
 
-    /**
-     * Set the records management event service
-     *
-     * @param recordsManagementEventService     records management service
-     */
-    public void setRecordsManagementEventService(RecordsManagementEventService recordsManagementEventService)
-    {
-        this.recordsManagementEventService = recordsManagementEventService;
-    }
+  /**
+   * @return Records management event service
+   */
+  protected RecordsManagementEventService getRecordsManagementEventService() {
+    return this.recordsManagementEventService;
+  }
 
-    /**
-     * Initialisation method
-     */
-    public void init()
-    {
-        getRecordsManagementEventService().registerEventType(this);
-    }
+  /**
+   * Set the records management event service
+   *
+   * @param recordsManagementEventService     records management service
+   */
+  public void setRecordsManagementEventService(
+    RecordsManagementEventService recordsManagementEventService
+  ) {
+    this.recordsManagementEventService = recordsManagementEventService;
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType#isAutomaticEvent()
-     */
-    public boolean isAutomaticEvent()
-    {
-        return false;
-    }
+  /**
+   * Initialisation method
+   */
+  public void init() {
+    getRecordsManagementEventService().registerEventType(this);
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType#getName()
-     */
-    public String getName()
-    {
-        return this.name;
-    }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType#isAutomaticEvent()
+   */
+  public boolean isAutomaticEvent() {
+    return false;
+  }
 
-    /**
-     * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
-     */
-    public void setBeanName(String name)
-    {
-        this.name = name;
-    }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType#getName()
+   */
+  public String getName() {
+    return this.name;
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType#getDisplayLabel()
-     */
-    public String getDisplayLabel()
-    {
-        return I18NUtil.getMessage(LOOKUP_PREFIX + getName());
-    }
+  /**
+   * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)
+   */
+  public void setBeanName(String name) {
+    this.name = name;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType#getDisplayLabel()
+   */
+  public String getDisplayLabel() {
+    return I18NUtil.getMessage(LOOKUP_PREFIX + getName());
+  }
 }

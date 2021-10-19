@@ -40,19 +40,19 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
  * @since 2.1
  */
 @BehaviourBean
-public class CreateObjectAuditEvent extends AuditEvent implements OnCreateNodePolicy
-{
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            type = "rma:filePlanComponent"
-    )
-    public void onCreateNode(ChildAssociationRef childAssocRef)
-    {
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName());
-    }
+public class CreateObjectAuditEvent
+  extends AuditEvent
+  implements OnCreateNodePolicy {
+
+  /**
+   * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+   */
+  @Override
+  @Behaviour(kind = BehaviourKind.CLASS, type = "rma:filePlanComponent")
+  public void onCreateNode(ChildAssociationRef childAssocRef) {
+    recordsManagementAuditService.auditEvent(
+      childAssocRef.getChildRef(),
+      getName()
+    );
+  }
 }

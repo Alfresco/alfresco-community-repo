@@ -29,8 +29,7 @@ package org.alfresco.rest.rm.community.model.recordcategory;
 /**
  * The property of the dispositioned item that is used to calculate the "as of" period.
  */
-public enum RetentionPeriodProperty
-{
+public enum RetentionPeriodProperty {
     /** Item created date. */
     CREATED_DATE("cm:created"),
     /** Record filed date. */
@@ -40,13 +39,11 @@ public enum RetentionPeriodProperty
 
     String periodProperty;
 
-    RetentionPeriodProperty(String periodProperty)
-    {
+    RetentionPeriodProperty(String periodProperty) {
         this.periodProperty = periodProperty;
     }
 
-    public String getPeriodProperty()
-    {
+    public String getPeriodProperty() {
         return periodProperty;
     }
 }

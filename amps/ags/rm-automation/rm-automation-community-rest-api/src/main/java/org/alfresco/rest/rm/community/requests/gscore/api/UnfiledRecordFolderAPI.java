@@ -39,15 +39,13 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
-
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
@@ -61,21 +59,21 @@ import org.alfresco.rest.rm.community.util.UnfiledContainerChildMixin;
  * @author Ramona Popa
  * @since 2.6
  */
-public class UnfiledRecordFolderAPI extends RMModelRequest
-{
+public class UnfiledRecordFolderAPI extends RMModelRequest {
+
     /**
      * @param rmRestWrapper RM REST Wrapper
      */
-    public UnfiledRecordFolderAPI(RMRestWrapper rmRestWrapper)
-    {
+    public UnfiledRecordFolderAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
     /**
      * see {@link #getUnfiledRecordFolder(String, String)}
      */
-    public UnfiledRecordFolder getUnfiledRecordFolder(String unfiledRecordFolderId)
-    {
+    public UnfiledRecordFolder getUnfiledRecordFolder(
+        String unfiledRecordFolderId
+    ) {
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
         return getUnfiledRecordFolder(unfiledRecordFolderId, EMPTY);
@@ -95,23 +93,30 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      *  <li>{@code unfiledRecordFolderId} does not exist</li>
      * </ul>
      */
-    public UnfiledRecordFolder getUnfiledRecordFolder(String unfiledRecordFolderId, String parameters)
-    {
+    public UnfiledRecordFolder getUnfiledRecordFolder(
+        String unfiledRecordFolderId,
+        String parameters
+    ) {
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
-        return getRmRestWrapper().processModel(UnfiledRecordFolder.class, simpleRequest(
-                GET,
-                "unfiled-record-folders/{unfiledRecordFolderId}?{parameters}",
-                unfiledRecordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                UnfiledRecordFolder.class,
+                simpleRequest(
+                    GET,
+                    "unfiled-record-folders/{unfiledRecordFolderId}?{parameters}",
+                    unfiledRecordFolderId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #getUnfiledRecordFolderChildren(String, String)}
      */
-    public UnfiledContainerChildCollection getUnfiledRecordFolderChildren(String unfiledRecordFolderId)
-    {
+    public UnfiledContainerChildCollection getUnfiledRecordFolderChildren(
+        String unfiledRecordFolderId
+    ) {
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
         return getUnfiledRecordFolderChildren(unfiledRecordFolderId, EMPTY);
@@ -130,27 +135,42 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      *  <li>{@code unfiledRecordFolderId} does not exist</li>
      *</ul>
      */
-    public UnfiledContainerChildCollection getUnfiledRecordFolderChildren(String unfiledRecordFolderId, String parameters)
-    {
+    public UnfiledContainerChildCollection getUnfiledRecordFolderChildren(
+        String unfiledRecordFolderId,
+        String parameters
+    ) {
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
-        return getRmRestWrapper().processModels(UnfiledContainerChildCollection.class, simpleRequest(
-            GET,
-            "unfiled-record-folders/{unfiledRecordFolderId}/children?{parameters}",
-            unfiledRecordFolderId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModels(
+                UnfiledContainerChildCollection.class,
+                simpleRequest(
+                    GET,
+                    "unfiled-record-folders/{unfiledRecordFolderId}/children?{parameters}",
+                    unfiledRecordFolderId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #createUnfiledRecordFolderChild(UnfiledContainerChild, String, String)}
      */
-    public UnfiledContainerChild createUnfiledRecordFolderChild(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId)
-    {
-        mandatoryObject("unfiledRecordFolderChildModel", unfiledRecordFolderChildModel);
+    public UnfiledContainerChild createUnfiledRecordFolderChild(
+        UnfiledContainerChild unfiledRecordFolderChildModel,
+        String unfiledRecordFolderId
+    ) {
+        mandatoryObject(
+            "unfiledRecordFolderChildModel",
+            unfiledRecordFolderChildModel
+        );
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
-        return createUnfiledRecordFolderChild(unfiledRecordFolderChildModel, unfiledRecordFolderId, EMPTY);
+        return createUnfiledRecordFolderChild(
+            unfiledRecordFolderChildModel,
+            unfiledRecordFolderId,
+            EMPTY
+        );
     }
 
     /**
@@ -170,18 +190,28 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public UnfiledContainerChild createUnfiledRecordFolderChild(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId, String parameters)
-    {
-        mandatoryObject("unfiledRecordFolderChildModel", unfiledRecordFolderChildModel);
+    public UnfiledContainerChild createUnfiledRecordFolderChild(
+        UnfiledContainerChild unfiledRecordFolderChildModel,
+        String unfiledRecordFolderId,
+        String parameters
+    ) {
+        mandatoryObject(
+            "unfiledRecordFolderChildModel",
+            unfiledRecordFolderChildModel
+        );
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
-        return getRmRestWrapper().processModel(UnfiledContainerChild.class, requestWithBody(
-                POST,
-                toJson(unfiledRecordFolderChildModel),
-                "unfiled-record-folders/{unfiledRecordFolderId}/children?{parameters}",
-                unfiledRecordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                UnfiledContainerChild.class,
+                requestWithBody(
+                    POST,
+                    toJson(unfiledRecordFolderChildModel),
+                    "unfiled-record-folders/{unfiledRecordFolderId}/children?{parameters}",
+                    unfiledRecordFolderId,
+                    parameters
+                )
+            );
     }
 
     /**
@@ -193,14 +223,22 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      * @return newly created {@link UnfiledContainerChild}
      * @throws RuntimeException for invalid recordModel JSON strings
      */
-    public UnfiledContainerChild uploadRecord(UnfiledContainerChild unfiledRecordFolderChildModel, String unfiledRecordFolderId, File unfiledRecordFolderChildContent)
-    {
-        mandatoryObject("unfiledRecordFolderChildModel", unfiledRecordFolderChildModel);
-        mandatoryObject("unfiledRecordFolderChildContent", unfiledRecordFolderChildContent);
+    public UnfiledContainerChild uploadRecord(
+        UnfiledContainerChild unfiledRecordFolderChildModel,
+        String unfiledRecordFolderId,
+        File unfiledRecordFolderChildContent
+    ) {
+        mandatoryObject(
+            "unfiledRecordFolderChildModel",
+            unfiledRecordFolderChildModel
+        );
+        mandatoryObject(
+            "unfiledRecordFolderChildContent",
+            unfiledRecordFolderChildContent
+        );
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
-        if (!unfiledRecordFolderChildModel.getNodeType().equals(CONTENT_TYPE))
-        {
+        if (!unfiledRecordFolderChildModel.getNodeType().equals(CONTENT_TYPE)) {
             fail("Only electronic records are supported");
         }
 
@@ -210,36 +248,57 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
         JsonNode root;
-        try
-        {
-            root = new ObjectMapper().readTree(toJson(unfiledRecordFolderChildModel, UnfiledContainerChild.class, UnfiledContainerChildMixin.class));
-        }
-        catch (IOException e)
-        {
+        try {
+            root =
+                new ObjectMapper()
+                    .readTree(
+                        toJson(
+                            unfiledRecordFolderChildModel,
+                            UnfiledContainerChild.class,
+                            UnfiledContainerChildMixin.class
+                        )
+                    );
+        } catch (IOException e) {
             throw new RuntimeException("Failed to convert model to JSON.", e);
         }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
-        while (fieldNames.hasNext())
-        {
+        while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
-            builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
+            builder.addMultiPart(
+                fieldName,
+                root.get(fieldName).asText(),
+                ContentType.JSON.name()
+            );
         }
-        builder.addMultiPart("filedata", unfiledRecordFolderChildContent, ContentType.BINARY.name());
+        builder.addMultiPart(
+            "filedata",
+            unfiledRecordFolderChildContent,
+            ContentType.BINARY.name()
+        );
 
         // create node with given content
-        return createUnfiledRecordFolderChild(unfiledRecordFolderChildModel, unfiledRecordFolderId);
+        return createUnfiledRecordFolderChild(
+            unfiledRecordFolderChildModel,
+            unfiledRecordFolderId
+        );
     }
 
     /**
      * see {@link #updateUnfiledRecordFolder(UnfiledRecordFolder, String, String)
      */
-    public UnfiledRecordFolder updateUnfiledRecordFolder(UnfiledRecordFolder unfiledRecordFolderModel, String unfiledRecordFolderId)
-    {
+    public UnfiledRecordFolder updateUnfiledRecordFolder(
+        UnfiledRecordFolder unfiledRecordFolderModel,
+        String unfiledRecordFolderId
+    ) {
         mandatoryObject("unfiledRecordFolderModel", unfiledRecordFolderModel);
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
-        return updateUnfiledRecordFolder(unfiledRecordFolderModel, unfiledRecordFolderId, EMPTY);
+        return updateUnfiledRecordFolder(
+            unfiledRecordFolderModel,
+            unfiledRecordFolderId,
+            EMPTY
+        );
     }
 
     /**
@@ -259,18 +318,25 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public UnfiledRecordFolder updateUnfiledRecordFolder(UnfiledRecordFolder unfiledRecordFolderModel, String unfiledRecordFolderId, String parameters)
-    {
+    public UnfiledRecordFolder updateUnfiledRecordFolder(
+        UnfiledRecordFolder unfiledRecordFolderModel,
+        String unfiledRecordFolderId,
+        String parameters
+    ) {
         mandatoryObject("unfiledRecordFolderModel", unfiledRecordFolderModel);
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
-        return getRmRestWrapper().processModel(UnfiledRecordFolder.class, requestWithBody(
-                PUT,
-                toJson(unfiledRecordFolderModel),
-                "unfiled-record-folders/{unfiledRecordFolderId}?{parameters}",
-                unfiledRecordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                UnfiledRecordFolder.class,
+                requestWithBody(
+                    PUT,
+                    toJson(unfiledRecordFolderModel),
+                    "unfiled-record-folders/{unfiledRecordFolderId}?{parameters}",
+                    unfiledRecordFolderId,
+                    parameters
+                )
+            );
     }
 
     /**
@@ -286,15 +352,16 @@ public class UnfiledRecordFolderAPI extends RMModelRequest
      *  <li>{@code unfiledRecordFolderId} is locked and cannot be deleted</li>
      * </ul>
      */
-    public void deleteUnfiledRecordFolder(String unfiledRecordFolderId)
-    {
+    public void deleteUnfiledRecordFolder(String unfiledRecordFolderId) {
         mandatoryString("unfiledRecordFolderId", unfiledRecordFolderId);
 
-        getRmRestWrapper().processEmptyModel(simpleRequest(
-                DELETE,
-                "unfiled-record-folders/{recordFolderId}",
-                unfiledRecordFolderId
-        ));
+        getRmRestWrapper()
+            .processEmptyModel(
+                simpleRequest(
+                    DELETE,
+                    "unfiled-record-folders/{recordFolderId}",
+                    unfiledRecordFolderId
+                )
+            );
     }
-
 }

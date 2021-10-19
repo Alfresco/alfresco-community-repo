@@ -27,7 +27,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import java.util.UUID;
-
 import org.alfresco.module.org_alfresco_module_rm.action.impl.LinkToAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.action.Action;
@@ -42,88 +41,91 @@ import org.alfresco.service.cmr.rule.RuleType;
  * @author Tuna Aksoy
  * @since 2.3.0.8
  */
-public class RM4101Test extends BaseRMTestCase
-{
-    private RuleService ruleService;
+public class RM4101Test extends BaseRMTestCase {
 
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
+  private RuleService ruleService;
 
-        ruleService = (RuleService) applicationContext.getBean("RuleService");
-    }
+  @Override
+  protected void initServices() {
+    super.initServices();
 
-    @Override
-    protected boolean isRecordTest()
-    {
-        return true;
-    }
+    ruleService = (RuleService) applicationContext.getBean("RuleService");
+  }
 
-    public void testRunRuleNotInBackground() throws Exception
-    {
-        final String categoryName = "category1" + UUID.randomUUID().toString();
-        final NodeRef category1 = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                return filePlanService.createRecordCategory(filePlan, categoryName);
-            }
-        });
+  @Override
+  protected boolean isRecordTest() {
+    return true;
+  }
 
-        final NodeRef folder1 = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                return recordFolderService.createRecordFolder(category1, "folder1WithRule" + UUID.randomUUID().toString());
-            }
-        });
+  public void testRunRuleNotInBackground() throws Exception {
+    final String categoryName = "category1" + UUID.randomUUID().toString();
+    final NodeRef category1 = doTestInTransaction(
+      new Test<NodeRef>() {
+        @Override
+        public NodeRef run() {
+          return filePlanService.createRecordCategory(filePlan, categoryName);
+        }
+      }
+    );
 
-        final String folder2Name = "folder2FolderToLinkTo" + UUID.randomUUID().toString();
-        final NodeRef folder2 = doTestInTransaction(new Test<NodeRef>()
-        {
-            @Override
-            public NodeRef run()
-            {
-                return recordFolderService.createRecordFolder(category1, folder2Name);
-            }
-        });
+    final NodeRef folder1 = doTestInTransaction(
+      new Test<NodeRef>() {
+        @Override
+        public NodeRef run() {
+          return recordFolderService.createRecordFolder(
+            category1,
+            "folder1WithRule" + UUID.randomUUID().toString()
+          );
+        }
+      }
+    );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                Action linkToAction = actionService.createAction(LinkToAction.NAME);
-                linkToAction.setParameterValue(LinkToAction.PARAM_PATH, "/" + categoryName + "/" + folder2Name);
+    final String folder2Name =
+      "folder2FolderToLinkTo" + UUID.randomUUID().toString();
+    final NodeRef folder2 = doTestInTransaction(
+      new Test<NodeRef>() {
+        @Override
+        public NodeRef run() {
+          return recordFolderService.createRecordFolder(category1, folder2Name);
+        }
+      }
+    );
 
-                Rule rule = new Rule();
-                rule.setRuleType(RuleType.INBOUND);
-                rule.setTitle("LinkTo");
-                rule.setAction(linkToAction);
-                rule.setExecuteAsynchronously(false);
-                ruleService.saveRule(folder1, rule);
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          Action linkToAction = actionService.createAction(LinkToAction.NAME);
+          linkToAction.setParameterValue(
+            LinkToAction.PARAM_PATH,
+            "/" + categoryName + "/" + folder2Name
+          );
 
-                return null;
-            }
-        });
+          Rule rule = new Rule();
+          rule.setRuleType(RuleType.INBOUND);
+          rule.setTitle("LinkTo");
+          rule.setAction(linkToAction);
+          rule.setExecuteAsynchronously(false);
+          ruleService.saveRule(folder1, rule);
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                utils.createRecord(folder1, "record1" + UUID.randomUUID().toString());
-                return null;
-            }
+          return null;
+        }
+      }
+    );
 
-            @Override
-            public void test(Void result) throws Exception
-            {
-                assertEquals(1, nodeService.getChildAssocs(folder2).size());
-            }
-        });
-    }
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          utils.createRecord(folder1, "record1" + UUID.randomUUID().toString());
+          return null;
+        }
+
+        @Override
+        public void test(Void result) throws Exception {
+          assertEquals(1, nodeService.getChildAssocs(folder2).size());
+        }
+      }
+    );
+  }
 }

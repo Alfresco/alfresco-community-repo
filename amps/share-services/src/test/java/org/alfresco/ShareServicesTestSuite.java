@@ -32,15 +32,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Categories.class)
-@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
-@Suite.SuiteClasses({
-        org.alfresco.repo.web.scripts.permission.PermissionServiceTest.class,
-        org.alfresco.repo.web.scripts.search.AdvancedSearchTest.class,
-        org.alfresco.repo.web.scripts.ReadOnlyTransactionInGetSlingshotApiTest.class,
-        org.alfresco.repo.wiki.WikiServiceImplTest.class,
-        org.alfresco.slingshot.documentlibrary.FolderTemplateTest.class,
-        org.alfresco.slingshot.web.scripts.SlingshotContentGetTest.class,
-})
-public class ShareServicesTestSuite
-{
-}
+@Categories.ExcludeCategory({ DBTests.class, NonBuildTests.class })
+@Suite.SuiteClasses(
+  {
+    org.alfresco.repo.web.scripts.permission.PermissionServiceTest.class,
+    org.alfresco.repo.web.scripts.search.AdvancedSearchTest.class,
+    org.alfresco.repo.web.scripts.ReadOnlyTransactionInGetSlingshotApiTest.class,
+    org.alfresco.repo.wiki.WikiServiceImplTest.class,
+    org.alfresco.slingshot.documentlibrary.FolderTemplateTest.class,
+    org.alfresco.slingshot.web.scripts.SlingshotContentGetTest.class,
+  }
+)
+public class ShareServicesTestSuite {}

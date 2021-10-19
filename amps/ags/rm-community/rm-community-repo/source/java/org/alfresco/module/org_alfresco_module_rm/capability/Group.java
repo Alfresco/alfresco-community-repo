@@ -36,26 +36,25 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public interface Group
-{
-    /**
-     * Gets the id of a group (Get the id of the group)
-     *
-     * @return String the group id
-     */
-    String getId();
+public interface Group {
+  /**
+   * Gets the id of a group (Get the id of the group)
+   *
+   * @return String the group id
+   */
+  String getId();
 
-    /**
-     * Gets the title of a group
-     *
-     * @return String the group title
-     */
-    String getTitle();
+  /**
+   * Gets the title of a group
+   *
+   * @return String the group title
+   */
+  String getTitle();
 
-    /**
-     * Gets the index of a group
-     *
-     * @return int the group index
-     */
-    int getIndex();
+  /**
+   * Gets the index of a group
+   *
+   * @return int the group index
+   */
+  int getIndex();
 }

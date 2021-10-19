@@ -43,162 +43,141 @@ import org.slf4j.LoggerFactory;
 /**
  * An implementation of an Entity Resource for Probes.
  */
-@EntityResource(name = "probes", title = "Probes") public class ProbeEntityResource
-            implements EntityResourceAction.ReadById<Probe>
-{
-    public static final long CHECK_PERIOD = 10 * 1000; // Maximum of only one checkResult every 10 seconds.
+@EntityResource(name = "probes", title = "Probes")
+public class ProbeEntityResource
+  implements EntityResourceAction.ReadById<Probe> {
 
-    private final static Logger logger = LoggerFactory.getLogger(ProbeEntityResource.class);
-    private final Object lock = new Object();
-    private final Probe liveProbe = new Probe("liveProbe: Success - Tested");
-    private long lastCheckTime = 0;
-    private Boolean checkResult;
-    private DiscoveryApiWebscript discovery;
+  public static final long CHECK_PERIOD = 10 * 1000; // Maximum of only one checkResult every 10 seconds.
 
-    private RepoHealthChecker repoHealthChecker;
+  private static final Logger logger = LoggerFactory.getLogger(
+    ProbeEntityResource.class
+  );
+  private final Object lock = new Object();
+  private final Probe liveProbe = new Probe("liveProbe: Success - Tested");
+  private long lastCheckTime = 0;
+  private Boolean checkResult;
+  private DiscoveryApiWebscript discovery;
 
-    public DiscoveryApiWebscript setDiscovery(DiscoveryApiWebscript discovery)
-    {
-        DiscoveryApiWebscript result = this.discovery;
-        this.discovery = discovery;
-        return result;
+  private RepoHealthChecker repoHealthChecker;
+
+  public DiscoveryApiWebscript setDiscovery(DiscoveryApiWebscript discovery) {
+    DiscoveryApiWebscript result = this.discovery;
+    this.discovery = discovery;
+    return result;
+  }
+
+  public void setRepoHealthChecker(RepoHealthChecker repoHealthChecker) {
+    this.repoHealthChecker = repoHealthChecker;
+  }
+
+  /**
+   * Returns a status code of 200 for okay. The probe contains little information for security reasons.
+   * Note: does *not* require authenticated access, so limits the amount of work performed to avoid a DDOS.
+   */
+  @Override
+  @WebApiDescription(
+    title = "Get probe status",
+    description = "Returns 200 if valid"
+  )
+  @WebApiParam(name = "probeName", title = "The probe's name")
+  @WebApiNoAuth
+  public Probe readById(String name, Parameters parameters) {
+    ProbeType probeType = ProbeType.fromString(name);
+    Probe probeResponse = null;
+
+    switch (probeType) {
+      case LIVE:
+        probeResponse = liveProbe;
+        break;
+      case READY:
+        String message = doReadyCheck();
+        probeResponse = new Probe(message);
+        break;
+      case UNKNOWN:
+        throw new InvalidArgumentException("Bad probe name");
     }
 
-    public void setRepoHealthChecker(RepoHealthChecker repoHealthChecker)
-    {
-        this.repoHealthChecker = repoHealthChecker;
-    }
+    return probeResponse;
+  }
 
-    /**
-     * Returns a status code of 200 for okay. The probe contains little information for security reasons.
-     * Note: does *not* require authenticated access, so limits the amount of work performed to avoid a DDOS.
-     */
-    @Override @WebApiDescription(title = "Get probe status", description = "Returns 200 if valid") @WebApiParam(name = "probeName", title = "The probe's name") @WebApiNoAuth public Probe readById(
-                  String name, Parameters parameters)
-    {
-        ProbeType probeType = ProbeType.fromString(name);
-        Probe probeResponse = null;
+  // We don't want to be doing checks all the time or holding monitors for a long time to avoid a DDOS.
+  public String doReadyCheck() {
+    synchronized (lock) {
+      String message;
+      long now = System.currentTimeMillis();
 
-        switch (probeType)
-        {
-            case LIVE:
-                probeResponse = liveProbe;
-                break;
-            case READY:
-                String message = doReadyCheck();
-                probeResponse = new Probe(message);
-                break;
-            case UNKNOWN:
-                throw new InvalidArgumentException("Bad probe name");
+      if (checkResult == null || isAfterCheckPeriod(now)) {
+        try {
+          performReadinessCheck();
+          checkResult = true;
+        } catch (Exception e) {
+          checkResult = false;
+          logger.debug("Exception during readiness check", e);
+        } finally {
+          setLastCheckTime(now);
+          message = getMessage(checkResult, "Tested");
+          logger.info(message);
         }
+      } else {
+        // if no check is performed, use previous check result
+        message = getMessage(checkResult, "No test");
+        logger.debug(message);
+      }
+      if (checkResult) {
+        return message;
+      }
 
-        return probeResponse;
+      throw new ServiceUnavailableException(message);
+    }
+  }
+
+  private String getMessage(boolean result, String message) {
+    return "readyProbe: " + (result ? "Success" : "Failure") + " - " + message;
+  }
+
+  private void performReadinessCheck() {
+    discovery.getRepositoryInfo();
+    repoHealthChecker.checkDatabase();
+    logger.debug("All checks complete");
+  }
+
+  private void setLastCheckTime(long time) {
+    this.lastCheckTime = time;
+    long nextCheckTime = lastCheckTime + CHECK_PERIOD;
+
+    logger.trace(
+      "nextCheckTime: {} (+{} secs)",
+      nextCheckTime,
+      ((CHECK_PERIOD) / 1000)
+    );
+  }
+
+  private boolean isAfterCheckPeriod(long currentTime) {
+    return ((currentTime - lastCheckTime) >= CHECK_PERIOD);
+  }
+
+  public enum ProbeType {
+    LIVE("-live-"),
+    READY("-ready-"),
+    UNKNOWN("");
+
+    String value;
+
+    ProbeType(String strValue) {
+      value = strValue;
     }
 
-    // We don't want to be doing checks all the time or holding monitors for a long time to avoid a DDOS.
-    public String doReadyCheck()
-    {
-
-        synchronized (lock)
-        {
-            String message;
-            long now = System.currentTimeMillis();
-
-            if (checkResult == null || isAfterCheckPeriod(now))
-            {
-                try
-                {
-                    performReadinessCheck();
-                    checkResult = true;
-                }
-                catch (Exception e)
-                {
-                    checkResult = false;
-                    logger.debug("Exception during readiness check", e);
-                }
-                finally
-                {
-
-                    setLastCheckTime(now);
-                    message = getMessage(checkResult, "Tested");
-                    logger.info(message);
-
-                }
-            }
-            else
-            {
-                // if no check is performed, use previous check result
-                message = getMessage(checkResult, "No test");
-                logger.debug(message);
-
-            }
-            if (checkResult)
-            {
-                return message;
-            }
-
-            throw new ServiceUnavailableException(message);
+    public static ProbeType fromString(String text) {
+      for (ProbeType p : ProbeType.values()) {
+        if (p.value.equalsIgnoreCase(text)) {
+          return p;
         }
-
+      }
+      return UNKNOWN;
     }
 
-    private String getMessage(boolean result, String message)
-    {
-
-        return "readyProbe: " + (result ? "Success" : "Failure") + " - " + message;
-
+    public String getValue() {
+      return value;
     }
-
-    private void performReadinessCheck()
-    {
-
-        discovery.getRepositoryInfo();
-        repoHealthChecker.checkDatabase();
-        logger.debug("All checks complete");
-
-    }
-
-    private void setLastCheckTime(long time)
-    {
-        this.lastCheckTime = time;
-        long nextCheckTime = lastCheckTime + CHECK_PERIOD;
-
-        logger.trace("nextCheckTime: {} (+{} secs)", nextCheckTime, ((CHECK_PERIOD) / 1000));
-
-    }
-
-    private boolean isAfterCheckPeriod(long currentTime)
-    {
-        return ((currentTime - lastCheckTime) >= CHECK_PERIOD);
-    }
-
-    public enum ProbeType
-    {
-        LIVE("-live-"), READY("-ready-"), UNKNOWN("");
-
-        String value;
-
-        ProbeType(String strValue)
-        {
-            value = strValue;
-        }
-
-        public static ProbeType fromString(String text)
-        {
-            for (ProbeType p : ProbeType.values())
-            {
-                if (p.value.equalsIgnoreCase(text))
-                {
-                    return p;
-                }
-            }
-            return UNKNOWN;
-        }
-
-        public String getValue()
-        {
-            return value;
-        }
-    }
-
+  }
 }

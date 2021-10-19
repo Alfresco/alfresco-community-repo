@@ -27,14 +27,12 @@
 package org.alfresco.rest.rm.community.model.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.utility.model.TestModel;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for File records
@@ -47,8 +45,8 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class RecordBodyFile extends TestModel
-{
+public class RecordBodyFile extends TestModel {
+
     @JsonProperty
     private String targetParentId;
 }

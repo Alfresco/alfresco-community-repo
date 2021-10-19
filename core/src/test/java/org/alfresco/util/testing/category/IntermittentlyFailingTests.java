@@ -24,6 +24,4 @@ package org.alfresco.util.testing.category;
  * be switch to {@link FrequentlyFailingTests}. Use by developers to aid in working out if the build job should just be
  * retried.
  */
-public interface IntermittentlyFailingTests
-{
-}
+public interface IntermittentlyFailingTests {}

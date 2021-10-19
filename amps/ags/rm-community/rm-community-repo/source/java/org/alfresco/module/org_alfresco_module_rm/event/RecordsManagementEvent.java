@@ -37,73 +37,72 @@ import org.alfresco.util.ParameterCheck;
  * @since 1.0
  */
 @AlfrescoPublicApi
-public class RecordsManagementEvent
-{
-    /** Records management event type */
-    private RecordsManagementEventType type;
+public class RecordsManagementEvent {
 
-    /** Records management event name */
-    private String name;
+  /** Records management event type */
+  private RecordsManagementEventType type;
 
-    /** Records management display label */
-    private String displayLabel;
+  /** Records management event name */
+  private String name;
 
-    /**
-     * Constructor
-     *
-     * @param type          event type
-     * @param name          event name
-     * @param displayLabel  event display label
-     */
-    public RecordsManagementEvent(RecordsManagementEventType type, String name, String displayLabel)
-    {
-        ParameterCheck.mandatory("type", type);
-        ParameterCheck.mandatory("name", name);
-        ParameterCheck.mandatory("displayLabel", displayLabel);
+  /** Records management display label */
+  private String displayLabel;
 
-        this.type =  type;
-        this.name = name;
-        this.displayLabel = displayLabel;
-    }
+  /**
+   * Constructor
+   *
+   * @param type          event type
+   * @param name          event name
+   * @param displayLabel  event display label
+   */
+  public RecordsManagementEvent(
+    RecordsManagementEventType type,
+    String name,
+    String displayLabel
+  ) {
+    ParameterCheck.mandatory("type", type);
+    ParameterCheck.mandatory("name", name);
+    ParameterCheck.mandatory("displayLabel", displayLabel);
 
-    /**
-     * Get records management type name
-     *
-     * @return  String records management event type name
-     */
-    public String getType()
-    {
-        return type.getName();
-    }
+    this.type = type;
+    this.name = name;
+    this.displayLabel = displayLabel;
+  }
 
-    /**
-     * Get the records management event type.
-     *
-     * @return {@link RecordsManagementEventType}   records management event type
-     *
-     * @since 2.2
-     */
-    public RecordsManagementEventType getRecordsManagementEventType()
-    {
-        return type;
-    }
+  /**
+   * Get records management type name
+   *
+   * @return  String records management event type name
+   */
+  public String getType() {
+    return type.getName();
+  }
 
-    /**
-     * Event name
-     *
-     * @return String   event name
-     */
-    public String getName()
-    {
-        return this.name;
-    }
+  /**
+   * Get the records management event type.
+   *
+   * @return {@link RecordsManagementEventType}   records management event type
+   *
+   * @since 2.2
+   */
+  public RecordsManagementEventType getRecordsManagementEventType() {
+    return type;
+  }
 
-    /**
-     *
-     * @return
-     */
-    public String getDisplayLabel()
-    {
-        return displayLabel;
-    }
+  /**
+   * Event name
+   *
+   * @return String   event name
+   */
+  public String getName() {
+    return this.name;
+  }
+
+  /**
+   *
+   * @return
+   */
+  public String getDisplayLabel() {
+    return displayLabel;
+  }
 }

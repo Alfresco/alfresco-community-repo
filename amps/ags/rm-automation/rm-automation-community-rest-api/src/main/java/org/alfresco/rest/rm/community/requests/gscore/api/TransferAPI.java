@@ -43,21 +43,19 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class TransferAPI extends RMModelRequest
-{
+public class TransferAPI extends RMModelRequest {
+
     /**
      * @param rmRestWrapper RM REST Wrapper
      */
-    public TransferAPI(RMRestWrapper rmRestWrapper)
-    {
+    public TransferAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
     /**
      * see {@link #getTransfer(String, String)}
      */
-    public Transfer getTransfer(String transferId)
-    {
+    public Transfer getTransfer(String transferId) {
         mandatoryString("transferId", transferId);
 
         return getTransfer(transferId, EMPTY);
@@ -77,22 +75,25 @@ public class TransferAPI extends RMModelRequest
      *  <li>{@code transferId} does not exist</li>
      * </ul>
      */
-    public Transfer getTransfer(String transferId, String parameters)
-    {
+    public Transfer getTransfer(String transferId, String parameters) {
         mandatoryString("transferId", transferId);
 
-        return getRmRestWrapper().processModel(Transfer.class, simpleRequest(
-                GET,
-                "/transfers/{transferId}?{parameters}",
-                transferId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                Transfer.class,
+                simpleRequest(
+                    GET,
+                    "/transfers/{transferId}?{parameters}",
+                    transferId,
+                    parameters
+                )
+            );
     }
+
     /**
      * see {@link #getTransfersChildren(String, String)}
      */
-    public TransferChildCollection getTransfersChildren(String transferId)
-    {
+    public TransferChildCollection getTransfersChildren(String transferId) {
         mandatoryString("transferId", transferId);
 
         return getTransfersChildren(transferId, EMPTY);
@@ -111,15 +112,21 @@ public class TransferAPI extends RMModelRequest
      *  <li>{@code filePlanId} does not exist</li>
      *</ul>
      */
-    public TransferChildCollection getTransfersChildren(String transferId, String parameters)
-    {
+    public TransferChildCollection getTransfersChildren(
+        String transferId,
+        String parameters
+    ) {
         mandatoryString("transferId", transferId);
 
-        return getRmRestWrapper().processModels(TransferChildCollection.class, simpleRequest(
-            GET,
-            "transfers/{filePlanId}/children?{parameters}",
-            transferId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModels(
+                TransferChildCollection.class,
+                simpleRequest(
+                    GET,
+                    "transfers/{filePlanId}/children?{parameters}",
+                    transferId,
+                    parameters
+                )
+            );
     }
 }

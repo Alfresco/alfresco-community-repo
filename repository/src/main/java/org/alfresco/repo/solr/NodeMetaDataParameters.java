@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,90 +29,75 @@ import java.util.List;
 
 /**
  * Stores node meta data query parameters for use in SOLR DAO queries
- * 
+ *
  * @since 4.0
  */
-public class NodeMetaDataParameters
-{
-    private List<Long> transactionIds;
-    private Long fromTxnId;
-    private Long toTxnId;
+public class NodeMetaDataParameters {
 
-    // default is 'all' results
-    private int maxResults = 0;
-    
-    private Long fromNodeId;
-    private Long toNodeId;
-    private List<Long> nodeIds;
+  private List<Long> transactionIds;
+  private Long fromTxnId;
+  private Long toTxnId;
 
-    
-    public int getMaxResults()
-    {
-        return maxResults;
-    }
+  // default is 'all' results
+  private int maxResults = 0;
 
-    public void setMaxResults(int maxResults)
-    {
-        this.maxResults = maxResults;
-    }
+  private Long fromNodeId;
+  private Long toNodeId;
+  private List<Long> nodeIds;
 
-    public List<Long> getNodeIds()
-    {
-        return nodeIds;
-    }
+  public int getMaxResults() {
+    return maxResults;
+  }
 
-    public void setNodeIds(List<Long> nodeIds)
-    {
-        this.nodeIds = nodeIds;
-    }
+  public void setMaxResults(int maxResults) {
+    this.maxResults = maxResults;
+  }
 
-    public void setTransactionIds(List<Long> txnIds)
-    {
-        this.transactionIds = txnIds;
-    }
+  public List<Long> getNodeIds() {
+    return nodeIds;
+  }
 
-    public List<Long> getTransactionIds()
-    {
-        return transactionIds;
-    }
+  public void setNodeIds(List<Long> nodeIds) {
+    this.nodeIds = nodeIds;
+  }
 
-    public Long getFromTxnId()
-    {
-        return fromTxnId;
-    }
+  public void setTransactionIds(List<Long> txnIds) {
+    this.transactionIds = txnIds;
+  }
 
-    public void setFromTxnId(Long fromTxnId)
-    {
-        this.fromTxnId = fromTxnId;
-    }
+  public List<Long> getTransactionIds() {
+    return transactionIds;
+  }
 
-    public Long getToTxnId()
-    {
-        return toTxnId;
-    }
+  public Long getFromTxnId() {
+    return fromTxnId;
+  }
 
-    public void setToTxnId(Long toTxnId)
-    {
-        this.toTxnId = toTxnId;
-    }
+  public void setFromTxnId(Long fromTxnId) {
+    this.fromTxnId = fromTxnId;
+  }
 
-    public Long getFromNodeId()
-    {
-        return fromNodeId;
-    }
+  public Long getToTxnId() {
+    return toTxnId;
+  }
 
-    public void setFromNodeId(Long fromNodeId)
-    {
-        this.fromNodeId = fromNodeId;
-    }
+  public void setToTxnId(Long toTxnId) {
+    this.toTxnId = toTxnId;
+  }
 
-    public Long getToNodeId()
-    {
-        return toNodeId;
-    }
+  public Long getFromNodeId() {
+    return fromNodeId;
+  }
 
-    public void setToNodeId(Long toNodeId)
-    {
-        this.toNodeId = toNodeId;
-    }
+  public void setFromNodeId(Long fromNodeId) {
+    this.fromNodeId = fromNodeId;
+  }
+
+  public Long getToNodeId() {
+    return toNodeId;
+  }
+
+  public void setToNodeId(Long toNodeId) {
+    this.toNodeId = toNodeId;
+  }
 }

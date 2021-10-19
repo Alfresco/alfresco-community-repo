@@ -22,7 +22,6 @@ import static java.util.Collections.emptyList;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
-
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
@@ -30,7 +29,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
-
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
@@ -73,564 +71,545 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * logging will hamper performance but is useful when it appears that something is eating
  * connections or holding onto resources - usually a sign that client code hasn't handled all
  * possible exception conditions.
- * 
+ *
  * @see org.springframework.transaction.PlatformTransactionManager
  * @see org.springframework.transaction.support.DefaultTransactionDefinition
- * 
+ *
  * @author Derek Hulley
  */
 public class SpringAwareUserTransaction
-        extends TransactionAspectSupport
-        implements UserTransaction, TransactionAttributeSource, TransactionAttribute
-{
-    /*
-     * There is some extra work in here to perform safety checks against the thread ID.
-     * This is because this class doesn't operate in an environment that guarantees that the
-     * thread coming into the begin() method is the same as the thread forcing commit() or
-     * rollback().
-     */
-        
-    private static final long serialVersionUID = 3762538897183224373L;
+  extends TransactionAspectSupport
+  implements UserTransaction, TransactionAttributeSource, TransactionAttribute {
 
+  /*
+   * There is some extra work in here to perform safety checks against the thread ID.
+   * This is because this class doesn't operate in an environment that guarantees that the
+   * thread coming into the begin() method is the same as the thread forcing commit() or
+   * rollback().
+   */
 
-    private static final String NAME = "UserTransaction";
-    
-    private static final Log logger = LogFactory.getLog(SpringAwareUserTransaction.class);
-    
-    
-    /*
-     * Leaked Transaction Logging
-     */
-    private static final Log traceLogger = LogFactory.getLog(SpringAwareUserTransaction.class.getName() + ".trace");
-    private static volatile boolean isCallStackTraced = false;
-    
-    static
-    {
-        if (traceLogger.isDebugEnabled())
-        {
-            isCallStackTraced = true;
-            traceLogger.warn("Logging of transaction call stack is enforced and will affect performance");
-        }
+  private static final long serialVersionUID = 3762538897183224373L;
+
+  private static final String NAME = "UserTransaction";
+
+  private static final Log logger = LogFactory.getLog(
+    SpringAwareUserTransaction.class
+  );
+
+  /*
+   * Leaked Transaction Logging
+   */
+  private static final Log traceLogger = LogFactory.getLog(
+    SpringAwareUserTransaction.class.getName() + ".trace"
+  );
+  private static volatile boolean isCallStackTraced = false;
+
+  static {
+    if (traceLogger.isDebugEnabled()) {
+      isCallStackTraced = true;
+      traceLogger.warn(
+        "Logging of transaction call stack is enforced and will affect performance"
+      );
     }
-    
-    
-    static boolean isCallStackTraced()
-    {
-        return isCallStackTraced;
-    }
-    
-    /** stores whether begin() & commit()/rollback() methods calls are balanced */ 
-    private boolean isBeginMatched = true;
-    /** stores the begin() call stack when auto tracing */
-    private StackTraceElement[] beginCallStack;
+  }
 
-    
-    private boolean readOnly;
-    private int isolationLevel;
-    private int propagationBehaviour;
-    private int timeout;
-    
-    /** Stores the user transaction current status as affected by explicit operations */
-    private int internalStatus = Status.STATUS_NO_TRANSACTION;
-    /** the transaction information used to check for mismatched begin/end */
-    private TransactionInfo internalTxnInfo;
-    /** keep the thread that the transaction was started on to perform thread safety checks */
-    private long threadId = Long.MIN_VALUE;
-    /** make sure that we clean up the thread transaction stack properly */
-    private boolean finalized = false;
+  static boolean isCallStackTraced() {
+    return isCallStackTraced;
+  }
 
-    private Collection<String> labels = emptyList();
+  /** stores whether begin() & commit()/rollback() methods calls are balanced */
+  private boolean isBeginMatched = true;
+  /** stores the begin() call stack when auto tracing */
+  private StackTraceElement[] beginCallStack;
 
-    /**
-     * Creates a user transaction that defaults to {@link TransactionDefinition#PROPAGATION_REQUIRED}.
-     * 
-     * @param transactionManager the transaction manager to use
-     * @param readOnly true to force a read-only transaction
-     * @param isolationLevel one of the
-     *      {@link TransactionDefinition#ISOLATION_DEFAULT TransactionDefinition.ISOLATION_XXX}
-     *      constants
-     * @param propagationBehaviour one of the
-     *      {@link TransactionDefinition#PROPAGATION_MANDATORY TransactionDefinition.PROPAGATION__XXX}
-     *      constants
-     * @param timeout the transaction timeout in seconds.
-     * 
-     * @see TransactionDefinition#getTimeout()
-     */
-    public SpringAwareUserTransaction(
-            PlatformTransactionManager transactionManager,
-            boolean readOnly,
-            int isolationLevel,
-            int propagationBehaviour,
-            int timeout)
-    {
-        super();
-        setTransactionManager(transactionManager);
-        setTransactionAttributeSource(this);
-        this.readOnly = readOnly;
-        this.isolationLevel = isolationLevel;
-        this.propagationBehaviour = propagationBehaviour;
-        this.timeout = timeout;
-    }
-    
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder(256);
-        sb.append("UserTransaction")
-          .append("[object=").append(super.toString())
-          .append(", status=").append(internalStatus)
-          .append("]");
-        return sb.toString();
-    }
+  private boolean readOnly;
+  private int isolationLevel;
+  private int propagationBehaviour;
+  private int timeout;
 
-    /**
-     * This class carries all the information required to fullfil requests about the transaction
-     * attributes.  It acts as a source of the transaction attributes.
-     * 
-     * @return Return <code>this</code> instance
-     */
-    public TransactionAttribute getTransactionAttribute(Method method, Class<?> targetClass)
-    {
-        return this;
-    }        
-    
-    /**
-     * Return a qualifier value associated with this transaction attribute. This is not used as the transaction manager
-     * has been selected for us.
-     * 
-     * @return null always
-     */
-    public String getQualifier()
-    {
-        return null;
-    }
+  /** Stores the user transaction current status as affected by explicit operations */
+  private int internalStatus = Status.STATUS_NO_TRANSACTION;
+  /** the transaction information used to check for mismatched begin/end */
+  private TransactionInfo internalTxnInfo;
+  /** keep the thread that the transaction was started on to perform thread safety checks */
+  private long threadId = Long.MIN_VALUE;
+  /** make sure that we clean up the thread transaction stack properly */
+  private boolean finalized = false;
 
-    /**
-     * Associate one or more labels with this transaction attribute.
-     * <p>This may be used for applying specific transactional behavior
-     * or follow a purely descriptive nature.
-     */
-    public void setLabels(Collection<String> labels) {
-        this.labels = labels;
-    }
+  private Collection<String> labels = emptyList();
 
-    @Override
-    public Collection<String> getLabels()
-    {
-        return this.labels;
-    }
+  /**
+   * Creates a user transaction that defaults to {@link TransactionDefinition#PROPAGATION_REQUIRED}.
+   *
+   * @param transactionManager the transaction manager to use
+   * @param readOnly true to force a read-only transaction
+   * @param isolationLevel one of the
+   *      {@link TransactionDefinition#ISOLATION_DEFAULT TransactionDefinition.ISOLATION_XXX}
+   *      constants
+   * @param propagationBehaviour one of the
+   *      {@link TransactionDefinition#PROPAGATION_MANDATORY TransactionDefinition.PROPAGATION__XXX}
+   *      constants
+   * @param timeout the transaction timeout in seconds.
+   *
+   * @see TransactionDefinition#getTimeout()
+   */
+  public SpringAwareUserTransaction(
+    PlatformTransactionManager transactionManager,
+    boolean readOnly,
+    int isolationLevel,
+    int propagationBehaviour,
+    int timeout
+  ) {
+    super();
+    setTransactionManager(transactionManager);
+    setTransactionAttributeSource(this);
+    this.readOnly = readOnly;
+    this.isolationLevel = isolationLevel;
+    this.propagationBehaviour = propagationBehaviour;
+    this.timeout = timeout;
+  }
 
-    /**
-     * The {@link UserTransaction } must rollback regardless of the error.  The
-     * {@link #rollback() rollback} behaviour is implemented by simulating a caught
-     * exception.  As this method will always return <code>true</code>, the rollback
-     * behaviour will be to rollback the transaction or mark it for rollback.
-     * 
-     * @return Returns true always
-     */
-    public boolean rollbackOn(Throwable ex)
-    {
-        return true;
-    }
-    
-    public String getName()
-    {
-        return Thread.currentThread().getName() + "-" + GUID.generate();
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(256);
+    sb
+      .append("UserTransaction")
+      .append("[object=")
+      .append(super.toString())
+      .append(", status=")
+      .append(internalStatus)
+      .append("]");
+    return sb.toString();
+  }
 
-    public boolean isReadOnly()
-    {
-        return readOnly;
-    }
+  /**
+   * This class carries all the information required to fullfil requests about the transaction
+   * attributes.  It acts as a source of the transaction attributes.
+   *
+   * @return Return <code>this</code> instance
+   */
+  public TransactionAttribute getTransactionAttribute(
+    Method method,
+    Class<?> targetClass
+  ) {
+    return this;
+  }
 
-    public int getIsolationLevel()
-    {
-        return isolationLevel;
-    }
+  /**
+   * Return a qualifier value associated with this transaction attribute. This is not used as the transaction manager
+   * has been selected for us.
+   *
+   * @return null always
+   */
+  public String getQualifier() {
+    return null;
+  }
 
-    public int getPropagationBehavior()
-    {
-        return propagationBehaviour;
-    }
+  /**
+   * Associate one or more labels with this transaction attribute.
+   * <p>This may be used for applying specific transactional behavior
+   * or follow a purely descriptive nature.
+   */
+  public void setLabels(Collection<String> labels) {
+    this.labels = labels;
+  }
 
-    public int getTimeout()
-    {
-        return timeout;
-    }
+  @Override
+  public Collection<String> getLabels() {
+    return this.labels;
+  }
 
-    /**
-     * Implementation required for {@link UserTransaction}.
-     */
-    public void setTransactionTimeout(int timeout) throws SystemException
-    {
-        if (internalStatus != Status.STATUS_NO_TRANSACTION)
-        {
-            throw new RuntimeException("Can only set the timeout before begin");
-        }
-        this.timeout = timeout;
-    }
+  /**
+   * The {@link UserTransaction } must rollback regardless of the error.  The
+   * {@link #rollback() rollback} behaviour is implemented by simulating a caught
+   * exception.  As this method will always return <code>true</code>, the rollback
+   * behaviour will be to rollback the transaction or mark it for rollback.
+   *
+   * @return Returns true always
+   */
+  public boolean rollbackOn(Throwable ex) {
+    return true;
+  }
 
-    /**
-     * Gets the current transaction info, or null if none exists.
-     * <p>
-     * A check is done to ensure that the transaction info on the stack is exactly
-     * the same instance used when this transaction was started.
-     * The internal status is also checked against the transaction info.
-     * These checks ensure that the transaction demarcation is done correctly and that
-     * thread safety is adhered to.
-     * 
-     * @return Returns the current transaction
-     */
-    private TransactionInfo getTransactionInfo()
-    {
-        // a few quick self-checks
-        if (threadId < 0 && internalStatus != Status.STATUS_NO_TRANSACTION)
-        {
-            throw new RuntimeException("Transaction has been started but there is no thread ID");
-        }
-        else if (threadId >= 0 && internalStatus == Status.STATUS_NO_TRANSACTION)
-        {
-            throw new RuntimeException("Transaction has not been started but a thread ID has been recorded");
-        }
-        
-        TransactionInfo txnInfo = null;
-        try
-        {
-            txnInfo = TransactionAspectSupport.currentTransactionInfo();
-            // we are in a transaction
-        }
-        catch (NoTransactionException e)
-        {
-            // No transaction.  It is possible that the transaction threw an exception during commit.
-        }
-        // perform checks for active transactions
-        if (internalStatus == Status.STATUS_ACTIVE)
-        {
-            if (Thread.currentThread().getId() != threadId)
-            {
-                // the internally stored transaction info (retrieved in begin()) should match the info
-                // on the thread
-                throw new RuntimeException("UserTransaction may not be accessed by multiple threads");
-            }
-            else if (txnInfo == null)
-            {
-                // internally we recorded a transaction starting, but there is nothing on the thread
-                throw new RuntimeException("Transaction boundaries have been made to overlap in the stack");
-            }
-            else if (txnInfo != internalTxnInfo)
-            {
-                // the transaction info on the stack isn't the one we started with
-                throw new RuntimeException("UserTransaction begin/commit mismatch");
-            }
-        }
-        return txnInfo;
+  public String getName() {
+    return Thread.currentThread().getName() + "-" + GUID.generate();
+  }
+
+  public boolean isReadOnly() {
+    return readOnly;
+  }
+
+  public int getIsolationLevel() {
+    return isolationLevel;
+  }
+
+  public int getPropagationBehavior() {
+    return propagationBehaviour;
+  }
+
+  public int getTimeout() {
+    return timeout;
+  }
+
+  /**
+   * Implementation required for {@link UserTransaction}.
+   */
+  public void setTransactionTimeout(int timeout) throws SystemException {
+    if (internalStatus != Status.STATUS_NO_TRANSACTION) {
+      throw new RuntimeException("Can only set the timeout before begin");
+    }
+    this.timeout = timeout;
+  }
+
+  /**
+   * Gets the current transaction info, or null if none exists.
+   * <p>
+   * A check is done to ensure that the transaction info on the stack is exactly
+   * the same instance used when this transaction was started.
+   * The internal status is also checked against the transaction info.
+   * These checks ensure that the transaction demarcation is done correctly and that
+   * thread safety is adhered to.
+   *
+   * @return Returns the current transaction
+   */
+  private TransactionInfo getTransactionInfo() {
+    // a few quick self-checks
+    if (threadId < 0 && internalStatus != Status.STATUS_NO_TRANSACTION) {
+      throw new RuntimeException(
+        "Transaction has been started but there is no thread ID"
+      );
+    } else if (
+      threadId >= 0 && internalStatus == Status.STATUS_NO_TRANSACTION
+    ) {
+      throw new RuntimeException(
+        "Transaction has not been started but a thread ID has been recorded"
+      );
     }
 
-    /**
-     * This status is a combination of the internal status, as recorded during explicit operations,
-     * and the status provided by the Spring support.
-     * 
-     * @see Status
-     */
-    public synchronized int getStatus() throws SystemException
-    {
-        TransactionInfo txnInfo = getTransactionInfo();
-        
-        // if the txn info is null, then we are outside a transaction
-        if (txnInfo == null)
-        {
-            return internalStatus;      // this is checked in getTransactionInfo
-        }
+    TransactionInfo txnInfo = null;
+    try {
+      txnInfo = TransactionAspectSupport.currentTransactionInfo();
+      // we are in a transaction
+    } catch (NoTransactionException e) {
+      // No transaction.  It is possible that the transaction threw an exception during commit.
+    }
+    // perform checks for active transactions
+    if (internalStatus == Status.STATUS_ACTIVE) {
+      if (Thread.currentThread().getId() != threadId) {
+        // the internally stored transaction info (retrieved in begin()) should match the info
+        // on the thread
+        throw new RuntimeException(
+          "UserTransaction may not be accessed by multiple threads"
+        );
+      } else if (txnInfo == null) {
+        // internally we recorded a transaction starting, but there is nothing on the thread
+        throw new RuntimeException(
+          "Transaction boundaries have been made to overlap in the stack"
+        );
+      } else if (txnInfo != internalTxnInfo) {
+        // the transaction info on the stack isn't the one we started with
+        throw new RuntimeException("UserTransaction begin/commit mismatch");
+      }
+    }
+    return txnInfo;
+  }
 
-        // normally the internal status is correct, but we only need to double check
-        // for the case where the transaction was marked for rollback, or rolledback
-        // in a deeper transaction
-        TransactionStatus txnStatus = txnInfo.getTransactionStatus();
-        if (internalStatus == Status.STATUS_ROLLEDBACK)
-        {
-            // explicitly rolled back at some point
-            return internalStatus;
-        }
-        else if (txnStatus.isRollbackOnly())
-        {
-            // marked for rollback at some point in the stack
-            return Status.STATUS_MARKED_ROLLBACK;
-        }
-        else
-        {
-            // just rely on the internal status
-            return internalStatus;
-        }
+  /**
+   * This status is a combination of the internal status, as recorded during explicit operations,
+   * and the status provided by the Spring support.
+   *
+   * @see Status
+   */
+  public synchronized int getStatus() throws SystemException {
+    TransactionInfo txnInfo = getTransactionInfo();
+
+    // if the txn info is null, then we are outside a transaction
+    if (txnInfo == null) {
+      return internalStatus; // this is checked in getTransactionInfo
     }
 
-    public synchronized void setRollbackOnly() throws IllegalStateException, SystemException
-    {
-        // just a check
-        TransactionInfo txnInfo = getTransactionInfo();
-
-        int status = getStatus();
-        // check the status
-        if (status == Status.STATUS_MARKED_ROLLBACK)
-        {
-            // this is acceptable
-        }
-        else if (status == Status.STATUS_NO_TRANSACTION)
-        {
-            throw new IllegalStateException("The transaction has not been started yet");
-        }
-        else if (status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_ROLLEDBACK)
-        {
-            throw new IllegalStateException("The transaction has already been rolled back");
-        }
-        else if (status == Status.STATUS_COMMITTING || status == Status.STATUS_COMMITTED)
-        {
-            throw new IllegalStateException("The transaction has already been committed");
-        }
-        else if (status != Status.STATUS_ACTIVE)
-        {
-            throw new IllegalStateException("The transaction is not active: " + status);
-        }
-
-        // mark for rollback
-        txnInfo.getTransactionStatus().setRollbackOnly();
-        // make sure that we record the fact that we have been marked for rollback
-        internalStatus = Status.STATUS_MARKED_ROLLBACK;
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Set transaction status to rollback only: " + this);
-        }
+    // normally the internal status is correct, but we only need to double check
+    // for the case where the transaction was marked for rollback, or rolledback
+    // in a deeper transaction
+    TransactionStatus txnStatus = txnInfo.getTransactionStatus();
+    if (internalStatus == Status.STATUS_ROLLEDBACK) {
+      // explicitly rolled back at some point
+      return internalStatus;
+    } else if (txnStatus.isRollbackOnly()) {
+      // marked for rollback at some point in the stack
+      return Status.STATUS_MARKED_ROLLBACK;
+    } else {
+      // just rely on the internal status
+      return internalStatus;
     }
-    
-    /**
-     * @throws NotSupportedException if an attempt is made to reuse this instance
-     */
-    public synchronized void begin() throws NotSupportedException, SystemException
-    {
-        // make sure that the status and info align - the result may or may not be null
-        @SuppressWarnings("unused")
-        TransactionInfo txnInfo = getTransactionInfo();
-        if (internalStatus != Status.STATUS_NO_TRANSACTION)
-        {
-            throw new NotSupportedException("The UserTransaction may not be reused");
-        }
-        
-        // check 
-        
-        if( (propagationBehaviour != TransactionDefinition.PROPAGATION_REQUIRES_NEW))
-        {
-            if(!readOnly && 
-                    TransactionSynchronizationManager.isSynchronizationActive() &&  
-                    TransactionSynchronizationManager.isCurrentTransactionReadOnly()
-            )
-            {
-                throw new IllegalStateException("Nested writable transaction in a read only transaction");
-            }
-        }
-        
-        // begin a transaction
-        try
-        {
-            TransactionManager tm = getTransactionManager();
+  }
 
-            if (tm != null && !(tm instanceof PlatformTransactionManager))
-            {
-                throw new IllegalStateException("Specified transaction manager is not a PlatformTransactionManager: " + tm);
-            }
+  public synchronized void setRollbackOnly()
+    throws IllegalStateException, SystemException {
+    // just a check
+    TransactionInfo txnInfo = getTransactionInfo();
 
-            internalTxnInfo = createTransactionIfNecessary(
-                (PlatformTransactionManager) tm, getTransactionAttribute(null, null), getName());
-        }
-        catch (CannotCreateTransactionException e)
-        {
-            throw new ConnectionPoolException("The DB connection pool is depleted.", e);
-        }
-        
-        internalStatus = Status.STATUS_ACTIVE;
-        threadId = Thread.currentThread().getId();
-        
-        // Record that transaction details now that begin was successful
-        isBeginMatched = false;
-        if (isCallStackTraced)
-        {
-            // get the stack trace
-            Exception e = new Exception();
-            e.fillInStackTrace();
-            beginCallStack = e.getStackTrace();
-        }
-
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Began user transaction: " + this);
-        }
-    }
-    
-    /**
-     * @throws IllegalStateException if a transaction was not started
-     */
-    public synchronized void commit()
-            throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
-            SecurityException, IllegalStateException, SystemException
-    {
-        // perform checks
-        TransactionInfo txnInfo = getTransactionInfo();
-
-        int status = getStatus();
-        // check the status
-        if (status == Status.STATUS_NO_TRANSACTION)
-        {
-            throw new IllegalStateException("The transaction has not yet begun");
-        }
-        else if (status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_ROLLEDBACK)
-        {
-            throw new RollbackException("The transaction has already been rolled back");
-        }
-        else if (status == Status.STATUS_MARKED_ROLLBACK)
-        {
-            throw new RollbackException("The transaction has already been marked for rollback");
-        }
-        else if (status == Status.STATUS_COMMITTING || status == Status.STATUS_COMMITTED)
-        {
-            throw new IllegalStateException("The transaction has already been committed");
-        }
-        else if (status != Status.STATUS_ACTIVE || txnInfo == null)
-        {
-            throw new IllegalStateException("No user transaction is active");
-        }
-            
-        if (!finalized)
-        {
-            try
-            {
-                // the status seems correct - we can try a commit
-                commitTransactionAfterReturning(txnInfo);
-            }
-            catch (Throwable e)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Transaction didn't commit", e);
-                }
-                // commit failed
-                internalStatus = Status.STATUS_ROLLEDBACK;
-                RollbackException re = new RollbackException("Transaction didn't commit: " + e.getMessage());
-                // Stick the originating reason for failure into the exception.
-                re.initCause(e);
-                throw re;
-            }
-            finally
-            {
-                // make sure that we clean up the stack
-                cleanupTransactionInfo(txnInfo);
-                finalized = true;
-                // clean up leaked transaction logging
-                isBeginMatched = true;
-                beginCallStack = null;
-            }
-        }
-        
-        // regardless of whether the transaction was finally committed or not, the status
-        // as far as UserTransaction is concerned should be 'committed'
-        
-        // keep track that this UserTransaction was explicitly committed
-        internalStatus = Status.STATUS_COMMITTED;
-        
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Committed user transaction: " + this);
-        }
+    int status = getStatus();
+    // check the status
+    if (status == Status.STATUS_MARKED_ROLLBACK) {
+      // this is acceptable
+    } else if (status == Status.STATUS_NO_TRANSACTION) {
+      throw new IllegalStateException(
+        "The transaction has not been started yet"
+      );
+    } else if (
+      status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_ROLLEDBACK
+    ) {
+      throw new IllegalStateException(
+        "The transaction has already been rolled back"
+      );
+    } else if (
+      status == Status.STATUS_COMMITTING || status == Status.STATUS_COMMITTED
+    ) {
+      throw new IllegalStateException(
+        "The transaction has already been committed"
+      );
+    } else if (status != Status.STATUS_ACTIVE) {
+      throw new IllegalStateException(
+        "The transaction is not active: " + status
+      );
     }
 
-    public synchronized void rollback()
-            throws IllegalStateException, SecurityException, SystemException
-    {
-        // perform checks
-        TransactionInfo txnInfo = getTransactionInfo();
-        
-        int status = getStatus();
-        // check the status
-        if (status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_ROLLEDBACK)
-        {
-            throw new IllegalStateException("The transaction has already been rolled back");
-        }
-        else if (status == Status.STATUS_COMMITTING || status == Status.STATUS_COMMITTED)
-        {
-            throw new IllegalStateException("The transaction has already been committed");
-        }
-        else if (txnInfo == null)
-        {
-            throw new IllegalStateException("No user transaction is active");
-        }
-    
-        if (!finalized)
-        {
-            try
-            {
-                // force a rollback by generating an exception that will trigger a rollback
-                completeTransactionAfterThrowing(txnInfo, new Exception());
-            }
-            finally
-            {
-                // make sure that we clean up the stack
-                cleanupTransactionInfo(txnInfo);
-                finalized = true;
-                // clean up leaked transaction logging
-                isBeginMatched = true;
-                beginCallStack = null;
-            }
-        }
+    // mark for rollback
+    txnInfo.getTransactionStatus().setRollbackOnly();
+    // make sure that we record the fact that we have been marked for rollback
+    internalStatus = Status.STATUS_MARKED_ROLLBACK;
+    // done
+    if (logger.isDebugEnabled()) {
+      logger.debug("Set transaction status to rollback only: " + this);
+    }
+  }
 
-        // the internal status notes that we were specifically rolled back 
+  /**
+   * @throws NotSupportedException if an attempt is made to reuse this instance
+   */
+  public synchronized void begin()
+    throws NotSupportedException, SystemException {
+    // make sure that the status and info align - the result may or may not be null
+    @SuppressWarnings("unused")
+    TransactionInfo txnInfo = getTransactionInfo();
+    if (internalStatus != Status.STATUS_NO_TRANSACTION) {
+      throw new NotSupportedException("The UserTransaction may not be reused");
+    }
+
+    // check
+
+    if (
+      (propagationBehaviour != TransactionDefinition.PROPAGATION_REQUIRES_NEW)
+    ) {
+      if (
+        !readOnly &&
+        TransactionSynchronizationManager.isSynchronizationActive() &&
+        TransactionSynchronizationManager.isCurrentTransactionReadOnly()
+      ) {
+        throw new IllegalStateException(
+          "Nested writable transaction in a read only transaction"
+        );
+      }
+    }
+
+    // begin a transaction
+    try {
+      TransactionManager tm = getTransactionManager();
+
+      if (tm != null && !(tm instanceof PlatformTransactionManager)) {
+        throw new IllegalStateException(
+          "Specified transaction manager is not a PlatformTransactionManager: " +
+          tm
+        );
+      }
+
+      internalTxnInfo =
+        createTransactionIfNecessary(
+          (PlatformTransactionManager) tm,
+          getTransactionAttribute(null, null),
+          getName()
+        );
+    } catch (CannotCreateTransactionException e) {
+      throw new ConnectionPoolException(
+        "The DB connection pool is depleted.",
+        e
+      );
+    }
+
+    internalStatus = Status.STATUS_ACTIVE;
+    threadId = Thread.currentThread().getId();
+
+    // Record that transaction details now that begin was successful
+    isBeginMatched = false;
+    if (isCallStackTraced) {
+      // get the stack trace
+      Exception e = new Exception();
+      e.fillInStackTrace();
+      beginCallStack = e.getStackTrace();
+    }
+
+    // done
+    if (logger.isDebugEnabled()) {
+      logger.debug("Began user transaction: " + this);
+    }
+  }
+
+  /**
+   * @throws IllegalStateException if a transaction was not started
+   */
+  public synchronized void commit()
+    throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
+    // perform checks
+    TransactionInfo txnInfo = getTransactionInfo();
+
+    int status = getStatus();
+    // check the status
+    if (status == Status.STATUS_NO_TRANSACTION) {
+      throw new IllegalStateException("The transaction has not yet begun");
+    } else if (
+      status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_ROLLEDBACK
+    ) {
+      throw new RollbackException(
+        "The transaction has already been rolled back"
+      );
+    } else if (status == Status.STATUS_MARKED_ROLLBACK) {
+      throw new RollbackException(
+        "The transaction has already been marked for rollback"
+      );
+    } else if (
+      status == Status.STATUS_COMMITTING || status == Status.STATUS_COMMITTED
+    ) {
+      throw new IllegalStateException(
+        "The transaction has already been committed"
+      );
+    } else if (status != Status.STATUS_ACTIVE || txnInfo == null) {
+      throw new IllegalStateException("No user transaction is active");
+    }
+
+    if (!finalized) {
+      try {
+        // the status seems correct - we can try a commit
+        commitTransactionAfterReturning(txnInfo);
+      } catch (Throwable e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Transaction didn't commit", e);
+        }
+        // commit failed
         internalStatus = Status.STATUS_ROLLEDBACK;
-        
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Rolled back user transaction: " + this);
-        }
-    }
-    
-    @Override
-    protected void completeTransactionAfterThrowing(TransactionInfo txInfo, Throwable ex)
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Exception attempting to pass transaction boundaries.", ex);
-        }
-        super.completeTransactionAfterThrowing(txInfo, ex);
+        RollbackException re = new RollbackException(
+          "Transaction didn't commit: " + e.getMessage()
+        );
+        // Stick the originating reason for failure into the exception.
+        re.initCause(e);
+        throw re;
+      } finally {
+        // make sure that we clean up the stack
+        cleanupTransactionInfo(txnInfo);
+        finalized = true;
+        // clean up leaked transaction logging
+        isBeginMatched = true;
+        beginCallStack = null;
+      }
     }
 
-    @Override
-    protected void finalize() throws Throwable
-    {
-        if (!isBeginMatched)
-        {
-            if (isCallStackTraced)
-            {
-                if (beginCallStack == null)
-                {
-                    traceLogger.error("UserTransaction being garbage collected without a commit() or rollback(). " + 
-                                      "NOTE: Prior to transaction call stack logging.");
-                }
-                else
-                {
-                    StringBuilder sb = new StringBuilder(1024);
-                    StackTraceUtil.buildStackTrace(
-                            "UserTransaction being garbage collected without a commit() or rollback().",
-                            beginCallStack,
-                            sb,
-                            -1);
-                    traceLogger.error(sb);
-                }
-            }
-            else
-            {
-                traceLogger.error("Detected first UserTransaction which is being garbage collected without a commit() or rollback()");
-                traceLogger.error("Logging of transaction call stack is now enabled and will affect performance");
-                isCallStackTraced = true;
-            }
-        }
+    // regardless of whether the transaction was finally committed or not, the status
+    // as far as UserTransaction is concerned should be 'committed'
+
+    // keep track that this UserTransaction was explicitly committed
+    internalStatus = Status.STATUS_COMMITTED;
+
+    // done
+    if (logger.isDebugEnabled()) {
+      logger.debug("Committed user transaction: " + this);
     }
+  }
+
+  public synchronized void rollback()
+    throws IllegalStateException, SecurityException, SystemException {
+    // perform checks
+    TransactionInfo txnInfo = getTransactionInfo();
+
+    int status = getStatus();
+    // check the status
+    if (
+      status == Status.STATUS_ROLLING_BACK || status == Status.STATUS_ROLLEDBACK
+    ) {
+      throw new IllegalStateException(
+        "The transaction has already been rolled back"
+      );
+    } else if (
+      status == Status.STATUS_COMMITTING || status == Status.STATUS_COMMITTED
+    ) {
+      throw new IllegalStateException(
+        "The transaction has already been committed"
+      );
+    } else if (txnInfo == null) {
+      throw new IllegalStateException("No user transaction is active");
+    }
+
+    if (!finalized) {
+      try {
+        // force a rollback by generating an exception that will trigger a rollback
+        completeTransactionAfterThrowing(txnInfo, new Exception());
+      } finally {
+        // make sure that we clean up the stack
+        cleanupTransactionInfo(txnInfo);
+        finalized = true;
+        // clean up leaked transaction logging
+        isBeginMatched = true;
+        beginCallStack = null;
+      }
+    }
+
+    // the internal status notes that we were specifically rolled back
+    internalStatus = Status.STATUS_ROLLEDBACK;
+
+    // done
+    if (logger.isDebugEnabled()) {
+      logger.debug("Rolled back user transaction: " + this);
+    }
+  }
+
+  @Override
+  protected void completeTransactionAfterThrowing(
+    TransactionInfo txInfo,
+    Throwable ex
+  ) {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Exception attempting to pass transaction boundaries.", ex);
+    }
+    super.completeTransactionAfterThrowing(txInfo, ex);
+  }
+
+  @Override
+  protected void finalize() throws Throwable {
+    if (!isBeginMatched) {
+      if (isCallStackTraced) {
+        if (beginCallStack == null) {
+          traceLogger.error(
+            "UserTransaction being garbage collected without a commit() or rollback(). " +
+            "NOTE: Prior to transaction call stack logging."
+          );
+        } else {
+          StringBuilder sb = new StringBuilder(1024);
+          StackTraceUtil.buildStackTrace(
+            "UserTransaction being garbage collected without a commit() or rollback().",
+            beginCallStack,
+            sb,
+            -1
+          );
+          traceLogger.error(sb);
+        }
+      } else {
+        traceLogger.error(
+          "Detected first UserTransaction which is being garbage collected without a commit() or rollback()"
+        );
+        traceLogger.error(
+          "Logging of transaction call stack is now enabled and will affect performance"
+        );
+        isCallStackTraced = true;
+      }
+    }
+  }
 }

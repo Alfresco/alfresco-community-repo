@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -50,126 +49,127 @@ import org.alfresco.service.cmr.repository.NodeService;
  * @author Derek Hulley
  * @since 3.2
  */
-public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtractor
-{
-    private NodeService nodeService;
-    private FilePlanService filePlanService;
-    private FilePlanRoleService filePlanRoleService;
-    private DictionaryService dictionaryService;
+public final class AuthenticatedUserRolesDataExtractor
+  extends AbstractDataExtractor {
 
-    /**
-     * Used to check that the node in the context is a fileplan component
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+  private NodeService nodeService;
+  private FilePlanService filePlanService;
+  private FilePlanRoleService filePlanRoleService;
+  private DictionaryService dictionaryService;
+
+  /**
+   * Used to check that the node in the context is a fileplan component
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * @param filePlanService   file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
+
+  /**
+   * @param filePlanRoleService   file plan role service
+   */
+  public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) {
+    this.filePlanRoleService = filePlanRoleService;
+  }
+
+  /**
+   * @param dictionaryService	dictionary service
+   */
+  public void setDictionaryService(DictionaryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
+
+  /**
+   * @return  Returns <tt>true</tt> if the data is a NodeRef and it represents either a fileplan component or
+   *          a subtype of content
+   */
+  public boolean isSupported(Serializable data) {
+    if (!(data instanceof NodeRef)) {
+      return false;
+    }
+    NodeRef nodeRef = (NodeRef) data;
+    return (
+      nodeService.hasAspect(
+        nodeRef,
+        RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT
+      ) ||
+      dictionaryService.isSubClass(
+        nodeService.getType(nodeRef),
+        ContentModel.TYPE_CONTENT
+      )
+    );
+  }
+
+  /**
+   * @see org.alfresco.repo.audit.extractor.DataExtractor#extractData(java.io.Serializable)
+   */
+  public Serializable extractData(Serializable value) {
+    NodeRef nodeRef = (NodeRef) value;
+    String user = AuthenticationUtil.getFullyAuthenticatedUser();
+    if (user == null) {
+      // No-one is authenticated
+      return null;
     }
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
+    StringBuilder sb = new StringBuilder(100);
+
+    // Get the rm root
+    NodeRef rmRootNodeRef = filePlanService.getFilePlan(nodeRef);
+
+    // if we don't have an rm root and the given node is a subtype of content
+    if (
+      rmRootNodeRef == null &&
+      dictionaryService.isSubClass(
+        nodeService.getType(nodeRef),
+        ContentModel.TYPE_CONTENT
+      )
+    ) {
+      // use the default file plan
+      rmRootNodeRef =
+        filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
     }
 
-    /**
-     * @param filePlanRoleService   file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-
-    /**
-     * @param dictionaryService	dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * @return  Returns <tt>true</tt> if the data is a NodeRef and it represents either a fileplan component or
-     *          a subtype of content
-     */
-    public boolean isSupported(Serializable data)
-    {
-        if (!(data instanceof NodeRef))
-        {
-            return false;
+    if (rmRootNodeRef != null) {
+      Set<Role> roles = filePlanRoleService.getRolesByUser(rmRootNodeRef, user);
+      for (Role role : roles) {
+        if (sb.length() > 0) {
+          sb.append(", ");
         }
-        NodeRef nodeRef = (NodeRef) data;
-        return nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT)  ||
-                dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT);
+        sb.append(role.getDisplayLabel());
+      }
     }
 
-    /**
-     * @see org.alfresco.repo.audit.extractor.DataExtractor#extractData(java.io.Serializable)
-     */
-    public Serializable extractData(Serializable value)
-    {
-        NodeRef nodeRef = (NodeRef) value;
-        String user = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (user == null)
-        {
-            // No-one is authenticated
-            return null;
-        }
+    // Done
+    return sb.toString();
+  }
 
-        StringBuilder sb = new StringBuilder(100);
-        
-        // Get the rm root
-        NodeRef rmRootNodeRef = filePlanService.getFilePlan(nodeRef);
-
-        // if we don't have an rm root and the given node is a subtype of content
-        if (rmRootNodeRef == null &&
-            dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
-        {
-            // use the default file plan
-            rmRootNodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        }
-
-        if (rmRootNodeRef != null)
-        {
-            Set<Role> roles = filePlanRoleService.getRolesByUser(rmRootNodeRef, user);
-            for (Role role : roles)
-            {
-                if (sb.length() > 0)
-                {
-                    sb.append(", ");
-                }
-                sb.append(role.getDisplayLabel());
-            }
-        }
-
-        // Done
-        return sb.toString();
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass())
-        {
-            return false;
-        }
-        if (!super.equals(o))
-        {
-            return false;
-        }
-        AuthenticatedUserRolesDataExtractor that = (AuthenticatedUserRolesDataExtractor) o;
-        return Objects.equals(nodeService, that.nodeService) && Objects.equals(filePlanService, that.filePlanService)
-            && Objects.equals(filePlanRoleService, that.filePlanRoleService);
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(nodeService, filePlanService, filePlanRoleService);
+    if (!super.equals(o)) {
+      return false;
     }
+    AuthenticatedUserRolesDataExtractor that = (AuthenticatedUserRolesDataExtractor) o;
+    return (
+      Objects.equals(nodeService, that.nodeService) &&
+      Objects.equals(filePlanService, that.filePlanService) &&
+      Objects.equals(filePlanRoleService, that.filePlanRoleService)
+    );
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(nodeService, filePlanService, filePlanRoleService);
+  }
 }

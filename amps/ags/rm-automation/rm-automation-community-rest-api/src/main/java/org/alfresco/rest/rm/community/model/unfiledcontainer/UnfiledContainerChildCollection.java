@@ -35,7 +35,5 @@ import org.alfresco.rest.core.RestModels;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class UnfiledContainerChildCollection extends RestModels<UnfiledContainerChildEntry, UnfiledContainerChildCollection>
-{
-
-}
+public class UnfiledContainerChildCollection
+    extends RestModels<UnfiledContainerChildEntry, UnfiledContainerChildCollection> {}

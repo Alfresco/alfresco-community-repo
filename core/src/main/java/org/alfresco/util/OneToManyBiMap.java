@@ -22,28 +22,25 @@ package org.alfresco.util;
 /**
  * An extension of <code>org.alfresco.util.OneToManyMap</code> that stores the
  * inverse mapping from a value to its key.
- * 
+ *
  * @author Nick Smith
  */
-public interface OneToManyBiMap<K, V> extends OneToManyMap<K, V>
-{
+public interface OneToManyBiMap<K, V> extends OneToManyMap<K, V> {
+  /**
+   * Returns the key, if any, for the specified <code>value</code>. If the
+   * specified value does not exist within the map then this method returns
+   * <code>null</code>.
+   *
+   * @param value
+   * @return The key to the specified <code>value</code> or <code>null</code>.
+   */
+  public abstract K getKey(V value);
 
-    /**
-     * Returns the key, if any, for the specified <code>value</code>. If the
-     * specified value does not exist within the map then this method returns
-     * <code>null</code>.
-     * 
-     * @param value
-     * @return The key to the specified <code>value</code> or <code>null</code>.
-     */
-    public abstract K getKey(V value);
-
-    /**
-     * Removes the specified <code>value</code> from the <code>OneToManyBiMap</code>. If this was the only value associated with the key to this value, then the key is also removed.
-     * 
-     * @param value The value to be removed.
-     * @return The key that is associated with the value to be removed.
-     */
-    public abstract K removeValue(V value);
-
+  /**
+   * Removes the specified <code>value</code> from the <code>OneToManyBiMap</code>. If this was the only value associated with the key to this value, then the key is also removed.
+   *
+   * @param value The value to be removed.
+   * @return The key that is associated with the value to be removed.
+   */
+  public abstract K removeValue(V value);
 }

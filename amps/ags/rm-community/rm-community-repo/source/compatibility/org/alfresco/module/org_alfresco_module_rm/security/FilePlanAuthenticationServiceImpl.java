@@ -35,29 +35,31 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
  * @since 2.1
  */
 @Deprecated
-public class FilePlanAuthenticationServiceImpl implements FilePlanAuthenticationService
-{
-    /** Default rm admin user values */
-    @Deprecated
-    public static final String DEFAULT_RM_ADMIN_USER = "rmadmin";
+public class FilePlanAuthenticationServiceImpl
+  implements FilePlanAuthenticationService {
 
-    /**
-     * @see FilePlanAuthenticationService#getRmAdminUserName() ()
-     */
-    @Override
-    @Deprecated
-    public String getRmAdminUserName()
-    {
-        return AuthenticationUtil.getAdminUserName();
-    }
+  /** Default rm admin user values */
+  @Deprecated
+  public static final String DEFAULT_RM_ADMIN_USER = "rmadmin";
 
-    /**
-     * @see FilePlanAuthenticationService#runAsRmAdmin(RunAsWork)
-     */
-    @Override
-    @Deprecated
-    public <R> R runAsRmAdmin(RunAsWork<R> runAsWork)
-    {
-        return AuthenticationUtil.runAs(runAsWork, AuthenticationUtil.getAdminUserName());
-    }
+  /**
+   * @see FilePlanAuthenticationService#getRmAdminUserName() ()
+   */
+  @Override
+  @Deprecated
+  public String getRmAdminUserName() {
+    return AuthenticationUtil.getAdminUserName();
+  }
+
+  /**
+   * @see FilePlanAuthenticationService#runAsRmAdmin(RunAsWork)
+   */
+  @Override
+  @Deprecated
+  public <R> R runAsRmAdmin(RunAsWork<R> runAsWork) {
+    return AuthenticationUtil.runAs(
+      runAsWork,
+      AuthenticationUtil.getAdminUserName()
+    );
+  }
 }

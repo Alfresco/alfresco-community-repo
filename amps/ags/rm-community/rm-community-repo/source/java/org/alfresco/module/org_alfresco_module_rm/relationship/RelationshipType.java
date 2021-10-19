@@ -36,8 +36,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public enum RelationshipType
-{
-    BIDIRECTIONAL,
-    PARENTCHILD
+public enum RelationshipType {
+  BIDIRECTIONAL,
+  PARENTCHILD,
 }

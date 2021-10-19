@@ -25,6 +25,13 @@
  */
 package org.alfresco.heartbeat;
 
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -33,14 +40,6 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This class collects rendition request counts for HeartBeat. A rendition (such as "doclib") is always to the same
@@ -60,80 +59,102 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author adavis
  */
-public class RenditionsDataCollector extends HBBaseDataCollector implements InitializingBean
-{
-    private static final Log logger = LogFactory.getLog(RenditionsDataCollector.class);
+public class RenditionsDataCollector
+  extends HBBaseDataCollector
+  implements InitializingBean {
 
-    private DescriptorDAO currentRepoDescriptorDAO;
+  private static final Log logger = LogFactory.getLog(
+    RenditionsDataCollector.class
+  );
 
-    // Map keyed on rendition id to a Map keyed on source mimetypes to a count of the number of times it has been requested.
-    private final Map<ThumbnailDefinition, Map<String, AtomicInteger>> renditionRequests = new ConcurrentHashMap<>();
+  private DescriptorDAO currentRepoDescriptorDAO;
 
-    public RenditionsDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                    HeartBeatJobScheduler hbJobScheduler)
-    {
-        super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
-    }
+  // Map keyed on rendition id to a Map keyed on source mimetypes to a count of the number of times it has been requested.
+  private final Map<ThumbnailDefinition, Map<String, AtomicInteger>> renditionRequests = new ConcurrentHashMap<>();
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
-        this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
-    }
+  public RenditionsDataCollector(
+    String collectorId,
+    String collectorVersion,
+    String cronExpression,
+    HeartBeatJobScheduler hbJobScheduler
+  ) {
+    super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
-    }
+  public void setCurrentRepoDescriptorDAO(
+    DescriptorDAO currentRepoDescriptorDAO
+  ) {
+    this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
+  }
 
-    public void recordRenditionRequest(ThumbnailDefinition rendition, String sourceMimetype)
-    {
-        // Increment the count of renditions. Atomically creates missing parts of the Map structures.
-        renditionRequests.computeIfAbsent(rendition,
-                k -> new ConcurrentHashMap<>()).computeIfAbsent(sourceMimetype,
-                k -> new AtomicInteger()).incrementAndGet();
-    }
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    PropertyCheck.mandatory(
+      this,
+      "currentRepoDescriptorDAO",
+      currentRepoDescriptorDAO
+    );
+  }
 
-    @Override
-    public List<HBData> collectData()
-    {
-        List<HBData> collectedData = new LinkedList<>();
+  public void recordRenditionRequest(
+    ThumbnailDefinition rendition,
+    String sourceMimetype
+  ) {
+    // Increment the count of renditions. Atomically creates missing parts of the Map structures.
+    renditionRequests
+      .computeIfAbsent(rendition, k -> new ConcurrentHashMap<>())
+      .computeIfAbsent(sourceMimetype, k -> new AtomicInteger())
+      .incrementAndGet();
+  }
 
-        String systemId = this.currentRepoDescriptorDAO.getDescriptor().getId();
-        String collectorId = this.getCollectorId();
-        String collectorVersion = this.getCollectorVersion();
-        Date timestamp = new Date();
+  @Override
+  public List<HBData> collectData() {
+    List<HBData> collectedData = new LinkedList<>();
 
-        // We don't mind if new renditions are added while we iterate, as we will pick them up next time.
-        for (ThumbnailDefinition rendition : renditionRequests.keySet())
-        {
-            String renditionName = rendition.getName();
-            String targetMimetype = rendition.getMimetype();
-            for (Map.Entry<String, AtomicInteger> entry: renditionRequests.remove(rendition).entrySet())
-            {
-                String sourceMimetype = entry.getKey();
-                AtomicInteger count = entry.getValue();
+    String systemId = this.currentRepoDescriptorDAO.getDescriptor().getId();
+    String collectorId = this.getCollectorId();
+    String collectorVersion = this.getCollectorVersion();
+    Date timestamp = new Date();
 
-                Map<String, Object> values = new HashMap<>();
-                values.put("rendition", renditionName);
-                values.put("count", count.intValue());
-                values.put("sourceMimetype", sourceMimetype);
-                values.put("targetMimetype", targetMimetype);
+    // We don't mind if new renditions are added while we iterate, as we will pick them up next time.
+    for (ThumbnailDefinition rendition : renditionRequests.keySet()) {
+      String renditionName = rendition.getName();
+      String targetMimetype = rendition.getMimetype();
+      for (Map.Entry<String, AtomicInteger> entry : renditionRequests
+        .remove(rendition)
+        .entrySet()) {
+        String sourceMimetype = entry.getKey();
+        AtomicInteger count = entry.getValue();
 
-                // Decided it would be simpler to be able to combine results in Kibana from different nodes
-                // and days if the data was flattened (denormalized) out at this point. It is very likely
-                // that different nodes would have different sets of sourceMimetypes which would make summing
-                // the counts harder to do, if there was a single entry for each rendition with a nested
-                // structure for each sourceMimetype.
-                collectedData.add(new HBData(systemId, collectorId, collectorVersion, timestamp, values));
+        Map<String, Object> values = new HashMap<>();
+        values.put("rendition", renditionName);
+        values.put("count", count.intValue());
+        values.put("sourceMimetype", sourceMimetype);
+        values.put("targetMimetype", targetMimetype);
 
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug(renditionName+" "+count+" "+sourceMimetype+" "+targetMimetype);
-                }
-            }
+        // Decided it would be simpler to be able to combine results in Kibana from different nodes
+        // and days if the data was flattened (denormalized) out at this point. It is very likely
+        // that different nodes would have different sets of sourceMimetypes which would make summing
+        // the counts harder to do, if there was a single entry for each rendition with a nested
+        // structure for each sourceMimetype.
+        collectedData.add(
+          new HBData(systemId, collectorId, collectorVersion, timestamp, values)
+        );
+
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+            renditionName +
+            " " +
+            count +
+            " " +
+            sourceMimetype +
+            " " +
+            targetMimetype
+          );
         }
-
-        return collectedData;
+      }
     }
+
+    return collectedData;
+  }
 }

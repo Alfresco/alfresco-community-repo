@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,7 +31,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.repo.search.impl.solr.facet.FacetQNameUtils;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
@@ -49,85 +48,115 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class is the controller for the "solr-facet-config-admin.post" web scripts.
- * 
+ *
  * @author Jamal Kaabi-Mofrad
  */
-public class SolrFacetConfigAdminPost extends AbstractSolrFacetConfigAdminWebScript
-{
-    private static final Log logger = LogFactory.getLog(SolrFacetConfigAdminPost.class);
+public class SolrFacetConfigAdminPost
+  extends AbstractSolrFacetConfigAdminWebScript {
 
-    @Override
-    protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        try
-        {
-            SolrFacetProperties fp = parseRequestForFacetProperties(req);
-            facetService.createFacetNode(fp);
+  private static final Log logger = LogFactory.getLog(
+    SolrFacetConfigAdminPost.class
+  );
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Created facet node: " + fp);
-            }
-        }
-        catch (Throwable t)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not save the facet configuration.", t);
-        }
+  @Override
+  protected Map<String, Object> unprotectedExecuteImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    try {
+      SolrFacetProperties fp = parseRequestForFacetProperties(req);
+      facetService.createFacetNode(fp);
 
-        return new HashMap<>(); // Needs to be mutable.
+      if (logger.isDebugEnabled()) {
+        logger.debug("Created facet node: " + fp);
+      }
+    } catch (Throwable t) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not save the facet configuration.",
+        t
+      );
     }
 
-    private SolrFacetProperties parseRequestForFacetProperties(WebScriptRequest req)
-    {
-        JSONObject json = null;
-        try
-        {
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+    return new HashMap<>(); // Needs to be mutable.
+  }
 
-            final String filterID = json.getString(PARAM_FILTER_ID);
-            validateFilterID(filterID);
+  private SolrFacetProperties parseRequestForFacetProperties(
+    WebScriptRequest req
+  ) {
+    JSONObject json = null;
+    try {
+      json = new JSONObject(new JSONTokener(req.getContent().getContent()));
 
-            final String facetQNameStr = json.getString(PARAM_FACET_QNAME);
-            // Note: we're using this util class here because we need to be able to deal with
-            //       qnames without a URI e.g. "{}SITE" and *not* have them default to the cm: namespace
-            //       which happens with the 'normal' Alfresco QName code.
-            final QName facetQName = FacetQNameUtils.createQName(facetQNameStr, namespaceService);
-            final String displayName = json.getString(PARAM_DISPLAY_NAME);
-            final String displayControl = json.getString(PARAM_DISPLAY_CONTROL);
-            final int maxFilters = json.getInt(PARAM_MAX_FILTERS);
-            final int hitThreshold = json.getInt(PARAM_HIT_THRESHOLD);
-            final int minFilterValueLength = json.getInt(PARAM_MIN_FILTER_VALUE_LENGTH);
-            final String sortBy = json.getString(PARAM_SORT_BY);
-            // Optional params
-            final String scope = getValue(String.class, json.opt(PARAM_SCOPE), "ALL");
-            final boolean isEnabled = getValue(Boolean.class, json.opt(PARAM_IS_ENABLED), false);
-            JSONArray scopedSitesJsonArray = getValue(JSONArray.class, json.opt(PARAM_SCOPED_SITES), null);
-            final Set<String> scopedSites = getScopedSites(scopedSitesJsonArray);
-            final JSONObject customPropJsonObj = getValue(JSONObject.class, json.opt(PARAM_CUSTOM_PROPERTIES), null);
-            final Set<CustomProperties> customProps = getCustomProperties(customPropJsonObj);
+      final String filterID = json.getString(PARAM_FILTER_ID);
+      validateFilterID(filterID);
 
-            SolrFacetProperties fp = new SolrFacetProperties.Builder()
-                        .filterID(filterID)
-                        .facetQName(facetQName)
-                        .displayName(displayName)
-                        .displayControl(displayControl)
-                        .maxFilters(maxFilters)
-                        .hitThreshold(hitThreshold)
-                        .minFilterValueLength(minFilterValueLength)
-                        .sortBy(sortBy)
-                        .scope(scope)
-                        .isEnabled(isEnabled)
-                        .scopedSites(scopedSites)
-                        .customProperties(customProps).build();
-            return fp;
-        }
-        catch (IOException e)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", e);
-        }
-        catch (JSONException e)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", e);
-        }
+      final String facetQNameStr = json.getString(PARAM_FACET_QNAME);
+      // Note: we're using this util class here because we need to be able to deal with
+      //       qnames without a URI e.g. "{}SITE" and *not* have them default to the cm: namespace
+      //       which happens with the 'normal' Alfresco QName code.
+      final QName facetQName = FacetQNameUtils.createQName(
+        facetQNameStr,
+        namespaceService
+      );
+      final String displayName = json.getString(PARAM_DISPLAY_NAME);
+      final String displayControl = json.getString(PARAM_DISPLAY_CONTROL);
+      final int maxFilters = json.getInt(PARAM_MAX_FILTERS);
+      final int hitThreshold = json.getInt(PARAM_HIT_THRESHOLD);
+      final int minFilterValueLength = json.getInt(
+        PARAM_MIN_FILTER_VALUE_LENGTH
+      );
+      final String sortBy = json.getString(PARAM_SORT_BY);
+      // Optional params
+      final String scope = getValue(String.class, json.opt(PARAM_SCOPE), "ALL");
+      final boolean isEnabled = getValue(
+        Boolean.class,
+        json.opt(PARAM_IS_ENABLED),
+        false
+      );
+      JSONArray scopedSitesJsonArray = getValue(
+        JSONArray.class,
+        json.opt(PARAM_SCOPED_SITES),
+        null
+      );
+      final Set<String> scopedSites = getScopedSites(scopedSitesJsonArray);
+      final JSONObject customPropJsonObj = getValue(
+        JSONObject.class,
+        json.opt(PARAM_CUSTOM_PROPERTIES),
+        null
+      );
+      final Set<CustomProperties> customProps = getCustomProperties(
+        customPropJsonObj
+      );
+
+      SolrFacetProperties fp = new SolrFacetProperties.Builder()
+        .filterID(filterID)
+        .facetQName(facetQName)
+        .displayName(displayName)
+        .displayControl(displayControl)
+        .maxFilters(maxFilters)
+        .hitThreshold(hitThreshold)
+        .minFilterValueLength(minFilterValueLength)
+        .sortBy(sortBy)
+        .scope(scope)
+        .isEnabled(isEnabled)
+        .scopedSites(scopedSites)
+        .customProperties(customProps)
+        .build();
+      return fp;
+    } catch (IOException e) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not read content from req.",
+        e
+      );
+    } catch (JSONException e) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not parse JSON from req.",
+        e
+      );
     }
+  }
 }

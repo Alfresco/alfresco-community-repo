@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.audit;
 
 import static java.util.Arrays.asList;
-
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.CREATE_HOLD;
@@ -37,11 +36,9 @@ import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.google.common.collect.ImmutableMap;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
@@ -61,10 +58,12 @@ import org.testng.annotations.Test;
  * @author Claudia Agache
  * @since 3.3
  */
-@AlfrescoTest (jira = "RM-6859")
-public class AuditCreateHoldTests extends BaseRMRestTest
-{
-    private final String PREFIX = generateTestPrefix(AuditCreateHoldTests.class);
+@AlfrescoTest(jira = "RM-6859")
+public class AuditCreateHoldTests extends BaseRMRestTest {
+
+    private final String PREFIX = generateTestPrefix(
+        AuditCreateHoldTests.class
+    );
     private final String HOLD1 = PREFIX + "createHold";
     private final String HOLD2 = PREFIX + "createHold2";
     private final String HOLD3 = PREFIX + "createHold3";
@@ -72,19 +71,22 @@ public class AuditCreateHoldTests extends BaseRMRestTest
 
     @Autowired
     private RMAuditService rmAuditService;
+
     @Autowired
     private HoldsAPI holdsAPI;
+
     @Autowired
     private RoleService roleService;
 
     private UserModel rmAdmin, rmManager;
 
-    @BeforeClass (alwaysRun = true)
-    public void preconditionForAuditCreateHoldTests()
-    {
+    @BeforeClass(alwaysRun = true)
+    public void preconditionForAuditCreateHoldTests() {
         STEP("Create test users.");
-        rmAdmin = roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
-        rmManager = roleService.createUserWithRMRole(UserRoles.ROLE_RM_MANAGER.roleId);
+        rmAdmin =
+            roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
+        rmManager =
+            roleService.createUserWithRMRole(UserRoles.ROLE_RM_MANAGER.roleId);
     }
 
     /**
@@ -97,18 +99,45 @@ public class AuditCreateHoldTests extends BaseRMRestTest
      *      date the creation occurred
      */
     @Test
-    public void createHoldEventIsAuditedForNewHold()
-    {
+    public void createHoldEventIsAuditedForNewHold() {
         rmAuditService.clearAuditLog();
 
         STEP("Create a new hold.");
-        String hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD1,
-                HOLD_REASON, HOLD_DESCRIPTION);
+        String hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            HOLD1,
+            HOLD_REASON,
+            HOLD_DESCRIPTION
+        );
         holdsListRef.add(hold1NodeRef);
-        STEP("Check the audit log contains the entry for the created hold with the hold details.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), CREATE_HOLD, rmAdmin, HOLD1,
-                asList(ImmutableMap.of("new", HOLD_REASON, "previous", "", "name", "Hold Reason"),
-                        ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name")));
+        STEP(
+            "Check the audit log contains the entry for the created hold with the hold details."
+        );
+        rmAuditService.checkAuditLogForEvent(
+            getAdminUser(),
+            CREATE_HOLD,
+            rmAdmin,
+            HOLD1,
+            asList(
+                ImmutableMap.of(
+                    "new",
+                    HOLD_REASON,
+                    "previous",
+                    "",
+                    "name",
+                    "Hold Reason"
+                ),
+                ImmutableMap.of(
+                    "new",
+                    HOLD1,
+                    "previous",
+                    "",
+                    "name",
+                    "Hold Name"
+                )
+            )
+        );
     }
 
     /**
@@ -117,20 +146,37 @@ public class AuditCreateHoldTests extends BaseRMRestTest
      * Then the create hold event isn't audited
      */
     @Test
-    public void createHoldEventIsNotAuditedForExistingHold()
-    {
+    public void createHoldEventIsNotAuditedForExistingHold() {
         STEP("Create a new hold.");
-        String hold2NodeRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
+        String hold2NodeRef = holdsAPI.createHoldAndGetNodeRef(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            HOLD2,
+            HOLD_REASON,
+            HOLD_DESCRIPTION
+        );
         holdsListRef.add(hold2NodeRef);
         rmAuditService.clearAuditLog();
 
         STEP("Try to create again the same hold and expect action to fail.");
-        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION,
-                SC_INTERNAL_SERVER_ERROR);
+        holdsAPI.createHold(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            HOLD2,
+            HOLD_REASON,
+            HOLD_DESCRIPTION,
+            SC_INTERNAL_SERVER_ERROR
+        );
 
-        STEP("Check the audit log doesn't contain the entry for the second create hold event.");
-        assertTrue("The list of events should not contain Create Hold entry ",
-                rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD).isEmpty());
+        STEP(
+            "Check the audit log doesn't contain the entry for the second create hold event."
+        );
+        assertTrue(
+            "The list of events should not contain Create Hold entry ",
+            rmAuditService
+                .getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD)
+                .isEmpty()
+        );
     }
 
     /**
@@ -139,25 +185,46 @@ public class AuditCreateHoldTests extends BaseRMRestTest
      * Then the create hold entry still contains the initial details
      */
     @Test
-    public void createHoldAuditEntryIsNotLost()
-    {
+    public void createHoldAuditEntryIsNotLost() {
         final String holdName = PREFIX + "holdToBeDeleted";
         rmAuditService.clearAuditLog();
 
         STEP("Create a new hold.");
-        holdsAPI.createHold(rmAdmin.getUsername(), rmAdmin.getPassword(), holdName, HOLD_REASON, HOLD_DESCRIPTION);
+        holdsAPI.createHold(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            holdName,
+            HOLD_REASON,
+            HOLD_DESCRIPTION
+        );
 
         STEP("Get the list of audit entries for the create hold event.");
-        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD);
+        List<AuditEntry> auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(
+            getAdminUser(),
+            CREATE_HOLD
+        );
 
         STEP("Delete the created hold.");
-        holdsAPI.deleteHold(rmAdmin.getUsername(), rmAdmin.getPassword(), holdName);
+        holdsAPI.deleteHold(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            holdName
+        );
 
         STEP("Get again the list of audit entries for the create hold event.");
-        List<AuditEntry> auditEntriesAfterDelete = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), CREATE_HOLD);
+        List<AuditEntry> auditEntriesAfterDelete = rmAuditService.getAuditEntriesFilteredByEvent(
+            getAdminUser(),
+            CREATE_HOLD
+        );
 
-        STEP("Check that the audit entry for the created hold didn't change after hold deletion.");
-        assertEquals("The audit entry for Create Hold has been changed", auditEntries, auditEntriesAfterDelete);
+        STEP(
+            "Check that the audit entry for the created hold didn't change after hold deletion."
+        );
+        assertEquals(
+            "The audit entry for Create Hold has been changed",
+            auditEntries,
+            auditEntriesAfterDelete
+        );
     }
 
     /**
@@ -166,24 +233,36 @@ public class AuditCreateHoldTests extends BaseRMRestTest
      * Then the create hold entry isn't visible
      */
     @Test
-    public void createHoldAuditEntryNotVisible()
-    {
+    public void createHoldAuditEntryNotVisible() {
         rmAuditService.clearAuditLog();
 
         STEP("Create a new hold.");
-        String hold3NodeRef = holdsAPI.createHoldAndGetNodeRef(rmAdmin.getUsername(), rmAdmin.getPassword(), HOLD3,
-                HOLD_REASON, HOLD_DESCRIPTION);
+        String hold3NodeRef = holdsAPI.createHoldAndGetNodeRef(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            HOLD3,
+            HOLD_REASON,
+            HOLD_DESCRIPTION
+        );
         holdsListRef.add(hold3NodeRef);
 
-        STEP("Check that an user with no Read permissions over the hold can't see the entry for the create hold event");
-        assertTrue("The list of events should not contain Create Hold entry ",
-                rmAuditService.getAuditEntriesFilteredByEvent(rmManager, CREATE_HOLD).isEmpty());
+        STEP(
+            "Check that an user with no Read permissions over the hold can't see the entry for the create hold event"
+        );
+        assertTrue(
+            "The list of events should not contain Create Hold entry ",
+            rmAuditService
+                .getAuditEntriesFilteredByEvent(rmManager, CREATE_HOLD)
+                .isEmpty()
+        );
     }
 
-    @AfterClass (alwaysRun = true)
-    public void cleanUpAuditCreateHoldTests()
-    {
-        holdsListRef.forEach(holdRef -> holdsAPI.deleteHold(getAdminUser(), holdRef));
-        asList(rmAdmin, rmManager).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
+    @AfterClass(alwaysRun = true)
+    public void cleanUpAuditCreateHoldTests() {
+        holdsListRef.forEach(holdRef ->
+            holdsAPI.deleteHold(getAdminUser(), holdRef)
+        );
+        asList(rmAdmin, rmManager)
+            .forEach(user -> getDataUser().usingAdmin().deleteUser(user));
     }
 }

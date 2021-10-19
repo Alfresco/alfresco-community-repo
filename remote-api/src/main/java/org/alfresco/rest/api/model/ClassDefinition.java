@@ -26,24 +26,21 @@
 package org.alfresco.rest.api.model;
 
 import java.util.List;
+
 /**
  * Represents the node definition.
  *
  * @author gfertuso
  */
-public class ClassDefinition
-{
-    
-    List <PropertyDefinition> properties;
-    
-    public List<PropertyDefinition> getProperties()
-    {
-        return properties;
-    }
+public class ClassDefinition {
 
-    public void setProperties(List<PropertyDefinition> properties)
-    {
-        this.properties = properties;
-    }
-    
+  List<PropertyDefinition> properties;
+
+  public List<PropertyDefinition> getProperties() {
+    return properties;
+  }
+
+  public void setProperties(List<PropertyDefinition> properties) {
+    this.properties = properties;
+  }
 }

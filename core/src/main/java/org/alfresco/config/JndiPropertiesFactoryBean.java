@@ -19,42 +19,35 @@
 package org.alfresco.config;
 
 import java.util.Properties;
-
 import javax.naming.NamingException;
-
 import org.springframework.jndi.JndiTemplate;
 
 /**
  * An extended {@link SystemPropertiesFactoryBean} that allows properties to be set through JNDI entries in
  * java:comp/env/properties/*. The precedence given to system properties is still as per the superclass.
- * 
+ *
  * @author dward
  */
-public class JndiPropertiesFactoryBean extends SystemPropertiesFactoryBean
-{
-    private JndiTemplate jndiTemplate = new JndiTemplate();
+public class JndiPropertiesFactoryBean extends SystemPropertiesFactoryBean {
 
-    @Override
-    protected void resolveMergedProperty(String propertyName, Properties props)
-    {
-        try
-        {
-            Object value = this.jndiTemplate.lookup("java:comp/env/properties/" + propertyName);
-            if (value != null)
-            {
-                String stringValue = value.toString();
-                if (stringValue.length() > 0)
-                {
-                    // Unfortunately, JBoss 4 wrongly expects every env-entry declared in web.xml to have an
-                    // env-entry-value (even though these are meant to be decided on deployment!). So we treat the empty
-                    // string as null.
-                    props.setProperty(propertyName, stringValue);
-                }
-            }
+  private JndiTemplate jndiTemplate = new JndiTemplate();
+
+  @Override
+  protected void resolveMergedProperty(String propertyName, Properties props) {
+    try {
+      Object value =
+        this.jndiTemplate.lookup("java:comp/env/properties/" + propertyName);
+      if (value != null) {
+        String stringValue = value.toString();
+        if (stringValue.length() > 0) {
+          // Unfortunately, JBoss 4 wrongly expects every env-entry declared in web.xml to have an
+          // env-entry-value (even though these are meant to be decided on deployment!). So we treat the empty
+          // string as null.
+          props.setProperty(propertyName, stringValue);
         }
-        catch (NamingException e)
-        {
-            // Fall back to merged value in props
-        }
+      }
+    } catch (NamingException e) {
+      // Fall back to merged value in props
     }
+  }
 }

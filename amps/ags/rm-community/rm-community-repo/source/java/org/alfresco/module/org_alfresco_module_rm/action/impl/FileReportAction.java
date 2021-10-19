@@ -51,150 +51,158 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class FileReportAction extends RMActionExecuterAbstractBase implements ReportModel
-{
-    /** action name */
-    public static final String NAME = "fileReport";
+public class FileReportAction
+  extends RMActionExecuterAbstractBase
+  implements ReportModel {
 
-    /** Constants for the parameters passed from the UI */
-    public static final String REPORT_TYPE = "reportType";
+  /** action name */
+  public static final String NAME = "fileReport";
 
-    public static final String DESTINATION = "destination";
+  /** Constants for the parameters passed from the UI */
+  public static final String REPORT_TYPE = "reportType";
 
-    public static final String MIMETYPE = "mimetype";
+  public static final String DESTINATION = "destination";
 
-    /** I18N */
-    private static final String MSG_PARAM_NOT_SUPPLIED = "rm.action.parameter-not-supplied";
+  public static final String MIMETYPE = "mimetype";
 
-    /** Report service */
-    private ReportService reportService;
+  /** I18N */
+  private static final String MSG_PARAM_NOT_SUPPLIED =
+    "rm.action.parameter-not-supplied";
 
-    /** Capability service */
-    private CapabilityService capabilityService;
+  /** Report service */
+  private ReportService reportService;
 
-    /**
-     * @return Report service
-     */
-    protected ReportService getReportService()
-    {
-        return this.reportService;
+  /** Capability service */
+  private CapabilityService capabilityService;
+
+  /**
+   * @return Report service
+   */
+  protected ReportService getReportService() {
+    return this.reportService;
+  }
+
+  /**
+   * @return Capability service
+   */
+  protected CapabilityService getCapabilityService() {
+    return this.capabilityService;
+  }
+
+  /**
+   * @param reportService report service
+   */
+  public void setReportService(ReportService reportService) {
+    this.reportService = reportService;
+  }
+
+  /**
+   * @param capabilityService capability service
+   */
+  public void setCapabilityService(CapabilityService capabilityService) {
+    this.capabilityService = capabilityService;
+  }
+
+  /**
+   * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+   *      org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  protected void executeImpl(Action action, NodeRef actionedUponNodeRef) {
+    // get the mimetype of the report
+    String mimetype = (String) action.getParameterValue(MIMETYPE);
+    if (mimetype == null || mimetype.isEmpty()) {
+      mimetype = MimetypeMap.MIMETYPE_HTML;
     }
 
-    /**
-     * @return Capability service
-     */
-    protected CapabilityService getCapabilityService()
-    {
-        return this.capabilityService;
-    }
+    // get the report type
+    QName reportType = getReportType(action);
 
-    /**
-     * @param reportService report service
-     */
-    public void setReportService(ReportService reportService)
-    {
-        this.reportService = reportService;
-    }
+    // get the destination
+    final NodeRef destination = getDestination(action);
 
-    /**
-     * @param capabilityService capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
-        this.capabilityService = capabilityService;
-    }
+    // Check the filing permission only capability for the destination
+    checkFilingPermissionOnlyCapability(destination);
 
-    /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
-     *      org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-    {
-        // get the mimetype of the report
-        String mimetype = (String) action.getParameterValue(MIMETYPE);
-        if (mimetype == null || mimetype.isEmpty())
-        {
-            mimetype = MimetypeMap.MIMETYPE_HTML;
+    // generate the report
+    final Report report = getReportService()
+      .generateReport(reportType, actionedUponNodeRef, mimetype);
+
+    // file the report as system
+    NodeRef filedReport = AuthenticationUtil.runAsSystem(
+      new RunAsWork<NodeRef>() {
+        @Override
+        public NodeRef doWork() {
+          return getReportService().fileReport(destination, report);
         }
+      }
+    );
 
-        // get the report type
-        QName reportType = getReportType(action);
+    // return the report name
+    String filedReportName = (String) getNodeService()
+      .getProperty(filedReport, ContentModel.PROP_NAME);
+    action.setParameterValue(
+      ActionExecuterAbstractBase.PARAM_RESULT,
+      filedReportName
+    );
+  }
 
-        // get the destination
-        final NodeRef destination = getDestination(action);
-
-        // Check the filing permission only capability for the destination
-        checkFilingPermissionOnlyCapability(destination);
-
-        // generate the report
-        final Report report = getReportService().generateReport(reportType, actionedUponNodeRef, mimetype);
-
-        // file the report as system
-        NodeRef filedReport = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork()
-            {
-                return getReportService().fileReport(destination, report);
-            }
-        });
-
-        // return the report name
-        String filedReportName = (String) getNodeService().getProperty(filedReport, ContentModel.PROP_NAME);
-        action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, filedReportName);
+  /**
+   * Checks if the destination is frozen, closed, cut off or not. In case if it is an exception will be thrown.
+   *
+   * @param nodeRef The destination node reference for which the capability should be checked
+   */
+  private void checkFilingPermissionOnlyCapability(NodeRef nodeRef) {
+    if (
+      AccessStatus.DENIED.equals(
+        capabilityService
+          .getCapability("FillingPermissionOnly")
+          .hasPermission(nodeRef)
+      )
+    ) {
+      throw new AlfrescoRuntimeException(
+        "You don't have filing permission on the destination or the destination is either frozen, closed or cut off!"
+      );
     }
+  }
 
-    /**
-     * Checks if the destination is frozen, closed, cut off or not. In case if it is an exception will be thrown.
-     *
-     * @param nodeRef The destination node reference for which the capability should be checked
-     */
-    private void checkFilingPermissionOnlyCapability(NodeRef nodeRef)
-    {
-        if (AccessStatus.DENIED.equals(capabilityService.getCapability("FillingPermissionOnly").hasPermission(nodeRef)))
-        {
-            throw new AlfrescoRuntimeException("You don't have filing permission on the destination or the destination is either frozen, closed or cut off!");
-        }
+  /**
+   * Retrieves the value of the given parameter. If the parameter has not been
+   * passed from the UI an error will be thrown
+   *
+   * @param action The action
+   * @param parameter The parameter for which the value should be retrieved
+   * @return The value of the given parameter
+   */
+  private String getParameterValue(Action action, String parameter) {
+    String paramValue = (String) action.getParameterValue(parameter);
+    if (StringUtils.isBlank(paramValue)) {
+      throw new AlfrescoRuntimeException(
+        I18NUtil.getMessage(MSG_PARAM_NOT_SUPPLIED, parameter)
+      );
     }
+    return paramValue;
+  }
 
-    /**
-     * Retrieves the value of the given parameter. If the parameter has not been
-     * passed from the UI an error will be thrown
-     *
-     * @param action The action
-     * @param parameter The parameter for which the value should be retrieved
-     * @return The value of the given parameter
-     */
-    private String getParameterValue(Action action, String parameter)
-    {
-        String paramValue = (String) action.getParameterValue(parameter);
-        if (StringUtils.isBlank(paramValue)) { throw new AlfrescoRuntimeException(I18NUtil.getMessage(
-                MSG_PARAM_NOT_SUPPLIED, parameter)); }
-        return paramValue;
-    }
+  /**
+   * Helper method for getting the destination.
+   *
+   * @param action The action
+   * @return The file plan node reference
+   */
+  private NodeRef getDestination(Action action) {
+    String destination = getParameterValue(action, DESTINATION);
+    return new NodeRef(destination);
+  }
 
-    /**
-     * Helper method for getting the destination.
-     *
-     * @param action The action
-     * @return The file plan node reference
-     */
-    private NodeRef getDestination(Action action)
-    {
-        String destination = getParameterValue(action, DESTINATION);
-        return new NodeRef(destination);
-    }
-
-    /**
-     * Helper method for getting the report type.
-     *
-     * @param action The action
-     * @return The report type
-     */
-    private QName getReportType(Action action)
-    {
-        String reportType = getParameterValue(action, REPORT_TYPE);
-        return QName.createQName(reportType, getNamespaceService());
-    }
+  /**
+   * Helper method for getting the report type.
+   *
+   * @param action The action
+   * @return The report type
+   */
+  private QName getReportType(Action action) {
+    String reportType = getParameterValue(action, REPORT_TYPE);
+    return QName.createQName(reportType, getNamespaceService());
+  }
 }

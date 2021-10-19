@@ -43,105 +43,105 @@ import org.springframework.jdbc.BadSqlGrammarException;
 
 /**
  * Simple bean used to test RM-3314
- * 
+ *
  * @author rwetherall
  * @since 2.2.1.5
  */
-public class RM3314TestListener implements ApplicationListener<ContextRefreshedEvent>, 
-                                           Ordered,
-                                           BeanNameAware
-{
-    private RecordsManagementAdminServiceImpl recordsManagementAdminService;
-    private NodeService nodeService;
-    private FileFolderService fileFolderService;
-    private Repository repository;
-    
-    private String name;
-    private int order = Ordered.LOWEST_PRECEDENCE;
+public class RM3314TestListener
+  implements
+    ApplicationListener<ContextRefreshedEvent>, Ordered, BeanNameAware {
 
-    public void setRecordsManagementAdminService(RecordsManagementAdminServiceImpl recordsManagementAdminService)
-    {
-        this.recordsManagementAdminService = recordsManagementAdminService;
-    }
-    
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-    
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-    
-    public void setRepository(Repository repository)
-    {
-        this.repository = repository;
-    }
-    
-    @Override
-    public void setBeanName(String name)
-    {
-        this.name = name;
-    }
+  private RecordsManagementAdminServiceImpl recordsManagementAdminService;
+  private NodeService nodeService;
+  private FileFolderService fileFolderService;
+  private Repository repository;
 
-    public void setOrder(int order)
-    {
-        this.order = order;
-    }
+  private String name;
+  private int order = Ordered.LOWEST_PRECEDENCE;
 
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent event)
-    {
-        // call back to show whether the custom map is initialised or not
-        RM3314Test.callback.put(name, recordsManagementAdminService.isCustomMapInit());
-        
-        // Do some work on a node to show that reguardless of whether the custom map is
-        // init or not, things still work.
-        // Note: using public services to ensure new transaction for each service call        
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            public Void doWork() throws Exception
-            {
-                try
-                {
-                    NodeRef companyHome = repository.getCompanyHome();
-                    
-                    if (fileFolderService.searchSimple(companyHome, name) == null)
-                    {
-                        // create node
-                        NodeRef folder = fileFolderService.create(
-                                    repository.getCompanyHome(), 
-                                    name, 
-                                    ContentModel.TYPE_FOLDER).getNodeRef();
-                        try
-                        {                
-                            // add aspect
-                            nodeService.addAspect(folder, ContentModel.ASPECT_CLASSIFIABLE, null);
-                            
-                            // remove aspect
-                            nodeService.removeAspect(folder, ContentModel.ASPECT_CLASSIFIABLE);
-                        }
-                        finally
-                        {
-                            // delete node
-                            nodeService.deleteNode(folder);
-                        }
-                    }
-                }
-                catch (BadSqlGrammarException e)
-                {
-                    // ignore and carry on
-                }
+  public void setRecordsManagementAdminService(
+    RecordsManagementAdminServiceImpl recordsManagementAdminService
+  ) {
+    this.recordsManagementAdminService = recordsManagementAdminService;
+  }
 
-                return null;
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
+
+  public void setRepository(Repository repository) {
+    this.repository = repository;
+  }
+
+  @Override
+  public void setBeanName(String name) {
+    this.name = name;
+  }
+
+  public void setOrder(int order) {
+    this.order = order;
+  }
+
+  @Override
+  public void onApplicationEvent(ContextRefreshedEvent event) {
+    // call back to show whether the custom map is initialised or not
+    RM3314Test.callback.put(
+      name,
+      recordsManagementAdminService.isCustomMapInit()
+    );
+
+    // Do some work on a node to show that reguardless of whether the custom map is
+    // init or not, things still work.
+    // Note: using public services to ensure new transaction for each service call
+    AuthenticationUtil.runAsSystem(
+      new RunAsWork<Void>() {
+        public Void doWork() throws Exception {
+          try {
+            NodeRef companyHome = repository.getCompanyHome();
+
+            if (fileFolderService.searchSimple(companyHome, name) == null) {
+              // create node
+              NodeRef folder = fileFolderService
+                .create(
+                  repository.getCompanyHome(),
+                  name,
+                  ContentModel.TYPE_FOLDER
+                )
+                .getNodeRef();
+              try {
+                // add aspect
+                nodeService.addAspect(
+                  folder,
+                  ContentModel.ASPECT_CLASSIFIABLE,
+                  null
+                );
+
+                // remove aspect
+                nodeService.removeAspect(
+                  folder,
+                  ContentModel.ASPECT_CLASSIFIABLE
+                );
+              } finally {
+                // delete node
+                nodeService.deleteNode(folder);
+              }
             }
-        });
-    }
+          } catch (BadSqlGrammarException e) {
+            // ignore and carry on
+          }
 
-    @Override
-    public int getOrder()
-    {
-        return order;
-    }
+          return null;
+        }
+      }
+    );
+  }
+
+  @Override
+  public int getOrder() {
+    return order;
+  }
 }

@@ -2,9 +2,9 @@ package org.alfresco.rest.nodes;
 
 import static org.junit.Assert.assertEquals;
 
+import io.restassured.RestAssured;
 import javax.json.Json;
 import javax.json.JsonObject;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
@@ -26,104 +26,135 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.Test;
 
-import io.restassured.RestAssured;
-
 /**
  * Handles tests related to api-explorer/#!/nodes
  */
-public class NodesTests extends RestTest
-{
-    @TestRail(section = { TestGroup.REST_API,TestGroup.NODES }, executionType = ExecutionType.SANITY,
-            description = "Verify files can be moved from one folder to another")
-    @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY}) 
-    public void testMoveFile() throws Exception
-    {
-        restClient.authenticateUser(dataContent.getAdminUser());
+public class NodesTests extends RestTest {
 
-        /*
-         * Create the following file structure for preconditions : 
-         *   - sourceFolder
-         *     - file
-         *   - destinationFolder
-         */
-        NodesBuilder nodesBuilder = restClient.withCoreAPI().usingNode(ContentModel.my()).defineNodes();
-        NodeDetail sourceFolder = nodesBuilder.folder("sourceFolder");
-        NodeDetail file = sourceFolder.file("file");
-        NodeDetail destinationFolder = nodesBuilder.folder("destinationFolder");
+  @TestRail(
+    section = { TestGroup.REST_API, TestGroup.NODES },
+    executionType = ExecutionType.SANITY,
+    description = "Verify files can be moved from one folder to another"
+  )
+  @Test(groups = { TestGroup.REST_API, TestGroup.NODES, TestGroup.SANITY })
+  public void testMoveFile() throws Exception {
+    restClient.authenticateUser(dataContent.getAdminUser());
 
-        // Move file from sourceFolder to destinationFolder
-        RestNodeBodyMoveCopyModel moveDestinationInfo = new RestNodeBodyMoveCopyModel();
-        moveDestinationInfo.setTargetParentId(destinationFolder.getId());
+    /*
+     * Create the following file structure for preconditions :
+     *   - sourceFolder
+     *     - file
+     *   - destinationFolder
+     */
+    NodesBuilder nodesBuilder = restClient
+      .withCoreAPI()
+      .usingNode(ContentModel.my())
+      .defineNodes();
+    NodeDetail sourceFolder = nodesBuilder.folder("sourceFolder");
+    NodeDetail file = sourceFolder.file("file");
+    NodeDetail destinationFolder = nodesBuilder.folder("destinationFolder");
 
-        ContentModel fileToMove = new ContentModel();
-        fileToMove.setNodeRef(file.getId());
+    // Move file from sourceFolder to destinationFolder
+    RestNodeBodyMoveCopyModel moveDestinationInfo = new RestNodeBodyMoveCopyModel();
+    moveDestinationInfo.setTargetParentId(destinationFolder.getId());
 
-        RestNodeModel response = restClient.withParams("autoRename=true").withCoreAPI().usingNode(fileToMove).move(moveDestinationInfo);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
+    ContentModel fileToMove = new ContentModel();
+    fileToMove.setNodeRef(file.getId());
 
-        /*
-         *  Check file's parent has changed to destinationFolder
-         *   - sourceFolder
-         *   - destinationFolder
-         *     - file
-         */
-        response.assertThat().field("parentId").is(destinationFolder.getId());
-    }
+    RestNodeModel response = restClient
+      .withParams("autoRename=true")
+      .withCoreAPI()
+      .usingNode(fileToMove)
+      .move(moveDestinationInfo);
+    restClient.assertStatusCodeIs(HttpStatus.OK);
 
-    @TestRail(section = { TestGroup.SANITY },
-        executionType = ExecutionType.SANITY,
-        description = "Verify 403 is received for files where the user lacks permissions.")
-    @Test(groups = {TestGroup.SANITY})
-    public void siteConsumerWillGet403OnFileWithDisabledInherittedPermissions() throws Exception
-    {
-        // https://issues.alfresco.com/jira/browse/REPO-4859
+    /*
+     *  Check file's parent has changed to destinationFolder
+     *   - sourceFolder
+     *   - destinationFolder
+     *     - file
+     */
+    response.assertThat().field("parentId").is(destinationFolder.getId());
+  }
 
-        // Authenticate as admin to fulfill the preconditions
-        UserModel adminUser = dataContent.getAdminUser();
-        RestWrapper restWrapper = this.restClient.authenticateUser(adminUser);
+  @TestRail(
+    section = { TestGroup.SANITY },
+    executionType = ExecutionType.SANITY,
+    description = "Verify 403 is received for files where the user lacks permissions."
+  )
+  @Test(groups = { TestGroup.SANITY })
+  public void siteConsumerWillGet403OnFileWithDisabledInherittedPermissions()
+    throws Exception {
+    // https://issues.alfresco.com/jira/browse/REPO-4859
 
-        // Create the file using CMIS
-        testSite = dataSite.createPublicRandomSite();
-        FileModel file = dataContent
-            .usingUser(adminUser)
-            .usingSite(testSite)
-            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+    // Authenticate as admin to fulfill the preconditions
+    UserModel adminUser = dataContent.getAdminUser();
+    RestWrapper restWrapper = this.restClient.authenticateUser(adminUser);
 
-        // Add a consumer user via CMIS
-        DataUser.ListUserWithRoles listUserWithRoles = dataUser.usingUser(adminUser)
-            .addUsersWithRolesToSite(testSite, UserRole.SiteConsumer);
+    // Create the file using CMIS
+    testSite = dataSite.createPublicRandomSite();
+    FileModel file = dataContent
+      .usingUser(adminUser)
+      .usingSite(testSite)
+      .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
-        // Disable the permission inheritance
-        JsonObject activateModelJson = Json.createObjectBuilder().add("permissions",
-            Json.createObjectBuilder().add("isInheritanceEnabled", false))
-            .build();
+    // Add a consumer user via CMIS
+    DataUser.ListUserWithRoles listUserWithRoles = dataUser
+      .usingUser(adminUser)
+      .addUsersWithRolesToSite(testSite, UserRole.SiteConsumer);
 
-        restWrapper.withCoreAPI().usingNode(file).updateNode(activateModelJson.toString());
-        restWrapper.assertStatusCodeIs(HttpStatus.OK);
+    // Disable the permission inheritance
+    JsonObject activateModelJson = Json
+      .createObjectBuilder()
+      .add(
+        "permissions",
+        Json.createObjectBuilder().add("isInheritanceEnabled", false)
+      )
+      .build();
 
-        // Authenticate as the consumer user
-        UserModel consumerUser = listUserWithRoles.getOneUserWithRole(UserRole.SiteConsumer);
+    restWrapper
+      .withCoreAPI()
+      .usingNode(file)
+      .updateNode(activateModelJson.toString());
+    restWrapper.assertStatusCodeIs(HttpStatus.OK);
 
-        // Assert the consumer gets a 403 VIA REST Call
-        RestResponse restApiResponse = restClient.authenticateUser(consumerUser).withCoreAPI()
-            .usingNode(file).getNodeContent();
+    // Authenticate as the consumer user
+    UserModel consumerUser = listUserWithRoles.getOneUserWithRole(
+      UserRole.SiteConsumer
+    );
 
-        int restApiStatusCode = restApiResponse.getResponse().getStatusCode();
-        logger.info("REST API call response status code is: " + restApiStatusCode);
-        assertEquals(HttpStatus.FORBIDDEN.value(), restApiStatusCode);
+    // Assert the consumer gets a 403 VIA REST Call
+    RestResponse restApiResponse = restClient
+      .authenticateUser(consumerUser)
+      .withCoreAPI()
+      .usingNode(file)
+      .getNodeContent();
 
-        // Assert the consumer gets a 403 VIA CMIS API
-        // Implement the CMIS call as it is not supported under .withCMISApi()
-        // This is done similar to {@link IntegrationWithCmisTests#verifyGetChildrenReturnsUniqueValues}
-        RestAssured.basePath = "alfresco/api/-default-/public/cmis/versions/1.1/browser";
-        restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
+    int restApiStatusCode = restApiResponse.getResponse().getStatusCode();
+    logger.info("REST API call response status code is: " + restApiStatusCode);
+    assertEquals(HttpStatus.FORBIDDEN.value(), restApiStatusCode);
 
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET,
-            "/root/Sites/" + testSite.getTitle() + "/documentLibrary/" + file.getName() + "?cmisselector=object&succinct=true");
-        RestResponse cmisApiResponse = restWrapper.authenticateUser(consumerUser).process(request);
+    // Assert the consumer gets a 403 VIA CMIS API
+    // Implement the CMIS call as it is not supported under .withCMISApi()
+    // This is done similar to {@link IntegrationWithCmisTests#verifyGetChildrenReturnsUniqueValues}
+    RestAssured.basePath =
+      "alfresco/api/-default-/public/cmis/versions/1.1/browser";
+    restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
 
-        int cmisApiStatusCode = cmisApiResponse.getResponse().getStatusCode();
-        logger.info("CMIS API call response status code is: " + cmisApiStatusCode);
-        assertEquals(HttpStatus.FORBIDDEN.value(), cmisApiStatusCode);
-    }
+    RestRequest request = RestRequest.simpleRequest(
+      HttpMethod.GET,
+      "/root/Sites/" +
+      testSite.getTitle() +
+      "/documentLibrary/" +
+      file.getName() +
+      "?cmisselector=object&succinct=true"
+    );
+    RestResponse cmisApiResponse = restWrapper
+      .authenticateUser(consumerUser)
+      .process(request);
+
+    int cmisApiStatusCode = cmisApiResponse.getResponse().getStatusCode();
+    logger.info("CMIS API call response status code is: " + cmisApiStatusCode);
+    assertEquals(HttpStatus.FORBIDDEN.value(), cmisApiStatusCode);
+  }
 }

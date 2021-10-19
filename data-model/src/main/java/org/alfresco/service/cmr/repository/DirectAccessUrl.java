@@ -28,60 +28,56 @@ package org.alfresco.service.cmr.repository;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Objects;
-
 import org.alfresco.api.AlfrescoPublicApi;
 
 @AlfrescoPublicApi
-public class DirectAccessUrl implements Serializable
-{
-    private static final long serialVersionUID = -881676208224414139L;
+public class DirectAccessUrl implements Serializable {
 
-    private String contentUrl;
-    private Date expiryTime;
-    private boolean attachment;
+  private static final long serialVersionUID = -881676208224414139L;
 
-    public String getContentUrl()
-    {
-        return contentUrl;
-    }
+  private String contentUrl;
+  private Date expiryTime;
+  private boolean attachment;
 
-    public void setContentUrl(String contentUrl)
-    {
-        this.contentUrl = contentUrl;
-    }
+  public String getContentUrl() {
+    return contentUrl;
+  }
 
-    public Date getExpiryTime()
-    {
-        return expiryTime;
-    }
+  public void setContentUrl(String contentUrl) {
+    this.contentUrl = contentUrl;
+  }
 
-    public void setExpiryTime(Date expiryTime)
-    {
-        this.expiryTime = expiryTime;
-    }
+  public Date getExpiryTime() {
+    return expiryTime;
+  }
 
-    public boolean isAttachment()
-    {
-        return attachment;
-    }
+  public void setExpiryTime(Date expiryTime) {
+    this.expiryTime = expiryTime;
+  }
 
-    public void setAttachment(boolean attachment)
-    {
-        this.attachment = attachment;
-    }
+  public boolean isAttachment() {
+    return attachment;
+  }
 
-    @Override public boolean equals(Object obj)
-    {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+  public void setAttachment(boolean attachment) {
+    this.attachment = attachment;
+  }
 
-        DirectAccessUrl that = (DirectAccessUrl) obj;
-        return attachment == that.attachment && Objects.equals(contentUrl,
-                that.contentUrl) && Objects.equals(expiryTime, that.expiryTime);
-    }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
 
-    @Override public int hashCode()
-    {
-        return Objects.hash(contentUrl, expiryTime, attachment);
-    }
+    DirectAccessUrl that = (DirectAccessUrl) obj;
+    return (
+      attachment == that.attachment &&
+      Objects.equals(contentUrl, that.contentUrl) &&
+      Objects.equals(expiryTime, that.expiryTime)
+    );
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(contentUrl, expiryTime, attachment);
+  }
 }

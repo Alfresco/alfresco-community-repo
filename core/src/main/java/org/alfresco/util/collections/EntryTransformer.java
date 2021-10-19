@@ -20,7 +20,6 @@
 package org.alfresco.util.collections;
 
 import java.util.Map.Entry;
-
 import org.alfresco.util.Pair;
 
 /**
@@ -28,7 +27,7 @@ import org.alfresco.util.Pair;
  * @since 4.0
  *
  */
-public interface EntryTransformer<FK, FV, TK, TV> extends Function<Entry<FK, FV>, Pair<TK, TV>>
-{
-    //NOOP
+public interface EntryTransformer<FK, FV, TK, TV>
+  extends Function<Entry<FK, FV>, Pair<TK, TV>> {
+  //NOOP
 }

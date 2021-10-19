@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.jscript;
 
 import java.util.Collections;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementServiceRegistry;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -45,43 +44,47 @@ import org.mozilla.javascript.Scriptable;
  *
  * @author Roy Wetherall
  */
-public class ScriptRecordsManagmentNode extends ScriptNode
-{
-    private static final long serialVersionUID = 8872385533440938353L;
+public class ScriptRecordsManagmentNode extends ScriptNode {
 
-    private RecordsManagementServiceRegistry rmServices;
+  private static final long serialVersionUID = 8872385533440938353L;
 
-    public ScriptRecordsManagmentNode(NodeRef nodeRef, RecordsManagementServiceRegistry services, Scriptable scope)
-    {
-        super(nodeRef, services, scope);
-        rmServices = services;
-    }
+  private RecordsManagementServiceRegistry rmServices;
 
-    public ScriptRecordsManagmentNode(NodeRef nodeRef, RecordsManagementServiceRegistry services)
-    {
-        super(nodeRef, services);
-        rmServices = services;
-    }
+  public ScriptRecordsManagmentNode(
+    NodeRef nodeRef,
+    RecordsManagementServiceRegistry services,
+    Scriptable scope
+  ) {
+    super(nodeRef, services, scope);
+    rmServices = services;
+  }
 
-    public boolean hasCapability(String capabilityName)
-    {
-        boolean result = false;
+  public ScriptRecordsManagmentNode(
+    NodeRef nodeRef,
+    RecordsManagementServiceRegistry services
+  ) {
+    super(nodeRef, services);
+    rmServices = services;
+  }
 
-        CapabilityService capabilityService = (CapabilityService)rmServices.getCapabilityService();
-        Capability capability = capabilityService.getCapability(capabilityName);
-        if (capability != null)
-        {
-            Map<Capability, AccessStatus> map = capabilityService.getCapabilitiesAccessState(nodeRef, Collections.singletonList(capabilityName));
-            if (map.containsKey(capability))
-            {
-                AccessStatus accessStatus = map.get(capability);
-                if (!accessStatus.equals(AccessStatus.DENIED))
-                {
-                    result = true;
-                }
-            }
+  public boolean hasCapability(String capabilityName) {
+    boolean result = false;
+
+    CapabilityService capabilityService = (CapabilityService) rmServices.getCapabilityService();
+    Capability capability = capabilityService.getCapability(capabilityName);
+    if (capability != null) {
+      Map<Capability, AccessStatus> map = capabilityService.getCapabilitiesAccessState(
+        nodeRef,
+        Collections.singletonList(capabilityName)
+      );
+      if (map.containsKey(capability)) {
+        AccessStatus accessStatus = map.get(capability);
+        if (!accessStatus.equals(AccessStatus.DENIED)) {
+          result = true;
         }
-
-        return result;
+      }
     }
+
+    return result;
+  }
 }

@@ -25,19 +25,6 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.heartbeat.datasender.HBData;
-import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
-import org.alfresco.repo.deployment.DeploymentMethodProvider;
-import org.alfresco.repo.descriptor.DescriptorDAO;
-import org.alfresco.service.descriptor.Descriptor;
-import org.alfresco.util.PropertyCheck;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.web.context.ServletContextAware;
-
-import javax.servlet.ServletContext;
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -49,6 +36,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
+import javax.servlet.ServletContext;
+import javax.sql.DataSource;
+import org.alfresco.heartbeat.datasender.HBData;
+import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
+import org.alfresco.repo.deployment.DeploymentMethodProvider;
+import org.alfresco.repo.descriptor.DescriptorDAO;
+import org.alfresco.service.descriptor.Descriptor;
+import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.web.context.ServletContextAware;
 
 /**
  * A collector of data related to the meta-data for the Alfresco stack.
@@ -91,131 +90,150 @@ import java.util.TimeZone;
  *  </li>
  * </ul>
  */
-public class InfoDataCollector extends HBBaseDataCollector implements InitializingBean,
-        ServletContextAware
-{
-    /** The logger. */
-    private static final Log logger = LogFactory.getLog(InfoDataCollector.class);
+public class InfoDataCollector
+  extends HBBaseDataCollector
+  implements InitializingBean, ServletContextAware {
 
-    /** DAO for current repository descriptor. */
-    private DescriptorDAO currentRepoDescriptorDAO;
+  /** The logger. */
+  private static final Log logger = LogFactory.getLog(InfoDataCollector.class);
 
-    /** DAO for current descriptor. */
-    private DescriptorDAO serverDescriptorDAO;
+  /** DAO for current repository descriptor. */
+  private DescriptorDAO currentRepoDescriptorDAO;
 
-    private DeploymentMethodProvider deploymentMethodProvider;
+  /** DAO for current descriptor. */
+  private DescriptorDAO serverDescriptorDAO;
 
-    private DataSource dataSource;
+  private DeploymentMethodProvider deploymentMethodProvider;
 
-    private ServletContext servletContext;
+  private DataSource dataSource;
 
-    public InfoDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                             HeartBeatJobScheduler hbJobScheduler)
-    {
-        super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
+  private ServletContext servletContext;
+
+  public InfoDataCollector(
+    String collectorId,
+    String collectorVersion,
+    String cronExpression,
+    HeartBeatJobScheduler hbJobScheduler
+  ) {
+    super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
+  }
+
+  public void setCurrentRepoDescriptorDAO(
+    DescriptorDAO currentRepoDescriptorDAO
+  ) {
+    this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
+  }
+
+  public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO) {
+    this.serverDescriptorDAO = serverDescriptorDAO;
+  }
+
+  public void setDeploymentMethodProvider(
+    DeploymentMethodProvider deploymentMethodProvider
+  ) {
+    this.deploymentMethodProvider = deploymentMethodProvider;
+  }
+
+  public void setDataSource(DataSource dataSource) {
+    this.dataSource = dataSource;
+  }
+
+  @Override
+  public void setServletContext(ServletContext servletContext) {
+    this.servletContext = servletContext;
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    PropertyCheck.mandatory(this, "serverDescriptorDAO", serverDescriptorDAO);
+    PropertyCheck.mandatory(
+      this,
+      "currentRepoDescriptorDAO",
+      currentRepoDescriptorDAO
+    );
+    PropertyCheck.mandatory(
+      this,
+      "deploymentMethodProvider",
+      deploymentMethodProvider
+    );
+    PropertyCheck.mandatory(this, "dataSource", dataSource);
+  }
+
+  @Override
+  public List<HBData> collectData() {
+    logger.debug("Preparing repository info data...");
+
+    final Descriptor serverDescriptor =
+      this.serverDescriptorDAO.getDescriptor();
+
+    Map<String, Object> infoValues = new HashMap<>();
+    infoValues.put("repoName", serverDescriptor.getName());
+
+    Map<String, Object> version = new HashMap<>();
+    version.put("full", serverDescriptor.getVersion());
+    version.put(
+      "servicePack",
+      serverDescriptor.getVersionMajor() +
+      "." +
+      serverDescriptor.getVersionMinor()
+    );
+    version.put("major", serverDescriptor.getVersionMajor());
+    version.put("minor", serverDescriptor.getVersionMinor());
+    version.put("patch", serverDescriptor.getVersionRevision());
+    version.put("build", serverDescriptor.getVersionBuild());
+
+    String hotfix = serverDescriptor.getVersionLabel();
+    if (hotfix != null && hotfix.length() > 0) {
+      version.put(
+        "hotfix",
+        hotfix.startsWith(".") ? hotfix.substring(1) : hotfix
+      );
+    }
+    infoValues.put("version", version);
+    infoValues.put("schema", new Integer(serverDescriptor.getSchema()));
+    infoValues.put("edition", serverDescriptor.getEdition());
+    infoValues.put(
+      "deploymentMethod",
+      deploymentMethodProvider.getDeploymentMethod().toString()
+    );
+
+    infoValues.put("osVendor", System.getProperty("os.name"));
+    infoValues.put("osVersion", System.getProperty("os.version"));
+    infoValues.put("osArch", System.getProperty("os.arch"));
+    infoValues.put("javaVendor", System.getProperty("java.vendor"));
+    infoValues.put("javaVersion", System.getProperty("java.version"));
+
+    infoValues.put("userLanguage", Locale.getDefault().getLanguage());
+    infoValues.put("userTimezone", TimeZone.getDefault().getID());
+    infoValues.put(
+      "userUTCOffset",
+      OffsetDateTime.now().getOffset().getId().replaceAll("Z", "+00.00")
+    );
+
+    if (servletContext != null) {
+      infoValues.put("serverInfo", servletContext.getServerInfo());
+    } else infoValues.put("serverInfo", null);
+
+    try (Connection con = dataSource.getConnection()) {
+      DatabaseMetaData dbmeta = con.getMetaData();
+      Map<String, Object> db = new HashMap<>();
+      db.put("vendor", dbmeta.getDatabaseProductName());
+      db.put("version", dbmeta.getDatabaseProductVersion());
+      db.put("driverName", dbmeta.getDriverName());
+      db.put("driverVersion", dbmeta.getDriverVersion());
+      infoValues.put("db", db);
+    } catch (SQLException e) {
+      // No need to log exception if the data cannot be retrieved
     }
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
-        this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
-    }
+    HBData infoData = new HBData(
+      this.currentRepoDescriptorDAO.getDescriptor().getId(),
+      this.getCollectorId(),
+      this.getCollectorVersion(),
+      new Date(),
+      infoValues
+    );
 
-    public void setServerDescriptorDAO(DescriptorDAO serverDescriptorDAO)
-    {
-        this.serverDescriptorDAO = serverDescriptorDAO;
-    }
-
-    public void setDeploymentMethodProvider(DeploymentMethodProvider deploymentMethodProvider)
-    {
-        this.deploymentMethodProvider = deploymentMethodProvider;
-    }
-
-    public void setDataSource(DataSource dataSource)
-    {
-        this.dataSource = dataSource;
-    }
-
-    @Override public void setServletContext(ServletContext servletContext)
-    {
-        this.servletContext = servletContext;
-    }
-    
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "serverDescriptorDAO", serverDescriptorDAO);
-        PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
-        PropertyCheck.mandatory(this, "deploymentMethodProvider", deploymentMethodProvider);
-        PropertyCheck.mandatory(this, "dataSource", dataSource);
-    }
-
-    @Override
-    public List<HBData> collectData()
-    {
-        logger.debug("Preparing repository info data...");
-
-        final Descriptor serverDescriptor = this.serverDescriptorDAO.getDescriptor();
-
-        Map<String, Object> infoValues = new HashMap<>();
-        infoValues.put("repoName", serverDescriptor.getName());
-
-        Map<String, Object> version = new HashMap<>();
-        version.put("full", serverDescriptor.getVersion());
-        version.put("servicePack", serverDescriptor.getVersionMajor() + "." + serverDescriptor.getVersionMinor());
-        version.put("major", serverDescriptor.getVersionMajor());
-        version.put("minor", serverDescriptor.getVersionMinor());
-        version.put("patch", serverDescriptor.getVersionRevision());
-        version.put("build", serverDescriptor.getVersionBuild());
-
-        String hotfix = serverDescriptor.getVersionLabel();
-        if (hotfix != null && hotfix.length() > 0)
-        {
-            version.put("hotfix", hotfix.startsWith(".") ? hotfix.substring(1) : hotfix);
-        }
-        infoValues.put("version", version);
-        infoValues.put("schema", new Integer(serverDescriptor.getSchema()));
-        infoValues.put("edition", serverDescriptor.getEdition());
-        infoValues.put("deploymentMethod", deploymentMethodProvider.getDeploymentMethod().toString());
-
-        infoValues.put("osVendor", System.getProperty("os.name"));
-        infoValues.put("osVersion", System.getProperty("os.version"));
-        infoValues.put("osArch", System.getProperty("os.arch"));
-        infoValues.put("javaVendor", System.getProperty("java.vendor"));
-        infoValues.put("javaVersion", System.getProperty("java.version"));
-
-        infoValues.put("userLanguage", Locale.getDefault().getLanguage());
-        infoValues.put("userTimezone", TimeZone.getDefault().getID());
-        infoValues.put("userUTCOffset", OffsetDateTime.now().getOffset().getId().replaceAll("Z","+00.00"));
-
-        if(servletContext != null)
-        {
-            infoValues.put("serverInfo", servletContext.getServerInfo());
-        }
-        else
-            infoValues.put("serverInfo", null);
-                
-        try (Connection con = dataSource.getConnection())
-        {
-            DatabaseMetaData dbmeta = con.getMetaData();
-            Map<String, Object> db = new HashMap<>();
-            db.put("vendor", dbmeta.getDatabaseProductName());
-            db.put("version", dbmeta.getDatabaseProductVersion());
-            db.put("driverName", dbmeta.getDriverName());
-            db.put("driverVersion", dbmeta.getDriverVersion());
-            infoValues.put("db", db); 
-        }
-        catch (SQLException e)
-        {
-            // No need to log exception if the data cannot be retrieved
-        }
-                                
-        HBData infoData = new HBData(
-                this.currentRepoDescriptorDAO.getDescriptor().getId(),
-                this.getCollectorId(),
-                this.getCollectorVersion(),
-                new Date(),
-                infoValues);
-
-        return Arrays.asList(infoData);
-    }
+    return Arrays.asList(infoData);
+  }
 }

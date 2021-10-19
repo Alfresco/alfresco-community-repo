@@ -37,33 +37,38 @@ import org.springframework.stereotype.Component;
  * @author sglover
  */
 @Component
-public class RepoNodeEventsRouteBuilder extends RouteBuilder
-{
-    private static Log logger = LogFactory.getLog(RepoNodeEventsRouteBuilder.class);
+public class RepoNodeEventsRouteBuilder extends RouteBuilder {
 
-    private static final String DEFAULT_SOURCE = "direct-vm:alfresco.events";
-    private static final String DEFAULT_TARGET = "amqp:topic:alfresco.repo.events?jmsMessageType=Text";
+  private static Log logger = LogFactory.getLog(
+    RepoNodeEventsRouteBuilder.class
+  );
 
-    @Value("${messaging.events.repo.node.sourceQueue.endpoint:" + DEFAULT_SOURCE + "}")
-    public String sourceQueue;
+  private static final String DEFAULT_SOURCE = "direct-vm:alfresco.events";
+  private static final String DEFAULT_TARGET =
+    "amqp:topic:alfresco.repo.events?jmsMessageType=Text";
 
-    @Value("${messaging.events.repo.node.targetTopic.endpoint:" + DEFAULT_TARGET + "}")
-    public String targetTopic;
+  @Value(
+    "${messaging.events.repo.node.sourceQueue.endpoint:" + DEFAULT_SOURCE + "}"
+  )
+  public String sourceQueue;
 
-    @Override
-    public void configure() throws Exception
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Repo node events routes config: ");
-            logger.debug("SourceQueue is "+sourceQueue);
-            logger.debug("targetTopic is "+targetTopic);
-        }
+  @Value(
+    "${messaging.events.repo.node.targetTopic.endpoint:" + DEFAULT_TARGET + "}"
+  )
+  public String targetTopic;
 
-        from(sourceQueue)
-            .routeId("alfresco.events -> topic:alfresco.repo.events")
-            .marshal("defaultDataFormat")
-            .to(targetTopic)
-            .end();
+  @Override
+  public void configure() throws Exception {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Repo node events routes config: ");
+      logger.debug("SourceQueue is " + sourceQueue);
+      logger.debug("targetTopic is " + targetTopic);
     }
+
+    from(sourceQueue)
+      .routeId("alfresco.events -> topic:alfresco.repo.events")
+      .marshal("defaultDataFormat")
+      .to(targetTopic)
+      .end();
+  }
 }

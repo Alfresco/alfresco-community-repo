@@ -27,80 +27,73 @@
 package org.alfresco.module.org_alfresco_module_rm.disposition;
 
 import java.util.Date;
-
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionServiceImpl.WriteMode;
 import org.alfresco.service.cmr.repository.NodeRef;
 
-public class NextActionFromDisposition
-{
-    public NextActionFromDisposition(NodeRef dispositionNodeRef, NodeRef nextActionNodeRef, String nextActionName, Date nextActionDateAsOf,
-            WriteMode writeMode)
-    {
-        super();
-        this.dispositionNodeRef = dispositionNodeRef;
-        this.nextActionNodeRef = nextActionNodeRef;
-        this.nextActionName = nextActionName;
-        this.nextActionDateAsOf = nextActionDateAsOf;
-        this.writeMode = writeMode;
-    }
+public class NextActionFromDisposition {
 
-    private NodeRef dispositionNodeRef;
+  public NextActionFromDisposition(
+    NodeRef dispositionNodeRef,
+    NodeRef nextActionNodeRef,
+    String nextActionName,
+    Date nextActionDateAsOf,
+    WriteMode writeMode
+  ) {
+    super();
+    this.dispositionNodeRef = dispositionNodeRef;
+    this.nextActionNodeRef = nextActionNodeRef;
+    this.nextActionName = nextActionName;
+    this.nextActionDateAsOf = nextActionDateAsOf;
+    this.writeMode = writeMode;
+  }
 
-    private NodeRef nextActionNodeRef;
+  private NodeRef dispositionNodeRef;
 
-    private String nextActionName;
+  private NodeRef nextActionNodeRef;
 
-    private Date nextActionDateAsOf;
+  private String nextActionName;
 
-    private WriteMode writeMode;
+  private Date nextActionDateAsOf;
 
-    public WriteMode getWriteMode()
-    {
-        return writeMode;
-    }
+  private WriteMode writeMode;
 
-    public void setWriteMode(WriteMode writeMode)
-    {
-        this.writeMode = writeMode;
-    }
+  public WriteMode getWriteMode() {
+    return writeMode;
+  }
 
-    public NodeRef getNextActionNodeRef()
-    {
-        return nextActionNodeRef;
-    }
+  public void setWriteMode(WriteMode writeMode) {
+    this.writeMode = writeMode;
+  }
 
-    public void setNextActionNodeRef(NodeRef nextActionNodeRef)
-    {
-        this.nextActionNodeRef = nextActionNodeRef;
-    }
+  public NodeRef getNextActionNodeRef() {
+    return nextActionNodeRef;
+  }
 
-    public NodeRef getDispositionNodeRef()
-    {
-        return dispositionNodeRef;
-    }
+  public void setNextActionNodeRef(NodeRef nextActionNodeRef) {
+    this.nextActionNodeRef = nextActionNodeRef;
+  }
 
-    public void setDispositionNodeRef(NodeRef dispositionNodeRef)
-    {
-        this.dispositionNodeRef = dispositionNodeRef;
-    }
+  public NodeRef getDispositionNodeRef() {
+    return dispositionNodeRef;
+  }
 
-    public String getNextActionName()
-    {
-        return nextActionName;
-    }
+  public void setDispositionNodeRef(NodeRef dispositionNodeRef) {
+    this.dispositionNodeRef = dispositionNodeRef;
+  }
 
-    public void setNextActionName(String nextActionName)
-    {
-        this.nextActionName = nextActionName;
-    }
+  public String getNextActionName() {
+    return nextActionName;
+  }
 
-    public Date getNextActionDateAsOf()
-    {
-        return nextActionDateAsOf;
-    }
+  public void setNextActionName(String nextActionName) {
+    this.nextActionName = nextActionName;
+  }
 
-    public void setNextActionDateAsOf(Date nextActionDateAsOf)
-    {
-        this.nextActionDateAsOf = nextActionDateAsOf;
-    }
+  public Date getNextActionDateAsOf() {
+    return nextActionDateAsOf;
+  }
+
+  public void setNextActionDateAsOf(Date nextActionDateAsOf) {
+    this.nextActionDateAsOf = nextActionDateAsOf;
+  }
 }

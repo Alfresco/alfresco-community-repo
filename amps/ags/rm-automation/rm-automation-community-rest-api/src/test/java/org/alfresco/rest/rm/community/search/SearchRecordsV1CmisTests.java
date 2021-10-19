@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.search;
 
 import static java.util.Arrays.asList;
-
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -57,9 +56,11 @@ import org.testng.annotations.Test;
 /**
  * This class contains the tests for v1 Search API  with records with CMIS query
  */
-public class SearchRecordsV1CmisTests extends BaseRMRestTest
-{
-    private static final String SEARCH_TERM = generateTestPrefix(SearchRecordsV1CmisTests.class);
+public class SearchRecordsV1CmisTests extends BaseRMRestTest {
+
+    private static final String SEARCH_TERM = generateTestPrefix(
+        SearchRecordsV1CmisTests.class
+    );
     private SiteModel collaborationSite;
     private UserModel nonRMUser, rmUser;
     private FileModel fileModel;
@@ -74,49 +75,82 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
     /**
      * Create a collaboration site and some in place records.
      */
-    @BeforeClass (alwaysRun = true)
-    public void setupSearchRecordsV1Cmis() throws Exception
-    {
+    @BeforeClass(alwaysRun = true)
+    public void setupSearchRecordsV1Cmis() throws Exception {
         STEP("Create a collaboration site");
         collaborationSite = dataSite.usingAdmin().createPrivateRandomSite();
 
         STEP("Create a site manager user for the collaboration site");
         nonRMUser = getDataUser().createRandomTestUser();
-        getDataUser().addUserToSite(nonRMUser, collaborationSite, UserRole.SiteManager);
+        getDataUser()
+            .addUserToSite(nonRMUser, collaborationSite, UserRole.SiteManager);
 
         STEP("Create an rm user");
         rmUser = getDataUser().createRandomTestUser();
 
         STEP("Create 10 documents and declare as records");
-        for (int i = 0; ++i <= 10; )
-        {
-            fileModel = new FileModel(String.format("%s.%s", "Record" + SEARCH_TERM + i, FileType.TEXT_PLAIN.extension));
-            fileModel = dataContent.usingUser(nonRMUser).usingSite(collaborationSite).createContent(fileModel);
-            getRestAPIFactory().getFilesAPI(nonRMUser).declareAsRecord(fileModel.getNodeRefWithoutVersion());
+        for (int i = 0; ++i <= 10;) {
+            fileModel =
+                new FileModel(
+                    String.format(
+                        "%s.%s",
+                        "Record" + SEARCH_TERM + i,
+                        FileType.TEXT_PLAIN.extension
+                    )
+                );
+            fileModel =
+                dataContent
+                    .usingUser(nonRMUser)
+                    .usingSite(collaborationSite)
+                    .createContent(fileModel);
+            getRestAPIFactory()
+                .getFilesAPI(nonRMUser)
+                .declareAsRecord(fileModel.getNodeRefWithoutVersion());
         }
         STEP("Create record folder and some records ");
         RecordCategoryChild recordFolder = createCategoryFolderInFilePlan();
-        roleService.assignUserPermissionsOnCategoryAndRMRole(rmUser, recordFolder.getId(),
-                UserPermissions.PERMISSION_READ_RECORDS, ROLE_RM_MANAGER.roleId);
-        for (int i = 0; ++i <= 10; )
-        {
-            createElectronicRecord(recordFolder.getId(), "Record" + SEARCH_TERM + i);
+        roleService.assignUserPermissionsOnCategoryAndRMRole(
+            rmUser,
+            recordFolder.getId(),
+            UserPermissions.PERMISSION_READ_RECORDS,
+            ROLE_RM_MANAGER.roleId
+        );
+        for (int i = 0; ++i <= 10;) {
+            createElectronicRecord(
+                recordFolder.getId(),
+                "Record" + SEARCH_TERM + i
+            );
         }
 
         queryModel = new RestRequestQueryModel();
-        queryModel.setQuery("select * from cmis:document WHERE cmis:name LIKE 'Record" + SEARCH_TERM + "%'");
+        queryModel.setQuery(
+            "select * from cmis:document WHERE cmis:name LIKE 'Record" +
+            SEARCH_TERM +
+            "%'"
+        );
         queryModel.setLanguage("cmis");
 
         //wait for solr indexing
-        Utility.sleep(1000, 80000, () ->
-        {
-            SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                        .setPagingBuilder(new SearchRequestBuilder().setPagination(100, 0))
-                                                                        .setFieldsBuilder(asList("id", "name"));
-            SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(null).search(sqlRequest);
-            assertEquals(searchResponse.getPagination().getTotalItems().intValue(), 20,
-                    "Total number of items is not retrieved yet");
-        });
+        Utility.sleep(
+            1000,
+            80000,
+            () -> {
+                SearchRequestBuilder sqlRequest = new SearchRequestBuilder()
+                    .setQueryBuilder(queryModel)
+                    .setPagingBuilder(
+                        new SearchRequestBuilder().setPagination(100, 0)
+                    )
+                    .setFieldsBuilder(asList("id", "name"));
+                SearchResponse searchResponse = getRestAPIFactory()
+                    .getSearchAPI(null)
+                    .search(sqlRequest);
+                assertEquals(
+                    searchResponse.getPagination().getTotalItems().intValue(),
+                    20,
+                    "Total number of items is not retrieved yet"
+                );
+            }
+        );
     }
 
     /**
@@ -126,31 +160,65 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
      * Then hasMoreItems will be set to false
      */
     @Test
-    public void searchWhenTotalItemsReach()
-    {
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 15))
-                                                                          .setFieldsBuilder(asList("id", "name"));
+    public void searchWhenTotalItemsReach() {
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder()
+            .setQueryBuilder(queryModel)
+            .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 15))
+            .setFieldsBuilder(asList("id", "name"));
 
-        SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(rmUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 5, "Expected maxItems to be five");
-        assertEquals(searchResponse.getPagination().getSkipCount(), 15, "Expected skip count to be fifteen");
-        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
-        assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
+        SearchResponse searchResponse = getRestAPIFactory()
+            .getSearchAPI(rmUser)
+            .search(sqlRequest);
+        assertEquals(
+            searchResponse.getPagination().getCount(),
+            5,
+            "Expected maxItems to be five"
+        );
+        assertEquals(
+            searchResponse.getPagination().getSkipCount(),
+            15,
+            "Expected skip count to be fifteen"
+        );
+        assertFalse(
+            searchResponse.getPagination().isHasMoreItems(),
+            "Expected hasMoreItems to be false"
+        );
+        assertEquals(
+            searchResponse.getEntries().size(),
+            5,
+            "Expected total entries to be five"
+        );
     }
 
     @Test
-    public void searchWhenTotalItemsReachWithNonRM()
-    {
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 5))
-                                                                          .setFieldsBuilder(asList("id", "name"));
+    public void searchWhenTotalItemsReachWithNonRM() {
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder()
+            .setQueryBuilder(queryModel)
+            .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 5))
+            .setFieldsBuilder(asList("id", "name"));
 
-        SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(nonRMUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 5, "Expected maxItems to be five");
-        assertEquals(searchResponse.getPagination().getSkipCount(), 5, "Expected skip count to be five");
-        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
-        assertEquals(searchResponse.getEntries().size(), 5, "Expected total entries to be five");
+        SearchResponse searchResponse = getRestAPIFactory()
+            .getSearchAPI(nonRMUser)
+            .search(sqlRequest);
+        assertEquals(
+            searchResponse.getPagination().getCount(),
+            5,
+            "Expected maxItems to be five"
+        );
+        assertEquals(
+            searchResponse.getPagination().getSkipCount(),
+            5,
+            "Expected skip count to be five"
+        );
+        assertFalse(
+            searchResponse.getPagination().isHasMoreItems(),
+            "Expected hasMoreItems to be false"
+        );
+        assertEquals(
+            searchResponse.getEntries().size(),
+            5,
+            "Expected total entries to be five"
+        );
     }
 
     /**
@@ -160,31 +228,65 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
      * Then hasMoreItems will be set to false
      */
     @Test
-    public void searchWhenTotalItemsExceedRMUser()
-    {
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 16))
-                                                                          .setFieldsBuilder(asList("id", "name"));
+    public void searchWhenTotalItemsExceedRMUser() {
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder()
+            .setQueryBuilder(queryModel)
+            .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 16))
+            .setFieldsBuilder(asList("id", "name"));
 
-        SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(rmUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
-        assertEquals(searchResponse.getPagination().getSkipCount(), 16, "Expected skip count to be sixteen");
-        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
-        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+        SearchResponse searchResponse = getRestAPIFactory()
+            .getSearchAPI(rmUser)
+            .search(sqlRequest);
+        assertEquals(
+            searchResponse.getPagination().getCount(),
+            4,
+            "Expected maxItems to be four"
+        );
+        assertEquals(
+            searchResponse.getPagination().getSkipCount(),
+            16,
+            "Expected skip count to be sixteen"
+        );
+        assertFalse(
+            searchResponse.getPagination().isHasMoreItems(),
+            "Expected hasMoreItems to be false"
+        );
+        assertEquals(
+            searchResponse.getEntries().size(),
+            4,
+            "Expected total entries to be four"
+        );
     }
 
     @Test
-    public void searchWhenTotalItemsExceedNonRMUser()
-    {
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 6))
-                                                                          .setFieldsBuilder(asList("id", "name"));
+    public void searchWhenTotalItemsExceedNonRMUser() {
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder()
+            .setQueryBuilder(queryModel)
+            .setPagingBuilder(new SearchRequestBuilder().setPagination(5, 6))
+            .setFieldsBuilder(asList("id", "name"));
 
-        SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(nonRMUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
-        assertEquals(searchResponse.getPagination().getSkipCount(), 6, "Expected skip count to be six");
-        assertFalse(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be false");
-        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+        SearchResponse searchResponse = getRestAPIFactory()
+            .getSearchAPI(nonRMUser)
+            .search(sqlRequest);
+        assertEquals(
+            searchResponse.getPagination().getCount(),
+            4,
+            "Expected maxItems to be four"
+        );
+        assertEquals(
+            searchResponse.getPagination().getSkipCount(),
+            6,
+            "Expected skip count to be six"
+        );
+        assertFalse(
+            searchResponse.getPagination().isHasMoreItems(),
+            "Expected hasMoreItems to be false"
+        );
+        assertEquals(
+            searchResponse.getEntries().size(),
+            4,
+            "Expected total entries to be four"
+        );
     }
 
     /**
@@ -194,37 +296,73 @@ public class SearchRecordsV1CmisTests extends BaseRMRestTest
      * Then hasMoreItems will be set to true
      */
     @Test
-    public void searchResultsUnderTotalItemsRMUser()
-    {
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 15))
-                                                                          .setFieldsBuilder(asList("id", "name"));
+    public void searchResultsUnderTotalItemsRMUser() {
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder()
+            .setQueryBuilder(queryModel)
+            .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 15))
+            .setFieldsBuilder(asList("id", "name"));
 
-        SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(rmUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
-        assertEquals(searchResponse.getPagination().getSkipCount(), 15, "Expected skip count to be fifteen");
-        assertTrue(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be true");
-        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+        SearchResponse searchResponse = getRestAPIFactory()
+            .getSearchAPI(rmUser)
+            .search(sqlRequest);
+        assertEquals(
+            searchResponse.getPagination().getCount(),
+            4,
+            "Expected maxItems to be four"
+        );
+        assertEquals(
+            searchResponse.getPagination().getSkipCount(),
+            15,
+            "Expected skip count to be fifteen"
+        );
+        assertTrue(
+            searchResponse.getPagination().isHasMoreItems(),
+            "Expected hasMoreItems to be true"
+        );
+        assertEquals(
+            searchResponse.getEntries().size(),
+            4,
+            "Expected total entries to be four"
+        );
     }
 
     @Test
-    public void searchResultsUnderTotalItemsNonRMUser()
-    {
-        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder().setQueryBuilder(queryModel)
-                                                                          .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 5))
-                                                                          .setFieldsBuilder(asList("id", "name"));
+    public void searchResultsUnderTotalItemsNonRMUser() {
+        final SearchRequestBuilder sqlRequest = new SearchRequestBuilder()
+            .setQueryBuilder(queryModel)
+            .setPagingBuilder(new SearchRequestBuilder().setPagination(4, 5))
+            .setFieldsBuilder(asList("id", "name"));
 
-        SearchResponse searchResponse = getRestAPIFactory().getSearchAPI(nonRMUser).search(sqlRequest);
-        assertEquals(searchResponse.getPagination().getCount(), 4, "Expected maxItems to be four");
-        assertEquals(searchResponse.getPagination().getSkipCount(), 5, "Expected skip count to be five");
-        assertTrue(searchResponse.getPagination().isHasMoreItems(), "Expected hasMoreItems to be true");
-        assertEquals(searchResponse.getEntries().size(), 4, "Expected total entries to be four");
+        SearchResponse searchResponse = getRestAPIFactory()
+            .getSearchAPI(nonRMUser)
+            .search(sqlRequest);
+        assertEquals(
+            searchResponse.getPagination().getCount(),
+            4,
+            "Expected maxItems to be four"
+        );
+        assertEquals(
+            searchResponse.getPagination().getSkipCount(),
+            5,
+            "Expected skip count to be five"
+        );
+        assertTrue(
+            searchResponse.getPagination().isHasMoreItems(),
+            "Expected hasMoreItems to be true"
+        );
+        assertEquals(
+            searchResponse.getEntries().size(),
+            4,
+            "Expected total entries to be four"
+        );
     }
 
-    @AfterClass (alwaysRun = true)
-    public void tearDown()
-    {
+    @AfterClass(alwaysRun = true)
+    public void tearDown() {
         dataSite.usingAdmin().deleteSite(collaborationSite);
-        userTrashcanAPI.emptyTrashcan(getAdminUser().getUsername(), getAdminUser().getPassword());
+        userTrashcanAPI.emptyTrashcan(
+            getAdminUser().getUsername(),
+            getAdminUser().getPassword()
+        );
     }
 }

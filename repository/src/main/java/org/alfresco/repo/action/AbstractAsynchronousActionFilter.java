@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -34,58 +34,54 @@ import java.util.Comparator;
  * (i.e. currently executing or in the queue awaiting execution) will be compared to any new action
  * and if they are equal (as determined by the compare implementation defined herein) the newly
  * submitted action will not be added to the queue and will be dropped.
- * 
+ *
  * Concrete subclasses can be implemented and then dependency-injected using the spring-bean
  * baseActionFilter as their parent.
- * 
+ *
  * @author Neil McErlean
  */
-public abstract class AbstractAsynchronousActionFilter implements Comparator<OngoingAsyncAction>
-{
-    private String name;
-    private String actionDefinitionName;
-    private AsynchronousActionExecutionQueueImpl asynchronousActionExecutionQueue;
+public abstract class AbstractAsynchronousActionFilter
+  implements Comparator<OngoingAsyncAction> {
 
-    /**
-     * Gets the name of this comparator.
-     * @return String
-     */
-    public String getName()
-    {
-        return this.name;
-    }
+  private String name;
+  private String actionDefinitionName;
+  private AsynchronousActionExecutionQueueImpl asynchronousActionExecutionQueue;
 
-    /**
-     * Sets the name of this comparator.
-     * @param name String
-     */
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+  /**
+   * Gets the name of this comparator.
+   * @return String
+   */
+  public String getName() {
+    return this.name;
+  }
 
-    /**
-     * Gets the action definition name against which this comparator is registered.
-     * @return String
-     */
-    public String getActionDefinitionName()
-    {
-        return this.actionDefinitionName;
-    }
+  /**
+   * Sets the name of this comparator.
+   * @param name String
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setActionDefinitionName(String actionDefinitionName)
-    {
-        this.actionDefinitionName = actionDefinitionName;
-    }
+  /**
+   * Gets the action definition name against which this comparator is registered.
+   * @return String
+   */
+  public String getActionDefinitionName() {
+    return this.actionDefinitionName;
+  }
 
-    public void setAsynchronousActionExecutionQueue(
-            AsynchronousActionExecutionQueueImpl asynchronousActionExecutionQueue)
-    {
-        this.asynchronousActionExecutionQueue = asynchronousActionExecutionQueue;
-    }
-    
-    public void init()
-    {
-        this.asynchronousActionExecutionQueue.registerActionFilter(this);
-    }
+  public void setActionDefinitionName(String actionDefinitionName) {
+    this.actionDefinitionName = actionDefinitionName;
+  }
+
+  public void setAsynchronousActionExecutionQueue(
+    AsynchronousActionExecutionQueueImpl asynchronousActionExecutionQueue
+  ) {
+    this.asynchronousActionExecutionQueue = asynchronousActionExecutionQueue;
+  }
+
+  public void init() {
+    this.asynchronousActionExecutionQueue.registerActionFilter(this);
+  }
 }

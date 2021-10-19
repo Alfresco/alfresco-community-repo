@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.role;
 
 import java.util.Set;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 
@@ -38,88 +37,91 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public class Role
-{
-    /** Role name */
-    private String name;
+public class Role {
 
-    /** Role label */
-    private String displayLabel;
+  /** Role name */
+  private String name;
 
-    /** Role capabilities */
-    private Set<Capability> capabilities;
+  /** Role label */
+  private String displayLabel;
 
-    /** Role group name */
-    private String roleGroupName;
+  /** Role capabilities */
+  private Set<Capability> capabilities;
 
-    /** Role group short name */
-    private String groupShortName;
+  /** Role group name */
+  private String roleGroupName;
 
-    /**
-     * @param name
-     * @param displayLabel
-     * @param capabilities
-     * @param roleGroupName
-     */
-    public Role(String name, String displayLabel, Set<Capability> capabilities, String roleGroupName)
-    {
-        this.name = name;
-        this.displayLabel = displayLabel;
-        this.capabilities = capabilities;
-        this.roleGroupName = roleGroupName;
-    }
+  /** Role group short name */
+  private String groupShortName;
 
-    /**
-     * @param name
-     * @param displayLabel
-     * @param capabilities
-     * @param roleGroupName
-     * @param groupShortName
-     */
-    public Role(String name, String displayLabel, Set<Capability> capabilities, String roleGroupName, String groupShortName)
-    {
-        this(name, displayLabel, capabilities, roleGroupName);
-        this.groupShortName = groupShortName;
-    }
+  /**
+   * @param name
+   * @param displayLabel
+   * @param capabilities
+   * @param roleGroupName
+   */
+  public Role(
+    String name,
+    String displayLabel,
+    Set<Capability> capabilities,
+    String roleGroupName
+  ) {
+    this.name = name;
+    this.displayLabel = displayLabel;
+    this.capabilities = capabilities;
+    this.roleGroupName = roleGroupName;
+  }
 
-    /**
-     * @return the name
-     */
-    public String getName()
-    {
-        return name;
-    }
+  /**
+   * @param name
+   * @param displayLabel
+   * @param capabilities
+   * @param roleGroupName
+   * @param groupShortName
+   */
+  public Role(
+    String name,
+    String displayLabel,
+    Set<Capability> capabilities,
+    String roleGroupName,
+    String groupShortName
+  ) {
+    this(name, displayLabel, capabilities, roleGroupName);
+    this.groupShortName = groupShortName;
+  }
 
-    /**
-     * @return the displayLabel
-     */
-    public String getDisplayLabel()
-    {
-        return displayLabel;
-    }
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
 
-    /**
-     * @return the capabilities
-     */
-    public Set<Capability> getCapabilities()
-    {
-        return capabilities;
-    }
+  /**
+   * @return the displayLabel
+   */
+  public String getDisplayLabel() {
+    return displayLabel;
+  }
 
-    /**
-     * @return the roleGroupName
-     */
-    public String getRoleGroupName()
-    {
-        return roleGroupName;
-    }
+  /**
+   * @return the capabilities
+   */
+  public Set<Capability> getCapabilities() {
+    return capabilities;
+  }
 
-    /**
-     * @return the groupShortName
-     */
-    public String getGroupShortName()
-    {
-        return this.groupShortName;
-    }
+  /**
+   * @return the roleGroupName
+   */
+  public String getRoleGroupName() {
+    return roleGroupName;
+  }
 
+  /**
+   * @return the groupShortName
+   */
+  public String getGroupShortName() {
+    return this.groupShortName;
+  }
 }

@@ -32,7 +32,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -45,49 +44,60 @@ import org.alfresco.service.cmr.security.PermissionService;
  * @author Roy Wetherall
  * @since 2.2
  */
-public abstract class BaseHoldWebScriptUnitTest extends BaseWebScriptUnitTest
-{
-    /** test holds */
-    protected NodeRef hold1NodeRef;
-    protected NodeRef hold2NodeRef;
-    protected NodeRef dmNodeRef;
-    protected List<NodeRef> holds;
-    protected List<NodeRef> records;
-    protected List<NodeRef> recordFolders;
-    protected List<NodeRef> filePlanComponents;
-    protected List<NodeRef> activeContents;
+public abstract class BaseHoldWebScriptUnitTest extends BaseWebScriptUnitTest {
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
-     */
-    @Override
-    public void before() throws Exception
-    {
-        super.before();
+  /** test holds */
+  protected NodeRef hold1NodeRef;
+  protected NodeRef hold2NodeRef;
+  protected NodeRef dmNodeRef;
+  protected List<NodeRef> holds;
+  protected List<NodeRef> records;
+  protected List<NodeRef> recordFolders;
+  protected List<NodeRef> filePlanComponents;
+  protected List<NodeRef> activeContents;
 
-        // generate test holds
-        hold1NodeRef = generateHoldNodeRef("hold1");
-        hold2NodeRef = generateHoldNodeRef("hold2");
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
+   */
+  @Override
+  public void before() throws Exception {
+    super.before();
 
-        // generate active content
-        dmNodeRef = generateNodeRef(TYPE_CONTENT);
-        when(mockedExtendedPermissionService.hasPermission(dmNodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(dmNodeRef), ContentModel.TYPE_CONTENT)).thenReturn(true);
+    // generate test holds
+    hold1NodeRef = generateHoldNodeRef("hold1");
+    hold2NodeRef = generateHoldNodeRef("hold2");
 
-        // list of active contents
-        activeContents = Collections.singletonList(dmNodeRef);
+    // generate active content
+    dmNodeRef = generateNodeRef(TYPE_CONTENT);
+    when(
+      mockedExtendedPermissionService.hasPermission(
+        dmNodeRef,
+        PermissionService.WRITE
+      )
+    )
+      .thenReturn(AccessStatus.ALLOWED);
+    when(
+      mockedDictionaryService.isSubClass(
+        mockedNodeService.getType(dmNodeRef),
+        ContentModel.TYPE_CONTENT
+      )
+    )
+      .thenReturn(true);
 
-        // list of holds
-        holds = new ArrayList<>(2);
-        Collections.addAll(holds, hold1NodeRef, hold2NodeRef);
+    // list of active contents
+    activeContents = Collections.singletonList(dmNodeRef);
 
-        // list of records
-        records = Collections.singletonList(record);
+    // list of holds
+    holds = new ArrayList<>(2);
+    Collections.addAll(holds, hold1NodeRef, hold2NodeRef);
 
-        // list of record folders
-        recordFolders = Collections.singletonList(recordFolder);
+    // list of records
+    records = Collections.singletonList(record);
 
-        // list of file plan components
-        filePlanComponents = Collections.singletonList(filePlanComponent);
-    }
+    // list of record folders
+    recordFolders = Collections.singletonList(recordFolder);
+
+    // list of file plan components
+    filePlanComponents = Collections.singletonList(filePlanComponent);
+  }
 }

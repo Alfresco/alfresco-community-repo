@@ -38,19 +38,18 @@ import org.alfresco.service.namespace.QName;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public interface ReportGenerator
-{
-    /**
-     * @return {@link QName} report type
-     */
-    QName getReportType();
+public interface ReportGenerator {
+  /**
+   * @return {@link QName} report type
+   */
+  QName getReportType();
 
-    /**
-     * Generate report.
-     *
-     * @param reportedUponNodeRef
-     * @param mimetype
-     * @return
-     */
-    Report generateReport(NodeRef reportedUponNodeRef, String mimetype);
+  /**
+   * Generate report.
+   *
+   * @param reportedUponNodeRef
+   * @param mimetype
+   * @return
+   */
+  Report generateReport(NodeRef reportedUponNodeRef, String mimetype);
 }

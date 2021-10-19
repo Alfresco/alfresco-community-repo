@@ -23,10 +23,9 @@ package org.alfresco.httpclient;
  *
  * @since 4.0
  */
-public class HeadRequest extends Request
-{
-    public HeadRequest(String uri)
-    {
-        super("head", uri);
-    }
+public class HeadRequest extends Request {
+
+  public HeadRequest(String uri) {
+    super("head", uri);
+  }
 }

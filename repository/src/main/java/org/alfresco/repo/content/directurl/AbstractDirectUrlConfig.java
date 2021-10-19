@@ -30,52 +30,46 @@ package org.alfresco.repo.content.directurl;
  *
  * @author Sara Aspery
  */
-public abstract class AbstractDirectUrlConfig implements DirectUrlConfig
-{
-    /** System-wide direct access URL configuration */
-    private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
+public abstract class AbstractDirectUrlConfig implements DirectUrlConfig {
 
-    /** Direct access URL configuration settings */
-    private Boolean enabled;
-    private Long defaultExpiryTimeInSec;
+  /** System-wide direct access URL configuration */
+  private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
 
-    public void setSystemWideDirectUrlConfig(SystemWideDirectUrlConfig systemWideDirectUrlConfig)
-    {
-        this.systemWideDirectUrlConfig = systemWideDirectUrlConfig;
-    }
+  /** Direct access URL configuration settings */
+  private Boolean enabled;
+  private Long defaultExpiryTimeInSec;
 
-    public void setEnabled(Boolean enabled)
-    {
-        this.enabled = enabled;
-    }
+  public void setSystemWideDirectUrlConfig(
+    SystemWideDirectUrlConfig systemWideDirectUrlConfig
+  ) {
+    this.systemWideDirectUrlConfig = systemWideDirectUrlConfig;
+  }
 
-    public void setDefaultExpiryTimeInSec(Long defaultExpiryTimeInSec)
-    {
-        this.defaultExpiryTimeInSec = defaultExpiryTimeInSec;
-    }
+  public void setEnabled(Boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    protected Boolean isSysWideEnabled()
-    {
-        return systemWideDirectUrlConfig.isEnabled();
-    }
+  public void setDefaultExpiryTimeInSec(Long defaultExpiryTimeInSec) {
+    this.defaultExpiryTimeInSec = defaultExpiryTimeInSec;
+  }
 
-    public Long getSysWideDefaultExpiryTimeInSec()
-    {
-        return systemWideDirectUrlConfig.getDefaultExpiryTimeInSec();
-    }
+  protected Boolean isSysWideEnabled() {
+    return systemWideDirectUrlConfig.isEnabled();
+  }
 
-    public Long getSysWideMaxExpiryTimeInSec()
-    {
-        return systemWideDirectUrlConfig.getMaxExpiryTimeInSec();
-    }
+  public Long getSysWideDefaultExpiryTimeInSec() {
+    return systemWideDirectUrlConfig.getDefaultExpiryTimeInSec();
+  }
 
-    public Boolean isEnabled()
-    {
-        return enabled;
-    }
+  public Long getSysWideMaxExpiryTimeInSec() {
+    return systemWideDirectUrlConfig.getMaxExpiryTimeInSec();
+  }
 
-    public Long getDefaultExpiryTimeInSec()
-    {
-        return defaultExpiryTimeInSec;
-    }
+  public Boolean isEnabled() {
+    return enabled;
+  }
+
+  public Long getDefaultExpiryTimeInSec() {
+    return defaultExpiryTimeInSec;
+  }
 }

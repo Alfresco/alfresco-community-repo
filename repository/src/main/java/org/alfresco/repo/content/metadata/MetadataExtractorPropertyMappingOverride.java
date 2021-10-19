@@ -25,11 +25,10 @@
  */
 package org.alfresco.repo.content.metadata;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-
 import java.util.Map;
 import java.util.Set;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @deprecated as code running inside the content repository process that overrides metadata extract properties should
@@ -38,22 +37,21 @@ import java.util.Set;
  * @author adavis
  */
 @Deprecated
-public interface MetadataExtractorPropertyMappingOverride
-{
-    /**
-     * Indicates if the {@link #getExtractMapping(NodeRef)} will provide extract properties
-     * to override those in the T-Engine.
-     *
-     * @param sourceMimetype of the node.
-     * @return {@code true} if there will be override extract properties.
-     */
-    boolean match(String sourceMimetype);
+public interface MetadataExtractorPropertyMappingOverride {
+  /**
+   * Indicates if the {@link #getExtractMapping(NodeRef)} will provide extract properties
+   * to override those in the T-Engine.
+   *
+   * @param sourceMimetype of the node.
+   * @return {@code true} if there will be override extract properties.
+   */
+  boolean match(String sourceMimetype);
 
-    /**
-     * Returns the extract mapping to be passed to the T-Engine.
-     *
-     * @param nodeRef of the node having its metadata extracted.
-     * @return the mapping of document properties to system properties
-     */
-    Map<String, Set<String>> getExtractMapping(NodeRef nodeRef);
+  /**
+   * Returns the extract mapping to be passed to the T-Engine.
+   *
+   * @param nodeRef of the node having its metadata extracted.
+   * @return the mapping of document properties to system properties
+   */
+  Map<String, Set<String>> getExtractMapping(NodeRef nodeRef);
 }

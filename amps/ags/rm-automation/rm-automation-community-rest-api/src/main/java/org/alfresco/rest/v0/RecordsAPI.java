@@ -31,7 +31,6 @@ import static org.testng.AssertJUnit.assertTrue;
 
 import java.text.MessageFormat;
 import java.util.Map;
-
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
@@ -50,12 +49,15 @@ import org.springframework.stereotype.Component;
  * @since 2.5
  */
 @Component
-public class RecordsAPI extends BaseAPI
-{
-    // logger
-    private static final Logger LOGGER = LoggerFactory.getLogger(RecordsAPI.class);
+public class RecordsAPI extends BaseAPI {
 
-    private static final String CREATE_NON_ELECTRONIC_RECORD_API = "{0}type/rma:nonElectronicDocument/formprocessor";
+    // logger
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        RecordsAPI.class
+    );
+
+    private static final String CREATE_NON_ELECTRONIC_RECORD_API =
+        "{0}type/rma:nonElectronicDocument/formprocessor";
 
     /**
      * Declare documents as records
@@ -66,15 +68,27 @@ public class RecordsAPI extends BaseAPI
      * @param documentName the document name
      * @return The HTTP Response.
      */
-    public HttpResponse declareDocumentAsRecord(String user, String password, String siteID, String documentName)
-    {
-        String docNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, siteID, documentName);
+    public HttpResponse declareDocumentAsRecord(
+        String user,
+        String password,
+        String siteID,
+        String documentName
+    ) {
+        String docNodeRef =
+            getNodeRefSpacesStore() +
+            contentService.getNodeRef(user, password, siteID, documentName);
 
         JSONObject requestParams = new JSONObject();
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "create-record");
 
-        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            ACTIONS_API
+        );
     }
 
     /**
@@ -85,15 +99,26 @@ public class RecordsAPI extends BaseAPI
      * @param recordName the record name
      * @return The HTTP Response.
      */
-    public HttpResponse completeRecord(String user, String password, String recordName)
-    {
-        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
+    public HttpResponse completeRecord(
+        String user,
+        String password,
+        String recordName
+    ) {
+        String recNodeRef =
+            getNodeRefSpacesStore() +
+            contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
 
         JSONObject requestParams = new JSONObject();
         requestParams.put("name", "declareRecord");
         requestParams.put("nodeRef", recNodeRef);
 
-        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            RM_ACTIONS_API
+        );
     }
 
     /**
@@ -106,8 +131,12 @@ public class RecordsAPI extends BaseAPI
      * @return The HTTP Response.
      * @throws AssertionError If the POST call is not successful.
      */
-    public HttpResponse rejectRecord(String user, String password, String recordName, String reason)
-    {
+    public HttpResponse rejectRecord(
+        String user,
+        String password,
+        String recordName,
+        String reason
+    ) {
         return rejectRecord(user, password, SC_OK, recordName, reason);
     }
 
@@ -122,17 +151,29 @@ public class RecordsAPI extends BaseAPI
      * @return The HTTP Response.
      * @throws AssertionError If the expectedStatusCode was not returned.
      */
-    public HttpResponse rejectRecord(String user, String password, int expectedStatusCode, String recordName, String reason)
-    {
-        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
+    public HttpResponse rejectRecord(
+        String user,
+        String password,
+        int expectedStatusCode,
+        String recordName,
+        String reason
+    ) {
+        String recNodeRef =
+            getNodeRefSpacesStore() +
+            contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
 
         JSONObject requestParams = new JSONObject();
         requestParams.put("name", "reject");
         requestParams.put("nodeRef", recNodeRef);
-        requestParams.put("params",new JSONObject()
-                    .put("reason",reason));
+        requestParams.put("params", new JSONObject().put("reason", reason));
 
-        return doPostJsonRequest(user, password, expectedStatusCode, requestParams, RM_ACTIONS_API);
+        return doPostJsonRequest(
+            user,
+            password,
+            expectedStatusCode,
+            requestParams,
+            RM_ACTIONS_API
+        );
     }
 
     /**
@@ -144,15 +185,27 @@ public class RecordsAPI extends BaseAPI
      * @param documentName the document name
      * @return The HTTP Response.
      */
-    public HttpResponse declareDocumentVersionAsRecord(String user, String password, String siteID, String documentName)
-    {
-        String docNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, siteID, documentName);
+    public HttpResponse declareDocumentVersionAsRecord(
+        String user,
+        String password,
+        String siteID,
+        String documentName
+    ) {
+        String docNodeRef =
+            getNodeRefSpacesStore() +
+            contentService.getNodeRef(user, password, siteID, documentName);
 
         JSONObject requestParams = new JSONObject();
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "declare-as-version-record");
 
-        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            ACTIONS_API
+        );
     }
 
     /**
@@ -170,32 +223,50 @@ public class RecordsAPI extends BaseAPI
      *                     this case is useful when trying to create a record directly in Unfiled Records
      * @return The HTTP Response (or null if the request was not needed).
      */
-    public <K extends Enum<?>> HttpResponse createNonElectronicRecord(String username, String password, Map<K, String> properties, String categoryName, String folderName)
-    {
+    public <K extends Enum<?>> HttpResponse createNonElectronicRecord(
+        String username,
+        String password,
+        Map<K, String> properties,
+        String categoryName,
+        String folderName
+    ) {
         String recordName = properties.get(RMProperty.NAME);
-        if (getRecord(username, password, folderName, recordName) != null)
-        {
+        if (getRecord(username, password, folderName, recordName) != null) {
             return null;
         }
         String recordPath = "/" + categoryName;
-        if (!folderName.equals(""))
-        {
+        if (!folderName.equals("")) {
             recordPath = recordPath + "/" + folderName;
         }
         // if the record already exists don't try to create it again
-        CmisObject record = getObjectByPath(username, password, getFilePlanPath() + recordPath + "/" + recordName);
+        CmisObject record = getObjectByPath(
+            username,
+            password,
+            getFilePlanPath() + recordPath + "/" + recordName
+        );
 
-        if (record != null)
-        {
+        if (record != null) {
             return null;
         }
         // non-electronic properties
         String recordTitle = getPropertyValue(properties, RMProperty.TITLE);
-        String description = getPropertyValue(properties, RMProperty.DESCRIPTION);
-        String physicalSize = getPropertyValue(properties, RMProperty.PHYSICAL_SIZE);
-        String numberOfCopies = getPropertyValue(properties, RMProperty.NUMBER_OF_COPIES);
+        String description = getPropertyValue(
+            properties,
+            RMProperty.DESCRIPTION
+        );
+        String physicalSize = getPropertyValue(
+            properties,
+            RMProperty.PHYSICAL_SIZE
+        );
+        String numberOfCopies = getPropertyValue(
+            properties,
+            RMProperty.NUMBER_OF_COPIES
+        );
         String shelf = getPropertyValue(properties, RMProperty.SHELF);
-        String storage = getPropertyValue(properties, RMProperty.STORAGE_LOCATION);
+        String storage = getPropertyValue(
+            properties,
+            RMProperty.STORAGE_LOCATION
+        );
         String box = getPropertyValue(properties, RMProperty.BOX);
         String file = getPropertyValue(properties, RMProperty.FILE);
 
@@ -203,7 +274,10 @@ public class RecordsAPI extends BaseAPI
         String parentNodeRef = getItemNodeRef(username, password, recordPath);
 
         JSONObject requestParams = new JSONObject();
-        requestParams.put("alf_destination", getNodeRefSpacesStore() + parentNodeRef);
+        requestParams.put(
+            "alf_destination",
+            getNodeRefSpacesStore() + parentNodeRef
+        );
         requestParams.put("prop_cm_name", recordName);
         requestParams.put("prop_cm_title", recordTitle);
         requestParams.put("prop_cm_description", description);
@@ -214,7 +288,13 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("prop_rma_box", box);
         requestParams.put("prop_rma_file", file);
 
-        return doPostJsonRequest(username, password, SC_OK, requestParams, CREATE_NON_ELECTRONIC_RECORD_API);
+        return doPostJsonRequest(
+            username,
+            password,
+            SC_OK,
+            requestParams,
+            CREATE_NON_ELECTRONIC_RECORD_API
+        );
     }
 
     /**
@@ -227,12 +307,33 @@ public class RecordsAPI extends BaseAPI
      * @param folderName the folder inside which the record will be created, it needs to have a unique name, as this method doesn't check other containers than the folder name
      * @throws AssertionError if the upload was unsuccessful.
      */
-    public void uploadElectronicRecord(String username, String password, Map<RMProperty, String> properties, String folderName, DocumentType documentType)
-    {
+    public void uploadElectronicRecord(
+        String username,
+        String password,
+        Map<RMProperty, String> properties,
+        String folderName,
+        DocumentType documentType
+    ) {
         String recordName = getPropertyValue(properties, RMProperty.NAME);
         String recordContent = getPropertyValue(properties, RMProperty.CONTENT);
-        boolean success = (getRecord(username, password, folderName, recordName) != null) || (contentService.createDocumentInFolder(username, password, RM_SITE_ID, folderName, documentType, recordName, recordContent) != null);
-        assertTrue("Failed to upload electronic record to " + folderName, success);
+        boolean success =
+            (getRecord(username, password, folderName, recordName) != null) ||
+            (
+                contentService.createDocumentInFolder(
+                    username,
+                    password,
+                    RM_SITE_ID,
+                    folderName,
+                    documentType,
+                    recordName,
+                    recordContent
+                ) !=
+                null
+            );
+        assertTrue(
+            "Failed to upload electronic record to " + folderName,
+            success
+        );
     }
 
     /**
@@ -248,11 +349,15 @@ public class RecordsAPI extends BaseAPI
      * @param folderName   folder name, in case in which trying to delete a record in Unfiled records directly, this will be ""
      * @throws AssertionError If the record could not be deleted.
      */
-    public void deleteRecord(String username, String password, String recordName, String categoryName, String folderName)
-    {
+    public void deleteRecord(
+        String username,
+        String password,
+        String recordName,
+        String categoryName,
+        String folderName
+    ) {
         String recordPath = "/" + categoryName;
-        if (!folderName.equals(""))
-        {
+        if (!folderName.equals("")) {
             recordPath = recordPath + "/" + folderName;
         }
         deleteItem(username, password, recordPath + "/" + recordName);
@@ -267,12 +372,20 @@ public class RecordsAPI extends BaseAPI
      * @param recordName the String with which the record name starts
      * @return the record object in case it exists, null otherwise
      */
-    private CmisObject getRecord(String username, String password, String folderName, String recordName)
-    {
-        for (CmisObject record : contentService.getFolderObject(contentService.getCMISSession(username, password), RM_SITE_ID, folderName).getChildren())
-        {
-            if (record.getName().startsWith(recordName))
-            {
+    private CmisObject getRecord(
+        String username,
+        String password,
+        String folderName,
+        String recordName
+    ) {
+        for (CmisObject record : contentService
+            .getFolderObject(
+                contentService.getCMISSession(username, password),
+                RM_SITE_ID,
+                folderName
+            )
+            .getChildren()) {
+            if (record.getName().startsWith(recordName)) {
                 return record;
             }
         }
@@ -288,16 +401,23 @@ public class RecordsAPI extends BaseAPI
      * @param recordPartialName the String with which the record name starts
      * @return the record name in case it exists, empty String otherwise
      */
-    public String getRecordFullName(String username, String password, String folderName, String recordPartialName)
-    {
-        CmisObject record = getRecord(username, password, folderName, recordPartialName);
-        if (record != null)
-        {
+    public String getRecordFullName(
+        String username,
+        String password,
+        String folderName,
+        String recordPartialName
+    ) {
+        CmisObject record = getRecord(
+            username,
+            password,
+            folderName,
+            recordPartialName
+        );
+        if (record != null) {
             return record.getName();
         }
         return "";
     }
-
 
     /**
      * Share a document
@@ -308,21 +428,28 @@ public class RecordsAPI extends BaseAPI
      * @return {@link Pair}. on success will be true and the shareId.
      * on failure will be false and the response status code.
      */
-    public Pair<Boolean, String> shareDocument(String user, String password, String nodeId) throws JSONException
-    {
-        JSONObject response = doPostRequest(user, password, null,
-                MessageFormat.format(SHARE_ACTION_API, "{0}", nodeId));
-        try
-        {
-            if (response.has("sharedId"))
-            {
+    public Pair<Boolean, String> shareDocument(
+        String user,
+        String password,
+        String nodeId
+    ) throws JSONException {
+        JSONObject response = doPostRequest(
+            user,
+            password,
+            null,
+            MessageFormat.format(SHARE_ACTION_API, "{0}", nodeId)
+        );
+        try {
+            if (response.has("sharedId")) {
                 return Pair.of(true, response.getString("sharedId"));
             }
-        } catch (JSONException e)
-        {
+        } catch (JSONException e) {
             LOGGER.info("Unable to extract response parameter", e);
         }
-        return Pair.of(false, String.valueOf(response.getJSONObject("status").getInt("code")));
+        return Pair.of(
+            false,
+            String.valueOf(response.getJSONObject("status").getInt("code"))
+        );
     }
 
     /**
@@ -333,15 +460,24 @@ public class RecordsAPI extends BaseAPI
      * @param nodeId     the in place record node id
      * @return The HTTP Response.
      */
-    public HttpResponse hideRecord(String user, String password, String nodeId)
-    {
+    public HttpResponse hideRecord(
+        String user,
+        String password,
+        String nodeId
+    ) {
         String docNodeRef = getNodeRefSpacesStore() + nodeId;
 
         JSONObject requestParams = new JSONObject();
         requestParams.put("actionedUponNode", docNodeRef);
         requestParams.put("actionDefinitionName", "hide-record");
 
-        return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            ACTIONS_API
+        );
     }
 
     /**
@@ -353,8 +489,15 @@ public class RecordsAPI extends BaseAPI
      * @param recordPath the String with which the record name starts
      * @return the record nodeRef in case it exists, empty string otherwise
      */
-    public String getRecordNodeRef(String username, String password, String recordName, String recordPath)
-    {
-        return getNodeRefSpacesStore() + getItemNodeRef(username, password, recordPath + "/" + recordName);
+    public String getRecordNodeRef(
+        String username,
+        String password,
+        String recordName,
+        String recordPath
+    ) {
+        return (
+            getNodeRefSpacesStore() +
+            getItemNodeRef(username, password, recordPath + "/" + recordName)
+        );
     }
 }

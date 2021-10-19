@@ -32,7 +32,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -46,47 +45,70 @@ import org.alfresco.service.namespace.QName;
  * @author Tom Page
  * @since 2.7
  */
-public class UserGroupMembershipUtils
-{
-    /** A QName to display for the parent group's name. */
-    public static final QName PARENT_GROUP = QName.createQName(RecordsManagementModel.RM_URI, "Parent Group");
-    /** A QName to display for a child group's name. */
-    private static final QName CHILD_GROUP = QName.createQName(RecordsManagementModel.RM_URI, "Child Group");
+public class UserGroupMembershipUtils {
 
-    /**
-     * Create a properties map from the given cm:member association.
-     *
-     * @param childAssocRef The association to use.
-     * @param nodeService The node service.
-     * @return A map containing the names of the parent and child.
-     */
-    public static Map<QName, Serializable> makePropertiesMap(ChildAssociationRef childAssocRef, NodeService nodeService)
-    {
-        Map<QName, Serializable> auditProperties = new HashMap<>();
-        // Set exactly one of the child group property or the child user name property.
-        String childGroupName = getUserGroupName(childAssocRef.getChildRef(), nodeService);
-        if (!isBlank(childGroupName))
-        {
-            auditProperties.put(CHILD_GROUP, childGroupName);
-        }
-        String childUserName = (String) nodeService.getProperty(childAssocRef.getChildRef(), ContentModel.PROP_USERNAME);
-        if (!isBlank(childUserName))
-        {
-            auditProperties.put(ContentModel.PROP_USERNAME, childUserName);
-        }
-        // Set the parent group name.
-        auditProperties.put(PARENT_GROUP, getUserGroupName(childAssocRef.getParentRef(), nodeService));
-        return auditProperties;
-    }
+  /** A QName to display for the parent group's name. */
+  public static final QName PARENT_GROUP = QName.createQName(
+    RecordsManagementModel.RM_URI,
+    "Parent Group"
+  );
+  /** A QName to display for a child group's name. */
+  private static final QName CHILD_GROUP = QName.createQName(
+    RecordsManagementModel.RM_URI,
+    "Child Group"
+  );
 
-    /** Get a name that can be displayed for the user group. */
-    private static String getUserGroupName(NodeRef nodeRef, NodeService nodeService)
-    {
-        String groupName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_DISPLAY_NAME);
-        if (isBlank(groupName))
-        {
-            groupName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_NAME);
-        }
-        return groupName;
+  /**
+   * Create a properties map from the given cm:member association.
+   *
+   * @param childAssocRef The association to use.
+   * @param nodeService The node service.
+   * @return A map containing the names of the parent and child.
+   */
+  public static Map<QName, Serializable> makePropertiesMap(
+    ChildAssociationRef childAssocRef,
+    NodeService nodeService
+  ) {
+    Map<QName, Serializable> auditProperties = new HashMap<>();
+    // Set exactly one of the child group property or the child user name property.
+    String childGroupName = getUserGroupName(
+      childAssocRef.getChildRef(),
+      nodeService
+    );
+    if (!isBlank(childGroupName)) {
+      auditProperties.put(CHILD_GROUP, childGroupName);
     }
+    String childUserName = (String) nodeService.getProperty(
+      childAssocRef.getChildRef(),
+      ContentModel.PROP_USERNAME
+    );
+    if (!isBlank(childUserName)) {
+      auditProperties.put(ContentModel.PROP_USERNAME, childUserName);
+    }
+    // Set the parent group name.
+    auditProperties.put(
+      PARENT_GROUP,
+      getUserGroupName(childAssocRef.getParentRef(), nodeService)
+    );
+    return auditProperties;
+  }
+
+  /** Get a name that can be displayed for the user group. */
+  private static String getUserGroupName(
+    NodeRef nodeRef,
+    NodeService nodeService
+  ) {
+    String groupName = (String) nodeService.getProperty(
+      nodeRef,
+      ContentModel.PROP_AUTHORITY_DISPLAY_NAME
+    );
+    if (isBlank(groupName)) {
+      groupName =
+        (String) nodeService.getProperty(
+          nodeRef,
+          ContentModel.PROP_AUTHORITY_NAME
+        );
+    }
+    return groupName;
+  }
 }

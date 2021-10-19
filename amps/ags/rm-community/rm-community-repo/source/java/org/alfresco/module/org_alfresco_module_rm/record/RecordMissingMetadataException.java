@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.record;
 
 import java.io.Serializable;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
@@ -37,27 +36,27 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * @author Sara Aspery
  * @since 2.6
  */
-public class RecordMissingMetadataException extends AlfrescoRuntimeException
-{
-    private static final long serialVersionUID = 3437687270967611234L;
+public class RecordMissingMetadataException extends AlfrescoRuntimeException {
 
-    public RecordMissingMetadataException(String msgId, Throwable cause)
-    {
-        super(msgId, cause);
-    }
+  private static final long serialVersionUID = 3437687270967611234L;
 
-    public RecordMissingMetadataException(String msgId, Object[] msgParams, Throwable cause)
-    {
-        super(msgId, msgParams, cause);
-    }
+  public RecordMissingMetadataException(String msgId, Throwable cause) {
+    super(msgId, cause);
+  }
 
-    public RecordMissingMetadataException(String msgId, Object[] msgParams)
-    {
-        super(msgId, msgParams);
-    }
+  public RecordMissingMetadataException(
+    String msgId,
+    Object[] msgParams,
+    Throwable cause
+  ) {
+    super(msgId, msgParams, cause);
+  }
 
-    public RecordMissingMetadataException(String msgId)
-    {
-        super(msgId);
-    }
+  public RecordMissingMetadataException(String msgId, Object[] msgParams) {
+    super(msgId, msgParams);
+  }
+
+  public RecordMissingMetadataException(String msgId) {
+    super(msgId);
+  }
 }

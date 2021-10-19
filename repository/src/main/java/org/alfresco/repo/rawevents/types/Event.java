@@ -28,17 +28,16 @@ package org.alfresco.repo.rawevents.types;
 /**
  * This interface defines the basic data which is captured for each event.
  */
-public interface Event
-{
-    String getId();
+public interface Event {
+  String getId();
 
-    String getType();
+  String getType();
 
-    String getAuthenticatedUser();
+  String getAuthenticatedUser();
 
-    String getExecutingUser();
+  String getExecutingUser();
 
-    Long getTimestamp();
+  Long getTimestamp();
 
-    int getSchema();
+  int getSchema();
 }

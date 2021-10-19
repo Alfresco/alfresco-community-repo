@@ -20,7 +20,6 @@ package org.alfresco.httpclient;
 
 import java.io.IOException;
 import java.util.Map;
-
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -32,56 +31,55 @@ import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
  * Since Apache HttpClient 3.1 doesn't support including custom headers by default,
  * this class is adding that custom headers every time a method is invoked.
  */
-public class RequestHeadersHttpClient extends HttpClient
-{
-    
-    private Map<String, String> defaultHeaders;
-    
-    public RequestHeadersHttpClient(MultiThreadedHttpConnectionManager connectionManager)
-    {
-        super(connectionManager);
-    }
+public class RequestHeadersHttpClient extends HttpClient {
 
-    public Map<String, String> getDefaultHeaders()
-    {
-        return defaultHeaders;
-    }
+  private Map<String, String> defaultHeaders;
 
-    public void setDefaultHeaders(Map<String, String> defaultHeaders)
-    {
-        this.defaultHeaders = defaultHeaders;
-    }
-    
-    private void addDefaultHeaders(HttpMethod method)
-    {
-        if (defaultHeaders != null)
-        {
-            defaultHeaders.forEach((k,v) -> {
-                method.addRequestHeader(k, v);
-            });
-        }        
-    }
-    
-    @Override
-    public int executeMethod(HttpMethod method) throws IOException, HttpException
-    {
-        addDefaultHeaders(method);
-        return super.executeMethod(method);
-    }
+  public RequestHeadersHttpClient(
+    MultiThreadedHttpConnectionManager connectionManager
+  ) {
+    super(connectionManager);
+  }
 
-    @Override
-    public int executeMethod(HostConfiguration hostConfiguration, HttpMethod method) throws IOException, HttpException
-    {
-        addDefaultHeaders(method);
-        return super.executeMethod(hostConfiguration, method);
-    }
+  public Map<String, String> getDefaultHeaders() {
+    return defaultHeaders;
+  }
 
-    @Override
-    public int executeMethod(HostConfiguration hostconfig, HttpMethod method, HttpState state)
-                throws IOException, HttpException
-    {
-        addDefaultHeaders(method);
-        return super.executeMethod(hostconfig, method, state);
-    }
+  public void setDefaultHeaders(Map<String, String> defaultHeaders) {
+    this.defaultHeaders = defaultHeaders;
+  }
 
+  private void addDefaultHeaders(HttpMethod method) {
+    if (defaultHeaders != null) {
+      defaultHeaders.forEach((k, v) -> {
+        method.addRequestHeader(k, v);
+      });
+    }
+  }
+
+  @Override
+  public int executeMethod(HttpMethod method)
+    throws IOException, HttpException {
+    addDefaultHeaders(method);
+    return super.executeMethod(method);
+  }
+
+  @Override
+  public int executeMethod(
+    HostConfiguration hostConfiguration,
+    HttpMethod method
+  ) throws IOException, HttpException {
+    addDefaultHeaders(method);
+    return super.executeMethod(hostConfiguration, method);
+  }
+
+  @Override
+  public int executeMethod(
+    HostConfiguration hostconfig,
+    HttpMethod method,
+    HttpState state
+  ) throws IOException, HttpException {
+    addDefaultHeaders(method);
+    return super.executeMethod(hostconfig, method, state);
+  }
 }

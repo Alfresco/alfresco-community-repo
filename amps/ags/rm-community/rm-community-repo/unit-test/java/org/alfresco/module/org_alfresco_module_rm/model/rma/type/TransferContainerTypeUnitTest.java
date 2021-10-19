@@ -44,26 +44,26 @@ import org.mockito.InjectMocks;
  * @author Mihai Cozma
  * @since 2.4
  */
-public class TransferContainerTypeUnitTest extends BaseUnitTest
-{
-    /** test object */
-    private @InjectMocks TransferContainerType transferContainerType;
+public class TransferContainerTypeUnitTest extends BaseUnitTest {
 
-    /**
-     * Given that we try to add to transfer container,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testAddToTransferContainerTest()
-    {
-        NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
+  /** test object */
+  @InjectMocks
+  private TransferContainerType transferContainerType;
 
-        QName type = AlfMock.generateQName();
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+  /**
+   * Given that we try to add to transfer container,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testAddToTransferContainerTest() {
+    NodeRef transferContainer = generateNodeRef(TYPE_TRANSFER_CONTAINER, true);
 
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
-        when(mockedChildAssoc.getParentRef()).thenReturn(transferContainer);
-        transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
+    QName type = AlfMock.generateQName();
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+
+    ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+    when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+    when(mockedChildAssoc.getParentRef()).thenReturn(transferContainer);
+    transferContainerType.onCreateChildAssociation(mockedChildAssoc, true);
+  }
 }

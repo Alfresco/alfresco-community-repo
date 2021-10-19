@@ -27,11 +27,9 @@
 package org.alfresco.rest.rm.community.model.unfiledcontainer;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.core.RestModels;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.alfresco.rest.core.RestModels;
 
 /**
  * POJO for record category child entry
@@ -41,8 +39,9 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class UnfiledContainerChildEntry extends RestModels<UnfiledContainer, UnfiledContainerChildEntry>
-{
+public class UnfiledContainerChildEntry
+    extends RestModels<UnfiledContainer, UnfiledContainerChildEntry> {
+
     @JsonProperty
     private UnfiledContainerChild entry;
 }

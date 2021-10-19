@@ -29,7 +29,6 @@ package org.alfresco.rest.v0;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
@@ -44,8 +43,8 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class ExportAPI extends BaseAPI
-{
+public class ExportAPI extends BaseAPI {
+
     /**
      * The URI to export an item
      */
@@ -60,9 +59,18 @@ public class ExportAPI extends BaseAPI
      * @param nodeID             ID of the Node(Record/RecordFolder) to be exported
      * @return HTTP Response
      */
-    public HttpResponse exportRMNode(String user, String password, int expectedStatusCode, String nodeID)
-    {
-        return export(user, password, expectedStatusCode, Collections.singletonList(getNodeRefSpacesStore() + nodeID));
+    public HttpResponse exportRMNode(
+        String user,
+        String password,
+        int expectedStatusCode,
+        String nodeID
+    ) {
+        return export(
+            user,
+            password,
+            expectedStatusCode,
+            Collections.singletonList(getNodeRefSpacesStore() + nodeID)
+        );
     }
 
     /**
@@ -74,11 +82,16 @@ public class ExportAPI extends BaseAPI
      * @param nodeIDList         List of the nodes to be exported
      * @return HTTP Response
      */
-    public HttpResponse exportRMNodes(String user, String password, int expectedStatusCode, List<String> nodeIDList)
-    {
-
-        List<String> nodeRefs =
-                nodeIDList.stream().map(nodeID -> getNodeRefSpacesStore() + nodeID).collect(Collectors.toList());
+    public HttpResponse exportRMNodes(
+        String user,
+        String password,
+        int expectedStatusCode,
+        List<String> nodeIDList
+    ) {
+        List<String> nodeRefs = nodeIDList
+            .stream()
+            .map(nodeID -> getNodeRefSpacesStore() + nodeID)
+            .collect(Collectors.toList());
 
         return export(user, password, expectedStatusCode, nodeRefs);
     }
@@ -92,12 +105,22 @@ public class ExportAPI extends BaseAPI
      * @param nodeRefs           list of the noderefs for the items to be exported
      * @return Rest API Post Request
      */
-    public HttpResponse export(String user, String password, int expectedStatusCode, List<String> nodeRefs)
-    {
+    public HttpResponse export(
+        String user,
+        String password,
+        int expectedStatusCode,
+        List<String> nodeRefs
+    ) {
         final JSONObject requestParams = new JSONObject();
 
         requestParams.put("nodeRefs", new JSONArray(nodeRefs));
 
-        return doPostJsonRequest(user, password, expectedStatusCode, requestParams, EXPORT_API);
+        return doPostJsonRequest(
+            user,
+            password,
+            expectedStatusCode,
+            requestParams,
+            EXPORT_API
+        );
     }
 }

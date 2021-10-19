@@ -48,143 +48,144 @@ import org.alfresco.service.namespace.QName;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class RMSitesImpl extends SitesImpl implements RMSites
-{
-    private static final String RM_SITE_PRESET = "rm-site-dashboard";
-    private static final String RM_SITE_ID = "rm";
-    private static final int SITE_MAXLEN_TITLE = 256;
-    private static final int SITE_MAXLEN_DESCRIPTION = 512;
+public class RMSitesImpl extends SitesImpl implements RMSites {
 
-    @Override
-    public RMSite createRMSite(RMSite rmSite, Parameters parameters)
-    {
-        RMSiteCompliance compliance = rmSite.getCompliance();
-        if (compliance == null)
-        {
-            compliance = RMSiteCompliance.STANDARD;
-        }
-        Site site = createSite(rmSite, parameters);
-        return new RMSite(site, compliance);
+  private static final String RM_SITE_PRESET = "rm-site-dashboard";
+  private static final String RM_SITE_ID = "rm";
+  private static final int SITE_MAXLEN_TITLE = 256;
+  private static final int SITE_MAXLEN_DESCRIPTION = 512;
+
+  @Override
+  public RMSite createRMSite(RMSite rmSite, Parameters parameters) {
+    RMSiteCompliance compliance = rmSite.getCompliance();
+    if (compliance == null) {
+      compliance = RMSiteCompliance.STANDARD;
+    }
+    Site site = createSite(rmSite, parameters);
+    return new RMSite(site, compliance);
+  }
+
+  @Override
+  protected SiteInfo createSite(Site site) {
+    return siteService.createSite(
+      RM_SITE_PRESET,
+      RM_SITE_ID,
+      site.getTitle(),
+      site.getDescription(),
+      SiteVisibility.PUBLIC,
+      getRMSiteType((RMSite) site)
+    );
+  }
+
+  /**
+   * Even if the method it will be protected in core, we still need to override since we don't need to check if the visibility is set since for RM site it is always PUBLIC.
+   * We also don't need to generate the id from title, or to check the id, since the id is always rm.
+   * @param site
+   * @return
+   */
+  @Override
+  protected Site validateSite(Site site) {
+    // site title - mandatory
+    String siteTitle = site.getTitle();
+    if ((siteTitle == null) || siteTitle.isEmpty()) {
+      throw new InvalidArgumentException(
+        "Site title is expected: " + siteTitle
+      );
+    } else if (siteTitle.length() > SITE_MAXLEN_TITLE) {
+      throw new InvalidArgumentException(
+        "Site title exceeds max length of " + SITE_MAXLEN_TITLE + " characters"
+      );
     }
 
-    @Override
-    protected SiteInfo createSite(Site site)
-    {
-        return siteService.createSite(RM_SITE_PRESET, RM_SITE_ID, site.getTitle(), site.getDescription(), SiteVisibility.PUBLIC, getRMSiteType((RMSite) site));
+    String siteDescription = site.getDescription();
+
+    if (siteDescription == null) {
+      // workaround: to avoid Share error (eg. in My Sites dashlet / freemarker template)
+      site.setDescription("");
     }
 
-    /**
-     * Even if the method it will be protected in core, we still need to override since we don't need to check if the visibility is set since for RM site it is always PUBLIC.
-     * We also don't need to generate the id from title, or to check the id, since the id is always rm.
-     * @param site
-     * @return
-     */
-    @Override
-    protected Site validateSite(Site site)
-    {
-        // site title - mandatory
-        String siteTitle = site.getTitle();
-        if ((siteTitle == null) || siteTitle.isEmpty())
-        {
-            throw new InvalidArgumentException("Site title is expected: "+siteTitle);
-        }
-        else if (siteTitle.length() > SITE_MAXLEN_TITLE)
-        {
-            throw new InvalidArgumentException("Site title exceeds max length of "+SITE_MAXLEN_TITLE+" characters");
-        }
-
-        String siteDescription = site.getDescription();
-
-        if (siteDescription == null)
-        {
-            // workaround: to avoid Share error (eg. in My Sites dashlet / freemarker template)
-            site.setDescription("");
-        }
-
-        if ((siteDescription != null) && (siteDescription.length() > SITE_MAXLEN_DESCRIPTION))
-        {
-            throw new InvalidArgumentException("Site description exceeds max length of "+SITE_MAXLEN_DESCRIPTION+" characters");
-        }
-
-        return site;
+    if (
+      (siteDescription != null) &&
+      (siteDescription.length() > SITE_MAXLEN_DESCRIPTION)
+    ) {
+      throw new InvalidArgumentException(
+        "Site description exceeds max length of " +
+        SITE_MAXLEN_DESCRIPTION +
+        " characters"
+      );
     }
 
-    /**
-     * Updates the RM site
-     */
-    public RMSite updateRMSite(String siteId, SiteUpdate update, Parameters parameters)
-    {
-        Site updatedSite = updateSite(siteId, update, parameters);
-        SiteInfo siteInfo = siteService.getSite(siteId);
-        RMSiteCompliance compliance = getCompliance(siteInfo);
-        return new RMSite(updatedSite, compliance);
-    }
+    return site;
+  }
 
-    /**
-     * Obtain compliance from site info
-     *
-     * @param siteInfo
-     * @return
-     */
-    private RMSiteCompliance getCompliance(SiteInfo siteInfo)
-    {
-        NodeRef nodeRef = siteInfo.getNodeRef();
-        QName siteType = nodeService.getType(nodeRef);
-        RMSiteCompliance compliance;
-        if (RecordsManagementModel.TYPE_RM_SITE.equals(siteType))
-        {
-            compliance = RMSiteCompliance.STANDARD;
-        }
-        else
-        {
-            compliance = RMSiteCompliance.DOD5015;
-        }
-        return compliance;
-    }
+  /**
+   * Updates the RM site
+   */
+  public RMSite updateRMSite(
+    String siteId,
+    SiteUpdate update,
+    Parameters parameters
+  ) {
+    Site updatedSite = updateSite(siteId, update, parameters);
+    SiteInfo siteInfo = siteService.getSite(siteId);
+    RMSiteCompliance compliance = getCompliance(siteInfo);
+    return new RMSite(updatedSite, compliance);
+  }
 
-    /**
-     * Gets RM site type based on compliance.
-     *
-     * @param rmSite
-     * @return
-     */
-    private QName getRMSiteType(RMSite rmSite)
-    {
-        RMSiteCompliance compliance = rmSite.getCompliance();
-        if (compliance == null || compliance.equals(RMSiteCompliance.STANDARD))
-        {
-            return RecordsManagementModel.TYPE_RM_SITE;
-        }
-        else
-        {
-            return DOD5015Model.TYPE_DOD_5015_SITE;
-        }
+  /**
+   * Obtain compliance from site info
+   *
+   * @param siteInfo
+   * @return
+   */
+  private RMSiteCompliance getCompliance(SiteInfo siteInfo) {
+    NodeRef nodeRef = siteInfo.getNodeRef();
+    QName siteType = nodeService.getType(nodeRef);
+    RMSiteCompliance compliance;
+    if (RecordsManagementModel.TYPE_RM_SITE.equals(siteType)) {
+      compliance = RMSiteCompliance.STANDARD;
+    } else {
+      compliance = RMSiteCompliance.DOD5015;
     }
+    return compliance;
+  }
 
-    @Override
-    public RMSite getRMSite(String siteId)
-    {
-        Site site = getSite(siteId);
-        SiteInfo siteInfo = siteService.getSite(siteId);
-        RMSiteCompliance compliance = getCompliance(siteInfo);
-        return new RMSite(site, compliance);
+  /**
+   * Gets RM site type based on compliance.
+   *
+   * @param rmSite
+   * @return
+   */
+  private QName getRMSiteType(RMSite rmSite) {
+    RMSiteCompliance compliance = rmSite.getCompliance();
+    if (compliance == null || compliance.equals(RMSiteCompliance.STANDARD)) {
+      return RecordsManagementModel.TYPE_RM_SITE;
+    } else {
+      return DOD5015Model.TYPE_DOD_5015_SITE;
     }
+  }
 
-    @Override
-    public void deleteRMSite(String siteId, Parameters parameters)
-    {
-        deleteSite(siteId, parameters);
-        solveRMSiteNodeRefCaching();
-    }
+  @Override
+  public RMSite getRMSite(String siteId) {
+    Site site = getSite(siteId);
+    SiteInfo siteInfo = siteService.getSite(siteId);
+    RMSiteCompliance compliance = getCompliance(siteInfo);
+    return new RMSite(site, compliance);
+  }
 
-    /**
-     * Method used for solving rm site nodeRef caching problem that affected rm site update and get from rest api, after site deletion from rest api.
-     * See RM-4289 issue for details.
-     *
-     */
-    private void solveRMSiteNodeRefCaching()
-    {
-        //since we do not have access to SiteServiceImpl.getSiteNodeRef(String shortName, boolean enforcePermissions) method we can use hasSite method to solve caching problem
-        siteService.hasSite(RM_SITE_ID);
-    }
+  @Override
+  public void deleteRMSite(String siteId, Parameters parameters) {
+    deleteSite(siteId, parameters);
+    solveRMSiteNodeRefCaching();
+  }
+
+  /**
+   * Method used for solving rm site nodeRef caching problem that affected rm site update and get from rest api, after site deletion from rest api.
+   * See RM-4289 issue for details.
+   *
+   */
+  private void solveRMSiteNodeRefCaching() {
+    //since we do not have access to SiteServiceImpl.getSiteNodeRef(String shortName, boolean enforcePermissions) method we can use hasSite method to solve caching problem
+    siteService.hasSite(RM_SITE_ID);
+  }
 }

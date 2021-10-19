@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
@@ -51,143 +50,159 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RelationshipsGet extends AbstractRmWebScript
-{
-    /** Constants */
-    private static final String RELATIONSHIPS = "relationships";
-    private static final String RELATIONSHIP_LABEL = "relationshipLabel";
-    private static final String RELATIONSHIP_UNIQUE_NAME = "relationshipUniqueName";
+public class RelationshipsGet extends AbstractRmWebScript {
 
-    /** The relationship end point */
-    private enum RelationshipEndPoint
-    {
-        SOURCE, TARGET
-    }
+  /** Constants */
+  private static final String RELATIONSHIPS = "relationships";
+  private static final String RELATIONSHIP_LABEL = "relationshipLabel";
+  private static final String RELATIONSHIP_UNIQUE_NAME =
+    "relationshipUniqueName";
 
-    /** Relationship service */
-    private RelationshipService relationshipService;
+  /** The relationship end point */
+  private enum RelationshipEndPoint {
+    SOURCE,
+    TARGET,
+  }
 
-    /** JSON conversion component */
-    private JSONConversionComponent jsonConversionComponent;
+  /** Relationship service */
+  private RelationshipService relationshipService;
 
-    /**
-     * Gets the relationship service
-     *
-     * @return The relationship service
-     */
-    protected RelationshipService getRelationshipService()
-    {
-        return this.relationshipService;
-    }
+  /** JSON conversion component */
+  private JSONConversionComponent jsonConversionComponent;
 
-    /**
-     * Gets the JSON conversion component
-     *
-     * @return The JSON conversion component
-     */
-    protected JSONConversionComponent getJsonConversionComponent()
-    {
-        return this.jsonConversionComponent;
-    }
+  /**
+   * Gets the relationship service
+   *
+   * @return The relationship service
+   */
+  protected RelationshipService getRelationshipService() {
+    return this.relationshipService;
+  }
 
-    /**
-     * Sets the relationship service
-     *
-     * @param relationshipService The relationship service
-     */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
-        this.relationshipService = relationshipService;
-    }
+  /**
+   * Gets the JSON conversion component
+   *
+   * @return The JSON conversion component
+   */
+  protected JSONConversionComponent getJsonConversionComponent() {
+    return this.jsonConversionComponent;
+  }
 
-    /**
-     * Sets the JSON conversion component
-     *
-     * @param jsonConversionComponent The JSON conversion component
-     */
-    public void setJsonConversionComponent(JSONConversionComponent jsonConversionComponent)
-    {
-        this.jsonConversionComponent = jsonConversionComponent;
-    }
+  /**
+   * Sets the relationship service
+   *
+   * @param relationshipService The relationship service
+   */
+  public void setRelationshipService(RelationshipService relationshipService) {
+    this.relationshipService = relationshipService;
+  }
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<>(1);
-        NodeRef nodeRef = parseRequestForNodeRef(req);
-        model.put(RELATIONSHIPS, getRelationships(nodeRef));
-        return model;
-    }
+  /**
+   * Sets the JSON conversion component
+   *
+   * @param jsonConversionComponent The JSON conversion component
+   */
+  public void setJsonConversionComponent(
+    JSONConversionComponent jsonConversionComponent
+  ) {
+    this.jsonConversionComponent = jsonConversionComponent;
+  }
 
-    /**
-     * Gets the relationships of a node
-     *
-     * @param nodeRef The node reference
-     *
-     * @return The list of relationships of a node
-     */
-    private List<String> getRelationships(NodeRef nodeRef)
-    {
-        List<String> relationships = new ArrayList<>();
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+   *      org.springframework.extensions.webscripts.Status,
+   *      org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, Object> model = new HashMap<>(1);
+    NodeRef nodeRef = parseRequestForNodeRef(req);
+    model.put(RELATIONSHIPS, getRelationships(nodeRef));
+    return model;
+  }
 
-        Set<Relationship> relationshipsFrom = getRelationshipService().getRelationshipsFrom(nodeRef);
-        relationships.addAll(buildRelationshipData(relationshipsFrom, RelationshipEndPoint.TARGET));
+  /**
+   * Gets the relationships of a node
+   *
+   * @param nodeRef The node reference
+   *
+   * @return The list of relationships of a node
+   */
+  private List<String> getRelationships(NodeRef nodeRef) {
+    List<String> relationships = new ArrayList<>();
 
-        Set<Relationship> relationshipsTo = getRelationshipService().getRelationshipsTo(nodeRef);
-        relationships.addAll(buildRelationshipData(relationshipsTo, RelationshipEndPoint.SOURCE));
+    Set<Relationship> relationshipsFrom = getRelationshipService()
+      .getRelationshipsFrom(nodeRef);
+    relationships.addAll(
+      buildRelationshipData(relationshipsFrom, RelationshipEndPoint.TARGET)
+    );
 
-        return relationships;
-    }
+    Set<Relationship> relationshipsTo = getRelationshipService()
+      .getRelationshipsTo(nodeRef);
+    relationships.addAll(
+      buildRelationshipData(relationshipsTo, RelationshipEndPoint.SOURCE)
+    );
 
-    /**
-     * Creates the relationship data
-     *
-     * @param relationships The {@link Set} of relationships
-     * @param relationshipEndPoint The end point of the relationship, which is either {@link RelationshipEndpoint#SOURCE} or {@link RelationshipEndpoint#TARGET}
-     * @return The relationship data as {@link List}
-     */
-    private List<String> buildRelationshipData(Set<Relationship> relationships, RelationshipEndPoint relationshipEndPoint)
-    {
-        List<String> result = new ArrayList<>();
+    return relationships;
+  }
 
-        for (Relationship relationship : relationships)
-        {
-            String uniqueName = relationship.getUniqueName();
-            RelationshipDefinition relationshipDefinition = getRelationshipService().getRelationshipDefinition(uniqueName);
-            if (relationshipDefinition != null)
-            {
-                NodeRef node;
-                String label;
+  /**
+   * Creates the relationship data
+   *
+   * @param relationships The {@link Set} of relationships
+   * @param relationshipEndPoint The end point of the relationship, which is either {@link RelationshipEndpoint#SOURCE} or {@link RelationshipEndpoint#TARGET}
+   * @return The relationship data as {@link List}
+   */
+  private List<String> buildRelationshipData(
+    Set<Relationship> relationships,
+    RelationshipEndPoint relationshipEndPoint
+  ) {
+    List<String> result = new ArrayList<>();
 
-                if (RelationshipEndPoint.SOURCE.equals(relationshipEndPoint))
-                {
-                    node = relationship.getSource();
-                    label = relationshipDefinition.getDisplayName().getSourceText();
-                }
-                else if (RelationshipEndPoint.TARGET.equals(relationshipEndPoint))
-                {
-                    node = relationship.getTarget();
-                    label = relationshipDefinition.getDisplayName().getTargetText();
-                }
-                else
-                {
-                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unknown relationship end point type '" + relationshipEndPoint + "'.");
-                }
+    for (Relationship relationship : relationships) {
+      String uniqueName = relationship.getUniqueName();
+      RelationshipDefinition relationshipDefinition = getRelationshipService()
+        .getRelationshipDefinition(uniqueName);
+      if (relationshipDefinition != null) {
+        NodeRef node;
+        String label;
 
-                String nodeDetails = getJsonConversionComponent().toJSON(node, true);
-                JSONObject jsonObject = WebScriptUtils.createJSONObject(nodeDetails);
-                WebScriptUtils.putValueToJSONObject(jsonObject, RELATIONSHIP_LABEL, label);
-                WebScriptUtils.putValueToJSONObject(jsonObject, RELATIONSHIP_UNIQUE_NAME, relationshipDefinition.getUniqueName());
-
-                result.add(jsonObject.toString());
-            }
+        if (RelationshipEndPoint.SOURCE.equals(relationshipEndPoint)) {
+          node = relationship.getSource();
+          label = relationshipDefinition.getDisplayName().getSourceText();
+        } else if (RelationshipEndPoint.TARGET.equals(relationshipEndPoint)) {
+          node = relationship.getTarget();
+          label = relationshipDefinition.getDisplayName().getTargetText();
+        } else {
+          throw new WebScriptException(
+            Status.STATUS_BAD_REQUEST,
+            "Unknown relationship end point type '" +
+            relationshipEndPoint +
+            "'."
+          );
         }
 
-        return result;
+        String nodeDetails = getJsonConversionComponent().toJSON(node, true);
+        JSONObject jsonObject = WebScriptUtils.createJSONObject(nodeDetails);
+        WebScriptUtils.putValueToJSONObject(
+          jsonObject,
+          RELATIONSHIP_LABEL,
+          label
+        );
+        WebScriptUtils.putValueToJSONObject(
+          jsonObject,
+          RELATIONSHIP_UNIQUE_NAME,
+          relationshipDefinition.getUniqueName()
+        );
+
+        result.add(jsonObject.toString());
+      }
     }
+
+    return result;
+  }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -32,39 +32,39 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * A registry which holds and provides the appropriate display handler for a
  * particular facet field.
- * 
+ *
  * @author Jamal Kaabi-Mofrad
  * @since 5.0
  */
-public class FacetLabelDisplayHandlerRegistry
-{
-    private final ConcurrentMap<String, FacetLabelDisplayHandler> registry;
+public class FacetLabelDisplayHandlerRegistry {
 
-    public FacetLabelDisplayHandlerRegistry()
-    {
-        this.registry = new ConcurrentHashMap<String, FacetLabelDisplayHandler>();
-    }
+  private final ConcurrentMap<String, FacetLabelDisplayHandler> registry;
 
-    /**
-     * Register an instance of {@code FacetLabelDisplayHandler} with the
-     * specified field facet.
-     * 
-     * @param fieldFacet the field facet
-     * @param displayHandler the display handler
-     */
-    public void addDisplayHandler(String fieldFacet, FacetLabelDisplayHandler displayHandler)
-    {
-        registry.putIfAbsent(fieldFacet, displayHandler);
-    }
+  public FacetLabelDisplayHandlerRegistry() {
+    this.registry = new ConcurrentHashMap<String, FacetLabelDisplayHandler>();
+  }
 
-    /**
-     * Gets the display handler.
-     * 
-     * @param fieldFacet the field facet to perform the lookup
-     * @return the display handler or null if none found
-     */
-    public FacetLabelDisplayHandler getDisplayHandler(String fieldFacet)
-    {
-        return registry.get(fieldFacet);
-    }
+  /**
+   * Register an instance of {@code FacetLabelDisplayHandler} with the
+   * specified field facet.
+   *
+   * @param fieldFacet the field facet
+   * @param displayHandler the display handler
+   */
+  public void addDisplayHandler(
+    String fieldFacet,
+    FacetLabelDisplayHandler displayHandler
+  ) {
+    registry.putIfAbsent(fieldFacet, displayHandler);
+  }
+
+  /**
+   * Gets the display handler.
+   *
+   * @param fieldFacet the field facet to perform the lookup
+   * @return the display handler or null if none found
+   */
+  public FacetLabelDisplayHandler getDisplayHandler(String fieldFacet) {
+    return registry.get(fieldFacet);
+  }
 }

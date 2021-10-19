@@ -28,18 +28,17 @@ package org.alfresco.util.log;
  * @author dward
  *
  */
-public interface NDCDelegate
-{
-    /**
-     * Push new diagnostic context information for the current thread.
-     * 
-     * @param message
-     *            The new diagnostic context information.
-     */
-    public void push(String message);
+public interface NDCDelegate {
+  /**
+   * Push new diagnostic context information for the current thread.
+   *
+   * @param message
+   *            The new diagnostic context information.
+   */
+  public void push(String message);
 
-    /**
-     * Remove the diagnostic context for this thread.
-     */
-    public void remove();
+  /**
+   * Remove the diagnostic context for this thread.
+   */
+  public void remove();
 }

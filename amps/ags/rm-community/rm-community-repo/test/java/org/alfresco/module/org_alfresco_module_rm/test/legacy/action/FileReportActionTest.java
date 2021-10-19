@@ -43,74 +43,88 @@ import org.springframework.extensions.webscripts.GUID;
  * @since 2.2
  * @version 1.0
  */
-public class FileReportActionTest extends BaseRMTestCase
-{
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+public class FileReportActionTest extends BaseRMTestCase {
 
-    public void testFileReport()
-    {
-        fileReport(MimetypeMap.MIMETYPE_HTML);
-    }
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-    public void testfileReportDefaultMimetype()
-    {
-        fileReport(null);
-    }
+  public void testFileReport() {
+    fileReport(MimetypeMap.MIMETYPE_HTML);
+  }
 
-    private void fileReport(final String mimeType)
-    {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        
-        // create record folder
-        final NodeRef recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
-        
-        // close the record folder
-        recordFolderService.closeRecordFolder(recordFolder);
-        
-        // create hold
-        final NodeRef hold = holdService.createHold(filePlan, "holdName", "holdReason", "holdDescription");
+  public void testfileReportDefaultMimetype() {
+    fileReport(null);
+  }
 
-        doTestInTransaction(new FailureTest()
-        {
-            @Override
-            public void run() throws Exception
-            {                
-                // execute action
-                executeAction(mimeType, recordFolder, hold);
-            }
-        });
+  private void fileReport(final String mimeType) {
+    AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // reopen the record folder
-                rmActionService.executeRecordsManagementAction(recordFolder, "openRecordFolder");
-                return null;
-            }
-            
-            @Override
-            public void test(Void result) throws Exception
-            {
-                // execute action
-                executeAction(mimeType, recordFolder, hold);
-            }
-        });
-    }
+    // create record folder
+    final NodeRef recordFolder = recordFolderService.createRecordFolder(
+      rmContainer,
+      GUID.generate()
+    );
 
-    private void executeAction(String mimeType, NodeRef recordFolder, NodeRef hold)
-    {
-        Action action = actionService.createAction(FileReportAction.NAME);
-        if (StringUtils.isNotBlank(mimeType))
-        {
-            action.setParameterValue(FileReportAction.MIMETYPE, mimeType);
+    // close the record folder
+    recordFolderService.closeRecordFolder(recordFolder);
+
+    // create hold
+    final NodeRef hold = holdService.createHold(
+      filePlan,
+      "holdName",
+      "holdReason",
+      "holdDescription"
+    );
+
+    doTestInTransaction(
+      new FailureTest() {
+        @Override
+        public void run() throws Exception {
+          // execute action
+          executeAction(mimeType, recordFolder, hold);
         }
-        action.setParameterValue(FileReportAction.DESTINATION, recordFolder.toString());
-        action.setParameterValue(FileReportAction.REPORT_TYPE, "rmr:destructionReport");
-        actionService.executeAction(action, hold);
+      }
+    );
+
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() {
+          // reopen the record folder
+          rmActionService.executeRecordsManagementAction(
+            recordFolder,
+            "openRecordFolder"
+          );
+          return null;
+        }
+
+        @Override
+        public void test(Void result) throws Exception {
+          // execute action
+          executeAction(mimeType, recordFolder, hold);
+        }
+      }
+    );
+  }
+
+  private void executeAction(
+    String mimeType,
+    NodeRef recordFolder,
+    NodeRef hold
+  ) {
+    Action action = actionService.createAction(FileReportAction.NAME);
+    if (StringUtils.isNotBlank(mimeType)) {
+      action.setParameterValue(FileReportAction.MIMETYPE, mimeType);
     }
+    action.setParameterValue(
+      FileReportAction.DESTINATION,
+      recordFolder.toString()
+    );
+    action.setParameterValue(
+      FileReportAction.REPORT_TYPE,
+      "rmr:destructionReport"
+    );
+    actionService.executeAction(action, hold);
+  }
 }

@@ -30,18 +30,14 @@ import org.springframework.stereotype.Component;
 
 /**
  * Route builder for test messages
- * 
+ *
  * @author Ray Gauss II
  */
 @Component
-public class TestingRouteBuilder extends RouteBuilder
-{
+public class TestingRouteBuilder extends RouteBuilder {
 
-    @Override
-    public void configure() throws Exception
-    {
-        from("direct-vm:alfresco.test.2")
-            .to("mock:result2");
-    }
-
+  @Override
+  public void configure() throws Exception {
+    from("direct-vm:alfresco.test.2").to("mock:result2");
+  }
 }

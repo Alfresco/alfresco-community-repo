@@ -35,40 +35,39 @@ import java.util.StringTokenizer;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class EventUserFilter implements EventFilter<String>
-{
-    private Set<String> filteredUsers;
-    private boolean userNamesAreCaseSensitive;
+public class EventUserFilter implements EventFilter<String> {
 
-    public EventUserFilter(String filteredUsersStr, boolean userNamesAreCaseSensitive)
-    {
-        this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
-        this.filteredUsers = parseFilterList(filteredUsersStr);
+  private Set<String> filteredUsers;
+  private boolean userNamesAreCaseSensitive;
+
+  public EventUserFilter(
+    String filteredUsersStr,
+    boolean userNamesAreCaseSensitive
+  ) {
+    this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
+    this.filteredUsers = parseFilterList(filteredUsersStr);
+  }
+
+  private Set<String> parseFilterList(String str) {
+    Set<String> set = new HashSet<>();
+
+    StringTokenizer st = new StringTokenizer(str, ",");
+    while (st.hasMoreTokens()) {
+      String entry = st.nextToken().trim();
+      if (!entry.isEmpty()) {
+        set.add((userNamesAreCaseSensitive) ? entry : entry.toLowerCase());
+      }
     }
+    return set;
+  }
 
-    private Set<String> parseFilterList(String str)
-    {
-        Set<String> set = new HashSet<>();
-
-        StringTokenizer st = new StringTokenizer(str, ",");
-        while (st.hasMoreTokens())
-        {
-            String entry = st.nextToken().trim();
-            if (!entry.isEmpty())
-            {
-                set.add((userNamesAreCaseSensitive) ? entry : entry.toLowerCase());
-            }
-        }
-        return set;
+  @Override
+  public boolean isExcluded(String user) {
+    if (user == null) {
+      user = "null";
     }
-
-    @Override
-    public boolean isExcluded(String user)
-    {
-        if (user == null)
-        {
-            user = "null";
-        }
-        return filteredUsers.contains((userNamesAreCaseSensitive) ? user : user.toLowerCase());
-    }
+    return filteredUsers.contains(
+      (userNamesAreCaseSensitive) ? user : user.toLowerCase()
+    );
+  }
 }

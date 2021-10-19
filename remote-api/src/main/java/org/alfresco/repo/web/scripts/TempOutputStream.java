@@ -37,13 +37,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.Key;
 import java.util.function.Supplier;
-
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.IvParameterSpec;
-
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
@@ -57,10 +55,10 @@ import org.apache.commons.logging.LogFactory;
  * Close the stream before any call to
  * {@link TempOutputStream}.getInputStream().
  * <p/>
- * 
+ *
  * If <b>deleteTempFileOnClose</b> is false then use proper try-finally patterns
  * to ensure that the temp file is destroyed after it is no longer needed.
- * 
+ *
  * <pre>
  *   <code>try
  *   {
@@ -74,295 +72,274 @@ import org.apache.commons.logging.LogFactory;
  *   </code>
  * </pre>
  */
-public class TempOutputStream extends OutputStream
-{
-    private static final Log logger = LogFactory.getLog(TempOutputStream.class);
+public class TempOutputStream extends OutputStream {
 
-    private static final int DEFAULT_MEMORY_THRESHOLD = 4 * 1024 * 1024; // 4mb
-    private static final String ALGORITHM = "AES";
-    private static final String MODE = "CTR";
-    private static final String PADDING = "PKCS5Padding";
-    private static final String TRANSFORMATION = ALGORITHM + '/' + MODE + '/' + PADDING;
-    private static final int KEY_SIZE = 128;
-    public static final String TEMP_FILE_PREFIX = "tempStreamFile-";
+  private static final Log logger = LogFactory.getLog(TempOutputStream.class);
 
-    private final File tempDir;
-    private final int memoryThreshold;
-    private final long maxContentSize;
-    private final boolean encrypt;
+  private static final int DEFAULT_MEMORY_THRESHOLD = 4 * 1024 * 1024; // 4mb
+  private static final String ALGORITHM = "AES";
+  private static final String MODE = "CTR";
+  private static final String PADDING = "PKCS5Padding";
+  private static final String TRANSFORMATION =
+    ALGORITHM + '/' + MODE + '/' + PADDING;
+  private static final int KEY_SIZE = 128;
+  public static final String TEMP_FILE_PREFIX = "tempStreamFile-";
 
-    private long length = 0;
-    private OutputStream outputStream;
-    private File tempFile;
+  private final File tempDir;
+  private final int memoryThreshold;
+  private final long maxContentSize;
+  private final boolean encrypt;
 
-    private Key symKey;
-    private byte[] iv;
+  private long length = 0;
+  private OutputStream outputStream;
+  private File tempFile;
 
-    /**
-     * Creates a TempOutputStream.
-     * 
-     * @param tempDir
-     *            the temporary directory, i.e. <code>isDir == true</code>, that
-     *            will be used as * parent directory for creating temp file backed
-     *            streams
-     * @param memoryThreshold
-     *            the memory threshold in B
-     * @param maxContentSize
-     *            the max content size in B
-     * @param encrypt
-     *            true if temp files should be encrypted
-     */
-    public TempOutputStream(File tempDir, int memoryThreshold, long maxContentSize, boolean encrypt)
-    {
-        this.tempDir = tempDir;
-        this.memoryThreshold = (memoryThreshold < 0) ? DEFAULT_MEMORY_THRESHOLD : memoryThreshold;
-        this.maxContentSize = maxContentSize;
-        this.encrypt = encrypt;
+  private Key symKey;
+  private byte[] iv;
 
-        this.outputStream = new ByteArrayOutputStream();
+  /**
+   * Creates a TempOutputStream.
+   *
+   * @param tempDir
+   *            the temporary directory, i.e. <code>isDir == true</code>, that
+   *            will be used as * parent directory for creating temp file backed
+   *            streams
+   * @param memoryThreshold
+   *            the memory threshold in B
+   * @param maxContentSize
+   *            the max content size in B
+   * @param encrypt
+   *            true if temp files should be encrypted
+   */
+  public TempOutputStream(
+    File tempDir,
+    int memoryThreshold,
+    long maxContentSize,
+    boolean encrypt
+  ) {
+    this.tempDir = tempDir;
+    this.memoryThreshold =
+      (memoryThreshold < 0) ? DEFAULT_MEMORY_THRESHOLD : memoryThreshold;
+    this.maxContentSize = maxContentSize;
+    this.encrypt = encrypt;
+
+    this.outputStream = new ByteArrayOutputStream();
+  }
+
+  /**
+   * Returns the data as an InputStream
+   */
+  public InputStream toNewInputStream() throws IOException {
+    closeOutputStream();
+
+    if (tempFile == null) {
+      return new ByteArrayInputStream(
+        ((ByteArrayOutputStream) outputStream).toByteArray()
+      );
     }
-
-    /**
-     * Returns the data as an InputStream
-     */
-    public InputStream toNewInputStream() throws IOException
-    {
-        closeOutputStream();
-
-        if (tempFile == null)
-        {
-            return new ByteArrayInputStream(((ByteArrayOutputStream) outputStream).toByteArray());
-        }
-        if (!encrypt)
-        {
-            return new BufferedInputStream(new FileInputStream(tempFile));
-        }
-        try
-        {
-            final Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.DECRYPT_MODE, symKey, new IvParameterSpec(iv));
-
-            return new BufferedInputStream(new CipherInputStream(new FileInputStream(tempFile), cipher));
-        }
-        catch (Exception e)
-        {
-            destroy();
-
-            if (logger.isErrorEnabled())
-            {
-                logger.error("Cannot initialize decryption cipher", e);
-            }
-
-            throw new IOException("Cannot initialize decryption cipher", e);
-        }
+    if (!encrypt) {
+      return new BufferedInputStream(new FileInputStream(tempFile));
     }
+    try {
+      final Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+      cipher.init(Cipher.DECRYPT_MODE, symKey, new IvParameterSpec(iv));
 
-    @Override
-    public void write(int b) throws IOException
-    {
-        update(1);
-        outputStream.write(b);
+      return new BufferedInputStream(
+        new CipherInputStream(new FileInputStream(tempFile), cipher)
+      );
+    } catch (Exception e) {
+      destroy();
+
+      if (logger.isErrorEnabled()) {
+        logger.error("Cannot initialize decryption cipher", e);
+      }
+
+      throw new IOException("Cannot initialize decryption cipher", e);
     }
+  }
 
-    @Override
-    public void write(byte[] b, int off, int len) throws IOException
-    {
-        update(len);
-        outputStream.write(b, off, len);
-    }
+  @Override
+  public void write(int b) throws IOException {
+    update(1);
+    outputStream.write(b);
+  }
 
-    @Override
-    public void flush() throws IOException
-    {
+  @Override
+  public void write(byte[] b, int off, int len) throws IOException {
+    update(len);
+    outputStream.write(b, off, len);
+  }
+
+  @Override
+  public void flush() throws IOException {
+    outputStream.flush();
+  }
+
+  @Override
+  public void close() throws IOException {
+    closeOutputStream();
+  }
+
+  /**
+   * Closes the stream and removes the backing file (if present).
+   * <p/>
+   *
+   * If <b>deleteTempFileOnClose</b> is false then use proper try-finally patterns
+   * to ensure that the temp file is destroyed after it is no longer needed.
+   *
+   * <pre>
+   *   <code>try
+   *   {
+   *      StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), tempOutputStream);
+   *      tempOutputStream.close();
+   *   }
+   *   finally
+   *   {
+   *       tempOutputStream.destroy();
+   *   }
+   *   </code>
+   * </pre>
+   */
+  public void destroy() throws IOException {
+    closeOutputStream();
+
+    deleteTempFile();
+  }
+
+  public long getLength() {
+    return length;
+  }
+
+  private void closeOutputStream() {
+    if (outputStream != null) {
+      try {
         outputStream.flush();
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        closeOutputStream();
-    }
-
-    /**
-     * Closes the stream and removes the backing file (if present).
-     * <p/>
-     * 
-     * If <b>deleteTempFileOnClose</b> is false then use proper try-finally patterns
-     * to ensure that the temp file is destroyed after it is no longer needed.
-     *
-     * <pre>
-     *   <code>try
-     *   {
-     *      StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), tempOutputStream);
-     *      tempOutputStream.close();
-     *   }
-     *   finally
-     *   {
-     *       tempOutputStream.destroy();
-     *   }
-     *   </code>
-     * </pre>
-     */
-    public void destroy() throws IOException
-    {
-        closeOutputStream();
-
-        deleteTempFile();
-    }
-
-    public long getLength()
-    {
-        return length;
-    }
-
-    private void closeOutputStream()
-    {
-        if (outputStream != null)
-        {
-            try
-            {
-                outputStream.flush();
-            }
-            catch (IOException e)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Flushing the output stream failed", e);
-                }
-            }
-
-            try
-            {
-                outputStream.close();
-            }
-            catch (IOException e)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Closing the output stream failed", e);
-                }
-            }
+      } catch (IOException e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Flushing the output stream failed", e);
         }
-    }
+      }
 
-    private void deleteTempFile()
-    {
-        if (tempFile != null)
-        {
-            try
-            {
-                boolean isDeleted = tempFile.delete();
-                if (!isDeleted)
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Temp file could not be deleted: " + tempFile.getAbsolutePath());
-                    }
-                }
-                else
-                {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Deleted temp file: " + tempFile.getAbsolutePath());
-                    }
-                }
-            }
-            finally
-            {
-                tempFile = null;
-            }
+      try {
+        outputStream.close();
+      } catch (IOException e) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Closing the output stream failed", e);
         }
+      }
     }
+  }
 
-    private BufferedOutputStream createFileOutputStream(final File file) throws IOException
-    {
-        if (!encrypt)
-        {
-            return new BufferedOutputStream(new FileOutputStream(file));
+  private void deleteTempFile() {
+    if (tempFile != null) {
+      try {
+        boolean isDeleted = tempFile.delete();
+        if (!isDeleted) {
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+              "Temp file could not be deleted: " + tempFile.getAbsolutePath()
+            );
+          }
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Deleted temp file: " + tempFile.getAbsolutePath());
+          }
         }
-        try
-        {
-            // Generate a symmetric key
-            final KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
-            keyGen.init(KEY_SIZE);
-            symKey = keyGen.generateKey();
+      } finally {
+        tempFile = null;
+      }
+    }
+  }
 
-            Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, symKey);
+  private BufferedOutputStream createFileOutputStream(final File file)
+    throws IOException {
+    if (!encrypt) {
+      return new BufferedOutputStream(new FileOutputStream(file));
+    }
+    try {
+      // Generate a symmetric key
+      final KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
+      keyGen.init(KEY_SIZE);
+      symKey = keyGen.generateKey();
 
-            iv = cipher.getIV();
+      Cipher cipher = Cipher.getInstance(TRANSFORMATION);
+      cipher.init(Cipher.ENCRYPT_MODE, symKey);
 
-            return new BufferedOutputStream(new CipherOutputStream(new FileOutputStream(file), cipher));
-        }
-        catch (Exception e)
-        {
-            if (logger.isErrorEnabled())
-            {
-                logger.error("Cannot initialize encryption cipher", e);
-            }
+      iv = cipher.getIV();
 
-            throw new IOException("Cannot initialize encryption cipher", e);
-        }
+      return new BufferedOutputStream(
+        new CipherOutputStream(new FileOutputStream(file), cipher)
+      );
+    } catch (Exception e) {
+      if (logger.isErrorEnabled()) {
+        logger.error("Cannot initialize encryption cipher", e);
+      }
+
+      throw new IOException("Cannot initialize encryption cipher", e);
+    }
+  }
+
+  private void update(int len) throws IOException {
+    if (surpassesMaxContentSize(len)) {
+      destroy();
+      throw new ContentLimitViolationException(
+        "Content size violation, limit = " + maxContentSize
+      );
     }
 
-    private void update(int len) throws IOException
-    {
-        if (surpassesMaxContentSize(len))
-        {
-            destroy();
-            throw new ContentLimitViolationException("Content size violation, limit = " + maxContentSize);
-        }
+    if (surpassesThreshold(len)) {
+      tempFile =
+        TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ".bin", tempDir);
 
-        if (surpassesThreshold(len))
-        {
-            tempFile = TempFileProvider.createTempFile(TEMP_FILE_PREFIX, ".bin", tempDir);
+      final BufferedOutputStream fileOutputStream = createFileOutputStream(
+        tempFile
+      );
+      fileOutputStream.write(
+        ((ByteArrayOutputStream) outputStream).toByteArray()
+      );
+      fileOutputStream.flush();
 
-            final BufferedOutputStream fileOutputStream = createFileOutputStream(tempFile);
-            fileOutputStream.write(((ByteArrayOutputStream) outputStream).toByteArray());
-            fileOutputStream.flush();
+      try {
+        outputStream.close();
+      } catch (IOException ignore) {
+        // Ignore exception
+      }
 
-            try
-            {
-                outputStream.close();
-            }
-            catch (IOException ignore)
-            {
-                // Ignore exception
-            }
-
-            outputStream = fileOutputStream;
-        }
-
-        length += len;
+      outputStream = fileOutputStream;
     }
 
-    private boolean surpassesMaxContentSize(final int len)
-    {
-        return maxContentSize >= 0 && length + len > maxContentSize;
-    }
+    length += len;
+  }
 
-    private boolean surpassesThreshold(final int len)
-    {
-        return tempFile == null && length + len > memoryThreshold;
-    }
+  private boolean surpassesMaxContentSize(final int len) {
+    return maxContentSize >= 0 && length + len > maxContentSize;
+  }
 
-    /**
-     * Creates a {@link TempOutputStream} factory/supplier.
-     *
-     * @param tempDir
-     *            the temporary directory, i.e. <code>isDir == true</code>, that
-     *            will be used as * parent directory for creating temp file backed
-     *            streams
-     * @param memoryThreshold
-     *            the memory threshold in B
-     * @param maxContentSize
-     *            the max content size in B
-     * @param encrypt
-     *            true if temp files should be encrypted
-     */
-    public static Supplier<TempOutputStream> factory(final File tempDir, final int memoryThreshold,
-        final long maxContentSize, final boolean encrypt)
-    {
-        return () -> new TempOutputStream(tempDir, memoryThreshold, maxContentSize, encrypt);
-    }
+  private boolean surpassesThreshold(final int len) {
+    return tempFile == null && length + len > memoryThreshold;
+  }
+
+  /**
+   * Creates a {@link TempOutputStream} factory/supplier.
+   *
+   * @param tempDir
+   *            the temporary directory, i.e. <code>isDir == true</code>, that
+   *            will be used as * parent directory for creating temp file backed
+   *            streams
+   * @param memoryThreshold
+   *            the memory threshold in B
+   * @param maxContentSize
+   *            the max content size in B
+   * @param encrypt
+   *            true if temp files should be encrypted
+   */
+  public static Supplier<TempOutputStream> factory(
+    final File tempDir,
+    final int memoryThreshold,
+    final long maxContentSize,
+    final boolean encrypt
+  ) {
+    return () ->
+      new TempOutputStream(tempDir, memoryThreshold, maxContentSize, encrypt);
+  }
 }

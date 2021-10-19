@@ -29,29 +29,25 @@ package org.alfresco.rm.rest.api.model;
 
 /**
  * Concrete class carrying general information for a record folder
- * 
+ *
  * @author Ramona Popa
  * @since 2.6
  */
-public class RecordFolder extends RMNode
-{
-    public static final String PARAM_IS_CLOSED = "isClosed";
-    
-    private Boolean isClosed;
+public class RecordFolder extends RMNode {
 
-    public RecordFolder()
-    {
-        super();
-    }
+  public static final String PARAM_IS_CLOSED = "isClosed";
 
-    public Boolean getIsClosed()
-    {
-        return isClosed;
-    }
+  private Boolean isClosed;
 
-    public void setIsClosed(Boolean isClosed)
-    {
-        this.isClosed = isClosed;
-    }
+  public RecordFolder() {
+    super();
+  }
 
+  public Boolean getIsClosed() {
+    return isClosed;
+  }
+
+  public void setIsClosed(Boolean isClosed) {
+    this.isClosed = isClosed;
+  }
 }

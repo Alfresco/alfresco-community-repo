@@ -44,241 +44,306 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Claudia Agache
  * @since 3.2
  */
-public class AddActiveContentToHoldTest extends BaseRMTestCase
-{
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+public class AddActiveContentToHoldTest extends BaseRMTestCase {
 
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-    /**
-     * Given active content
-     * And file permission on the hold
-     * And the appropriate capability to add to hold
-     * When I try to add the active content to the hold
-     * Then the active content is frozen
-     * And the active content is contained within the hold
-     */
-    public void testAddDocumentToHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-            public void given()
-            {
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-            }
+  /**
+   * Given active content
+   * And file permission on the hold
+   * And the appropriate capability to add to hold
+   * When I try to add the active content to the hold
+   * Then the active content is frozen
+   * And the active content is contained within the hold
+   */
+  public void testAddDocumentToHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef hold;
 
-            public void when()
-            {
-                // add the active content to hold
-                holdService.addToHold(hold, dmDocument);
-            }
+        public void given() {
+          // create a hold
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+        }
 
-            public void then()
-            {
-                // active content is held
-                assertTrue(freezeService.isFrozen(dmDocument));
+        public void when() {
+          // add the active content to hold
+          holdService.addToHold(hold, dmDocument);
+        }
 
-                // collaboration folder has frozen children
-                assertFalse(freezeService.isFrozen(dmFolder));
-                assertTrue(freezeService.hasFrozenChildren(dmFolder));
+        public void then() {
+          // active content is held
+          assertTrue(freezeService.isFrozen(dmDocument));
 
-                // collaboration folder is not held
-                assertFalse(holdService.getHeld(hold).contains(dmFolder));
-                assertFalse(holdService.heldBy(dmFolder, true).contains(hold));
+          // collaboration folder has frozen children
+          assertFalse(freezeService.isFrozen(dmFolder));
+          assertTrue(freezeService.hasFrozenChildren(dmFolder));
 
-                // hold contains active content
-                assertTrue(holdService.getHeld(hold).contains(dmDocument));
-                assertTrue(holdService.heldBy(dmDocument, true).contains(hold));
+          // collaboration folder is not held
+          assertFalse(holdService.getHeld(hold).contains(dmFolder));
+          assertFalse(holdService.heldBy(dmFolder, true).contains(hold));
 
-                // additional check for child held caching
-                assertTrue(nodeService.hasAspect(dmFolder, ASPECT_HELD_CHILDREN));
-                assertEquals(1, nodeService.getProperty(dmFolder, PROP_HELD_CHILDREN_COUNT));
-            }
-        });
-    }
+          // hold contains active content
+          assertTrue(holdService.getHeld(hold).contains(dmDocument));
+          assertTrue(holdService.heldBy(dmDocument, true).contains(hold));
 
-    /**
-     * Given active content
-     * And a non rm user with write permission on active content
-     * When user tries to add the active content to hold
-     * Then AccessDeniedException is thrown
-     */
-    public void testAddDocumentToHoldAsNonRMUser()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
-            private NodeRef hold;
+          // additional check for child held caching
+          assertTrue(nodeService.hasAspect(dmFolder, ASPECT_HELD_CHILDREN));
+          assertEquals(
+            1,
+            nodeService.getProperty(dmFolder, PROP_HELD_CHILDREN_COUNT)
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-            }
+  /**
+   * Given active content
+   * And a non rm user with write permission on active content
+   * When user tries to add the active content to hold
+   * Then AccessDeniedException is thrown
+   */
+  public void testAddDocumentToHoldAsNonRMUser() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(AccessDeniedException.class) {
+        private NodeRef hold;
 
-            public void when()
-            {
-                // add the active content to hold as a non RM user
-                AuthenticationUtil.runAs(
-                        (RunAsWork<Void>) () -> {
-                            holdService.addToHold(hold, dmDocument);
-                            return null;
-                        }, dmCollaborator);
-            }
-        });
-    }
+        public void given() {
+          // create a hold
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+        }
 
-    /**
-     * Given active content
-     * And a rm user with Filing permission on hold and Add to Hold Capability, but only read permission on active content
-     * When user tries to add the active content to hold
-     * Then an exception is thrown
-     */
-    public void testAddDocumentToHoldNoWritePermissionOnDoc()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
-            private NodeRef hold;
+        public void when() {
+          // add the active content to hold as a non RM user
+          AuthenticationUtil.runAs(
+            (RunAsWork<Void>) () -> {
+              holdService.addToHold(hold, dmDocument);
+              return null;
+            },
+            dmCollaborator
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+  /**
+   * Given active content
+   * And a rm user with Filing permission on hold and Add to Hold Capability, but only read permission on active content
+   * When user tries to add the active content to hold
+   * Then an exception is thrown
+   */
+  public void testAddDocumentToHoldNoWritePermissionOnDoc() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(AccessDeniedException.class) {
+        private NodeRef hold;
 
-                //add rm Admin as consumer in collaboration site to have read permissions on dmDocument
-                siteService.setMembership(collabSiteId, rmAdminName, SiteModel.SITE_CONSUMER);
-            }
+        public void given() {
+          // create a hold
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
 
-            public void when()
-            {
-                // add the active content to hold as a RM admin who has Add to Hold Capability and filing permission on
-                // hold, but no Write permissions on doc
-                AuthenticationUtil.runAs(
-                        (RunAsWork<Void>) () -> {
-                            holdService.addToHold(hold, dmDocument);
-                            return null;
-                        }, rmAdminName);
-            }
-        });
-    }
+          //add rm Admin as consumer in collaboration site to have read permissions on dmDocument
+          siteService.setMembership(
+            collabSiteId,
+            rmAdminName,
+            SiteModel.SITE_CONSUMER
+          );
+        }
 
-    /**
-     * Given active content
-     * And a rm user with Add to Hold Capability, write permission on active content and only Read permission on hold
-     * When user tries to add the active content to hold
-     * Then AccessDeniedException is thrown
-     */
-    public void testAddDocumentToHoldNoFilingPermissionOnHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class, recordsManagerName, false)
-        {
-            private NodeRef hold;
+        public void when() {
+          // add the active content to hold as a RM admin who has Add to Hold Capability and filing permission on
+          // hold, but no Write permissions on doc
+          AuthenticationUtil.runAs(
+            (RunAsWork<Void>) () -> {
+              holdService.addToHold(hold, dmDocument);
+              return null;
+            },
+            rmAdminName
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                AuthenticationUtil.runAs(
-                        (RunAsWork<Void>) () -> {
-                            // create a hold
-                            hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+  /**
+   * Given active content
+   * And a rm user with Add to Hold Capability, write permission on active content and only Read permission on hold
+   * When user tries to add the active content to hold
+   * Then AccessDeniedException is thrown
+   */
+  public void testAddDocumentToHoldNoFilingPermissionOnHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(
+        AccessDeniedException.class,
+        recordsManagerName,
+        false
+      ) {
+        private NodeRef hold;
 
-                            //add Read permission on hold
-                            filePlanPermissionService.setPermission(hold, recordsManagerName, RMPermissionModel.READ_RECORDS);
+        public void given() {
+          AuthenticationUtil.runAs(
+            (RunAsWork<Void>) () -> {
+              // create a hold
+              hold =
+                holdService.createHold(
+                  filePlan,
+                  GUID.generate(),
+                  GUID.generate(),
+                  GUID.generate()
+                );
 
-                            //add recordsManagerPerson as manager in collaboration site to have write permissions on dmDocument
-                            siteService.setMembership(collabSiteId, recordsManagerName, SITE_MANAGER);
-                            return null;
-                        }, getAdminUserName());
-            }
+              //add Read permission on hold
+              filePlanPermissionService.setPermission(
+                hold,
+                recordsManagerName,
+                RMPermissionModel.READ_RECORDS
+              );
 
-            public void when()
-            {
-                // add the active content to hold as a RM manager who has Add to Hold Capability and write permission on
-                // doc, but no filing permission on hold
-                holdService.addToHold(hold, dmDocument);
-            }
-        });
-    }
+              //add recordsManagerPerson as manager in collaboration site to have write permissions on dmDocument
+              siteService.setMembership(
+                collabSiteId,
+                recordsManagerName,
+                SITE_MANAGER
+              );
+              return null;
+            },
+            getAdminUserName()
+          );
+        }
 
-    /**
-     * Given active content
-     * And a rm user with write permission on active content and Filing permission on hold, but no Add to Hold Capability
-     * When user tries to add the active content to hold
-     * Then AccessDeniedException is thrown
-     */
-    public void testAddDocumentToHoldNoCapability()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class, powerUserName, false)
-        {
-            private NodeRef hold;
+        public void when() {
+          // add the active content to hold as a RM manager who has Add to Hold Capability and write permission on
+          // doc, but no filing permission on hold
+          holdService.addToHold(hold, dmDocument);
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                AuthenticationUtil.runAs(
-                        (RunAsWork<Void>) () -> {
-                            // create a hold
-                            hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+  /**
+   * Given active content
+   * And a rm user with write permission on active content and Filing permission on hold, but no Add to Hold Capability
+   * When user tries to add the active content to hold
+   * Then AccessDeniedException is thrown
+   */
+  public void testAddDocumentToHoldNoCapability() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(
+        AccessDeniedException.class,
+        powerUserName,
+        false
+      ) {
+        private NodeRef hold;
 
-                            //add powerUserPerson as manager in collaboration site to have write permissions on dmDocument
-                            siteService.setMembership(collabSiteId, powerUserName, SiteModel.SITE_MANAGER);
+        public void given() {
+          AuthenticationUtil.runAs(
+            (RunAsWork<Void>) () -> {
+              // create a hold
+              hold =
+                holdService.createHold(
+                  filePlan,
+                  GUID.generate(),
+                  GUID.generate(),
+                  GUID.generate()
+                );
 
-                            //assign powerUserPerson filing permission on hold
-                            filePlanPermissionService.setPermission(hold, powerUserName, FILING);
-                            return null;
-                        }, getAdminUserName());
-            }
+              //add powerUserPerson as manager in collaboration site to have write permissions on dmDocument
+              siteService.setMembership(
+                collabSiteId,
+                powerUserName,
+                SiteModel.SITE_MANAGER
+              );
 
-            public void when()
-            {
-                // add the active content to hold as a RM power user who has write permission on doc and filing
-                // permission on hold, but no Add To Hold capability
-                holdService.addToHold(hold, dmDocument);
-            }
-        });
-    }
+              //assign powerUserPerson filing permission on hold
+              filePlanPermissionService.setPermission(
+                hold,
+                powerUserName,
+                FILING
+              );
+              return null;
+            },
+            getAdminUserName()
+          );
+        }
 
-    /**
-     * Given active content on hold
-     * When I try to add content to another hold
-     * And I have file permission on the other hold
-     * And I have the appropriate capability to add to hold
-     * Then the active content is contained within both holds
-     * And the active content remains frozen
-     */
-    public void testAddDocumentToAnotherHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
-            private NodeRef hold2;
+        public void when() {
+          // add the active content to hold as a RM power user who has write permission on doc and filing
+          // permission on hold, but no Add To Hold capability
+          holdService.addToHold(hold, dmDocument);
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                hold2 = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                holdService.addToHold(hold, dmDocument);
-            }
+  /**
+   * Given active content on hold
+   * When I try to add content to another hold
+   * And I have file permission on the other hold
+   * And I have the appropriate capability to add to hold
+   * Then the active content is contained within both holds
+   * And the active content remains frozen
+   */
+  public void testAddDocumentToAnotherHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef hold;
+        private NodeRef hold2;
 
-            public void when()
-            {
-                holdService.addToHold(hold2, dmDocument);
-            }
+        public void given() {
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+          hold2 =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+          holdService.addToHold(hold, dmDocument);
+        }
 
-            public void then()
-            {
-                assertTrue(freezeService.isFrozen(dmDocument));
-                assertTrue(holdService.heldBy(dmDocument, true).contains(hold));
-                assertTrue(holdService.heldBy(dmDocument, true).contains(hold2));
-            }
-        });
-    }
+        public void when() {
+          holdService.addToHold(hold2, dmDocument);
+        }
+
+        public void then() {
+          assertTrue(freezeService.isFrozen(dmDocument));
+          assertTrue(holdService.heldBy(dmDocument, true).contains(hold));
+          assertTrue(holdService.heldBy(dmDocument, true).contains(hold2));
+        }
+      }
+    );
+  }
 }

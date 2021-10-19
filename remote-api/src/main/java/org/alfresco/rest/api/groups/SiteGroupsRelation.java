@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.groups;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.SiteGroup;
 import org.alfresco.rest.api.sites.SiteEntityResource;
@@ -36,93 +38,109 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
-import java.util.List;
-import java.util.stream.Collectors;
+@RelationshipResource(
+  name = "group-members",
+  entityResource = SiteEntityResource.class,
+  title = "Site Groups"
+)
+public class SiteGroupsRelation
+  implements
+    RelationshipResourceAction.Read<SiteGroup>,
+    RelationshipResourceAction.Delete,
+    RelationshipResourceAction.Create<SiteGroup>,
+    RelationshipResourceAction.Update<SiteGroup>,
+    RelationshipResourceAction.ReadById<SiteGroup>,
+    InitializingBean {
 
-@RelationshipResource(name = "group-members", entityResource = SiteEntityResource.class, title = "Site Groups")
-public class SiteGroupsRelation implements RelationshipResourceAction.Read<SiteGroup>,
-        RelationshipResourceAction.Delete,
-        RelationshipResourceAction.Create<SiteGroup>,
-        RelationshipResourceAction.Update<SiteGroup>,
-        RelationshipResourceAction.ReadById<SiteGroup>,
-        InitializingBean
-{
+  private Sites sites;
 
-    private Sites sites;
+  public void setSites(Sites sites) {
+    this.sites = sites;
+  }
 
-    public void setSites(Sites sites)
-    {
-        this.sites = sites;
-    }
+  @Override
+  public void afterPropertiesSet() {
+    ParameterCheck.mandatory("sites", this.sites);
+  }
 
-    @Override
-    public void afterPropertiesSet()
-    {
-        ParameterCheck.mandatory("sites", this.sites);
-    }
+  /**
+   * POST sites/<siteId>/group-members
+   * <p>
+   * Adds groups to site
+   * <p>
+   * If group does not exist throws NotFoundException (status 404).
+   *
+   * @see RelationshipResourceAction.Create#create(String, List, Parameters)
+   */
+  @Override
+  @WebApiDescription(title = "Adds groups as a member of site siteId.")
+  public List<SiteGroup> create(
+    String siteId,
+    List<SiteGroup> siteMembers,
+    Parameters parameters
+  ) {
+    return siteMembers
+      .stream()
+      .map(group -> sites.addSiteGroupMembership(siteId, group))
+      .collect(Collectors.toList());
+  }
 
-    /**
-     * POST sites/<siteId>/group-members
-     * <p>
-     * Adds groups to site
-     * <p>
-     * If group does not exist throws NotFoundException (status 404).
-     *
-     * @see RelationshipResourceAction.Create#create(String, List, Parameters)
-     */
-    @Override
-    @WebApiDescription(title = "Adds groups as a member of site siteId.")
-    public List<SiteGroup> create(String siteId, List<SiteGroup> siteMembers, Parameters parameters)
-    {
-        return siteMembers.stream().map((group) -> sites.addSiteGroupMembership(siteId, group)).collect(Collectors.toList());
-    }
+  /**
+   * Returns a paged list of all the groups of the site 'siteId'.
+   * <p>
+   * If siteId does not exist, throws NotFoundException (status 404).
+   */
+  @Override
+  @WebApiDescription(
+    title = "A paged list of all the groups of the site 'siteId'."
+  )
+  public CollectionWithPagingInfo<SiteGroup> readAll(
+    String siteId,
+    Parameters parameters
+  ) {
+    return sites.getSiteGroupMemberships(siteId, parameters);
+  }
 
-    /**
-     * Returns a paged list of all the groups of the site 'siteId'.
-     * <p>
-     * If siteId does not exist, throws NotFoundException (status 404).
-     */
-    @Override
-    @WebApiDescription(title = "A paged list of all the groups of the site 'siteId'.")
-    public CollectionWithPagingInfo<SiteGroup> readAll(String siteId, Parameters parameters)
-    {
-        return sites.getSiteGroupMemberships(siteId, parameters);
-    }
+  /**
+   * Returns site membership information for groupId in siteId.
+   * <p>
+   * GET sites/<siteId>/group-members/<groupId>
+   */
+  @Override
+  @WebApiDescription(
+    title = "Returns site membership information for groupId in siteId."
+  )
+  public SiteGroup readById(
+    String siteId,
+    String groupId,
+    Parameters parameters
+  ) {
+    return sites.getSiteGroupMembership(siteId, groupId);
+  }
 
-    /**
-     * Returns site membership information for groupId in siteId.
-     * <p>
-     * GET sites/<siteId>/group-members/<groupId>
-     */
-    @Override
-    @WebApiDescription(title = "Returns site membership information for groupId in siteId.")
-    public SiteGroup readById(String siteId, String groupId, Parameters parameters)
-    {
-        return sites.getSiteGroupMembership(siteId, groupId);
-    }
+  /**
+   * PUT sites/<siteId>/group-members/<groupId>
+   * <p>
+   * Updates the membership of group in the site.
+   */
+  @Override
+  @WebApiDescription(title = "Updates the membership of groupId in the site.")
+  public SiteGroup update(
+    String siteId,
+    SiteGroup groupMember,
+    Parameters parameters
+  ) {
+    return sites.updateSiteGroupMembership(siteId, groupMember);
+  }
 
-    /**
-     * PUT sites/<siteId>/group-members/<groupId>
-     * <p>
-     * Updates the membership of group in the site.
-     */
-    @Override
-    @WebApiDescription(title = "Updates the membership of groupId in the site.")
-    public SiteGroup update(String siteId, SiteGroup groupMember, Parameters parameters)
-    {
-        return sites.updateSiteGroupMembership(siteId, groupMember);
-    }
-
-    /**
-     * DELETE sites/<siteId>/group-members/<groupId>
-     * <p>
-     * Remove a group from site.
-     */
-    @Override
-    @WebApiDescription(title = "Removes groupId as a member of site siteId.")
-    public void delete(String siteId, String groupId, Parameters parameters)
-    {
-        sites.removeSiteGroupMembership(siteId, groupId);
-    }
-
+  /**
+   * DELETE sites/<siteId>/group-members/<groupId>
+   * <p>
+   * Remove a group from site.
+   */
+  @Override
+  @WebApiDescription(title = "Removes groupId as a member of site siteId.")
+  public void delete(String siteId, String groupId, Parameters parameters) {
+    sites.removeSiteGroupMembership(siteId, groupId);
+  }
 }

@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
@@ -51,209 +50,205 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author janv
  */
-public class RMListOfValuesConstraint extends ListOfValuesConstraint
-{
-    private static final String LOV_CONSTRAINT_VALUE = "listconstraint";
-    private List<String> allowedValues;
-    private List<String> allowedValuesUpper;
-    // defined match logic used by caveat matching (default = "AND")
-    private MatchLogic matchLogic = MatchLogic.AND;
+public class RMListOfValuesConstraint extends ListOfValuesConstraint {
 
-    public enum MatchLogic
-    {
-        // closed marking - all values must match
-        AND,
-        // open marking   - at least one value must match
-        OR
-    }
+  private static final String LOV_CONSTRAINT_VALUE = "listconstraint";
+  private List<String> allowedValues;
+  private List<String> allowedValuesUpper;
+  // defined match logic used by caveat matching (default = "AND")
+  private MatchLogic matchLogic = MatchLogic.AND;
 
-    // note: alternative to static init could be to use 'registered' constraint
-    private static RMCaveatConfigService caveatConfigService;
+  public enum MatchLogic {
+    // closed marking - all values must match
+    AND,
+    // open marking   - at least one value must match
+    OR,
+  }
 
-    public void setCaveatConfigService(RMCaveatConfigService caveatConfigService)
-    {
-        RMListOfValuesConstraint.caveatConfigService = caveatConfigService;
-    }
+  // note: alternative to static init could be to use 'registered' constraint
+  private static RMCaveatConfigService caveatConfigService;
 
+  public void setCaveatConfigService(
+    RMCaveatConfigService caveatConfigService
+  ) {
+    RMListOfValuesConstraint.caveatConfigService = caveatConfigService;
+  }
 
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder(80);
-        sb.append("RMListOfValuesConstraint")
-          .append("[allowedValues=").append(getAllowedValues())
-          .append(", caseSensitive=").append(isCaseSensitive())
-          .append(", sorted=").append(isSorted())
-          .append(", matchLogic=").append(getMatchLogic())
-          .append("]");
-        return sb.toString();
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(80);
+    sb
+      .append("RMListOfValuesConstraint")
+      .append("[allowedValues=")
+      .append(getAllowedValues())
+      .append(", caseSensitive=")
+      .append(isCaseSensitive())
+      .append(", sorted=")
+      .append(isSorted())
+      .append(", matchLogic=")
+      .append(getMatchLogic())
+      .append("]");
+    return sb.toString();
+  }
 
-    public RMListOfValuesConstraint()
-    {
-        super();
+  public RMListOfValuesConstraint() {
+    super();
+    // Set RM list of value constraints to be sorted by default
+    sorted = true;
+  }
 
-        // Set RM list of value constraints to be sorted by default
-        sorted = true;
-    }
+  /**
+   * Get the allowed values.  Note that these are <tt>String</tt> instances, but may
+   * represent non-<tt>String</tt> values.  It is up to the caller to distinguish.
+   *
+   * @return Returns the values allowed
+   */
+  @Override
+  public List<String> getRawAllowedValues() {
+    String runAsUser = AuthenticationUtil.getRunAsUser();
+    if (
+      (runAsUser != null) &&
+      (!runAsUser.equals(AuthenticationUtil.getSystemUserName())) &&
+      (caveatConfigService != null)
+    ) {
+      // get allowed values for current user
+      List<String> allowedForUser = caveatConfigService.getRMAllowedValues(
+        getShortName()
+      );
 
-    /**
-     * Get the allowed values.  Note that these are <tt>String</tt> instances, but may
-     * represent non-<tt>String</tt> values.  It is up to the caller to distinguish.
-     *
-     * @return Returns the values allowed
-     */
-    @Override
-    public List<String> getRawAllowedValues()
-    {
-        String runAsUser = AuthenticationUtil.getRunAsUser();
-        if ((runAsUser != null) && (! runAsUser.equals(AuthenticationUtil.getSystemUserName())) && (caveatConfigService != null))
-        {
-            // get allowed values for current user
-            List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getShortName());
-
-            List<String> filteredList = new ArrayList<>(allowedForUser.size());
-            for (String allowed : allowedForUser)
-            {
-                if (this.allowedValues.contains(allowed))
-                {
-                    filteredList.add(allowed);
-                }
-            }
-
-            return filteredList;
+      List<String> filteredList = new ArrayList<>(allowedForUser.size());
+      for (String allowed : allowedForUser) {
+        if (this.allowedValues.contains(allowed)) {
+          filteredList.add(allowed);
         }
-        else
-        {
-            return this.allowedValues;
-        }
+      }
+
+      return filteredList;
+    } else {
+      return this.allowedValues;
+    }
+  }
+
+  public String getDisplayLabel(
+    String constraintAllowableValue,
+    MessageLookup messageLookup
+  ) {
+    if (!this.allowedValues.contains(constraintAllowableValue)) {
+      return null;
     }
 
-    public String getDisplayLabel(String constraintAllowableValue, MessageLookup messageLookup)
-    {
-        if (!this.allowedValues.contains(constraintAllowableValue))
-        {
-            return null;
+    String key = LOV_CONSTRAINT_VALUE;
+    key += "." + this.getShortName();
+    key += "." + constraintAllowableValue;
+    key = StringUtils.replace(key, ":", "_");
+
+    String message = messageLookup.getMessage(key, I18NUtil.getLocale());
+    return message == null ? constraintAllowableValue : message;
+  }
+
+  private List<String> getAllowedValuesUpper() {
+    String runAsUser = AuthenticationUtil.getRunAsUser();
+    if (
+      (runAsUser != null) &&
+      (!runAsUser.equals(AuthenticationUtil.getSystemUserName())) &&
+      (caveatConfigService != null)
+    ) {
+      // get allowed values for current user
+      List<String> allowedForUser = caveatConfigService.getRMAllowedValues(
+        getType()
+      );
+
+      List<String> filteredList = new ArrayList<>(allowedForUser.size());
+      for (String allowed : allowedForUser) {
+        if (this.allowedValuesUpper.contains(allowed.toUpperCase())) {
+          filteredList.add(allowed);
         }
+      }
 
-        String key = LOV_CONSTRAINT_VALUE;
-        key += "." + this.getShortName();
-        key += "." + constraintAllowableValue;
-        key = StringUtils.replace(key, ":", "_");
-
-        String message = messageLookup.getMessage(key, I18NUtil.getLocale());
-        return message == null ? constraintAllowableValue : message;
+      return filteredList;
+    } else {
+      return this.allowedValuesUpper;
     }
+  }
 
-    private List<String> getAllowedValuesUpper()
-    {
-        String runAsUser = AuthenticationUtil.getRunAsUser();
-        if ((runAsUser != null) && (! runAsUser.equals(AuthenticationUtil.getSystemUserName())) && (caveatConfigService != null))
-        {
-            // get allowed values for current user
-            List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getType());
-
-            List<String> filteredList = new ArrayList<>(allowedForUser.size());
-            for (String allowed : allowedForUser)
-            {
-                if (this.allowedValuesUpper.contains(allowed.toUpperCase()))
-                {
-                    filteredList.add(allowed);
-                }
-            }
-
-            return filteredList;
-        }
-        else
-        {
-            return this.allowedValuesUpper;
-        }
+  /**
+   * Set the values that are allowed by the constraint.
+   *
+   * @param allowedValues a list of allowed values
+   */
+  @SuppressWarnings({ "unchecked", "rawtypes" })
+  @Override
+  public void setAllowedValues(List allowedValues) {
+    if (allowedValues == null) {
+      allowedValues = new ArrayList<String>(0);
     }
-    /**
-     * Set the values that are allowed by the constraint.
-     *
-     * @param allowedValues a list of allowed values
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    @Override
-    public void setAllowedValues(List allowedValues)
-    {
-        if (allowedValues == null)
-        {
-            allowedValues = new ArrayList<String>(0);
-        }
-        int valueCount = allowedValues.size();
-        this.allowedValues = Collections.unmodifiableList(allowedValues);
+    int valueCount = allowedValues.size();
+    this.allowedValues = Collections.unmodifiableList(allowedValues);
 
-        // make the upper case versions
-        this.allowedValuesUpper = new ArrayList<>(valueCount);
-        for (String allowedValue : this.allowedValues)
-        {
-            allowedValuesUpper.add(allowedValue.toUpperCase());
-        }
+    // make the upper case versions
+    this.allowedValuesUpper = new ArrayList<>(valueCount);
+    for (String allowedValue : this.allowedValues) {
+      allowedValuesUpper.add(allowedValue.toUpperCase());
     }
+  }
 
-    @Override
-    public void initialize()
-    {
-        checkPropertyNotNull("allowedValues", allowedValues);
+  @Override
+  public void initialize() {
+    checkPropertyNotNull("allowedValues", allowedValues);
+  }
+
+  @Override
+  public Map<String, Object> getParameters() {
+    Map<String, Object> params = new HashMap<>(2);
+
+    params.put("caseSensitive", isCaseSensitive());
+    params.put("allowedValues", getAllowedValues());
+    params.put("sorted", isSorted());
+    params.put("matchLogic", getMatchLogic());
+
+    return params;
+  }
+
+  public MatchLogic getMatchLogicEnum() {
+    return matchLogic;
+  }
+
+  public String getMatchLogic() {
+    return matchLogic.toString();
+  }
+
+  public void setMatchLogic(String matchLogicStr) {
+    this.matchLogic = MatchLogic.valueOf(matchLogicStr);
+  }
+
+  @Override
+  protected void evaluateSingleValue(Object value) {
+    // convert the value to a String
+    String valueStr = null;
+    try {
+      valueStr = DefaultTypeConverter.INSTANCE.convert(String.class, value);
+    } catch (TypeConversionException e) {
+      throw new ConstraintException(
+        RMConstraintMessageKeys.ERR_NON_STRING,
+        value,
+        e
+      );
     }
-
-    @Override
-    public Map<String, Object> getParameters()
-    {
-        Map<String, Object> params = new HashMap<>(2);
-
-        params.put("caseSensitive", isCaseSensitive());
-        params.put("allowedValues", getAllowedValues());
-        params.put("sorted", isSorted());
-        params.put("matchLogic", getMatchLogic());
-
-        return params;
+    // check that the value is in the set of allowed values
+    if (isCaseSensitive()) {
+      if (!getAllowedValues().contains(valueStr)) {
+        throw new ConstraintException(
+          RMConstraintMessageKeys.ERR_INVALID_VALUE,
+          value
+        );
+      }
+    } else {
+      if (!getAllowedValuesUpper().contains(valueStr.toUpperCase())) {
+        throw new ConstraintException(
+          RMConstraintMessageKeys.ERR_INVALID_VALUE,
+          value
+        );
+      }
     }
-
-    public MatchLogic getMatchLogicEnum()
-    {
-        return matchLogic;
-    }
-
-    public String getMatchLogic()
-    {
-        return matchLogic.toString();
-    }
-
-    public void setMatchLogic(String matchLogicStr)
-    {
-        this.matchLogic = MatchLogic.valueOf(matchLogicStr);
-    }
-
-    @Override
-    protected void evaluateSingleValue(Object value)
-    {
-        // convert the value to a String
-        String valueStr = null;
-        try
-        {
-            valueStr = DefaultTypeConverter.INSTANCE.convert(String.class, value);
-        }
-        catch (TypeConversionException e)
-        {
-            throw new ConstraintException(RMConstraintMessageKeys.ERR_NON_STRING, value, e);
-        }
-        // check that the value is in the set of allowed values
-        if (isCaseSensitive())
-        {
-            if (!getAllowedValues().contains(valueStr))
-            {
-                throw new ConstraintException(RMConstraintMessageKeys.ERR_INVALID_VALUE, value);
-            }
-        }
-        else
-        {
-            if (!getAllowedValuesUpper().contains(valueStr.toUpperCase()))
-            {
-                throw new ConstraintException(RMConstraintMessageKeys.ERR_INVALID_VALUE, value);
-            }
-        }
-    }
+  }
 }

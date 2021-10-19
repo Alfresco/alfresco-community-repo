@@ -36,29 +36,30 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class LastDispositionActionCondition extends AbstractCapabilityCondition
-{
+public class LastDispositionActionCondition
+  extends AbstractCapabilityCondition {
 
-    private String dispositionActionName;
+  private String dispositionActionName;
 
-    public void setDispositionActionName(String dispositionActionName)
-    {
-        this.dispositionActionName = dispositionActionName;
+  public void setDispositionActionName(String dispositionActionName) {
+    this.dispositionActionName = dispositionActionName;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  public boolean evaluateImpl(NodeRef nodeRef) {
+    boolean result = false;
+    DispositionAction dispositionAction = dispositionService.getLastCompletedDispostionAction(
+      nodeRef
+    );
+    if (
+      dispositionAction != null &&
+      dispositionActionName.equals(dispositionAction.getName())
+    ) {
+      result = true;
     }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
-        boolean result = false;
-        DispositionAction dispositionAction = dispositionService.getLastCompletedDispostionAction(nodeRef);
-        if (dispositionAction != null &&
-            dispositionActionName.equals(dispositionAction.getName()))
-        {
-            result = true;
-        }
-        return result;
-    }
+    return result;
+  }
 }

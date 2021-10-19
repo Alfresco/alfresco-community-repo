@@ -39,15 +39,13 @@ import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 import static org.testng.Assert.fail;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
-
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordfolder.RecordFolder;
@@ -61,15 +59,14 @@ import org.alfresco.rest.rm.community.util.FilePlanComponentMixIn;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RecordFolderAPI extends RMModelRequest
-{
+public class RecordFolderAPI extends RMModelRequest {
+
     /**
      * Constructor.
      *
      * @param rmRestWrapper RM REST Wrapper
      */
-    public RecordFolderAPI(RMRestWrapper rmRestWrapper)
-    {
+    public RecordFolderAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
@@ -86,22 +83,23 @@ public class RecordFolderAPI extends RMModelRequest
      *  <li>{@code recordFolderId} is locked and cannot be deleted</li>
      * </ul>
      */
-    public void deleteRecordFolder(String recordFolderId)
-    {
+    public void deleteRecordFolder(String recordFolderId) {
         mandatoryString("recordFolderId", recordFolderId);
 
-        getRmRestWrapper().processEmptyModel(simpleRequest(
-                DELETE,
-                "record-folders/{recordFolderId}",
-                recordFolderId
-        ));
+        getRmRestWrapper()
+            .processEmptyModel(
+                simpleRequest(
+                    DELETE,
+                    "record-folders/{recordFolderId}",
+                    recordFolderId
+                )
+            );
     }
 
     /**
      * see {@link #getRecordFolder(String, String)}
      */
-    public RecordFolder getRecordFolder(String recordFolderId)
-    {
+    public RecordFolder getRecordFolder(String recordFolderId) {
         mandatoryString("recordFolderId", recordFolderId);
 
         return getRecordFolder(recordFolderId, EMPTY);
@@ -121,23 +119,31 @@ public class RecordFolderAPI extends RMModelRequest
      *  <li>{@code recordFolderId} does not exist</li>
      * </ul>
      */
-    public RecordFolder getRecordFolder(String recordFolderId, String parameters)
-    {
+    public RecordFolder getRecordFolder(
+        String recordFolderId,
+        String parameters
+    ) {
         mandatoryString("recordFolderId", recordFolderId);
 
-        return getRmRestWrapper().processModel(RecordFolder.class, simpleRequest(
-                GET,
-                "record-folders/{recordFolderId}?{parameters}",
-                recordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                RecordFolder.class,
+                simpleRequest(
+                    GET,
+                    "record-folders/{recordFolderId}?{parameters}",
+                    recordFolderId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #updateRecordFolder(RecordFolder, String, String)
      */
-    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId)
-    {
+    public RecordFolder updateRecordFolder(
+        RecordFolder recordFolderModel,
+        String recordFolderId
+    ) {
         mandatoryObject("recordFolderModel", recordFolderModel);
         mandatoryString("recordFolderId", recordFolderId);
 
@@ -161,25 +167,33 @@ public class RecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public RecordFolder updateRecordFolder(RecordFolder recordFolderModel, String recordFolderId, String parameters)
-    {
+    public RecordFolder updateRecordFolder(
+        RecordFolder recordFolderModel,
+        String recordFolderId,
+        String parameters
+    ) {
         mandatoryObject("recordFolderModel", recordFolderModel);
         mandatoryString("recordFolderId", recordFolderId);
 
-        return getRmRestWrapper().processModel(RecordFolder.class, requestWithBody(
-                PUT,
-                toJson(recordFolderModel),
-                "record-folders/{recordFolderId}?{parameters}",
-                recordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                RecordFolder.class,
+                requestWithBody(
+                    PUT,
+                    toJson(recordFolderModel),
+                    "record-folders/{recordFolderId}?{parameters}",
+                    recordFolderId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #getRecordFolderChildren(String, String)}
      */
-    public RecordFolderCollection getRecordFolderChildren(String recordFolderId)
-    {
+    public RecordFolderCollection getRecordFolderChildren(
+        String recordFolderId
+    ) {
         mandatoryString("recordFolderId", recordFolderId);
 
         return getRecordFolderChildren(recordFolderId, EMPTY);
@@ -198,23 +212,28 @@ public class RecordFolderAPI extends RMModelRequest
      *  <li>{@code recordFolderId} does not exist</li>
      *</ul>
      */
-    public RecordFolderCollection getRecordFolderChildren(String recordFolderId, String parameters)
-    {
+    public RecordFolderCollection getRecordFolderChildren(
+        String recordFolderId,
+        String parameters
+    ) {
         mandatoryString("recordFolderId", recordFolderId);
 
-        return getRmRestWrapper().processModels(RecordFolderCollection.class, simpleRequest(
-            GET,
-            "record-folders/{recordFolderId}/records?{parameters}",
-            recordFolderId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModels(
+                RecordFolderCollection.class,
+                simpleRequest(
+                    GET,
+                    "record-folders/{recordFolderId}/records?{parameters}",
+                    recordFolderId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #createRecord(Record, String, String)}
      */
-    public Record createRecord(Record recordModel, String recordFolderId)
-    {
+    public Record createRecord(Record recordModel, String recordFolderId) {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordFolderId", recordFolderId);
 
@@ -230,14 +249,16 @@ public class RecordFolderAPI extends RMModelRequest
      * @return newly created {@link Record}
      * @throws RuntimeException for invalid recordModel JSON strings
      */
-    public Record createRecord(Record recordModel, String recordFolderId, File recordContent) throws RuntimeException
-    {
+    public Record createRecord(
+        Record recordModel,
+        String recordFolderId,
+        File recordContent
+    ) throws RuntimeException {
         mandatoryString("recordFolderId", recordFolderId);
         mandatoryObject("recordContent", recordContent);
         mandatoryObject("recordModel", recordModel);
 
-        if (!recordModel.getNodeType().equals(CONTENT_TYPE))
-        {
+        if (!recordModel.getNodeType().equals(CONTENT_TYPE)) {
             fail("Only electronic records are supported");
         }
 
@@ -247,22 +268,34 @@ public class RecordFolderAPI extends RMModelRequest
          */
         RequestSpecBuilder builder = getRmRestWrapper().configureRequestSpec();
         JsonNode root;
-        try
-        {
-            root = new ObjectMapper().readTree(toJson(recordModel, Record.class, FilePlanComponentMixIn.class));
-        }
-        catch (IOException e)
-        {
+        try {
+            root =
+                new ObjectMapper()
+                    .readTree(
+                        toJson(
+                            recordModel,
+                            Record.class,
+                            FilePlanComponentMixIn.class
+                        )
+                    );
+        } catch (IOException e) {
             throw new RuntimeException("Failed to convert model to JSON.", e);
         }
         // add request fields
         Iterator<String> fieldNames = root.fieldNames();
-        while (fieldNames.hasNext())
-        {
+        while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
-            builder.addMultiPart(fieldName, root.get(fieldName).asText(), ContentType.JSON.name());
+            builder.addMultiPart(
+                fieldName,
+                root.get(fieldName).asText(),
+                ContentType.JSON.name()
+            );
         }
-        builder.addMultiPart("filedata", recordContent, ContentType.BINARY.name());
+        builder.addMultiPart(
+            "filedata",
+            recordContent,
+            ContentType.BINARY.name()
+        );
 
         // create node with given content
         return createRecord(recordModel, recordFolderId);
@@ -284,17 +317,24 @@ public class RecordFolderAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public Record createRecord(Record recordModel, String recordFolderId, String parameters)
-    {
+    public Record createRecord(
+        Record recordModel,
+        String recordFolderId,
+        String parameters
+    ) {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordFolderId", recordFolderId);
 
-        return getRmRestWrapper().processModel(Record.class, requestWithBody(
-                POST,
-                toJson(recordModel),
-                "record-folders/{recordFolderId}/records?{parameters}",
-                recordFolderId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                Record.class,
+                requestWithBody(
+                    POST,
+                    toJson(recordModel),
+                    "record-folders/{recordFolderId}/records?{parameters}",
+                    recordFolderId,
+                    parameters
+                )
+            );
     }
 }

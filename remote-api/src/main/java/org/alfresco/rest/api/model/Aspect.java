@@ -29,38 +29,48 @@ package org.alfresco.rest.api.model;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 
-public class Aspect extends AbstractClass
-{
-    public Aspect()
-    {
-    }
+public class Aspect extends AbstractClass {
 
-    public Aspect(AspectDefinition aspectDefinition, MessageLookup messageLookup)
-    {
-        this.id = aspectDefinition.getName().toPrefixString();
-        this.title = aspectDefinition.getTitle(messageLookup);
-        this.description = aspectDefinition.getDescription(messageLookup);
-        this.parentId = getParentNameAsString(aspectDefinition.getParentName());
-        this.model = getModelInfo(aspectDefinition, messageLookup);
-    }
+  public Aspect() {}
 
-    @Override
-    public String toString()
-    {
-        StringBuilder builder = new StringBuilder(512);
-        builder.append("Aspect [id=").append(this.id)
-                .append(", title=").append(this.title)
-                .append(", description=").append(this.description)
-                .append(", parentId=").append(parentId)
-                .append(", properties=").append(properties)
-                .append(", mandatoryAspects=").append(mandatoryAspects)
-                .append(", isContainer=").append(isContainer)
-                .append(", isArchive=").append(isArchive)
-                .append(", associations=").append(associations)
-                .append(", model=").append(model)
-                .append(", includedInSupertypeQuery=").append(includedInSupertypeQuery)
-                .append(']');
-        return builder.toString();
-    }
+  public Aspect(
+    AspectDefinition aspectDefinition,
+    MessageLookup messageLookup
+  ) {
+    this.id = aspectDefinition.getName().toPrefixString();
+    this.title = aspectDefinition.getTitle(messageLookup);
+    this.description = aspectDefinition.getDescription(messageLookup);
+    this.parentId = getParentNameAsString(aspectDefinition.getParentName());
+    this.model = getModelInfo(aspectDefinition, messageLookup);
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder(512);
+    builder
+      .append("Aspect [id=")
+      .append(this.id)
+      .append(", title=")
+      .append(this.title)
+      .append(", description=")
+      .append(this.description)
+      .append(", parentId=")
+      .append(parentId)
+      .append(", properties=")
+      .append(properties)
+      .append(", mandatoryAspects=")
+      .append(mandatoryAspects)
+      .append(", isContainer=")
+      .append(isContainer)
+      .append(", isArchive=")
+      .append(isArchive)
+      .append(", associations=")
+      .append(associations)
+      .append(", model=")
+      .append(model)
+      .append(", includedInSupertypeQuery=")
+      .append(includedInSupertypeQuery)
+      .append(']');
+    return builder.toString();
+  }
 }
-

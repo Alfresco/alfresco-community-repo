@@ -32,13 +32,11 @@ import org.alfresco.error.AlfrescoRuntimeException;
  *
  * @author Sara Aspery
  */
-public class DirectAccessUrlDisabledException extends AlfrescoRuntimeException
-{
+public class DirectAccessUrlDisabledException extends AlfrescoRuntimeException {
 
-    private static final long serialVersionUID = -6506082117146782993L;
+  private static final long serialVersionUID = -6506082117146782993L;
 
-    public DirectAccessUrlDisabledException(String msg)
-    {
-        super(msg);
-    }
+  public DirectAccessUrlDisabledException(String msg) {
+    super(msg);
+  }
 }

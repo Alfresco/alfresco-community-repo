@@ -33,19 +33,18 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 /**
  * Aspect API
  */
-public interface Aspects
-{
-    /**
-     * Lists aspects
-     * @param params
-     * @return Collection of aspects
-     */
-    CollectionWithPagingInfo<Aspect> listAspects(Parameters params);
+public interface Aspects {
+  /**
+   * Lists aspects
+   * @param params
+   * @return Collection of aspects
+   */
+  CollectionWithPagingInfo<Aspect> listAspects(Parameters params);
 
-    /**
-     * Gets an aspect by id
-     * @param aspectId
-     * @return an aspect
-     */
-    Aspect getAspect(String aspectId);
+  /**
+   * Gets an aspect by id
+   * @param aspectId
+   * @return an aspect
+   */
+  Aspect getAspect(String aspectId);
 }

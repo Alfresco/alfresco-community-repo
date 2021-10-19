@@ -23,31 +23,29 @@ import java.util.Map;
 
 /**
  * Map that ejects the last recently accessed or inserted element(s) to keep the size to a specified maximum.
- * 
+ *
  * @param <K>
  *            Key
  * @param <V>
  *            Value
  */
-public class MaxSizeMap<K, V> extends LinkedHashMap<K, V>
-{
-    private static final long serialVersionUID = 3753219027867262507L;
+public class MaxSizeMap<K, V> extends LinkedHashMap<K, V> {
 
-    private final int maxSize;
+  private static final long serialVersionUID = 3753219027867262507L;
 
-    /**
-     * @param maxSize maximum size of the map.
-     * @param accessOrder <tt>true</tt> for access-order, <tt>false</tt> for insertion-order.
-     */
-    public MaxSizeMap(int maxSize, boolean accessOrder)
-    {
-        super(maxSize * 2, 0.75f, accessOrder);
-        this.maxSize = maxSize;
-    }
+  private final int maxSize;
 
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<K, V> eldest)
-    {
-        return super.size() > this.maxSize;
-    }
+  /**
+   * @param maxSize maximum size of the map.
+   * @param accessOrder <tt>true</tt> for access-order, <tt>false</tt> for insertion-order.
+   */
+  public MaxSizeMap(int maxSize, boolean accessOrder) {
+    super(maxSize * 2, 0.75f, accessOrder);
+    this.maxSize = maxSize;
+  }
+
+  @Override
+  protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
+    return super.size() > this.maxSize;
+  }
 }

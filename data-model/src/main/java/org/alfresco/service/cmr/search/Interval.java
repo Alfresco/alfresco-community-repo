@@ -25,54 +25,56 @@
  */
 package org.alfresco.service.cmr.search;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Parameters used for a search Interval.
  */
-public class Interval
-{
-    private final String field;
-    private final String label;
-    private final Set<IntervalSet> sets;
+public class Interval {
 
-    @JsonCreator
-    public Interval(
-                @JsonProperty("field") String field,
-                @JsonProperty("label") String label,
-                @JsonProperty("sets")  Set<IntervalSet> sets)
-    {
-        this.field = field;
-        this.label = label;
-        this.sets = sets == null ? new HashSet() :sets;
-    }
+  private final String field;
+  private final String label;
+  private final Set<IntervalSet> sets;
 
-    public String getField()
-    {
-        return field;
-    }
+  @JsonCreator
+  public Interval(
+    @JsonProperty("field") String field,
+    @JsonProperty("label") String label,
+    @JsonProperty("sets") Set<IntervalSet> sets
+  ) {
+    this.field = field;
+    this.label = label;
+    this.sets = sets == null ? new HashSet() : sets;
+  }
 
-    public String getLabel()
-    {
-        return label;
-    }
+  public String getField() {
+    return field;
+  }
 
-    public Set<IntervalSet> getSets()
-    {
-        return sets;
-    }
+  public String getLabel() {
+    return label;
+  }
 
-    @Override
-    public String toString()
-    {
-        return "Interval{" +
-                    "field='" + field + '\'' +
-                    ", label='" + label + '\'' +
-                    ", sets=" + sets +
-                    '}';
-    }
+  public Set<IntervalSet> getSets() {
+    return sets;
+  }
+
+  @Override
+  public String toString() {
+    return (
+      "Interval{" +
+      "field='" +
+      field +
+      '\'' +
+      ", label='" +
+      label +
+      '\'' +
+      ", sets=" +
+      sets +
+      '}'
+    );
+  }
 }

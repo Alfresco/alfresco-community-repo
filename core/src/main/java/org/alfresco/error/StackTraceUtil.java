@@ -18,51 +18,51 @@
  */
 package org.alfresco.error;
 
-
 /**
  * Helper class around outputting stack traces.
- * 
+ *
  * @author Derek Hulley
  */
-public class StackTraceUtil
-{
-    /**
-     * Builds a message with the stack trace of the form:
-     * <pre>
-     *    SOME MESSAGE:
-     *       Started at:
-     *          com.package...
-     *          com.package...
-     *          ...
-     * </pre>
-     * 
-     * @param msg the initial error message
-     * @param stackTraceElements the stack trace elements
-     * @param sb the buffer to append to
-     * @param maxDepth the maximum number of trace elements to output.  0 or less means output all.
-     */
-    public static void buildStackTrace(
-            String msg,
-            StackTraceElement[] stackTraceElements,
-            StringBuilder sb,
-            int maxDepth)
-    {
-        String lineEnding = System.getProperty("line.separator", "\n");
+public class StackTraceUtil {
 
-        sb.append(msg).append(" ").append(lineEnding)
-          .append("   Started at: ").append(lineEnding);
-        for (int i = 0; i < stackTraceElements.length; i++)
-        {
-            if (i > maxDepth && maxDepth > 0)
-            {
-                sb.append("      ...");
-                break;
-            }
-            sb.append("      ").append(stackTraceElements[i]);
-            if (i < stackTraceElements.length - 1)
-            {
-                sb.append(lineEnding);
-            }
-        }
+  /**
+   * Builds a message with the stack trace of the form:
+   * <pre>
+   *    SOME MESSAGE:
+   *       Started at:
+   *          com.package...
+   *          com.package...
+   *          ...
+   * </pre>
+   *
+   * @param msg the initial error message
+   * @param stackTraceElements the stack trace elements
+   * @param sb the buffer to append to
+   * @param maxDepth the maximum number of trace elements to output.  0 or less means output all.
+   */
+  public static void buildStackTrace(
+    String msg,
+    StackTraceElement[] stackTraceElements,
+    StringBuilder sb,
+    int maxDepth
+  ) {
+    String lineEnding = System.getProperty("line.separator", "\n");
+
+    sb
+      .append(msg)
+      .append(" ")
+      .append(lineEnding)
+      .append("   Started at: ")
+      .append(lineEnding);
+    for (int i = 0; i < stackTraceElements.length; i++) {
+      if (i > maxDepth && maxDepth > 0) {
+        sb.append("      ...");
+        break;
+      }
+      sb.append("      ").append(stackTraceElements[i]);
+      if (i < stackTraceElements.length - 1) {
+        sb.append(lineEnding);
+      }
     }
+  }
 }

@@ -33,15 +33,14 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
  * @author Mark Hibbins
  * @since 2.2
  */
-public class LinkToAction extends CopyMoveLinkFileToBaseAction
-{
-    /** action name */
-    public static final String NAME = "linkTo";
+public class LinkToAction extends CopyMoveLinkFileToBaseAction {
 
-    @Override
-    public void init()
-    {
-        super.init();
-        setMode(CopyMoveLinkFileToActionMode.LINK);
-    }
+  /** action name */
+  public static final String NAME = "linkTo";
+
+  @Override
+  public void init() {
+    super.init();
+    setMode(CopyMoveLinkFileToActionMode.LINK);
+  }
 }

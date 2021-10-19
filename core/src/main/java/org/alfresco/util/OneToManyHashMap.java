@@ -30,161 +30,137 @@ import java.util.Set;
 /**
  * @author Nick Smith
  */
-public class OneToManyHashMap<K, V> implements Map<K, Set<V>>, OneToManyMap<K, V>
-{
-    //Delegate map.
-    private final Map<K, Set<V>> map = new HashMap<K, Set<V>>();
+public class OneToManyHashMap<K, V>
+  implements Map<K, Set<V>>, OneToManyMap<K, V> {
 
-    public void clear()
-    {
-        map.clear();
+  //Delegate map.
+  private final Map<K, Set<V>> map = new HashMap<K, Set<V>>();
+
+  public void clear() {
+    map.clear();
+  }
+
+  public boolean containsKey(Object key) {
+    return map.containsKey(key);
+  }
+
+  public boolean containsValue(Object value) {
+    return map.containsValue(value);
+  }
+
+  /*
+   * @see org.alfresco.util.OneToManyMap#containsSingleValue(V)
+   */
+  public boolean containsSingleValue(V value) {
+    Collection<Set<V>> values = map.values();
+    for (Set<V> set : values) {
+      if (set.contains(value)) return true;
     }
+    return false;
+  }
 
-    public boolean containsKey(Object key)
-    {
-        return map.containsKey(key);
-    }
+  public Set<Entry<K, Set<V>>> entrySet() {
+    return map.entrySet();
+  }
 
-    public boolean containsValue(Object value)
-    {
-        return map.containsValue(value);
-    }
-
-    /*
-     * @see org.alfresco.util.OneToManyMap#containsSingleValue(V)
-     */
-    public boolean containsSingleValue(V value)
-    {
-        Collection<Set<V>> values = map.values();
-        for (Set<V> set : values)
-        {
-            if (set.contains(value)) return true;
-
-        }
-        return false;
-    }
-
-    public Set<Entry<K, Set<V>>> entrySet()
-    {
-        return map.entrySet();
-    }
-
-    /*
-     * @see org.alfresco.util.OneToManyMap#entries()
-     */
-    public Set<Entry<K, V>> entries()
-    {
-        Set<Entry<K, V>> entries = new HashSet<Entry<K, V>>();
-        for (Entry<K, Set<V>> entry : map.entrySet())
-        {
-            final K key = entry.getKey();
-            final Set<V> values = entry.getValue();
-            for (final V value : values)
-            {
-                entries.add(new Entry<K, V>()
-                {
-
-                    public K getKey()
-                    {
-                        return key;
-                    }
-
-                    public V getValue()
-                    {
-                        return value;
-                    }
-
-                    // Not Thread-safe!
-                    public V setValue(V newValue)
-                    {
-                        throw new UnsupportedOperationException(
-                                    "Cannot modify the entries returned by "
-                                                + OneToManyHashMap.class.getName() + ".entries()!");
-                    }
-                });
+  /*
+   * @see org.alfresco.util.OneToManyMap#entries()
+   */
+  public Set<Entry<K, V>> entries() {
+    Set<Entry<K, V>> entries = new HashSet<Entry<K, V>>();
+    for (Entry<K, Set<V>> entry : map.entrySet()) {
+      final K key = entry.getKey();
+      final Set<V> values = entry.getValue();
+      for (final V value : values) {
+        entries.add(
+          new Entry<K, V>() {
+            public K getKey() {
+              return key;
             }
-        }
-        return entries;
-    }
 
-    public Set<V> get(Object key)
-    {
-        Set<V> set = map.get(key);
-        if (set == null) set = new HashSet<V>();
-        return Collections.unmodifiableSet(set);
-    }
+            public V getValue() {
+              return value;
+            }
 
-    public boolean isEmpty()
-    {
-        return map.isEmpty();
+            // Not Thread-safe!
+            public V setValue(V newValue) {
+              throw new UnsupportedOperationException(
+                "Cannot modify the entries returned by " +
+                OneToManyHashMap.class.getName() +
+                ".entries()!"
+              );
+            }
+          }
+        );
+      }
     }
+    return entries;
+  }
 
-    public Set<K> keySet()
-    {
-        return map.keySet();
-    }
+  public Set<V> get(Object key) {
+    Set<V> set = map.get(key);
+    if (set == null) set = new HashSet<V>();
+    return Collections.unmodifiableSet(set);
+  }
 
-    public Set<V> put(K key, Set<V> value)
-    {
-        return map.put(key, value);
-    }
+  public boolean isEmpty() {
+    return map.isEmpty();
+  }
 
-    /*
-     * @see org.alfresco.util.OneToManyMap#putSingleValue(K, V)
-     */
-    public V putSingleValue(K key, V value)
-    {
-        Set<V> values = map.get(key);
-        if (values == null)
-        {
-            values = new HashSet<V>();
-            map.put(key, values);
-        }
-        values.add(value);
-        return value;
-    }
+  public Set<K> keySet() {
+    return map.keySet();
+  }
 
-    public void putAll(Map<? extends K, ? extends Set<V>> m)
-    {
-        map.putAll(m);
-    }
+  public Set<V> put(K key, Set<V> value) {
+    return map.put(key, value);
+  }
 
-    /*
-     * @see org.alfresco.util.OneToManyMap#putAllSingleValues(java.util.Map)
-     */
-    public void putAllSingleValues(Map<? extends K, ? extends V> m)
-    {
-        for (Entry<? extends K, ? extends V> entry : m.entrySet())
-        {
-            putSingleValue(entry.getKey(), entry.getValue());
-        }
+  /*
+   * @see org.alfresco.util.OneToManyMap#putSingleValue(K, V)
+   */
+  public V putSingleValue(K key, V value) {
+    Set<V> values = map.get(key);
+    if (values == null) {
+      values = new HashSet<V>();
+      map.put(key, values);
     }
+    values.add(value);
+    return value;
+  }
 
-    public Set<V> remove(Object key)
-    {
-        return map.remove(key);
-    }
+  public void putAll(Map<? extends K, ? extends Set<V>> m) {
+    map.putAll(m);
+  }
 
-    public int size()
-    {
-        return map.size();
+  /*
+   * @see org.alfresco.util.OneToManyMap#putAllSingleValues(java.util.Map)
+   */
+  public void putAllSingleValues(Map<? extends K, ? extends V> m) {
+    for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
+      putSingleValue(entry.getKey(), entry.getValue());
     }
+  }
 
-    public Collection<Set<V>> values()
-    {
-        return map.values();
-    }
+  public Set<V> remove(Object key) {
+    return map.remove(key);
+  }
 
-    /*
-     * @see org.alfresco.util.OneToManyMap#flatValues()
-     */
-    public Collection<V> flatValues()
-    {
-        LinkedList<V> flatValues = new LinkedList<V>();
-        for (Set<V> values : map.values())
-        {
-            flatValues.addAll(values);
-        }
-        return flatValues;
+  public int size() {
+    return map.size();
+  }
+
+  public Collection<Set<V>> values() {
+    return map.values();
+  }
+
+  /*
+   * @see org.alfresco.util.OneToManyMap#flatValues()
+   */
+  public Collection<V> flatValues() {
+    LinkedList<V> flatValues = new LinkedList<V>();
+    for (Set<V> values : map.values()) {
+      flatValues.addAll(values);
     }
+    return flatValues;
+  }
 }

@@ -36,20 +36,18 @@ import org.quartz.JobDataMap;
  * @author eknizat
  *
  */
-public class NonLockingJobScheduler extends QuartzJobScheduler
-{
-    @Override
-    protected JobDataMap getJobDetailMap(HBBaseDataCollector collector)
-    {
-        JobDataMap jobDataMap = new JobDataMap();
-        jobDataMap.put(NonLockingJob.COLLECTOR_KEY, collector);
-        jobDataMap.put(NonLockingJob.DATA_SENDER_SERVICE_KEY, hbDataSenderService);
-        return jobDataMap;
-    }
+public class NonLockingJobScheduler extends QuartzJobScheduler {
 
-    @Override
-    protected Class<? extends Job> getHeartBeatJobClass()
-    {
-        return NonLockingJob.class;
-    }
+  @Override
+  protected JobDataMap getJobDetailMap(HBBaseDataCollector collector) {
+    JobDataMap jobDataMap = new JobDataMap();
+    jobDataMap.put(NonLockingJob.COLLECTOR_KEY, collector);
+    jobDataMap.put(NonLockingJob.DATA_SENDER_SERVICE_KEY, hbDataSenderService);
+    return jobDataMap;
+  }
+
+  @Override
+  protected Class<? extends Job> getHeartBeatJobClass() {
+    return NonLockingJob.class;
+  }
 }

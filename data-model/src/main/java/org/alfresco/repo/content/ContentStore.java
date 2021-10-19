@@ -26,12 +26,16 @@
 package org.alfresco.repo.content;
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+
+import java.util.Collections;
+import java.util.Map;
 
 
 /**
@@ -323,5 +327,20 @@ public interface ContentStore
     {
         throw new UnsupportedOperationException(
                 "Retrieving direct access URLs is not supported by this content store.");
+    }
+
+    /**
+     * Gets a key-value (String-String) collection of storage headers/properties with their respective values.
+     * A particular Cloud Connector will fill in that data with Cloud Storage Provider generic data.
+     * Map may be also filled in with entries consisting of pre-defined Alfresco keys of {@code ObjectStorageProps} and their values.
+     * If empty Map is returned - no connector is present or connector is not supporting retrieval of the properties
+     * or cannot determine the properties.
+     *
+     * @param contentUrl the URL of the content for which the storage properties are to be retrieved.
+     * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values.
+     */
+    @Experimental
+    default Map<String, String> getObjectStorageProperties(String contentUrl) {
+        return Collections.emptyMap();
     }
 }

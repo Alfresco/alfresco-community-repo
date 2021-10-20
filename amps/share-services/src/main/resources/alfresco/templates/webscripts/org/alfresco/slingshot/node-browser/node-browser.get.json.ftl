@@ -11,7 +11,7 @@
         <#elseif p.value?is_number>
          ${p.value?c}
         <#elseif p.value?is_string>
-         "${p.value?html}"
+         "${p.value}"
         <#elseif p.value?is_hash || p.value?is_enumerable>
             <#assign val>
                <@convertToJSON p.value />

@@ -83,8 +83,8 @@
       "prefixedName": "${node.prefixedQNamePath}"
    },
    "name": {
-      "name": "${node.name?html}",
-      "prefixedName": "${node.prefixedName?html}"
+      "name": "${node.name}",
+      "prefixedName": "${node.prefixedName}"
    },
    "parentNodeRef": "<#if node.parentNodeRef?exists>${node.parentNodeRef}</#if>",
    "type": {
@@ -155,8 +155,8 @@
    <#list parents as p>
       {
          "name": {
-            "name": "${p.name.name?html}",
-            "prefixedName": "${p.name.prefixedName?html}"
+            "name": "${p.name.name}",
+            "prefixedName": "${p.name.prefixedName}"
          },
          "nodeRef": "${p.parentRef}",
          "type": {
@@ -210,7 +210,7 @@
       <#list permissions.entries as p>
          {
             "permission": "${p.permission}",
-            "authority": "${p.authority?html}",
+            "authority": "${p.authority}",
             "rel": "${p.accessStatus}"
          }<#if p_has_next>,</#if>
       </#list>
@@ -225,7 +225,7 @@
       </#list>
       ],
       "inherit": ${permissions.inherit?string},
-      "owner": "<#if permissions.owner?exists>${permissions.owner?html}</#if>"
+      "owner": "<#if permissions.owner?exists>${permissions.owner}</#if>"
    }
    <#elseif results??>
    "numResults": ${results?size?c},

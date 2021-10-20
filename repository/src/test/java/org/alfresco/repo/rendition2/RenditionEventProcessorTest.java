@@ -27,6 +27,8 @@ package org.alfresco.repo.rendition2;
 
 import static org.mockito.Mockito.doThrow;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -47,110 +49,103 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.springframework.context.ApplicationContext;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * Provides a base set of tests for {@link RenditionEventProcessor}
  *
  * @author Cristian Turlica
  */
 @Category(NeverRunsTests.class)
-public class RenditionEventProcessorTest
-{
-    private RenditionEventProcessor renditionEventProcessor;
-    private CamelContext camelContext;
-    private ObjectMapper messagingObjectMapper;
+public class RenditionEventProcessorTest {
 
-    @Mock
-    private RenditionService2Impl renditionService2;
+  private RenditionEventProcessor renditionEventProcessor;
+  private CamelContext camelContext;
+  private ObjectMapper messagingObjectMapper;
 
-    @Rule
-    public TestName name = new TestName();
+  @Mock
+  private RenditionService2Impl renditionService2;
 
-    @Rule
-    public MockitoRule mockitoRule = MockitoJUnit.rule();
+  @Rule
+  public TestName name = new TestName();
 
-    @Before
-    public void setUp() throws Exception
-    {
-        ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
 
-        camelContext = (CamelContext) ctx.getBean("alfrescoCamelContext");
-        messagingObjectMapper = (ObjectMapper) ctx.getBean("alfrescoEventObjectMapper");
-        TransactionService transactionService = (TransactionService) ctx.getBean("transactionService");
+  @Before
+  public void setUp() throws Exception {
+    ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
-        renditionEventProcessor = new RenditionEventProcessor();
-        renditionEventProcessor.setMessagingObjectMapper(messagingObjectMapper);
-        renditionEventProcessor.setTransactionService(transactionService);
-        renditionEventProcessor.setRenditionService2(renditionService2);
+    camelContext = (CamelContext) ctx.getBean("alfrescoCamelContext");
+    messagingObjectMapper =
+      (ObjectMapper) ctx.getBean("alfrescoEventObjectMapper");
+    TransactionService transactionService = (TransactionService) ctx.getBean(
+      "transactionService"
+    );
+
+    renditionEventProcessor = new RenditionEventProcessor();
+    renditionEventProcessor.setMessagingObjectMapper(messagingObjectMapper);
+    renditionEventProcessor.setTransactionService(transactionService);
+    renditionEventProcessor.setRenditionService2(renditionService2);
+  }
+
+  @Test
+  public void processEmptyExchange() throws Exception {
+    renditionEventProcessor.process(createExchange());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void processMissingNodeRef() throws Exception {
+    Exchange exchange = createExchange(new OnContentUpdatePolicyEvent());
+    renditionEventProcessor.process(exchange);
+  }
+
+  @Test(expected = AlfrescoRuntimeException.class)
+  public void processInvalidExchange() throws Exception {
+    Exchange exchange = createExchange("invalidContent");
+    renditionEventProcessor.process(exchange);
+  }
+
+  @Test
+  public void process() throws Exception {
+    NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
+
+    OnContentUpdatePolicyEvent policyEvent = new OnContentUpdatePolicyEvent();
+    policyEvent.setNodeRef(nodeRef.toString());
+    policyEvent.setNewContent(true);
+
+    Exchange exchange = createExchange(policyEvent);
+    renditionEventProcessor.process(exchange);
+  }
+
+  @Test(expected = AlfrescoRuntimeException.class)
+  public void processException() throws Exception {
+    NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
+
+    OnContentUpdatePolicyEvent policyEvent = new OnContentUpdatePolicyEvent();
+    policyEvent.setNodeRef(nodeRef.toString());
+    policyEvent.setNewContent(true);
+
+    Exchange exchange = createExchange(policyEvent);
+
+    doThrow(new AlfrescoRuntimeException("any"))
+      .when(renditionService2)
+      .onContentUpdate(nodeRef, true);
+    renditionEventProcessor.process(exchange);
+  }
+
+  private Exchange createExchange() {
+    return new DefaultExchange(camelContext);
+  }
+
+  private Exchange createExchange(Object event) throws JsonProcessingException {
+    Exchange exchange = createExchange();
+
+    Message in = exchange.getIn();
+    if (!(event instanceof String)) {
+      event = messagingObjectMapper.writeValueAsString(event);
     }
 
-    @Test
-    public void processEmptyExchange() throws Exception
-    {
-        renditionEventProcessor.process(createExchange());
-    }
+    in.setBody(event);
 
-    @Test(expected = IllegalArgumentException.class)
-    public void processMissingNodeRef() throws Exception
-    {
-        Exchange exchange = createExchange(new OnContentUpdatePolicyEvent());
-        renditionEventProcessor.process(exchange);
-    }
-
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void processInvalidExchange() throws Exception
-    {
-        Exchange exchange = createExchange("invalidContent");
-        renditionEventProcessor.process(exchange);
-    }
-
-    @Test
-    public void process() throws Exception
-    {
-        NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
-
-        OnContentUpdatePolicyEvent policyEvent = new OnContentUpdatePolicyEvent();
-        policyEvent.setNodeRef(nodeRef.toString());
-        policyEvent.setNewContent(true);
-
-        Exchange exchange = createExchange(policyEvent);
-        renditionEventProcessor.process(exchange);
-    }
-
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void processException() throws Exception
-    {
-        NodeRef nodeRef = new NodeRef("workspace://spacesStore/test-id");
-
-        OnContentUpdatePolicyEvent policyEvent = new OnContentUpdatePolicyEvent();
-        policyEvent.setNodeRef(nodeRef.toString());
-        policyEvent.setNewContent(true);
-
-        Exchange exchange = createExchange(policyEvent);
-
-        doThrow(new AlfrescoRuntimeException("any")).when(renditionService2).onContentUpdate(nodeRef, true);
-        renditionEventProcessor.process(exchange);
-    }
-
-    private Exchange createExchange()
-    {
-        return new DefaultExchange(camelContext);
-    }
-
-    private Exchange createExchange(Object event) throws JsonProcessingException
-    {
-        Exchange exchange = createExchange();
-
-        Message in = exchange.getIn();
-        if (!(event instanceof String))
-        {
-            event = messagingObjectMapper.writeValueAsString(event);
-        }
-
-        in.setBody(event);
-
-        return exchange;
-    }
+    return exchange;
+  }
 }

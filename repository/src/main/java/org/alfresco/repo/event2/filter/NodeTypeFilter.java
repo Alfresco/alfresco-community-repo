@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.namespace.QName;
 
@@ -38,29 +37,28 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class NodeTypeFilter extends AbstractNodeEventFilter
-{
-    private final List<String> nodeTypesBlackList;
+public class NodeTypeFilter extends AbstractNodeEventFilter {
 
-    public NodeTypeFilter(String filteredNodeTypes)
-    {
-        this.nodeTypesBlackList = parseFilterList(filteredNodeTypes);
-    }
+  private final List<String> nodeTypesBlackList;
 
-    @Override
-    public Set<QName> getExcludedTypes()
-    {
-        // include all system folder types to be filtered out
-        Set<QName> result = new HashSet<>(getSystemFolderTypes());
+  public NodeTypeFilter(String filteredNodeTypes) {
+    this.nodeTypesBlackList = parseFilterList(filteredNodeTypes);
+  }
 
-        // add node types defined in repository.properties/alfresco-global.properties
-        nodeTypesBlackList.forEach(nodeType -> result.addAll(expandTypeDef(nodeType)));
+  @Override
+  public Set<QName> getExcludedTypes() {
+    // include all system folder types to be filtered out
+    Set<QName> result = new HashSet<>(getSystemFolderTypes());
 
-        return result;
-    }
+    // add node types defined in repository.properties/alfresco-global.properties
+    nodeTypesBlackList.forEach(nodeType ->
+      result.addAll(expandTypeDef(nodeType))
+    );
 
-    private Collection<QName> getSystemFolderTypes()
-    {
-        return dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
-    }
+    return result;
+  }
+
+  private Collection<QName> getSystemFolderTypes() {
+    return dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+  }
 }

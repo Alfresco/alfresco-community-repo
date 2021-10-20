@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.BeforeRemoveFromHoldPolicy;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServicePolicies.OnRemoveFromHoldPolicy;
@@ -48,251 +47,324 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class RemoveFromHoldTest extends BaseRMTestCase implements BeforeRemoveFromHoldPolicy, OnRemoveFromHoldPolicy
-{
-    private static final int RECORD_COUNT = 10;
+public class RemoveFromHoldTest
+  extends BaseRMTestCase
+  implements BeforeRemoveFromHoldPolicy, OnRemoveFromHoldPolicy {
 
-    private boolean beforeRemoveFromHoldFlag = false;
-    private boolean onRemoveFromHoldFlag = false;
+  private static final int RECORD_COUNT = 10;
 
-    public void testRemoveRecordsFromHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
-            private NodeRef recordCategory;
-            private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
+  private boolean beforeRemoveFromHoldFlag = false;
+  private boolean onRemoveFromHoldFlag = false;
 
-            public void given()
-            {
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+  public void testRemoveRecordsFromHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef hold;
+        private NodeRef recordCategory;
+        private NodeRef recordFolder;
+        private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
 
-                // create a record folder that contains records  
-                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
-                for (int i = 0; i < RECORD_COUNT; i++)
-                {
-                    records.add(recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT, null, null));
-                }
+        public void given() {
+          // create a hold
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
 
-                // add records to hold
-                holdService.addToHold(hold, records);
-            }
+          // create a record folder that contains records
+          recordCategory =
+            filePlanService.createRecordCategory(filePlan, GUID.generate());
+          recordFolder =
+            recordFolderService.createRecordFolder(
+              recordCategory,
+              GUID.generate()
+            );
+          for (int i = 0; i < RECORD_COUNT; i++) {
+            records.add(
+              recordService.createRecordFromContent(
+                recordFolder,
+                GUID.generate(),
+                ContentModel.TYPE_CONTENT,
+                null,
+                null
+              )
+            );
+          }
 
-            public void when() throws Exception
-            {
-                // remove *some* of the records
-                holdService.removeFromHold(hold, records.subList(0, 5));
-            }
+          // add records to hold
+          holdService.addToHold(hold, records);
+        }
 
-            public void then()
-            {
-                // check record state (no longer held)   
-                for (NodeRef record : records.subList(0, 5))
-                {
-                    assertFalse(freezeService.isFrozen(record));
-                    assertFalse(holdService.getHeld(hold).contains(record));
-                    assertFalse(holdService.heldBy(record, true).contains(hold));
-                }
+        public void when() throws Exception {
+          // remove *some* of the records
+          holdService.removeFromHold(hold, records.subList(0, 5));
+        }
 
-                // check record state (still held)   
-                for (NodeRef record : records.subList(5, 10))
-                {
-                    assertTrue(freezeService.isFrozen(record));
-                    assertTrue(holdService.getHeld(hold).contains(record));
-                    assertTrue(holdService.heldBy(record, true).contains(hold));
-                }
+        public void then() {
+          // check record state (no longer held)
+          for (NodeRef record : records.subList(0, 5)) {
+            assertFalse(freezeService.isFrozen(record));
+            assertFalse(holdService.getHeld(hold).contains(record));
+            assertFalse(holdService.heldBy(record, true).contains(hold));
+          }
 
-                // record folder has frozen children
-                assertFalse(freezeService.isFrozen(recordFolder));
-                assertTrue(freezeService.hasFrozenChildren(recordFolder));
+          // check record state (still held)
+          for (NodeRef record : records.subList(5, 10)) {
+            assertTrue(freezeService.isFrozen(record));
+            assertTrue(holdService.getHeld(hold).contains(record));
+            assertTrue(holdService.heldBy(record, true).contains(hold));
+          }
 
-                // record folder is not held
-                assertFalse(holdService.getHeld(hold).contains(recordFolder));
-                assertFalse(holdService.heldBy(recordFolder, true).contains(hold));
+          // record folder has frozen children
+          assertFalse(freezeService.isFrozen(recordFolder));
+          assertTrue(freezeService.hasFrozenChildren(recordFolder));
 
-                // additional check for child held caching
-                assertTrue(nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN));
-                assertEquals(5, nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT));
-            }
-        });
-    }
+          // record folder is not held
+          assertFalse(holdService.getHeld(hold).contains(recordFolder));
+          assertFalse(holdService.heldBy(recordFolder, true).contains(hold));
 
-    public void testRemoveAllRecordsFromHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
-            private NodeRef recordCategory;
-            private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
+          // additional check for child held caching
+          assertTrue(nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN));
+          assertEquals(
+            5,
+            nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT)
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+  public void testRemoveAllRecordsFromHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef hold;
+        private NodeRef recordCategory;
+        private NodeRef recordFolder;
+        private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
 
-                // create a record folder that contains records  
-                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
-                for (int i = 0; i < RECORD_COUNT; i++)
-                {
-                    records.add(recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT, null, null));
-                }
+        public void given() {
+          // create a hold
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
 
-                // add records to hold
-                holdService.addToHold(hold, records);
-            }
+          // create a record folder that contains records
+          recordCategory =
+            filePlanService.createRecordCategory(filePlan, GUID.generate());
+          recordFolder =
+            recordFolderService.createRecordFolder(
+              recordCategory,
+              GUID.generate()
+            );
+          for (int i = 0; i < RECORD_COUNT; i++) {
+            records.add(
+              recordService.createRecordFromContent(
+                recordFolder,
+                GUID.generate(),
+                ContentModel.TYPE_CONTENT,
+                null,
+                null
+              )
+            );
+          }
 
-            public void when() throws Exception
-            {
-                // remove all of the records
-                holdService.removeFromHold(hold, records);
-            }
+          // add records to hold
+          holdService.addToHold(hold, records);
+        }
 
-            public void then()
-            {
-                // check record state (no longer held)   
-                for (NodeRef record : records)
-                {
-                    assertFalse(freezeService.isFrozen(record));
-                    assertFalse(holdService.getHeld(hold).contains(record));
-                    assertFalse(holdService.heldBy(record, true).contains(hold));
-                }
+        public void when() throws Exception {
+          // remove all of the records
+          holdService.removeFromHold(hold, records);
+        }
 
-                // record folder has frozen children
-                assertFalse(freezeService.isFrozen(recordFolder));
-                assertFalse(freezeService.hasFrozenChildren(recordFolder));
+        public void then() {
+          // check record state (no longer held)
+          for (NodeRef record : records) {
+            assertFalse(freezeService.isFrozen(record));
+            assertFalse(holdService.getHeld(hold).contains(record));
+            assertFalse(holdService.heldBy(record, true).contains(hold));
+          }
 
-                // record folder is not held
-                assertFalse(holdService.getHeld(hold).contains(recordFolder));
-                assertFalse(holdService.heldBy(recordFolder, true).contains(hold));
+          // record folder has frozen children
+          assertFalse(freezeService.isFrozen(recordFolder));
+          assertFalse(freezeService.hasFrozenChildren(recordFolder));
 
-                // additional check for child held caching
-                assertTrue(nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN));
-                assertEquals(0, nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT));
-            }
-        });
-    }
+          // record folder is not held
+          assertFalse(holdService.getHeld(hold).contains(recordFolder));
+          assertFalse(holdService.heldBy(recordFolder, true).contains(hold));
 
-    public void testRemoveRecordFolderFromHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
-            private NodeRef recordCategory;
-            private NodeRef recordFolder;
-            private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
+          // additional check for child held caching
+          assertTrue(nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN));
+          assertEquals(
+            0,
+            nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT)
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
+  public void testRemoveRecordFolderFromHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef hold;
+        private NodeRef recordCategory;
+        private NodeRef recordFolder;
+        private List<NodeRef> records = new ArrayList<>(RECORD_COUNT);
 
-                // create a record folder that contains records  
-                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
-                for (int i = 0; i < RECORD_COUNT; i++)
-                {
-                    records.add(recordService.createRecordFromContent(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT, null, null));
-                }
+        public void given() {
+          // create a hold
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
 
-                // add record folder to hold
-                holdService.addToHold(hold, recordFolder);
-            }
+          // create a record folder that contains records
+          recordCategory =
+            filePlanService.createRecordCategory(filePlan, GUID.generate());
+          recordFolder =
+            recordFolderService.createRecordFolder(
+              recordCategory,
+              GUID.generate()
+            );
+          for (int i = 0; i < RECORD_COUNT; i++) {
+            records.add(
+              recordService.createRecordFromContent(
+                recordFolder,
+                GUID.generate(),
+                ContentModel.TYPE_CONTENT,
+                null,
+                null
+              )
+            );
+          }
 
-            public void when() throws Exception
-            {
-                // remove record folder from hold
-                holdService.removeFromHold(hold, recordFolder);
-            }
+          // add record folder to hold
+          holdService.addToHold(hold, recordFolder);
+        }
 
-            public void then()
-            {
-                // check record states   
-                for (NodeRef record : records)
-                {
-                    assertFalse(freezeService.isFrozen(record));
-                    assertFalse(holdService.getHeld(hold).contains(record));
-                    assertFalse(holdService.heldBy(record, true).contains(hold));
-                }
+        public void when() throws Exception {
+          // remove record folder from hold
+          holdService.removeFromHold(hold, recordFolder);
+        }
 
-                // record folder has frozen children
-                assertFalse(freezeService.isFrozen(recordFolder));
-                assertFalse(freezeService.hasFrozenChildren(recordFolder));
+        public void then() {
+          // check record states
+          for (NodeRef record : records) {
+            assertFalse(freezeService.isFrozen(record));
+            assertFalse(holdService.getHeld(hold).contains(record));
+            assertFalse(holdService.heldBy(record, true).contains(hold));
+          }
 
-                // record folder is not held
-                assertFalse(holdService.getHeld(hold).contains(recordFolder));
-                assertFalse(holdService.heldBy(recordFolder, true).contains(hold));
+          // record folder has frozen children
+          assertFalse(freezeService.isFrozen(recordFolder));
+          assertFalse(freezeService.hasFrozenChildren(recordFolder));
 
-                // additional check for child held caching
-                assertTrue(nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN));
-                assertEquals(0, nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT));
-            }
-        });
-    }
+          // record folder is not held
+          assertFalse(holdService.getHeld(hold).contains(recordFolder));
+          assertFalse(holdService.heldBy(recordFolder, true).contains(hold));
 
-    public void testPolicyNotificationForRemoveFromHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
-            private NodeRef recordCategory;
-            private NodeRef recordFolder;
-            BehaviourDefinition<ClassBehaviourBinding> beforeRemoveFromHoldBehaviour;
-            BehaviourDefinition<ClassBehaviourBinding> onRemoveFromHoldBehaviour;
+          // additional check for child held caching
+          assertTrue(nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN));
+          assertEquals(
+            0,
+            nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT)
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                // create a hold
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                // create a record category -> record folder
-                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
-                // add the record folder to hold
-                holdService.addToHold(hold, recordFolder);
+  public void testPolicyNotificationForRemoveFromHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef hold;
+        private NodeRef recordCategory;
+        private NodeRef recordFolder;
+        BehaviourDefinition<ClassBehaviourBinding> beforeRemoveFromHoldBehaviour;
+        BehaviourDefinition<ClassBehaviourBinding> onRemoveFromHoldBehaviour;
 
-                beforeRemoveFromHoldBehaviour = policyComponent.bindClassBehaviour(BeforeRemoveFromHoldPolicy.QNAME,
-                        RecordsManagementModel.TYPE_HOLD, new JavaBehaviour(RemoveFromHoldTest.this, "beforeRemoveFromHold", NotificationFrequency.EVERY_EVENT));
+        public void given() {
+          // create a hold
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+          // create a record category -> record folder
+          recordCategory =
+            filePlanService.createRecordCategory(filePlan, GUID.generate());
+          recordFolder =
+            recordFolderService.createRecordFolder(
+              recordCategory,
+              GUID.generate()
+            );
+          // add the record folder to hold
+          holdService.addToHold(hold, recordFolder);
 
-                onRemoveFromHoldBehaviour = policyComponent.bindClassBehaviour(OnRemoveFromHoldPolicy.QNAME,
-                        RecordsManagementModel.TYPE_HOLD, new JavaBehaviour(RemoveFromHoldTest.this, "onRemoveFromHold", NotificationFrequency.EVERY_EVENT));
+          beforeRemoveFromHoldBehaviour =
+            policyComponent.bindClassBehaviour(
+              BeforeRemoveFromHoldPolicy.QNAME,
+              RecordsManagementModel.TYPE_HOLD,
+              new JavaBehaviour(
+                RemoveFromHoldTest.this,
+                "beforeRemoveFromHold",
+                NotificationFrequency.EVERY_EVENT
+              )
+            );
 
-                assertFalse(beforeRemoveFromHoldFlag);
-                assertFalse(onRemoveFromHoldFlag);
-            }
+          onRemoveFromHoldBehaviour =
+            policyComponent.bindClassBehaviour(
+              OnRemoveFromHoldPolicy.QNAME,
+              RecordsManagementModel.TYPE_HOLD,
+              new JavaBehaviour(
+                RemoveFromHoldTest.this,
+                "onRemoveFromHold",
+                NotificationFrequency.EVERY_EVENT
+              )
+            );
 
-            public void when() throws Exception
-            {
-                // remove the record folder from the hold
-                holdService.removeFromHold(hold, recordFolder);
-            }
+          assertFalse(beforeRemoveFromHoldFlag);
+          assertFalse(onRemoveFromHoldFlag);
+        }
 
-            public void then()
-            {
-                assertTrue(beforeRemoveFromHoldFlag);
-                assertTrue(onRemoveFromHoldFlag);
-            }
+        public void when() throws Exception {
+          // remove the record folder from the hold
+          holdService.removeFromHold(hold, recordFolder);
+        }
 
-            public void after()
-            {
-                policyComponent.removeClassDefinition(beforeRemoveFromHoldBehaviour);
-                policyComponent.removeClassDefinition(onRemoveFromHoldBehaviour);
-            }
-        });
-    }
+        public void then() {
+          assertTrue(beforeRemoveFromHoldFlag);
+          assertTrue(onRemoveFromHoldFlag);
+        }
 
-    @Override
-    public void beforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
-    {
-        beforeRemoveFromHoldFlag = true;
-    }
+        public void after() {
+          policyComponent.removeClassDefinition(beforeRemoveFromHoldBehaviour);
+          policyComponent.removeClassDefinition(onRemoveFromHoldBehaviour);
+        }
+      }
+    );
+  }
 
-    @Override
-    public void onRemoveFromHold(NodeRef hold, NodeRef contentNodeRef)
-    {
-        onRemoveFromHoldFlag = true;
-    }
+  @Override
+  public void beforeRemoveFromHold(NodeRef hold, NodeRef contentNodeRef) {
+    beforeRemoveFromHoldFlag = true;
+  }
+
+  @Override
+  public void onRemoveFromHold(NodeRef hold, NodeRef contentNodeRef) {
+    onRemoveFromHoldFlag = true;
+  }
 }

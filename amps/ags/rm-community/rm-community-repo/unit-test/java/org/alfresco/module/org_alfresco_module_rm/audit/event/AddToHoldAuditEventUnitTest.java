@@ -27,6 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
+import java.util.Map;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -36,57 +45,55 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import java.util.Map;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-
 /**
  * Unit tests for {@link AddToHoldAuditEvent}.
  *
  * @author Sara Aspery
  * @since 3.3
  */
-public class AddToHoldAuditEventUnitTest extends BaseUnitTest
-{
-    @InjectMocks
-    private AddToHoldAuditEvent addToHoldAuditEvent;
+public class AddToHoldAuditEventUnitTest extends BaseUnitTest {
 
-    @Mock
-    private NodeService mockedNodeService;
+  @InjectMocks
+  private AddToHoldAuditEvent addToHoldAuditEvent;
 
-    private NodeRef holdNodeRef;
-    private NodeRef contentNodeRef;
+  @Mock
+  private NodeService mockedNodeService;
 
-    /** Set up the mocks. */
-    @Before
-    public void setUp()
-    {
-        initMocks(this);
+  private NodeRef holdNodeRef;
+  private NodeRef contentNodeRef;
 
-        holdNodeRef = generateNodeRef();
-        String holdName = "Hold " + GUID.generate();
+  /** Set up the mocks. */
+  @Before
+  public void setUp() {
+    initMocks(this);
 
-        contentNodeRef = generateNodeRef();
-        String contentName = "Content " + GUID.generate();
+    holdNodeRef = generateNodeRef();
+    String holdName = "Hold " + GUID.generate();
 
-        when(mockedNodeService.getProperty(holdNodeRef, PROP_NAME)).thenReturn(holdName);
-        when(mockedNodeService.getProperty(contentNodeRef, PROP_NAME)).thenReturn(contentName);
-    }
+    contentNodeRef = generateNodeRef();
+    String contentName = "Content " + GUID.generate();
 
-    /**
-     * Check that the add to hold event calls an audit event.
-     *
-     */
-    @Test
-    public void testAddToHoldCausesAuditEvent()
-    {
-        addToHoldAuditEvent.onAddToHold(holdNodeRef, contentNodeRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), any(String.class), isNull(Map.class), any(Map.class), eq(true), eq(false));
-    }
+    when(mockedNodeService.getProperty(holdNodeRef, PROP_NAME))
+      .thenReturn(holdName);
+    when(mockedNodeService.getProperty(contentNodeRef, PROP_NAME))
+      .thenReturn(contentName);
+  }
+
+  /**
+   * Check that the add to hold event calls an audit event.
+   *
+   */
+  @Test
+  public void testAddToHoldCausesAuditEvent() {
+    addToHoldAuditEvent.onAddToHold(holdNodeRef, contentNodeRef);
+    verify(mockedRecordsManagementAuditService, times(1))
+      .auditEvent(
+        eq(contentNodeRef),
+        any(String.class),
+        isNull(Map.class),
+        any(Map.class),
+        eq(true),
+        eq(false)
+      );
+  }
 }

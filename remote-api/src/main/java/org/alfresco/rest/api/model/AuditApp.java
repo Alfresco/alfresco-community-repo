@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,82 +31,76 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * A representation of a Audit App
  *
  * @author janv
- * 
+ *
  */
-public class AuditApp
-{
-	private String id;
-    private String name;
-    private Boolean isEnabled;
-    private Long maxEntryId;
-    private Long minEntryId;
+public class AuditApp {
 
-    public Long getMaxEntryId()
-    {
-        return maxEntryId;
-    }
+  private String id;
+  private String name;
+  private Boolean isEnabled;
+  private Long maxEntryId;
+  private Long minEntryId;
 
-    public void setMaxEntryId(Long maxEntryId)
-    {
-        this.maxEntryId = maxEntryId;
-    }
+  public Long getMaxEntryId() {
+    return maxEntryId;
+  }
 
-    public Long getMinEntryId()
-    {
-        return minEntryId;
-    }
+  public void setMaxEntryId(Long maxEntryId) {
+    this.maxEntryId = maxEntryId;
+  }
 
-    public void setMinEntryId(Long minEntryId)
-    {
-        this.minEntryId = minEntryId;
-    }
+  public Long getMinEntryId() {
+    return minEntryId;
+  }
 
-    public AuditApp()
-    {
-    }
+  public void setMinEntryId(Long minEntryId) {
+    this.minEntryId = minEntryId;
+  }
 
-    public AuditApp(String id, String name, boolean isEnabled)
-    {
-    	this.id = id;
-        this.name = name;
-        this.isEnabled = isEnabled;
-    }
+  public AuditApp() {}
 
-    public String getId()
-    {
-		return id;
-	}
+  public AuditApp(String id, String name, boolean isEnabled) {
+    this.id = id;
+    this.name = name;
+    this.isEnabled = isEnabled;
+  }
 
-    public void setId(String id)
-    {
-    	this.id = id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public String getName()
-    {
-        return name;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    @JsonProperty(value="isEnabled")
-    public Boolean getIsEnabled()
-    {
-        return isEnabled;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    @JsonProperty(value="isEnabled")
-    public void setIsEnabled(Boolean isEnabled)
-    {
-        this.isEnabled = isEnabled;
-    }
+  @JsonProperty(value = "isEnabled")
+  public Boolean getIsEnabled() {
+    return isEnabled;
+  }
 
-	@Override
-	public String toString()
-    {
-		return "AuditApp [id=" + id + ", name= " + name + ", isEnabled=" + isEnabled + "]";
-	}
+  @JsonProperty(value = "isEnabled")
+  public void setIsEnabled(Boolean isEnabled) {
+    this.isEnabled = isEnabled;
+  }
+
+  @Override
+  public String toString() {
+    return (
+      "AuditApp [id=" +
+      id +
+      ", name= " +
+      name +
+      ", isEnabled=" +
+      isEnabled +
+      "]"
+    );
+  }
 }

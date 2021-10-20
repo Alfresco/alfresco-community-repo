@@ -28,8 +28,7 @@ package org.alfresco.repo.domain.permissions;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /** Listener to receive callback events when permissions are asynchronously updated with the {@link FixedAclUpdater}. */
-public interface FixedAclUpdaterListener
-{
-    /** Callback method for when permissions have been updated by the FixedAclUpdater. */
-    void permissionsUpdatedAsynchronously(NodeRef nodeRef);
+public interface FixedAclUpdaterListener {
+  /** Callback method for when permissions have been updated by the FixedAclUpdater. */
+  void permissionsUpdatedAsynchronously(NodeRef nodeRef);
 }

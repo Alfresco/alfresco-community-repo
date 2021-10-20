@@ -33,7 +33,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.rule.RuleModel;
@@ -47,72 +46,87 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * RM V2.4 File Plan container rule inheritance patch unit test.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.4
  */
-public class RMv24FilePlanContainerRuleInheritancePatchUnitTest
-{
-    private @Mock NodeService mockedNodeService;
-    private @Mock FilePlanService mockedFilePlanService;
-  
-    private @InjectMocks RMv24FilePlanContainerRuleInheritancePatch patch;
-    
-    @Before
-    public void before()
-    {
-        MockitoAnnotations.initMocks(this);
-    }
-    
-    /**
-     * Given there are not file plans,
-     * When the patch is executed,
-     * Then nothing happens
-     */
-    @SuppressWarnings("unchecked")
-    @Test
-    public void noFilePlans()
-    {
-        // given
-        when(mockedFilePlanService.getFilePlans())
-            .thenReturn(Collections.EMPTY_SET);
-        
-        // when
-        patch.applyInternal();
-        
-        // then
-        verifyZeroInteractions(mockedNodeService);
-    }
-    
-    /**
-     * Given there is a file plan,
-     * When the patch is executed,
-     * Then the file plan containers are updated
-     */
-    @Test
-    public void atLeastOneFilePlan()
-    {
-        NodeRef filePlan = generateNodeRef(mockedNodeService, RecordsManagementModel.TYPE_FILE_PLAN);
-        NodeRef holdsContainer = generateNodeRef(mockedNodeService);
-        NodeRef transferContainer = generateNodeRef(mockedNodeService);
-        NodeRef unfiledRecordsContainer = generateNodeRef(mockedNodeService);
-        
-        // given        
-        when(mockedFilePlanService.getFilePlans())
-            .thenReturn(Collections.singleton(filePlan));
-        when(mockedFilePlanService.getHoldContainer(filePlan))
-            .thenReturn(holdsContainer);
-        when(mockedFilePlanService.getTransferContainer(filePlan))
-            .thenReturn(transferContainer);
-        when(mockedFilePlanService.getUnfiledContainer(filePlan))
-            .thenReturn(unfiledRecordsContainer);
-        
-        // when
-        patch.applyInternal();
-        
-        // then
-        verify(mockedNodeService).addAspect(holdsContainer, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
-        verify(mockedNodeService).addAspect(transferContainer, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
-        verify(mockedNodeService).addAspect(unfiledRecordsContainer, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);        
-    }
+public class RMv24FilePlanContainerRuleInheritancePatchUnitTest {
+
+  @Mock
+  private NodeService mockedNodeService;
+
+  @Mock
+  private FilePlanService mockedFilePlanService;
+
+  @InjectMocks
+  private RMv24FilePlanContainerRuleInheritancePatch patch;
+
+  @Before
+  public void before() {
+    MockitoAnnotations.initMocks(this);
+  }
+
+  /**
+   * Given there are not file plans,
+   * When the patch is executed,
+   * Then nothing happens
+   */
+  @SuppressWarnings("unchecked")
+  @Test
+  public void noFilePlans() {
+    // given
+    when(mockedFilePlanService.getFilePlans())
+      .thenReturn(Collections.EMPTY_SET);
+
+    // when
+    patch.applyInternal();
+
+    // then
+    verifyZeroInteractions(mockedNodeService);
+  }
+
+  /**
+   * Given there is a file plan,
+   * When the patch is executed,
+   * Then the file plan containers are updated
+   */
+  @Test
+  public void atLeastOneFilePlan() {
+    NodeRef filePlan = generateNodeRef(
+      mockedNodeService,
+      RecordsManagementModel.TYPE_FILE_PLAN
+    );
+    NodeRef holdsContainer = generateNodeRef(mockedNodeService);
+    NodeRef transferContainer = generateNodeRef(mockedNodeService);
+    NodeRef unfiledRecordsContainer = generateNodeRef(mockedNodeService);
+
+    // given
+    when(mockedFilePlanService.getFilePlans())
+      .thenReturn(Collections.singleton(filePlan));
+    when(mockedFilePlanService.getHoldContainer(filePlan))
+      .thenReturn(holdsContainer);
+    when(mockedFilePlanService.getTransferContainer(filePlan))
+      .thenReturn(transferContainer);
+    when(mockedFilePlanService.getUnfiledContainer(filePlan))
+      .thenReturn(unfiledRecordsContainer);
+
+    // when
+    patch.applyInternal();
+
+    // then
+    verify(mockedNodeService)
+      .addAspect(holdsContainer, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+    verify(mockedNodeService)
+      .addAspect(
+        transferContainer,
+        RuleModel.ASPECT_IGNORE_INHERITED_RULES,
+        null
+      );
+    verify(mockedNodeService)
+      .addAspect(
+        unfiledRecordsContainer,
+        RuleModel.ASPECT_IGNORE_INHERITED_RULES,
+        null
+      );
+  }
 }

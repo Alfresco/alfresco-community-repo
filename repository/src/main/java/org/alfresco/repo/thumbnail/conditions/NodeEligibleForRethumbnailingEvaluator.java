@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,7 +29,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase;
@@ -72,151 +71,217 @@ import org.apache.commons.logging.LogFactory;
  *     {@link FailureHandlingOptions#getQuietPeriodRetriesEnabled() system.thumbnail.quietPeriodRetriesEnabled} to false.</li>
  * </ul>
  * At all times, thumbnails will be attempted when a user navigates to a page which needs to show the relevant thumbnail (lazy production).
- * 
+ *
  * @author Neil Mc Erlean.
  * @since 3.5.0
  *
  * @deprecated The thumbnails code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
 @Deprecated
-public class NodeEligibleForRethumbnailingEvaluator extends ActionConditionEvaluatorAbstractBase 
-{
-    private static Log logger = LogFactory.getLog(NodeEligibleForRethumbnailingEvaluator.class);
+public class NodeEligibleForRethumbnailingEvaluator
+  extends ActionConditionEvaluatorAbstractBase {
 
-    /**
-     * Evaluator constants
-     */
-    public final static String NAME = "node-eligible-for-rethumbnailing-evaluator";
+  private static Log logger = LogFactory.getLog(
+    NodeEligibleForRethumbnailingEvaluator.class
+  );
 
-    public final static String PARAM_THUMBNAIL_DEFINITION_NAME = "thumbnail-definition-name";
-    
-    public final static String PARAM_RETRY_PERIOD = "retry-period";
-    public final static String PARAM_RETRY_COUNT = "retry-count";
-    public final static String PARAM_QUIET_PERIOD = "quiet-period";
-    public final static String PARAM_QUIET_PERIOD_RETRIES_ENABLED = "quiet-period-retries-enabled";
+  /**
+   * Evaluator constants
+   */
+  public static final String NAME =
+    "node-eligible-for-rethumbnailing-evaluator";
 
-    protected NodeService nodeService;
-    protected ThumbnailService thumbnailService;
-    
-    public void setNodeService(NodeService nodeService) 
-    {
-        this.nodeService = nodeService;
-    }
-    
-    public void setThumbnailService(ThumbnailService thumbnailService) 
-    {
-        this.thumbnailService = thumbnailService;
-    }
-    
-    /**
-     * Add parameter definitions
-     */
-    @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
-    {
-        paramList.add(new ParameterDefinitionImpl(PARAM_THUMBNAIL_DEFINITION_NAME, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_THUMBNAIL_DEFINITION_NAME)));
-        
-        paramList.add(new ParameterDefinitionImpl(PARAM_RETRY_PERIOD, DataTypeDefinition.LONG, true, getParamDisplayLabel(PARAM_RETRY_PERIOD)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_RETRY_COUNT, DataTypeDefinition.INT, true, getParamDisplayLabel(PARAM_RETRY_COUNT)));
-        
-        paramList.add(new ParameterDefinitionImpl(PARAM_QUIET_PERIOD, DataTypeDefinition.LONG, true, getParamDisplayLabel(PARAM_QUIET_PERIOD)));
-        paramList.add(new ParameterDefinitionImpl(PARAM_QUIET_PERIOD_RETRIES_ENABLED, DataTypeDefinition.BOOLEAN, true, getParamDisplayLabel(PARAM_QUIET_PERIOD_RETRIES_ENABLED)));
-    }
+  public static final String PARAM_THUMBNAIL_DEFINITION_NAME =
+    "thumbnail-definition-name";
 
-    /**
-     * @see ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, NodeRef)
-     */
-    public boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef) 
-    {
-        if (!this.nodeService.exists(actionedUponNodeRef))
-        {
-            return false;
-        }
-    
-        Serializable paramThumbnailDefnName = actionCondition.getParameterValue(PARAM_THUMBNAIL_DEFINITION_NAME);
-        
-        Serializable paramRetryPeriod = actionCondition.getParameterValue(PARAM_RETRY_PERIOD);
-        Serializable paramRetryCount = actionCondition.getParameterValue(PARAM_RETRY_COUNT);
-        Serializable paramQuietPeriod = actionCondition.getParameterValue(PARAM_QUIET_PERIOD);
-        
-        final Serializable parameterValue = actionCondition.getParameterValue(PARAM_QUIET_PERIOD_RETRIES_ENABLED);
-        Serializable paramQuietPeriodRetriesEnabled = parameterValue != null ? parameterValue : FailureHandlingOptions.DEFAULT_QUIET_PERIOD_RETRIES_ENABLED;
-        
-        
-        
-        final QName thumbnailDefnQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, (String)paramThumbnailDefnName);
-        
-        // If there are no previous failed thumbnail attempts for this thumbnail definition,
-        // then the node is always eligible for a first try.
-        Map<String, FailedThumbnailInfo> failures = thumbnailService.getFailedThumbnails(actionedUponNodeRef);
-        if (failures.isEmpty() || !failures.containsKey(thumbnailDefnQName.getLocalName()))
-        {
-            if (logger.isDebugEnabled())
-            {
-                StringBuilder msg = new StringBuilder();
-                msg.append("Node ").append(actionedUponNodeRef).append(" has no matching ").append(ContentModel.ASSOC_FAILED_THUMBNAIL)
-                   .append(" child.");
-                logger.debug(msg.toString());
-            }
-            return true;
-        }
-        
-        
-        final FailedThumbnailInfo failedThumbnailInfo = failures.get(thumbnailDefnQName.getLocalName());
-        
-        // There is a cm:failedThumbnail child, so there has been at least one failed execution of the given
-        // thumbnail definition at some point.
-        if (failedThumbnailInfo.getMostRecentFailure() == null)
-        {
-            // The property should never be null like this, but just in case.
-            return true;
-        }
-        
-        // So how long ago did the given thumbnail definition fail?
-        long nowMs = new Date().getTime();
-        long failureTimeMs = failedThumbnailInfo.getMostRecentFailure().getTime();
-        final long timeSinceLastFailureMs = nowMs - failureTimeMs;
-        
-        // And how many failures have there been?
-        final int failureCount = failedThumbnailInfo.getFailureCount();
-        
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Comparing failure time of ")
-               .append(failedThumbnailInfo.getMostRecentFailure()).append(" to now. Difference is ")
-               .append(timeSinceLastFailureMs).append(" ms. ").append(failureCount).append(" existing failures.");
-            logger.debug(msg.toString());
-        }
+  public static final String PARAM_RETRY_PERIOD = "retry-period";
+  public static final String PARAM_RETRY_COUNT = "retry-count";
+  public static final String PARAM_QUIET_PERIOD = "quiet-period";
+  public static final String PARAM_QUIET_PERIOD_RETRIES_ENABLED =
+    "quiet-period-retries-enabled";
 
-        if (failureCount >= (Integer)paramRetryCount)
-        {
-            boolean quietPeriodRetriesEnabled = (Boolean)paramQuietPeriodRetriesEnabled;
-            return quietPeriodRetriesEnabled && timeSinceFailureExceedsLimit(paramQuietPeriod, timeSinceLastFailureMs);
-        }
-        else
-        {
-            return timeSinceFailureExceedsLimit(paramRetryPeriod, timeSinceLastFailureMs);
-        }
+  protected NodeService nodeService;
+  protected ThumbnailService thumbnailService;
+
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  public void setThumbnailService(ThumbnailService thumbnailService) {
+    this.thumbnailService = thumbnailService;
+  }
+
+  /**
+   * Add parameter definitions
+   */
+  @Override
+  protected void addParameterDefinitions(List<ParameterDefinition> paramList) {
+    paramList.add(
+      new ParameterDefinitionImpl(
+        PARAM_THUMBNAIL_DEFINITION_NAME,
+        DataTypeDefinition.TEXT,
+        true,
+        getParamDisplayLabel(PARAM_THUMBNAIL_DEFINITION_NAME)
+      )
+    );
+
+    paramList.add(
+      new ParameterDefinitionImpl(
+        PARAM_RETRY_PERIOD,
+        DataTypeDefinition.LONG,
+        true,
+        getParamDisplayLabel(PARAM_RETRY_PERIOD)
+      )
+    );
+    paramList.add(
+      new ParameterDefinitionImpl(
+        PARAM_RETRY_COUNT,
+        DataTypeDefinition.INT,
+        true,
+        getParamDisplayLabel(PARAM_RETRY_COUNT)
+      )
+    );
+
+    paramList.add(
+      new ParameterDefinitionImpl(
+        PARAM_QUIET_PERIOD,
+        DataTypeDefinition.LONG,
+        true,
+        getParamDisplayLabel(PARAM_QUIET_PERIOD)
+      )
+    );
+    paramList.add(
+      new ParameterDefinitionImpl(
+        PARAM_QUIET_PERIOD_RETRIES_ENABLED,
+        DataTypeDefinition.BOOLEAN,
+        true,
+        getParamDisplayLabel(PARAM_QUIET_PERIOD_RETRIES_ENABLED)
+      )
+    );
+  }
+
+  /**
+   * @see ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, NodeRef)
+   */
+  public boolean evaluateImpl(
+    ActionCondition actionCondition,
+    NodeRef actionedUponNodeRef
+  ) {
+    if (!this.nodeService.exists(actionedUponNodeRef)) {
+      return false;
     }
 
-    private boolean timeSinceFailureExceedsLimit(Serializable failurePeriod, long timeSinceFailure)
-    {
-        // Is that time period greater than the specified offset?
-        // We'll allow for -ve offset values.
-        Long offsetLong = (Long)failurePeriod;
-        long absOffset = Math.abs(offsetLong);
-        
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("timeSinceFailure is ");
-            msg.append(timeSinceFailure).append(" ms.");
-            msg.append(", absOffset is ")
-               .append(absOffset).append(" ms.");
-            logger.debug(msg.toString());
-        }
-        
-        return timeSinceFailure > absOffset;
+    Serializable paramThumbnailDefnName = actionCondition.getParameterValue(
+      PARAM_THUMBNAIL_DEFINITION_NAME
+    );
+
+    Serializable paramRetryPeriod = actionCondition.getParameterValue(
+      PARAM_RETRY_PERIOD
+    );
+    Serializable paramRetryCount = actionCondition.getParameterValue(
+      PARAM_RETRY_COUNT
+    );
+    Serializable paramQuietPeriod = actionCondition.getParameterValue(
+      PARAM_QUIET_PERIOD
+    );
+
+    final Serializable parameterValue = actionCondition.getParameterValue(
+      PARAM_QUIET_PERIOD_RETRIES_ENABLED
+    );
+    Serializable paramQuietPeriodRetriesEnabled = parameterValue != null
+      ? parameterValue
+      : FailureHandlingOptions.DEFAULT_QUIET_PERIOD_RETRIES_ENABLED;
+
+    final QName thumbnailDefnQName = QName.createQName(
+      NamespaceService.CONTENT_MODEL_1_0_URI,
+      (String) paramThumbnailDefnName
+    );
+
+    // If there are no previous failed thumbnail attempts for this thumbnail definition,
+    // then the node is always eligible for a first try.
+    Map<String, FailedThumbnailInfo> failures = thumbnailService.getFailedThumbnails(
+      actionedUponNodeRef
+    );
+    if (
+      failures.isEmpty() ||
+      !failures.containsKey(thumbnailDefnQName.getLocalName())
+    ) {
+      if (logger.isDebugEnabled()) {
+        StringBuilder msg = new StringBuilder();
+        msg
+          .append("Node ")
+          .append(actionedUponNodeRef)
+          .append(" has no matching ")
+          .append(ContentModel.ASSOC_FAILED_THUMBNAIL)
+          .append(" child.");
+        logger.debug(msg.toString());
+      }
+      return true;
     }
+
+    final FailedThumbnailInfo failedThumbnailInfo = failures.get(
+      thumbnailDefnQName.getLocalName()
+    );
+
+    // There is a cm:failedThumbnail child, so there has been at least one failed execution of the given
+    // thumbnail definition at some point.
+    if (failedThumbnailInfo.getMostRecentFailure() == null) {
+      // The property should never be null like this, but just in case.
+      return true;
+    }
+
+    // So how long ago did the given thumbnail definition fail?
+    long nowMs = new Date().getTime();
+    long failureTimeMs = failedThumbnailInfo.getMostRecentFailure().getTime();
+    final long timeSinceLastFailureMs = nowMs - failureTimeMs;
+
+    // And how many failures have there been?
+    final int failureCount = failedThumbnailInfo.getFailureCount();
+
+    if (logger.isDebugEnabled()) {
+      StringBuilder msg = new StringBuilder();
+      msg
+        .append("Comparing failure time of ")
+        .append(failedThumbnailInfo.getMostRecentFailure())
+        .append(" to now. Difference is ")
+        .append(timeSinceLastFailureMs)
+        .append(" ms. ")
+        .append(failureCount)
+        .append(" existing failures.");
+      logger.debug(msg.toString());
+    }
+
+    if (failureCount >= (Integer) paramRetryCount) {
+      boolean quietPeriodRetriesEnabled = (Boolean) paramQuietPeriodRetriesEnabled;
+      return (
+        quietPeriodRetriesEnabled &&
+        timeSinceFailureExceedsLimit(paramQuietPeriod, timeSinceLastFailureMs)
+      );
+    } else {
+      return timeSinceFailureExceedsLimit(
+        paramRetryPeriod,
+        timeSinceLastFailureMs
+      );
+    }
+  }
+
+  private boolean timeSinceFailureExceedsLimit(
+    Serializable failurePeriod,
+    long timeSinceFailure
+  ) {
+    // Is that time period greater than the specified offset?
+    // We'll allow for -ve offset values.
+    Long offsetLong = (Long) failurePeriod;
+    long absOffset = Math.abs(offsetLong);
+
+    if (logger.isDebugEnabled()) {
+      StringBuilder msg = new StringBuilder();
+      msg.append("timeSinceFailure is ");
+      msg.append(timeSinceFailure).append(" ms.");
+      msg.append(", absOffset is ").append(absOffset).append(" ms.");
+      logger.debug(msg.toString());
+    }
+
+    return timeSinceFailure > absOffset;
+  }
 }

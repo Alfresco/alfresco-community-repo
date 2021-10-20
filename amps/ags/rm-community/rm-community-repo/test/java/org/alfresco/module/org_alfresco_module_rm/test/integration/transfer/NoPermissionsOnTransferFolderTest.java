@@ -42,7 +42,6 @@ import static org.alfresco.util.GUID.generate;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
@@ -56,136 +55,188 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class NoPermissionsOnTransferFolderTest extends BaseRMTestCase
-{
-    // Test users
-    private String testUser1 = null;
-    private String testUser2 = null;
+public class NoPermissionsOnTransferFolderTest extends BaseRMTestCase {
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest()
-     */
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+  // Test users
+  private String testUser1 = null;
+  private String testUser2 = null;
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestUsersImpl(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected void setupTestUsersImpl(NodeRef filePlan)
-    {
-        super.setupTestUsersImpl(filePlan);
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isUserTest()
+   */
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-        // Create test users
-        testUser1 = generate();
-        createPerson(testUser1);
-        testUser2 = generate();
-        createPerson(testUser2);
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupTestUsersImpl(org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  protected void setupTestUsersImpl(NodeRef filePlan) {
+    super.setupTestUsersImpl(filePlan);
 
-        // Join the RM site
-        siteService.setMembership(siteId, testUser1, SITE_CONSUMER);
-        siteService.setMembership(siteId, testUser2, SITE_CONSUMER);
+    // Create test users
+    testUser1 = generate();
+    createPerson(testUser1);
+    testUser2 = generate();
+    createPerson(testUser2);
 
-        // Add the test users to RM Records Manager role
-        filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_RECORDS_MANAGER, testUser1);
-        filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_RECORDS_MANAGER, testUser2);
-    }
+    // Join the RM site
+    siteService.setMembership(siteId, testUser1, SITE_CONSUMER);
+    siteService.setMembership(siteId, testUser2, SITE_CONSUMER);
 
-    public void testNoPermissionsOnTransferFolder()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(testUser1)
-        {
-            // Records folder
-            private NodeRef recordsFolder = null;
+    // Add the test users to RM Records Manager role
+    filePlanRoleService.assignRoleToAuthority(
+      filePlan,
+      ROLE_RECORDS_MANAGER,
+      testUser1
+    );
+    filePlanRoleService.assignRoleToAuthority(
+      filePlan,
+      ROLE_RECORDS_MANAGER,
+      testUser2
+    );
+  }
 
-            // Transfer folder
-            private NodeRef transferFolder = null;
+  public void testNoPermissionsOnTransferFolder() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(testUser1) {
+        // Records folder
+        private NodeRef recordsFolder = null;
 
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
-             */
-            @Override
-            public void given()
-            {
-                runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork()
-                    {
-                        // Create category
-                        NodeRef category = filePlanService.createRecordCategory(filePlan, generate());
+        // Transfer folder
+        private NodeRef transferFolder = null;
 
-                        // Give filing permissions for the test users on the category
-                        filePlanPermissionService.setPermission(category, testUser1, FILING);
-                        filePlanPermissionService.setPermission(category, testUser2, FILING);
+        /**
+         * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
+         */
+        @Override
+        public void given() {
+          runAs(
+            new RunAsWork<Void>() {
+              public Void doWork() {
+                // Create category
+                NodeRef category = filePlanService.createRecordCategory(
+                  filePlan,
+                  generate()
+                );
 
-                        // Create disposition schedule
-                        utils.createDispositionSchedule(category, DEFAULT_DISPOSITION_INSTRUCTIONS, DEFAULT_DISPOSITION_AUTHORITY, false, true, true);
+                // Give filing permissions for the test users on the category
+                filePlanPermissionService.setPermission(
+                  category,
+                  testUser1,
+                  FILING
+                );
+                filePlanPermissionService.setPermission(
+                  category,
+                  testUser2,
+                  FILING
+                );
 
-                        // Create folder
-                        recordsFolder = recordFolderService.createRecordFolder(category, generate());
+                // Create disposition schedule
+                utils.createDispositionSchedule(
+                  category,
+                  DEFAULT_DISPOSITION_INSTRUCTIONS,
+                  DEFAULT_DISPOSITION_AUTHORITY,
+                  false,
+                  true,
+                  true
+                );
 
-                        // Make eligible for cut off
-                        Map<String, Serializable> params = new HashMap<>(1);
-                        params.put(PARAM_EVENT_NAME, DEFAULT_EVENT_NAME);
-                        rmActionService.executeRecordsManagementAction(recordsFolder, CompleteEventAction.NAME, params);
+                // Create folder
+                recordsFolder =
+                  recordFolderService.createRecordFolder(category, generate());
 
-                        // Cut off folder
-                        rmActionService.executeRecordsManagementAction(recordsFolder, CutOffAction.NAME);
+                // Make eligible for cut off
+                Map<String, Serializable> params = new HashMap<>(1);
+                params.put(PARAM_EVENT_NAME, DEFAULT_EVENT_NAME);
+                rmActionService.executeRecordsManagementAction(
+                  recordsFolder,
+                  CompleteEventAction.NAME,
+                  params
+                );
 
-                        return null;
-                    }
-                }, getAdminUserName());
+                // Cut off folder
+                rmActionService.executeRecordsManagementAction(
+                  recordsFolder,
+                  CutOffAction.NAME
+                );
 
-                // FIXME: This step should be executed in "when()".
-                // See RM-3931
-                transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
-            }
+                return null;
+              }
+            },
+            getAdminUserName()
+          );
 
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#when()
-             */
-            @Override
-            public void when()
-            {
-                // FIXME: If the transfer step is executed here the test fails. See RM-3931
-                //transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
-            }
+          // FIXME: This step should be executed in "when()".
+          // See RM-3931
+          transferFolder =
+            (NodeRef) rmActionService
+              .executeRecordsManagementAction(
+                recordsFolder,
+                TransferAction.NAME
+              )
+              .getValue();
+        }
 
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#then()
-             */
-            @Override
-            public void then()
-            {
+        /**
+         * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#when()
+         */
+        @Override
+        public void when() {
+          // FIXME: If the transfer step is executed here the test fails. See RM-3931
+          //transferFolder = (NodeRef) rmActionService.executeRecordsManagementAction(recordsFolder, TransferAction.NAME).getValue();
+        }
+
+        /**
+         * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#then()
+         */
+        @Override
+        public void then() {
+          // Check transfer folder
+          assertNotNull(transferFolder);
+
+          // testUser1 should have read permissions on the transfers container
+          assertEquals(
+            ALLOWED,
+            permissionService.hasPermission(transfersContainer, READ_RECORDS)
+          );
+
+          // Check if testUser1 has filing permissions on the transfer folder
+          assertEquals(
+            ALLOWED,
+            permissionService.hasPermission(transferFolder, FILING)
+          );
+
+          runAs(
+            new RunAsWork<Void>() {
+              public Void doWork() {
                 // Check transfer folder
                 assertNotNull(transferFolder);
 
-                // testUser1 should have read permissions on the transfers container
-                assertEquals(ALLOWED, permissionService.hasPermission(transfersContainer, READ_RECORDS));
+                // testUser2 should have read permissions on the transfers container
+                assertEquals(
+                  ALLOWED,
+                  permissionService.hasPermission(
+                    transfersContainer,
+                    READ_RECORDS
+                  )
+                );
 
-                // Check if testUser1 has filing permissions on the transfer folder
-                assertEquals(ALLOWED, permissionService.hasPermission(transferFolder, FILING));
+                // Check if testUser2 has read permissions on the transfer folder
+                assertEquals(
+                  DENIED,
+                  permissionService.hasPermission(transferFolder, READ_RECORDS)
+                );
 
-                runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork()
-                    {
-                        // Check transfer folder
-                        assertNotNull(transferFolder);
-
-                        // testUser2 should have read permissions on the transfers container
-                        assertEquals(ALLOWED, permissionService.hasPermission(transfersContainer, READ_RECORDS));
-
-                        // Check if testUser2 has read permissions on the transfer folder
-                        assertEquals(DENIED, permissionService.hasPermission(transferFolder, READ_RECORDS));
-
-                        return null;
-                    }
-                }, testUser2);
-            }
-        });
-    }
+                return null;
+              }
+            },
+            testUser2
+          );
+        }
+      }
+    );
+  }
 }

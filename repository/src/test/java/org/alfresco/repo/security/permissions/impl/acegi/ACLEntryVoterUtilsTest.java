@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.Set;
-
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -52,130 +51,225 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-
 @RunWith(MockitoJUnitRunner.class)
-public class ACLEntryVoterUtilsTest
-{
-    private final NodeRef testNodeRef = new NodeRef("workspace://testNodeRef/testNodeRef");
-    private final NodeRef rootNodeRef = new NodeRef("workspace://rootNodeRef/rootNodeRef");
-    private final NodeRef refNodeForTestObject = new NodeRef("workspace://refNodeForTestObject/refNodeForTestObject");
-    private final NodeRef childRefNode = new NodeRef("workspace://childRefNode/childRefNode");
-    private final StoreRef testStoreNodeRef = new StoreRef("system://testStoreRefMock/testStoreRefMock");
-    private final SimplePermissionReference simplePermissionReference = SimplePermissionReference.getPermissionReference(QName.createQName("uri", "local"), "Write");
-    private final QName qNameToAbstain1 = QName.createQName("{test}testnode1");
-    private final QName qNameToAbstain2 = QName.createQName("{test}testnode2");
-    private final QName qNameToAbstain3 = QName.createQName("{test}testnode3");
-    private final QName qNameNotFromTheAbstainSet = QName.createQName("{test}testnodeAbstain");
-    private final Set<QName> qNamesToAbstain = Set.of(qNameToAbstain1, qNameToAbstain2, qNameToAbstain3);
-    @Mock
-    private PermissionService permissionServiceMock;
-    @Mock
-    private NodeService nodeServiceMock;
-    @Mock
-    private ChildAssociationRef childAssocRefMock;
+public class ACLEntryVoterUtilsTest {
 
-    @Before
-    public void setUp()
-    {
-        when(nodeServiceMock.exists(testStoreNodeRef)).thenReturn(Boolean.TRUE);
-        when(nodeServiceMock.exists(testNodeRef)).thenReturn(Boolean.TRUE);
-        when(nodeServiceMock.getRootNode(testStoreNodeRef)).thenReturn(rootNodeRef);
-        when(nodeServiceMock.getType(testNodeRef)).thenReturn(qNameNotFromTheAbstainSet);
-        when(nodeServiceMock.getAspects(testNodeRef)).thenReturn(Set.of(qNameNotFromTheAbstainSet));
-        when(permissionServiceMock.hasPermission(eq(testNodeRef), nullable(String.class))).thenReturn(AccessStatus.DENIED);
-    }
+  private final NodeRef testNodeRef = new NodeRef(
+    "workspace://testNodeRef/testNodeRef"
+  );
+  private final NodeRef rootNodeRef = new NodeRef(
+    "workspace://rootNodeRef/rootNodeRef"
+  );
+  private final NodeRef refNodeForTestObject = new NodeRef(
+    "workspace://refNodeForTestObject/refNodeForTestObject"
+  );
+  private final NodeRef childRefNode = new NodeRef(
+    "workspace://childRefNode/childRefNode"
+  );
+  private final StoreRef testStoreNodeRef = new StoreRef(
+    "system://testStoreRefMock/testStoreRefMock"
+  );
+  private final SimplePermissionReference simplePermissionReference = SimplePermissionReference.getPermissionReference(
+    QName.createQName("uri", "local"),
+    "Write"
+  );
+  private final QName qNameToAbstain1 = QName.createQName("{test}testnode1");
+  private final QName qNameToAbstain2 = QName.createQName("{test}testnode2");
+  private final QName qNameToAbstain3 = QName.createQName("{test}testnode3");
+  private final QName qNameNotFromTheAbstainSet = QName.createQName(
+    "{test}testnodeAbstain"
+  );
+  private final Set<QName> qNamesToAbstain = Set.of(
+    qNameToAbstain1,
+    qNameToAbstain2,
+    qNameToAbstain3
+  );
 
-    @Test
-    public void returnsAccessDeniedFromPermissionService()
-    {
-        assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(AccessDecisionVoter.ACCESS_DENIED));
-    }
+  @Mock
+  private PermissionService permissionServiceMock;
 
-    @Test
-    public void returnsNullOnNullTestObject()
-    {
-        assertThat(getNodeRef(null, nodeServiceMock), is(nullValue()));
-    }
+  @Mock
+  private NodeService nodeServiceMock;
 
-    @Test(expected = ACLEntryVoterException.class)
-    public void throwsExceptionWhenParameterIsNotNodeRefOrChildAssociationRef()
-    {
-        getNodeRef("TEST", nodeServiceMock);
-    }
+  @Mock
+  private ChildAssociationRef childAssocRefMock;
 
-    @Test
-    public void returnsGivenTestNodeRefWhenStoreRefDoesNotExist()
-    {
-        when(nodeServiceMock.exists(testStoreNodeRef)).thenReturn(Boolean.FALSE);
-        assertThat(getNodeRef(testStoreNodeRef, nodeServiceMock), is(nullValue()));
-    }
+  @Before
+  public void setUp() {
+    when(nodeServiceMock.exists(testStoreNodeRef)).thenReturn(Boolean.TRUE);
+    when(nodeServiceMock.exists(testNodeRef)).thenReturn(Boolean.TRUE);
+    when(nodeServiceMock.getRootNode(testStoreNodeRef)).thenReturn(rootNodeRef);
+    when(nodeServiceMock.getType(testNodeRef))
+      .thenReturn(qNameNotFromTheAbstainSet);
+    when(nodeServiceMock.getAspects(testNodeRef))
+      .thenReturn(Set.of(qNameNotFromTheAbstainSet));
+    when(
+      permissionServiceMock.hasPermission(
+        eq(testNodeRef),
+        nullable(String.class)
+      )
+    )
+      .thenReturn(AccessStatus.DENIED);
+  }
 
-    @Test
-    public void returnsRootNode()
-    {
-        assertThat(getNodeRef(testStoreNodeRef, nodeServiceMock), is(rootNodeRef));
-    }
+  @Test
+  public void returnsAccessDeniedFromPermissionService() {
+    assertThat(
+      shouldAbstainOrDeny(
+        simplePermissionReference,
+        testNodeRef,
+        qNamesToAbstain,
+        nodeServiceMock,
+        permissionServiceMock
+      ),
+      is(AccessDecisionVoter.ACCESS_DENIED)
+    );
+  }
 
-    @Test
-    public void returnsNodeRefFromTestObject()
-    {
-        assertThat(getNodeRef(refNodeForTestObject, nodeServiceMock), is(refNodeForTestObject));
-    }
+  @Test
+  public void returnsNullOnNullTestObject() {
+    assertThat(getNodeRef(null, nodeServiceMock), is(nullValue()));
+  }
 
-    @Test
-    public void returnsChildRefFromChildAssocRef()
-    {
-        when(childAssocRefMock.getChildRef()).thenReturn(childRefNode);
-        assertThat(getNodeRef(childAssocRefMock, nodeServiceMock), is(childRefNode));
-    }
+  @Test(expected = ACLEntryVoterException.class)
+  public void throwsExceptionWhenParameterIsNotNodeRefOrChildAssociationRef() {
+    getNodeRef("TEST", nodeServiceMock);
+  }
 
-    @Test
-    public void returnsNullOnNullTestNodeRef()
-    {
-        assertThat(shouldAbstainOrDeny(simplePermissionReference, null, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(nullValue()));
-    }
+  @Test
+  public void returnsGivenTestNodeRefWhenStoreRefDoesNotExist() {
+    when(nodeServiceMock.exists(testStoreNodeRef)).thenReturn(Boolean.FALSE);
+    assertThat(getNodeRef(testStoreNodeRef, nodeServiceMock), is(nullValue()));
+  }
 
-    @Test
-    public void returnsNullOnAbstainClassQnamesIsEmptyAndThereAreNoDeniedPermissions()
-    {
-        when(permissionServiceMock.hasPermission(eq(testNodeRef), nullable(String.class))).thenReturn(AccessStatus.ALLOWED);
-        assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, Collections.emptySet(), nodeServiceMock, permissionServiceMock),
-                   is(nullValue()));
-    }
+  @Test
+  public void returnsRootNode() {
+    assertThat(getNodeRef(testStoreNodeRef, nodeServiceMock), is(rootNodeRef));
+  }
 
-    @Test
-    public void returnsNullOnTestNodeRefDoesNotExistAndThereAreNoDeniedPermissions()
-    {
-        when(nodeServiceMock.exists(testNodeRef)).thenReturn(Boolean.FALSE);
-        when(permissionServiceMock.hasPermission(eq(testNodeRef), nullable(String.class))).thenReturn(AccessStatus.ALLOWED);
-        assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(nullValue()));
-    }
+  @Test
+  public void returnsNodeRefFromTestObject() {
+    assertThat(
+      getNodeRef(refNodeForTestObject, nodeServiceMock),
+      is(refNodeForTestObject)
+    );
+  }
 
-    @Test
-    public void returnsNullOnNodeTypeAndNodeAspectsAreNotInSetToAbstainAndThereAreNoDeniedPermissions()
-    {
-        when(permissionServiceMock.hasPermission(eq(testNodeRef), nullable(String.class))).thenReturn(AccessStatus.ALLOWED);
-        assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(nullValue()));
-    }
+  @Test
+  public void returnsChildRefFromChildAssocRef() {
+    when(childAssocRefMock.getChildRef()).thenReturn(childRefNode);
+    assertThat(
+      getNodeRef(childAssocRefMock, nodeServiceMock),
+      is(childRefNode)
+    );
+  }
 
-    @Test
-    public void returnsAbstainWhenNodeRefTypeIsInSetToAbstain()
-    {
-        when(nodeServiceMock.getType(testNodeRef)).thenReturn(qNameToAbstain2);
-        assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(AccessDecisionVoter.ACCESS_ABSTAIN));
-    }
+  @Test
+  public void returnsNullOnNullTestNodeRef() {
+    assertThat(
+      shouldAbstainOrDeny(
+        simplePermissionReference,
+        null,
+        qNamesToAbstain,
+        nodeServiceMock,
+        permissionServiceMock
+      ),
+      is(nullValue())
+    );
+  }
 
-    @Test
-    public void returnsAbstainWhenAtLeastOneAspectIsInSetToAbstain()
-    {
-        when(nodeServiceMock.getAspects(testNodeRef)).thenReturn(Set.of(qNameNotFromTheAbstainSet, qNameToAbstain3));
-        assertThat(shouldAbstainOrDeny(simplePermissionReference, testNodeRef, qNamesToAbstain, nodeServiceMock, permissionServiceMock),
-                   is(AccessDecisionVoter.ACCESS_ABSTAIN));
-    }
+  @Test
+  public void returnsNullOnAbstainClassQnamesIsEmptyAndThereAreNoDeniedPermissions() {
+    when(
+      permissionServiceMock.hasPermission(
+        eq(testNodeRef),
+        nullable(String.class)
+      )
+    )
+      .thenReturn(AccessStatus.ALLOWED);
+    assertThat(
+      shouldAbstainOrDeny(
+        simplePermissionReference,
+        testNodeRef,
+        Collections.emptySet(),
+        nodeServiceMock,
+        permissionServiceMock
+      ),
+      is(nullValue())
+    );
+  }
 
+  @Test
+  public void returnsNullOnTestNodeRefDoesNotExistAndThereAreNoDeniedPermissions() {
+    when(nodeServiceMock.exists(testNodeRef)).thenReturn(Boolean.FALSE);
+    when(
+      permissionServiceMock.hasPermission(
+        eq(testNodeRef),
+        nullable(String.class)
+      )
+    )
+      .thenReturn(AccessStatus.ALLOWED);
+    assertThat(
+      shouldAbstainOrDeny(
+        simplePermissionReference,
+        testNodeRef,
+        qNamesToAbstain,
+        nodeServiceMock,
+        permissionServiceMock
+      ),
+      is(nullValue())
+    );
+  }
+
+  @Test
+  public void returnsNullOnNodeTypeAndNodeAspectsAreNotInSetToAbstainAndThereAreNoDeniedPermissions() {
+    when(
+      permissionServiceMock.hasPermission(
+        eq(testNodeRef),
+        nullable(String.class)
+      )
+    )
+      .thenReturn(AccessStatus.ALLOWED);
+    assertThat(
+      shouldAbstainOrDeny(
+        simplePermissionReference,
+        testNodeRef,
+        qNamesToAbstain,
+        nodeServiceMock,
+        permissionServiceMock
+      ),
+      is(nullValue())
+    );
+  }
+
+  @Test
+  public void returnsAbstainWhenNodeRefTypeIsInSetToAbstain() {
+    when(nodeServiceMock.getType(testNodeRef)).thenReturn(qNameToAbstain2);
+    assertThat(
+      shouldAbstainOrDeny(
+        simplePermissionReference,
+        testNodeRef,
+        qNamesToAbstain,
+        nodeServiceMock,
+        permissionServiceMock
+      ),
+      is(AccessDecisionVoter.ACCESS_ABSTAIN)
+    );
+  }
+
+  @Test
+  public void returnsAbstainWhenAtLeastOneAspectIsInSetToAbstain() {
+    when(nodeServiceMock.getAspects(testNodeRef))
+      .thenReturn(Set.of(qNameNotFromTheAbstainSet, qNameToAbstain3));
+    assertThat(
+      shouldAbstainOrDeny(
+        simplePermissionReference,
+        testNodeRef,
+        qNamesToAbstain,
+        nodeServiceMock,
+        permissionServiceMock
+      ),
+      is(AccessDecisionVoter.ACCESS_ABSTAIN)
+    );
+  }
 }

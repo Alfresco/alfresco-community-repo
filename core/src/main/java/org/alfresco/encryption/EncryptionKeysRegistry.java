@@ -24,60 +24,60 @@ import java.util.Set;
 
 /**
  * Stores registered encryption keys.
- * 
+ *
  * @since 4.0
  *
  */
-public interface EncryptionKeysRegistry
-{
-    public static enum KEY_STATUS
-    {
-        OK, CHANGED, MISSING;
-    };
+public interface EncryptionKeysRegistry {
+  public static enum KEY_STATUS {
+    OK,
+    CHANGED,
+    MISSING,
+  }
 
-    /**
-     * Is the key with alias 'keyAlias' registered?
-     * @param keyAlias String
-     * @return boolean
-     */
-    public boolean isKeyRegistered(String keyAlias);
-    
-    /**
-     * Register the key.
-     * 
-     * @param keyAlias String
-     * @param key Key
-     */
-    public void registerKey(String keyAlias, Key key);
-    
-    /**
-     * Unregister the key.
-     * 
-     * @param keyAlias String
-     */
-    public void unregisterKey(String keyAlias);
-    
-    /**
-     * Check the validity of the key against the registry.
-     * 
-     * @param keyAlias String
-     * @param key Key
-     * @return KEY_STATUS
-     */
-    public KEY_STATUS checkKey(String keyAlias, Key key);
-    
-    /**
-     * Remove the set of keys from the registry.
-     * 
-     * @param keys Set<String>
-     */
-    public void removeRegisteredKeys(Set<String> keys);
-    
-    /**
-     * Return those keys in the set that have been registered.
-     *
-     * @param keys Set<String>
-     * @return List<String>
-     */
-    public List<String> getRegisteredKeys(Set<String> keys);
+  /**
+   * Is the key with alias 'keyAlias' registered?
+   * @param keyAlias String
+   * @return boolean
+   */
+  public boolean isKeyRegistered(String keyAlias);
+
+  /**
+   * Register the key.
+   *
+   * @param keyAlias String
+   * @param key Key
+   */
+  public void registerKey(String keyAlias, Key key);
+
+  /**
+   * Unregister the key.
+   *
+   * @param keyAlias String
+   */
+  public void unregisterKey(String keyAlias);
+
+  /**
+   * Check the validity of the key against the registry.
+   *
+   * @param keyAlias String
+   * @param key Key
+   * @return KEY_STATUS
+   */
+  public KEY_STATUS checkKey(String keyAlias, Key key);
+
+  /**
+   * Remove the set of keys from the registry.
+   *
+   * @param keys Set<String>
+   */
+  public void removeRegisteredKeys(Set<String> keys);
+
+  /**
+   * Return those keys in the set that have been registered.
+   *
+   * @param keys Set<String>
+   * @return List<String>
+   */
+  public List<String> getRegisteredKeys(Set<String> keys);
 }

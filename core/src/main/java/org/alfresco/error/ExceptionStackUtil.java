@@ -20,38 +20,37 @@ package org.alfresco.error;
 
 /**
  * Helper class to provide information about exception stacks.
- * 
+ *
  * @author Derek Hulley
  */
-public class ExceptionStackUtil
-{
-    /**
-     * Searches through the exception stack of the given throwable to find any instance
-     * of the possible cause.  The top-level throwable will also be tested.
-     * 
-     * @param throwable         the exception condition to search
-     * @param possibleCauses    the types of the exception conditions of interest
-     * @return                  Returns the first instance that matches one of the given
-     *                          possible types, or null if there is nothing in the stack
-     */
-    public static Throwable getCause(Throwable throwable, Class<?> ... possibleCauses)
-    {
-        while (throwable != null)
-        {
-            for (Class<?> possibleCauseClass : possibleCauses)
-            {
-                Class<?> throwableClass = throwable.getClass();
-                if (possibleCauseClass.isAssignableFrom(throwableClass))
-                {
-                    // We have a match
-                    return throwable;
-                }
-            }
-            // There was no match, so dig deeper
-            Throwable cause = throwable.getCause();
-            throwable = (throwable == cause) ? null : cause;
+public class ExceptionStackUtil {
+
+  /**
+   * Searches through the exception stack of the given throwable to find any instance
+   * of the possible cause.  The top-level throwable will also be tested.
+   *
+   * @param throwable         the exception condition to search
+   * @param possibleCauses    the types of the exception conditions of interest
+   * @return                  Returns the first instance that matches one of the given
+   *                          possible types, or null if there is nothing in the stack
+   */
+  public static Throwable getCause(
+    Throwable throwable,
+    Class<?>... possibleCauses
+  ) {
+    while (throwable != null) {
+      for (Class<?> possibleCauseClass : possibleCauses) {
+        Class<?> throwableClass = throwable.getClass();
+        if (possibleCauseClass.isAssignableFrom(throwableClass)) {
+          // We have a match
+          return throwable;
         }
-        // Nothing found
-        return null;
+      }
+      // There was no match, so dig deeper
+      Throwable cause = throwable.getCause();
+      throwable = (throwable == cause) ? null : cause;
     }
+    // Nothing found
+    return null;
+  }
 }

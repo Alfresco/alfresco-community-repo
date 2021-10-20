@@ -14,31 +14,53 @@ import org.testng.annotations.Test;
 /**
  * Created by Claudia Agache on 10/4/2016.
  */
-public class GetDeploymentsSanityTests extends RestTest
-{
-    private UserModel adminUserModel;
-    private RestDeploymentModelsCollection deployments;
+public class GetDeploymentsSanityTests extends RestTest {
 
-    @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
-    {
-        adminUserModel = dataUser.getAdminUser();
-        restClient.authenticateUser(adminUserModel);
+  private UserModel adminUserModel;
+  private RestDeploymentModelsCollection deployments;
+
+  @BeforeClass(alwaysRun = true)
+  public void dataPreparation() throws Exception {
+    adminUserModel = dataUser.getAdminUser();
+    restClient.authenticateUser(adminUserModel);
+  }
+
+  @TestRail(
+    section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS },
+    executionType = ExecutionType.SANITY,
+    description = "Verify Admin user gets non-network deployments using REST API and status code is OK (200)"
+  )
+  @Test(
+    groups = {
+      TestGroup.REST_API,
+      TestGroup.WORKFLOW,
+      TestGroup.DEPLOYMENTS,
+      TestGroup.SANITY,
     }
-
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS }, executionType = ExecutionType.SANITY, 
-        description = "Verify Admin user gets non-network deployments using REST API and status code is OK (200)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.DEPLOYMENTS, TestGroup.SANITY})
-    public void getNonNetworkDeploymentsWithAdmin() throws JsonToModelConversionException, Exception
-    {
-        deployments = restClient.authenticateUser(adminUserModel).withWorkflowAPI().getDeployments();
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-        deployments.assertThat().entriesListIsNotEmpty();
-        deployments.getOneRandomEntry().onModel().assertThat()
-                .fieldsCount().is(3).and()
-                .field("id").isNotEmpty().and()
-                .field("deployedAt").isNotEmpty().and()
-                .field("name").isNotEmpty();
-    }
-
+  )
+  public void getNonNetworkDeploymentsWithAdmin()
+    throws JsonToModelConversionException, Exception {
+    deployments =
+      restClient
+        .authenticateUser(adminUserModel)
+        .withWorkflowAPI()
+        .getDeployments();
+    restClient.assertStatusCodeIs(HttpStatus.OK);
+    deployments.assertThat().entriesListIsNotEmpty();
+    deployments
+      .getOneRandomEntry()
+      .onModel()
+      .assertThat()
+      .fieldsCount()
+      .is(3)
+      .and()
+      .field("id")
+      .isNotEmpty()
+      .and()
+      .field("deployedAt")
+      .isNotEmpty()
+      .and()
+      .field("name")
+      .isNotEmpty();
+  }
 }

@@ -46,92 +46,112 @@ import org.mockito.InjectMocks;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest
-{
-    @InjectMocks
-    private UnfiledRecordFolderType unfiledRecordFolderType;
+public class UnfiledRecordFolderTypeUnitTest extends BaseUnitTest {
 
-    /**
-     * Given that we try to add a type that is not one of "rma:unfiledRecordFolder", "cm:content" or "rma:nonElectronicDocument" types to unfiled record folder,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testAddNonAcceptedTypeToUnfiledRecordFolder()
-    {
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
-        when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+  @InjectMocks
+  private UnfiledRecordFolderType unfiledRecordFolderType;
 
-        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+  /**
+   * Given that we try to add a type that is not one of "rma:unfiledRecordFolder", "cm:content" or "rma:nonElectronicDocument" types to unfiled record folder,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testAddNonAcceptedTypeToUnfiledRecordFolder() {
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER))
+      .thenReturn(false);
+    when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT))
+      .thenReturn(false);
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT))
+      .thenReturn(false);
 
-        NodeRef unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER, true);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
-        when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordFolder);
-        unfiledRecordFolderType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
-    /**
-     * Given that we try to add "rma:unfiledRecordFolder" sub-type to unfiled record folder,
-     * Then the operation is successful.
-     */
-    @Test
-    public void testAddUnfiledRecordFolderTypeToUnfiledRecordFolder()
-    {
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(true);
-        when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+    NodeRef unfiledRecordFolder = generateNodeRef(
+      TYPE_UNFILED_RECORD_FOLDER,
+      true
+    );
+    ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+    when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+    when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordFolder);
+    unfiledRecordFolderType.onCreateChildAssociation(mockedChildAssoc, true);
+  }
 
-        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+  /**
+   * Given that we try to add "rma:unfiledRecordFolder" sub-type to unfiled record folder,
+   * Then the operation is successful.
+   */
+  @Test
+  public void testAddUnfiledRecordFolderTypeToUnfiledRecordFolder() {
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER))
+      .thenReturn(true);
+    when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT))
+      .thenReturn(false);
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT))
+      .thenReturn(false);
 
-        NodeRef unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER, true);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
-        when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordFolder);
-        unfiledRecordFolderType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
-    /**
-     * Given that we try to add "cm:content" sub-type to unfiled record folder,
-     * Then the operation is successful.
-     */
-    @Test
-    public void testAddContentTypeToUnfiledRecordFolder()
-    {
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
-        when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(true);
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(false);
+    NodeRef unfiledRecordFolder = generateNodeRef(
+      TYPE_UNFILED_RECORD_FOLDER,
+      true
+    );
+    ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+    when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+    when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordFolder);
+    unfiledRecordFolderType.onCreateChildAssociation(mockedChildAssoc, true);
+  }
 
-        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+  /**
+   * Given that we try to add "cm:content" sub-type to unfiled record folder,
+   * Then the operation is successful.
+   */
+  @Test
+  public void testAddContentTypeToUnfiledRecordFolder() {
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER))
+      .thenReturn(false);
+    when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT))
+      .thenReturn(true);
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT))
+      .thenReturn(false);
 
-        NodeRef unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER, true);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
-        when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordFolder);
-        unfiledRecordFolderType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
 
-    /**
-     * Given that we try to add "rma:nonElectronicDocument" sub-type to unfiled record folder,
-     * Then the operation is successful.
-     */
-    @Test
-    public void testNonElectronicDocumentTypeToUnfiledRecordFolder()
-    {
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER)).thenReturn(false);
-        when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT)).thenReturn(false);
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT)).thenReturn(true);
+    NodeRef unfiledRecordFolder = generateNodeRef(
+      TYPE_UNFILED_RECORD_FOLDER,
+      true
+    );
+    ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+    when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+    when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordFolder);
+    unfiledRecordFolderType.onCreateChildAssociation(mockedChildAssoc, true);
+  }
 
-        NodeRef nodeRef= AlfMock.generateNodeRef(mockedNodeService, type);
+  /**
+   * Given that we try to add "rma:nonElectronicDocument" sub-type to unfiled record folder,
+   * Then the operation is successful.
+   */
+  @Test
+  public void testNonElectronicDocumentTypeToUnfiledRecordFolder() {
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_UNFILED_RECORD_FOLDER))
+      .thenReturn(false);
+    when(mockedNodeTypeUtility.instanceOf(type, ContentModel.TYPE_CONTENT))
+      .thenReturn(false);
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_NON_ELECTRONIC_DOCUMENT))
+      .thenReturn(true);
 
-        NodeRef unfiledRecordFolder = generateNodeRef(TYPE_UNFILED_RECORD_FOLDER, true);
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
-        when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordFolder);
-        unfiledRecordFolderType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+
+    NodeRef unfiledRecordFolder = generateNodeRef(
+      TYPE_UNFILED_RECORD_FOLDER,
+      true
+    );
+    ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+    when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+    when(mockedChildAssoc.getParentRef()).thenReturn(unfiledRecordFolder);
+    unfiledRecordFolderType.onCreateChildAssociation(mockedChildAssoc, true);
+  }
 }

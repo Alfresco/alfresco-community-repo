@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImpl;
@@ -49,98 +48,99 @@ import org.springframework.beans.factory.BeanNameAware;
  * @since 2.1
  */
 @SuppressWarnings("deprecation")
-public class RMv21RecordInheritancePatch extends RMv21PatchComponent
-                                         implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
-    /** file plan permission service */
-    private FilePlanPermissionServiceImpl filePlanPermissionServiceImpl;
+public class RMv21RecordInheritancePatch
+  extends RMv21PatchComponent
+  implements BeanNameAware, RecordsManagementModel, DOD5015Model {
 
-    /** node service */
-    private NodeService nodeService;
+  /** file plan permission service */
+  private FilePlanPermissionServiceImpl filePlanPermissionServiceImpl;
 
-    /** patch DAO */
-    private PatchDAO patchDAO;
+  /** node service */
+  private NodeService nodeService;
 
-    /** qname DAO */
-    private QNameDAO qnameDAO;
+  /** patch DAO */
+  private PatchDAO patchDAO;
 
-    /** node DAO */
-    private NodeDAO nodeDAO;
+  /** qname DAO */
+  private QNameDAO qnameDAO;
 
-    /**
-     * @param patchDAO  patch DAO
-     */
-    public void setPatchDAO(PatchDAO patchDAO)
-    {
-        this.patchDAO = patchDAO;
-    }
+  /** node DAO */
+  private NodeDAO nodeDAO;
 
-    /**
-     * @param qnameDAO  qname DAO
-     */
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
-        this.qnameDAO = qnameDAO;
-    }
+  /**
+   * @param patchDAO  patch DAO
+   */
+  public void setPatchDAO(PatchDAO patchDAO) {
+    this.patchDAO = patchDAO;
+  }
 
-    /**
-     * @param nodeDAO   node DAO
-     */
-    public void setNodeDAO(NodeDAO nodeDAO)
-    {
-        this.nodeDAO = nodeDAO;
-    }
+  /**
+   * @param qnameDAO  qname DAO
+   */
+  public void setQnameDAO(QNameDAO qnameDAO) {
+    this.qnameDAO = qnameDAO;
+  }
 
-    /**
-     * @param filePlanPermissionServiceImpl file plan permission service implementation
-     */
-    public void setFilePlanPermissionServiceImpl(FilePlanPermissionServiceImpl filePlanPermissionServiceImpl)
-    {
-        this.filePlanPermissionServiceImpl = filePlanPermissionServiceImpl;
-    }
+  /**
+   * @param nodeDAO   node DAO
+   */
+  public void setNodeDAO(NodeDAO nodeDAO) {
+    this.nodeDAO = nodeDAO;
+  }
 
-    /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /**
+   * @param filePlanPermissionServiceImpl file plan permission service implementation
+   */
+  public void setFilePlanPermissionServiceImpl(
+    FilePlanPermissionServiceImpl filePlanPermissionServiceImpl
+  ) {
+    this.filePlanPermissionServiceImpl = filePlanPermissionServiceImpl;
+  }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
-     */
-    @Override
-    protected void executePatch()
-    {
-        Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_RECORD);
-        if (aspectPair != null)
-        {
-            List<Long> records = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
+  /**
+   * @param nodeService node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("  ... updating " + records.size() + " records");
-            }
+  /**
+   * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
+   */
+  @Override
+  protected void executePatch() {
+    Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_RECORD);
+    if (aspectPair != null) {
+      List<Long> records = patchDAO.getNodesByAspectQNameId(
+        aspectPair.getFirst(),
+        0L,
+        patchDAO.getMaxAdmNodeID()
+      );
 
-            for (Long record : records)
-            {
-                Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(record);
-                NodeRef recordNodeRef = recordPair.getSecond();
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("  ... updating " + records.size() + " records");
+      }
 
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug("  ... updating record " + recordNodeRef.toString());
+      for (Long record : records) {
+        Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(record);
+        NodeRef recordNodeRef = recordPair.getSecond();
 
-                    // get the primary parent
-                    ChildAssociationRef assoc = nodeService.getPrimaryParent(recordNodeRef);
-                    NodeRef parent = assoc.getParentRef();
-                    if (parent != null)
-                    {
-                        filePlanPermissionServiceImpl.setupPermissions(parent, recordNodeRef);
-                    }
-                }
-            }
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("  ... updating record " + recordNodeRef.toString());
+
+          // get the primary parent
+          ChildAssociationRef assoc = nodeService.getPrimaryParent(
+            recordNodeRef
+          );
+          NodeRef parent = assoc.getParentRef();
+          if (parent != null) {
+            filePlanPermissionServiceImpl.setupPermissions(
+              parent,
+              recordNodeRef
+            );
+          }
         }
+      }
     }
+  }
 }

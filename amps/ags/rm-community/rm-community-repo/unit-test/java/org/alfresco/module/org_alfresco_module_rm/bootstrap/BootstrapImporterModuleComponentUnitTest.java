@@ -47,57 +47,65 @@ import org.mockito.Mock;
  * @author Roy Wetherall
  * @since 2.3
  */
-public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
-{
-    /** RM config node */
-    private static final NodeRef configNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
+public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest {
 
-    /** mocks */
-    @Mock(name="importer")                                  private ImporterBootstrap                         mockedImporter;
-    @Mock(name="modulePatchExecuter")                       private ModulePatchExecuter                       mockedModulePatchExecuter;
-    @Mock(name="recordContributorsGroupBootstrapComponent") private RecordContributorsGroupBootstrapComponent mockedRecordContributorsGroupBootstrapComponent;
+  /** RM config node */
+  private static final NodeRef configNodeRef = new NodeRef(
+    StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+    "rm_config_folder"
+  );
 
-    /** importer */
-    @InjectMocks
-    private BootstrapImporterModuleComponent importer;
+  /** mocks */
+  @Mock(name = "importer")
+  private ImporterBootstrap mockedImporter;
 
-    /**
-     * Given that the system has already been bootstraped
-     * When I try and boostrap the system
-     * Then the system is not bootstraped again
-     */
-    @Test
-    public void alreadyBootstraped() throws Throwable
-    {
-        // config node exists
-        doReturn(true).when(mockedNodeService).exists(configNodeRef);
+  @Mock(name = "modulePatchExecuter")
+  private ModulePatchExecuter mockedModulePatchExecuter;
 
-        // boostrap
-        importer.executeInternal();
+  @Mock(name = "recordContributorsGroupBootstrapComponent")
+  private RecordContributorsGroupBootstrapComponent mockedRecordContributorsGroupBootstrapComponent;
 
-        // not bootstraped
-        verify(mockedImporter, never()).bootstrap();
-        verify(mockedModulePatchExecuter, never()).initSchemaVersion();
-        verify(mockedRecordContributorsGroupBootstrapComponent, never()).createRecordContributorsGroup();
-    }
+  /** importer */
+  @InjectMocks
+  private BootstrapImporterModuleComponent importer;
 
-    /**
-     * Given that the system has not been bootstraped
-     * When I try and bootstrap the system
-     * Then the system is bootstraped
-     */
-    @Test
-    public void boostrap() throws Throwable
-    {
-        // config node does not exist
-        doReturn(false).when(mockedNodeService).exists(configNodeRef);
+  /**
+   * Given that the system has already been bootstraped
+   * When I try and boostrap the system
+   * Then the system is not bootstraped again
+   */
+  @Test
+  public void alreadyBootstraped() throws Throwable {
+    // config node exists
+    doReturn(true).when(mockedNodeService).exists(configNodeRef);
 
-        // boostrap
-        importer.executeInternal();
+    // boostrap
+    importer.executeInternal();
 
-        // not bootstraped
-        verify(mockedImporter, times(1)).bootstrap();
-        verify(mockedModulePatchExecuter, times(1)).initSchemaVersion();
-        verify(mockedRecordContributorsGroupBootstrapComponent, times(1)).createRecordContributorsGroup();
-    }
+    // not bootstraped
+    verify(mockedImporter, never()).bootstrap();
+    verify(mockedModulePatchExecuter, never()).initSchemaVersion();
+    verify(mockedRecordContributorsGroupBootstrapComponent, never())
+      .createRecordContributorsGroup();
+  }
+
+  /**
+   * Given that the system has not been bootstraped
+   * When I try and bootstrap the system
+   * Then the system is bootstraped
+   */
+  @Test
+  public void boostrap() throws Throwable {
+    // config node does not exist
+    doReturn(false).when(mockedNodeService).exists(configNodeRef);
+
+    // boostrap
+    importer.executeInternal();
+
+    // not bootstraped
+    verify(mockedImporter, times(1)).bootstrap();
+    verify(mockedModulePatchExecuter, times(1)).initSchemaVersion();
+    verify(mockedRecordContributorsGroupBootstrapComponent, times(1))
+      .createRecordContributorsGroup();
+  }
 }

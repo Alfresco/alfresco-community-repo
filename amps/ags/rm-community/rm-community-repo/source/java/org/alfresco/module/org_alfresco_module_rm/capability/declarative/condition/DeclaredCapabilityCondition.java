@@ -34,16 +34,18 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * @author Roy Wetherall
  */
-public class DeclaredCapabilityCondition extends AbstractCapabilityCondition
-{
-    @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
-        boolean result = false;
-        if (FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))
-        {
-            result = recordService.isDeclared(nodeRef);
-        }
-        return result;
+public class DeclaredCapabilityCondition extends AbstractCapabilityCondition {
+
+  @Override
+  public boolean evaluateImpl(NodeRef nodeRef) {
+    boolean result = false;
+    if (
+      FilePlanComponentKind.RECORD.equals(
+        filePlanService.getFilePlanComponentKind(nodeRef)
+      )
+    ) {
+      result = recordService.isDeclared(nodeRef);
     }
+    return result;
+  }
 }

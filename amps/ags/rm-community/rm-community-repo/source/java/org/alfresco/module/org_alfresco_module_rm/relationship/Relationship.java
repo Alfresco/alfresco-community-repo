@@ -37,26 +37,25 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public interface Relationship
-{
-    /**
-     * Gets the unique name of the relationship
-     *
-     * @return The unique name of the relationship
-     */
-    String getUniqueName();
+public interface Relationship {
+  /**
+   * Gets the unique name of the relationship
+   *
+   * @return The unique name of the relationship
+   */
+  String getUniqueName();
 
-    /**
-     * Gets the source of the relationship
-     *
-     * @return The source of the relationship
-     */
-    NodeRef getSource();
+  /**
+   * Gets the source of the relationship
+   *
+   * @return The source of the relationship
+   */
+  NodeRef getSource();
 
-    /**
-     * Gets the target of the relationship
-     *
-     * @return The target of the relationship
-     */
-    NodeRef getTarget();
+  /**
+   * Gets the target of the relationship
+   *
+   * @return The target of the relationship
+   */
+  NodeRef getTarget();
 }

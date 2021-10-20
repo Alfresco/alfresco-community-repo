@@ -33,25 +33,26 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Retain action
- * 
+ *
  * @author Roy Wetherall
  */
-public class RetainAction extends RMDispositionActionExecuterAbstractBase
-{
-    /**
-     * Action name
-     */
-    public static final String NAME = "retain";
+public class RetainAction extends RMDispositionActionExecuterAbstractBase {
 
-    @Override
-    protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
-    {
-        // Do nothing      
-    }
+  /**
+   * Action name
+   */
+  public static final String NAME = "retain";
 
-    @Override
-    protected void executeRecordLevelDisposition(Action action, NodeRef record)
-    {
-        // Do nothing
-    }
+  @Override
+  protected void executeRecordFolderLevelDisposition(
+    Action action,
+    NodeRef recordFolder
+  ) {
+    // Do nothing
+  }
+
+  @Override
+  protected void executeRecordLevelDisposition(Action action, NodeRef record) {
+    // Do nothing
+  }
 }

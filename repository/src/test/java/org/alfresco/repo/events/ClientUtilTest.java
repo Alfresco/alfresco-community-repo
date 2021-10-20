@@ -31,41 +31,36 @@ import org.alfresco.sync.repo.Client;
 import org.alfresco.util.FileFilterMode;
 import org.junit.Test;
 
-public class ClientUtilTest
-{
+public class ClientUtilTest {
 
-    /**
-     * If a new client is added to the FileFilterMode.Client then this unit test will
-     * throw a IllegalArgument exception.  To fix it you will need to add to the
-     * org.alfresco.sync.events.Client.ClientType.
-     */
-    @Test
-    public void testFileFilterModeConversion()
-    {
-        // Loop through all the client types checking they work
-        for (FileFilterMode.Client client : FileFilterMode.Client.values())
-        {
-            equalsConversion(client);
-        }
-        org.alfresco.sync.repo.Client client = ClientUtil.from(null);
-        assertNull(client);
+  /**
+   * If a new client is added to the FileFilterMode.Client then this unit test will
+   * throw a IllegalArgument exception.  To fix it you will need to add to the
+   * org.alfresco.sync.events.Client.ClientType.
+   */
+  @Test
+  public void testFileFilterModeConversion() {
+    // Loop through all the client types checking they work
+    for (FileFilterMode.Client client : FileFilterMode.Client.values()) {
+      equalsConversion(client);
     }
+    org.alfresco.sync.repo.Client client = ClientUtil.from(null);
+    assertNull(client);
+  }
 
-    @Test
-    public void testClientType()
-    {
-        Client client = Client.asType(null);
-        assertNotNull(client);
-    }
+  @Test
+  public void testClientType() {
+    Client client = Client.asType(null);
+    assertNotNull(client);
+  }
 
-    private void equalsConversion(FileFilterMode.Client ffSource)
-    {
-        org.alfresco.sync.repo.Client client = ClientUtil.from(ffSource);
-        FileFilterMode.Client ffClient = to(client);
-        assertEquals(ffSource, ffClient);
-    }
+  private void equalsConversion(FileFilterMode.Client ffSource) {
+    org.alfresco.sync.repo.Client client = ClientUtil.from(ffSource);
+    FileFilterMode.Client ffClient = to(client);
+    assertEquals(ffSource, ffClient);
+  }
 
-    /*
+  /*
     @Test
     public void testClientTypeConversion()
     {
@@ -83,10 +78,11 @@ public class ClientUtilTest
     assertEquals(type, client.getType());
     }
     */
-    
-    private static FileFilterMode.Client to(org.alfresco.sync.repo.Client from)
-    {
-        FileFilterMode.Client client = FileFilterMode.Client.valueOf(from.getType().toString());
-        return client;
-    }
+
+  private static FileFilterMode.Client to(org.alfresco.sync.repo.Client from) {
+    FileFilterMode.Client client = FileFilterMode.Client.valueOf(
+      from.getType().toString()
+    );
+    return client;
+  }
 }

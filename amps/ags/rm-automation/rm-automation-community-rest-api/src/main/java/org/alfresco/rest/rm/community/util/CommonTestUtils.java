@@ -35,24 +35,24 @@ import java.util.UUID;
  * @author Tom Page
  * @since 2.6
  */
-public class CommonTestUtils
-{
+public class CommonTestUtils {
+
     /**
      * The default pattern used for the user full name when users are created with tas utility
      */
     public static final String USER_FULLNAME_PATTERN = "FN-%1$s LN-%1$s";
 
     /** Private constructor to prevent instantiation. */
-    private CommonTestUtils()
-    {
-    }
+    private CommonTestUtils() {}
 
     /**
      * Generate a prefix to namespace the objects in a test class. Note that four random hex digits should be good enough to avoid
      * collisions when running locally and should also be short enough to maintain readability.
      */
-    public static String generateTestPrefix(Class<?> clazz)
-    {
-        return clazz.getSimpleName().substring(0, 7) + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    public static String generateTestPrefix(Class<?> clazz) {
+        return (
+            clazz.getSimpleName().substring(0, 7) +
+            UUID.randomUUID().toString().substring(0, 4).toUpperCase()
+        );
     }
 }

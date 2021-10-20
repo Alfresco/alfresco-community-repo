@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -53,120 +52,146 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @author Gavin Cornwell
  */
-public class DispositionActionDefinitionPut extends DispositionAbstractBase
-{
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        // parse the request to retrieve the schedule object
-        DispositionSchedule schedule = parseRequestForSchedule(req);
+public class DispositionActionDefinitionPut extends DispositionAbstractBase {
 
-        // parse the request to retrieve the action definition object
-        DispositionActionDefinition actionDef = parseRequestForActionDefinition(req, schedule);
+  /*
+   * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    // parse the request to retrieve the schedule object
+    DispositionSchedule schedule = parseRequestForSchedule(req);
 
-        // retrieve the rest of the post body and update the action definition
-        JSONObject json = null;
-        try
-        {
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            actionDef = updateActionDefinition(actionDef, json);
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
-        }
+    // parse the request to retrieve the action definition object
+    DispositionActionDefinition actionDef = parseRequestForActionDefinition(
+      req,
+      schedule
+    );
 
-        // create model object with just the action data
-        Map<String, Object> model = new HashMap<>(1);
-        model.put("action", createActionDefModel(actionDef, req.getURL()));
-        return model;
+    // retrieve the rest of the post body and update the action definition
+    JSONObject json = null;
+    try {
+      json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+      actionDef = updateActionDefinition(actionDef, json);
+    } catch (IOException iox) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not read content from req.",
+        iox
+      );
+    } catch (JSONException je) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not parse JSON from req.",
+        je
+      );
     }
 
-    /**
-     * Updates a dispositionActionDefinition node in the repo.
-     *
-     * @param actionDef The action definition to update
-     * @param json The JSON to use to create the action definition
-     * @return The updated DispositionActionDefinition
-     */
-    protected DispositionActionDefinition updateActionDefinition(DispositionActionDefinition actionDef,
-              JSONObject json) throws JSONException
-    {
-        // create the properties for the action definition
-        Map<QName, Serializable> props = new HashMap<>(8);
+    // create model object with just the action data
+    Map<String, Object> model = new HashMap<>(1);
+    model.put("action", createActionDefModel(actionDef, req.getURL()));
+    return model;
+  }
 
-        if (json.has("name"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, json.getString("name"));
-        }
+  /**
+   * Updates a dispositionActionDefinition node in the repo.
+   *
+   * @param actionDef The action definition to update
+   * @param json The JSON to use to create the action definition
+   * @return The updated DispositionActionDefinition
+   */
+  protected DispositionActionDefinition updateActionDefinition(
+    DispositionActionDefinition actionDef,
+    JSONObject json
+  ) throws JSONException {
+    // create the properties for the action definition
+    Map<QName, Serializable> props = new HashMap<>(8);
 
-        if (json.has("description"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, json.getString("description"));
-        }
-
-        if (json.has("period"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD, json.getString("period"));
-        }
-
-        if (json.has("periodProperty"))
-        {
-            QName periodProperty = QName.createQName(json.getString("periodProperty"), getNamespaceService());
-            props.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
-        }
-
-        if (json.has("eligibleOnFirstCompleteEvent"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
-                        json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
-        }
-
-        if (json.has(COMBINE_DISPOSITION_STEP_CONDITIONS))
-        {
-            props.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
-                    json.getBoolean(COMBINE_DISPOSITION_STEP_CONDITIONS));
-        }
-
-        if (json.has("location"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
-                      json.getString("location"));
-        }
-
-        if (json.has("events"))
-        {
-            JSONArray events = json.getJSONArray("events");
-            List<String> eventsList = new ArrayList<>(events.length());
-            for (int x = 0; x < events.length(); x++)
-            {
-                eventsList.add(events.getString(x));
-            }
-            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable)eventsList);
-        }
-
-        if (json.has("name") && "destroy".equals(json.getString("name")))
-        {
-            if (json.has("ghostOnDestroy"))
-            {
-                props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
-            }
-            else
-            {
-                props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "delete");
-            }
-        }
-
-        // update the action definition
-        return getDispositionService().updateDispositionActionDefinition(actionDef, props);
+    if (json.has("name")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME,
+        json.getString("name")
+      );
     }
+
+    if (json.has("description")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION,
+        json.getString("description")
+      );
+    }
+
+    if (json.has("period")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_PERIOD,
+        json.getString("period")
+      );
+    }
+
+    if (json.has("periodProperty")) {
+      QName periodProperty = QName.createQName(
+        json.getString("periodProperty"),
+        getNamespaceService()
+      );
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY,
+        periodProperty
+      );
+    }
+
+    if (json.has("eligibleOnFirstCompleteEvent")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
+        json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and"
+      );
+    }
+
+    if (json.has(COMBINE_DISPOSITION_STEP_CONDITIONS)) {
+      props.put(
+        RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
+        json.getBoolean(COMBINE_DISPOSITION_STEP_CONDITIONS)
+      );
+    }
+
+    if (json.has("location")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_LOCATION,
+        json.getString("location")
+      );
+    }
+
+    if (json.has("events")) {
+      JSONArray events = json.getJSONArray("events");
+      List<String> eventsList = new ArrayList<>(events.length());
+      for (int x = 0; x < events.length(); x++) {
+        eventsList.add(events.getString(x));
+      }
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_EVENT,
+        (Serializable) eventsList
+      );
+    }
+
+    if (json.has("name") && "destroy".equals(json.getString("name"))) {
+      if (json.has("ghostOnDestroy")) {
+        props.put(
+          RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY,
+          "ghost"
+        );
+      } else {
+        props.put(
+          RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY,
+          "delete"
+        );
+      }
+    }
+
+    // update the action definition
+    return getDispositionService()
+      .updateDispositionActionDefinition(actionDef, props);
+  }
 }

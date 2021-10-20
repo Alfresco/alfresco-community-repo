@@ -39,61 +39,62 @@ import org.junit.runner.RunWith;
  * @since 2.1
  */
 @RunWith(ClasspathSuite.class)
-@SuiteTypes({SuiteType.TEST_CLASSES, SuiteType.RUN_WITH_CLASSES, SuiteType.JUNIT38_TEST_CLASSES})
-@ClassnameFilters({
+@SuiteTypes(
+  {
+    SuiteType.TEST_CLASSES,
+    SuiteType.RUN_WITH_CLASSES,
+    SuiteType.JUNIT38_TEST_CLASSES,
+  }
+)
+@ClassnameFilters(
+  {
+    // Use a catch all for tests and then exclude those in other parts in case someone forgets to add a package.
+    ".*Test",
+    // The following packages are run by Pt1
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
+    // The following packages are run by Pt2
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.destroy\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.disposition\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.dod\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\..*Test",
+    "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\..*Test",
+    // The following packages 'should' be run by Pt3
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.rm3314\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.record\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\..*Test",
+    //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\..*Test",
 
-        // Use a catch all for tests and then exclude those in other parts in case someone forgets to add a package.
-        ".*Test",
-
-        // The following packages are run by Pt1
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
-
-        // The following packages are run by Pt2
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.destroy\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.disposition\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.dod\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.event\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.hold\\..*Test",
-        "!org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\..*Test",
-
-        // The following packages 'should' be run by Pt3
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.issue\\.rm3314\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.record\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.recordfolder\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.relationship\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.report\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.rule\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.transfer\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.integration\\.version\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.system\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\..*Test",
-        //    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.util\\.bdt\\..*Test",
-
-        // Exclude all UnitTests
-        "!.*UnitTest",
-
-        // Put the test classes you want to exclude here
-        "!.*DataLoadSystemTest",
-        "!.*RM2072Test",
-        "!.*RM2190Test",
-        "!.*RM981SystemTest",
-        "!.*RM3993Test",
-        "!.*RM4163Test",
-        "!.*RecordsManagementEventServiceImplTest",
-        "!.*RmRestApiTest",
-        "!.*NotificationServiceHelperSystemTest",
-        "!.*RetryingTransactionHelperBaseTest",
-        "!.*RMCaveatConfigServiceImplTest",
-        // This test is running successfully locally but not on bamboo (if executed as a single test).
-        // The problem can be reproduced if the whole test suite is run locally as well.
-        // Tests should not be dependant on other test classes and should run in any order without any problems.
-        "!.*EmailMapScriptTest"
-})
-public class AllTestSuitePt3
-{
-}
+    // Exclude all UnitTests
+    "!.*UnitTest",
+    // Put the test classes you want to exclude here
+    "!.*DataLoadSystemTest",
+    "!.*RM2072Test",
+    "!.*RM2190Test",
+    "!.*RM981SystemTest",
+    "!.*RM3993Test",
+    "!.*RM4163Test",
+    "!.*RecordsManagementEventServiceImplTest",
+    "!.*RmRestApiTest",
+    "!.*NotificationServiceHelperSystemTest",
+    "!.*RetryingTransactionHelperBaseTest",
+    "!.*RMCaveatConfigServiceImplTest",
+    // This test is running successfully locally but not on bamboo (if executed as a single test).
+    // The problem can be reproduced if the whole test suite is run locally as well.
+    // Tests should not be dependant on other test classes and should run in any order without any problems.
+    "!.*EmailMapScriptTest",
+  }
+)
+public class AllTestSuitePt3 {}

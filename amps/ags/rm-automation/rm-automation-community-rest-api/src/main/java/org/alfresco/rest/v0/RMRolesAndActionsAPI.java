@@ -41,7 +41,6 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.dataprep.UserService;
@@ -71,17 +70,21 @@ import org.springframework.stereotype.Component;
  * @since 2.5
  */
 @Component
-public class RMRolesAndActionsAPI extends BaseAPI
-{
+public class RMRolesAndActionsAPI extends BaseAPI {
+
     /** The URI to view the configured roles and capabilities. */
     private static final String RM_ROLES = "{0}rma/admin/rmroles";
     /** The URI for REST requests about a particular configured role. */
     private static final String RM_ROLES_ROLE = RM_ROLES + "/{1}";
-    private static final String RM_ROLES_AUTHORITIES = "{0}rm/roles/{1}/authorities/{2}?alf_ticket={3}";
+    private static final String RM_ROLES_AUTHORITIES =
+        "{0}rm/roles/{1}/authorities/{2}?alf_ticket={3}";
 
     // logger
-    private static final Logger LOGGER = LoggerFactory.getLogger(RMRolesAndActionsAPI.class);
-    private static final String MOVE_ACTIONS_API = "action/rm-move-to/site/rm/documentLibrary/{0}";
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        RMRolesAndActionsAPI.class
+    );
+    private static final String MOVE_ACTIONS_API =
+        "action/rm-move-to/site/rm/documentLibrary/{0}";
 
     /** http client factory */
     @Autowired
@@ -93,6 +96,7 @@ public class RMRolesAndActionsAPI extends BaseAPI
 
     @Autowired
     private DataUserAIS dataUser;
+
     /**
      * Get all the configured RM roles.
      *
@@ -100,11 +104,17 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param adminPassword The password of the user.
      * @return The RM roles in the system (Note that this will be the internal names, not the display labels).
      */
-    public Set<String> getConfiguredRoles(String adminUser, String adminPassword)
-    {
+    public Set<String> getConfiguredRoles(
+        String adminUser,
+        String adminPassword
+    ) {
         // Using "is=true" includes the in-place readers and writers.
-        final JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject(
-                "data");
+        final JSONObject jsonObject = doGetRequest(
+            adminUser,
+            adminPassword,
+            RM_ROLES + "?is=true"
+        )
+            .getJSONObject("data");
         return jsonObject.toMap().keySet();
     }
 
@@ -116,12 +126,25 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param role The role to get capabilities for.
      * @return The set of system names for the capabilities.
      */
-    public Set<String> getCapabilitiesForRole(String adminUser, String adminPassword, String role)
-    {
-        final JSONObject jsonObject = doGetRequest(adminUser, adminPassword, RM_ROLES + "?is=true").getJSONObject(
-                "data");
-        assertTrue("Could not find role '" + role + "' in " + jsonObject.keySet(), jsonObject.has(role));
-        return jsonObject.getJSONObject(role).getJSONObject("capabilities").keySet();
+    public Set<String> getCapabilitiesForRole(
+        String adminUser,
+        String adminPassword,
+        String role
+    ) {
+        final JSONObject jsonObject = doGetRequest(
+            adminUser,
+            adminPassword,
+            RM_ROLES + "?is=true"
+        )
+            .getJSONObject("data");
+        assertTrue(
+            "Could not find role '" + role + "' in " + jsonObject.keySet(),
+            jsonObject.has(role)
+        );
+        return jsonObject
+            .getJSONObject(role)
+            .getJSONObject("capabilities")
+            .keySet();
     }
 
     /**
@@ -132,8 +155,11 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param capabilities     a list of capabilities for the role
      * @return
      */
-    private JSONObject roleRequestBody(String roleName, String roleDisplayLabel, Set<String> capabilities)
-    {
+    private JSONObject roleRequestBody(
+        String roleName,
+        String roleDisplayLabel,
+        Set<String> capabilities
+    ) {
         final JSONObject requestBody = new JSONObject();
         requestBody.put("name", roleName);
         requestBody.put("displayLabel", roleDisplayLabel);
@@ -152,10 +178,20 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param roleDisplayLabel A human-readable label for the role.
      * @param capabilities A list of capabilities for the role.
      */
-    public void createRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
-    {
-        doPostJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, roleRequestBody(roleName, roleDisplayLabel, capabilities),
-                RM_ROLES);
+    public void createRole(
+        String adminUser,
+        String adminPassword,
+        String roleName,
+        String roleDisplayLabel,
+        Set<String> capabilities
+    ) {
+        doPostJsonRequest(
+            adminUser,
+            adminPassword,
+            HttpStatus.SC_OK,
+            roleRequestBody(roleName, roleDisplayLabel, capabilities),
+            RM_ROLES
+        );
     }
 
     /**
@@ -167,10 +203,21 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param roleDisplayLabel A human-readable label for the role.
      * @param capabilities A list of capabilities for the role.
      */
-    public void updateRole(String adminUser, String adminPassword, String roleName, String roleDisplayLabel, Set<String> capabilities)
-    {
-        doPutJsonRequest(adminUser, adminPassword, HttpStatus.SC_OK, roleRequestBody(roleName, roleDisplayLabel, capabilities),
-                RM_ROLES_ROLE, roleName);
+    public void updateRole(
+        String adminUser,
+        String adminPassword,
+        String roleName,
+        String roleDisplayLabel,
+        Set<String> capabilities
+    ) {
+        doPutJsonRequest(
+            adminUser,
+            adminPassword,
+            HttpStatus.SC_OK,
+            roleRequestBody(roleName, roleDisplayLabel, capabilities),
+            RM_ROLES_ROLE,
+            roleName
+        );
     }
 
     /**
@@ -180,27 +227,34 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param adminPassword The password for the admin user.
      * @param roleName The name of the role to be deleted.
      */
-    public void deleteRole(String adminUser, String adminPassword, String roleName)
-    {
-        doDeleteRequest(adminUser, adminPassword, MessageFormat.format(RM_ROLES_ROLE, "{0}", roleName));
-        assertFalse("Failed to delete role " + roleName + " with " + adminUser,
-                getConfiguredRoles(adminUser, adminPassword).contains(roleName));
+    public void deleteRole(
+        String adminUser,
+        String adminPassword,
+        String roleName
+    ) {
+        doDeleteRequest(
+            adminUser,
+            adminPassword,
+            MessageFormat.format(RM_ROLES_ROLE, "{0}", roleName)
+        );
+        assertFalse(
+            "Failed to delete role " + roleName + " with " + adminUser,
+            getConfiguredRoles(adminUser, adminPassword).contains(roleName)
+        );
     }
 
     /**
      * create user and assign to records management role
      */
     public void createUserAndAssignToRole(
-            String adminUser,
-            String adminPassword,
-            String userName,
-            String password,
-            String role)
-    {
-        if (!userService.userExists(adminUser, adminPassword, userName))
-        {
+        String adminUser,
+        String adminPassword,
+        String userName,
+        String password,
+        String role
+    ) {
+        if (!userService.userExists(adminUser, adminPassword, userName)) {
             dataUser.createUser(userName, password);
-
         }
         assignRoleToUser(adminUser, adminPassword, userName, role);
     }
@@ -210,33 +264,37 @@ public class RMRolesAndActionsAPI extends BaseAPI
      *
      * @throws AssertionError if the assignation is unsuccessful.
      */
-    public void assignRoleToUser(String adminUser, String adminPassword, String userName, String role)
-    {
+    public void assignRoleToUser(
+        String adminUser,
+        String adminPassword,
+        String userName,
+        String role
+    ) {
         final AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
         final String reqURL = MessageFormat.format(
-                RM_ROLES_AUTHORITIES,
-                client.getApiUrl(),
-                role,
-                userName,
-                client.getAlfTicket(adminUser, adminPassword));
+            RM_ROLES_AUTHORITIES,
+            client.getApiUrl(),
+            role,
+            userName,
+            client.getAlfTicket(adminUser, adminPassword)
+        );
 
         HttpPost request = null;
         HttpResponse response;
-        try
-        {
+        try {
             request = new HttpPost(reqURL);
             response = client.execute(adminUser, adminPassword, request);
-        }
-        finally
-        {
-            if (request != null)
-            {
+        } finally {
+            if (request != null) {
                 request.releaseConnection();
             }
             client.close();
         }
-        assertEquals("Assigning role " + role + " to user " + userName + " failed.", SC_OK,
-                    response.getStatusLine().getStatusCode());
+        assertEquals(
+            "Assigning role " + role + " to user " + userName + " failed.",
+            SC_OK,
+            response.getStatusLine().getStatusCode()
+        );
     }
 
     /**
@@ -248,51 +306,68 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param destinationPath destination path
      * @throws AssertionError if the move was unsuccessful.
      */
-    public void moveTo(String user, String password, String contentPath, String destinationPath)
-    {
-        String contentNodeRef = getNodeRefSpacesStore() + getItemNodeRef(user, password, contentPath);
+    public void moveTo(
+        String user,
+        String password,
+        String contentPath,
+        String destinationPath
+    ) {
+        String contentNodeRef =
+            getNodeRefSpacesStore() +
+            getItemNodeRef(user, password, contentPath);
         AlfrescoHttpClient client = alfrescoHttpClientFactory.getObject();
-        String url = MessageFormat.format(client.getAlfrescoUrl() + "alfresco/s/slingshot/doclib/" + MOVE_ACTIONS_API, destinationPath);
+        String url = MessageFormat.format(
+            client.getAlfrescoUrl() +
+            "alfresco/s/slingshot/doclib/" +
+            MOVE_ACTIONS_API,
+            destinationPath
+        );
         HttpPost request = new HttpPost(url);
 
         boolean success = false;
-        try
-        {
+        try {
             JSONObject body = new JSONObject();
             body.put("nodeRefs", new JSONArray(Arrays.asList(contentNodeRef)));
-            StringEntity se = new StringEntity(body.toString(), AlfrescoHttpClient.UTF_8_ENCODING);
-            se.setContentType(new BasicHeader(HTTP.CONTENT_TYPE, MIME_TYPE_JSON));
+            StringEntity se = new StringEntity(
+                body.toString(),
+                AlfrescoHttpClient.UTF_8_ENCODING
+            );
+            se.setContentType(
+                new BasicHeader(HTTP.CONTENT_TYPE, MIME_TYPE_JSON)
+            );
             request.setEntity(se);
 
             HttpResponse response = client.execute(user, password, request);
-            switch (response.getStatusLine().getStatusCode())
-            {
+            switch (response.getStatusLine().getStatusCode()) {
                 case HttpStatus.SC_OK:
-                    JSONObject json = new JSONObject(EntityUtils.toString(response.getEntity()));
+                    JSONObject json = new JSONObject(
+                        EntityUtils.toString(response.getEntity())
+                    );
                     success = (Boolean) json.get("overallSuccess");
                     break;
                 case HttpStatus.SC_NOT_FOUND:
-                    LOGGER.info("The provided paths couldn't be found " + response.toString());
+                    LOGGER.info(
+                        "The provided paths couldn't be found " +
+                        response.toString()
+                    );
                     break;
                 default:
                     LOGGER.error("Unable to move: " + response.toString());
                     break;
             }
-        }
-        catch (JSONException | IOException e)
-        {
+        } catch (JSONException | IOException e) {
             LOGGER.error(e.toString());
-        }
-        finally
-        {
-            if (request != null)
-            {
+        } finally {
+            if (request != null) {
                 request.releaseConnection();
             }
             client.close();
         }
 
-        assertTrue("Moving " + contentPath + " to " + destinationPath + " failed.", success);
+        assertTrue(
+            "Moving " + contentPath + " to " + destinationPath + " failed.",
+            success
+        );
     }
 
     /**
@@ -304,18 +379,25 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param destinationPath destination path
      * @throws AssertionError if the move was unexpectedly successful.
      */
-    public void moveToAndExpectFailure(String user, String password, String contentPath, String destinationPath)
-    {
-        try
-        {
+    public void moveToAndExpectFailure(
+        String user,
+        String password,
+        String contentPath,
+        String destinationPath
+    ) {
+        try {
             moveTo(user, password, contentPath, destinationPath);
-        }
-        catch(AssertionError e)
-        {
+        } catch (AssertionError e) {
             // We are expecting the move to fail.
             return;
         }
-        fail("Moving " + contentPath + " to " + destinationPath + " succeeded unexpectedly.");
+        fail(
+            "Moving " +
+            contentPath +
+            " to " +
+            destinationPath +
+            " succeeded unexpectedly."
+        );
     }
 
     /**
@@ -326,10 +408,15 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param contentName the content name
      * @return The HTTP response.
      */
-    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action)
-    {
+    public HttpResponse executeAction(
+        String user,
+        String password,
+        String contentName,
+        RM_ACTIONS action
+    ) {
         return executeAction(user, password, contentName, action, null, SC_OK);
     }
+
     /**
      * Perform an action on the given content
      *
@@ -338,9 +425,13 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param contentName the content name
      * @return The HTTP response.
      */
-    public HttpResponse executeActionAndExpectResponseCode(String user, String password, String contentName, RM_ACTIONS action,
-                                                           int status)
-    {
+    public HttpResponse executeActionAndExpectResponseCode(
+        String user,
+        String password,
+        String contentName,
+        RM_ACTIONS action,
+        int status
+    ) {
         return executeAction(user, password, contentName, action, null, status);
     }
 
@@ -352,9 +443,13 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param contentName the content name
      * @return The HTTP response.
      */
-    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
-                                      ZonedDateTime date)
-    {
+    public HttpResponse executeAction(
+        String user,
+        String password,
+        String contentName,
+        RM_ACTIONS action,
+        ZonedDateTime date
+    ) {
         return executeAction(user, password, contentName, action, date, SC_OK);
     }
 
@@ -368,15 +463,20 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param actionsParams the request parameters
      * @return the JSONObject created
      */
-    private JSONObject actionsRequestBody(String user, String password, String contentName, RM_ACTIONS action,
-                                          JSONObject actionsParams)
-    {
-        final String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
+    private JSONObject actionsRequestBody(
+        String user,
+        String password,
+        String contentName,
+        RM_ACTIONS action,
+        JSONObject actionsParams
+    ) {
+        final String recNodeRef =
+            getNodeRefSpacesStore() +
+            contentService.getNodeRef(user, password, RM_SITE_ID, contentName);
         final JSONObject requestParams = new JSONObject();
         requestParams.put("name", action.getAction());
         requestParams.put("nodeRef", recNodeRef);
-        if (actionsParams != null)
-        {
+        if (actionsParams != null) {
             requestParams.put("params", actionsParams);
         }
         return requestParams;
@@ -391,16 +491,36 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param date        the date to be updated
      * @return The HTTP response.
      */
-    public HttpResponse executeAction(String user, String password, String contentName, RM_ACTIONS action,
-                                      ZonedDateTime date, int status)
-    {
+    public HttpResponse executeAction(
+        String user,
+        String password,
+        String contentName,
+        RM_ACTIONS action,
+        ZonedDateTime date,
+        int status
+    ) {
         final JSONObject actionParams = new JSONObject();
-        if (date != null)
-        {
-            actionParams.put("asOfDate", new JSONObject().put("iso8601", ISO_INSTANT_FORMATTER.format(date)));
+        if (date != null) {
+            actionParams.put(
+                "asOfDate",
+                new JSONObject()
+                    .put("iso8601", ISO_INSTANT_FORMATTER.format(date))
+            );
         }
-        final JSONObject requestParams = actionsRequestBody(user, password, contentName, action, actionParams);
-        return doPostJsonRequest(user, password, status, requestParams, RM_ACTIONS_API);
+        final JSONObject requestParams = actionsRequestBody(
+            user,
+            password,
+            contentName,
+            action,
+            actionParams
+        );
+        return doPostJsonRequest(
+            user,
+            password,
+            status,
+            requestParams,
+            RM_ACTIONS_API
+        );
     }
 
     /**
@@ -413,17 +533,36 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param date        the date to be updated
      * @return The HTTP response.
      */
-    public HttpResponse completeEvent(String user, String password, String nodeName, RMEvents event, Instant date)
-    {
+    public HttpResponse completeEvent(
+        String user,
+        String password,
+        String nodeName,
+        RMEvents event,
+        Instant date
+    ) {
         date = (date != null) ? date : Instant.now();
-        final JSONObject actionParams = new JSONObject().put("eventName", event.getEventName())
-                                                        .put("eventCompletedBy", user)
-                                                        .put("eventCompletedAt", new JSONObject()
-                                                                .put("iso8601", ISO_INSTANT_FORMATTER.format(date))
-                                                            );
-        final JSONObject requestParams = actionsRequestBody(user, password, nodeName, RM_ACTIONS.COMPLETE_EVENT,
-                actionParams);
-        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        final JSONObject actionParams = new JSONObject()
+            .put("eventName", event.getEventName())
+            .put("eventCompletedBy", user)
+            .put(
+                "eventCompletedAt",
+                new JSONObject()
+                    .put("iso8601", ISO_INSTANT_FORMATTER.format(date))
+            );
+        final JSONObject requestParams = actionsRequestBody(
+            user,
+            password,
+            nodeName,
+            RM_ACTIONS.COMPLETE_EVENT,
+            actionParams
+        );
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            RM_ACTIONS_API
+        );
     }
 
     /**
@@ -435,11 +574,26 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param event       the event to be undone
      * @return The HTTP response.
      */
-    public HttpResponse undoEvent(String user, String password, String contentName, RMEvents event)
-    {
-        final JSONObject requestParams = actionsRequestBody(user, password, contentName, RM_ACTIONS.UNDO_EVENT,
-                new JSONObject().put("eventName", event.getEventName()));
-        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+    public HttpResponse undoEvent(
+        String user,
+        String password,
+        String contentName,
+        RMEvents event
+    ) {
+        final JSONObject requestParams = actionsRequestBody(
+            user,
+            password,
+            contentName,
+            RM_ACTIONS.UNDO_EVENT,
+            new JSONObject().put("eventName", event.getEventName())
+        );
+        return doPostJsonRequest(
+            user,
+            password,
+            SC_OK,
+            requestParams,
+            RM_ACTIONS_API
+        );
     }
 
     /**
@@ -451,14 +605,32 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param containerName the container to look for items into
      * @throws AssertionError if not all items could be deleted.
      */
-    public void deleteAllItemsInContainer(String username, String password, String siteId, String containerName)
-    {
-        for (CmisObject item : contentService.getFolderObject(contentService.getCMISSession(username, password), siteId, containerName).getChildren())
-        {
+    public void deleteAllItemsInContainer(
+        String username,
+        String password,
+        String siteId,
+        String containerName
+    ) {
+        for (CmisObject item : contentService
+            .getFolderObject(
+                contentService.getCMISSession(username, password),
+                siteId,
+                containerName
+            )
+            .getChildren()) {
             item.delete();
         }
-        assertFalse("Not all items were deleted from " + containerName,
-                contentService.getFolderObject(contentService.getCMISSession(username, password), siteId, containerName).getChildren().getHasMoreItems());
+        assertFalse(
+            "Not all items were deleted from " + containerName,
+            contentService
+                .getFolderObject(
+                    contentService.getCMISSession(username, password),
+                    siteId,
+                    containerName
+                )
+                .getChildren()
+                .getHasMoreItems()
+        );
     }
 
     /**
@@ -469,18 +641,62 @@ public class RMRolesAndActionsAPI extends BaseAPI
      * @param itemNodeRef the item noderef
      * @return The HTTP response.
      */
-    public HttpResponse updateMetadata(String username, String password, String itemNodeRef, Map<RMProperty, String> properties)
-    {
+    public HttpResponse updateMetadata(
+        String username,
+        String password,
+        String itemNodeRef,
+        Map<RMProperty, String> properties
+    ) {
         JSONObject requestParams = new JSONObject();
-        addPropertyToRequest(requestParams, "prop_cm_name", properties, RMProperty.NAME);
-        addPropertyToRequest(requestParams, "prop_cm_title", properties, RMProperty.TITLE);
-        addPropertyToRequest(requestParams, "prop_cm_description", properties, RMProperty.DESCRIPTION);
-        addPropertyToRequest(requestParams, "prop_cm_author", properties, RMProperty.AUTHOR);
-        addPropertyToRequest(requestParams, "prop_dod_originator", properties, RMProperty.ORIGINATOR);
-        addPropertyToRequest(requestParams, "prop_dod_originatingOrganization", properties, RMProperty
-                .ORIGINATING_ORGANIZATION);
-        addPropertyToRequest(requestParams, "prop_dod_publicationDate", properties, RMProperty.PUBLICATION_DATE);
+        addPropertyToRequest(
+            requestParams,
+            "prop_cm_name",
+            properties,
+            RMProperty.NAME
+        );
+        addPropertyToRequest(
+            requestParams,
+            "prop_cm_title",
+            properties,
+            RMProperty.TITLE
+        );
+        addPropertyToRequest(
+            requestParams,
+            "prop_cm_description",
+            properties,
+            RMProperty.DESCRIPTION
+        );
+        addPropertyToRequest(
+            requestParams,
+            "prop_cm_author",
+            properties,
+            RMProperty.AUTHOR
+        );
+        addPropertyToRequest(
+            requestParams,
+            "prop_dod_originator",
+            properties,
+            RMProperty.ORIGINATOR
+        );
+        addPropertyToRequest(
+            requestParams,
+            "prop_dod_originatingOrganization",
+            properties,
+            RMProperty.ORIGINATING_ORGANIZATION
+        );
+        addPropertyToRequest(
+            requestParams,
+            "prop_dod_publicationDate",
+            properties,
+            RMProperty.PUBLICATION_DATE
+        );
 
-        return doPostJsonRequest(username, password, SC_OK, requestParams, MessageFormat.format(UPDATE_METADATA_API, "{0}", itemNodeRef));
+        return doPostJsonRequest(
+            username,
+            password,
+            SC_OK,
+            requestParams,
+            MessageFormat.format(UPDATE_METADATA_API, "{0}", itemNodeRef)
+        );
     }
 }

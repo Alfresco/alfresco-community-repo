@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.repo.search.SearchTrackingComponent;
 import org.alfresco.repo.solr.AlfrescoModelDiff;
 import org.alfresco.service.namespace.QName;
@@ -49,87 +48,104 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @since 4.0
  */
-public class AlfrescoModelsDiff extends DeclarativeWebScript
-{
-    protected static final Log logger = LogFactory.getLog(AlfrescoModelsDiff.class);
+public class AlfrescoModelsDiff extends DeclarativeWebScript {
 
-    private static final String MSG_IO_EXCEPTION = "IO exception parsing request ";
+  protected static final Log logger = LogFactory.getLog(
+    AlfrescoModelsDiff.class
+  );
 
-    private static final String MSG_JSON_EXCEPTION = "Unable to fetch model changes from ";
+  private static final String MSG_IO_EXCEPTION =
+    "IO exception parsing request ";
 
-    private SearchTrackingComponent searchTrackingComponent;
-    
-    public void setSearchTrackingComponent(SearchTrackingComponent searchTrackingComponent)
-    {
-        this.searchTrackingComponent = searchTrackingComponent;
+  private static final String MSG_JSON_EXCEPTION =
+    "Unable to fetch model changes from ";
+
+  private SearchTrackingComponent searchTrackingComponent;
+
+  public void setSearchTrackingComponent(
+    SearchTrackingComponent searchTrackingComponent
+  ) {
+    this.searchTrackingComponent = searchTrackingComponent;
+  }
+
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status
+  ) {
+    try {
+      Map<String, Object> model = buildModel(req);
+      if (logger.isDebugEnabled()) {
+        logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
+      }
+      return model;
+    } catch (IOException e) {
+      setExceptionResponse(
+        req,
+        status,
+        MSG_IO_EXCEPTION,
+        Status.STATUS_INTERNAL_SERVER_ERROR,
+        e
+      );
+      return null;
+    } catch (JSONException e) {
+      setExceptionResponse(
+        req,
+        status,
+        MSG_JSON_EXCEPTION,
+        Status.STATUS_BAD_REQUEST,
+        e
+      );
+      return null;
+    }
+  }
+
+  private void setExceptionResponse(
+    WebScriptRequest req,
+    Status responseStatus,
+    String responseMessage,
+    int statusCode,
+    Exception e
+  ) {
+    String message = responseMessage + req;
+
+    if (logger.isDebugEnabled()) {
+      logger.warn(message, e);
+    } else {
+      logger.warn(message);
     }
 
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
-    {
-        try
-        {
-            Map<String, Object> model = buildModel(req);
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
-            }
-            return model;
-        }
-        catch (IOException e)
-        {
-            setExceptionResponse(req, status, MSG_IO_EXCEPTION, Status.STATUS_INTERNAL_SERVER_ERROR, e);
-            return null;
-        }
-        catch (JSONException e)
-        {
-            setExceptionResponse(req, status, MSG_JSON_EXCEPTION, Status.STATUS_BAD_REQUEST, e);
-            return null;
-        }
+    responseStatus.setCode(statusCode, message);
+    responseStatus.setException(e);
+  }
+
+  private Map<String, Object> buildModel(WebScriptRequest req)
+    throws JSONException, IOException {
+    Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
+
+    Content content = req.getContent();
+    if (content == null) {
+      throw new WebScriptException("Failed to convert request to String");
+    }
+    JSONObject o = new JSONObject(content.getContent());
+    JSONArray jsonModels = o.getJSONArray("models");
+    Map<QName, Long> models = new HashMap<QName, Long>(jsonModels.length());
+    for (int i = 0; i < jsonModels.length(); i++) {
+      JSONObject jsonModel = jsonModels.getJSONObject(i);
+      models.put(
+        QName.createQName(jsonModel.getString("name")),
+        jsonModel.getLong("checksum")
+      );
     }
 
-    private void setExceptionResponse(WebScriptRequest req, Status responseStatus, String responseMessage, int statusCode, Exception e)
-    {
-        String message = responseMessage + req;
+    List<AlfrescoModelDiff> diffs = searchTrackingComponent.getModelDiffs(
+      models
+    );
+    model.put("diffs", diffs);
 
-        if (logger.isDebugEnabled())
-        {
-            logger.warn(message, e);
-        }
-        else
-        {
-            logger.warn(message);
-        }
-
-        responseStatus.setCode(statusCode, message);
-        responseStatus.setException(e);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
     }
 
-    private Map<String, Object> buildModel(WebScriptRequest req) throws JSONException, IOException
-    {
-        Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
-
-        Content content = req.getContent();
-        if(content == null)
-        {
-            throw new WebScriptException("Failed to convert request to String");
-        }
-        JSONObject o = new JSONObject(content.getContent());
-        JSONArray jsonModels = o.getJSONArray("models");
-        Map<QName, Long> models = new HashMap<QName, Long>(jsonModels.length());
-        for(int i = 0; i < jsonModels.length(); i++)
-        {
-            JSONObject jsonModel = jsonModels.getJSONObject(i);
-            models.put(QName.createQName(jsonModel.getString("name")), jsonModel.getLong("checksum"));
-        }
-
-        List<AlfrescoModelDiff> diffs = searchTrackingComponent.getModelDiffs(models);
-        model.put("diffs", diffs);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Result: \n\tRequest: " + req + "\n\tModel: " + model);
-        }
-        
-        return model;
-    }
+    return model;
+  }
 }

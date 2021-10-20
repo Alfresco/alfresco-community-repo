@@ -26,80 +26,72 @@
 
 package org.alfresco.rest.api.model;
 
-public class Model implements Comparable<Model>
-{
-    private String  id;
-    private String  author;
-    private String  description;
-    private String  namespaceUri;
-    private String  namespacePrefix;
+public class Model implements Comparable<Model> {
 
-    public Model()
-    {
-    }
+  private String id;
+  private String author;
+  private String description;
+  private String namespaceUri;
+  private String namespacePrefix;
 
-    public Model(String name, String author, String description, String namespaceUri, String namespacePrefix)
-    {
-        this.id = name;
-        this.author = author;
-        this.description = description;
-        this.namespaceUri = namespaceUri;
-        this.namespacePrefix = namespacePrefix;
-    }
+  public Model() {}
 
-    public String getId()
-    {
-        return id;
-    }
+  public Model(
+    String name,
+    String author,
+    String description,
+    String namespaceUri,
+    String namespacePrefix
+  ) {
+    this.id = name;
+    this.author = author;
+    this.description = description;
+    this.namespaceUri = namespaceUri;
+    this.namespacePrefix = namespacePrefix;
+  }
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public String getAuthor()
-    {
-        return author;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public void setAuthor(String author)
-    {
-        this.author = author;
-    }
+  public String getAuthor() {
+    return author;
+  }
 
-    public String getDescription()
-    {
-        return description;
-    }
+  public void setAuthor(String author) {
+    this.author = author;
+  }
 
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public String getNamespaceUri()
-    {
-        return namespaceUri;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setNamespaceUri(String namespaceUri)
-    {
-        this.namespaceUri = namespaceUri;
-    }
+  public String getNamespaceUri() {
+    return namespaceUri;
+  }
 
-    public String getNamespacePrefix()
-    {
-        return namespacePrefix;
-    }
+  public void setNamespaceUri(String namespaceUri) {
+    this.namespaceUri = namespaceUri;
+  }
 
-    public void setNamespacePrefix(String namespacePrefix)
-    {
-        this.namespacePrefix = namespacePrefix;
-    }
+  public String getNamespacePrefix() {
+    return namespacePrefix;
+  }
 
-    @Override
-    public int compareTo(Model model)
-    {
-        return this.id.compareTo(model.getId());
-    }
+  public void setNamespacePrefix(String namespacePrefix) {
+    this.namespacePrefix = namespacePrefix;
+  }
+
+  @Override
+  public int compareTo(Model model) {
+    return this.id.compareTo(model.getId());
+  }
 }

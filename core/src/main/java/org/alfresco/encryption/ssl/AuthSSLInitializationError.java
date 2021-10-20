@@ -22,32 +22,30 @@ package org.alfresco.encryption.ssl;
  * <p>
  * Signals fatal error in initialization of {@link AuthSSLProtocolSocketFactory}.
  * </p>
- * 
+ *
  * <p>
  * Adapted from code here: http://svn.apache.org/viewvc/httpcomponents/oac.hc3x/trunk/src/contrib/org/apache/commons/httpclient/contrib/ssl/AuthSSLX509TrustManager.java?revision=608014&view=co
  * </p>
- * 
+ *
  * @since 4.0
  */
-public class AuthSSLInitializationError extends Error
-{
-    private static final long serialVersionUID = 8135341334029823112L;
+public class AuthSSLInitializationError extends Error {
 
-    /**
-     * Creates a new AuthSSLInitializationError.
-     */
-    public AuthSSLInitializationError()
-    {
-        super();
-    }
+  private static final long serialVersionUID = 8135341334029823112L;
 
-    /**
-     * Creates a new AuthSSLInitializationError with the specified message.
-     *
-     * @param message error message
-     */
-    public AuthSSLInitializationError(String message)
-    {
-        super(message);
-    }
+  /**
+   * Creates a new AuthSSLInitializationError.
+   */
+  public AuthSSLInitializationError() {
+    super();
+  }
+
+  /**
+   * Creates a new AuthSSLInitializationError with the specified message.
+   *
+   * @param message error message
+   */
+  public AuthSSLInitializationError(String message) {
+    super(message);
+  }
 }

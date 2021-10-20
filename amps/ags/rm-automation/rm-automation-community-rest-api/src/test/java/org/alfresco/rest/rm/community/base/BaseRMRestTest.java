@@ -57,7 +57,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 import lombok.Getter;
 import org.alfresco.dataprep.ContentService;
 import org.alfresco.rest.RestTest;
@@ -103,14 +102,14 @@ import org.testng.annotations.DataProvider;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class BaseRMRestTest extends RestTest
-{
+public class BaseRMRestTest extends RestTest {
+
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     private RestAPIFactory restAPIFactory;
 
     @Autowired
-    @Getter (value = PROTECTED)
+    @Getter(value = PROTECTED)
     protected DataUserAIS dataUser;
 
     @Autowired
@@ -126,8 +125,7 @@ public class BaseRMRestTest extends RestTest
      *
      * @param statusCode The status code to assert
      */
-    protected void assertStatusCode(HttpStatus statusCode)
-    {
+    protected void assertStatusCode(HttpStatus statusCode) {
         getRestAPIFactory().getRmRestWrapper().assertStatusCodeIs(statusCode);
     }
 
@@ -136,23 +134,28 @@ public class BaseRMRestTest extends RestTest
      *
      * @return The admin user
      */
-    protected UserModel getAdminUser()
-    {
+    protected UserModel getAdminUser() {
         return getDataUser().getAdminUser();
     }
 
     /** Valid root containers where electronic and non-electronic records can be created */
     @DataProvider(name = "validRootContainers")
-    public Object[][] getValidRootContainers()
-    {
-        return new String[][]
-        {
+    public Object[][] getValidRootContainers() {
+        return new String[][] {
             // an arbitrary record folder
-            { createCategoryFolderInFilePlan().getId(), RECORD_FOLDER_TYPE},
+            { createCategoryFolderInFilePlan().getId(), RECORD_FOLDER_TYPE },
             // unfiled records root
-            { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE},
+            { UNFILED_RECORDS_CONTAINER_ALIAS, UNFILED_CONTAINER_TYPE },
             // an arbitrary unfiled records folder
-            { createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, "Unfiled Folder " + getRandomAlphanumeric(), UNFILED_RECORD_FOLDER_TYPE).getId(), UNFILED_RECORD_FOLDER_TYPE }
+            {
+                createUnfiledContainerChild(
+                    UNFILED_RECORDS_CONTAINER_ALIAS,
+                    "Unfiled Folder " + getRandomAlphanumeric(),
+                    UNFILED_RECORD_FOLDER_TYPE
+                )
+                    .getId(),
+                UNFILED_RECORD_FOLDER_TYPE,
+            },
         };
     }
 
@@ -160,9 +163,8 @@ public class BaseRMRestTest extends RestTest
      * @see org.alfresco.rest.RestTest#checkServerHealth()
      */
     @Override
-    @BeforeClass (alwaysRun = true)
-    public void checkServerHealth() throws Exception
-    {
+    @BeforeClass(alwaysRun = true)
+    public void checkServerHealth() throws Exception {
         // Create RM Site if not exist
         createRMSiteIfNotExists();
     }
@@ -171,13 +173,11 @@ public class BaseRMRestTest extends RestTest
      * Helper method to create the RM Site via the POST request
      * if the site doesn't exist
      */
-    public void createRMSiteIfNotExists()
-    {
+    public void createRMSiteIfNotExists() {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
 
         // Check RM site doesn't exist
-        if (!rmSiteAPI.existsRMSite())
-        {
+        if (!rmSiteAPI.existsRMSite()) {
             // Create the RM site
             rmSiteAPI.createRMSite(createStandardRMSiteModel());
 
@@ -189,11 +189,9 @@ public class BaseRMRestTest extends RestTest
     /**
      * Helper method to delete the RM site if exists and to create a new one
      */
-    public void createRMSite(RMSite rmSiteModel)
-    {
+    public void createRMSite(RMSite rmSiteModel) {
         RMSiteAPI rmSiteAPI = getRestAPIFactory().getRMSiteAPI();
-        if (rmSiteAPI.existsRMSite())
-        {
+        if (rmSiteAPI.existsRMSite()) {
             rmSiteAPI.deleteRMSite();
             assertStatusCode(NO_CONTENT);
         }
@@ -209,9 +207,12 @@ public class BaseRMRestTest extends RestTest
      * @return The created category
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(String categoryName)
-    {
-        return createRootCategory(getAdminUser(), categoryName, RECORD_CATEGORY_TITLE);
+    public RecordCategory createRootCategory(String categoryName) {
+        return createRootCategory(
+            getAdminUser(),
+            categoryName,
+            RECORD_CATEGORY_TITLE
+        );
     }
 
     /**
@@ -222,9 +223,15 @@ public class BaseRMRestTest extends RestTest
      * @return The created category
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(UserModel userModel, String categoryName)
-    {
-        return createRootCategory(userModel, categoryName, RECORD_CATEGORY_TITLE);
+    public RecordCategory createRootCategory(
+        UserModel userModel,
+        String categoryName
+    ) {
+        return createRootCategory(
+            userModel,
+            categoryName,
+            RECORD_CATEGORY_TITLE
+        );
     }
 
     /**
@@ -235,8 +242,10 @@ public class BaseRMRestTest extends RestTest
      * @return The created category
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(String categoryName, String categoryTitle)
-    {
+    public RecordCategory createRootCategory(
+        String categoryName,
+        String categoryTitle
+    ) {
         return createRootCategory(getAdminUser(), categoryName, categoryTitle);
     }
 
@@ -249,10 +258,18 @@ public class BaseRMRestTest extends RestTest
      * @return The created category
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategory createRootCategory(UserModel userModel, String categoryName, String categoryTitle)
-    {
-        RecordCategory recordCategoryModel = createRecordCategoryModel(categoryName, categoryTitle);
-        return getRestAPIFactory().getFilePlansAPI(userModel).createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS);
+    public RecordCategory createRootCategory(
+        UserModel userModel,
+        String categoryName,
+        String categoryTitle
+    ) {
+        RecordCategory recordCategoryModel = createRecordCategoryModel(
+            categoryName,
+            categoryTitle
+        );
+        return getRestAPIFactory()
+            .getFilePlansAPI(userModel)
+            .createRootRecordCategory(recordCategoryModel, FILE_PLAN_ALIAS);
     }
 
     /**
@@ -265,10 +282,22 @@ public class BaseRMRestTest extends RestTest
      * @return The created {@link RecordCategoryChild}
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordCategoryChild(UserModel user, String recordCategoryId, String name, String type)
-    {
-        RecordCategoryChild recordCategoryChildModel = createRecordCategoryChildModel(name, type);
-        return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordCategoryChildModel, recordCategoryId);
+    public RecordCategoryChild createRecordCategoryChild(
+        UserModel user,
+        String recordCategoryId,
+        String name,
+        String type
+    ) {
+        RecordCategoryChild recordCategoryChildModel = createRecordCategoryChildModel(
+            name,
+            type
+        );
+        return getRestAPIFactory()
+            .getRecordCategoryAPI(user)
+            .createRecordCategoryChild(
+                recordCategoryChildModel,
+                recordCategoryId
+            );
     }
 
     /**
@@ -280,9 +309,17 @@ public class BaseRMRestTest extends RestTest
      * @return The created {@link RecordCategoryChild}
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordCategoryChild(String recordCategoryId, String name, String type)
-    {
-        return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, type);
+    public RecordCategoryChild createRecordCategoryChild(
+        String recordCategoryId,
+        String name,
+        String type
+    ) {
+        return createRecordCategoryChild(
+            getAdminUser(),
+            recordCategoryId,
+            name,
+            type
+        );
     }
 
     /**
@@ -293,9 +330,16 @@ public class BaseRMRestTest extends RestTest
      * @return The created {@link RecordCategoryChild}
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordCategory(String recordCategoryId, String name)
-    {
-        return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, RECORD_CATEGORY_TYPE);
+    public RecordCategoryChild createRecordCategory(
+        String recordCategoryId,
+        String name
+    ) {
+        return createRecordCategoryChild(
+            getAdminUser(),
+            recordCategoryId,
+            name,
+            RECORD_CATEGORY_TYPE
+        );
     }
 
     /**
@@ -306,9 +350,16 @@ public class BaseRMRestTest extends RestTest
      * @return The created {@link RecordCategoryChild}
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createRecordFolder(String recordCategoryId, String name)
-    {
-        return createRecordCategoryChild(getAdminUser(), recordCategoryId, name, RECORD_FOLDER_TYPE);
+    public RecordCategoryChild createRecordFolder(
+        String recordCategoryId,
+        String name
+    ) {
+        return createRecordCategoryChild(
+            getAdminUser(),
+            recordCategoryId,
+            name,
+            RECORD_FOLDER_TYPE
+        );
     }
 
     /**
@@ -320,10 +371,18 @@ public class BaseRMRestTest extends RestTest
      * @return The created folder
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createFolder(UserModel user, String recordCategoryId, String name)
-    {
-        RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(name, RECORD_FOLDER_TYPE);
-        return getRestAPIFactory().getRecordCategoryAPI(user).createRecordCategoryChild(recordFolderModel, recordCategoryId);
+    public RecordCategoryChild createFolder(
+        UserModel user,
+        String recordCategoryId,
+        String name
+    ) {
+        RecordCategoryChild recordFolderModel = createRecordCategoryChildModel(
+            name,
+            RECORD_FOLDER_TYPE
+        );
+        return getRestAPIFactory()
+            .getRecordCategoryAPI(user)
+            .createRecordCategoryChild(recordFolderModel, recordCategoryId);
     }
 
     /**
@@ -334,8 +393,10 @@ public class BaseRMRestTest extends RestTest
      * @return The created folder
      * @throws RuntimeException on unsuccessful component creation
      */
-    public RecordCategoryChild createFolder(String recordCategoryId, String name)
-    {
+    public RecordCategoryChild createFolder(
+        String recordCategoryId,
+        String name
+    ) {
         return createFolder(getAdminUser(), recordCategoryId, name);
     }
 
@@ -348,10 +409,19 @@ public class BaseRMRestTest extends RestTest
      * @return The created folder
      * @throws RuntimeException on unsuccessful component creation
      */
-    public UnfiledContainerChild createUnfiledRecordsFolderChild(UserModel user, String parentId, String childName, String nodeType)
-    {
-        UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
-        UnfiledContainerChild child = getRestAPIFactory().getUnfiledRecordFoldersAPI(user).createUnfiledRecordFolderChild(childModel, parentId);
+    public UnfiledContainerChild createUnfiledRecordsFolderChild(
+        UserModel user,
+        String parentId,
+        String childName,
+        String nodeType
+    ) {
+        UnfiledContainerChild childModel = createUnfiledContainerChildModel(
+            childName,
+            nodeType
+        );
+        UnfiledContainerChild child = getRestAPIFactory()
+            .getUnfiledRecordFoldersAPI(user)
+            .createUnfiledRecordFolderChild(childModel, parentId);
         assertStatusCode(CREATED);
 
         return child;
@@ -365,9 +435,17 @@ public class BaseRMRestTest extends RestTest
      * @return The created folder
      * @throws RuntimeException on unsuccessful component creation
      */
-    public UnfiledContainerChild createUnfiledRecordsFolderChild(String parentId, String childName, String nodeType)
-    {
-        return createUnfiledRecordsFolderChild(getAdminUser(), parentId, childName, nodeType);
+    public UnfiledContainerChild createUnfiledRecordsFolderChild(
+        String parentId,
+        String childName,
+        String nodeType
+    ) {
+        return createUnfiledRecordsFolderChild(
+            getAdminUser(),
+            parentId,
+            childName,
+            nodeType
+        );
     }
 
     /**
@@ -380,18 +458,35 @@ public class BaseRMRestTest extends RestTest
      * @return The created chid
      * @throws RuntimeException on unsuccessful child creation
      */
-    public UnfiledContainerChild createUnfiledContainerChild(UserModel user, String parentId, String childName, String nodeType)
-    {
+    public UnfiledContainerChild createUnfiledContainerChild(
+        UserModel user,
+        String parentId,
+        String childName,
+        String nodeType
+    ) {
         UnfiledContainerChild child = null;
-        UnfiledContainerChild childModel = createUnfiledContainerChildModel(childName, nodeType);
+        UnfiledContainerChild childModel = createUnfiledContainerChildModel(
+            childName,
+            nodeType
+        );
 
-        if (FilePlanComponentType.CONTENT_TYPE.equals(nodeType))
-        {
-            child = getRestAPIFactory().getUnfiledContainersAPI(user).uploadRecord(childModel, parentId, createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME));
-        }
-        else
-        {
-            child = getRestAPIFactory().getUnfiledContainersAPI(user).createUnfiledContainerChild(childModel, parentId);
+        if (FilePlanComponentType.CONTENT_TYPE.equals(nodeType)) {
+            child =
+                getRestAPIFactory()
+                    .getUnfiledContainersAPI(user)
+                    .uploadRecord(
+                        childModel,
+                        parentId,
+                        createTempFile(
+                            ELECTRONIC_RECORD_NAME,
+                            ELECTRONIC_RECORD_NAME
+                        )
+                    );
+        } else {
+            child =
+                getRestAPIFactory()
+                    .getUnfiledContainersAPI(user)
+                    .createUnfiledContainerChild(childModel, parentId);
         }
         assertStatusCode(CREATED);
 
@@ -407,9 +502,17 @@ public class BaseRMRestTest extends RestTest
      * @return The created chid
      * @throws RuntimeException on unsuccessful child creation
      */
-    public UnfiledContainerChild createUnfiledContainerChild(String parentId, String childName, String nodeType)
-    {
-        return createUnfiledContainerChild(getAdminUser(), parentId, childName, nodeType);
+    public UnfiledContainerChild createUnfiledContainerChild(
+        String parentId,
+        String childName,
+        String nodeType
+    ) {
+        return createUnfiledContainerChild(
+            getAdminUser(),
+            parentId,
+            childName,
+            nodeType
+        );
     }
 
     /**
@@ -418,14 +521,14 @@ public class BaseRMRestTest extends RestTest
      * @param folderId The id of the folder
      * @return The closed folder
      */
-    protected RecordFolder closeFolder(String folderId)
-    {
-        RecordFolder recordFolderModel = RecordFolder.builder()
-                                            .properties(RecordFolderProperties.builder()
-                                                    .isClosed(true)
-                                                    .build())
-                                            .build();
-        RecordFolder updateRecordFolder = getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolderModel, folderId);
+    protected RecordFolder closeFolder(String folderId) {
+        RecordFolder recordFolderModel = RecordFolder
+            .builder()
+            .properties(RecordFolderProperties.builder().isClosed(true).build())
+            .build();
+        RecordFolder updateRecordFolder = getRestAPIFactory()
+            .getRecordFolderAPI()
+            .updateRecordFolder(recordFolderModel, folderId);
         assertStatusCode(OK);
 
         return updateRecordFolder;
@@ -437,8 +540,7 @@ public class BaseRMRestTest extends RestTest
      * @param recordId The id of the record to complete
      * @return The completed record
      */
-    public Record completeRecord(String recordId)
-    {
+    public Record completeRecord(String recordId) {
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
         List<String> aspects = recordsAPI.getRecord(recordId).getAspectNames();
 
@@ -449,7 +551,10 @@ public class BaseRMRestTest extends RestTest
         // add completed record aspect
         aspects.add(ASPECTS_COMPLETED_RECORD);
 
-        Record updateRecord = recordsAPI.updateRecord(Record.builder().aspectNames(aspects).build(), recordId);
+        Record updateRecord = recordsAPI.updateRecord(
+            Record.builder().aspectNames(aspects).build(),
+            recordId
+        );
         assertStatusCode(OK);
 
         return updateRecord;
@@ -462,13 +567,19 @@ public class BaseRMRestTest extends RestTest
      * @return {@link RecordCategoryChild} which represents the record folder
      * @throws RuntimeException on failed creation
      */
-    public RecordCategoryChild createCategoryFolderInFilePlan(UserModel user)
-    {
+    public RecordCategoryChild createCategoryFolderInFilePlan(UserModel user) {
         // create root category
-        RecordCategory recordCategory = createRootCategory(user, "Category " + getRandomAlphanumeric());
+        RecordCategory recordCategory = createRootCategory(
+            user,
+            "Category " + getRandomAlphanumeric()
+        );
 
         // and return a folder underneath
-        return createFolder(user, recordCategory.getId(), "Folder " + getRandomAlphanumeric());
+        return createFolder(
+            user,
+            recordCategory.getId(),
+            "Folder " + getRandomAlphanumeric()
+        );
     }
 
     /**
@@ -477,38 +588,43 @@ public class BaseRMRestTest extends RestTest
      * @return {@link RecordCategoryChild} which represents the record folder
      * @throws RuntimeException on failed creation
      */
-    public RecordCategoryChild createCategoryFolderInFilePlan()
-    {
+    public RecordCategoryChild createCategoryFolderInFilePlan() {
         return createCategoryFolderInFilePlan(getAdminUser());
     }
 
-    public UnfiledContainer getUnfiledContainerAsUser(UserModel user, String componentId)
-    {
-        return getRestAPIFactory().getUnfiledContainersAPI(user).getUnfiledContainer(componentId);
+    public UnfiledContainer getUnfiledContainerAsUser(
+        UserModel user,
+        String componentId
+    ) {
+        return getRestAPIFactory()
+            .getUnfiledContainersAPI(user)
+            .getUnfiledContainer(componentId);
     }
 
-    public UnfiledContainer getUnfiledContainer(String componentId)
-    {
+    public UnfiledContainer getUnfiledContainer(String componentId) {
         return getUnfiledContainerAsUser(getAdminUser(), componentId);
     }
 
-    public TransferContainer getTransferContainerAsUser(UserModel user, String componentId)
-    {
-        return getRestAPIFactory().getTransferContainerAPI(user).getTransferContainer(componentId);
+    public TransferContainer getTransferContainerAsUser(
+        UserModel user,
+        String componentId
+    ) {
+        return getRestAPIFactory()
+            .getTransferContainerAPI(user)
+            .getTransferContainer(componentId);
     }
 
-    public TransferContainer getTransferContainer(String componentId)
-    {
+    public TransferContainer getTransferContainer(String componentId) {
         return getTransferContainerAsUser(getAdminUser(), componentId);
     }
 
-    public FilePlan getFilePlanAsUser(UserModel user, String componentId)
-    {
-        return getRestAPIFactory().getFilePlansAPI(user).getFilePlan(componentId);
+    public FilePlan getFilePlanAsUser(UserModel user, String componentId) {
+        return getRestAPIFactory()
+            .getFilePlansAPI(user)
+            .getFilePlan(componentId);
     }
 
-    public FilePlan getFilePlan(String componentId)
-    {
+    public FilePlan getFilePlan(String componentId) {
         return getFilePlanAsUser(getAdminUser(), componentId);
     }
 
@@ -518,10 +634,13 @@ public class BaseRMRestTest extends RestTest
      * @param siteModel
      * @param folder
      */
-    public void deleteFolder(SiteModel siteModel, FolderModel folder)
-    {
-        contentService.deleteTree(getAdminUser().getUsername(), getAdminUser().getPassword(), siteModel.getId(),
-                    folder.getName());
+    public void deleteFolder(SiteModel siteModel, FolderModel folder) {
+        contentService.deleteTree(
+            getAdminUser().getUsername(),
+            getAdminUser().getPassword(),
+            siteModel.getId(),
+            folder.getName()
+        );
     }
 
     /**
@@ -531,11 +650,9 @@ public class BaseRMRestTest extends RestTest
      * @param name the name of the record
      * @return the created record
      */
-    public Record createElectronicRecord(String parentId, String name)
-    {
-       return createElectronicRecord(parentId, name ,null);
+    public Record createElectronicRecord(String parentId, String name) {
+        return createElectronicRecord(parentId, name, null);
     }
-
 
     /**
      * Create an electronic record
@@ -544,10 +661,19 @@ public class BaseRMRestTest extends RestTest
      * @param name     the name of the record
      * @return the created record
      */
-    public Record createElectronicRecord(String parentId, String name, UserModel user)
-    {
-        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
-        Record recordModel = Record.builder().name(name).nodeType(CONTENT_TYPE).build();
+    public Record createElectronicRecord(
+        String parentId,
+        String name,
+        UserModel user
+    ) {
+        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(
+            user
+        );
+        Record recordModel = Record
+            .builder()
+            .name(name)
+            .nodeType(CONTENT_TYPE)
+            .build();
         return recordFolderAPI.createRecord(recordModel, parentId);
     }
 
@@ -558,8 +684,7 @@ public class BaseRMRestTest extends RestTest
      * @param name     the name of the record
      * @return the created record
      */
-    public Record createNonElectronicRecord(String parentId, String name)
-    {
+    public Record createNonElectronicRecord(String parentId, String name) {
         return createNonElectronicRecord(parentId, name, null);
     }
 
@@ -571,10 +696,19 @@ public class BaseRMRestTest extends RestTest
      * @param user the user who creates the  non-electronic record
      * @return the created record
      */
-    public Record createNonElectronicRecord(String parentId, String name, UserModel user)
-    {
-        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(user);
-        Record recordModel = Record.builder().name(name).nodeType(NON_ELECTRONIC_RECORD_TYPE).build();
+    public Record createNonElectronicRecord(
+        String parentId,
+        String name,
+        UserModel user
+    ) {
+        RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI(
+            user
+        );
+        Record recordModel = Record
+            .builder()
+            .name(name)
+            .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+            .build();
         return recordFolderAPI.createRecord(recordModel, parentId);
     }
 
@@ -583,8 +717,7 @@ public class BaseRMRestTest extends RestTest
      *
      * @param recordFolderId the id of the record folder to delete
      */
-    public void deleteRecordFolder(String recordFolderId)
-    {
+    public void deleteRecordFolder(String recordFolderId) {
         RecordFolderAPI recordFolderAPI = restAPIFactory.getRecordFolderAPI();
         recordFolderAPI.deleteRecordFolder(recordFolderId);
     }
@@ -594,8 +727,7 @@ public class BaseRMRestTest extends RestTest
      *
      * @param recordId the id of the record to delete
      */
-    public void deleteRecord(String recordId)
-    {
+    public void deleteRecord(String recordId) {
         RecordsAPI recordsAPI = restAPIFactory.getRecordsAPI();
         recordsAPI.deleteRecord(recordId);
     }
@@ -605,8 +737,7 @@ public class BaseRMRestTest extends RestTest
      *
      * @param recordCategoryId the id of the record category to delete
      */
-    public void deleteRecordCategory(String recordCategoryId)
-    {
+    public void deleteRecordCategory(String recordCategoryId) {
         RecordCategoryAPI recordCategoryAPI = restAPIFactory.getRecordCategoryAPI();
         recordCategoryAPI.deleteRecordCategory(recordCategoryId);
     }
@@ -618,10 +749,9 @@ public class BaseRMRestTest extends RestTest
      * @param term
      * @return
      */
-    public List<String> searchForContentAsUser(UserModel user, String term)
-    {
+    public List<String> searchForContentAsUser(UserModel user, String term) {
         String query = "cm:name:*" + term + "*";
-        return searchForContentAsUser(user,query,"afts");
+        return searchForContentAsUser(user, query, "afts");
     }
 
     /**
@@ -633,8 +763,11 @@ public class BaseRMRestTest extends RestTest
      * @return
      * @throws Exception
      */
-    public List<String> searchForContentAsUser(UserModel user, String q, String queryLanguage)
-    {
+    public List<String> searchForContentAsUser(
+        UserModel user,
+        String q,
+        String queryLanguage
+    ) {
         getRestAPIFactory().getRmRestWrapper().authenticateUser(user);
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         SearchRequest query = new SearchRequest(queryReq);
@@ -645,30 +778,27 @@ public class BaseRMRestTest extends RestTest
         // wait for solr indexing
         int counter = 0;
         int waitInMilliSeconds = 7000;
-        while (counter < 4)
-        {
-            synchronized (this)
-            {
-                try
-                {
+        while (counter < 4) {
+            synchronized (this) {
+                try {
                     this.wait(waitInMilliSeconds);
-                }
-                catch (InterruptedException e)
-                {
+                } catch (InterruptedException e) {
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();
                 }
             }
 
-            List<SearchNodeModel> searchResults = getRestAPIFactory().getRmRestWrapper().withSearchAPI().search(query)
-                                                                     .getEntries();
-            if (searchResults != null && !searchResults.isEmpty())
-            {
-                searchResults.forEach(childNode -> names.add(childNode.onModel().getName()));
+            List<SearchNodeModel> searchResults = getRestAPIFactory()
+                .getRmRestWrapper()
+                .withSearchAPI()
+                .search(query)
+                .getEntries();
+            if (searchResults != null && !searchResults.isEmpty()) {
+                searchResults.forEach(childNode ->
+                    names.add(childNode.onModel().getName())
+                );
                 break;
-            }
-            else
-            {
+            } else {
                 counter++;
             }
             // double wait time to not overdo solr search
@@ -688,36 +818,40 @@ public class BaseRMRestTest extends RestTest
      * @param expectedResults
      * @return List<String>
      */
-    public List<String> searchForRMContentAsUser(UserModel user, String term, String sortby, boolean includeFolders,
-                boolean includeCategories, List<String> expectedResults)
-    {
+    public List<String> searchForRMContentAsUser(
+        UserModel user,
+        String term,
+        String sortby,
+        boolean includeFolders,
+        boolean includeCategories,
+        List<String> expectedResults
+    ) {
         List<String> results = new ArrayList<>();
         // wait for solr indexing
         int counter = 0;
         int waitInMilliSeconds = 7000;
-        while (counter < 4)
-        {
-            synchronized (this)
-            {
-                try
-                {
+        while (counter < 4) {
+            synchronized (this) {
+                try {
                     this.wait(waitInMilliSeconds);
-                }
-                catch (InterruptedException e)
-                {
+                } catch (InterruptedException e) {
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();
                 }
             }
 
-            results = searchApi.searchForNodeNamesAsUser(user.getUsername(), user.getPassword(), term, sortby,
-                    includeFolders, includeCategories);
-            if (!results.isEmpty() && results.containsAll(expectedResults))
-            {
+            results =
+                searchApi.searchForNodeNamesAsUser(
+                    user.getUsername(),
+                    user.getPassword(),
+                    term,
+                    sortby,
+                    includeFolders,
+                    includeCategories
+                );
+            if (!results.isEmpty() && results.containsAll(expectedResults)) {
                 break;
-            }
-            else
-            {
+            } else {
                 counter++;
             }
             // double wait time to not overdo solr search
@@ -739,35 +873,43 @@ public class BaseRMRestTest extends RestTest
      * @param expectedResults
      * @return String
      */
-    public String searchForRMContentAsUser(UserModel user, String term, String nodeRef, String propertyName,
-                String sortby, boolean includeFolders, boolean includeCategories, String expectedResults)
-    {
+    public String searchForRMContentAsUser(
+        UserModel user,
+        String term,
+        String nodeRef,
+        String propertyName,
+        String sortby,
+        boolean includeFolders,
+        boolean includeCategories,
+        String expectedResults
+    ) {
         String result = "";
         // wait for solr indexing
         int counter = 0;
         int waitInMilliSeconds = 5000;
-        while (counter < 4)
-        {
-            synchronized (this)
-            {
-                try
-                {
+        while (counter < 4) {
+            synchronized (this) {
+                try {
                     this.wait(waitInMilliSeconds);
-                }
-                catch (InterruptedException e)
-                {
+                } catch (InterruptedException e) {
                     // Restore interrupted state...
                     Thread.currentThread().interrupt();
                 }
             }
-            result = searchApi.searchForNodePropertyAsUser(user.getUsername(), user.getPassword(), nodeRef,
-                        propertyName, term, sortby, includeFolders, includeCategories);
-            if (!result.isEmpty() && result.contains(expectedResults))
-            {
+            result =
+                searchApi.searchForNodePropertyAsUser(
+                    user.getUsername(),
+                    user.getPassword(),
+                    nodeRef,
+                    propertyName,
+                    term,
+                    sortby,
+                    includeFolders,
+                    includeCategories
+                );
+            if (!result.isEmpty() && result.contains(expectedResults)) {
                 break;
-            }
-            else
-            {
+            } else {
                 counter++;
             }
             // double wait time to not overdo solr search
@@ -782,28 +924,35 @@ public class BaseRMRestTest extends RestTest
      * @return ContentModel
      * @throws Exception
      */
-    public ContentModel getDocumentLibrary(UserModel usermodel, SiteModel testSite) throws Exception
-    {
+    public ContentModel getDocumentLibrary(
+        UserModel usermodel,
+        SiteModel testSite
+    ) throws Exception {
         ContentModel siteModel = new ContentModel();
         siteModel.setNodeRef(testSite.getGuid());
 
         restClient.authenticateUser(usermodel);
 
-        List<RestNodeModel> nodes = restClient.withCoreAPI().usingNode(siteModel)
-                                              .listChildren().getEntries().stream().collect(Collectors.toList());
+        List<RestNodeModel> nodes = restClient
+            .withCoreAPI()
+            .usingNode(siteModel)
+            .listChildren()
+            .getEntries()
+            .stream()
+            .collect(Collectors.toList());
         ContentModel documentLibrary = new ContentModel();
         documentLibrary.setName(nodes.get(0).onModel().getName());
         documentLibrary.setNodeRef(nodes.get(0).onModel().getId());
         return documentLibrary;
     }
+
     /**
      * Checks if the given file has record aspect
      *
      * @param testFile the file to be checked
      * @return true if the file has the aspect, false otherwise
      */
-    protected boolean hasRecordAspect(FileModel testFile) throws Exception
-    {
+    protected boolean hasRecordAspect(FileModel testFile) throws Exception {
         return hasAspect(testFile, RECORD_TYPE);
     }
 
@@ -814,10 +963,13 @@ public class BaseRMRestTest extends RestTest
      * @param aspectName the matching aspect
      * @return true if the file has the aspect, false otherwise
      */
-    private boolean hasAspect(FileModel testFile, String aspectName) throws Exception
-    {
-        return getRestAPIFactory().getNodeAPI(testFile).getNode()
-                                  .getAspectNames().contains(aspectName);
+    private boolean hasAspect(FileModel testFile, String aspectName)
+        throws Exception {
+        return getRestAPIFactory()
+            .getNodeAPI(testFile)
+            .getNode()
+            .getAspectNames()
+            .contains(aspectName);
     }
 
     /**
@@ -827,8 +979,8 @@ public class BaseRMRestTest extends RestTest
      * @param aspectName the matching aspect
      * @return true if the file has the aspect, false otherwise
      */
-    protected boolean hasAspect(String nodeId, String aspectName) throws Exception
-    {
+    protected boolean hasAspect(String nodeId, String aspectName)
+        throws Exception {
         return hasAspect(toFileModel(nodeId), aspectName);
     }
 
@@ -838,25 +990,31 @@ public class BaseRMRestTest extends RestTest
      * @param testFile the file declared as record
      * @return true if the matching record is found in Unfiled Records, false otherwise
      */
-    protected boolean isMatchingRecordInUnfiledRecords(FileModel testFile)
-    {
-        try
-        {
-            Utility.sleep(1000, 10000,
-                    () -> {
-                        Optional<UnfiledContainerChildEntry> matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
-                                                                                                 .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                                                                                                 .getEntries()
-                                                                                                 .stream()
-                                                                                                 .filter(e -> e.getEntry().getId()
-                                                                                                               .equals(testFile.getNodeRefWithoutVersion()))
-                                                                                                 .findAny();
-                        assertTrue(matchingRecord.isPresent());
-                    });
+    protected boolean isMatchingRecordInUnfiledRecords(FileModel testFile) {
+        try {
+            Utility.sleep(
+                1000,
+                10000,
+                () -> {
+                    Optional<UnfiledContainerChildEntry> matchingRecord = getRestAPIFactory()
+                        .getUnfiledContainersAPI()
+                        .getUnfiledContainerChildren(
+                            UNFILED_RECORDS_CONTAINER_ALIAS
+                        )
+                        .getEntries()
+                        .stream()
+                        .filter(e ->
+                            e
+                                .getEntry()
+                                .getId()
+                                .equals(testFile.getNodeRefWithoutVersion())
+                        )
+                        .findAny();
+                    assertTrue(matchingRecord.isPresent());
+                }
+            );
             return true;
-        }
-        catch (AssertionError | Exception e)
-        {
+        } catch (AssertionError | Exception e) {
             return false;
         }
     }
@@ -868,28 +1026,36 @@ public class BaseRMRestTest extends RestTest
      * @param recFolder the record folder where the declared record has been filed
      * @return true if matching record is found in record folder, null otherwise
      */
-    protected boolean isMatchingRecordInRecordFolder(FileModel testFile, RecordCategoryChild recFolder)
-    {
-        try
-        {
-            Utility.sleep(1000, 10000,
-                    () -> {
-                        Optional<RecordFolderEntry> matchingRecord = getRestAPIFactory().getRecordFolderAPI()
-                                                                                        .getRecordFolderChildren(recFolder.getId())
-                                                                                        .getEntries()
-                                                                                        .stream()
-                                                                                        .filter(e -> e.getEntry().getId()
-                                                                                                      .equals(testFile.getNodeRefWithoutVersion()))
-                                                                                        .findAny();
-                        assertTrue(matchingRecord.isPresent());
-                    });
+    protected boolean isMatchingRecordInRecordFolder(
+        FileModel testFile,
+        RecordCategoryChild recFolder
+    ) {
+        try {
+            Utility.sleep(
+                1000,
+                10000,
+                () -> {
+                    Optional<RecordFolderEntry> matchingRecord = getRestAPIFactory()
+                        .getRecordFolderAPI()
+                        .getRecordFolderChildren(recFolder.getId())
+                        .getEntries()
+                        .stream()
+                        .filter(e ->
+                            e
+                                .getEntry()
+                                .getId()
+                                .equals(testFile.getNodeRefWithoutVersion())
+                        )
+                        .findAny();
+                    assertTrue(matchingRecord.isPresent());
+                }
+            );
             return true;
-        }
-        catch (AssertionError | Exception e)
-        {
+        } catch (AssertionError | Exception e) {
             return false;
         }
     }
+
     /**
      * Helper method to verify if the document version is declared as record version in unfiled container
      *
@@ -897,31 +1063,58 @@ public class BaseRMRestTest extends RestTest
      * @param version the document version
      * @return true if matching record version is found in unfiled record container, false otherwise
      */
-    protected boolean isRecordVersionInUnfiledRecords(FileModel testFile, String version)
-    {
-        try
-        {
-            Utility.sleep(1000, 10000,
-                    () -> {
-                        UnfiledContainerChildEntry matchingRecord = getRestAPIFactory().getUnfiledContainersAPI()
-                                                                                       .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS, "include=properties,aspectNames")
-                                                                                       .getEntries()
-                                                                                       .stream()
-                                                                                       .filter(e -> e.getEntry().getName().contains(testFile.getName().replace(".txt", ""))
-                                                                                               && e.getEntry().getProperties().getVersionedNodeRef().equals(testFile.getNodeRefWithoutVersion())
-                                                                                               && e.getEntry().getProperties().getRecordVersionLabel().equalsIgnoreCase(version)
-                                                                                              )
-                                                                                       .findFirst().get();
+    protected boolean isRecordVersionInUnfiledRecords(
+        FileModel testFile,
+        String version
+    ) {
+        try {
+            Utility.sleep(
+                1000,
+                10000,
+                () -> {
+                    UnfiledContainerChildEntry matchingRecord = getRestAPIFactory()
+                        .getUnfiledContainersAPI()
+                        .getUnfiledContainerChildren(
+                            UNFILED_RECORDS_CONTAINER_ALIAS,
+                            "include=properties,aspectNames"
+                        )
+                        .getEntries()
+                        .stream()
+                        .filter(e ->
+                            e
+                                .getEntry()
+                                .getName()
+                                .contains(
+                                    testFile.getName().replace(".txt", "")
+                                ) &&
+                            e
+                                .getEntry()
+                                .getProperties()
+                                .getVersionedNodeRef()
+                                .equals(testFile.getNodeRefWithoutVersion()) &&
+                            e
+                                .getEntry()
+                                .getProperties()
+                                .getRecordVersionLabel()
+                                .equalsIgnoreCase(version)
+                        )
+                        .findFirst()
+                        .get();
 
-                        assertTrue(hasAspect(matchingRecord.getEntry().getId(), VERSION_AS_RECORD));
-                    });
+                    assertTrue(
+                        hasAspect(
+                            matchingRecord.getEntry().getId(),
+                            VERSION_AS_RECORD
+                        )
+                    );
+                }
+            );
             return true;
-        }
-        catch (AssertionError | Exception e)
-        {
+        } catch (AssertionError | Exception e) {
             return false;
         }
     }
+
     /**
      * Helper method to verify if the document version is declared as record version in a specific record folder
      *
@@ -930,31 +1123,56 @@ public class BaseRMRestTest extends RestTest
      * @param version the document version
      * @return true if matching record version is found in record folder, false otherwise
      */
-    protected boolean isRecordVersionInRecordFolder(FileModel testFile, RecordCategoryChild recordFolder,
-                                                    String version)
-    {
-        try
-        {
-            Utility.sleep(1000, 10000,
-                    () -> {
-                        RecordFolderEntry matchingRecord = getRestAPIFactory().getRecordFolderAPI()
-                                                                              .getRecordFolderChildren(recordFolder.getId(),"include=properties,aspectNames")
-                                                                              .getEntries()
-                                                                              .stream()
-                                                                              .filter(e -> e.getEntry().getName().contains(testFile.getName().replace(".txt", ""))
-                                                                                      && e.getEntry().getProperties().getVersionedNodeRef().equals(testFile.getNodeRefWithoutVersion())
-                                                                                      && e.getEntry().getProperties().getRecordVersionLabel().equalsIgnoreCase(version)
-                                                                                     )
-                                                                              .findFirst().get();
+    protected boolean isRecordVersionInRecordFolder(
+        FileModel testFile,
+        RecordCategoryChild recordFolder,
+        String version
+    ) {
+        try {
+            Utility.sleep(
+                1000,
+                10000,
+                () -> {
+                    RecordFolderEntry matchingRecord = getRestAPIFactory()
+                        .getRecordFolderAPI()
+                        .getRecordFolderChildren(
+                            recordFolder.getId(),
+                            "include=properties,aspectNames"
+                        )
+                        .getEntries()
+                        .stream()
+                        .filter(e ->
+                            e
+                                .getEntry()
+                                .getName()
+                                .contains(
+                                    testFile.getName().replace(".txt", "")
+                                ) &&
+                            e
+                                .getEntry()
+                                .getProperties()
+                                .getVersionedNodeRef()
+                                .equals(testFile.getNodeRefWithoutVersion()) &&
+                            e
+                                .getEntry()
+                                .getProperties()
+                                .getRecordVersionLabel()
+                                .equalsIgnoreCase(version)
+                        )
+                        .findFirst()
+                        .get();
 
-                        assertTrue(hasAspect(matchingRecord.getEntry().getId(), VERSION_AS_RECORD));
-                    });
+                    assertTrue(
+                        hasAspect(
+                            matchingRecord.getEntry().getId(),
+                            VERSION_AS_RECORD
+                        )
+                    );
+                }
+            );
             return true;
-        }
-        catch (AssertionError | Exception e)
-        {
+        } catch (AssertionError | Exception e) {
             return false;
         }
     }
-
 }

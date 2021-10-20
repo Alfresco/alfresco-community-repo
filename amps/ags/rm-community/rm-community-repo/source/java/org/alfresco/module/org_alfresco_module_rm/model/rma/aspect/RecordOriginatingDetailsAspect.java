@@ -42,24 +42,19 @@ import org.alfresco.service.namespace.QName;
  * @author Mark Hibbins
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:recordOriginatingDetails"
-)
-public class RecordOriginatingDetailsAspect extends BaseBehaviourBean
-{
-    /**
-     * Copy callback.
-     *
-     * Record originating details aspect should not be copied.
-     */
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
-    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
-    {
-        return new DoNothingCopyBehaviourCallback();
-    }
+@BehaviourBean(defaultType = "rma:recordOriginatingDetails")
+public class RecordOriginatingDetailsAspect extends BaseBehaviourBean {
+
+  /**
+   * Copy callback.
+   *
+   * Record originating details aspect should not be copied.
+   */
+  @Behaviour(kind = BehaviourKind.CLASS, policy = "alf:getCopyCallback")
+  public CopyBehaviourCallback getCopyCallback(
+    QName classRef,
+    CopyDetails copyDetails
+  ) {
+    return new DoNothingCopyBehaviourCallback();
+  }
 }

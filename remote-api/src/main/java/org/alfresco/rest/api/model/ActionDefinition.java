@@ -27,145 +27,129 @@ package org.alfresco.rest.api.model;
 
 import java.util.List;
 
-public class ActionDefinition
-{
-    private String id;
+public class ActionDefinition {
+
+  private String id;
+  private String name;
+  private String title;
+  private String description;
+  private List<String> applicableTypes;
+  private boolean adhocPropertiesAllowed;
+  private boolean trackStatus;
+  private List<ParameterDefinition> parameterDefinitions;
+
+  /**
+   * For Jackson deserialisation.
+   */
+  public ActionDefinition() {}
+
+  public ActionDefinition(
+    String id,
+    String name,
+    String title,
+    String description,
+    List<String> applicableTypes,
+    boolean adhocPropertiesAllowed,
+    boolean trackStatus,
+    List<ParameterDefinition> parameterDefinitions
+  ) {
+    this.id = id;
+    this.name = name;
+    this.title = title;
+    this.description = description;
+    this.applicableTypes = applicableTypes;
+    this.adhocPropertiesAllowed = adhocPropertiesAllowed;
+    this.trackStatus = trackStatus;
+    this.parameterDefinitions = parameterDefinitions;
+  }
+
+  /**
+   * Will be used as a synonym for name.
+   */
+  public String getId() {
+    return id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getTitle() {
+    return title;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public List<String> getApplicableTypes() {
+    return applicableTypes;
+  }
+
+  public boolean isAdhocPropertiesAllowed() {
+    return adhocPropertiesAllowed;
+  }
+
+  public boolean isTrackStatus() {
+    return trackStatus;
+  }
+
+  public List<ParameterDefinition> getParameterDefinitions() {
+    return parameterDefinitions;
+  }
+
+  public static class ParameterDefinition {
+
     private String name;
-    private String title;
-    private String description;
-    private List<String> applicableTypes;
-    private boolean adhocPropertiesAllowed;
-    private boolean trackStatus;
-    private List<ParameterDefinition> parameterDefinitions;
+    private String type;
+    private boolean multiValued;
+    private boolean mandatory;
+    private String displayLabel;
+    private String parameterConstraintName;
 
     /**
      * For Jackson deserialisation.
      */
-    public ActionDefinition()
-    {
+    public ParameterDefinition() {}
+
+    public ParameterDefinition(
+      String name,
+      String type,
+      boolean multiValued,
+      boolean mandatory,
+      String displayLabel,
+      String parameterConstraintName
+    ) {
+      this.name = name;
+      this.type = type;
+      this.multiValued = multiValued;
+      this.mandatory = mandatory;
+      this.displayLabel = displayLabel;
+      this.parameterConstraintName = parameterConstraintName;
     }
 
-    public ActionDefinition(String id,
-                            String name,
-                            String title,
-                            String description,
-                            List<String> applicableTypes,
-                            boolean adhocPropertiesAllowed,
-                            boolean trackStatus,
-                            List<ParameterDefinition> parameterDefinitions)
-    {
-        this.id = id;
-        this.name = name;
-        this.title = title;
-        this.description = description;
-        this.applicableTypes = applicableTypes;
-        this.adhocPropertiesAllowed = adhocPropertiesAllowed;
-        this.trackStatus = trackStatus;
-        this.parameterDefinitions = parameterDefinitions;
+    public String getName() {
+      return name;
     }
 
-    /**
-     * Will be used as a synonym for name.
-     */
-    public String getId()
-    {
-        return id;
-    }
-    
-    public String getName()
-    {
-        return name;
+    public String getType() {
+      return type;
     }
 
-    public String getTitle()
-    {
-        return title;
+    public boolean isMultiValued() {
+      return multiValued;
     }
 
-    public String getDescription()
-    {
-        return description;
+    public boolean isMandatory() {
+      return mandatory;
     }
 
-    public List<String> getApplicableTypes()
-    {
-        return applicableTypes;
+    public String getDisplayLabel() {
+      return displayLabel;
     }
 
-    public boolean isAdhocPropertiesAllowed()
-    {
-        return adhocPropertiesAllowed;
+    public String getParameterConstraintName() {
+      return parameterConstraintName;
     }
-
-    public boolean isTrackStatus()
-    {
-        return trackStatus;
-    }
-
-    public List<ParameterDefinition> getParameterDefinitions()
-    {
-        return parameterDefinitions;
-    }
-
-    public static class ParameterDefinition
-    {
-        private String name;
-        private String type;
-        private boolean multiValued;
-        private boolean mandatory;
-        private String displayLabel;
-        private String parameterConstraintName;
-
-        /**
-         * For Jackson deserialisation.
-         */
-        public ParameterDefinition()
-        {
-        }
-
-        public ParameterDefinition(String name,
-                                   String type,
-                                   boolean multiValued,
-                                   boolean mandatory,
-                                   String displayLabel,
-                                   String parameterConstraintName)
-        {
-            this.name = name;
-            this.type = type;
-            this.multiValued = multiValued;
-            this.mandatory = mandatory;
-            this.displayLabel = displayLabel;
-            this.parameterConstraintName = parameterConstraintName;
-        }
-
-        public String getName()
-        {
-            return name;
-        }
-
-        public String getType()
-        {
-            return type;
-        }
-
-        public boolean isMultiValued()
-        {
-            return multiValued;
-        }
-
-        public boolean isMandatory()
-        {
-            return mandatory;
-        }
-
-        public String getDisplayLabel()
-        {
-            return displayLabel;
-        }
-
-        public String getParameterConstraintName()
-        {
-            return parameterConstraintName;
-        }
-    }
+  }
 }

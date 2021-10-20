@@ -45,26 +45,26 @@ import org.mockito.InjectMocks;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class TransferTypeUnitTest extends BaseUnitTest
-{
-    /** test object */
-    private @InjectMocks TransferType transferType;
+public class TransferTypeUnitTest extends BaseUnitTest {
 
-    /**
-     * Given that we try to add to transfer type folder,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testAddToTransferFolderTest()
-    {
-        NodeRef transferFolder = generateNodeRef(TYPE_TRANSFER, true);
+  /** test object */
+  @InjectMocks
+  private TransferType transferType;
 
-        QName type = AlfMock.generateQName();
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+  /**
+   * Given that we try to add to transfer type folder,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testAddToTransferFolderTest() {
+    NodeRef transferFolder = generateNodeRef(TYPE_TRANSFER, true);
 
-        ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
-        when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
-        when(mockedChildAssoc.getParentRef()).thenReturn(transferFolder);
-        transferType.onCreateChildAssociation(mockedChildAssoc, true);
-    }
+    QName type = AlfMock.generateQName();
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type);
+
+    ChildAssociationRef mockedChildAssoc = mock(ChildAssociationRef.class);
+    when(mockedChildAssoc.getChildRef()).thenReturn(nodeRef);
+    when(mockedChildAssoc.getParentRef()).thenReturn(transferFolder);
+    transferType.onCreateChildAssociation(mockedChildAssoc, true);
+  }
 }

@@ -71,64 +71,63 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  *
  * @author alex.mukha
  */
-public class TransactionAwareHolder<T> extends Holder<T>
-{
-    private Holder<T> internalHolder;
-    private T value;
-    private TxAwareHolderListener txListener;
+public class TransactionAwareHolder<T> extends Holder<T> {
 
-    TransactionAwareHolder(Holder<T> internalHolder)
-    {
-        this.internalHolder = internalHolder;
-        this.value = internalHolder.getValue();
+  private Holder<T> internalHolder;
+  private T value;
+  private TxAwareHolderListener txListener;
+
+  TransactionAwareHolder(Holder<T> internalHolder) {
+    this.internalHolder = internalHolder;
+    this.value = internalHolder.getValue();
+  }
+
+  @Override
+  public T getValue() {
+    registerTxListenerIfNeeded();
+    return this.value;
+  }
+
+  @Override
+  public void setValue(T value) {
+    registerTxListenerIfNeeded();
+    this.value = value;
+  }
+
+  @Override
+  public String toString() {
+    return (
+      "TransactionAwareHolder{" +
+      "internalHolder=" +
+      internalHolder +
+      ", value=" +
+      value +
+      '}'
+    );
+  }
+
+  // MNT-21800 CMIS Web Service Check Out returns error
+  private void registerTxListenerIfNeeded() {
+    if (
+      this.txListener == null &&
+      TransactionSynchronizationManager.isSynchronizationActive()
+    ) {
+      TxAwareHolderListener listener = new TxAwareHolderListener();
+      AlfrescoTransactionSupport.bindListener(listener);
+      this.txListener = listener;
+    }
+  }
+
+  private class TxAwareHolderListener extends TransactionListenerAdapter {
+
+    @Override
+    public void afterCommit() {
+      internalHolder.setValue(getValue());
     }
 
     @Override
-    public T getValue()
-    {
-        registerTxListenerIfNeeded();
-        return this.value;
+    public void afterRollback() {
+      setValue(internalHolder.getValue());
     }
-
-    @Override
-    public void setValue(T value)
-    {
-        registerTxListenerIfNeeded();
-        this.value = value;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "TransactionAwareHolder{" +
-                "internalHolder=" + internalHolder +
-                ", value=" + value +
-                '}';
-    }
-
-    // MNT-21800 CMIS Web Service Check Out returns error
-    private void registerTxListenerIfNeeded()
-    {
-        if (this.txListener == null && TransactionSynchronizationManager.isSynchronizationActive())
-        {
-            TxAwareHolderListener listener = new TxAwareHolderListener();
-            AlfrescoTransactionSupport.bindListener(listener);
-            this.txListener = listener;
-        }
-    }
-
-    private class TxAwareHolderListener extends TransactionListenerAdapter
-    {
-        @Override
-        public void afterCommit()
-        {
-            internalHolder.setValue(getValue());
-        }
-
-        @Override
-        public void afterRollback()
-        {
-            setValue(internalHolder.getValue());
-        }
-    }
+  }
 }

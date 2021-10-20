@@ -27,7 +27,7 @@
 package org.alfresco.rest.core;
 
 import io.restassured.builder.RequestSpecBuilder;
-
+import lombok.Getter;
 import org.alfresco.rest.exception.EmptyJsonResponseException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestHtmlResponse;
@@ -43,8 +43,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import lombok.Getter;
-
 /**
  * Extends {@link RestWrapper} in order to call GS APIs with our own properties
  *
@@ -53,8 +51,8 @@ import lombok.Getter;
  */
 @Service
 @Scope(value = "prototype")
-public class RMRestWrapper
-{
+public class RMRestWrapper {
+
     /** The class that wraps the ReST APIs from core. */
     @Autowired
     private RestWrapper restWrapper;
@@ -63,92 +61,77 @@ public class RMRestWrapper
     @Getter
     private RMRestProperties rmRestProperties;
 
-    public GSCoreAPI withGSCoreAPI()
-    {
+    public GSCoreAPI withGSCoreAPI() {
         return new GSCoreAPI(this, getRmRestProperties());
     }
 
     /** Get the core class that wraps the ReST APIs. */
-    public RestWrapper getRestWrapper()
-    {
+    public RestWrapper getRestWrapper() {
         return restWrapper;
     }
 
     /** Authenticate specific user to Alfresco REST API */
-    public void authenticateUser(UserModel userModel)
-    {
+    public void authenticateUser(UserModel userModel) {
         restWrapper.authenticateUser(userModel);
     }
 
     /** Get the last error thrown (if any). */
-    public RestErrorModel assertLastError()
-    {
+    public RestErrorModel assertLastError() {
         return restWrapper.assertLastError();
     }
 
     /** Process responses for a collection of models as {@link RestSiteModelsCollection}. */
-    public <T> T processModels(Class<T> classz, RestRequest simpleRequest)
-    {
+    public <T> T processModels(Class<T> classz, RestRequest simpleRequest) {
         return restWrapper.processModels(classz, simpleRequest);
     }
 
     /** Process responses for a single model as {@link RestSiteModel}. */
-    public <T> T processModel(Class<T> classz, RestRequest restRequest)
-    {
+    public <T> T processModel(Class<T> classz, RestRequest restRequest) {
         return restWrapper.processModel(classz, restRequest);
     }
 
     /** Process a response that has no body - basically will need only the status code from it. */
-    public void processEmptyModel(RestRequest simpleRequest)
-    {
+    public void processEmptyModel(RestRequest simpleRequest) {
         restWrapper.processEmptyModel(simpleRequest);
     }
 
     /** Get the most recently returned status object. */
-    public StatusModel getLastStatus()
-    {
+    public StatusModel getLastStatus() {
         return restWrapper.getLastStatus();
     }
 
     /** Get the most recently returned status code. */
-    public String getStatusCode()
-    {
+    public String getStatusCode() {
         return restWrapper.getStatusCode();
     }
 
     /** Set the status code. This should only be needed when calling APIs without using the TAS framework. */
-    public void setStatusCode(String statusCode)
-    {
+    public void setStatusCode(String statusCode) {
         restWrapper.setStatusCode(statusCode);
     }
 
     /** Assert that a specific status code is returned. */
-    public void assertStatusCodeIs(HttpStatus statusCode)
-    {
+    public void assertStatusCodeIs(HttpStatus statusCode) {
         restWrapper.assertStatusCodeIs(statusCode);
     }
 
     /** @return A parameters string that you could pass on the request ?param=value */
-    public String getParameters()
-    {
+    public String getParameters() {
         return restWrapper.getParameters();
     }
 
     /** Create a {@link UserModel} for a new test user. */
-    public UserModel getTestUser()
-    {
+    public UserModel getTestUser() {
         return restWrapper.getTestUser();
     }
 
     /** Get the Alfresco Core API. */
-    public RestCoreAPI withCoreAPI()
-    {
+    public RestCoreAPI withCoreAPI() {
         return restWrapper.withCoreAPI();
     }
 
     /** Get the Alfresco Search API. */
-    public SearchAPI withSearchAPI()
-    {
+    public SearchAPI withSearchAPI() {
         return restWrapper.withSearchAPI();
     }
 
@@ -163,8 +146,7 @@ public class RMRestWrapper
      * restClient.withCoreAPI().usingNode(ContentModel.my()).createNode();
      * </pre> This will create the node using the multipart data defined.
      */
-    public RequestSpecBuilder configureRequestSpec()
-    {
+    public RequestSpecBuilder configureRequestSpec() {
         return restWrapper.configureRequestSpec();
     }
 
@@ -173,8 +155,7 @@ public class RMRestWrapper
      *
      * @throws EmptyJsonResponseException If there is no response from the server.
      */
-    public RestHtmlResponse processHtmlResponse(RestRequest simpleRequest)
-    {
+    public RestHtmlResponse processHtmlResponse(RestRequest simpleRequest) {
         return restWrapper.processHtmlResponse(simpleRequest);
     }
 }

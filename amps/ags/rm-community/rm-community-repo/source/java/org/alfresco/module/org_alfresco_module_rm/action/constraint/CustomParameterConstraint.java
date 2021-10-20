@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.action.constraint;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.repo.action.constraint.BaseParameterConstraint;
 
 /**
@@ -39,36 +38,33 @@ import org.alfresco.repo.action.constraint.BaseParameterConstraint;
  * @author Craig Tan
  * @since 2.1
  */
-public class CustomParameterConstraint extends BaseParameterConstraint
-{
-    private List<String> parameterValues;
+public class CustomParameterConstraint extends BaseParameterConstraint {
 
-    /**
-     * Sets the parameter values
-     *
-     * @param parameterValues The parameter values
-     */
-    public void setParameterValues(List<String> parameterValues)
-    {
-        this.parameterValues = parameterValues;
+  private List<String> parameterValues;
+
+  /**
+   * Sets the parameter values
+   *
+   * @param parameterValues The parameter values
+   */
+  public void setParameterValues(List<String> parameterValues) {
+    this.parameterValues = parameterValues;
+  }
+
+  /**
+   * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
+   */
+  protected Map<String, String> getAllowableValuesImpl() {
+    Map<String, String> allowableValues = new HashMap<>(parameterValues.size());
+
+    for (Object parameterValue : parameterValues) {
+      // Look up the I18N value
+      String displayLabel = getI18NLabel(parameterValue.toString());
+
+      // Add to the map of allowed values
+      allowableValues.put(parameterValue.toString(), displayLabel);
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
-     */
-    protected Map<String, String> getAllowableValuesImpl()
-    {
-        Map<String, String> allowableValues = new HashMap<>(parameterValues.size());
-
-        for (Object parameterValue : parameterValues)
-        {
-            // Look up the I18N value
-            String displayLabel = getI18NLabel(parameterValue.toString());
-
-            // Add to the map of allowed values
-            allowableValues.put(parameterValue.toString(), displayLabel);
-        }
-
-        return allowableValues;
-    }
+    return allowableValues;
+  }
 }

@@ -51,132 +51,160 @@ import org.alfresco.service.cmr.rule.RuleService;
  * @author Tuna Aksoy
  * @since 2.2.1.1
  */
-public class RM2192Test extends BaseRMTestCase
-{
-    private static final String PATH = "/111/222/333";
+public class RM2192Test extends BaseRMTestCase {
 
-    private RuleService ruleService;
-    private JSONConversionComponent converter;
+  private static final String PATH = "/111/222/333";
 
-    private NodeRef folder;
-    private String user;
-    private NodeRef documentLibrary2;
+  private RuleService ruleService;
+  private JSONConversionComponent converter;
 
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
+  private NodeRef folder;
+  private String user;
+  private NodeRef documentLibrary2;
 
-        ruleService = (RuleService) applicationContext.getBean("RuleService");
-        converter = (JSONConversionComponent) applicationContext.getBean("jsonConversionComponent");
-    }
+  @Override
+  protected void initServices() {
+    super.initServices();
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+    ruleService = (RuleService) applicationContext.getBean("RuleService");
+    converter =
+      (JSONConversionComponent) applicationContext.getBean(
+        "jsonConversionComponent"
+      );
+  }
 
-    @Override
-    protected boolean isRecordTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isRecordTest() {
+    return true;
+  }
 
-    @Override
-    protected void setupCollaborationSiteTestDataImpl()
-    {
-        super.setupCollaborationSiteTestDataImpl();
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-        String collabSiteId2 = generate();
-        siteService.createSite("site-dashboard", collabSiteId2, generate(), generate(), PUBLIC);
-        documentLibrary2 = getSiteContainer(
-                collabSiteId2,
-                DOCUMENT_LIBRARY,
-                true,
-                siteService,
-                transactionService,
-                taggingService);
+  @Override
+  protected void setupCollaborationSiteTestDataImpl() {
+    super.setupCollaborationSiteTestDataImpl();
 
-        assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary2);
+    String collabSiteId2 = generate();
+    siteService.createSite(
+      "site-dashboard",
+      collabSiteId2,
+      generate(),
+      generate(),
+      PUBLIC
+    );
+    documentLibrary2 =
+      getSiteContainer(
+        collabSiteId2,
+        DOCUMENT_LIBRARY,
+        true,
+        siteService,
+        transactionService,
+        taggingService
+      );
 
-        user = generate();
-        createPerson(user);
+    assertNotNull(
+      "Collaboration site document library component was not successfully created.",
+      documentLibrary2
+    );
 
-        siteService.setMembership(collabSiteId2, user, SITE_MANAGER);
+    user = generate();
+    createPerson(user);
 
-        filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_RECORDS_MANAGER, user);
-    }
+    siteService.setMembership(collabSiteId2, user, SITE_MANAGER);
 
-    public void testAccessToRecordAfterDeclaring()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                folder = fileFolderService.create(documentLibrary2, generate(), TYPE_FOLDER).getNodeRef();
+    filePlanRoleService.assignRoleToAuthority(
+      filePlan,
+      ROLE_RECORDS_MANAGER,
+      user
+    );
+  }
 
-                Action createAction = actionService.createAction(CreateRecordAction.NAME);
-                createAction.setParameterValue(CreateRecordAction.PARAM_FILE_PLAN, filePlan);
+  public void testAccessToRecordAfterDeclaring() {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          folder =
+            fileFolderService
+              .create(documentLibrary2, generate(), TYPE_FOLDER)
+              .getNodeRef();
 
-                Rule declareRule = new Rule();
-                declareRule.setRuleType(INBOUND);
-                declareRule.setTitle(generate());
-                declareRule.setAction(createAction);
-                declareRule.setExecuteAsynchronously(true);
-                declareRule.applyToChildren(true);
-                ruleService.saveRule(folder, declareRule);
+          Action createAction = actionService.createAction(
+            CreateRecordAction.NAME
+          );
+          createAction.setParameterValue(
+            CreateRecordAction.PARAM_FILE_PLAN,
+            filePlan
+          );
 
-                Action fileAction = actionService.createAction(FileToAction.NAME);
-                fileAction.setParameterValue(FileToAction.PARAM_PATH, PATH);
-                fileAction.setParameterValue(FileToAction.PARAM_CREATE_RECORD_PATH, true);
+          Rule declareRule = new Rule();
+          declareRule.setRuleType(INBOUND);
+          declareRule.setTitle(generate());
+          declareRule.setAction(createAction);
+          declareRule.setExecuteAsynchronously(true);
+          declareRule.applyToChildren(true);
+          ruleService.saveRule(folder, declareRule);
 
-                Rule fileRule = new Rule();
-                fileRule.setRuleType(INBOUND);
-                fileRule.setTitle(generate());
-                fileRule.setAction(fileAction);
-                fileRule.setExecuteAsynchronously(true);
-                ruleService.saveRule(unfiledContainer, fileRule);
+          Action fileAction = actionService.createAction(FileToAction.NAME);
+          fileAction.setParameterValue(FileToAction.PARAM_PATH, PATH);
+          fileAction.setParameterValue(
+            FileToAction.PARAM_CREATE_RECORD_PATH,
+            true
+          );
 
-                return null;
-            }
+          Rule fileRule = new Rule();
+          fileRule.setRuleType(INBOUND);
+          fileRule.setTitle(generate());
+          fileRule.setAction(fileAction);
+          fileRule.setExecuteAsynchronously(true);
+          ruleService.saveRule(unfiledContainer, fileRule);
 
-            @Override
-            public void test(Void result) throws Exception
-            {
-                assertFalse(ruleService.getRules(folder).isEmpty());
-                assertFalse(ruleService.getRules(unfiledContainer).isEmpty());
-            }
-        });
+          return null;
+        }
 
-        doTestInTransaction(new Test<Void>()
-        {
-            NodeRef document;
+        @Override
+        public void test(Void result) throws Exception {
+          assertFalse(ruleService.getRules(folder).isEmpty());
+          assertFalse(ruleService.getRules(unfiledContainer).isEmpty());
+        }
+      }
+    );
 
-            @Override
-            public Void run()
-            {
-                document = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
+    doTestInTransaction(
+      new Test<Void>() {
+        NodeRef document;
 
-                return null;
-            }
+        @Override
+        public Void run() {
+          document =
+            fileFolderService
+              .create(folder, generate(), TYPE_CONTENT)
+              .getNodeRef();
 
-            @Override
-            public void test(Void result) throws InterruptedException
-            {
-                Thread.sleep(10000);
+          return null;
+        }
 
-                assertEquals(permissionService.hasPermission(document, READ_RECORDS), ALLOWED);
-                assertTrue(recordService.isFiled(document));
-                assertNotNull(converter.toJSON(document, true));
-            }
-        }, user);
-    }
+        @Override
+        public void test(Void result) throws InterruptedException {
+          Thread.sleep(10000);
+
+          assertEquals(
+            permissionService.hasPermission(document, READ_RECORDS),
+            ALLOWED
+          );
+          assertTrue(recordService.isFiled(document));
+          assertNotNull(converter.toJSON(document, true));
+        }
+      },
+      user
+    );
+  }
 }

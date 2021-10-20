@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,75 +45,65 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class ActionDefinitionsRestApiTest extends BaseRMWebScriptTestCase
-{
-    /** URL for the REST APIs */
-    private static final String RM_ACTIONDEFINITIONS_URL = "/api/rm/rm-actiondefinitions";    
+public class ActionDefinitionsRestApiTest extends BaseRMWebScriptTestCase {
 
-    /**
-     * Test the REST API to retrieve the list of rm action definitions
-     *
-     * @throws IOException
-     * @throws JSONException
-     */
-    public void testRmGetActionDefinitions() throws IOException, JSONException
-    {
-        // Send request
-        Response response = sendRequest(new GetRequest(RM_ACTIONDEFINITIONS_URL), Status.STATUS_OK);
+  /** URL for the REST APIs */
+  private static final String RM_ACTIONDEFINITIONS_URL =
+    "/api/rm/rm-actiondefinitions";
 
-        // Check the content from the response
-        String contentAsString = response.getContentAsString();
-        assertNotNull(contentAsString);
+  /**
+   * Test the REST API to retrieve the list of rm action definitions
+   *
+   * @throws IOException
+   * @throws JSONException
+   */
+  public void testRmGetActionDefinitions() throws IOException, JSONException {
+    // Send request
+    Response response = sendRequest(
+      new GetRequest(RM_ACTIONDEFINITIONS_URL),
+      Status.STATUS_OK
+    );
 
-        // Convert the response to json and check the data
-        JSONObject contentAsJson = new JSONObject(contentAsString);
-        JSONArray data = contentAsJson.getJSONArray("data");
-        assertNotNull(data);
+    // Check the content from the response
+    String contentAsString = response.getContentAsString();
+    assertNotNull(contentAsString);
 
-        // Get a (sub)list of available dm action definitions
-        List<String> dmActionDefinitions = getDmActionDefinitions();
+    // Convert the response to json and check the data
+    JSONObject contentAsJson = new JSONObject(contentAsString);
+    JSONArray data = contentAsJson.getJSONArray("data");
+    assertNotNull(data);
 
-        // Get the list of rm action definitions from the response and check it
-        List<String> rmActionDefinitions = new ArrayList<>();
-        for (int i = 0; i < data.length(); i++)
-        {
-            String name = data.getJSONObject(i).getString("name");
-            assertNotNull(name);
-            rmActionDefinitions.add(name);
-            assertFalse(dmActionDefinitions.contains(name));
-        }
-        assertTrue(rmActionDefinitions.containsAll(getRmActionDefinitions()));
+    // Get a (sub)list of available dm action definitions
+    List<String> dmActionDefinitions = getDmActionDefinitions();
+
+    // Get the list of rm action definitions from the response and check it
+    List<String> rmActionDefinitions = new ArrayList<>();
+    for (int i = 0; i < data.length(); i++) {
+      String name = data.getJSONObject(i).getString("name");
+      assertNotNull(name);
+      rmActionDefinitions.add(name);
+      assertFalse(dmActionDefinitions.contains(name));
     }
+    assertTrue(rmActionDefinitions.containsAll(getRmActionDefinitions()));
+  }
 
-    /**
-     * Returns a (sub)list of rm action definitions
-     *
-     * @return A (sub)list of rm action definitions
-     */
-    private List<String> getRmActionDefinitions()
-    {
-        return Arrays.asList(new String[]
-        {
-            "reject",
-            "fileTo",
-            "declareRecord"
-        });
-    }
+  /**
+   * Returns a (sub)list of rm action definitions
+   *
+   * @return A (sub)list of rm action definitions
+   */
+  private List<String> getRmActionDefinitions() {
+    return Arrays.asList(new String[] { "reject", "fileTo", "declareRecord" });
+  }
 
-    /**
-     * Returns a (sub)list of dm action definitions
-     *
-     * @return A (sub)list of dm action definitions
-     */
-    private List<String> getDmActionDefinitions()
-    {
-        return Arrays.asList(new String[]
-        {
-            "check-in",
-            "check-out",
-            "mail",
-            "move",
-            "transform"
-        });
-    }
+  /**
+   * Returns a (sub)list of dm action definitions
+   *
+   * @return A (sub)list of dm action definitions
+   */
+  private List<String> getDmActionDefinitions() {
+    return Arrays.asList(
+      new String[] { "check-in", "check-out", "mail", "move", "transform" }
+    );
+  }
 }

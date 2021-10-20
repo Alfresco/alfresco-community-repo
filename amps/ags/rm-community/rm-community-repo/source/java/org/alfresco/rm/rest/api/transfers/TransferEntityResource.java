@@ -51,50 +51,51 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Silviu Dinuta
  * @since 2.6
  */
-@EntityResource(name="transfers", title = "Transfers")
-public class TransferEntityResource implements
-        EntityResourceAction.ReadById<Transfer>,
-        InitializingBean
-{
-    private FilePlanComponentsApiUtils apiUtils;
-    private FileFolderService fileFolderService;
-    private ApiNodesModelFactory nodesModelFactory;
+@EntityResource(name = "transfers", title = "Transfers")
+public class TransferEntityResource
+  implements EntityResourceAction.ReadById<Transfer>, InitializingBean {
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
-    }
+  private FilePlanComponentsApiUtils apiUtils;
+  private FileFolderService fileFolderService;
+  private ApiNodesModelFactory nodesModelFactory;
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        mandatory("apiUtils", apiUtils);
-        mandatory("fileFolderService", fileFolderService);
-        mandatory("apiNodesModelFactory", nodesModelFactory);
-    }
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
 
-    @Override
-    @WebApiDescription(title = "Get transfer information", description = "Gets information for a transfer with id 'transferId'")
-    @WebApiParam(name = "transferId", title = "The transfer id")
-    public Transfer readById(String transferId, Parameters parameters) throws EntityNotFoundException
-    {
-        checkNotBlank("transferId", transferId);
-        mandatory("parameters", parameters);
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    mandatory("apiUtils", apiUtils);
+    mandatory("fileFolderService", fileFolderService);
+    mandatory("apiNodesModelFactory", nodesModelFactory);
+  }
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(transferId, RecordsManagementModel.TYPE_TRANSFER);
+  @Override
+  @WebApiDescription(
+    title = "Get transfer information",
+    description = "Gets information for a transfer with id 'transferId'"
+  )
+  @WebApiParam(name = "transferId", title = "The transfer id")
+  public Transfer readById(String transferId, Parameters parameters)
+    throws EntityNotFoundException {
+    checkNotBlank("transferId", transferId);
+    mandatory("parameters", parameters);
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      transferId,
+      RecordsManagementModel.TYPE_TRANSFER
+    );
 
-        return nodesModelFactory.createTransfer(info, parameters, null, false);
-    }
+    FileInfo info = fileFolderService.getFileInfo(nodeRef);
+
+    return nodesModelFactory.createTransfer(info, parameters, null, false);
+  }
 }

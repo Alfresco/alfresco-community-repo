@@ -29,20 +29,18 @@ package org.alfresco.rest.rm.community.model.rules;
 /**
  * enum used to find the when condition names options by their value
  */
-public enum ConditionsOnRule
-{
+public enum ConditionsOnRule {
     UPDATE("update"),
     ADDED("inbound"),
     REMOVED("outbound");
+
     private String whenConditionValue;
 
-    ConditionsOnRule(String value)
-    {
-            this.whenConditionValue = value;
+    ConditionsOnRule(String value) {
+        this.whenConditionValue = value;
     }
 
-    public String getWhenConditionValue()
-    {
-            return whenConditionValue;
+    public String getWhenConditionValue() {
+        return whenConditionValue;
     }
 }

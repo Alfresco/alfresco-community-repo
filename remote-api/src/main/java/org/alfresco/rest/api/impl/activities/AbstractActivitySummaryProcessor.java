@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,116 +29,102 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
-public abstract class AbstractActivitySummaryProcessor extends AbstractLifecycleBean implements ActivitySummaryProcessor
-{
-	protected static Log logger = LogFactory.getLog(ActivitySummaryProcessor.class);  
+public abstract class AbstractActivitySummaryProcessor
+  extends AbstractLifecycleBean
+  implements ActivitySummaryProcessor {
 
-	protected ActivitySummaryProcessorRegistry registry;
-    private List<String> eventTypes;
+  protected static Log logger = LogFactory.getLog(
+    ActivitySummaryProcessor.class
+  );
 
-	public void setEventTypes(List<String> eventTypes)
-	{
-		this.eventTypes = eventTypes;
-	}
+  protected ActivitySummaryProcessorRegistry registry;
+  private List<String> eventTypes;
 
-	public void setRegistry(ActivitySummaryProcessorRegistry registry)
-	{
-		this.registry = registry;
-	}
+  public void setEventTypes(List<String> eventTypes) {
+    this.eventTypes = eventTypes;
+  }
 
-    public void setCustomRenditions(List<String> eventTypes)
-    {
-    	this.eventTypes = eventTypes;
+  public void setRegistry(ActivitySummaryProcessorRegistry registry) {
+    this.registry = registry;
+  }
+
+  public void setCustomRenditions(List<String> eventTypes) {
+    this.eventTypes = eventTypes;
+  }
+
+  /*
+   * (non-Javadoc)
+   * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
+   */
+  protected void onBootstrap(ApplicationEvent event) {
+    register();
+  }
+
+  protected void onShutdown(ApplicationEvent event) {}
+
+  @Override
+  public Map<String, Object> process(Map<String, Object> entries) {
+    List<Change> changes = new LinkedList<Change>();
+    Map<String, Object> ret = new HashMap<String, Object>(entries.size());
+    for (Map.Entry<String, Object> entry : entries.entrySet()) {
+      String key = entry.getKey();
+      Object value = entry.getValue();
+      Change change = processEntry(key, value);
+      if (change != null) {
+        changes.add(change);
+      }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.ApplicationEvent)
-     */
-    protected void onBootstrap(ApplicationEvent event)
-    {
-    	register();
-    }
-    
-    protected void onShutdown(ApplicationEvent event)
-    {
-    	
-    }
-    
-	@Override
-	public Map<String, Object> process(Map<String, Object> entries)
-	{
-		List<Change> changes = new LinkedList<Change>();
-		Map<String, Object> ret = new HashMap<String, Object>(entries.size());
-		for(Map.Entry<String, Object> entry : entries.entrySet())
-		{
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			Change change = processEntry(key, value);
-			if(change != null)
-			{
-				changes.add(change);
-			}
-		}
-
-		for(Change change : changes)
-		{
-			if(change != null)
-			{
-				change.process(entries);
-			}			
-		}
-
-		return ret;
-	}
-	
-	protected abstract Change processEntry(String key, Object value);
-
-    protected void register()
-    {
-    	for(String eventType : eventTypes)
-    	{
-    		registry.register(eventType, this);
-    	}
+    for (Change change : changes) {
+      if (change != null) {
+        change.process(entries);
+      }
     }
 
-	public static class ChangeKey implements Change
-	{
-		private String oldKey;
-		private String newKey;
+    return ret;
+  }
 
-		public ChangeKey(String oldKey, String newKey) {
-			super();
-			this.oldKey = oldKey;
-			this.newKey = newKey;
-		}
+  protected abstract Change processEntry(String key, Object value);
 
-		public void process(Map<String, Object> entries)
-		{
-			Object value = entries.remove(oldKey);
-			entries.put(newKey, value);
-		}
-	}
+  protected void register() {
+    for (String eventType : eventTypes) {
+      registry.register(eventType, this);
+    }
+  }
 
-	public static class RemoveKey implements Change
-	{
-		private String key;
+  public static class ChangeKey implements Change {
 
-		public RemoveKey(String key) {
-			super();
-			this.key = key;
-		}
+    private String oldKey;
+    private String newKey;
 
-		public void process(Map<String, Object> entries)
-		{
-			entries.remove(key);
-		}
-	}
-    
+    public ChangeKey(String oldKey, String newKey) {
+      super();
+      this.oldKey = oldKey;
+      this.newKey = newKey;
+    }
+
+    public void process(Map<String, Object> entries) {
+      Object value = entries.remove(oldKey);
+      entries.put(newKey, value);
+    }
+  }
+
+  public static class RemoveKey implements Change {
+
+    private String key;
+
+    public RemoveKey(String key) {
+      super();
+      this.key = key;
+    }
+
+    public void process(Map<String, Object> entries) {
+      entries.remove(key);
+    }
+  }
 }

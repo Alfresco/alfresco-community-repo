@@ -37,13 +37,11 @@ import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.http.HttpMethod.PUT;
 
-
+import io.restassured.response.ResponseBody;
 import org.alfresco.rest.core.RMRestWrapper;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.record.RecordBodyFile;
 import org.alfresco.rest.rm.community.requests.RMModelRequest;
-
-import io.restassured.response.ResponseBody;
 
 /**
  * Records REST API Wrapper
@@ -51,13 +49,12 @@ import io.restassured.response.ResponseBody;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class RecordsAPI extends RMModelRequest
-{
+public class RecordsAPI extends RMModelRequest {
+
     /**
      * @param rmRestWrapper RM REST Wrapper
      */
-    public RecordsAPI(RMRestWrapper rmRestWrapper)
-    {
+    public RecordsAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
@@ -74,14 +71,14 @@ public class RecordsAPI extends RMModelRequest
      * <li>{@code recordId} does not exist</li>
      * </ul>
      */
-    public ResponseBody<?> getRecordContent(String recordId)
-    {
+    public ResponseBody<?> getRecordContent(String recordId) {
         mandatoryString("recordId", recordId);
 
         return getRmRestWrapper()
-            .processHtmlResponse(simpleRequest(GET,"records/{recordId}/content", recordId))
+            .processHtmlResponse(
+                simpleRequest(GET, "records/{recordId}/content", recordId)
+            )
             .getBody();
-
     }
 
     /**
@@ -101,8 +98,7 @@ public class RecordsAPI extends RMModelRequest
      * </ul>
      *
      */
-    public Record fileRecord(RecordBodyFile recordBodyFile, String recordId)
-    {
+    public Record fileRecord(RecordBodyFile recordBodyFile, String recordId) {
         mandatoryObject("recordBodyFile", recordBodyFile);
         mandatoryString("recordId", recordId);
 
@@ -126,25 +122,31 @@ public class RecordsAPI extends RMModelRequest
      * </ul>
      *
      */
-    public Record fileRecord(RecordBodyFile recordBodyFile, String recordId, String parameters)
-    {
+    public Record fileRecord(
+        RecordBodyFile recordBodyFile,
+        String recordId,
+        String parameters
+    ) {
         mandatoryObject("requestBodyFile", recordBodyFile);
         mandatoryString("recordId", recordId);
 
-        return getRmRestWrapper().processModel(Record.class, requestWithBody(
-            POST,
-            toJson(recordBodyFile),
-            "/records/{recordId}/file?{parameters}",
-            recordId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                Record.class,
+                requestWithBody(
+                    POST,
+                    toJson(recordBodyFile),
+                    "/records/{recordId}/file?{parameters}",
+                    recordId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #completeRecord(String, String)
      */
-    public Record completeRecord(String recordId)
-    {
+    public Record completeRecord(String recordId) {
         mandatoryString("recordId", recordId);
 
         return completeRecord(recordId, EMPTY);
@@ -165,17 +167,21 @@ public class RecordsAPI extends RMModelRequest
      *                   <li>model integrity exception: the record has missing meta-data</li>
      *                   </ul>
      */
-    public Record completeRecord(String recordId, String parameters)
-    {
+    public Record completeRecord(String recordId, String parameters) {
         mandatoryString("recordId", recordId);
 
-        return getRmRestWrapper().processModel(Record.class, simpleRequest(
-            POST,
-            "/records/{recordId}/complete?{parameters}",
-            recordId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                Record.class,
+                simpleRequest(
+                    POST,
+                    "/records/{recordId}/complete?{parameters}",
+                    recordId,
+                    parameters
+                )
+            );
     }
+
     /**
      * Deletes a record.
      *
@@ -189,22 +195,19 @@ public class RecordsAPI extends RMModelRequest
      *  <li>{@code recordId} is locked and cannot be deleted</li>
      * </ul>
      */
-    public void deleteRecord(String recordId)
-    {
+    public void deleteRecord(String recordId) {
         mandatoryString("recordId", recordId);
 
-        getRmRestWrapper().processEmptyModel(simpleRequest(
-                DELETE,
-                "records/{recordId}",
-                recordId
-        ));
+        getRmRestWrapper()
+            .processEmptyModel(
+                simpleRequest(DELETE, "records/{recordId}", recordId)
+            );
     }
 
     /**
      * see {@link #getRecord(String, String)}
      */
-    public Record getRecord(String recordId)
-    {
+    public Record getRecord(String recordId) {
         mandatoryString("recordId", recordId);
 
         return getRecord(recordId, EMPTY);
@@ -224,23 +227,25 @@ public class RecordsAPI extends RMModelRequest
      *  <li>{@code recordId} does not exist</li>
      * </ul>
      */
-    public Record getRecord(String recordId, String parameters)
-    {
+    public Record getRecord(String recordId, String parameters) {
         mandatoryString("recordId", recordId);
 
-        return getRmRestWrapper().processModel(Record.class, simpleRequest(
-                GET,
-                "records/{recordId}?{parameters}",
-                recordId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                Record.class,
+                simpleRequest(
+                    GET,
+                    "records/{recordId}?{parameters}",
+                    recordId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #updateRecord(Record, String, String)
      */
-    public Record updateRecord(Record recordModel, String recordId)
-    {
+    public Record updateRecord(Record recordModel, String recordId) {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordId", recordId);
 
@@ -264,17 +269,24 @@ public class RecordsAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public Record updateRecord(Record recordModel, String recordId, String parameters)
-    {
+    public Record updateRecord(
+        Record recordModel,
+        String recordId,
+        String parameters
+    ) {
         mandatoryObject("recordModel", recordModel);
         mandatoryString("recordId", recordId);
 
-        return getRmRestWrapper().processModel(Record.class, requestWithBody(
-                PUT,
-                toJson(recordModel),
-                "records/{recordId}?{parameters}",
-                recordId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                Record.class,
+                requestWithBody(
+                    PUT,
+                    toJson(recordModel),
+                    "records/{recordId}?{parameters}",
+                    recordId,
+                    parameters
+                )
+            );
     }
 }

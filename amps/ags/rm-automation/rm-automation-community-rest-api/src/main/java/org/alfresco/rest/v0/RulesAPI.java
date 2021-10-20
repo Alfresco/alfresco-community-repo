@@ -28,7 +28,6 @@
 package org.alfresco.rest.v0;
 
 import static java.util.Arrays.asList;
-
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.testng.AssertJUnit.assertTrue;
 
@@ -36,7 +35,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
 import org.apache.http.HttpResponse;
@@ -51,13 +49,14 @@ import org.springframework.stereotype.Component;
  * Covers CRUD API operations on rules
  */
 @Component
-public class RulesAPI extends BaseAPI
-{
+public class RulesAPI extends BaseAPI {
 
     public static final String RULES_API = "{0}node/{1}/ruleset/rules";
     public static final String RULE_API = "{0}node/{1}/ruleset/rules/{2}";
-    public static final String INHERIT_RULES_API = "{0}node/{1}/ruleset/inheritrules/toggle";
-    public static final String INHERIT_RULES_STATE_API = "{0}node/{1}/ruleset/inheritrules/state";
+    public static final String INHERIT_RULES_API =
+        "{0}node/{1}/ruleset/inheritrules/toggle";
+    public static final String INHERIT_RULES_STATE_API =
+        "{0}node/{1}/ruleset/inheritrules/state";
     // logger
     public static final Logger LOGGER = LoggerFactory.getLogger(RulesAPI.class);
 
@@ -68,14 +67,21 @@ public class RulesAPI extends BaseAPI
      * @param ruleProperties   the rule properties
      * @return The HTTP Response (or null if the response could not be understood).
      */
-    public HttpResponse createRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
-    {
-        try
-        {
-            return doPostJsonRequest(username, password, SC_OK, getRuleRequest(ruleProperties), MessageFormat.format(RULES_API, "{0}", containerNodeRef));
-        }
-        catch (JSONException error)
-        {
+    public HttpResponse createRule(
+        String username,
+        String password,
+        String containerNodeRef,
+        RuleDefinition ruleProperties
+    ) {
+        try {
+            return doPostJsonRequest(
+                username,
+                password,
+                SC_OK,
+                getRuleRequest(ruleProperties),
+                MessageFormat.format(RULES_API, "{0}", containerNodeRef)
+            );
+        } catch (JSONException error) {
             LOGGER.error("Unable to extract response parameter.", error);
         }
         return null;
@@ -88,20 +94,25 @@ public class RulesAPI extends BaseAPI
      * @param ruleProperties   the rule properties
      * @return true if the rule has been updated successfully, false otherwise
      */
-    public JSONObject updateRule(String username, String password, String containerNodeRef, RuleDefinition ruleProperties)
-    {
+    public JSONObject updateRule(
+        String username,
+        String password,
+        String containerNodeRef,
+        RuleDefinition ruleProperties
+    ) {
         String ruleId = ruleProperties.getId();
-        if (ruleId == null || ruleId.isEmpty())
-        {
+        if (ruleId == null || ruleId.isEmpty()) {
             throw new RuntimeException("Can not update a rule without id.");
         }
-        try
-        {
-            return doPutRequest(username, password, getRuleRequest(ruleProperties), MessageFormat.format(RULE_API, "{0}", containerNodeRef, ruleId));
-        }
-        catch (JSONException error)
-        {
-           LOGGER.error("Unable to extract response parameter.", error);
+        try {
+            return doPutRequest(
+                username,
+                password,
+                getRuleRequest(ruleProperties),
+                MessageFormat.format(RULE_API, "{0}", containerNodeRef, ruleId)
+            );
+        } catch (JSONException error) {
+            LOGGER.error("Unable to extract response parameter.", error);
         }
         return null;
     }
@@ -115,11 +126,30 @@ public class RulesAPI extends BaseAPI
      * @param ruleId           the rule id
      * @throws AssertionError if the rule could not be deleted.
      */
-    public void deleteRule(String username, String password, String containerNodeRef, String ruleId)
-    {
-        doDeleteRequest(username, password, MessageFormat.format(RULE_API, "{0}", containerNodeRef, ruleId));
-        boolean success = !getRulesIdsSetOnContainer(username, password, containerNodeRef).contains(ruleId);
-        assertTrue("Rule " + ruleId + " was not deleted successfully from " + containerNodeRef, success);
+    public void deleteRule(
+        String username,
+        String password,
+        String containerNodeRef,
+        String ruleId
+    ) {
+        doDeleteRequest(
+            username,
+            password,
+            MessageFormat.format(RULE_API, "{0}", containerNodeRef, ruleId)
+        );
+        boolean success = !getRulesIdsSetOnContainer(
+            username,
+            password,
+            containerNodeRef
+        )
+            .contains(ruleId);
+        assertTrue(
+            "Rule " +
+            ruleId +
+            " was not deleted successfully from " +
+            containerNodeRef,
+            success
+        );
     }
 
     /**
@@ -130,11 +160,17 @@ public class RulesAPI extends BaseAPI
      * @param containerNodeRef the container on which the rules have been created
      * @throws AssertionError if at least one of the rules could not be deleted.
      */
-    public void deleteAllRulesOnContainer(String username, String password, String containerNodeRef)
-    {
-        List<String> ruleIds = getRulesIdsSetOnContainer(username, password, containerNodeRef);
-        for (String ruleId : ruleIds)
-        {
+    public void deleteAllRulesOnContainer(
+        String username,
+        String password,
+        String containerNodeRef
+    ) {
+        List<String> ruleIds = getRulesIdsSetOnContainer(
+            username,
+            password,
+            containerNodeRef
+        );
+        for (String ruleId : ruleIds) {
             deleteRule(username, password, containerNodeRef, ruleId);
         }
     }
@@ -149,31 +185,35 @@ public class RulesAPI extends BaseAPI
      * @return list of rules on container
      */
 
-    public List<RuleDefinition> getRulesSetOnContainer(String username, String password, String containerNodeRef)
-    {
+    public List<RuleDefinition> getRulesSetOnContainer(
+        String username,
+        String password,
+        String containerNodeRef
+    ) {
         List<RuleDefinition> rulesDefinitions = new ArrayList<>();
 
         // get the rules set on the container
-        JSONObject rulesJson = doGetRequest(username, password, MessageFormat.format(RULES_API, "{0}", containerNodeRef));
-        if (rulesJson != null)
-        {
-            try
-            {
+        JSONObject rulesJson = doGetRequest(
+            username,
+            password,
+            MessageFormat.format(RULES_API, "{0}", containerNodeRef)
+        );
+        if (rulesJson != null) {
+            try {
                 JSONArray rules = rulesJson.getJSONArray("data");
-                for (int i = 0; i < rules.length(); i++)
-                {
+                for (int i = 0; i < rules.length(); i++) {
                     RuleDefinition ruleDefinition = new RuleDefinition();
                     JSONObject rule = rules.getJSONObject(i);
                     ruleDefinition.id(rule.getString("id"));
                     ruleDefinition.title(rule.getString("title"));
                     ruleDefinition.description(rule.getString("description"));
-                    ruleDefinition.ruleType(rule.getJSONArray("ruleType").get(0).toString());
+                    ruleDefinition.ruleType(
+                        rule.getJSONArray("ruleType").get(0).toString()
+                    );
                     ruleDefinition.disabled(rule.getBoolean("disabled"));
                     rulesDefinitions.add(ruleDefinition);
                 }
-            }
-            catch (JSONException error)
-            {
+            } catch (JSONException error) {
                 LOGGER.error("Unable to parse rules.", error);
             }
         }
@@ -188,9 +228,15 @@ public class RulesAPI extends BaseAPI
      * @param containerNodeRef the container's noderef to get set rules for
      * @return the list of rules ids that the container has
      */
-    public List<String> getRulesIdsSetOnContainer(String username, String password, String containerNodeRef)
-    {
-        return getRulesSetOnContainer(username, password, containerNodeRef).stream().map(RuleDefinition::getId).collect(Collectors.toList());
+    public List<String> getRulesIdsSetOnContainer(
+        String username,
+        String password,
+        String containerNodeRef
+    ) {
+        return getRulesSetOnContainer(username, password, containerNodeRef)
+            .stream()
+            .map(RuleDefinition::getId)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -201,8 +247,8 @@ public class RulesAPI extends BaseAPI
      *
      * @throws JSONException
      */
-    private JSONObject getRuleRequest(RuleDefinition ruleProperties) throws JSONException
-    {
+    private JSONObject getRuleRequest(RuleDefinition ruleProperties)
+        throws JSONException {
         JSONObject requestParams = new JSONObject();
 
         // the id has to be sent as empty string no matter the request
@@ -211,8 +257,14 @@ public class RulesAPI extends BaseAPI
         requestParams.put("title", ruleProperties.getTitle());
         requestParams.put("description", ruleProperties.getDescription());
         requestParams.put("disabled", ruleProperties.isDisabled());
-        requestParams.put("applyToChildren", ruleProperties.isApplyToChildren());
-        requestParams.put("executeAsynchronously", ruleProperties.getRunInBackground());
+        requestParams.put(
+            "applyToChildren",
+            ruleProperties.isApplyToChildren()
+        );
+        requestParams.put(
+            "executeAsynchronously",
+            ruleProperties.getRunInBackground()
+        );
         requestParams.put("ruleType", asList(ruleProperties.getRuleType()));
 
         return requestParams;
@@ -227,8 +279,8 @@ public class RulesAPI extends BaseAPI
      *
      * @throws JSONException
      */
-    private JSONObject addRulesActions(RuleDefinition ruleProperties) throws JSONException
-    {
+    private JSONObject addRulesActions(RuleDefinition ruleProperties)
+        throws JSONException {
         JSONObject action = new JSONObject();
         action.put("actionDefinitionName", "composite-action");
         JSONObject conditions = new JSONObject();
@@ -246,37 +298,34 @@ public class RulesAPI extends BaseAPI
      *
      * @return the list of rule actions objects
      */
-    private List<JSONObject> getRuleActionsList(RuleDefinition ruleProperties) throws JSONException
-    {
+    private List<JSONObject> getRuleActionsList(RuleDefinition ruleProperties)
+        throws JSONException {
         List<JSONObject> ruleActionsList = new ArrayList<>();
 
-        for (String ruleAction : ruleProperties.getActions())
-        {
+        for (String ruleAction : ruleProperties.getActions()) {
             JSONObject ruleActionObj = new JSONObject();
             ruleActionObj.put("actionDefinitionName", ruleAction);
             JSONObject parameters = new JSONObject();
-            if (ruleProperties.getPath() != null)
-            {
-                if(ruleProperties.getCreateRecordPath() != null)
-                {
-                    parameters.put("createRecordPath", ruleProperties.getCreateRecordPath());
+            if (ruleProperties.getPath() != null) {
+                if (ruleProperties.getCreateRecordPath() != null) {
+                    parameters.put(
+                        "createRecordPath",
+                        ruleProperties.getCreateRecordPath()
+                    );
                 }
                 parameters.put("path", ruleProperties.getPath());
             }
-            if (ruleProperties.getContentTitle() != null)
-            {
+            if (ruleProperties.getContentTitle() != null) {
                 parameters.put("property", "cm:title");
                 parameters.put("value", ruleProperties.getContentTitle());
                 parameters.put("prop_type", "d:mltext");
             }
-            if (ruleProperties.getContentDescription() != null)
-            {
+            if (ruleProperties.getContentDescription() != null) {
                 parameters.put("property", "cm:description");
                 parameters.put("value", ruleProperties.getContentDescription());
                 parameters.put("prop_type", "d:mltext");
             }
-            if (ruleProperties.getRejectReason() != null)
-            {
+            if (ruleProperties.getRejectReason() != null) {
                 parameters.put("reason", ruleProperties.getRejectReason());
             }
             ruleActionObj.put("parameterValues", parameters);
@@ -294,10 +343,18 @@ public class RulesAPI extends BaseAPI
      *
      * @return the rule id
      */
-    public String getRuleIdWithTitle(String username, String password, String containerNodeRef, String title)
-    {
-        return getRulesSetOnContainer(username, password, containerNodeRef).stream().filter(
-                rule -> rule.getTitle().equals(title)).findAny().get().getId();
+    public String getRuleIdWithTitle(
+        String username,
+        String password,
+        String containerNodeRef,
+        String title
+    ) {
+        return getRulesSetOnContainer(username, password, containerNodeRef)
+            .stream()
+            .filter(rule -> rule.getTitle().equals(title))
+            .findAny()
+            .get()
+            .getId();
     }
 
     /**
@@ -309,11 +366,25 @@ public class RulesAPI extends BaseAPI
      *
      * @return The HTTP Response (or null if the current state is disabled).
      */
-    public HttpResponse disableRulesInheritance(String username, String password, String containerNodeRef)
-    {
-        if(containerInheritsRulesFromParent(username, password, containerNodeRef))
-        {
-            return doPostJsonRequest(username, password, SC_OK, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
+    public HttpResponse disableRulesInheritance(
+        String username,
+        String password,
+        String containerNodeRef
+    ) {
+        if (
+            containerInheritsRulesFromParent(
+                username,
+                password,
+                containerNodeRef
+            )
+        ) {
+            return doPostJsonRequest(
+                username,
+                password,
+                SC_OK,
+                new JSONObject(),
+                MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef)
+            );
         }
         return null;
     }
@@ -326,11 +397,25 @@ public class RulesAPI extends BaseAPI
      * @param containerNodeRef the container nodeRef
      * @return The HTTP Response (or null if the current state is disabled).
      */
-    public HttpResponse enableRulesInheritance(String username, String password, String containerNodeRef)
-    {
-        if (!containerInheritsRulesFromParent(username, password, containerNodeRef))
-        {
-            return doPostJsonRequest(username, password, SC_OK, new JSONObject(), MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef));
+    public HttpResponse enableRulesInheritance(
+        String username,
+        String password,
+        String containerNodeRef
+    ) {
+        if (
+            !containerInheritsRulesFromParent(
+                username,
+                password,
+                containerNodeRef
+            )
+        ) {
+            return doPostJsonRequest(
+                username,
+                password,
+                SC_OK,
+                new JSONObject(),
+                MessageFormat.format(INHERIT_RULES_API, "{0}", containerNodeRef)
+            );
         }
         return null;
     }
@@ -345,9 +430,22 @@ public class RulesAPI extends BaseAPI
      * @return a boolean specifying if the container inherits rules from parent
      * @throws JSONException
      */
-    public boolean containerInheritsRulesFromParent(String username, String password, String containerNodeRef) throws JSONException
-    {
-        JSONObject rulesInheritanceInfo = doGetRequest(username, password, MessageFormat.format(INHERIT_RULES_STATE_API, "{0}", containerNodeRef));
-        return rulesInheritanceInfo.getJSONObject("data").getBoolean("inheritRules");
+    public boolean containerInheritsRulesFromParent(
+        String username,
+        String password,
+        String containerNodeRef
+    ) throws JSONException {
+        JSONObject rulesInheritanceInfo = doGetRequest(
+            username,
+            password,
+            MessageFormat.format(
+                INHERIT_RULES_STATE_API,
+                "{0}",
+                containerNodeRef
+            )
+        );
+        return rulesInheritanceInfo
+            .getJSONObject("data")
+            .getBoolean("inheritRules");
     }
 }

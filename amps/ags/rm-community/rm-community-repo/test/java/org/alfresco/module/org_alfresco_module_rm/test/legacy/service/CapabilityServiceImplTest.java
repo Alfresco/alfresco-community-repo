@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Group;
@@ -41,104 +40,105 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class CapabilityServiceImplTest extends BaseRMTestCase
-{
-    public void testGetAddRemoveGroups() throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                Group auditGroup = capabilityService.getGroup("audit");
-                assertNotNull(auditGroup);
-                assertEquals(10, auditGroup.getIndex());
-                assertEquals("Audit", auditGroup.getTitle());
-                assertEquals("audit", auditGroup.getId());
+public class CapabilityServiceImplTest extends BaseRMTestCase {
 
-                return null;
-            }
-        });
+  public void testGetAddRemoveGroups() throws Exception {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() throws Exception {
+          Group auditGroup = capabilityService.getGroup("audit");
+          assertNotNull(auditGroup);
+          assertEquals(10, auditGroup.getIndex());
+          assertEquals("Audit", auditGroup.getTitle());
+          assertEquals("audit", auditGroup.getId());
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                int initialSize = capabilityService.getGroups().size();
+          return null;
+        }
+      }
+    );
 
-                GroupImpl testGroup = new GroupImpl();
-                testGroup.setId("testGroup");
-                testGroup.setIndex(140);
-                testGroup.setTitle("Test group");
-                capabilityService.addGroup(testGroup);
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() throws Exception {
+          int initialSize = capabilityService.getGroups().size();
 
-                assertEquals(initialSize+1, capabilityService.getGroups().size());
+          GroupImpl testGroup = new GroupImpl();
+          testGroup.setId("testGroup");
+          testGroup.setIndex(140);
+          testGroup.setTitle("Test group");
+          capabilityService.addGroup(testGroup);
 
-                Group group = capabilityService.getGroup("testGroup");
-                assertNotNull(group);
-                assertTrue(group.getId().equalsIgnoreCase("testGroup"));
-                assertTrue(group.getTitle().equalsIgnoreCase("Test group"));
-                assertTrue(group.getIndex() == 140);
+          assertEquals(initialSize + 1, capabilityService.getGroups().size());
 
-                return null;
-            }
-        });
+          Group group = capabilityService.getGroup("testGroup");
+          assertNotNull(group);
+          assertTrue(group.getId().equalsIgnoreCase("testGroup"));
+          assertTrue(group.getTitle().equalsIgnoreCase("Test group"));
+          assertTrue(group.getIndex() == 140);
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                Group testGroup = capabilityService.getGroup("testGroup");
-                assertNotNull(testGroup);
-                int initialSize = capabilityService.getGroups().size();
+          return null;
+        }
+      }
+    );
 
-                capabilityService.removeGroup(testGroup);
-                assertEquals(initialSize-1, capabilityService.getGroups().size());
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() throws Exception {
+          Group testGroup = capabilityService.getGroup("testGroup");
+          assertNotNull(testGroup);
+          int initialSize = capabilityService.getGroups().size();
 
-                return null;
-            }
-        });
-    }
+          capabilityService.removeGroup(testGroup);
+          assertEquals(initialSize - 1, capabilityService.getGroups().size());
 
-    public void testGetCapabilitiesByGroup() throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                List<Group> groups = capabilityService.getGroups();
-                assertNotNull(groups);
+          return null;
+        }
+      }
+    );
+  }
 
-                Group recordsGroup = groups.get(0);
-                assertNotNull(recordsGroup);
+  public void testGetCapabilitiesByGroup() throws Exception {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() throws Exception {
+          List<Group> groups = capabilityService.getGroups();
+          assertNotNull(groups);
 
-                List<Capability> recordCapabilities = capabilityService.getCapabilitiesByGroup(recordsGroup);
-                assertNotNull(recordCapabilities);
+          Group recordsGroup = groups.get(0);
+          assertNotNull(recordsGroup);
 
-                int recordCapabilitiesSize = recordCapabilities.size();
-                assertTrue(recordCapabilitiesSize > 1);
+          List<Capability> recordCapabilities = capabilityService.getCapabilitiesByGroup(
+            recordsGroup
+          );
+          assertNotNull(recordCapabilities);
 
-                for (int i = 1; i == recordCapabilitiesSize; i++)
-                {
-                    Capability capability = recordCapabilities.get(i);
-                    assertNotNull(capability);
-                    assertEquals(i * 10, capability.getIndex());
-                }
+          int recordCapabilitiesSize = recordCapabilities.size();
+          assertTrue(recordCapabilitiesSize > 1);
 
-                Group rulesGroup = groups.get(groups.size() - 2);
-                assertNotNull(rulesGroup);
+          for (int i = 1; i == recordCapabilitiesSize; i++) {
+            Capability capability = recordCapabilities.get(i);
+            assertNotNull(capability);
+            assertEquals(i * 10, capability.getIndex());
+          }
 
-                List<Capability> ruleCapabilities = capabilityService.getCapabilitiesByGroupId(rulesGroup.getId());
-                assertNotNull(ruleCapabilities);
+          Group rulesGroup = groups.get(groups.size() - 2);
+          assertNotNull(rulesGroup);
 
-                int ruleCapabilitiesSize = ruleCapabilities.size();
-                assertTrue(ruleCapabilitiesSize > 0);
+          List<Capability> ruleCapabilities = capabilityService.getCapabilitiesByGroupId(
+            rulesGroup.getId()
+          );
+          assertNotNull(ruleCapabilities);
 
-                return null;
-            }
-        });
-    }
+          int ruleCapabilitiesSize = ruleCapabilities.size();
+          assertTrue(ruleCapabilitiesSize > 0);
+
+          return null;
+        }
+      }
+    );
+  }
 }

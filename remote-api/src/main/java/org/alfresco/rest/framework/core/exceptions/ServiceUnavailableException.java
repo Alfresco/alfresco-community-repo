@@ -30,19 +30,18 @@ import java.io.Serializable;
 /**
  * A service is currently unavailable.
  */
-public class ServiceUnavailableException extends ApiException
-{
-    private static final long serialVersionUID = 7266627408681826999L;
+public class ServiceUnavailableException extends ApiException {
 
-    public static String DEFAULT_MESSAGE_ID = "framework.exception.ServiceUnavailableException";
+  private static final long serialVersionUID = 7266627408681826999L;
 
-    public ServiceUnavailableException()
-    {
-        super(DEFAULT_MESSAGE_ID);
-    }
+  public static String DEFAULT_MESSAGE_ID =
+    "framework.exception.ServiceUnavailableException";
 
-    public ServiceUnavailableException(String msgId)
-    {
-        super(msgId);
-    }
+  public ServiceUnavailableException() {
+    super(DEFAULT_MESSAGE_ID);
+  }
+
+  public ServiceUnavailableException(String msgId) {
+    super(msgId);
+  }
 }

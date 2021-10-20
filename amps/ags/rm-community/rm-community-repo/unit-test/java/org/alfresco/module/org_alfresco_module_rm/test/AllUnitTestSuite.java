@@ -38,10 +38,10 @@ import org.junit.runner.RunWith;
  * @since 2.2
  */
 @RunWith(ClasspathSuite.class)
-@ClassnameFilters({
+@ClassnameFilters(
+  {
     // Execute all test classes ending with "UnitTest"
-    ".*UnitTest"
-})
-public class AllUnitTestSuite
-{
-}
+    ".*UnitTest",
+  }
+)
+public class AllUnitTestSuite {}

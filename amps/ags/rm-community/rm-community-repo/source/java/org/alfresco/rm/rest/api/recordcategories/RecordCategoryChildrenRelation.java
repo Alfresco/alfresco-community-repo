@@ -40,7 +40,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
@@ -78,145 +77,213 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  * @author Tuna Aksoy
  * @since 2.6
  */
-@RelationshipResource(name="children", entityResource = RecordCategoriesEntityResource.class, title = "Children of a record category")
-public class RecordCategoryChildrenRelation implements RelationshipResourceAction.Read<RecordCategoryChild>,
-                                                    RelationshipResourceAction.Create<RecordCategoryChild>,
-                                                    MultiPartRelationshipResourceAction.Create<RecordCategoryChild>
-{
-    private final static Set<String> LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES = new HashSet<>(Arrays
-            .asList(new String[] { RecordCategoryChild.PARAM_IS_RECORD_CATEGORY, RecordCategoryChild.PARAM_IS_RECORD_FOLDER,
-                                   RecordCategoryChild.PARAM_IS_CLOSED, RecordCategoryChild.PARAM_HAS_RETENTION_SCHEDULE, RMNode.PARAM_NODE_TYPE }));
+@RelationshipResource(
+  name = "children",
+  entityResource = RecordCategoriesEntityResource.class,
+  title = "Children of a record category"
+)
+public class RecordCategoryChildrenRelation
+  implements
+    RelationshipResourceAction.Read<RecordCategoryChild>,
+    RelationshipResourceAction.Create<RecordCategoryChild>,
+    MultiPartRelationshipResourceAction.Create<RecordCategoryChild> {
 
-    private FilePlanComponentsApiUtils apiUtils;
-    private SearchTypesFactory searchTypesFactory;
-    private FileFolderService fileFolderService;
-    private ApiNodesModelFactory nodesModelFactory;
-    private TransactionService transactionService;
+  private static final Set<String> LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES = new HashSet<>(
+    Arrays.asList(
+      new String[] {
+        RecordCategoryChild.PARAM_IS_RECORD_CATEGORY,
+        RecordCategoryChild.PARAM_IS_RECORD_FOLDER,
+        RecordCategoryChild.PARAM_IS_CLOSED,
+        RecordCategoryChild.PARAM_HAS_RETENTION_SCHEDULE,
+        RMNode.PARAM_NODE_TYPE,
+      }
+    )
+  );
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
+  private FilePlanComponentsApiUtils apiUtils;
+  private SearchTypesFactory searchTypesFactory;
+  private FileFolderService fileFolderService;
+  private ApiNodesModelFactory nodesModelFactory;
+  private TransactionService transactionService;
+
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
+
+  public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory) {
+    this.searchTypesFactory = searchTypesFactory;
+  }
+
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
+
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
+
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
+
+  @Override
+  @WebApiDescription(
+    title = "Return a paged list of record category children for the container identified by 'recordCategoryId'"
+  )
+  public CollectionWithPagingInfo<RecordCategoryChild> readAll(
+    String recordCategoryId,
+    Parameters parameters
+  ) {
+    checkNotBlank("recordCategoryId", recordCategoryId);
+    mandatory("parameters", parameters);
+
+    String relativePath = parameters.getParameter(Nodes.PARAM_RELATIVE_PATH);
+    NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(
+      recordCategoryId,
+      RecordsManagementModel.TYPE_RECORD_CATEGORY,
+      relativePath,
+      true
+    );
+
+    // list record categories and record folders
+    Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesCategoriesEndpoint(
+      parameters,
+      LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES
+    );
+    Set<QName> assocTypeQNames = Collections.singleton(
+      ContentModel.ASSOC_CONTAINS
+    );
+    List<FilterProp> filterProps = apiUtils.getListChildrenFilterProps(
+      parameters,
+      LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES
+    );
+
+    final PagingResults<FileInfo> pagingResults = fileFolderService.list(
+      parentNodeRef,
+      assocTypeQNames,
+      searchTypeQNames,
+      null,
+      apiUtils.getSortProperties(parameters),
+      filterProps,
+      Util.getPagingRequest(parameters.getPaging())
+    );
+
+    final List<FileInfo> page = pagingResults.getPage();
+    Map<String, UserInfo> mapUserInfo = new HashMap<>();
+    List<RecordCategoryChild> nodes = new AbstractList<RecordCategoryChild>() {
+      @Override
+      public RecordCategoryChild get(int index) {
+        FileInfo info = page.get(index);
+        return nodesModelFactory.createRecordCategoryChild(
+          info,
+          parameters,
+          mapUserInfo,
+          true
+        );
+      }
+
+      @Override
+      public int size() {
+        return page.size();
+      }
+    };
+
+    RecordCategory sourceEntity = null;
+    if (parameters.includeSource()) {
+      FileInfo info = fileFolderService.getFileInfo(parentNodeRef);
+      sourceEntity =
+        nodesModelFactory.createRecordCategory(
+          info,
+          parameters,
+          mapUserInfo,
+          true
+        );
     }
 
-    public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory)
-    {
-        this.searchTypesFactory = searchTypesFactory;
-    }
+    return CollectionWithPagingInfo.asPaged(
+      parameters.getPaging(),
+      nodes,
+      pagingResults.hasMoreItems(),
+      pagingResults.getTotalResultCount().getFirst(),
+      sourceEntity
+    );
+  }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
+  @Override
+  @WebApiDescription(
+    title = "Create one (or more) nodes as children of a record category identified by 'recordCategoryId'"
+  )
+  public List<RecordCategoryChild> create(
+    String recordCategoryId,
+    List<RecordCategoryChild> nodeInfos,
+    Parameters parameters
+  ) {
+    checkNotBlank("recordCategoryId", recordCategoryId);
+    mandatory("nodeInfos", nodeInfos);
+    mandatory("parameters", parameters);
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
+    NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(
+      recordCategoryId,
+      RecordsManagementModel.TYPE_RECORD_CATEGORY
+    );
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+    List<RecordCategoryChild> result = new ArrayList<>(nodeInfos.size());
+    Map<String, UserInfo> mapUserInfo = new HashMap<>();
 
-    @Override
-    @WebApiDescription(title = "Return a paged list of record category children for the container identified by 'recordCategoryId'")
-    public CollectionWithPagingInfo<RecordCategoryChild> readAll(String recordCategoryId, Parameters parameters)
-    {
-        checkNotBlank("recordCategoryId", recordCategoryId);
-        mandatory("parameters", parameters);
-
-        String relativePath = parameters.getParameter(Nodes.PARAM_RELATIVE_PATH);
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY, relativePath, true);
-
-        // list record categories and record folders
-        Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesCategoriesEndpoint(parameters, LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES);
-        Set<QName> assocTypeQNames = Collections.singleton(ContentModel.ASSOC_CONTAINS);
-        List<FilterProp> filterProps = apiUtils.getListChildrenFilterProps(parameters, LIST_RECORD_CATEGORY_CHILDREN_EQUALS_QUERY_PROPERTIES);
-
-        final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef,
-                assocTypeQNames,
-                searchTypeQNames,
-                null,
-                apiUtils.getSortProperties(parameters),
-                filterProps,
-                Util.getPagingRequest(parameters.getPaging()));
-
-        final List<FileInfo> page = pagingResults.getPage();
-        Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<RecordCategoryChild> nodes = new AbstractList<RecordCategoryChild>()
-        {
-            @Override
-            public RecordCategoryChild get(int index)
-            {
-                FileInfo info = page.get(index);
-                return nodesModelFactory.createRecordCategoryChild(info, parameters, mapUserInfo, true);
-            }
-
-            @Override
-            public int size()
-            {
-                return page.size();
-            }
-        };
-
-        RecordCategory sourceEntity = null;
-        if (parameters.includeSource())
-        {
-            FileInfo info = fileFolderService.getFileInfo(parentNodeRef);
-            sourceEntity = nodesModelFactory.createRecordCategory(info, parameters, mapUserInfo, true);
+    RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>() {
+      public List<NodeRef> execute() {
+        List<NodeRef> createdNodes = new LinkedList<>();
+        for (RecordCategoryChild nodeInfo : nodeInfos) {
+          // Resolve the parent node
+          NodeRef nodeParent = parentNodeRef;
+          if (StringUtils.isNoneBlank(nodeInfo.getRelativePath())) {
+            nodeParent =
+              apiUtils.lookupAndValidateRelativePath(
+                parentNodeRef,
+                nodeInfo.getRelativePath(),
+                RecordsManagementModel.TYPE_RECORD_CATEGORY
+              );
+          }
+          // Create the node
+          NodeRef newNode = apiUtils.createRMNode(
+            nodeParent,
+            nodeInfo,
+            parameters
+          );
+          createdNodes.add(newNode);
         }
+        return createdNodes;
+      }
+    };
+    List<NodeRef> createdNodes = transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(callback, false, true);
 
-        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
+    for (NodeRef nodeInfo : createdNodes) {
+      FileInfo info = fileFolderService.getFileInfo(nodeInfo);
+      result.add(
+        nodesModelFactory.createRecordCategoryChild(
+          info,
+          parameters,
+          mapUserInfo,
+          false
+        )
+      );
     }
 
-    @Override
-    @WebApiDescription(title="Create one (or more) nodes as children of a record category identified by 'recordCategoryId'")
-    public List<RecordCategoryChild> create(String recordCategoryId, List<RecordCategoryChild> nodeInfos, Parameters parameters)
-    {
-        checkNotBlank("recordCategoryId", recordCategoryId);
-        mandatory("nodeInfos", nodeInfos);
-        mandatory("parameters", parameters);
+    return result;
+  }
 
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
-
-        List<RecordCategoryChild> result = new ArrayList<>(nodeInfos.size());
-        Map<String, UserInfo> mapUserInfo = new HashMap<>();
-
-        RetryingTransactionCallback<List<NodeRef>> callback = new RetryingTransactionCallback<List<NodeRef>>()
-        {
-            public List<NodeRef> execute()
-            {
-                List<NodeRef> createdNodes = new LinkedList<>();
-                for (RecordCategoryChild nodeInfo : nodeInfos)
-                {
-                    // Resolve the parent node
-                    NodeRef nodeParent = parentNodeRef;
-                    if (StringUtils.isNoneBlank(nodeInfo.getRelativePath()))
-                    {
-                        nodeParent = apiUtils.lookupAndValidateRelativePath(parentNodeRef, nodeInfo.getRelativePath(),
-                                RecordsManagementModel.TYPE_RECORD_CATEGORY);
-                    }
-                    // Create the node
-                    NodeRef newNode =  apiUtils.createRMNode(nodeParent, nodeInfo, parameters);
-                    createdNodes.add(newNode);
-                }
-                return createdNodes;
-            }
-        };
-        List<NodeRef> createdNodes = transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
-
-        for (NodeRef nodeInfo : createdNodes)
-        {
-            FileInfo info = fileFolderService.getFileInfo(nodeInfo);
-            result.add(nodesModelFactory.createRecordCategoryChild(info, parameters, mapUserInfo, false));
-        }
-
-        return result;
-    }
-
-    @Override
-    public RecordCategoryChild create(String entityResourceId, FormData formData, Parameters parameters, WithResponse withResponse)
-    {
-        throw new IntegrityException("Uploading records into record categories is not allowed.", null);
-    }
+  @Override
+  public RecordCategoryChild create(
+    String entityResourceId,
+    FormData formData,
+    Parameters parameters,
+    WithResponse withResponse
+  ) {
+    throw new IntegrityException(
+      "Uploading records into record categories is not allowed.",
+      null
+    );
+  }
 }

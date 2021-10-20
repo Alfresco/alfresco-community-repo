@@ -31,7 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
@@ -47,44 +46,47 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RmActionConditionDefinitionsGet extends DeclarativeWebScript
-{
-    private ActionService actionService;
+public class RmActionConditionDefinitionsGet extends DeclarativeWebScript {
 
-    private RecordsManagementActionService recordsManagementActionService;
+  private ActionService actionService;
 
-    public void setActionService(ActionService actionService)
-    {
-        this.actionService = actionService;
+  private RecordsManagementActionService recordsManagementActionService;
+
+  public void setActionService(ActionService actionService) {
+    this.actionService = actionService;
+  }
+
+  public void setRecordsManagementActionService(
+    RecordsManagementActionService recordsManagementActionService
+  ) {
+    this.recordsManagementActionService = recordsManagementActionService;
+  }
+
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    List<ActionConditionDefinition> dmDefs = actionService.getActionConditionDefinitions();
+    List<RecordsManagementActionCondition> conditions = recordsManagementActionService.getRecordsManagementActionConditions();
+
+    List<ActionConditionDefinition> defs = new ArrayList<>(
+      dmDefs.size() + conditions.size()
+    );
+    defs.addAll(dmDefs);
+    for (RecordsManagementActionCondition condition : conditions) {
+      if (condition.isPublicCondition()) {
+        defs.add(condition.getRecordsManagementActionConditionDefinition());
+      }
     }
 
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
-        this.recordsManagementActionService = recordsManagementActionService;
-    }
+    Map<String, Object> model = new HashMap<>();
+    model.put("actionconditiondefinitions", defs);
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        List<ActionConditionDefinition> dmDefs = actionService.getActionConditionDefinitions();
-        List<RecordsManagementActionCondition> conditions = recordsManagementActionService.getRecordsManagementActionConditions();
-
-        List<ActionConditionDefinition> defs = new ArrayList<>(dmDefs.size() + conditions.size());
-        defs.addAll(dmDefs);
-        for (RecordsManagementActionCondition condition: conditions)
-        {
-            if (condition.isPublicCondition())
-            {
-                defs.add(condition.getRecordsManagementActionConditionDefinition());
-            }
-        }
-
-        Map<String, Object> model = new HashMap<>();
-        model.put("actionconditiondefinitions", defs);
-
-        return model;
-    }
+    return model;
+  }
 }

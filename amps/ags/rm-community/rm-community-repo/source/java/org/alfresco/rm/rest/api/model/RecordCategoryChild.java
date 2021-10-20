@@ -33,71 +33,61 @@ package org.alfresco.rm.rest.api.model;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class RecordCategoryChild extends RMNode
-{
-    public static final String PARAM_IS_RECORD_FOLDER = "isRecordFolder";
-    public static final String PARAM_IS_RECORD_CATEGORY = "isRecordCategory";
-    public static final String PARAM_IS_CLOSED = "isClosed";
-    public static final String PARAM_HAS_RETENTION_SCHEDULE = "hasRetentionSchedule";
+public class RecordCategoryChild extends RMNode {
 
-    private Boolean isRecordCategory;
-    private Boolean isRecordFolder;
-    private Boolean hasRetentionSchedule;
-    private String relativePath;
-    private Boolean isClosed;
+  public static final String PARAM_IS_RECORD_FOLDER = "isRecordFolder";
+  public static final String PARAM_IS_RECORD_CATEGORY = "isRecordCategory";
+  public static final String PARAM_IS_CLOSED = "isClosed";
+  public static final String PARAM_HAS_RETENTION_SCHEDULE =
+    "hasRetentionSchedule";
 
-    public RecordCategoryChild()
-    {
-        //Default constructor
-    }
+  private Boolean isRecordCategory;
+  private Boolean isRecordFolder;
+  private Boolean hasRetentionSchedule;
+  private String relativePath;
+  private Boolean isClosed;
 
-    public Boolean getIsRecordCategory()
-    {
-        return isRecordCategory;
-    }
+  public RecordCategoryChild() {
+    //Default constructor
+  }
 
-    public void setIsRecordCategory(Boolean isRecordCategory)
-    {
-        this.isRecordCategory = isRecordCategory;
-    }
+  public Boolean getIsRecordCategory() {
+    return isRecordCategory;
+  }
 
-    public Boolean getIsRecordFolder()
-    {
-        return isRecordFolder;
-    }
+  public void setIsRecordCategory(Boolean isRecordCategory) {
+    this.isRecordCategory = isRecordCategory;
+  }
 
-    public void setIsRecordFolder(Boolean isRecordFolder)
-    {
-        this.isRecordFolder = isRecordFolder;
-    }
+  public Boolean getIsRecordFolder() {
+    return isRecordFolder;
+  }
 
-    public Boolean getHasRetentionSchedule()
-    {
-        return hasRetentionSchedule;
-    }
+  public void setIsRecordFolder(Boolean isRecordFolder) {
+    this.isRecordFolder = isRecordFolder;
+  }
 
-    public void setHasRetentionSchedule(Boolean hasRetentionSchedule)
-    {
-        this.hasRetentionSchedule = hasRetentionSchedule;
-    }
+  public Boolean getHasRetentionSchedule() {
+    return hasRetentionSchedule;
+  }
 
-    public String getRelativePath()
-    {
-        return relativePath;
-    }
+  public void setHasRetentionSchedule(Boolean hasRetentionSchedule) {
+    this.hasRetentionSchedule = hasRetentionSchedule;
+  }
 
-    public void setRelativePath(String relativePath)
-    {
-        this.relativePath = relativePath;
-    }
+  public String getRelativePath() {
+    return relativePath;
+  }
 
-    public Boolean getIsClosed()
-    {
-        return isClosed;
-    }
+  public void setRelativePath(String relativePath) {
+    this.relativePath = relativePath;
+  }
 
-    public void setIsClosed(Boolean isClosed)
-    {
-        this.isClosed = isClosed;
-    }
+  public Boolean getIsClosed() {
+    return isClosed;
+  }
+
+  public void setIsClosed(Boolean isClosed) {
+    this.isClosed = isClosed;
+  }
 }

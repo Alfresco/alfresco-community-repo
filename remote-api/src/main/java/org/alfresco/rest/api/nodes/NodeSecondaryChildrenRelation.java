@@ -4,27 +4,28 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 package org.alfresco.rest.api.nodes;
 
+import java.util.List;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
@@ -41,8 +42,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
-import java.util.List;
-
 /**
  * Node Secondary Children
  *
@@ -56,99 +55,120 @@ import java.util.List;
  *
  * @author janv
  */
-@RelationshipResource(name = "secondary-children",  entityResource = NodesEntityResource.class, title = "Node Secondary Children")
-public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implements
-        RelationshipResourceAction.Read<Node>,
-        RelationshipResourceAction.Create<AssocChild>,
-        RelationshipResourceAction.Delete
-{
-    /**
-     * List secondary children only
-     *
-     * @param parentNodeId String id of parent node
-     */
-    @Override
-    @WebApiDescription(title = "Return a paged list of secondary child nodes based on child assocs")
-    public CollectionWithPagingInfo<Node> readAll(String parentNodeId, Parameters parameters)
-    {
-        NodeRef parentNodeRef = nodes.validateOrLookupNode(parentNodeId, null);
+@RelationshipResource(
+  name = "secondary-children",
+  entityResource = NodesEntityResource.class,
+  title = "Node Secondary Children"
+)
+public class NodeSecondaryChildrenRelation
+  extends AbstractNodeRelation
+  implements
+    RelationshipResourceAction.Read<Node>,
+    RelationshipResourceAction.Create<AssocChild>,
+    RelationshipResourceAction.Delete {
 
-        QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
+  /**
+   * List secondary children only
+   *
+   * @param parentNodeId String id of parent node
+   */
+  @Override
+  @WebApiDescription(
+    title = "Return a paged list of secondary child nodes based on child assocs"
+  )
+  public CollectionWithPagingInfo<Node> readAll(
+    String parentNodeId,
+    Parameters parameters
+  ) {
+    NodeRef parentNodeRef = nodes.validateOrLookupNode(parentNodeId, null);
 
-        List<ChildAssociationRef> childAssocRefs = null;
-        if (assocTypeQNameParam.equals(RegexQNamePattern.MATCH_ALL))
-        {
-            childAssocRefs = nodeService.getChildAssocs(parentNodeRef);
-        }
-        else
-        {
-            childAssocRefs = nodeService.getChildAssocs(parentNodeRef, assocTypeQNameParam, RegexQNamePattern.MATCH_ALL);
-        }
+    QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 
-        return listNodeChildAssocs(childAssocRefs, parameters, false, true);
+    List<ChildAssociationRef> childAssocRefs = null;
+    if (assocTypeQNameParam.equals(RegexQNamePattern.MATCH_ALL)) {
+      childAssocRefs = nodeService.getChildAssocs(parentNodeRef);
+    } else {
+      childAssocRefs =
+        nodeService.getChildAssocs(
+          parentNodeRef,
+          assocTypeQNameParam,
+          RegexQNamePattern.MATCH_ALL
+        );
     }
 
-    @Override
-    @WebApiDescription(title="Add secondary child assoc")
-    public List<AssocChild> create(String parentNodeId, List<AssocChild> entities, Parameters parameters)
-    {
-        return nodes.addChildren(parentNodeId, entities);
+    return listNodeChildAssocs(childAssocRefs, parameters, false, true);
+  }
+
+  @Override
+  @WebApiDescription(title = "Add secondary child assoc")
+  public List<AssocChild> create(
+    String parentNodeId,
+    List<AssocChild> entities,
+    Parameters parameters
+  ) {
+    return nodes.addChildren(parentNodeId, entities);
+  }
+
+  @Override
+  @WebApiDescription(title = "Remove secondary child assoc(s)")
+  public void delete(
+    String parentNodeId,
+    String childNodeId,
+    Parameters parameters
+  ) {
+    NodeRef parentNodeRef = nodes.validateNode(parentNodeId);
+    NodeRef childNodeRef = nodes.validateNode(childNodeId);
+
+    String assocTypeStr = parameters.getParameter(Nodes.PARAM_ASSOC_TYPE);
+    QName assocTypeQName = nodes.getAssocType(assocTypeStr, false);
+
+    List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(
+      parentNodeRef
+    );
+
+    boolean found = false;
+
+    for (ChildAssociationRef assocRef : assocRefs) {
+      if (!assocRef.getChildRef().equals(childNodeRef)) {
+        continue;
+      }
+
+      if (assocTypeQName != null) {
+        if (assocTypeQName.equals(assocRef.getTypeQName())) {
+          if (assocRef.isPrimary()) {
+            throw new InvalidArgumentException(
+              "Cannot use secondary-children to delete primary assoc: " +
+              parentNodeId +
+              "," +
+              assocTypeStr +
+              "," +
+              childNodeId
+            );
+          }
+
+          boolean existed = nodeService.removeSecondaryChildAssociation(
+            assocRef
+          );
+          if (existed) {
+            found = true;
+          }
+        }
+      } else {
+        if (!assocRef.isPrimary()) {
+          boolean existed = nodeService.removeSecondaryChildAssociation(
+            assocRef
+          );
+          if (existed) {
+            found = true;
+          }
+        }
+      }
     }
 
-    @Override
-    @WebApiDescription(title = "Remove secondary child assoc(s)")
-    public void delete(String parentNodeId, String childNodeId, Parameters parameters)
-    {
-        NodeRef parentNodeRef = nodes.validateNode(parentNodeId);
-        NodeRef childNodeRef = nodes.validateNode(childNodeId);
-
-        String assocTypeStr = parameters.getParameter(Nodes.PARAM_ASSOC_TYPE);
-        QName assocTypeQName = nodes.getAssocType(assocTypeStr, false);
-
-        List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(parentNodeRef);
-
-        boolean found = false;
-
-        for (ChildAssociationRef assocRef : assocRefs)
-        {
-            if (! assocRef.getChildRef().equals(childNodeRef))
-            {
-                continue;
-            }
-
-            if (assocTypeQName != null)
-            {
-                if (assocTypeQName.equals(assocRef.getTypeQName()))
-                {
-                    if (assocRef.isPrimary())
-                    {
-                        throw new InvalidArgumentException("Cannot use secondary-children to delete primary assoc: "
-                            +parentNodeId+","+assocTypeStr+","+childNodeId);
-                    }
-
-                    boolean existed = nodeService.removeSecondaryChildAssociation(assocRef);
-                    if (existed)
-                    {
-                        found = true;
-                    }
-                }
-            }
-            else
-            {
-                if (! assocRef.isPrimary())
-                {
-                    boolean existed = nodeService.removeSecondaryChildAssociation(assocRef);
-                    if (existed)
-                    {
-                        found = true;
-                    }
-                }
-            }
-        }
-
-        if (! found)
-        {
-            throw new EntityNotFoundException(parentNodeId+","+assocTypeStr+","+childNodeId);
-        }
+    if (!found) {
+      throw new EntityNotFoundException(
+        parentNodeId + "," + assocTypeStr + "," + childNodeId
+      );
     }
+  }
 }

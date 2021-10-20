@@ -32,7 +32,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -47,335 +46,333 @@ import org.json.JSONObject;
  */
 @AlfrescoPublicApi
 @SuppressWarnings("serial")
-public class RecordsManagementSearchParameters
-{
-    /** Default sort order */
-    private static final List<SortItem> DEFAULT_SORT_ORDER = new ArrayList<SortItem>()
+public class RecordsManagementSearchParameters {
+
+  /** Default sort order */
+  private static final List<SortItem> DEFAULT_SORT_ORDER = new ArrayList<SortItem>() {
     {
-        {
-            add(new SortItem(ContentModel.PROP_NAME, Boolean.TRUE));
+      add(new SortItem(ContentModel.PROP_NAME, Boolean.TRUE));
+    }
+  };
+
+  /** Default templates */
+  private static final Map<String, String> DEFAULT_TEMPLATES = new HashMap<String, String>() {
+    {
+      put("keywords", "%(cm:name cm:title cm:description TEXT)");
+      put("name", "%(cm:name)");
+      put("title", "%(cm:title)");
+      put("description", "%(cm:description)");
+      put("creator", "%(cm:creator)");
+      put("created", "%(cm:created)");
+      put("modifier", "%(cm:modifier)");
+      put("modified", "%(cm:modified)");
+      put("author", "%(cm:author)");
+      put("markings", "%(rmc:supplementalMarkingList)");
+      put("dispositionEvents", "%(rma:recordSearchDispositionEvents)");
+      put("dispositionActionName", "%(rma:recordSearchDispositionActionName)");
+      put("dispositionActionAsOf", "%(rma:recordSearchDispositionActionAsOf)");
+      put(
+        "dispositionEventsEligible",
+        "%(rma:recordSearchDispositionEventsEligible)"
+      );
+      put("dispositionPeriod", "%(rma:recordSearchDispositionPeriod)");
+      put(
+        "hasDispositionSchedule",
+        "%(rma:recordSearchHasDispositionSchedule)"
+      );
+      put(
+        "dispositionInstructions",
+        "%(rma:recordSearchDispositionInstructions)"
+      );
+      put("dispositionAuthority", "%(rma:recordSearchDispositionAuthority)");
+      put(
+        "vitalRecordReviewPeriod",
+        "%(rma:recordSearchVitalRecordReviewPeriod)"
+      );
+    }
+  };
+
+  /** Default included container types */
+  private static final List<QName> DEFAULT_INCLUDED_CONTAINER_TYPES = Collections.emptyList();
+
+  /** Max items */
+  private int maxItems;
+
+  private boolean includeRecords = true;
+  private boolean includeUndeclaredRecords = false;
+  private boolean includeVitalRecords = false;
+  private boolean includeRecordFolders = true;
+  private boolean includeFrozen = false;
+  private boolean includeCutoff = false;
+
+  private List<QName> includedContainerTypes = DEFAULT_INCLUDED_CONTAINER_TYPES;
+  private List<SortItem> sortOrder = DEFAULT_SORT_ORDER;
+  private Map<String, String> templates = DEFAULT_TEMPLATES;
+
+  private static final String JSON_MAXITEMS = "maxitems";
+  private static final String JSON_RECORDS = "records";
+  private static final String JSON_UNDECLAREDRECORDS = "undeclaredrecords";
+  private static final String JSON_VITALRECORDS = "vitalrecords";
+  private static final String JSON_RECORDFOLDERES = "recordfolders";
+  private static final String JSON_FROZEN = "frozen";
+  private static final String JSON_CUTOFF = "cutoff";
+  private static final String JSON_CONTAINERTYPES = "containertypes";
+  private static final String JSON_SORT = "sort";
+  private static final String JSON_FIELD = "field";
+  private static final String JSON_ASCENDING = "ascending";
+
+  /**
+   * {
+   *    "maxItems" : 500,
+   *    "records" : true,
+   *    "undeclaredrecords" : false,
+   *    "vitalrecords" : false,
+   *    "recordfolders" : false,
+   *    "frozen" : false,
+   *    "cutoff" : false,
+   *    "containertypes" :
+   *    [
+   *       "rma:recordSeries",
+   *       "rma:recordCategory"
+   *    ]
+   *    "sort" :
+   *    [
+   *       {
+   *          "field" : "cm:name",
+   *          "ascending" : true
+   *       }
+   *    ]
+   * }
+   */
+  public static RecordsManagementSearchParameters createFromJSON(
+    String json,
+    NamespaceService namespaceService
+  ) {
+    try {
+      JSONObject jsonObject = new JSONObject(json);
+      return RecordsManagementSearchParameters.createFromJSON(
+        jsonObject,
+        namespaceService
+      );
+    } catch (JSONException e) {
+      throw new AlfrescoRuntimeException(
+        "Unable to create records management search parameters from json string.  " +
+        json,
+        e
+      );
+    }
+  }
+
+  /**
+   *
+   * @param jsonObject
+   * @return
+   */
+  public static RecordsManagementSearchParameters createFromJSON(
+    JSONObject jsonObject,
+    NamespaceService namespaceService
+  ) {
+    try {
+      RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
+
+      // Get the search parameter properties
+      if (jsonObject.has(JSON_MAXITEMS)) {
+        searchParameters.setMaxItems(jsonObject.getInt(JSON_MAXITEMS));
+      }
+      if (jsonObject.has(JSON_RECORDS)) {
+        searchParameters.setIncludeRecords(jsonObject.getBoolean(JSON_RECORDS));
+      }
+      if (jsonObject.has(JSON_UNDECLAREDRECORDS)) {
+        searchParameters.setIncludeUndeclaredRecords(
+          jsonObject.getBoolean(JSON_UNDECLAREDRECORDS)
+        );
+      }
+      if (jsonObject.has(JSON_VITALRECORDS)) {
+        searchParameters.setIncludeVitalRecords(
+          jsonObject.getBoolean(JSON_VITALRECORDS)
+        );
+      }
+      if (jsonObject.has(JSON_RECORDFOLDERES)) {
+        searchParameters.setIncludeRecordFolders(
+          jsonObject.getBoolean(JSON_RECORDFOLDERES)
+        );
+      }
+      if (jsonObject.has(JSON_FROZEN)) {
+        searchParameters.setIncludeFrozen(jsonObject.getBoolean(JSON_FROZEN));
+      }
+      if (jsonObject.has(JSON_CUTOFF)) {
+        searchParameters.setIncludeCutoff(jsonObject.getBoolean(JSON_CUTOFF));
+      }
+
+      // Get container types
+      if (jsonObject.has(JSON_CONTAINERTYPES)) {
+        JSONArray jsonArray = jsonObject.getJSONArray(JSON_CONTAINERTYPES);
+        List<QName> containerTypes = new ArrayList<>(jsonArray.length());
+        for (int i = 0; i < jsonArray.length(); i++) {
+          String type = jsonArray.getString(i);
+          containerTypes.add(QName.createQName(type, namespaceService));
         }
-    };
+        searchParameters.setIncludedContainerTypes(containerTypes);
+      }
 
-    /** Default templates */
-    private static final Map<String, String> DEFAULT_TEMPLATES = new HashMap<String, String>()
-    {
-        {
-            put("keywords", "%(cm:name cm:title cm:description TEXT)");
-            put("name", "%(cm:name)");
-            put("title", "%(cm:title)");
-            put("description", "%(cm:description)");
-            put("creator", "%(cm:creator)");
-            put("created", "%(cm:created)");
-            put("modifier", "%(cm:modifier)");
-            put("modified", "%(cm:modified)");
-            put("author", "%(cm:author)");
-            put("markings", "%(rmc:supplementalMarkingList)");
-            put("dispositionEvents", "%(rma:recordSearchDispositionEvents)");
-            put("dispositionActionName", "%(rma:recordSearchDispositionActionName)");
-            put("dispositionActionAsOf", "%(rma:recordSearchDispositionActionAsOf)");
-            put("dispositionEventsEligible", "%(rma:recordSearchDispositionEventsEligible)");
-            put("dispositionPeriod", "%(rma:recordSearchDispositionPeriod)");
-            put("hasDispositionSchedule", "%(rma:recordSearchHasDispositionSchedule)");
-            put("dispositionInstructions", "%(rma:recordSearchDispositionInstructions)");
-            put("dispositionAuthority", "%(rma:recordSearchDispositionAuthority)");
-            put("vitalRecordReviewPeriod", "%(rma:recordSearchVitalRecordReviewPeriod)");
+      // Get sort details
+      if (jsonObject.has(JSON_SORT)) {
+        JSONArray jsonArray = jsonObject.getJSONArray(JSON_SORT);
+        List<SortItem> sortOrder = new ArrayList<>(jsonArray.length());
+        for (int i = 0; i < jsonArray.length(); i++) {
+          JSONObject sortJSONObject = jsonArray.getJSONObject(i);
+          if (
+            sortJSONObject.has(JSON_FIELD) && sortJSONObject.has(JSON_ASCENDING)
+          ) {
+            sortOrder.add(
+              new SortItem(
+                QName.createQName(
+                  sortJSONObject.getString(JSON_FIELD),
+                  namespaceService
+                ),
+                sortJSONObject.getBoolean(JSON_ASCENDING)
+              )
+            );
+          }
         }
-    };
+        searchParameters.setSortOrder(sortOrder);
+      }
 
-    /** Default included container types */
-    private static final List<QName> DEFAULT_INCLUDED_CONTAINER_TYPES = Collections.emptyList();
-
-    /** Max items */
-    private int maxItems;
-
-    private boolean includeRecords = true;
-    private boolean includeUndeclaredRecords = false;
-    private boolean includeVitalRecords = false;
-    private boolean includeRecordFolders = true;
-    private boolean includeFrozen = false;
-    private boolean includeCutoff = false;
-
-    private List<QName> includedContainerTypes = DEFAULT_INCLUDED_CONTAINER_TYPES;
-    private List<SortItem> sortOrder = DEFAULT_SORT_ORDER;
-    private Map<String, String> templates = DEFAULT_TEMPLATES;
-
-    private static final String JSON_MAXITEMS = "maxitems";
-    private static final String JSON_RECORDS = "records";
-    private static final String JSON_UNDECLAREDRECORDS = "undeclaredrecords";
-    private static final String JSON_VITALRECORDS = "vitalrecords";
-    private static final String JSON_RECORDFOLDERES = "recordfolders";
-    private static final String JSON_FROZEN = "frozen";
-    private static final String JSON_CUTOFF = "cutoff";
-    private static final String JSON_CONTAINERTYPES = "containertypes";
-    private static final String JSON_SORT = "sort";
-    private static final String JSON_FIELD = "field";
-    private static final String JSON_ASCENDING = "ascending";
-
-    /**
-     * {
-     *    "maxItems" : 500,
-     *    "records" : true,
-     *    "undeclaredrecords" : false,
-     *    "vitalrecords" : false,
-     *    "recordfolders" : false,
-     *    "frozen" : false,
-     *    "cutoff" : false,
-     *    "containertypes" :
-     *    [
-     *       "rma:recordSeries",
-     *       "rma:recordCategory"
-     *    ]
-     *    "sort" :
-     *    [
-     *       {
-     *          "field" : "cm:name",
-     *          "ascending" : true
-     *       }
-     *    ]
-     * }
-     */
-    public static RecordsManagementSearchParameters createFromJSON(String json, NamespaceService namespaceService)
-    {
-        try
-        {
-            JSONObject jsonObject = new JSONObject(json);
-            return RecordsManagementSearchParameters.createFromJSON(jsonObject, namespaceService);
-        }
-        catch (JSONException e)
-        {
-            throw new AlfrescoRuntimeException("Unable to create records management search parameters from json string.  " + json, e);
-        }
+      return searchParameters;
+    } catch (JSONException e) {
+      throw new AlfrescoRuntimeException(
+        "Unable to create records management search parameters from json string.  " +
+        jsonObject.toString(),
+        e
+      );
     }
+  }
 
-    /**
-     *
-     * @param jsonObject
-     * @return
-     */
-    public static RecordsManagementSearchParameters createFromJSON(JSONObject jsonObject, NamespaceService namespaceService)
-    {
-        try
-        {
-            RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
+  /**
+   *
+   * @return
+   */
+  public String toJSONString(NamespaceService namespaceService) {
+    return toJSONObject(namespaceService).toString();
+  }
 
-            // Get the search parameter properties
-            if (jsonObject.has(JSON_MAXITEMS))
-            {
-                searchParameters.setMaxItems(jsonObject.getInt(JSON_MAXITEMS));
-            }
-            if (jsonObject.has(JSON_RECORDS))
-            {
-                searchParameters.setIncludeRecords(jsonObject.getBoolean(JSON_RECORDS));
-            }
-            if (jsonObject.has(JSON_UNDECLAREDRECORDS))
-            {
-                searchParameters.setIncludeUndeclaredRecords(jsonObject.getBoolean(JSON_UNDECLAREDRECORDS));
-            }
-            if (jsonObject.has(JSON_VITALRECORDS))
-            {
-                searchParameters.setIncludeVitalRecords(jsonObject.getBoolean(JSON_VITALRECORDS));
-            }
-            if (jsonObject.has(JSON_RECORDFOLDERES))
-            {
-                searchParameters.setIncludeRecordFolders(jsonObject.getBoolean(JSON_RECORDFOLDERES));
-            }
-            if (jsonObject.has(JSON_FROZEN))
-            {
-                searchParameters.setIncludeFrozen(jsonObject.getBoolean(JSON_FROZEN));
-            }
-            if (jsonObject.has(JSON_CUTOFF))
-            {
-                searchParameters.setIncludeCutoff(jsonObject.getBoolean(JSON_CUTOFF));
-            }
+  public JSONObject toJSONObject(NamespaceService namespaceService) {
+    try {
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(JSON_MAXITEMS, maxItems);
+      jsonObject.put(JSON_RECORDS, includeRecords);
+      jsonObject.put(JSON_UNDECLAREDRECORDS, includeUndeclaredRecords);
+      jsonObject.put(JSON_VITALRECORDS, includeVitalRecords);
+      jsonObject.put(JSON_RECORDFOLDERES, includeRecordFolders);
+      jsonObject.put(JSON_FROZEN, includeFrozen);
+      jsonObject.put(JSON_CUTOFF, includeCutoff);
 
-            // Get container types
-            if (jsonObject.has(JSON_CONTAINERTYPES))
-            {
-                JSONArray jsonArray = jsonObject.getJSONArray(JSON_CONTAINERTYPES);
-                List<QName> containerTypes = new ArrayList<>(jsonArray.length());
-                for (int i = 0; i < jsonArray.length(); i++)
-                {
-                    String type = jsonArray.getString(i);
-                    containerTypes.add(QName.createQName(type, namespaceService));
-                }
-                searchParameters.setIncludedContainerTypes(containerTypes);
-            }
+      // Included containers
+      JSONArray jsonArray = new JSONArray();
+      for (QName containerType : includedContainerTypes) {
+        jsonArray.put(containerType.toPrefixString(namespaceService));
+      }
+      jsonObject.put(JSON_CONTAINERTYPES, jsonArray);
 
-            // Get sort details
-            if (jsonObject.has(JSON_SORT))
-            {
-                JSONArray jsonArray = jsonObject.getJSONArray(JSON_SORT);
-                List<SortItem> sortOrder = new ArrayList<>(jsonArray.length());
-                for (int i = 0; i < jsonArray.length(); i++)
-                {
-                    JSONObject sortJSONObject = jsonArray.getJSONObject(i);
-                    if (sortJSONObject.has(JSON_FIELD) &&
-                        sortJSONObject.has(JSON_ASCENDING))
-                    {
-                        sortOrder.add(new SortItem(
-                                QName.createQName(sortJSONObject.getString(JSON_FIELD), namespaceService),
-                                sortJSONObject.getBoolean(JSON_ASCENDING)));
-                    }
-                }
-                searchParameters.setSortOrder(sortOrder);
-            }
+      // Sort
+      JSONArray jsonSortArray = new JSONArray();
+      for (SortItem entry : sortOrder) {
+        JSONObject jsonEntry = new JSONObject();
+        jsonEntry.put(
+          JSON_FIELD,
+          entry.property.toPrefixString(namespaceService)
+        );
+        jsonEntry.put(JSON_ASCENDING, entry.assc);
+        jsonSortArray.put(jsonEntry);
+      }
+      jsonObject.put(JSON_SORT, jsonSortArray);
 
-            return searchParameters;
-        }
-        catch (JSONException e)
-        {
-            throw new AlfrescoRuntimeException("Unable to create records management search parameters from json string.  " + jsonObject.toString(), e);
-        }
+      return jsonObject;
+    } catch (JSONException e) {
+      throw new AlfrescoRuntimeException(
+        "Unable to generate json string for records management search parameters.",
+        e
+      );
     }
+  }
 
-    /**
-     *
-     * @return
-     */
-    public String toJSONString(NamespaceService namespaceService)
-    {
-        return toJSONObject(namespaceService).toString();
-    }
+  public void setMaxItems(int maxItems) {
+    this.maxItems = maxItems;
+  }
 
-    public JSONObject toJSONObject(NamespaceService namespaceService)
-    {
-        try
-        {
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put(JSON_MAXITEMS, maxItems);
-            jsonObject.put(JSON_RECORDS, includeRecords);
-            jsonObject.put(JSON_UNDECLAREDRECORDS, includeUndeclaredRecords);
-            jsonObject.put(JSON_VITALRECORDS, includeVitalRecords);
-            jsonObject.put(JSON_RECORDFOLDERES, includeRecordFolders);
-            jsonObject.put(JSON_FROZEN, includeFrozen);
-            jsonObject.put(JSON_CUTOFF, includeCutoff);
+  public int getMaxItems() {
+    return maxItems;
+  }
 
-            // Included containers
-            JSONArray jsonArray = new JSONArray();
-            for (QName containerType : includedContainerTypes)
-            {
-                jsonArray.put(containerType.toPrefixString(namespaceService));
-            }
-            jsonObject.put(JSON_CONTAINERTYPES, jsonArray);
+  public void setSortOrder(List<SortItem> sortOrder) {
+    this.sortOrder = sortOrder;
+  }
 
-            // Sort
-            JSONArray jsonSortArray = new JSONArray();
-            for (SortItem entry : sortOrder)
-            {
-                JSONObject jsonEntry = new JSONObject();
-                jsonEntry.put(JSON_FIELD, entry.property.toPrefixString(namespaceService));
-                jsonEntry.put(JSON_ASCENDING, entry.assc);
-                jsonSortArray.put(jsonEntry);
-            }
-            jsonObject.put(JSON_SORT, jsonSortArray);
+  public List<SortItem> getSortOrder() {
+    return sortOrder;
+  }
 
-            return jsonObject;
-        }
-        catch (JSONException e)
-        {
-            throw new AlfrescoRuntimeException("Unable to generate json string for records management search parameters.", e);
-        }
-    }
+  public void setTemplates(Map<String, String> templates) {
+    this.templates = templates;
+  }
 
-    public void setMaxItems(int maxItems)
-    {
-        this.maxItems = maxItems;
-    }
+  public Map<String, String> getTemplates() {
+    return templates;
+  }
 
-    public int getMaxItems()
-    {
-        return maxItems;
-    }
+  public void setIncludeRecords(boolean includeRecords) {
+    this.includeRecords = includeRecords;
+  }
 
-    public void setSortOrder(List<SortItem> sortOrder)
-    {
-        this.sortOrder = sortOrder;
-    }
+  public boolean isIncludeRecords() {
+    return includeRecords;
+  }
 
-    public List<SortItem> getSortOrder()
-    {
-        return sortOrder;
-    }
+  public void setIncludeUndeclaredRecords(boolean includeUndeclaredRecords) {
+    this.includeUndeclaredRecords = includeUndeclaredRecords;
+  }
 
-    public void setTemplates(Map<String, String> templates)
-    {
-        this.templates = templates;
-    }
+  public boolean isIncludeUndeclaredRecords() {
+    return includeUndeclaredRecords;
+  }
 
-    public Map<String, String> getTemplates()
-    {
-        return templates;
-    }
+  public void setIncludeVitalRecords(boolean includeVitalRecords) {
+    this.includeVitalRecords = includeVitalRecords;
+  }
 
-    public void setIncludeRecords(boolean includeRecords)
-    {
-        this.includeRecords = includeRecords;
-    }
+  public boolean isIncludeVitalRecords() {
+    return includeVitalRecords;
+  }
 
-    public boolean isIncludeRecords()
-    {
-        return includeRecords;
-    }
+  public void setIncludeRecordFolders(boolean includeRecordFolders) {
+    this.includeRecordFolders = includeRecordFolders;
+  }
 
-    public void setIncludeUndeclaredRecords(boolean includeUndeclaredRecords)
-    {
-        this.includeUndeclaredRecords = includeUndeclaredRecords;
-    }
+  public boolean isIncludeRecordFolders() {
+    return includeRecordFolders;
+  }
 
-    public boolean isIncludeUndeclaredRecords()
-    {
-        return includeUndeclaredRecords;
-    }
+  public void setIncludeFrozen(boolean includeFrozen) {
+    this.includeFrozen = includeFrozen;
+  }
 
-    public void setIncludeVitalRecords(boolean includeVitalRecords)
-    {
-        this.includeVitalRecords = includeVitalRecords;
-    }
+  public boolean isIncludeFrozen() {
+    return includeFrozen;
+  }
 
-    public boolean isIncludeVitalRecords()
-    {
-        return includeVitalRecords;
-    }
+  public void setIncludeCutoff(boolean includeCutoff) {
+    this.includeCutoff = includeCutoff;
+  }
 
-    public void setIncludeRecordFolders(boolean includeRecordFolders)
-    {
-        this.includeRecordFolders = includeRecordFolders;
-    }
+  public boolean isIncludeCutoff() {
+    return includeCutoff;
+  }
 
-    public boolean isIncludeRecordFolders()
-    {
-        return includeRecordFolders;
-    }
+  public void setIncludedContainerTypes(List<QName> includedContainerTypes) {
+    this.includedContainerTypes = includedContainerTypes;
+  }
 
-    public void setIncludeFrozen(boolean includeFrozen)
-    {
-        this.includeFrozen = includeFrozen;
-    }
-
-    public boolean isIncludeFrozen()
-    {
-        return includeFrozen;
-    }
-
-    public void setIncludeCutoff(boolean includeCutoff)
-    {
-        this.includeCutoff = includeCutoff;
-    }
-
-    public boolean isIncludeCutoff()
-    {
-        return includeCutoff;
-    }
-
-    public void setIncludedContainerTypes(List<QName> includedContainerTypes)
-    {
-        this.includedContainerTypes = includedContainerTypes;
-    }
-
-    public List<QName> getIncludedContainerTypes()
-    {
-        return includedContainerTypes;
-    }
-    
+  public List<QName> getIncludedContainerTypes() {
+    return includedContainerTypes;
+  }
 }

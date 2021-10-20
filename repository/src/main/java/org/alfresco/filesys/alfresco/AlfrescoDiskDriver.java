@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -44,82 +44,76 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Alfresco Disk Driver Base Class
- * 
+ *
  * <p>Provides common code to the Alfresco filesystem implementations.
  *
  * @author gkspencer
  */
 public abstract class AlfrescoDiskDriver implements ExtendedDiskInterface {
 
-    // Logging
-    
-    private static final Log logger = LogFactory.getLog(AlfrescoDiskDriver.class);
-    
-    // Service registry for desktop actions
-    
-    private ServiceRegistry m_serviceRegistry;
-    
-    //  Transaction service
-    
-    protected TransactionService m_transactionService;
+  // Logging
 
-    /**
-     * Return the service registry
-     * 
-     * @return ServiceRegistry
-     */
-    public final ServiceRegistry getServiceRegistry()
-    {
-        return m_serviceRegistry;
-    }
+  private static final Log logger = LogFactory.getLog(AlfrescoDiskDriver.class);
 
-    /**
-     * Return the transaction service
-     * 
-     * @return TransactionService
-     */
-    public final TransactionService getTransactionService()
-    {
-        return m_transactionService;
-    }
-    
-    /**
-     * Set the service registry
-     * 
-     * @param serviceRegistry ServiceRegistry
-     */
-    public void setServiceRegistry(ServiceRegistry serviceRegistry)
-    {
-        m_serviceRegistry = serviceRegistry;
-    }
-    
-    /**
-     * @param transactionService the transaction service
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        m_transactionService = transactionService;
-    }
+  // Service registry for desktop actions
 
-    /**
-     * Registers a device context object for this instance
-     * of the shared device. The same DeviceInterface implementation may be used for multiple
-     * shares. In this base class, we initialize all desktop actions.
-     * 
-     * @param ctx the context
-     * @exception DeviceContextException
-     */
-    public void registerContext(DeviceContext ctx) throws DeviceContextException
-    {
-        if (ctx instanceof AlfrescoContext)
-        {
-            // Enable a standalone state cache on the filesystem
-            
-            AlfrescoContext alfCtx = (AlfrescoContext) ctx;
-            
-            // Initialize the filesystem
-            
-            alfCtx.initialize(this);
-        }
+  private ServiceRegistry m_serviceRegistry;
+
+  //  Transaction service
+
+  protected TransactionService m_transactionService;
+
+  /**
+   * Return the service registry
+   *
+   * @return ServiceRegistry
+   */
+  public final ServiceRegistry getServiceRegistry() {
+    return m_serviceRegistry;
+  }
+
+  /**
+   * Return the transaction service
+   *
+   * @return TransactionService
+   */
+  public final TransactionService getTransactionService() {
+    return m_transactionService;
+  }
+
+  /**
+   * Set the service registry
+   *
+   * @param serviceRegistry ServiceRegistry
+   */
+  public void setServiceRegistry(ServiceRegistry serviceRegistry) {
+    m_serviceRegistry = serviceRegistry;
+  }
+
+  /**
+   * @param transactionService the transaction service
+   */
+  public void setTransactionService(TransactionService transactionService) {
+    m_transactionService = transactionService;
+  }
+
+  /**
+   * Registers a device context object for this instance
+   * of the shared device. The same DeviceInterface implementation may be used for multiple
+   * shares. In this base class, we initialize all desktop actions.
+   *
+   * @param ctx the context
+   * @exception DeviceContextException
+   */
+  public void registerContext(DeviceContext ctx) throws DeviceContextException {
+    if (ctx instanceof AlfrescoContext) {
+      // Enable a standalone state cache on the filesystem
+
+      AlfrescoContext alfCtx = (AlfrescoContext) ctx;
+
+      // Initialize the filesystem
+
+      alfCtx.initialize(this);
     }
+  }
 }

@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
@@ -66,320 +65,330 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordsManagementAdminBase implements RecordsManagementCustomModel
-{
-    /** Logger */
-    protected Log logger = LogFactory.getLog(this.getClass());
+public class RecordsManagementAdminBase
+  implements RecordsManagementCustomModel {
 
-    /** Constants */
-    private static final String SOURCE_TARGET_ID_SEPARATOR = "__";
-    private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "records_management_custom_model");
+  /** Logger */
+  protected Log logger = LogFactory.getLog(this.getClass());
 
-    /** I18N */
-    private static final String MSG_CUSTOM_MODEL_NOT_FOUND = "rm.admin.custom-model-not-found";
-    private static final String MSG_CUSTOM_MODEL_NO_CONTENT = "rm.admin.custom-model-no-content";
-    private static final String MSG_ERROR_WRITE_CUSTOM_MODEL = "rm.admin.error-write-custom-model";
-    private static final String MSG_ERROR_SPLIT_ID = "rm.admin.error-split-id";
+  /** Constants */
+  private static final String SOURCE_TARGET_ID_SEPARATOR = "__";
+  private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef(
+    StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+    "records_management_custom_model"
+  );
 
-    /** Dictionary service */
-    private DictionaryService dictionaryService;
+  /** I18N */
+  private static final String MSG_CUSTOM_MODEL_NOT_FOUND =
+    "rm.admin.custom-model-not-found";
+  private static final String MSG_CUSTOM_MODEL_NO_CONTENT =
+    "rm.admin.custom-model-no-content";
+  private static final String MSG_ERROR_WRITE_CUSTOM_MODEL =
+    "rm.admin.error-write-custom-model";
+  private static final String MSG_ERROR_SPLIT_ID = "rm.admin.error-split-id";
 
-    /** Node service */
-    private NodeService nodeService;
+  /** Dictionary service */
+  private DictionaryService dictionaryService;
 
-    /** Content service */
-    private ContentService contentService;
+  /** Node service */
+  private NodeService nodeService;
 
-    /** Namespace service */
-    private NamespaceService namespaceService;
+  /** Content service */
+  private ContentService contentService;
 
-    /** Dictionary repository bootstrap */
-    private DictionaryRepositoryBootstrap dictionaryRepositoryBootstrap;
+  /** Namespace service */
+  private NamespaceService namespaceService;
 
-    /**
-     * Gets the dictionary service instance
-     *
-     * @return The dictionary service instance
-     */
-    protected DictionaryService getDictionaryService()
-    {
-        return this.dictionaryService;
+  /** Dictionary repository bootstrap */
+  private DictionaryRepositoryBootstrap dictionaryRepositoryBootstrap;
+
+  /**
+   * Gets the dictionary service instance
+   *
+   * @return The dictionary service instance
+   */
+  protected DictionaryService getDictionaryService() {
+    return this.dictionaryService;
+  }
+
+  /**
+   * Gets the node service instance
+   *
+   * @return The node service instance
+   */
+  protected NodeService getNodeService() {
+    return this.nodeService;
+  }
+
+  /**
+   * Gets the content service instance
+   *
+   * @return The content service instance
+   */
+  protected ContentService getContentService() {
+    return this.contentService;
+  }
+
+  /**
+   * Gets the namespace service instance
+   *
+   * @return The namespace service instance
+   */
+  protected NamespaceService getNamespaceService() {
+    return this.namespaceService;
+  }
+
+  /**
+   * Gets the dictionary repository bootstrap instance
+   *
+   * @return The dictionary repository bootstrap instance
+   */
+  protected DictionaryRepositoryBootstrap getDictionaryRepositoryBootstrap() {
+    return this.dictionaryRepositoryBootstrap;
+  }
+
+  /**
+   * Sets the dictionary service instance
+   *
+   * @param dictionaryService The dictionary service instance
+   */
+  public void setDictionaryService(DictionaryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
+
+  /**
+   * Sets the node service instance
+   *
+   * @param nodeService The node service instance
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * Sets the content service instance
+   *
+   * @param contentService The content service instance
+   */
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
+
+  /**
+   * Sets the namespace service instance
+   *
+   * @param namespaceService The namespace service instance
+   */
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
+
+  /**
+   * Sets the dictionary repository bootstrap instance
+   *
+   * @param dictionaryRepositoryBootstrap The dictionary repository bootstrap instance
+   */
+  public void setDictionaryRepositoryBootstrap(
+    DictionaryRepositoryBootstrap dictionaryRepositoryBootstrap
+  ) {
+    this.dictionaryRepositoryBootstrap = dictionaryRepositoryBootstrap;
+  }
+
+  /**
+   * Gets all the custom associations
+   *
+   * @return All custom associations
+   */
+  protected Map<QName, AssociationDefinition> getCustomAssociations() {
+    Map<QName, AssociationDefinition> customAssociations = new HashMap<>();
+
+    AspectDefinition aspectDefn = getDictionaryService()
+      .getAspect(ASPECT_CUSTOM_ASSOCIATIONS);
+    if (aspectDefn != null) {
+      customAssociations.putAll(aspectDefn.getAssociations());
     }
 
-    /**
-     * Gets the node service instance
-     *
-     * @return The node service instance
-     */
-    protected NodeService getNodeService()
-    {
-        return this.nodeService;
-    }
+    return customAssociations;
+  }
 
-    /**
-     * Gets the content service instance
-     *
-     * @return The content service instance
-     */
-    protected ContentService getContentService()
-    {
-        return this.contentService;
-    }
+  /**
+   * Gets the node reference of the custom model
+   *
+   * @param uri The URI of the model namespace
+   * @return The node reference of the custom model
+   */
+  protected NodeRef getCustomModelRef(String uri) {
+    if (
+      (uri.equals("")) || (uri.equals(RecordsManagementModel.RM_CUSTOM_URI))
+    ) {
+      // note: short-cut for "rmc" currently assumes that RM custom model does not define additional namespaces
+      return RM_CUSTOM_MODEL_NODE_REF;
+    } else {
+      // ALF-5875
+      List<NodeRef> modelRefs = getDictionaryRepositoryBootstrap()
+        .getModelRefs();
 
-    /**
-     * Gets the namespace service instance
-     *
-     * @return The namespace service instance
-     */
-    protected NamespaceService getNamespaceService()
-    {
-        return this.namespaceService;
-    }
+      for (NodeRef modelRef : modelRefs) {
+        try {
+          M2Model model = readCustomContentModel(modelRef);
 
-    /**
-     * Gets the dictionary repository bootstrap instance
-     *
-     * @return The dictionary repository bootstrap instance
-     */
-    protected DictionaryRepositoryBootstrap getDictionaryRepositoryBootstrap()
-    {
-        return this.dictionaryRepositoryBootstrap;
-    }
-
-    /**
-     * Sets the dictionary service instance
-     *
-     * @param dictionaryService The dictionary service instance
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * Sets the node service instance
-     *
-     * @param nodeService The node service instance
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
-     * Sets the content service instance
-     *
-     * @param contentService The content service instance
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
-
-    /**
-     * Sets the namespace service instance
-     *
-     * @param namespaceService The namespace service instance
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
-    /**
-     * Sets the dictionary repository bootstrap instance
-     *
-     * @param dictionaryRepositoryBootstrap The dictionary repository bootstrap instance
-     */
-    public void setDictionaryRepositoryBootstrap(DictionaryRepositoryBootstrap dictionaryRepositoryBootstrap)
-    {
-        this.dictionaryRepositoryBootstrap = dictionaryRepositoryBootstrap;
-    }
-
-    /**
-     * Gets all the custom associations
-     *
-     * @return All custom associations
-     */
-    protected Map<QName, AssociationDefinition> getCustomAssociations()
-    {
-        Map<QName, AssociationDefinition> customAssociations = new HashMap<>();
-
-        AspectDefinition aspectDefn = getDictionaryService().getAspect(ASPECT_CUSTOM_ASSOCIATIONS);
-        if (aspectDefn != null)
-        {
-            customAssociations.putAll(aspectDefn.getAssociations());
-        }
-
-        return customAssociations;
-    }
-
-    /**
-     * Gets the node reference of the custom model
-     *
-     * @param uri The URI of the model namespace
-     * @return The node reference of the custom model
-     */
-    protected NodeRef getCustomModelRef(String uri)
-    {
-        if ((uri.equals("")) || (uri.equals(RecordsManagementModel.RM_CUSTOM_URI)))
-        {
-            // note: short-cut for "rmc" currently assumes that RM custom model does not define additional namespaces
-            return RM_CUSTOM_MODEL_NODE_REF;
-        }
-        else
-        {
-            // ALF-5875
-            List<NodeRef> modelRefs = getDictionaryRepositoryBootstrap().getModelRefs();
-
-            for (NodeRef modelRef : modelRefs)
-            {
-                try
-                {
-                    M2Model model = readCustomContentModel(modelRef);
-
-                    for (M2Namespace namespace : model.getNamespaces())
-                    {
-                        if (namespace.getUri().equals(uri))
-                        {
-                            return modelRef;
-                        }
-                    }
-                }
-                catch (DictionaryException de)
-                {
-                    logger.warn("readCustomContentModel: skip model ("+modelRef+") whilst searching for uri ("+uri+"): ", de);
-                }
+          for (M2Namespace namespace : model.getNamespaces()) {
+            if (namespace.getUri().equals(uri)) {
+              return modelRef;
             }
-
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CUSTOM_MODEL_NOT_FOUND, uri));
+          }
+        } catch (DictionaryException de) {
+          logger.warn(
+            "readCustomContentModel: skip model (" +
+            modelRef +
+            ") whilst searching for uri (" +
+            uri +
+            "): ",
+            de
+          );
         }
+      }
+
+      throw new AlfrescoRuntimeException(
+        I18NUtil.getMessage(MSG_CUSTOM_MODEL_NOT_FOUND, uri)
+      );
+    }
+  }
+
+  /**
+   * Gets the deserialized model
+   *
+   * @param modelNodeRef The node reference of the model
+   * @return The deserialized model
+   */
+  protected M2Model readCustomContentModel(NodeRef modelNodeRef) {
+    ContentReader reader = getContentService()
+      .getReader(modelNodeRef, ContentModel.TYPE_CONTENT);
+    if (!reader.exists()) {
+      throw new AlfrescoRuntimeException(
+        I18NUtil.getMessage(
+          MSG_CUSTOM_MODEL_NO_CONTENT,
+          modelNodeRef.toString()
+        )
+      );
     }
 
-    /**
-     * Gets the deserialized model
-     *
-     * @param modelNodeRef The node reference of the model
-     * @return The deserialized model
-     */
-    protected M2Model readCustomContentModel(NodeRef modelNodeRef)
-    {
-        ContentReader reader = getContentService().getReader(modelNodeRef, ContentModel.TYPE_CONTENT);
-        if (!reader.exists())
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CUSTOM_MODEL_NO_CONTENT, modelNodeRef.toString()));
-        }
+    InputStream contentIn = null;
+    M2Model deserializedModel = null;
 
-        InputStream contentIn = null;
-        M2Model deserializedModel = null;
-
-        try
-        {
-            contentIn = reader.getContentInputStream();
-            deserializedModel = M2Model.createModel(contentIn);
+    try {
+      contentIn = reader.getContentInputStream();
+      deserializedModel = M2Model.createModel(contentIn);
+    } finally {
+      try {
+        if (contentIn != null) {
+          contentIn.close();
         }
-        finally
-        {
-            try
-            {
-                if (contentIn != null)
-                {
-                    contentIn.close();
-                }
-            }
-            catch (IOException ignored)
-            {
-                // Intentionally empty.
-            }
-        }
-
-        return deserializedModel;
+      } catch (IOException ignored) {
+        // Intentionally empty.
+      }
     }
 
-    /**
-     * Updates the content of the custom model
-     *
-     * @param modelRef The node reference of the model
-     * @param deserializedModel The deserialized model
-     */
-    protected void writeCustomContentModel(NodeRef modelRef, M2Model deserializedModel)
-    {
-        ContentWriter writer = getContentService().getWriter(modelRef, ContentModel.TYPE_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-        writer.setEncoding("UTF-8");
+    return deserializedModel;
+  }
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        deserializedModel.toXML(baos);
+  /**
+   * Updates the content of the custom model
+   *
+   * @param modelRef The node reference of the model
+   * @param deserializedModel The deserialized model
+   */
+  protected void writeCustomContentModel(
+    NodeRef modelRef,
+    M2Model deserializedModel
+  ) {
+    ContentWriter writer = getContentService()
+      .getWriter(modelRef, ContentModel.TYPE_CONTENT, true);
+    writer.setMimetype(MimetypeMap.MIMETYPE_XML);
+    writer.setEncoding("UTF-8");
 
-        String updatedModelXml;
-        try
-        {
-            updatedModelXml = baos.toString("UTF-8");
-            writer.putContent(updatedModelXml);
-            // putContent closes all resources.
-            // so we don't have to.
-        }
-        catch (UnsupportedEncodingException uex)
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_WRITE_CUSTOM_MODEL, modelRef.toString()), uex);
-        }
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    deserializedModel.toXML(baos);
+
+    String updatedModelXml;
+    try {
+      updatedModelXml = baos.toString("UTF-8");
+      writer.putContent(updatedModelXml);
+      // putContent closes all resources.
+      // so we don't have to.
+    } catch (UnsupportedEncodingException uex) {
+      throw new AlfrescoRuntimeException(
+        I18NUtil.getMessage(MSG_ERROR_WRITE_CUSTOM_MODEL, modelRef.toString()),
+        uex
+      );
+    }
+  }
+
+  /**
+   * Checks if the given association definition title exists
+   *
+   * @param associationDefinitionTitle The association definition title
+   * @return <code>true</code> if the association definition title exists, <code>false</code> otherwise
+   */
+  protected boolean existsTitle(String associationDefinitionTitle) {
+    boolean existsLabel = false;
+    Collection<AssociationDefinition> associationDefinitions = getCustomAssociations()
+      .values();
+    for (AssociationDefinition associationDefinition : associationDefinitions) {
+      if (
+        associationDefinition
+          .getTitle(getDictionaryService())
+          .equalsIgnoreCase(associationDefinitionTitle)
+      ) {
+        existsLabel = true;
+      }
+    }
+    return existsLabel;
+  }
+
+  /**
+   * Splits the association definition title into source text and target text
+   *
+   * @param sourceTargetText The text to split into source text and target text
+   * @return Splited association definition title which includes source text and target text
+   */
+  protected String[] splitAssociationDefinitionTitle(String sourceTargetText) {
+    if (!sourceTargetText.contains(SOURCE_TARGET_ID_SEPARATOR)) {
+      throw new IllegalArgumentException(
+        I18NUtil.getMessage(
+          MSG_ERROR_SPLIT_ID,
+          sourceTargetText,
+          SOURCE_TARGET_ID_SEPARATOR
+        )
+      );
     }
 
-    /**
-     * Checks if the given association definition title exists
-     *
-     * @param associationDefinitionTitle The association definition title
-     * @return <code>true</code> if the association definition title exists, <code>false</code> otherwise
-     */
-    protected boolean existsTitle(String associationDefinitionTitle)
-    {
-        boolean existsLabel = false;
-        Collection<AssociationDefinition> associationDefinitions = getCustomAssociations().values();
-        for (AssociationDefinition associationDefinition : associationDefinitions)
-        {
-            if (associationDefinition.getTitle(getDictionaryService()).equalsIgnoreCase(associationDefinitionTitle))
-            {
-                existsLabel = true;
-            }
-        }
-        return existsLabel;
+    return sourceTargetText.split(SOURCE_TARGET_ID_SEPARATOR);
+  }
+
+  /**
+   * Creates the association definition title form the source text and target text
+   *
+   * @param sourceText The source text
+   * @param targetText The target text
+   * @return The association definition title created from the source text and target text
+   */
+  protected String composeAssociationDefinitionTitle(
+    String sourceText,
+    String targetText
+  ) {
+    if (sourceText.contains(SOURCE_TARGET_ID_SEPARATOR)) {
+      throw new IllegalArgumentException(
+        "sourceId cannot contain '" +
+        SOURCE_TARGET_ID_SEPARATOR +
+        "': " +
+        sourceText
+      );
     }
 
-    /**
-     * Splits the association definition title into source text and target text
-     *
-     * @param sourceTargetText The text to split into source text and target text
-     * @return Splited association definition title which includes source text and target text
-     */
-    protected String[] splitAssociationDefinitionTitle(String sourceTargetText)
-    {
-        if (!sourceTargetText.contains(SOURCE_TARGET_ID_SEPARATOR))
-        {
-            throw new IllegalArgumentException(I18NUtil.getMessage(MSG_ERROR_SPLIT_ID, sourceTargetText, SOURCE_TARGET_ID_SEPARATOR));
-        }
+    StringBuilder sb = new StringBuilder();
+    sb.append(sourceText).append(SOURCE_TARGET_ID_SEPARATOR).append(targetText);
 
-        return sourceTargetText.split(SOURCE_TARGET_ID_SEPARATOR);
-    }
-
-    /**
-     * Creates the association definition title form the source text and target text
-     *
-     * @param sourceText The source text
-     * @param targetText The target text
-     * @return The association definition title created from the source text and target text
-     */
-    protected String composeAssociationDefinitionTitle(String sourceText, String targetText)
-    {
-        if (sourceText.contains(SOURCE_TARGET_ID_SEPARATOR))
-        {
-            throw new IllegalArgumentException("sourceId cannot contain '" + SOURCE_TARGET_ID_SEPARATOR + "': " + sourceText);
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(sourceText)
-            .append(SOURCE_TARGET_ID_SEPARATOR)
-            .append(targetText);
-
-        return sb.toString();
-    }
+    return sb.toString();
+  }
 }

@@ -34,11 +34,14 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * @author Roy Wetherall
  */
-public class TransferredCapabilityCondition extends AbstractCapabilityCondition
-{
-    @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
-        return nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_TRANSFERRED);
-    }
+public class TransferredCapabilityCondition
+  extends AbstractCapabilityCondition {
+
+  @Override
+  public boolean evaluateImpl(NodeRef nodeRef) {
+    return nodeService.hasAspect(
+      nodeRef,
+      RecordsManagementModel.ASPECT_TRANSFERRED
+    );
+  }
 }

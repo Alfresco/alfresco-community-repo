@@ -41,151 +41,134 @@ import org.apache.ibatis.type.TypeHandler;
 
 /**
  * MyBatis 3.x TypeHandler for <tt>java.io.Serializable</tt> to <b>BLOB</b> types.
- * 
+ *
  * @author Derek Hulley, janv
  * @since 4.0
  */
-public class SerializableTypeHandler implements TypeHandler
-{
-    public static final int DEFAULT_SERIALIZABLE_TYPE = Types.LONGVARBINARY;
-    private static volatile int serializableType = DEFAULT_SERIALIZABLE_TYPE;
+public class SerializableTypeHandler implements TypeHandler {
 
-    /**
-     * @see Types
-     */
-    public static void setSerializableType(int serializableType)
-    {
-        SerializableTypeHandler.serializableType = serializableType;
-    }
+  public static final int DEFAULT_SERIALIZABLE_TYPE = Types.LONGVARBINARY;
+  private static volatile int serializableType = DEFAULT_SERIALIZABLE_TYPE;
 
-    /**
-     * @return      Returns the SQL type to use for serializable columns
-     */
-    public static int getSerializableType()
-    {
-        return serializableType;
-    }
+  /**
+   * @see Types
+   */
+  public static void setSerializableType(int serializableType) {
+    SerializableTypeHandler.serializableType = serializableType;
+  }
 
-    /**
-     * @throws DeserializationException if the object could not be deserialized
-     */
-    public Object getResult(ResultSet rs, String columnName) throws SQLException
-    {
-        final Serializable ret;
-        try
-        {
-            InputStream is = rs.getBinaryStream(columnName);
-            if (is == null || rs.wasNull())
-            {
-                return null;
-            }
-            // Get the stream and deserialize
-            ObjectInputStream ois = new ObjectInputStream(is);
-            Object obj = ois.readObject();
-            // Success
-            ret = (Serializable) obj;
-        }
-        catch (Throwable e)
-        {
-            throw new DeserializationException(e);
-        }
-        return ret;
-    }
+  /**
+   * @return      Returns the SQL type to use for serializable columns
+   */
+  public static int getSerializableType() {
+    return serializableType;
+  }
 
-    @Override
-    public Object getResult(ResultSet rs, int columnIndex) throws SQLException
-    {
-        final Serializable ret;
-        try
-        {
-            InputStream is = rs.getBinaryStream(columnIndex);
-            if (is == null || rs.wasNull())
-            {
-                return null;
-            }
-            // Get the stream and deserialize
-            ObjectInputStream ois = new ObjectInputStream(is);
-            Object obj = ois.readObject();
-            // Success
-            ret = (Serializable) obj;
-        }
-        catch (Throwable e)
-        {
-            throw new DeserializationException(e);
-        }
-        return ret;
+  /**
+   * @throws DeserializationException if the object could not be deserialized
+   */
+  public Object getResult(ResultSet rs, String columnName) throws SQLException {
+    final Serializable ret;
+    try {
+      InputStream is = rs.getBinaryStream(columnName);
+      if (is == null || rs.wasNull()) {
+        return null;
+      }
+      // Get the stream and deserialize
+      ObjectInputStream ois = new ObjectInputStream(is);
+      Object obj = ois.readObject();
+      // Success
+      ret = (Serializable) obj;
+    } catch (Throwable e) {
+      throw new DeserializationException(e);
     }
-    
-    public void setParameter(PreparedStatement ps, int i, Object parameter, JdbcType jdbcType) throws SQLException
-    {
-        if (parameter == null)
-        {
-            ps.setNull(i, SerializableTypeHandler.serializableType);
-        }
-        else
-        {
-            try
-            {
-                ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-                ObjectOutputStream oos = new ObjectOutputStream(baos);
-                oos.writeObject(parameter);
-                byte[] bytes = baos.toByteArray();
-                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-                ps.setBinaryStream(i, bais, bytes.length);
-            }
-            catch (Throwable e)
-            {
-                throw new SerializationException(e);
-            }
-        }
-    }
-    
-    public Object getResult(CallableStatement cs, int columnIndex) throws SQLException 
-    {
-        throw new UnsupportedOperationException("Unsupported");
-    }
+    return ret;
+  }
 
-    /**
-     * @return          Returns the value given
-     */
-    public Object valueOf(String s)
-    {
-        return s;
+  @Override
+  public Object getResult(ResultSet rs, int columnIndex) throws SQLException {
+    final Serializable ret;
+    try {
+      InputStream is = rs.getBinaryStream(columnIndex);
+      if (is == null || rs.wasNull()) {
+        return null;
+      }
+      // Get the stream and deserialize
+      ObjectInputStream ois = new ObjectInputStream(is);
+      Object obj = ois.readObject();
+      // Success
+      ret = (Serializable) obj;
+    } catch (Throwable e) {
+      throw new DeserializationException(e);
     }
-    
-    /**
-     * Marker exception to allow deserialization issues to be dealt with by calling code.
-     * If this exception remains uncaught, it will be very difficult to find and rectify
-     * the data issue.
-     * 
-     * @author Derek Hulley
-     * @since 3.2
-     */
-    public static class DeserializationException extends RuntimeException
-    {
-        private static final long serialVersionUID = 4673487701048985340L;
+    return ret;
+  }
 
-        public DeserializationException(Throwable cause)
-        {
-            super(cause);
-        }
+  public void setParameter(
+    PreparedStatement ps,
+    int i,
+    Object parameter,
+    JdbcType jdbcType
+  ) throws SQLException {
+    if (parameter == null) {
+      ps.setNull(i, SerializableTypeHandler.serializableType);
+    } else {
+      try {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(parameter);
+        byte[] bytes = baos.toByteArray();
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        ps.setBinaryStream(i, bais, bytes.length);
+      } catch (Throwable e) {
+        throw new SerializationException(e);
+      }
     }
-    
-    /**
-     * Marker exception to allow serialization issues to be dealt with by calling code.
-     * Unlike with {@link DeserializationException deserialization}, it is not important
-     * to handle this exception neatly.
-     *   
-     * @author Derek Hulley
-     * @since 3.2
-     */
-    public static class SerializationException extends RuntimeException
-    {
-        private static final long serialVersionUID = 962957884262870228L;
+  }
 
-        public SerializationException(Throwable cause)
-        {
-            super(cause);
-        }
+  public Object getResult(CallableStatement cs, int columnIndex)
+    throws SQLException {
+    throw new UnsupportedOperationException("Unsupported");
+  }
+
+  /**
+   * @return          Returns the value given
+   */
+  public Object valueOf(String s) {
+    return s;
+  }
+
+  /**
+   * Marker exception to allow deserialization issues to be dealt with by calling code.
+   * If this exception remains uncaught, it will be very difficult to find and rectify
+   * the data issue.
+   *
+   * @author Derek Hulley
+   * @since 3.2
+   */
+  public static class DeserializationException extends RuntimeException {
+
+    private static final long serialVersionUID = 4673487701048985340L;
+
+    public DeserializationException(Throwable cause) {
+      super(cause);
     }
+  }
+
+  /**
+   * Marker exception to allow serialization issues to be dealt with by calling code.
+   * Unlike with {@link DeserializationException deserialization}, it is not important
+   * to handle this exception neatly.
+   *
+   * @author Derek Hulley
+   * @since 3.2
+   */
+  public static class SerializationException extends RuntimeException {
+
+    private static final long serialVersionUID = 962957884262870228L;
+
+    public SerializationException(Throwable cause) {
+      super(cause);
+    }
+  }
 }

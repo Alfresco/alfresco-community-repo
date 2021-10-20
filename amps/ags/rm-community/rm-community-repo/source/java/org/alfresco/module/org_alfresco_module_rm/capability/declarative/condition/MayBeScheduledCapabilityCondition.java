@@ -37,53 +37,58 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class MayBeScheduledCapabilityCondition extends AbstractCapabilityCondition
-{
-    /** Disposition action */
-    private String dispositionAction;
+public class MayBeScheduledCapabilityCondition
+  extends AbstractCapabilityCondition {
 
-    /**
-     * @param dispositionAction     disposition action
-     */
-    public void setDispositionAction(String dispositionAction)
-    {
-        this.dispositionAction = dispositionAction;
-    }
+  /** Disposition action */
+  private String dispositionAction;
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
-        boolean result = false;
+  /**
+   * @param dispositionAction     disposition action
+   */
+  public void setDispositionAction(String dispositionAction) {
+    this.dispositionAction = dispositionAction;
+  }
 
-        DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(nodeRef);
-        if (dispositionSchedule != null && checkDispositionLevel(nodeRef, dispositionSchedule))
-        {
-            for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions())
-            {
-                if (dispositionActionDefinition.getName().equals(dispositionAction))
-                {
-                    result = true;
-                    break;
-                }
-            }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  public boolean evaluateImpl(NodeRef nodeRef) {
+    boolean result = false;
+
+    DispositionSchedule dispositionSchedule = dispositionService.getDispositionSchedule(
+      nodeRef
+    );
+    if (
+      dispositionSchedule != null &&
+      checkDispositionLevel(nodeRef, dispositionSchedule)
+    ) {
+      for (DispositionActionDefinition dispositionActionDefinition : dispositionSchedule.getDispositionActionDefinitions()) {
+        if (dispositionActionDefinition.getName().equals(dispositionAction)) {
+          result = true;
+          break;
         }
-        return result;
+      }
     }
+    return result;
+  }
 
-    /**
-     * Checks the disposition level
-     *
-     * @param nodeRef
-     * @param dispositionSchedule
-     * @return
-     */
-    private boolean checkDispositionLevel(NodeRef nodeRef, DispositionSchedule dispositionSchedule)
-    {
-        boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
-        return (recordService.isRecord(nodeRef) && isRecordLevelDisposition)
-                    || (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition);
-    }
+  /**
+   * Checks the disposition level
+   *
+   * @param nodeRef
+   * @param dispositionSchedule
+   * @return
+   */
+  private boolean checkDispositionLevel(
+    NodeRef nodeRef,
+    DispositionSchedule dispositionSchedule
+  ) {
+    boolean isRecordLevelDisposition = dispositionSchedule.isRecordLevelDisposition();
+    return (
+      (recordService.isRecord(nodeRef) && isRecordLevelDisposition) ||
+      (recordFolderService.isRecordFolder(nodeRef) && !isRecordLevelDisposition)
+    );
+  }
 }

@@ -35,22 +35,24 @@ import org.apache.chemistry.opencmis.commons.spi.Holder;
  *
  * @author alex.mukha
  */
-public class CMISTransactionAwareHolderInterceptor implements MethodInterceptor
-{
-    @Override
-    @SuppressWarnings("unchecked")
-    public Object invoke(MethodInvocation invocation) throws Throwable
-    {
-        Class<?>[] parameterTypes = invocation.getMethod().getParameterTypes();
-        Object[] arguments = invocation.getArguments();
-        for (int i = 0; i < parameterTypes.length; i++)
-        {
-            if (Holder.class.isAssignableFrom(parameterTypes[i]) && arguments[i] != null)
-            {
-                TransactionAwareHolder txnHolder = new TransactionAwareHolder(((Holder) arguments[i]));
-                arguments[i] = txnHolder;
-            }
-        }
-        return invocation.proceed();
+public class CMISTransactionAwareHolderInterceptor
+  implements MethodInterceptor {
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public Object invoke(MethodInvocation invocation) throws Throwable {
+    Class<?>[] parameterTypes = invocation.getMethod().getParameterTypes();
+    Object[] arguments = invocation.getArguments();
+    for (int i = 0; i < parameterTypes.length; i++) {
+      if (
+        Holder.class.isAssignableFrom(parameterTypes[i]) && arguments[i] != null
+      ) {
+        TransactionAwareHolder txnHolder = new TransactionAwareHolder(
+          ((Holder) arguments[i])
+        );
+        arguments[i] = txnHolder;
+      }
     }
+    return invocation.proceed();
+  }
 }

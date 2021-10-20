@@ -42,102 +42,101 @@ import org.alfresco.util.GUID;
  * @author Rodica Sutu
  * @since 3.2.0.1
  */
-public class DownloadAsZipRecordTest extends BaseRMTestCase
-{
-    private DownloadService downloadService;
+public class DownloadAsZipRecordTest extends BaseRMTestCase {
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+  private DownloadService downloadService;
 
-    /**
-     * @see BaseRMTestCase#initServices()
-     */
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-        downloadService = (DownloadService) applicationContext.getBean("DownloadService");
-    }
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-    /**
-     * Given a record and a user without view record capability
-     * When the user downloads the record
-     * Then Access Denied exception is thrown
-     */
-    public void testDownloadRecordUserNoReadCapability()
-    {
+  /**
+   * @see BaseRMTestCase#initServices()
+   */
+  @Override
+  protected void initServices() {
+    super.initServices();
+    downloadService =
+      (DownloadService) applicationContext.getBean("DownloadService");
+  }
 
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
-            /** user with no view record capability */
-            String userDownload;
-            Authentication previousAuthentication;
+  /**
+   * Given a record and a user without view record capability
+   * When the user downloads the record
+   * Then Access Denied exception is thrown
+   */
+  public void testDownloadRecordUserNoReadCapability() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(AccessDeniedException.class) {
+        /** user with no view record capability */
+        String userDownload;
+        Authentication previousAuthentication;
 
-            public void given()
-            {
-                // create an inplace record
-                AuthenticationUtil.runAs((RunAsWork<Void>) () -> {
-                    recordService.createRecord(filePlan, dmDocument);
-                    return null;
-                }, AuthenticationUtil.getAdminUserName());
-                // create user
-                userDownload = GUID.generate();
-                createPerson(userDownload);
-            }
+        public void given() {
+          // create an inplace record
+          AuthenticationUtil.runAs(
+            (RunAsWork<Void>) () -> {
+              recordService.createRecord(filePlan, dmDocument);
+              return null;
+            },
+            AuthenticationUtil.getAdminUserName()
+          );
+          // create user
+          userDownload = GUID.generate();
+          createPerson(userDownload);
+        }
 
-            public void when()
-            {
-                previousAuthentication = AuthenticationUtil.getFullAuthentication();
-                AuthenticationUtil.setFullyAuthenticatedUser(userDownload);
-                downloadService.createDownload(new NodeRef[] { dmDocument }, true);
-            }
+        public void when() {
+          previousAuthentication = AuthenticationUtil.getFullAuthentication();
+          AuthenticationUtil.setFullyAuthenticatedUser(userDownload);
+          downloadService.createDownload(new NodeRef[] { dmDocument }, true);
+        }
 
-            public void after()
-            {
-                AuthenticationUtil.setFullAuthentication(previousAuthentication);
-                personService.deletePerson(userDownload);
-            }
-        });
-    }
+        public void after() {
+          AuthenticationUtil.setFullAuthentication(previousAuthentication);
+          personService.deletePerson(userDownload);
+        }
+      }
+    );
+  }
 
-    /**
-     * Given a record and a user with view record capability
-     * When the user downloads the record
-     * Then download node is created
-     */
-    public void testDownloadRecordUserWithReadCapability()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            NodeRef downloadStorageNode;
+  /**
+   * Given a record and a user with view record capability
+   * When the user downloads the record
+   * Then download node is created
+   */
+  public void testDownloadRecordUserWithReadCapability() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        NodeRef downloadStorageNode;
 
-            public void given()
-            {
-                // Create an inplace record
-                AuthenticationUtil.runAs((RunAsWork<Void>) () -> {
-                    // Declare record
-                    recordService.createRecord(filePlan, dmDocument);
-                    return null;
-                }, dmCollaborator);
-            }
+        public void given() {
+          // Create an inplace record
+          AuthenticationUtil.runAs(
+            (RunAsWork<Void>) () -> {
+              // Declare record
+              recordService.createRecord(filePlan, dmDocument);
+              return null;
+            },
+            dmCollaborator
+          );
+        }
 
-            public void when()
-            {
-                Authentication previousAuthentication = AuthenticationUtil.getFullAuthentication();
-                AuthenticationUtil.setFullyAuthenticatedUser(dmCollaborator);
-                //  request to download the record
-                downloadStorageNode = downloadService.createDownload(new NodeRef[] { dmDocument }, true);
-                AuthenticationUtil.setFullAuthentication(previousAuthentication);
-            }
+        public void when() {
+          Authentication previousAuthentication = AuthenticationUtil.getFullAuthentication();
+          AuthenticationUtil.setFullyAuthenticatedUser(dmCollaborator);
+          //  request to download the record
+          downloadStorageNode =
+            downloadService.createDownload(new NodeRef[] { dmDocument }, true);
+          AuthenticationUtil.setFullAuthentication(previousAuthentication);
+        }
 
-            public void then()
-            {
-                // check the download storage node is created
-                assertTrue(nodeService.exists(downloadStorageNode));
-            }
-        });
-    }
+        public void then() {
+          // check the download storage node is created
+          assertTrue(nodeService.exists(downloadStorageNode));
+        }
+      }
+    );
+  }
 }

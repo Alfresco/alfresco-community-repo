@@ -31,7 +31,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.forms.Field;
@@ -62,130 +61,166 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  *
  * @author Gavin Cornwell
  */
-public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter<TypeDefinition> implements RecordsManagementModel
-{
-    /** Logger */
-    private static Log logger = LogFactory.getLog(RecordsManagementTypeFormFilter.class);
+public class RecordsManagementTypeFormFilter
+  extends RecordsManagementFormFilter<TypeDefinition>
+  implements RecordsManagementModel {
 
-    protected static final String NAME_FIELD_GROUP_ID = "name";
-    protected static final String TITLE_FIELD_GROUP_ID = "title";
-    protected static final String DESC_FIELD_GROUP_ID = "description";
-    protected static final String OTHER_FIELD_GROUP_ID = "other";
+  /** Logger */
+  private static Log logger = LogFactory.getLog(
+    RecordsManagementTypeFormFilter.class
+  );
 
-    protected static final FieldGroup NAME_FIELD_GROUP = new FieldGroup(NAME_FIELD_GROUP_ID, null, false, false, null);
-    protected static final FieldGroup TITLE_FIELD_GROUP = new FieldGroup(TITLE_FIELD_GROUP_ID, null, false, false, null);
-    protected static final FieldGroup DESC_FIELD_GROUP = new FieldGroup(DESC_FIELD_GROUP_ID, null, false, false, null);
-    protected static final FieldGroup OTHER_FIELD_GROUP = new FieldGroup(OTHER_FIELD_GROUP_ID, null, false, false, null);
+  protected static final String NAME_FIELD_GROUP_ID = "name";
+  protected static final String TITLE_FIELD_GROUP_ID = "title";
+  protected static final String DESC_FIELD_GROUP_ID = "description";
+  protected static final String OTHER_FIELD_GROUP_ID = "other";
 
-    /** Identifier service */
-    protected IdentifierService identifierService;
+  protected static final FieldGroup NAME_FIELD_GROUP = new FieldGroup(
+    NAME_FIELD_GROUP_ID,
+    null,
+    false,
+    false,
+    null
+  );
+  protected static final FieldGroup TITLE_FIELD_GROUP = new FieldGroup(
+    TITLE_FIELD_GROUP_ID,
+    null,
+    false,
+    false,
+    null
+  );
+  protected static final FieldGroup DESC_FIELD_GROUP = new FieldGroup(
+    DESC_FIELD_GROUP_ID,
+    null,
+    false,
+    false,
+    null
+  );
+  protected static final FieldGroup OTHER_FIELD_GROUP = new FieldGroup(
+    OTHER_FIELD_GROUP_ID,
+    null,
+    false,
+    false,
+    null
+  );
 
-    /**
-     * @param identifierService identifier service
-     */
-    public void setIdentifierService(IdentifierService identifierService)
-    {
-        this.identifierService = identifierService;
+  /** Identifier service */
+  protected IdentifierService identifierService;
+
+  /**
+   * @param identifierService identifier service
+   */
+  public void setIdentifierService(IdentifierService identifierService) {
+    this.identifierService = identifierService;
+  }
+
+  /*
+   * @see
+   * org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object,
+   * java.util.List, java.util.List, org.alfresco.repo.forms.Form,
+   * java.util.Map)
+   */
+  public void afterGenerate(
+    TypeDefinition type,
+    List<String> fields,
+    List<String> forcedFields,
+    Form form,
+    Map<String, Object> context
+  ) {
+    QName typeName = type.getName();
+    if (rmAdminService.isCustomisable(typeName)) {
+      addCustomRMProperties(typeName, form);
     }
 
-    /*
-     * @see
-     * org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object,
-     * java.util.List, java.util.List, org.alfresco.repo.forms.Form,
-     * java.util.Map)
-     */
-    public void afterGenerate(
-                    TypeDefinition type,
-                    List<String> fields,
-                    List<String> forcedFields,
-                    Form form,
-                    Map<String, Object> context)
-    {
-        QName typeName = type.getName();
-        if (rmAdminService.isCustomisable(typeName))
-        {
-        	addCustomRMProperties(typeName, form);
-        }
-
-        // What about any mandatory aspects?
-        Set<QName> aspects = type.getDefaultAspectNames();
-        for (QName aspect : aspects)
-        {
-            if (rmAdminService.isCustomisable(aspect))
-            {
-                addCustomRMProperties(aspect, form);
-            }
-        }
-
-        // set the id
-        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-        for (FieldDefinition fieldDef : fieldDefs)
-        {
-            String prefixName = fieldDef.getName();
-            if (prefixName.equals("rma:identifier"))
-            {
-                String defaultId = identifierService.generateIdentifier(typeName, null);
-                fieldDef.setDefaultValue(defaultId);
-            }
-            // NOTE: we set these defaults in the form for backwards compatibility reasons (RM-753)
-            else if (prefixName.equals("rma:vitalRecordIndicator"))
-            {
-                fieldDef.setDefaultValue(Boolean.FALSE.toString());
-            }
-            else if (prefixName.equals("rma:reviewPeriod"))
-            {
-                fieldDef.setDefaultValue("none|0");
-            }
-        }
+    // What about any mandatory aspects?
+    Set<QName> aspects = type.getDefaultAspectNames();
+    for (QName aspect : aspects) {
+      if (rmAdminService.isCustomisable(aspect)) {
+        addCustomRMProperties(aspect, form);
+      }
     }
 
-    /**
-     * Adds a property definition for each of the custom properties for the
-     * given RM type to the given form.
-     *
-     * @param customisableType Enum representing the RM type to add custom
-     *            properties for
-     * @param form The form to add the properties to
-     */
-    protected void addCustomRMProperties(QName customisableType, Form form)
-    {
-        ParameterCheck.mandatory("customisableType", customisableType);
-        ParameterCheck.mandatory("form", form);
-
-        Map<QName, PropertyDefinition> customProps = rmAdminService.getCustomPropertyDefinitions(customisableType);
-
-        if (customProps != null && !customProps.isEmpty())
-        {
-	        if (logger.isDebugEnabled())
-	        {
-	            logger.debug("Found " + customProps.size() + " custom properties for customisable type " + customisableType);
-	        }
-
-	        // setup field definition for each custom property
-	        Collection<PropertyDefinition> properties = customProps.values();
-	        FieldGroup group = new FieldGroup(CUSTOM_RM_FIELD_GROUP_ID, null, false, false, null);
-	        List<Field> fields = FieldUtils.makePropertyFields(properties, group, namespaceService, dictionaryService);
-	        form.addFields(fields);
-        }
+    // set the id
+    List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+    for (FieldDefinition fieldDef : fieldDefs) {
+      String prefixName = fieldDef.getName();
+      if (prefixName.equals("rma:identifier")) {
+        String defaultId = identifierService.generateIdentifier(typeName, null);
+        fieldDef.setDefaultValue(defaultId);
+      }
+      // NOTE: we set these defaults in the form for backwards compatibility reasons (RM-753)
+      else if (prefixName.equals("rma:vitalRecordIndicator")) {
+        fieldDef.setDefaultValue(Boolean.FALSE.toString());
+      } else if (prefixName.equals("rma:reviewPeriod")) {
+        fieldDef.setDefaultValue("none|0");
+      }
     }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementFormFilter#beforePersist(java.lang.Object, org.alfresco.repo.forms.FormData)
-     */
-    @Override
-    public void beforePersist(TypeDefinition item, FormData data)
-    {
-        recordService.disablePropertyEditableCheck();        
-        super.beforePersist(item, data);
-    }
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementFormFilter#afterPersist(java.lang.Object, org.alfresco.repo.forms.FormData, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public void afterPersist(TypeDefinition item, FormData data, NodeRef persistedObject)
-    {
-        super.afterPersist(item, data, persistedObject);
-        recordService.enablePropertyEditableCheck();
+  /**
+   * Adds a property definition for each of the custom properties for the
+   * given RM type to the given form.
+   *
+   * @param customisableType Enum representing the RM type to add custom
+   *            properties for
+   * @param form The form to add the properties to
+   */
+  protected void addCustomRMProperties(QName customisableType, Form form) {
+    ParameterCheck.mandatory("customisableType", customisableType);
+    ParameterCheck.mandatory("form", form);
+
+    Map<QName, PropertyDefinition> customProps = rmAdminService.getCustomPropertyDefinitions(
+      customisableType
+    );
+
+    if (customProps != null && !customProps.isEmpty()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+          "Found " +
+          customProps.size() +
+          " custom properties for customisable type " +
+          customisableType
+        );
+      }
+
+      // setup field definition for each custom property
+      Collection<PropertyDefinition> properties = customProps.values();
+      FieldGroup group = new FieldGroup(
+        CUSTOM_RM_FIELD_GROUP_ID,
+        null,
+        false,
+        false,
+        null
+      );
+      List<Field> fields = FieldUtils.makePropertyFields(
+        properties,
+        group,
+        namespaceService,
+        dictionaryService
+      );
+      form.addFields(fields);
     }
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementFormFilter#beforePersist(java.lang.Object, org.alfresco.repo.forms.FormData)
+   */
+  @Override
+  public void beforePersist(TypeDefinition item, FormData data) {
+    recordService.disablePropertyEditableCheck();
+    super.beforePersist(item, data);
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementFormFilter#afterPersist(java.lang.Object, org.alfresco.repo.forms.FormData, org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  public void afterPersist(
+    TypeDefinition item,
+    FormData data,
+    NodeRef persistedObject
+  ) {
+    super.afterPersist(item, data, persistedObject);
+    recordService.enablePropertyEditableCheck();
+  }
 }

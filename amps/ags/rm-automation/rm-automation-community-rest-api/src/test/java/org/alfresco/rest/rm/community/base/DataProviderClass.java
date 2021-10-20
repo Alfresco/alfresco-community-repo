@@ -47,19 +47,18 @@ import org.testng.annotations.DataProvider;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class DataProviderClass
-{
+public class DataProviderClass {
+
     /**
      * Data Provider with the special file plan components alias
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] getContainers()
-    {
+    public static Object[][] getContainers() {
         return new String[][] {
-                { FILE_PLAN_ALIAS },
-                { TRANSFERS_ALIAS },
-                { UNFILED_RECORDS_CONTAINER_ALIAS },
+            { FILE_PLAN_ALIAS },
+            { TRANSFERS_ALIAS },
+            { UNFILED_RECORDS_CONTAINER_ALIAS },
         };
     }
 
@@ -70,15 +69,14 @@ public class DataProviderClass
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] childrenNotAllowedForCategory()
-    {
+    public static Object[][] childrenNotAllowedForCategory() {
         return new String[][] {
             { FILE_PLAN_TYPE },
             { TRANSFER_CONTAINER_TYPE },
             { UNFILED_CONTAINER_TYPE },
             { UNFILED_RECORD_FOLDER_TYPE },
             { TRANSFER_TYPE },
-            { CONTENT_TYPE }
+            { CONTENT_TYPE },
         };
     }
 
@@ -89,12 +87,8 @@ public class DataProviderClass
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] folderTypes()
-    {
-        return new String[][] {
-            { RECORD_FOLDER_TYPE },
-            { FOLDER_TYPE }
-        };
+    public static Object[][] folderTypes() {
+        return new String[][] { { RECORD_FOLDER_TYPE }, { FOLDER_TYPE } };
     }
 
     /**
@@ -104,12 +98,8 @@ public class DataProviderClass
      * @return file plan component alias
      */
     @DataProvider
-    public static Object[][] categoryTypes()
-    {
-        return new String[][] {
-            { FOLDER_TYPE },
-            { RECORD_CATEGORY_TYPE }
-        };
+    public static Object[][] categoryTypes() {
+        return new String[][] { { FOLDER_TYPE }, { RECORD_CATEGORY_TYPE } };
     }
 
     /**
@@ -119,30 +109,26 @@ public class DataProviderClass
      * @return record category child type
      */
     @DataProvider
-    public static Object[][] categoryChild()
-    {
+    public static Object[][] categoryChild() {
         return new String[][] {
-                    { RECORD_FOLDER_TYPE },
-                    { FOLDER_TYPE },
-                    { RECORD_CATEGORY_TYPE }
+            { RECORD_FOLDER_TYPE },
+            { FOLDER_TYPE },
+            { RECORD_CATEGORY_TYPE },
         };
     }
 
     /**
      * Invalid root level types, at unfiled record folder/unfiled containers container  level that shouldn't be possible to create
      */
-    @DataProvider (name = "invalidRootTypes")
-    public static Object[][] getInvalidRootTypes()
-    {
-        return new String[][]
-                {
-                        { FILE_PLAN_TYPE },
-                        { RECORD_CATEGORY_TYPE },
-                        { RECORD_FOLDER_TYPE },
-                        { TRANSFER_CONTAINER_TYPE },
-                        { TRANSFER_TYPE },
-                        { UNFILED_CONTAINER_TYPE },
-
-                };
+    @DataProvider(name = "invalidRootTypes")
+    public static Object[][] getInvalidRootTypes() {
+        return new String[][] {
+            { FILE_PLAN_TYPE },
+            { RECORD_CATEGORY_TYPE },
+            { RECORD_FOLDER_TYPE },
+            { TRANSFER_CONTAINER_TYPE },
+            { TRANSFER_TYPE },
+            { UNFILED_CONTAINER_TYPE },
+        };
     }
 }

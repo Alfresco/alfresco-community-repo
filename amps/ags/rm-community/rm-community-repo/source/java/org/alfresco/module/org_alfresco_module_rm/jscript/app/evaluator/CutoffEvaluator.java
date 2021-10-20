@@ -35,18 +35,16 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
-public class CutoffEvaluator extends BaseEvaluator
-{
-    private boolean isCutoff = true;
+public class CutoffEvaluator extends BaseEvaluator {
 
-    public void setCutoff(boolean isCutoff)
-    {
-        this.isCutoff = isCutoff;
-    }
+  private boolean isCutoff = true;
 
-    @Override
-    protected boolean evaluateImpl(NodeRef nodeRef)
-    {
-        return (dispositionService.isDisposableItemCutoff(nodeRef) == isCutoff);
-    }
+  public void setCutoff(boolean isCutoff) {
+    this.isCutoff = isCutoff;
+  }
+
+  @Override
+  protected boolean evaluateImpl(NodeRef nodeRef) {
+    return (dispositionService.isDisposableItemCutoff(nodeRef) == isCutoff);
+  }
 }

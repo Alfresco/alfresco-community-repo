@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -45,180 +44,179 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public abstract class RecordsManagementActionConditionEvaluatorAbstractBase extends ActionConditionEvaluatorAbstractBase
-                                                                            implements RecordsManagementActionCondition,
-                                                                                       BeanNameAware
-{
-    /** records management action service */
-    private RecordsManagementActionService recordsManagementActionService;
+public abstract class RecordsManagementActionConditionEvaluatorAbstractBase
+  extends ActionConditionEvaluatorAbstractBase
+  implements RecordsManagementActionCondition, BeanNameAware {
 
-    /** File Plan Service */
-    private FilePlanService filePlanService;
+  /** records management action service */
+  private RecordsManagementActionService recordsManagementActionService;
 
-    /** bean name */
-    private String beanName;
+  /** File Plan Service */
+  private FilePlanService filePlanService;
 
-    /** public condition */
-    private boolean publicCondition = true;
+  /** bean name */
+  private String beanName;
 
-    private RetryingTransactionHelper retryingTransactionHelper;
+  /** public condition */
+  private boolean publicCondition = true;
 
-    /**
-     * @return Records management action service
-     */
-    protected RecordsManagementActionService getRecordsManagementActionService()
-    {
-        return this.recordsManagementActionService;
-    }
+  private RetryingTransactionHelper retryingTransactionHelper;
 
-    /**
-     * @return File plan service
-     */
-    protected FilePlanService getFilePlanService()
-    {
-        return this.filePlanService;
-    }
+  /**
+   * @return Records management action service
+   */
+  protected RecordsManagementActionService getRecordsManagementActionService() {
+    return this.recordsManagementActionService;
+  }
 
-    /**
-     * @param recordsManagementActionService    records management action service
-     */
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
-        this.recordsManagementActionService = recordsManagementActionService;
-    }
+  /**
+   * @return File plan service
+   */
+  protected FilePlanService getFilePlanService() {
+    return this.filePlanService;
+  }
 
-    /**
-     * @param filePlanService	file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-		this.filePlanService = filePlanService;
-	}
+  /**
+   * @param recordsManagementActionService    records management action service
+   */
+  public void setRecordsManagementActionService(
+    RecordsManagementActionService recordsManagementActionService
+  ) {
+    this.recordsManagementActionService = recordsManagementActionService;
+  }
 
-    /**
-     * @param retryingTransactionHelper retrying transaction helper
-     */
-    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
-    {
-        this.retryingTransactionHelper = retryingTransactionHelper;
-    }
+  /**
+   * @param filePlanService	file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
 
-    /**
-     * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#init()
-     */
-    @Override
-    public void init()
-    {
-        // override to prevent condition being registered with the core action service
+  /**
+   * @param retryingTransactionHelper retrying transaction helper
+   */
+  public void setRetryingTransactionHelper(
+    RetryingTransactionHelper retryingTransactionHelper
+  ) {
+    this.retryingTransactionHelper = retryingTransactionHelper;
+  }
 
-        // run the following code as System
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                {
-                    public Void execute()
-                    {
-                        getRecordsManagementActionService().register(RecordsManagementActionConditionEvaluatorAbstractBase.this);
+  /**
+   * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#init()
+   */
+  @Override
+  public void init() {
+    // override to prevent condition being registered with the core action service
 
-                        return null;
-                    }
-                };
+    // run the following code as System
+    AuthenticationUtil.runAs(
+      new RunAsWork<Object>() {
+        public Object doWork() {
+          RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
+            public Void execute() {
+              getRecordsManagementActionService()
+                .register(
+                  RecordsManagementActionConditionEvaluatorAbstractBase.this
+                );
 
-                retryingTransactionHelper.doInTransaction(callback);
-                return null;
+              return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+          };
 
-    }
-
-    @Override
-    public void setPublicCondition(boolean publicCondition)
-    {
-        this.publicCondition = publicCondition;
-    }
-
-    /**
-     * @see org.alfresco.repo.action.CommonResourceAbstractBase#setBeanName(java.lang.String)
-     */
-    @Override
-    public void setBeanName(String name)
-    {
-        this.beanName = name;
-        super.setBeanName(name);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#getBeanName()
-     */
-    public String getBeanName()
-    {
-        return this.beanName;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getLabel()
-     */
-    public String getLabel()
-    {
-        return getActionConditionDefintion().getTitle();
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getDescription()
-     */
-    public String getDescription()
-    {
-        return getActionConditionDefintion().getDescription();
-    }
-
-    /**
-     * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#getActionConditionDefintion()
-     *
-     * TODO base class should provide "createActionDefinition" method that can be over-ridden like the ActionExecuter
-     * base class to prevent duplication of code and a cleaner extension.
-     */
-    @Override
-    public ActionConditionDefinition getActionConditionDefintion()
-    {
-        if (this.actionConditionDefinition == null)
-        {
-            this.actionConditionDefinition = new RecordsManagementActionConditionDefinitionImpl(beanName);
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setTitleKey(getTitleKey());
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setDescriptionKey(getDescriptionKey());
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setConditionEvaluator(beanName);
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
+          retryingTransactionHelper.doInTransaction(callback);
+          return null;
         }
-        return this.actionConditionDefinition;
-    }
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
 
-    /**
-     * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
-     */
-    @Override
-    protected void addParameterDefinitions(List<ParameterDefinition> arg0)
-    {
-        // No param implementation by default
-    }
+  @Override
+  public void setPublicCondition(boolean publicCondition) {
+    this.publicCondition = publicCondition;
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#isPublicCondition()
-     */
-    @Override
-    public boolean isPublicCondition()
-    {
-        return publicCondition;
-    }
+  /**
+   * @see org.alfresco.repo.action.CommonResourceAbstractBase#setBeanName(java.lang.String)
+   */
+  @Override
+  public void setBeanName(String name) {
+    this.beanName = name;
+    super.setBeanName(name);
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#getRecordsManagementActionConditionDefinition()
-     */
-    @Override
-    public RecordsManagementActionConditionDefinition getRecordsManagementActionConditionDefinition()
-    {
-        return (RecordsManagementActionConditionDefinition)getActionConditionDefintion();
-    }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#getBeanName()
+   */
+  public String getBeanName() {
+    return this.beanName;
+  }
 
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getLabel()
+   */
+  public String getLabel() {
+    return getActionConditionDefintion().getTitle();
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getDescription()
+   */
+  public String getDescription() {
+    return getActionConditionDefintion().getDescription();
+  }
+
+  /**
+   * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#getActionConditionDefintion()
+   *
+   * TODO base class should provide "createActionDefinition" method that can be over-ridden like the ActionExecuter
+   * base class to prevent duplication of code and a cleaner extension.
+   */
+  @Override
+  public ActionConditionDefinition getActionConditionDefintion() {
+    if (this.actionConditionDefinition == null) {
+      this.actionConditionDefinition =
+        new RecordsManagementActionConditionDefinitionImpl(beanName);
+      (
+        (RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition
+      ).setTitleKey(getTitleKey());
+      (
+        (RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition
+      ).setDescriptionKey(getDescriptionKey());
+      (
+        (RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition
+      ).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
+      (
+        (RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition
+      ).setConditionEvaluator(beanName);
+      (
+        (RecordsManagementActionConditionDefinitionImpl) actionConditionDefinition
+      ).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
+    }
+    return this.actionConditionDefinition;
+  }
+
+  /**
+   * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
+   */
+  @Override
+  protected void addParameterDefinitions(List<ParameterDefinition> arg0) {
+    // No param implementation by default
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#isPublicCondition()
+   */
+  @Override
+  public boolean isPublicCondition() {
+    return publicCondition;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#getRecordsManagementActionConditionDefinition()
+   */
+  @Override
+  public RecordsManagementActionConditionDefinition getRecordsManagementActionConditionDefinition() {
+    return (RecordsManagementActionConditionDefinition) getActionConditionDefintion();
+  }
 }

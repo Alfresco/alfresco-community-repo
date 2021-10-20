@@ -30,7 +30,6 @@ import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAd
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -44,151 +43,187 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Ross Gale
  * @since 3.2
  */
-public class RemoveActiveContentFromHoldTest extends BaseRMTestCase
-{
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+public class RemoveActiveContentFromHoldTest extends BaseRMTestCase {
 
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-    /**
-     * Given a piece of active content on hold
-     * When I try to remove the active content from the hold
-     * Then the active content is unfrozen
-     * And the active content is not contained within the hold
-     */
-    public void testRemoveDocumentFromHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
-            Integer before;
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-            public void given()
-            {
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                holdService.addToHold(hold, dmDocument);
-            }
+  /**
+   * Given a piece of active content on hold
+   * When I try to remove the active content from the hold
+   * Then the active content is unfrozen
+   * And the active content is not contained within the hold
+   */
+  public void testRemoveDocumentFromHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef hold;
+        Integer before;
 
-            public void when()
-            {
-                before = (Integer) nodeService.getProperty(dmFolder, PROP_HELD_CHILDREN_COUNT);
-                holdService.removeFromHold(hold, dmDocument);
-            }
+        public void given() {
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+          holdService.addToHold(hold, dmDocument);
+        }
 
-            public void then()
-            {
-                // active content is no longer frozen
-                assertFalse(freezeService.isFrozen(dmDocument));
+        public void when() {
+          before =
+            (Integer) nodeService.getProperty(
+              dmFolder,
+              PROP_HELD_CHILDREN_COUNT
+            );
+          holdService.removeFromHold(hold, dmDocument);
+        }
 
-                // check the content is no longer held
-                assertFalse(holdService.getHeld(hold).contains(dmDocument));
-                assertFalse(holdService.heldBy(dmDocument, true).contains(hold));
+        public void then() {
+          // active content is no longer frozen
+          assertFalse(freezeService.isFrozen(dmDocument));
 
-                // check the held count on the folder has been reduced
-                assertTrue(before > (Integer) nodeService.getProperty(dmFolder, PROP_HELD_CHILDREN_COUNT));
-            }
-        });
-    }
+          // check the content is no longer held
+          assertFalse(holdService.getHeld(hold).contains(dmDocument));
+          assertFalse(holdService.heldBy(dmDocument, true).contains(hold));
 
-    /**
-     * Given a piece of active content in multiple holds
-     * When I try to remove the active content from a single hold
-     * Then the active content is still frozen
-     * And the active content is not contained within the specified hold
-     * And is still added to any other holds
-     */
-    public void testRemoveDocumentFromASingleHold()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef hold;
-            private NodeRef hold2;
+          // check the held count on the folder has been reduced
+          assertTrue(
+            before >
+            (Integer) nodeService.getProperty(
+              dmFolder,
+              PROP_HELD_CHILDREN_COUNT
+            )
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                hold2 = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                final List<NodeRef> holds = new ArrayList<>(2);
-                holds.add(hold);
-                holds.add(hold2);
-                holdService.addToHolds(holds, dmDocument);
-            }
+  /**
+   * Given a piece of active content in multiple holds
+   * When I try to remove the active content from a single hold
+   * Then the active content is still frozen
+   * And the active content is not contained within the specified hold
+   * And is still added to any other holds
+   */
+  public void testRemoveDocumentFromASingleHold() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef hold;
+        private NodeRef hold2;
 
-            public void when()
-            {
-                holdService.removeFromHold(hold, dmDocument);
-            }
+        public void given() {
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+          hold2 =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+          final List<NodeRef> holds = new ArrayList<>(2);
+          holds.add(hold);
+          holds.add(hold2);
+          holdService.addToHolds(holds, dmDocument);
+        }
 
-            public void then()
-            {
-                assertTrue(freezeService.isFrozen(dmDocument));
-                assertFalse(holdService.heldBy(dmDocument, true).contains(hold));
-                assertTrue(holdService.heldBy(dmDocument, true).contains(hold2));
-            }
-        });
-    }
+        public void when() {
+          holdService.removeFromHold(hold, dmDocument);
+        }
 
-    /**
-     * Given a piece of active content on hold
-     * When I try to remove the active content from the hold without permission
-     * Then an access denied exception is thrown
-     */
-    public void testRemoveDocumentFromHoldFailsWithoutFilingPermission()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
-            private NodeRef hold;
+        public void then() {
+          assertTrue(freezeService.isFrozen(dmDocument));
+          assertFalse(holdService.heldBy(dmDocument, true).contains(hold));
+          assertTrue(holdService.heldBy(dmDocument, true).contains(hold2));
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                holdService.addToHold(hold, dmDocument);
-            }
+  /**
+   * Given a piece of active content on hold
+   * When I try to remove the active content from the hold without permission
+   * Then an access denied exception is thrown
+   */
+  public void testRemoveDocumentFromHoldFailsWithoutFilingPermission() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(AccessDeniedException.class) {
+        private NodeRef hold;
 
-            public void when()
-            {
-                AuthenticationUtil.runAs(
-                        (RunAsWork<Void>) () -> {
-                            holdService.removeFromHold(hold, dmDocument);
-                            return null;
-                        }, recordsManagerName);
-            }
-        });
-    }
+        public void given() {
+          hold =
+            holdService.createHold(
+              filePlan,
+              GUID.generate(),
+              GUID.generate(),
+              GUID.generate()
+            );
+          holdService.addToHold(hold, dmDocument);
+        }
 
-    /**
-     * Given a piece of active content on hold
-     * When I try to remove the active content from the hold without the remove hold capability
-     * Then an access denied exception is thrown
-     */
-    public void testRemoveDocumentFromHoldFailsWithoutRemoveHoldPermission()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class, powerUserName, false)
-        {
-            private NodeRef hold;
+        public void when() {
+          AuthenticationUtil.runAs(
+            (RunAsWork<Void>) () -> {
+              holdService.removeFromHold(hold, dmDocument);
+              return null;
+            },
+            recordsManagerName
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                AuthenticationUtil.runAs(
-                        (RunAsWork<Void>) () -> {
-                            hold = holdService.createHold(filePlan, GUID.generate(), GUID.generate(), GUID.generate());
-                            holdService.addToHold(hold, dmDocument);
-                        return null;
-                        }, getAdminUserName());
-            }
+  /**
+   * Given a piece of active content on hold
+   * When I try to remove the active content from the hold without the remove hold capability
+   * Then an access denied exception is thrown
+   */
+  public void testRemoveDocumentFromHoldFailsWithoutRemoveHoldPermission() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(
+        AccessDeniedException.class,
+        powerUserName,
+        false
+      ) {
+        private NodeRef hold;
 
-            public void when()
-            {
-                holdService.removeFromHold(hold, dmDocument);
-            }
-        });
-    }
+        public void given() {
+          AuthenticationUtil.runAs(
+            (RunAsWork<Void>) () -> {
+              hold =
+                holdService.createHold(
+                  filePlan,
+                  GUID.generate(),
+                  GUID.generate(),
+                  GUID.generate()
+                );
+              holdService.addToHold(hold, dmDocument);
+              return null;
+            },
+            getAdminUserName()
+          );
+        }
+
+        public void when() {
+          holdService.removeFromHold(hold, dmDocument);
+        }
+      }
+    );
+  }
 }

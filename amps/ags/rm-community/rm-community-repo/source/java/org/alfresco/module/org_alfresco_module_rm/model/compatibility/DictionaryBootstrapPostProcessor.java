@@ -39,28 +39,34 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class DictionaryBootstrapPostProcessor implements BeanFactoryPostProcessor
-{
-    /** bean id's */
-    private static final String BEAN_SITESERVICE_BOOTSTRAP = "siteService_dictionaryBootstrap";
-    private static final String BEAN_RM_DICTIONARY_BOOTSTRAP = "org_alfresco_module_rm_dictionaryBootstrap";
+public class DictionaryBootstrapPostProcessor
+  implements BeanFactoryPostProcessor {
 
-    /**
-     * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
-     */
-    @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
-    {
-        // if the site service bootstrap bean and the RM dictionary bean are present in the bean factory
-        if (beanFactory.containsBean(BEAN_SITESERVICE_BOOTSTRAP) &&
-            beanFactory.containsBean(BEAN_RM_DICTIONARY_BOOTSTRAP))
-        {
-            // get the RM dictionary bootstrap bean definition
-            BeanDefinition beanDef = beanFactory.getBeanDefinition(BEAN_RM_DICTIONARY_BOOTSTRAP);
+  /** bean id's */
+  private static final String BEAN_SITESERVICE_BOOTSTRAP =
+    "siteService_dictionaryBootstrap";
+  private static final String BEAN_RM_DICTIONARY_BOOTSTRAP =
+    "org_alfresco_module_rm_dictionaryBootstrap";
 
-            // set the dependency
-            beanDef.setDependsOn(new String[]{BEAN_SITESERVICE_BOOTSTRAP});
-        }
+  /**
+   * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
+   */
+  @Override
+  public void postProcessBeanFactory(
+    ConfigurableListableBeanFactory beanFactory
+  ) {
+    // if the site service bootstrap bean and the RM dictionary bean are present in the bean factory
+    if (
+      beanFactory.containsBean(BEAN_SITESERVICE_BOOTSTRAP) &&
+      beanFactory.containsBean(BEAN_RM_DICTIONARY_BOOTSTRAP)
+    ) {
+      // get the RM dictionary bootstrap bean definition
+      BeanDefinition beanDef = beanFactory.getBeanDefinition(
+        BEAN_RM_DICTIONARY_BOOTSTRAP
+      );
+
+      // set the dependency
+      beanDef.setDependsOn(new String[] { BEAN_SITESERVICE_BOOTSTRAP });
     }
-
+  }
 }

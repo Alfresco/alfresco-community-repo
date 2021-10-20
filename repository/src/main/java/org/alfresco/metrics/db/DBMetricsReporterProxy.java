@@ -32,73 +32,70 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class DBMetricsReporterProxy implements DBMetricsReporter, ApplicationContextAware, InitializingBean
-{
-    private Log logger = LogFactory.getLog(getClass());
-    private ApplicationContext applicationContext;
-    private DBMetricsReporter dbMetricsReporterImpl;
+public class DBMetricsReporterProxy
+  implements DBMetricsReporter, ApplicationContextAware, InitializingBean {
 
-    @Override
-    public void reportQueryExecutionTime(long milliseconds, String queryTpe, String statementID)
-    {
-        if (dbMetricsReporterImpl != null)
-        {
-            dbMetricsReporterImpl.reportQueryExecutionTime(milliseconds, queryTpe, statementID);
-        }
-    }
+  private Log logger = LogFactory.getLog(getClass());
+  private ApplicationContext applicationContext;
+  private DBMetricsReporter dbMetricsReporterImpl;
 
-    @Override
-    public boolean isEnabled()
-    {
-        if (dbMetricsReporterImpl != null)
-        {
-            return dbMetricsReporterImpl.isEnabled();
-        }
-        return false;
+  @Override
+  public void reportQueryExecutionTime(
+    long milliseconds,
+    String queryTpe,
+    String statementID
+  ) {
+    if (dbMetricsReporterImpl != null) {
+      dbMetricsReporterImpl.reportQueryExecutionTime(
+        milliseconds,
+        queryTpe,
+        statementID
+      );
     }
+  }
 
-    @Override
-    public boolean isQueryMetricsEnabled()
-    {
-        if (dbMetricsReporterImpl != null)
-        {
-            return dbMetricsReporterImpl.isQueryMetricsEnabled();
-        }
-        return false;
+  @Override
+  public boolean isEnabled() {
+    if (dbMetricsReporterImpl != null) {
+      return dbMetricsReporterImpl.isEnabled();
     }
+    return false;
+  }
 
-    @Override
-    public boolean isQueryStatementsMetricsEnabled()
-    {
-        if (dbMetricsReporterImpl != null)
-        {
-            return dbMetricsReporterImpl.isQueryStatementsMetricsEnabled();
-        }
-        return false;
+  @Override
+  public boolean isQueryMetricsEnabled() {
+    if (dbMetricsReporterImpl != null) {
+      return dbMetricsReporterImpl.isQueryMetricsEnabled();
     }
+    return false;
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        init();
+  @Override
+  public boolean isQueryStatementsMetricsEnabled() {
+    if (dbMetricsReporterImpl != null) {
+      return dbMetricsReporterImpl.isQueryStatementsMetricsEnabled();
     }
+    return false;
+  }
 
-    private void init()
-    {
-        try
-        {
-            dbMetricsReporterImpl = (DBMetricsReporter) applicationContext.getBean("dbMetricsReporterImpl");
-        }
-        catch (Exception e)
-        {
-            // we expect that we will not have this bean in the community runtime
-            // so don't report this problem
-        }
-    }
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    init();
+  }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
+  private void init() {
+    try {
+      dbMetricsReporterImpl =
+        (DBMetricsReporter) applicationContext.getBean("dbMetricsReporterImpl");
+    } catch (Exception e) {
+      // we expect that we will not have this bean in the community runtime
+      // so don't report this problem
     }
+  }
+
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext)
+    throws BeansException {
+    this.applicationContext = applicationContext;
+  }
 }

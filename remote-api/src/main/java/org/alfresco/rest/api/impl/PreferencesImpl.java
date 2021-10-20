@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -28,7 +28,6 @@ package org.alfresco.rest.api.impl;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.alfresco.query.PagingResults;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Preferences;
@@ -41,51 +40,63 @@ import org.alfresco.util.Pair;
 
 /**
  * Centralises access to preference services and maps between representations.
- * 
+ *
  * @author steveglover
  * @since publicapi1.0
  */
-public class PreferencesImpl implements Preferences
-{
-	private People people;
-    private PreferenceService preferenceService;
-    
-	public void setPeople(People people)
-	{
-		this.people = people;
-	}
+public class PreferencesImpl implements Preferences {
 
-	public void setPreferenceService(PreferenceService preferenceService)
-	{
-		this.preferenceService = preferenceService;
-	}
+  private People people;
+  private PreferenceService preferenceService;
 
-	public Preference getPreference(String personId, String preferenceName)
-	{
-		personId = people.validatePerson(personId);
-		Serializable preferenceValue = preferenceService.getPreference(personId, preferenceName);
-		if(preferenceValue != null)
-		{
-			return new Preference(preferenceName, preferenceValue);
-		}
-		else
-		{
-			throw new RelationshipResourceNotFoundException(personId, preferenceName);
-		}
-	}
-	
-	public CollectionWithPagingInfo<Preference> getPreferences(String personId, Paging paging)
-	{
-		personId = people.validatePerson(personId);
+  public void setPeople(People people) {
+    this.people = people;
+  }
 
-		PagingResults<Pair<String, Serializable>> preferences = preferenceService.getPagedPreferences(personId, null, Util.getPagingRequest(paging));
-		List<Preference> ret = new ArrayList<Preference>(preferences.getPage().size());
-		for(Pair<String, Serializable> prefEntity : preferences.getPage())
-		{
-			Preference pref = new Preference(prefEntity.getFirst(), prefEntity.getSecond());
-			ret.add(pref);
-		}
+  public void setPreferenceService(PreferenceService preferenceService) {
+    this.preferenceService = preferenceService;
+  }
 
-        return CollectionWithPagingInfo.asPaged(paging, ret, preferences.hasMoreItems(), preferences.getTotalResultCount().getFirst());
-	}
+  public Preference getPreference(String personId, String preferenceName) {
+    personId = people.validatePerson(personId);
+    Serializable preferenceValue = preferenceService.getPreference(
+      personId,
+      preferenceName
+    );
+    if (preferenceValue != null) {
+      return new Preference(preferenceName, preferenceValue);
+    } else {
+      throw new RelationshipResourceNotFoundException(personId, preferenceName);
+    }
+  }
+
+  public CollectionWithPagingInfo<Preference> getPreferences(
+    String personId,
+    Paging paging
+  ) {
+    personId = people.validatePerson(personId);
+
+    PagingResults<Pair<String, Serializable>> preferences = preferenceService.getPagedPreferences(
+      personId,
+      null,
+      Util.getPagingRequest(paging)
+    );
+    List<Preference> ret = new ArrayList<Preference>(
+      preferences.getPage().size()
+    );
+    for (Pair<String, Serializable> prefEntity : preferences.getPage()) {
+      Preference pref = new Preference(
+        prefEntity.getFirst(),
+        prefEntity.getSecond()
+      );
+      ret.add(pref);
+    }
+
+    return CollectionWithPagingInfo.asPaged(
+      paging,
+      ret,
+      preferences.hasMoreItems(),
+      preferences.getTotalResultCount().getFirst()
+    );
+  }
 }

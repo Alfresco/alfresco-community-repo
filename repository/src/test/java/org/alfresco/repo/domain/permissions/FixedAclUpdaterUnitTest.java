@@ -46,63 +46,76 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 /** Mock-based unit tests for {@link FixedAclUpdater}. */
-public class FixedAclUpdaterUnitTest
-{
-    private static final NodeRef NODE_REF = new NodeRef("test://node/ref");
-    private static final long NODE_ID = 123L;
-    private static final NodeRef ARCHIVED_NODE = new NodeRef(STORE_REF_ARCHIVE_SPACESSTORE, "archived");
+public class FixedAclUpdaterUnitTest {
 
-    @InjectMocks
-    private FixedAclUpdater fixedAclUpdater = new FixedAclUpdater();
-    /** The inner class under test. */
-    private AclWorker aclWorker = fixedAclUpdater.createAclWorker();
-    @Mock
-    private NodeDAO nodeDAO;
-    @Mock
-    private AccessControlListDAO accessControlListDAO;
-    @Mock
-    private PolicyIgnoreUtil policyIgnoreUtil;
-    @Mock
-    private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;
-    @Mock
-    private OnInheritPermissionsDisabled onInheritPermissionsDisabled;
-    /** A pair of mock listeners. */
-    @Mock
-    private FixedAclUpdaterListener listenerA, listenerB;
+  private static final NodeRef NODE_REF = new NodeRef("test://node/ref");
+  private static final long NODE_ID = 123L;
+  private static final NodeRef ARCHIVED_NODE = new NodeRef(
+    STORE_REF_ARCHIVE_SPACESSTORE,
+    "archived"
+  );
 
-    @Before
-    public void setUp()
-    {
-        openMocks(this);
+  @InjectMocks
+  private FixedAclUpdater fixedAclUpdater = new FixedAclUpdater();
 
-        fixedAclUpdater.registerListener(listenerA);
-        fixedAclUpdater.registerListener(listenerB);
-    }
+  /** The inner class under test. */
+  private AclWorker aclWorker = fixedAclUpdater.createAclWorker();
 
-    /** Check that when the AclWorker successfully processes a node then the listeners are notified. */
-    @Test
-    public void testListenersNotifiedAboutUpdate() throws Throwable
-    {
-        when(nodeDAO.getNodePair(NODE_REF)).thenReturn(new Pair<>(NODE_ID, NODE_REF));
-        when(onInheritPermissionsDisabledDelegate.get(TYPE_BASE)).thenReturn(onInheritPermissionsDisabled);
+  @Mock
+  private NodeDAO nodeDAO;
 
-        aclWorker.process(NODE_REF);
+  @Mock
+  private AccessControlListDAO accessControlListDAO;
 
-        verify(listenerA).permissionsUpdatedAsynchronously(NODE_REF);
-        verify(listenerB).permissionsUpdatedAsynchronously(NODE_REF);
-    }
+  @Mock
+  private PolicyIgnoreUtil policyIgnoreUtil;
 
-    /** Check that archived nodes get the "Pending ACL" aspect removed without further updates, and the listeners are not notified. */
-    @Test
-    public void testListenersNotNotifiedAboutArchivedNode() throws Throwable
-    {
-        when(nodeDAO.getNodePair(ARCHIVED_NODE)).thenReturn(new Pair<>(NODE_ID, ARCHIVED_NODE));
-        when(onInheritPermissionsDisabledDelegate.get(TYPE_BASE)).thenReturn(onInheritPermissionsDisabled);
+  @Mock
+  private ClassPolicyDelegate<OnInheritPermissionsDisabled> onInheritPermissionsDisabledDelegate;
 
-        aclWorker.process(ARCHIVED_NODE);
+  @Mock
+  private OnInheritPermissionsDisabled onInheritPermissionsDisabled;
 
-        verify(accessControlListDAO).removePendingAclAspect(NODE_ID);
-        verify(listenerA, never()).permissionsUpdatedAsynchronously(any(NodeRef.class));
-        verify(listenerB, never()).permissionsUpdatedAsynchronously(any(NodeRef.class));
-    }
+  /** A pair of mock listeners. */
+  @Mock
+  private FixedAclUpdaterListener listenerA, listenerB;
+
+  @Before
+  public void setUp() {
+    openMocks(this);
+
+    fixedAclUpdater.registerListener(listenerA);
+    fixedAclUpdater.registerListener(listenerB);
+  }
+
+  /** Check that when the AclWorker successfully processes a node then the listeners are notified. */
+  @Test
+  public void testListenersNotifiedAboutUpdate() throws Throwable {
+    when(nodeDAO.getNodePair(NODE_REF))
+      .thenReturn(new Pair<>(NODE_ID, NODE_REF));
+    when(onInheritPermissionsDisabledDelegate.get(TYPE_BASE))
+      .thenReturn(onInheritPermissionsDisabled);
+
+    aclWorker.process(NODE_REF);
+
+    verify(listenerA).permissionsUpdatedAsynchronously(NODE_REF);
+    verify(listenerB).permissionsUpdatedAsynchronously(NODE_REF);
+  }
+
+  /** Check that archived nodes get the "Pending ACL" aspect removed without further updates, and the listeners are not notified. */
+  @Test
+  public void testListenersNotNotifiedAboutArchivedNode() throws Throwable {
+    when(nodeDAO.getNodePair(ARCHIVED_NODE))
+      .thenReturn(new Pair<>(NODE_ID, ARCHIVED_NODE));
+    when(onInheritPermissionsDisabledDelegate.get(TYPE_BASE))
+      .thenReturn(onInheritPermissionsDisabled);
+
+    aclWorker.process(ARCHIVED_NODE);
+
+    verify(accessControlListDAO).removePendingAclAspect(NODE_ID);
+    verify(listenerA, never())
+      .permissionsUpdatedAsynchronously(any(NodeRef.class));
+    verify(listenerB, never())
+      .permissionsUpdatedAsynchronously(any(NodeRef.class));
+  }
 }

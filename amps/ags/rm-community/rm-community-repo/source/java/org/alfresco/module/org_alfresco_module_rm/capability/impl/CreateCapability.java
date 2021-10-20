@@ -29,7 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
@@ -39,152 +39,196 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
-
 /**
  * Create group capability implementation
  *
  * @author Andy Hind
  */
-public class CreateCapability extends DeclarativeCapability
-{
-    /** record service */
-    private RecordService recordService;
+public class CreateCapability extends DeclarativeCapability {
 
-    /** record folder service */
-    private RecordFolderService recordFolderService;
+  /** record service */
+  private RecordService recordService;
 
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
+  /** record folder service */
+  private RecordFolderService recordFolderService;
 
-    /**
-     * @param recordFolderService   record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
-    }
+  /**
+   * @param recordService record service
+   */
+  public void setRecordService(RecordService recordService) {
+    this.recordService = recordService;
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public int evaluate(NodeRef nodeRef)
-    {
-        return evaluate(nodeRef, null, null);
-    }
+  /**
+   * @param recordFolderService   record folder service
+   */
+  public void setRecordFolderService(RecordFolderService recordFolderService) {
+    this.recordFolderService = recordFolderService;
+  }
 
-    /**
-     * Evaluate capability.
-     *
-     * @param destination   destination node reference
-     * @param linkee        linkee node reference, can be null
-     * @param assocType     association type, can be null
-     * @return
-     */
-    public int evaluate(NodeRef destination, NodeRef linkee, QName assocType)
-    {
-        if (linkee != null)
-        {
-            int state = checkRead(linkee, true);
-            if (state != AccessDecisionVoter.ACCESS_GRANTED)
-            {
-                return AccessDecisionVoter.ACCESS_DENIED;
-            }
-        }
-        if (getFilePlanService().isFilePlanComponent(destination))
-        {
-            if ((assocType == null) || !assocType.equals(ContentModel.ASSOC_CONTAINS))
-            {
-                if (linkee == null)
-                {
-                    if (recordService.isRecord(destination) &&
-                        !recordService.isDeclared(destination) &&
-                        permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
-                    {
-                        return AccessDecisionVoter.ACCESS_GRANTED;
-                    }
-                }
-                else
-                {
-                    if (recordService.isRecord(linkee) &&
-                            recordService.isRecord(destination) &&
-                            !recordService.isDeclared(destination) &&
-                            permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
-                    {
-                        return AccessDecisionVoter.ACCESS_GRANTED;
-                    }
-                }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  public int evaluate(NodeRef nodeRef) {
+    return evaluate(nodeRef, null, null);
+  }
 
-            }
-
-            // Build the conditions map
-            Map<String, Boolean> conditions = new HashMap<>(5);
-            conditions.put("capabilityCondition.filling", Boolean.TRUE);
-            conditions.put("capabilityCondition.frozen", Boolean.FALSE);
-            conditions.put("capabilityCondition.closed", Boolean.FALSE);
-            conditions.put("capabilityCondition.cutoff", Boolean.FALSE);
-
-            // if the destination folder is not a record folder and the user has filling capability on it, grant access to create the record
-            if (checkConditions(destination, conditions) &&
-                   !recordFolderService.isRecordFolder(destination) )
-            {
-                return AccessDecisionVoter.ACCESS_GRANTED;
-            }
-
-            if (checkConditions(destination, conditions) &&
-                    recordFolderService.isRecordFolder(destination) &&
-                    permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
-            {
-                return AccessDecisionVoter.ACCESS_GRANTED;
-            }
-
-            conditions.put("capabilityCondition.closed", Boolean.TRUE);
-            if (checkConditions(destination, conditions) &&
-                    recordFolderService.isRecordFolder(destination) &&
-                    permissionService.hasPermission(getFilePlanService().getFilePlan(destination), RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS) == AccessStatus.ALLOWED)
-            {
-                return AccessDecisionVoter.ACCESS_GRANTED;
-            }
-
-            conditions.remove("capabilityCondition.closed");
-            conditions.put("capabilityCondition.cutoff", Boolean.TRUE);
-            if (checkConditions(destination, conditions) &&
-                    recordFolderService.isRecordFolder(destination) &&
-                    permissionService.hasPermission(getFilePlanService().getFilePlan(destination), RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS) == AccessStatus.ALLOWED)
-            {
-                return AccessDecisionVoter.ACCESS_GRANTED;
-            }
-        }
-        if (capabilityService.getCapability(RMPermissionModel.CREATE_MODIFY_DESTROY_FOLDERS).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
-        {
-            return AccessDecisionVoter.ACCESS_GRANTED;
-        }
-        if (capabilityService.getCapability(RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
-        {
-            return AccessDecisionVoter.ACCESS_GRANTED;
-        }
-        if (capabilityService.getCapability(RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
-        {
-            return AccessDecisionVoter.ACCESS_GRANTED;
-        }
-        if (capabilityService.getCapability(RMPermissionModel.CREATE_MODIFY_DESTROY_FILEPLAN_METADATA).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
-        {
-            return AccessDecisionVoter.ACCESS_GRANTED;
-        }
-        if (capabilityService.getCapability(RMPermissionModel.CREATE_HOLD).evaluate(destination) == AccessDecisionVoter.ACCESS_GRANTED)
-        {
-            return AccessDecisionVoter.ACCESS_GRANTED;
-        }
-        if (((ChangeOrDeleteReferencesCapability)capabilityService.getCapability(RMPermissionModel.CHANGE_OR_DELETE_REFERENCES)).evaluate(destination, linkee) == AccessDecisionVoter.ACCESS_GRANTED)
-        {
-            return AccessDecisionVoter.ACCESS_GRANTED;
-        }
+  /**
+   * Evaluate capability.
+   *
+   * @param destination   destination node reference
+   * @param linkee        linkee node reference, can be null
+   * @param assocType     association type, can be null
+   * @return
+   */
+  public int evaluate(NodeRef destination, NodeRef linkee, QName assocType) {
+    if (linkee != null) {
+      int state = checkRead(linkee, true);
+      if (state != AccessDecisionVoter.ACCESS_GRANTED) {
         return AccessDecisionVoter.ACCESS_DENIED;
+      }
     }
+    if (getFilePlanService().isFilePlanComponent(destination)) {
+      if (
+        (assocType == null) || !assocType.equals(ContentModel.ASSOC_CONTAINS)
+      ) {
+        if (linkee == null) {
+          if (
+            recordService.isRecord(destination) &&
+            !recordService.isDeclared(destination) &&
+            permissionService.hasPermission(
+              destination,
+              RMPermissionModel.FILE_RECORDS
+            ) ==
+            AccessStatus.ALLOWED
+          ) {
+            return AccessDecisionVoter.ACCESS_GRANTED;
+          }
+        } else {
+          if (
+            recordService.isRecord(linkee) &&
+            recordService.isRecord(destination) &&
+            !recordService.isDeclared(destination) &&
+            permissionService.hasPermission(
+              destination,
+              RMPermissionModel.FILE_RECORDS
+            ) ==
+            AccessStatus.ALLOWED
+          ) {
+            return AccessDecisionVoter.ACCESS_GRANTED;
+          }
+        }
+      }
+
+      // Build the conditions map
+      Map<String, Boolean> conditions = new HashMap<>(5);
+      conditions.put("capabilityCondition.filling", Boolean.TRUE);
+      conditions.put("capabilityCondition.frozen", Boolean.FALSE);
+      conditions.put("capabilityCondition.closed", Boolean.FALSE);
+      conditions.put("capabilityCondition.cutoff", Boolean.FALSE);
+
+      // if the destination folder is not a record folder and the user has filling capability on it, grant access to create the record
+      if (
+        checkConditions(destination, conditions) &&
+        !recordFolderService.isRecordFolder(destination)
+      ) {
+        return AccessDecisionVoter.ACCESS_GRANTED;
+      }
+
+      if (
+        checkConditions(destination, conditions) &&
+        recordFolderService.isRecordFolder(destination) &&
+        permissionService.hasPermission(
+          destination,
+          RMPermissionModel.FILE_RECORDS
+        ) ==
+        AccessStatus.ALLOWED
+      ) {
+        return AccessDecisionVoter.ACCESS_GRANTED;
+      }
+
+      conditions.put("capabilityCondition.closed", Boolean.TRUE);
+      if (
+        checkConditions(destination, conditions) &&
+        recordFolderService.isRecordFolder(destination) &&
+        permissionService.hasPermission(
+          getFilePlanService().getFilePlan(destination),
+          RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS
+        ) ==
+        AccessStatus.ALLOWED
+      ) {
+        return AccessDecisionVoter.ACCESS_GRANTED;
+      }
+
+      conditions.remove("capabilityCondition.closed");
+      conditions.put("capabilityCondition.cutoff", Boolean.TRUE);
+      if (
+        checkConditions(destination, conditions) &&
+        recordFolderService.isRecordFolder(destination) &&
+        permissionService.hasPermission(
+          getFilePlanService().getFilePlan(destination),
+          RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS
+        ) ==
+        AccessStatus.ALLOWED
+      ) {
+        return AccessDecisionVoter.ACCESS_GRANTED;
+      }
+    }
+    if (
+      capabilityService
+        .getCapability(RMPermissionModel.CREATE_MODIFY_DESTROY_FOLDERS)
+        .evaluate(destination) ==
+      AccessDecisionVoter.ACCESS_GRANTED
+    ) {
+      return AccessDecisionVoter.ACCESS_GRANTED;
+    }
+    if (
+      capabilityService
+        .getCapability(RMPermissionModel.DECLARE_RECORDS_IN_CLOSED_FOLDERS)
+        .evaluate(destination) ==
+      AccessDecisionVoter.ACCESS_GRANTED
+    ) {
+      return AccessDecisionVoter.ACCESS_GRANTED;
+    }
+    if (
+      capabilityService
+        .getCapability(
+          RMPermissionModel.CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS
+        )
+        .evaluate(destination) ==
+      AccessDecisionVoter.ACCESS_GRANTED
+    ) {
+      return AccessDecisionVoter.ACCESS_GRANTED;
+    }
+    if (
+      capabilityService
+        .getCapability(
+          RMPermissionModel.CREATE_MODIFY_DESTROY_FILEPLAN_METADATA
+        )
+        .evaluate(destination) ==
+      AccessDecisionVoter.ACCESS_GRANTED
+    ) {
+      return AccessDecisionVoter.ACCESS_GRANTED;
+    }
+    if (
+      capabilityService
+        .getCapability(RMPermissionModel.CREATE_HOLD)
+        .evaluate(destination) ==
+      AccessDecisionVoter.ACCESS_GRANTED
+    ) {
+      return AccessDecisionVoter.ACCESS_GRANTED;
+    }
+    if (
+      (
+        (ChangeOrDeleteReferencesCapability) capabilityService.getCapability(
+          RMPermissionModel.CHANGE_OR_DELETE_REFERENCES
+        )
+      ).evaluate(destination, linkee) ==
+      AccessDecisionVoter.ACCESS_GRANTED
+    ) {
+      return AccessDecisionVoter.ACCESS_GRANTED;
+    }
+    return AccessDecisionVoter.ACCESS_DENIED;
+  }
 }

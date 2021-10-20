@@ -29,7 +29,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.net.ConnectException;
-
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -46,108 +45,108 @@ import org.keycloak.authorization.client.util.HttpResponseException;
 import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest
-{
-    private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent();
+public class IdentityServiceAuthenticationComponentTest extends BaseSpringTest {
 
-    @Autowired
-    private AuthenticationContext authenticationContext;
+  private final IdentityServiceAuthenticationComponent authComponent = new IdentityServiceAuthenticationComponent();
 
-    @Autowired
-    private TransactionService transactionService;
+  @Autowired
+  private AuthenticationContext authenticationContext;
 
-    @Autowired
-    private UserRegistrySynchronizer userRegistrySynchronizer;
+  @Autowired
+  private TransactionService transactionService;
 
-    @Autowired
-    private NodeService nodeService;
+  @Autowired
+  private UserRegistrySynchronizer userRegistrySynchronizer;
 
-    @Autowired
-    private PersonService personService;
+  @Autowired
+  private NodeService nodeService;
 
-    private AuthzClient mockAuthzClient;
+  @Autowired
+  private PersonService personService;
 
-    @Before
-    public void setUp()
-    {
-        authComponent.setAuthenticationContext(authenticationContext);
-        authComponent.setTransactionService(transactionService);
-        authComponent.setUserRegistrySynchronizer(userRegistrySynchronizer);
-        authComponent.setNodeService(nodeService);
-        authComponent.setPersonService(personService);
+  private AuthzClient mockAuthzClient;
 
-        mockAuthzClient = mock(AuthzClient.class);
-        authComponent.setAuthenticatorAuthzClient(mockAuthzClient);
+  @Before
+  public void setUp() {
+    authComponent.setAuthenticationContext(authenticationContext);
+    authComponent.setTransactionService(transactionService);
+    authComponent.setUserRegistrySynchronizer(userRegistrySynchronizer);
+    authComponent.setNodeService(nodeService);
+    authComponent.setPersonService(personService);
+
+    mockAuthzClient = mock(AuthzClient.class);
+    authComponent.setAuthenticatorAuthzClient(mockAuthzClient);
+  }
+
+  @After
+  public void tearDown() {
+    authenticationContext.clearCurrentSecurityContext();
+  }
+
+  @Test(expected = AuthenticationException.class)
+  public void testAuthenticationFail() {
+    when(mockAuthzClient.obtainAccessToken("username", "password"))
+      .thenThrow(
+        new HttpResponseException("Unauthorized", 401, "Unauthorized", null)
+      );
+
+    authComponent.authenticateImpl("username", "password".toCharArray());
+  }
+
+  @Test(expected = AuthenticationException.class)
+  public void testAuthenticationFail_connectionException() {
+    when(mockAuthzClient.obtainAccessToken("username", "password"))
+      .thenThrow(
+        new RuntimeException(
+          "Couldn't connect to server",
+          new ConnectException("ConnectionRefused")
+        )
+      );
+
+    try {
+      authComponent.authenticateImpl("username", "password".toCharArray());
+    } catch (RuntimeException ex) {
+      Throwable cause = ExceptionStackUtil.getCause(ex, ConnectException.class);
+      assertNotNull(cause);
+      throw ex;
     }
+  }
 
-    @After
-    public void tearDown()
-    {
-        authenticationContext.clearCurrentSecurityContext();
-    }
+  @Test(expected = AuthenticationException.class)
+  public void testAuthenticationFail_otherException() {
+    when(mockAuthzClient.obtainAccessToken("username", "password"))
+      .thenThrow(new RuntimeException("Some other errors!"));
 
-    @Test (expected=AuthenticationException.class)
-    public void testAuthenticationFail()
-    {
-        when(mockAuthzClient.obtainAccessToken("username", "password"))
-                .thenThrow(new HttpResponseException("Unauthorized", 401, "Unauthorized", null));
+    authComponent.authenticateImpl("username", "password".toCharArray());
+  }
 
-        authComponent.authenticateImpl("username", "password".toCharArray());
-    }
+  @Test
+  public void testAuthenticationPass() {
+    when(mockAuthzClient.obtainAccessToken("username", "password"))
+      .thenReturn(new AccessTokenResponse());
 
-    @Test(expected = AuthenticationException.class)
-    public void testAuthenticationFail_connectionException()
-    {
-        when(mockAuthzClient.obtainAccessToken("username", "password")).thenThrow(
-                    new RuntimeException("Couldn't connect to server", new ConnectException("ConnectionRefused")));
+    authComponent.authenticateImpl("username", "password".toCharArray());
 
-        try
-        {
-            authComponent.authenticateImpl("username", "password".toCharArray());
-        }
-        catch (RuntimeException ex)
-        {
-            Throwable cause = ExceptionStackUtil.getCause(ex, ConnectException.class);
-            assertNotNull(cause);
-            throw ex;
-        }
-    }
+    // Check that the authenticated user has been set
+    assertEquals(
+      "User has not been set as expected.",
+      "username",
+      authenticationContext.getCurrentUserName()
+    );
+  }
 
-    @Test (expected=AuthenticationException.class)
-    public void testAuthenticationFail_otherException()
-    {
-        when(mockAuthzClient.obtainAccessToken("username", "password"))
-                    .thenThrow(new RuntimeException("Some other errors!"));
+  @Test(expected = AuthenticationException.class)
+  public void testFallthroughWhenAuthzClientIsNull() {
+    authComponent.setAuthenticatorAuthzClient(null);
+    authComponent.authenticateImpl("username", "password".toCharArray());
+  }
 
-        authComponent.authenticateImpl("username", "password".toCharArray());
-    }
+  @Test
+  public void testSettingAllowGuestUser() {
+    authComponent.setAllowGuestLogin(true);
+    assertTrue(authComponent.guestUserAuthenticationAllowed());
 
-    @Test
-    public void testAuthenticationPass()
-    {
-        when(mockAuthzClient.obtainAccessToken("username", "password"))
-                .thenReturn(new AccessTokenResponse());
-
-        authComponent.authenticateImpl("username", "password".toCharArray());
-
-        // Check that the authenticated user has been set
-        assertEquals("User has not been set as expected.","username", authenticationContext.getCurrentUserName());
-    }
-
-    @Test (expected= AuthenticationException.class)
-    public void testFallthroughWhenAuthzClientIsNull()
-    {
-        authComponent.setAuthenticatorAuthzClient(null);
-        authComponent.authenticateImpl("username", "password".toCharArray());
-    }
-
-    @Test
-    public void testSettingAllowGuestUser()
-    {
-        authComponent.setAllowGuestLogin(true);
-        assertTrue(authComponent.guestUserAuthenticationAllowed());
-
-        authComponent.setAllowGuestLogin(false);
-        assertFalse(authComponent.guestUserAuthenticationAllowed());
-    }
+    authComponent.setAllowGuestLogin(false);
+    assertFalse(authComponent.guestUserAuthenticationAllowed());
+  }
 }

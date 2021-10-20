@@ -32,30 +32,24 @@ package org.alfresco.module.org_alfresco_module_rm.query;
  * @author Ana Manolache
  * @since 2.6
  */
-public class PropertyValuesOfChildrenQueryParams
-{
-    private Long parentId;
-    private Long propertyQnameId;
+public class PropertyValuesOfChildrenQueryParams {
 
-    public Long getParentId()
-    {
-        return parentId;
-    }
+  private Long parentId;
+  private Long propertyQnameId;
 
-    public void setParentId(Long parentId)
-    {
-        this.parentId = parentId;
-    }
+  public Long getParentId() {
+    return parentId;
+  }
 
-    public Long getPropertyQnameId()
-    {
-        return propertyQnameId;
-    }
+  public void setParentId(Long parentId) {
+    this.parentId = parentId;
+  }
 
-    public void setPropertyQnameId(Long propertyQnameId)
-    {
-        this.propertyQnameId = propertyQnameId;
-    }
+  public Long getPropertyQnameId() {
+    return propertyQnameId;
+  }
 
+  public void setPropertyQnameId(Long propertyQnameId) {
+    this.propertyQnameId = propertyQnameId;
+  }
 }
-

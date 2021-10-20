@@ -32,40 +32,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/* package scope */ final class PivotUtil
-{
-    private PivotUtil()
-    {
-        // Will not be called
-    }
+/* package scope */final class PivotUtil {
 
-    static Map<String, List<String>> getPivot(Map<String, List<String>> source)
-    {
+  private PivotUtil() {
+    // Will not be called
+  }
 
-        Map<String, List<String>> pivot = new HashMap<>();
+  static Map<String, List<String>> getPivot(Map<String, List<String>> source) {
+    Map<String, List<String>> pivot = new HashMap<>();
 
-        for (Map.Entry<String, List<String>> entry : source.entrySet())
-        {
-            List<String>values = entry.getValue();
-            for (String value : values)
-            {
-                String authority = entry.getKey();
-                if (pivot.containsKey(value))
-                {
-                    // already exists
-                    List<String> list = pivot.get(value);
-                    list.add(authority );
-                }
-                else
-                {
-                    // New value
-                    List<String> list = new ArrayList<>();
-                    list.add(authority);
-                    pivot.put(value, list);
-                }
-            }
+    for (Map.Entry<String, List<String>> entry : source.entrySet()) {
+      List<String> values = entry.getValue();
+      for (String value : values) {
+        String authority = entry.getKey();
+        if (pivot.containsKey(value)) {
+          // already exists
+          List<String> list = pivot.get(value);
+          list.add(authority);
+        } else {
+          // New value
+          List<String> list = new ArrayList<>();
+          list.add(authority);
+          pivot.put(value, list);
         }
-
-        return pivot;
+      }
     }
+
+    return pivot;
+  }
 }

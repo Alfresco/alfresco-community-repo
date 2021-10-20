@@ -25,8 +25,8 @@
  */
 package org.alfresco.heartbeat;
 
-import org.alfresco.heartbeat.datasender.HBDataSenderServiceBuilder;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
+import org.alfresco.heartbeat.datasender.HBDataSenderServiceBuilder;
 
 /**
  * Creates and configures a {@link HBDataSenderService}
@@ -34,53 +34,50 @@ import org.alfresco.heartbeat.datasender.HBDataSenderService;
  * @author Ancuta Morarasu
  *
  */
-public class HBDataSenderServiceFactory
-{
-    private String target;
-    private boolean heartbeatEnabled;
-    private String sendingSchedule;
+public class HBDataSenderServiceFactory {
 
-    /**
-     * Sets the ingestion url for the heartbeat data
-     *
-     * @param target valid url
-     */
-    public void setTarget(String target)
-    {
-        this.target = target;
-    }
+  private String target;
+  private boolean heartbeatEnabled;
+  private String sendingSchedule;
 
-    /**
-     * Enables or stops gathering and sending heartbeat data
-     *
-     * @param heartbeatEnabled
-     */
-    public void setHeartbeatEnabled(boolean heartbeatEnabled)
-    {
-        this.heartbeatEnabled = heartbeatEnabled;
-    }
+  /**
+   * Sets the ingestion url for the heartbeat data
+   *
+   * @param target valid url
+   */
+  public void setTarget(String target) {
+    this.target = target;
+  }
 
-    /**
-     * Sets the cron trigger expression for scheduling the heartbeat job.
-     *
-     * @param sendingSchedule
-     */
-    public void setSendingSchedule(String sendingSchedule)
-    {
-        this.sendingSchedule = sendingSchedule;
-    }
+  /**
+   * Enables or stops gathering and sending heartbeat data
+   *
+   * @param heartbeatEnabled
+   */
+  public void setHeartbeatEnabled(boolean heartbeatEnabled) {
+    this.heartbeatEnabled = heartbeatEnabled;
+  }
 
-    /**
-     * Creates the HBDataSenderService
-     *
-     * @return
-     */
-    public HBDataSenderService createInstance() 
-    {
-        return HBDataSenderServiceBuilder.builder()
-                  .withHeartbeatURL(target)
-                  .withSendingSchedule(sendingSchedule)
-                  .enable(heartbeatEnabled)
-                  .build();
-    }
+  /**
+   * Sets the cron trigger expression for scheduling the heartbeat job.
+   *
+   * @param sendingSchedule
+   */
+  public void setSendingSchedule(String sendingSchedule) {
+    this.sendingSchedule = sendingSchedule;
+  }
+
+  /**
+   * Creates the HBDataSenderService
+   *
+   * @return
+   */
+  public HBDataSenderService createInstance() {
+    return HBDataSenderServiceBuilder
+      .builder()
+      .withHeartbeatURL(target)
+      .withSendingSchedule(sendingSchedule)
+      .enable(heartbeatEnabled)
+      .build();
+  }
 }

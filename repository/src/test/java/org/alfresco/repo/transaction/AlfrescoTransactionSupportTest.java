@@ -28,9 +28,7 @@ package org.alfresco.repo.transaction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.transaction.UserTransaction;
-
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -47,339 +45,453 @@ import org.junit.Test;
  *
  * @author Derek Hulley
  */
-public class AlfrescoTransactionSupportTest extends BaseSpringTest
-{
-    private ServiceRegistry serviceRegistry;
-    TransactionService transactionService;
+public class AlfrescoTransactionSupportTest extends BaseSpringTest {
 
-    @Before
-    public void setUp() throws Exception
+  private ServiceRegistry serviceRegistry;
+  TransactionService transactionService;
+
+  @Before
+  public void setUp() throws Exception {
+    serviceRegistry =
+      (ServiceRegistry) applicationContext.getBean(
+        ServiceRegistry.SERVICE_REGISTRY
+      );
+    transactionService = serviceRegistry.getTransactionService();
+  }
+
+  @Test
+  public void testTransactionId() throws Exception {
+    // get a user transaction
+    TransactionService transactionService = serviceRegistry.getTransactionService();
+    UserTransaction txn = transactionService.getUserTransaction();
+    assertNull(
+      "Thread shouldn't have a txn ID",
+      AlfrescoTransactionSupport.getTransactionId()
+    );
+    assertEquals(
+      "No transaction start time expected",
+      -1,
+      AlfrescoTransactionSupport.getTransactionStartTime()
+    );
+
+    // begin the txn
+    txn.begin();
+    String txnId = AlfrescoTransactionSupport.getTransactionId();
+    assertNotNull("Expected thread to have a txn id", txnId);
+    long txnStartTime = AlfrescoTransactionSupport.getTransactionStartTime();
+    assertTrue("Expected a transaction start time", txnStartTime > 0);
+
+    // check that the txn id and time doesn't change
+    String txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
+    assertEquals("Transaction ID changed on same thread", txnId, txnIdCheck);
+    long txnStartTimeCheck = AlfrescoTransactionSupport.getTransactionStartTime();
+    assertEquals(
+      "Transaction start time changed on same thread",
+      txnStartTime,
+      txnStartTimeCheck
+    );
+
+    // begin a new, inner transaction
     {
-        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        transactionService = serviceRegistry.getTransactionService();
+      UserTransaction txnInner = transactionService.getNonPropagatingUserTransaction();
+
+      String txnIdInner = AlfrescoTransactionSupport.getTransactionId();
+      assertEquals(
+        "Inner transaction not started, so txn ID should not change",
+        txnId,
+        txnIdInner
+      );
+      long txnStartTimeInner = AlfrescoTransactionSupport.getTransactionStartTime();
+      assertEquals(
+        "Inner transaction not started, so txn start time should not change",
+        txnStartTime,
+        txnStartTimeInner
+      );
+
+      // begin the nested txn
+      txnInner.begin();
+      // check the ID for the outer transaction
+      txnIdInner = AlfrescoTransactionSupport.getTransactionId();
+      assertNotSame(
+        "Inner txn ID must be different from outer txn ID",
+        txnIdInner,
+        txnId
+      );
+      // Check the time against the outer transaction
+      txnStartTimeInner = AlfrescoTransactionSupport.getTransactionStartTime();
+      assertTrue(
+        "Inner transaction start time should be greater or equal (accuracy) to the outer's",
+        txnStartTime <= txnStartTimeInner
+      );
+
+      // rollback the nested txn
+      txnInner.rollback();
+      txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
+      assertEquals("Txn ID not popped inner txn completion", txnId, txnIdCheck);
     }
 
-    @Test
-    public void testTransactionId() throws Exception
-    {
-        // get a user transaction
-        TransactionService transactionService = serviceRegistry.getTransactionService();
-        UserTransaction txn = transactionService.getUserTransaction();
-        assertNull("Thread shouldn't have a txn ID", AlfrescoTransactionSupport.getTransactionId());
-        assertEquals("No transaction start time expected", -1, AlfrescoTransactionSupport.getTransactionStartTime());
+    // rollback
+    txn.rollback();
+    assertNull(
+      "Thread shouldn't have a txn ID after rollback",
+      AlfrescoTransactionSupport.getTransactionId()
+    );
 
-        // begin the txn
-        txn.begin();
-        String txnId = AlfrescoTransactionSupport.getTransactionId();
-        assertNotNull("Expected thread to have a txn id", txnId);
-        long txnStartTime = AlfrescoTransactionSupport.getTransactionStartTime();
-        assertTrue("Expected a transaction start time", txnStartTime > 0);
+    // start a new transaction
+    txn = transactionService.getUserTransaction();
+    txn.begin();
+    txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
+    assertNotSame("New transaction has same ID", txnId, txnIdCheck);
 
-        // check that the txn id and time doesn't change
-        String txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
-        assertEquals("Transaction ID changed on same thread", txnId, txnIdCheck);
-        long txnStartTimeCheck = AlfrescoTransactionSupport.getTransactionStartTime();
-        assertEquals("Transaction start time changed on same thread", txnStartTime, txnStartTimeCheck);
+    // rollback
+    txn.rollback();
+    assertNull(
+      "Thread shouldn't have a txn ID after rollback",
+      AlfrescoTransactionSupport.getTransactionId()
+    );
+  }
 
-        // begin a new, inner transaction
-        {
-            UserTransaction txnInner = transactionService.getNonPropagatingUserTransaction();
+  @Test
+  public void testListener() throws Exception {
+    final List<String> strings = new ArrayList<String>(1);
 
-            String txnIdInner = AlfrescoTransactionSupport.getTransactionId();
-            assertEquals("Inner transaction not started, so txn ID should not change", txnId, txnIdInner);
-            long txnStartTimeInner = AlfrescoTransactionSupport.getTransactionStartTime();
-            assertEquals("Inner transaction not started, so txn start time should not change", txnStartTime, txnStartTimeInner);
+    // anonymous inner class to test it
+    TransactionListener listener = new TransactionListener() {
+      @Override
+      public void flush() {
+        strings.add("flush");
+      }
 
-            // begin the nested txn
-            txnInner.begin();
-            // check the ID for the outer transaction
-            txnIdInner = AlfrescoTransactionSupport.getTransactionId();
-            assertNotSame("Inner txn ID must be different from outer txn ID", txnIdInner, txnId);
-            // Check the time against the outer transaction
-            txnStartTimeInner = AlfrescoTransactionSupport.getTransactionStartTime();
-            assertTrue(
-                    "Inner transaction start time should be greater or equal (accuracy) to the outer's",
-                    txnStartTime <= txnStartTimeInner);
+      @Override
+      public void beforeCommit(boolean readOnly) {
+        strings.add("beforeCommit");
+      }
 
-            // rollback the nested txn
-            txnInner.rollback();
-            txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
-            assertEquals("Txn ID not popped inner txn completion", txnId, txnIdCheck);
-        }
+      @Override
+      public void beforeCompletion() {
+        strings.add("beforeCompletion");
+      }
 
-        // rollback
-        txn.rollback();
-        assertNull("Thread shouldn't have a txn ID after rollback", AlfrescoTransactionSupport.getTransactionId());
+      @Override
+      public void afterCommit() {
+        strings.add("afterCommit");
+      }
 
-        // start a new transaction
-        txn = transactionService.getUserTransaction();
-        txn.begin();
-        txnIdCheck = AlfrescoTransactionSupport.getTransactionId();
-        assertNotSame("New transaction has same ID", txnId, txnIdCheck);
+      @Override
+      public void afterRollback() {
+        strings.add("afterRollback");
+      }
+    };
 
-        // rollback
-        txn.rollback();
-        assertNull("Thread shouldn't have a txn ID after rollback", AlfrescoTransactionSupport.getTransactionId());
-    }
+    // begin a transaction
+    UserTransaction txn = transactionService.getUserTransaction();
+    txn.begin();
 
-    @Test
-    public void testListener() throws Exception
-    {
-        final List<String> strings = new ArrayList<String>(1);
+    // register it
+    AlfrescoTransactionSupport.bindListener(listener);
 
-        // anonymous inner class to test it
-        TransactionListener listener = new TransactionListener()
-        {
-            @Override
-            public void flush()
-            {
-                strings.add("flush");
-            }
-            @Override
-            public void beforeCommit(boolean readOnly)
-            {
-                strings.add("beforeCommit");
-            }
-            @Override
-            public void beforeCompletion()
-            {
-                strings.add("beforeCompletion");
-            }
-            @Override
-            public void afterCommit()
-            {
-                strings.add("afterCommit");
-            }
-            @Override
-            public void afterRollback()
-            {
-                strings.add("afterRollback");
-            }
+    // test commit
+    txn.commit();
+    assertTrue(
+      "beforeCommit not called on listener",
+      strings.contains("beforeCommit")
+    );
+    assertTrue(
+      "beforeCompletion not called on listener",
+      strings.contains("beforeCompletion")
+    );
+    assertTrue(
+      "afterCommit not called on listener",
+      strings.contains("afterCommit")
+    );
+  }
+
+  @Test
+  public void testListenerNew() throws Exception {
+    final List<String> strings = new ArrayList<String>(1);
+
+    // anonymous inner class to test it
+    org.alfresco.util.transaction.TransactionListener listener = new org.alfresco.util.transaction.TransactionListener() {
+      @Override
+      public void beforeCommit(boolean readOnly) {
+        strings.add("beforeCommit");
+      }
+
+      @Override
+      public void beforeCompletion() {
+        strings.add("beforeCompletion");
+      }
+
+      @Override
+      public void afterCommit() {
+        strings.add("afterCommit");
+      }
+
+      @Override
+      public void afterRollback() {
+        strings.add("afterRollback");
+      }
+    };
+
+    // begin a transaction
+    UserTransaction txn = transactionService.getUserTransaction();
+    txn.begin();
+
+    // register it
+    AlfrescoTransactionSupport.bindListener(listener);
+
+    // test commit
+    txn.commit();
+    assertTrue(
+      "beforeCommit not called on listener",
+      strings.contains("beforeCommit")
+    );
+    assertTrue(
+      "beforeCompletion not called on listener",
+      strings.contains("beforeCompletion")
+    );
+    assertTrue(
+      "afterCommit not called on listener",
+      strings.contains("afterCommit")
+    );
+  }
+
+  /**
+   * Tests the condition whereby a listener can cause failure by attempting to bind itself to
+   * the transaction in the pre-commit callback.  This is caused by the listener set being
+   * modified during calls to the listeners.
+   */
+  @Test
+  public void testPreCommitListenerBinding() throws Exception {
+    final String beforeCommit = "beforeCommit";
+    final String afterCommitInner = "afterCommit - inner";
+    final String afterCommitOuter = "afterCommit = outer";
+
+    // the listeners will play with this
+    final List<String> testList = new ArrayList<String>(1);
+    testList.add(beforeCommit);
+    testList.add(afterCommitInner);
+    testList.add(afterCommitOuter);
+
+    final TransactionListener listener = new TransactionListenerAdapter() {
+      @Override
+      public int hashCode() {
+        // force this listener to be first in the bound set
+        return 100;
+      }
+
+      @Override
+      public void beforeCommit(boolean readOnly) {
+        testList.remove(beforeCommit);
+        TransactionListener postCommitListener = new TransactionListenerAdapter() {
+          @Override
+          public void afterCommit() {
+            testList.remove(afterCommitInner);
+          }
         };
+        // register bogus on the transaction
+        AlfrescoTransactionSupport.bindListener(postCommitListener);
+      }
 
-        // begin a transaction
-        UserTransaction txn = transactionService.getUserTransaction();
-        txn.begin();
-
-        // register it
+      @Override
+      public void afterCommit() {
+        testList.remove(afterCommitOuter);
+      }
+    };
+    final TransactionListener dummyListener = new TransactionListenerAdapter() {
+      @Override
+      public int hashCode() {
+        // force the dummy listener to be AFTER the binding listener
+        return 200;
+      }
+    };
+    // start a transaction
+    RetryingTransactionCallback<Object> bindWork = new RetryingTransactionCallback<Object>() {
+      public Object execute() throws Exception {
+        // just bind the listener to the transaction
+        AlfrescoTransactionSupport.bindListener(dummyListener);
         AlfrescoTransactionSupport.bindListener(listener);
+        return null;
+      }
+    };
+    // kick it all off
+    transactionService.getRetryingTransactionHelper().doInTransaction(bindWork);
 
-        // test commit
-        txn.commit();
-        assertTrue("beforeCommit not called on listener", strings.contains("beforeCommit"));
-        assertTrue("beforeCompletion not called on listener", strings.contains("beforeCompletion"));
-        assertTrue("afterCommit not called on listener", strings.contains("afterCommit"));
-    }
+    // make sure that the binding all worked
+    assertTrue(
+      "Expected callbacks not all processed: " + testList,
+      testList.size() == 0
+    );
+  }
 
-    @Test
-    public void testListenerNew() throws Exception
-    {
-        final List<String> strings = new ArrayList<String>(1);
+  @Test
+  public void testReadWriteStateRetrieval() throws Exception {
+    final TxnReadState[] postCommitReadState = new TxnReadState[1];
+    final TransactionListenerAdapter getReadStatePostCommit = new TransactionListenerAdapter() {
+      @Override
+      public void afterCommit() {
+        postCommitReadState[0] =
+          AlfrescoTransactionSupport.getTransactionReadState();
+      }
 
-        // anonymous inner class to test it
-        org.alfresco.util.transaction.TransactionListener listener = new org.alfresco.util.transaction.TransactionListener()
-        {
-            @Override
-            public void beforeCommit(boolean readOnly)
-            {
-                strings.add("beforeCommit");
-            }
-            @Override
-            public void beforeCompletion()
-            {
-                strings.add("beforeCompletion");
-            }
-            @Override
-            public void afterCommit()
-            {
-                strings.add("afterCommit");
-            }
-            @Override
-            public void afterRollback()
-            {
-                strings.add("afterRollback");
-            }
-        };
+      @Override
+      public void afterRollback() {
+        postCommitReadState[0] =
+          AlfrescoTransactionSupport.getTransactionReadState();
+      }
+    };
 
-        // begin a transaction
-        UserTransaction txn = transactionService.getUserTransaction();
-        txn.begin();
-
-        // register it
-        AlfrescoTransactionSupport.bindListener(listener);
-
-        // test commit
-        txn.commit();
-        assertTrue("beforeCommit not called on listener", strings.contains("beforeCommit"));
-        assertTrue("beforeCompletion not called on listener", strings.contains("beforeCompletion"));
-        assertTrue("afterCommit not called on listener", strings.contains("afterCommit"));
-    }
-
-    /**
-     * Tests the condition whereby a listener can cause failure by attempting to bind itself to
-     * the transaction in the pre-commit callback.  This is caused by the listener set being
-     * modified during calls to the listeners.
-     */
-    @Test
-    public void testPreCommitListenerBinding() throws Exception
-    {
-        final String beforeCommit = "beforeCommit";
-        final String afterCommitInner = "afterCommit - inner";
-        final String afterCommitOuter = "afterCommit = outer";
-
-        // the listeners will play with this
-        final List<String> testList = new ArrayList<String>(1);
-        testList.add(beforeCommit);
-        testList.add(afterCommitInner);
-        testList.add(afterCommitOuter);
-
-        final TransactionListener listener = new TransactionListenerAdapter()
-        {
-            @Override
-            public int hashCode()
-            {
-                // force this listener to be first in the bound set
-                return 100;
-            }
-            @Override
-            public void beforeCommit(boolean readOnly)
-            {
-                testList.remove(beforeCommit);
-                TransactionListener postCommitListener = new TransactionListenerAdapter()
-                {
-                    @Override
-                    public void afterCommit()
-                    {
-                        testList.remove(afterCommitInner);
-                    }
-                };
-                // register bogus on the transaction
-                AlfrescoTransactionSupport.bindListener(postCommitListener);
-            }
-            @Override
-            public void afterCommit()
-            {
-                testList.remove(afterCommitOuter);
-            }
-        };
-        final TransactionListener dummyListener = new TransactionListenerAdapter()
-        {
-            @Override
-            public int hashCode()
-            {
-                // force the dummy listener to be AFTER the binding listener
-                return 200;
-            }
-        };
-        // start a transaction
-        RetryingTransactionCallback<Object> bindWork = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Exception
-            {
-                // just bind the listener to the transaction
-                AlfrescoTransactionSupport.bindListener(dummyListener);
-                AlfrescoTransactionSupport.bindListener(listener);
-                return null;
-            }
-        };
-        // kick it all off
-        transactionService.getRetryingTransactionHelper().doInTransaction(bindWork);
-
-        // make sure that the binding all worked
-        assertTrue("Expected callbacks not all processed: " + testList, testList.size() == 0);
-    }
-
-    @Test
-    public void testReadWriteStateRetrieval() throws Exception
-    {
-        final TxnReadState[] postCommitReadState = new TxnReadState[1];
-        final TransactionListenerAdapter getReadStatePostCommit = new TransactionListenerAdapter()
-        {
-            @Override
-            public void afterCommit()
-            {
-                postCommitReadState[0] = AlfrescoTransactionSupport.getTransactionReadState();
-            }
-
-            @Override
-            public void afterRollback()
-            {
-                postCommitReadState[0] = AlfrescoTransactionSupport.getTransactionReadState();
-            }
-        };
-
-        RetryingTransactionCallback<TxnReadState> getReadStateWork = new RetryingTransactionCallback<TxnReadState>()
-        {
-            public TxnReadState execute() throws Exception
-            {
-                // Register to list to post-commit
-                AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
-
-                return AlfrescoTransactionSupport.getTransactionReadState();
-            }
-        };
-
-        // Check TXN_NONE
-        TxnReadState checkTxnReadState = AlfrescoTransactionSupport.getTransactionReadState();
-        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, checkTxnReadState);
-        assertNull("Expected no post-commit read state", postCommitReadState[0]);
-        // Check TXN_READ_ONLY
-        checkTxnReadState = transactionService.getRetryingTransactionHelper().doInTransaction(getReadStateWork, true);
-        assertEquals("Expected 'read-only transaction'", TxnReadState.TXN_READ_ONLY, checkTxnReadState);
-        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
-        // check TXN_READ_WRITE
-        checkTxnReadState = transactionService.getRetryingTransactionHelper().doInTransaction(getReadStateWork, false);
-        assertEquals("Expected 'read-write transaction'", TxnReadState.TXN_READ_WRITE, checkTxnReadState);
-        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
-
-        // Check TXN_NONE on rollback
-        UserTransaction txn = transactionService.getUserTransaction();
-        txn.begin();
+    RetryingTransactionCallback<TxnReadState> getReadStateWork = new RetryingTransactionCallback<TxnReadState>() {
+      public TxnReadState execute() throws Exception {
+        // Register to list to post-commit
         AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
-        txn.rollback();
-        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
 
-        // Check TXN_NONE on commit
-        txn = transactionService.getUserTransaction();
-        txn.begin();
-        AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
-        txn.commit();
-        assertEquals("Expected 'no transaction'", TxnReadState.TXN_NONE, postCommitReadState[0]);
-    }
+        return AlfrescoTransactionSupport.getTransactionReadState();
+      }
+    };
 
-    @Test
-    public void testResourceHelper() throws Exception
-    {
-        // start a transaction
-        RetryingTransactionCallback<Object> testWork = new RetryingTransactionCallback<Object>()
-        {
-            public Object execute() throws Exception
-            {
-                // Check map access
-                Map<String, String> map = TransactionalResourceHelper.getMap("abc");
-                assertNotNull("Map not created", map);
-                map.put("1", "ONE");
-                Map<String, String> mapCheck = TransactionalResourceHelper.getMap("abc");
-                assertTrue("Same map not retrieved", map == mapCheck);
-                // Check counter
-                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.getCount("myCount"));
-                assertEquals("Transactional count incorrect. ", -1, TransactionalResourceHelper.decrementCount("myCount", true));
-                assertEquals("Transactional count incorrect. ", -2, TransactionalResourceHelper.decrementCount("myCount", true));
-                assertEquals("Transactional count incorrect. ", -2, TransactionalResourceHelper.getCount("myCount"));
-                assertEquals("Transactional count incorrect. ", -1, TransactionalResourceHelper.incrementCount("myCount"));
-                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.incrementCount("myCount"));
-                assertEquals("Transactional count incorrect. ", 1, TransactionalResourceHelper.incrementCount("myCount"));
-                assertEquals("Transactional count incorrect. ", 1, TransactionalResourceHelper.getCount("myCount"));
-                assertEquals("Transactional count incorrect. ", 1, TransactionalResourceHelper.getCount("myCount"));
-                TransactionalResourceHelper.resetCount("myCount");
-                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.getCount("myCount"));
-                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.decrementCount("myCount", false));
-                assertEquals("Transactional count incorrect. ", 0, TransactionalResourceHelper.decrementCount("myCount", false));
-                // Done
-                return null;
-            }
-        };
-        // kick it all off
-        transactionService.getRetryingTransactionHelper().doInTransaction(testWork);
-    }
+    // Check TXN_NONE
+    TxnReadState checkTxnReadState = AlfrescoTransactionSupport.getTransactionReadState();
+    assertEquals(
+      "Expected 'no transaction'",
+      TxnReadState.TXN_NONE,
+      checkTxnReadState
+    );
+    assertNull("Expected no post-commit read state", postCommitReadState[0]);
+    // Check TXN_READ_ONLY
+    checkTxnReadState =
+      transactionService
+        .getRetryingTransactionHelper()
+        .doInTransaction(getReadStateWork, true);
+    assertEquals(
+      "Expected 'read-only transaction'",
+      TxnReadState.TXN_READ_ONLY,
+      checkTxnReadState
+    );
+    assertEquals(
+      "Expected 'no transaction'",
+      TxnReadState.TXN_NONE,
+      postCommitReadState[0]
+    );
+    // check TXN_READ_WRITE
+    checkTxnReadState =
+      transactionService
+        .getRetryingTransactionHelper()
+        .doInTransaction(getReadStateWork, false);
+    assertEquals(
+      "Expected 'read-write transaction'",
+      TxnReadState.TXN_READ_WRITE,
+      checkTxnReadState
+    );
+    assertEquals(
+      "Expected 'no transaction'",
+      TxnReadState.TXN_NONE,
+      postCommitReadState[0]
+    );
+
+    // Check TXN_NONE on rollback
+    UserTransaction txn = transactionService.getUserTransaction();
+    txn.begin();
+    AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
+    txn.rollback();
+    assertEquals(
+      "Expected 'no transaction'",
+      TxnReadState.TXN_NONE,
+      postCommitReadState[0]
+    );
+
+    // Check TXN_NONE on commit
+    txn = transactionService.getUserTransaction();
+    txn.begin();
+    AlfrescoTransactionSupport.bindListener(getReadStatePostCommit);
+    txn.commit();
+    assertEquals(
+      "Expected 'no transaction'",
+      TxnReadState.TXN_NONE,
+      postCommitReadState[0]
+    );
+  }
+
+  @Test
+  public void testResourceHelper() throws Exception {
+    // start a transaction
+    RetryingTransactionCallback<Object> testWork = new RetryingTransactionCallback<Object>() {
+      public Object execute() throws Exception {
+        // Check map access
+        Map<String, String> map = TransactionalResourceHelper.getMap("abc");
+        assertNotNull("Map not created", map);
+        map.put("1", "ONE");
+        Map<String, String> mapCheck = TransactionalResourceHelper.getMap(
+          "abc"
+        );
+        assertTrue("Same map not retrieved", map == mapCheck);
+        // Check counter
+        assertEquals(
+          "Transactional count incorrect. ",
+          0,
+          TransactionalResourceHelper.getCount("myCount")
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          -1,
+          TransactionalResourceHelper.decrementCount("myCount", true)
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          -2,
+          TransactionalResourceHelper.decrementCount("myCount", true)
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          -2,
+          TransactionalResourceHelper.getCount("myCount")
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          -1,
+          TransactionalResourceHelper.incrementCount("myCount")
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          0,
+          TransactionalResourceHelper.incrementCount("myCount")
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          1,
+          TransactionalResourceHelper.incrementCount("myCount")
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          1,
+          TransactionalResourceHelper.getCount("myCount")
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          1,
+          TransactionalResourceHelper.getCount("myCount")
+        );
+        TransactionalResourceHelper.resetCount("myCount");
+        assertEquals(
+          "Transactional count incorrect. ",
+          0,
+          TransactionalResourceHelper.getCount("myCount")
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          0,
+          TransactionalResourceHelper.decrementCount("myCount", false)
+        );
+        assertEquals(
+          "Transactional count incorrect. ",
+          0,
+          TransactionalResourceHelper.decrementCount("myCount", false)
+        );
+        // Done
+        return null;
+      }
+    };
+    // kick it all off
+    transactionService.getRetryingTransactionHelper().doInTransaction(testWork);
+  }
 }

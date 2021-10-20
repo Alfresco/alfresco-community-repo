@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v35;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
 import static org.alfresco.module.org_alfresco_module_rm.patch.v35.RMv35HoldNewChildAssocPatch.PATCH_ASSOC_NAME;
@@ -47,7 +46,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -64,102 +62,130 @@ import org.mockito.MockitoAnnotations;
 
 /**
  * RM V3.5  Create new hold child association to link the record to the hold
- * 
+ *
  * @since 3.5
  */
-public class RMv35HoldNewChildAssocPatchUnitTest
-{
-    @Mock
-    private FilePlanService mockFilePlanService;
+public class RMv35HoldNewChildAssocPatchUnitTest {
 
-    @Mock
-    private HoldService mockHoldService;
+  @Mock
+  private FilePlanService mockFilePlanService;
 
-    @Mock
-    private NodeService mockNodeService;
+  @Mock
+  private HoldService mockHoldService;
 
-    @Mock
-    private BehaviourFilter mockBehaviourFilter;
+  @Mock
+  private NodeService mockNodeService;
 
-    @InjectMocks
-    private RMv35HoldNewChildAssocPatch patch;
+  @Mock
+  private BehaviourFilter mockBehaviourFilter;
 
-    private NodeRef filePlanRef, holdRef, heldItemRef;
+  @InjectMocks
+  private RMv35HoldNewChildAssocPatch patch;
 
-    private Set<NodeRef> fileplans;
-    private List<NodeRef> holds;
+  private NodeRef filePlanRef, holdRef, heldItemRef;
 
-    @Mock
-    private ChildAssociationRef childAssociationRef;
+  private Set<NodeRef> fileplans;
+  private List<NodeRef> holds;
 
-    private List<ChildAssociationRef> childAssocs;
+  @Mock
+  private ChildAssociationRef childAssociationRef;
 
-    @Before
-    public void setUp()
-    {
-        MockitoAnnotations.initMocks(this);
-        filePlanRef = new NodeRef("workspace://SpacesStore/filePlan");
-        holdRef = new NodeRef("workspace://SpacesStore/hold");
-        heldItemRef = new NodeRef("workspace://SpacesStore/heldItem");
-        fileplans = new HashSet<>();
-        fileplans.add(filePlanRef);
-        holds = new ArrayList<>();
-        holds.add(holdRef);
-        childAssocs = new ArrayList<>();
-        childAssocs.add(childAssociationRef);
-    }
+  private List<ChildAssociationRef> childAssocs;
 
-    /**
-     * Test secondary associations are created for held items so that they are "contained" in the hold.
-     */
-    @Test
-    public void testAddChildDuringUpgrade()
-    {
-        when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
-        when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
-        when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(childAssocs);
-        when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+    filePlanRef = new NodeRef("workspace://SpacesStore/filePlan");
+    holdRef = new NodeRef("workspace://SpacesStore/hold");
+    heldItemRef = new NodeRef("workspace://SpacesStore/heldItem");
+    fileplans = new HashSet<>();
+    fileplans.add(filePlanRef);
+    holds = new ArrayList<>();
+    holds.add(holdRef);
+    childAssocs = new ArrayList<>();
+    childAssocs.add(childAssociationRef);
+  }
 
-        patch.applyInternal();
+  /**
+   * Test secondary associations are created for held items so that they are "contained" in the hold.
+   */
+  @Test
+  public void testAddChildDuringUpgrade() {
+    when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
+    when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
+    when(
+      mockNodeService.getChildAssocs(
+        holdRef,
+        ASSOC_FROZEN_CONTENT,
+        RegexQNamePattern.MATCH_ALL
+      )
+    )
+      .thenReturn(childAssocs);
+    when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
 
-        verify(mockNodeService, times(1)).addChild(holdRef, heldItemRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
-    }
+    patch.applyInternal();
 
-    @Test
-    public void patchRunWithSuccessWhenNoHeldChildren()
-    {
-        when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
-        when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
-        when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(emptyList());
+    verify(mockNodeService, times(1))
+      .addChild(holdRef, heldItemRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
+  }
 
-        patch.applyInternal();
+  @Test
+  public void patchRunWithSuccessWhenNoHeldChildren() {
+    when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
+    when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
+    when(
+      mockNodeService.getChildAssocs(
+        holdRef,
+        ASSOC_FROZEN_CONTENT,
+        RegexQNamePattern.MATCH_ALL
+      )
+    )
+      .thenReturn(emptyList());
 
-        verify(mockNodeService, never()).addChild(any(NodeRef.class), any(NodeRef.class), any(QName.class), any(QName.class));
-    }
+    patch.applyInternal();
 
-    @Test
-    public void patchRunWithSuccessWhenNoHolds()
-    {
-        //no holds
-        List<NodeRef> holdList = emptyList();
-        when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
-        when(mockHoldService.getHolds(filePlanRef)).thenReturn(holdList);
+    verify(mockNodeService, never())
+      .addChild(
+        any(NodeRef.class),
+        any(NodeRef.class),
+        any(QName.class),
+        any(QName.class)
+      );
+  }
 
-        patch.applyInternal();
+  @Test
+  public void patchRunWithSuccessWhenNoHolds() {
+    //no holds
+    List<NodeRef> holdList = emptyList();
+    when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
+    when(mockHoldService.getHolds(filePlanRef)).thenReturn(holdList);
 
-        verify(mockNodeService, never()).addChild(any(NodeRef.class), any(NodeRef.class), any(QName.class), any(QName.class));
-    }
+    patch.applyInternal();
 
-    @Test
-    public void patchRunWithSuccessWhenNoFilePlan()
-    {
-        // given
-        doReturn(Collections.EMPTY_SET).when(mockFilePlanService).getFilePlans();
+    verify(mockNodeService, never())
+      .addChild(
+        any(NodeRef.class),
+        any(NodeRef.class),
+        any(QName.class),
+        any(QName.class)
+      );
+  }
 
-        // when
-        patch.applyInternal();
+  @Test
+  public void patchRunWithSuccessWhenNoFilePlan() {
+    // given
+    doReturn(Collections.EMPTY_SET).when(mockFilePlanService).getFilePlans();
 
-        // then
-        verify(mockNodeService, never()).addChild(any(NodeRef.class), any(NodeRef.class), any(QName.class), any(QName.class));
-    }
+    // when
+    patch.applyInternal();
+
+    // then
+    verify(mockNodeService, never())
+      .addChild(
+        any(NodeRef.class),
+        any(NodeRef.class),
+        any(QName.class),
+        any(QName.class)
+      );
+  }
 }

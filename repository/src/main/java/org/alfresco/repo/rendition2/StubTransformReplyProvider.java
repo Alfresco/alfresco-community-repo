@@ -25,9 +25,8 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-
 import java.io.InputStream;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Used to send transform response messages to remote transform clients.
@@ -35,12 +34,16 @@ import java.io.InputStream;
  *
  * Not currently supported in community edition.
  */
-public class StubTransformReplyProvider implements TransformReplyProvider
-{
-    public void produceTransformEvent(NodeRef sourceNodeRef, InputStream transformInputStream,
-        TransformDefinition transformDefinition, int transformContentHashCode)
-    {
-        throw new UnsupportedOperationException("Not currently supported in community edition");
-    }
+public class StubTransformReplyProvider implements TransformReplyProvider {
 
+  public void produceTransformEvent(
+    NodeRef sourceNodeRef,
+    InputStream transformInputStream,
+    TransformDefinition transformDefinition,
+    int transformContentHashCode
+  ) {
+    throw new UnsupportedOperationException(
+      "Not currently supported in community edition"
+    );
+  }
 }

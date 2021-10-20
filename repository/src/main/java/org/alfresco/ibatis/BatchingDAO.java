@@ -32,18 +32,17 @@ package org.alfresco.ibatis;
  * @author Derek Hulley
  * @since 3.2.1
  */
-public interface BatchingDAO
-{
-    /**
-     * Start a batch of insert or update commands
-     * 
-     * @throws RuntimeException wrapping a SQLException
-     */
-    void startBatch();
-    /**
-     * Write a batch of insert or update commands
-     * 
-     * @throws RuntimeException wrapping a SQLException
-     */
-    void executeBatch();
+public interface BatchingDAO {
+  /**
+   * Start a batch of insert or update commands
+   *
+   * @throws RuntimeException wrapping a SQLException
+   */
+  void startBatch();
+  /**
+   * Write a batch of insert or update commands
+   *
+   * @throws RuntimeException wrapping a SQLException
+   */
+  void executeBatch();
 }

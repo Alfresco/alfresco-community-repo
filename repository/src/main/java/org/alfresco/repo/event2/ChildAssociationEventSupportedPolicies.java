@@ -34,8 +34,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
  * @author Chris Shields
  * @author Sara Aspery
  */
-public interface ChildAssociationEventSupportedPolicies extends NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                                                NodeServicePolicies.BeforeDeleteChildAssociationPolicy
-{
-}
-
+public interface ChildAssociationEventSupportedPolicies
+  extends
+    NodeServicePolicies.OnCreateChildAssociationPolicy,
+    NodeServicePolicies.BeforeDeleteChildAssociationPolicy {}

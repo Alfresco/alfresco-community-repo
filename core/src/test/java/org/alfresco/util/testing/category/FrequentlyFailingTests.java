@@ -23,6 +23,4 @@ package org.alfresco.util.testing.category;
  * working on a specific feature/class. An issue should be raised to identify and fix the reason the test fails.
  * @see IntermittentlyFailingTests for tests that fail intermittently but not that frequently
  */
-public interface FrequentlyFailingTests extends NonBuildTests
-{
-}
+public interface FrequentlyFailingTests extends NonBuildTests {}

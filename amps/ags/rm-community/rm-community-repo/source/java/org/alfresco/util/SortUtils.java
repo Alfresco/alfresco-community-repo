@@ -36,36 +36,30 @@ import java.text.RuleBasedCollator;
  * @author Tom Page
  * @since 2.6
  */
-public class SortUtils
-{
-    /** The collator used for comparing Strings. */
-    private static Collator collator;
+public class SortUtils {
 
-    /** Private constructor for util class. */
-    private SortUtils()
-    {
-    }
+  /** The collator used for comparing Strings. */
+  private static Collator collator;
 
-    /**
-     * Get a string comparator that sorts strings according to the locale of the server, and which treats spaces as
-     * earlier than alphanumeric characters.
-     *
-     * @return The comparator.
-     */
-    public static synchronized Collator getStringComparator()
-    {
-        if (collator == null)
-        {
-            String rules = ((RuleBasedCollator) Collator.getInstance()).getRules();
-            try
-            {
-                collator = new RuleBasedCollator(rules.replaceAll("<'\u005f'", "<' '<'\u005f'"));
-            }
-            catch (ParseException e)
-            {
-                throw new IllegalStateException(e);
-            }
-        }
-        return collator;
+  /** Private constructor for util class. */
+  private SortUtils() {}
+
+  /**
+   * Get a string comparator that sorts strings according to the locale of the server, and which treats spaces as
+   * earlier than alphanumeric characters.
+   *
+   * @return The comparator.
+   */
+  public static synchronized Collator getStringComparator() {
+    if (collator == null) {
+      String rules = ((RuleBasedCollator) Collator.getInstance()).getRules();
+      try {
+        collator =
+          new RuleBasedCollator(rules.replaceAll("<'\u005f'", "<' '<'\u005f'"));
+      } catch (ParseException e) {
+        throw new IllegalStateException(e);
+      }
     }
+    return collator;
+  }
 }

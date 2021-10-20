@@ -53,10 +53,11 @@ import org.testng.annotations.Test;
 /**
  * Tests for moving record categories between record categories with different retention schedule
  */
-public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
-{
+public class MoveRecCategoriesWithRSTests extends BaseRMRestTest {
+
     private RecordCategory rootCategory, rootCategory2;
     private Record elRecord, nonElRecord;
+
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
 
@@ -64,15 +65,24 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
      * Create two root categories with some retention schedules on record level
      */
     @BeforeMethod
-    private void setUpMoveRecCategoriesWithRSTests()
-    {
-        STEP("Create record category with retention schedule and apply it to records.");
+    private void setUpMoveRecCategoriesWithRSTests() {
+        STEP(
+            "Create record category with retention schedule and apply it to records."
+        );
         rootCategory = createRootCategory(getRandomName("rootCategory1"));
-        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory.getName(), true);
+        dispositionScheduleService.createCategoryRetentionSchedule(
+            rootCategory.getName(),
+            true
+        );
 
-        STEP("Create record category with retention schedule and apply it to records.");
+        STEP(
+            "Create record category with retention schedule and apply it to records."
+        );
         rootCategory2 = createRootCategory(getRandomName("rootCategory2"));
-        dispositionScheduleService.createCategoryRetentionSchedule(rootCategory2.getName(), true);
+        dispositionScheduleService.createCategoryRetentionSchedule(
+            rootCategory2.getName(),
+            true
+        );
     }
 
     /**
@@ -87,43 +97,93 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
      * Then the records will inherit the RS from rootCategory2
      */
     @Test
-    @AlfrescoTest (jira = "APPS-1005")
-    public void testInheritWhenMoveToDifferentRSStep() throws Exception
-    {
+    @AlfrescoTest(jira = "APPS-1005")
+    public void testInheritWhenMoveToDifferentRSStep() throws Exception {
         STEP("Add retention schedule cut off step after 1 day period.");
-        dispositionScheduleService.addCutOffAfterPeriodStep(rootCategory.getName(), "day|1", CREATED_DATE);
+        dispositionScheduleService.addCutOffAfterPeriodStep(
+            rootCategory.getName(),
+            "day|1",
+            CREATED_DATE
+        );
 
         STEP("Add retention schedule destroy step after 1 Day period.");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory.getName(), "day|1", CUT_OFF_DATE);
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(
+            rootCategory.getName(),
+            "day|1",
+            CUT_OFF_DATE
+        );
 
         STEP("Create a subcategory with a record folder and records.");
         RecordCategoryChild subCategory = createSubCategoryWithRecords();
 
         STEP("Add retention schedule retain step after 2 day period.");
-        dispositionScheduleService.addRetainAfterPeriodStep(rootCategory2.getName(), "day|2");
+        dispositionScheduleService.addRetainAfterPeriodStep(
+            rootCategory2.getName(),
+            "day|2"
+        );
 
         STEP("Add retention schedule destroy step after 2 Day period.");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory2.getName(), "day|2", DATE_FILED);
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(
+            rootCategory2.getName(),
+            "day|2",
+            DATE_FILED
+        );
 
         STEP("Move the subcategory within the rootCategory2.");
-        getRestAPIFactory().getNodeAPI(toContentModel(subCategory.getId())).move(createBodyForMoveCopy(rootCategory2.getId()));
+        getRestAPIFactory()
+            .getNodeAPI(toContentModel(subCategory.getId()))
+            .move(createBodyForMoveCopy(rootCategory2.getId()));
         assertStatusCode(OK);
 
-        STEP("Check that both records inherit rootCategory2 retention schedule");
-        elRecord = getRestAPIFactory().getRecordsAPI().getRecord(elRecord.getId());
-        nonElRecord = getRestAPIFactory().getRecordsAPI().getRecord(nonElRecord.getId());
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionActionName().equalsIgnoreCase(RM_ACTIONS.END_RETENTION.getAction()),
-                "Disposition action should be retain");
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionPeriod().equalsIgnoreCase("day"),
-                "Disposition period property should be day");
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionPeriodExpression().equalsIgnoreCase("2"),
-                "Disposition period expression should be 2");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionActionName().equalsIgnoreCase(RM_ACTIONS.END_RETENTION.getAction()),
-                "Disposition action should be retain");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionPeriod().equalsIgnoreCase("day"),
-                "Disposition period property should be day");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionPeriodExpression().equalsIgnoreCase("2"),
-                "Disposition period expression should be 2");
+        STEP(
+            "Check that both records inherit rootCategory2 retention schedule"
+        );
+        elRecord =
+            getRestAPIFactory().getRecordsAPI().getRecord(elRecord.getId());
+        nonElRecord =
+            getRestAPIFactory().getRecordsAPI().getRecord(nonElRecord.getId());
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionActionName()
+                .equalsIgnoreCase(RM_ACTIONS.END_RETENTION.getAction()),
+            "Disposition action should be retain"
+        );
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriod()
+                .equalsIgnoreCase("day"),
+            "Disposition period property should be day"
+        );
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriodExpression()
+                .equalsIgnoreCase("2"),
+            "Disposition period expression should be 2"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionActionName()
+                .equalsIgnoreCase(RM_ACTIONS.END_RETENTION.getAction()),
+            "Disposition action should be retain"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriod()
+                .equalsIgnoreCase("day"),
+            "Disposition period property should be day"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriodExpression()
+                .equalsIgnoreCase("2"),
+            "Disposition period expression should be 2"
+        );
     }
 
     /**
@@ -138,47 +198,107 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
      * Then the records will inherit the RS from rootCategory2
      */
     @Test
-    @AlfrescoTest (jira = "APPS-1004")
-    public void testInheritWhenMoveToDifferentRSStepOnEventBase() throws Exception
-    {
+    @AlfrescoTest(jira = "APPS-1004")
+    public void testInheritWhenMoveToDifferentRSStepOnEventBase()
+        throws Exception {
         STEP("Add retention schedule retain step after 1 day period.");
-        dispositionScheduleService.addRetainAfterPeriodStep(rootCategory.getName(), "day|1");
+        dispositionScheduleService.addRetainAfterPeriodStep(
+            rootCategory.getName(),
+            "day|1"
+        );
 
         STEP("Add retention schedule destroy step after 1 Day period.");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory.getName(), "day|1", CUT_OFF_DATE);
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(
+            rootCategory.getName(),
+            "day|1",
+            CUT_OFF_DATE
+        );
 
         STEP("Create a subcategory with a record folder and records.");
         RecordCategoryChild subCategory = createSubCategoryWithRecords();
 
         STEP("Add retention schedule cut off step on event case closed.");
-        dispositionScheduleService.addCutOffAfterEventStep(rootCategory2.getName(), RMEvents.CASE_CLOSED.getEventName());
+        dispositionScheduleService.addCutOffAfterEventStep(
+            rootCategory2.getName(),
+            RMEvents.CASE_CLOSED.getEventName()
+        );
 
         STEP("Add retention schedule destroy step after 1 Day period.");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory2.getName(), "day|2", DATE_FILED);
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(
+            rootCategory2.getName(),
+            "day|2",
+            DATE_FILED
+        );
 
         STEP("Move the subcategory within the rootCategory2.");
-        getRestAPIFactory().getNodeAPI(toContentModel(subCategory.getId())).move(createBodyForMoveCopy(rootCategory2.getId()));
+        getRestAPIFactory()
+            .getNodeAPI(toContentModel(subCategory.getId()))
+            .move(createBodyForMoveCopy(rootCategory2.getId()));
         assertStatusCode(OK);
 
-        STEP("Check that both records inherit rootCategory2 retention schedule");
-        elRecord = getRestAPIFactory().getRecordsAPI().getRecord(elRecord.getId());
-        nonElRecord = getRestAPIFactory().getRecordsAPI().getRecord(nonElRecord.getId());
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionActionName().equalsIgnoreCase(RM_ACTIONS.CUT_OFF.getAction()),
-                "Disposition action should be cut off");
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionPeriod().equalsIgnoreCase("none"),
-                "Disposition period property should none");
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionPeriodExpression().equalsIgnoreCase("0"),
-                "Disposition period expression should be 0");
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionEvents().contains(RMEvents.CASE_CLOSED.getEventName()),
-                "Disposition event list doesn't contain case closed event");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionActionName().equalsIgnoreCase(RM_ACTIONS.CUT_OFF.getAction()),
-                "Disposition action should be cut off");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionPeriod().equalsIgnoreCase("none"),
-                "Disposition period property should be none");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionPeriodExpression().equalsIgnoreCase("0"),
-                "Disposition period expression should be 0");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionEvents().contains(RMEvents.CASE_CLOSED.getEventName()),
-                "Disposition event list doesn't contain case closed event");
+        STEP(
+            "Check that both records inherit rootCategory2 retention schedule"
+        );
+        elRecord =
+            getRestAPIFactory().getRecordsAPI().getRecord(elRecord.getId());
+        nonElRecord =
+            getRestAPIFactory().getRecordsAPI().getRecord(nonElRecord.getId());
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionActionName()
+                .equalsIgnoreCase(RM_ACTIONS.CUT_OFF.getAction()),
+            "Disposition action should be cut off"
+        );
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriod()
+                .equalsIgnoreCase("none"),
+            "Disposition period property should none"
+        );
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriodExpression()
+                .equalsIgnoreCase("0"),
+            "Disposition period expression should be 0"
+        );
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionEvents()
+                .contains(RMEvents.CASE_CLOSED.getEventName()),
+            "Disposition event list doesn't contain case closed event"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionActionName()
+                .equalsIgnoreCase(RM_ACTIONS.CUT_OFF.getAction()),
+            "Disposition action should be cut off"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriod()
+                .equalsIgnoreCase("none"),
+            "Disposition period property should be none"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriodExpression()
+                .equalsIgnoreCase("0"),
+            "Disposition period expression should be 0"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionEvents()
+                .contains(RMEvents.CASE_CLOSED.getEventName()),
+            "Disposition event list doesn't contain case closed event"
+        );
     }
 
     /**
@@ -193,58 +313,130 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
      * Then the records will inherit the RS from rootCategory2
      */
     @Test
-    @AlfrescoTest (jira = "APPS-1004")
-    public void testInheritWhenMoveToSameStepDifferentEvent() throws Exception
-    {
+    @AlfrescoTest(jira = "APPS-1004")
+    public void testInheritWhenMoveToSameStepDifferentEvent() throws Exception {
         STEP("Add retention schedule cut off on case closed.");
-        dispositionScheduleService.addCutOffAfterEventStep(rootCategory.getName(), RMEvents.CASE_CLOSED.getEventName());
+        dispositionScheduleService.addCutOffAfterEventStep(
+            rootCategory.getName(),
+            RMEvents.CASE_CLOSED.getEventName()
+        );
 
         STEP("Add retention schedule destroy step after 1 Day period.");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory.getName(), "day|1", CUT_OFF_DATE);
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(
+            rootCategory.getName(),
+            "day|1",
+            CUT_OFF_DATE
+        );
 
         STEP("Create a subcategory with a record folder and records.");
         RecordCategoryChild subCategory = createSubCategoryWithRecords();
 
         STEP("Add retention schedule cut off step on event separation.");
-        dispositionScheduleService.addCutOffAfterEventStep(rootCategory2.getName(), RMEvents.OBSOLETE.getEventName());
+        dispositionScheduleService.addCutOffAfterEventStep(
+            rootCategory2.getName(),
+            RMEvents.OBSOLETE.getEventName()
+        );
 
         STEP("Add retention schedule destroy step after 2 Day period.");
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(rootCategory2.getName(), "day|2", DATE_FILED);
+        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(
+            rootCategory2.getName(),
+            "day|2",
+            DATE_FILED
+        );
 
         STEP("Move the subcategory within the rootCategory2.");
-        getRestAPIFactory().getNodeAPI(toContentModel(subCategory.getId())).move(createBodyForMoveCopy(rootCategory2.getId()));
+        getRestAPIFactory()
+            .getNodeAPI(toContentModel(subCategory.getId()))
+            .move(createBodyForMoveCopy(rootCategory2.getId()));
         assertStatusCode(OK);
 
-        STEP("Check that both records inherit rootCategory2 retention schedule");
-        elRecord = getRestAPIFactory().getRecordsAPI().getRecord(elRecord.getId());
-        nonElRecord = getRestAPIFactory().getRecordsAPI().getRecord(nonElRecord.getId());
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionActionName().equalsIgnoreCase(RM_ACTIONS.CUT_OFF.getAction()),
-                "Disposition action should be cut off");
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionPeriod().equalsIgnoreCase("none"),
-                "Disposition period property should be none");
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionPeriodExpression().equalsIgnoreCase("0"),
-                "Disposition period expression should be 0");
-        assertFalse(elRecord.getProperties().getRecordSearchDispositionEvents().contains(RMEvents.CASE_CLOSED.getEventName()),
-                "Event list contain the event from the previous RS ");
-        assertTrue(elRecord.getProperties().getRecordSearchDispositionEvents().contains(RMEvents.OBSOLETE.getEventName()),
-                "Event list doesn't contain the event from the current RS ");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionActionName().equalsIgnoreCase(RM_ACTIONS.CUT_OFF.getAction()),
-                "Disposition action should be cut off");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionPeriod().equalsIgnoreCase("none"),
-                "Disposition period property should be none");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionPeriodExpression().equalsIgnoreCase("0"),
-                "Disposition period expression should be 0");
-        assertFalse(nonElRecord.getProperties().getRecordSearchDispositionEvents().contains(RMEvents.CASE_CLOSED.getEventName()),
-                "Event list contain the event from the previous RS ");
-        assertTrue(nonElRecord.getProperties().getRecordSearchDispositionEvents().contains(RMEvents.OBSOLETE.getEventName()),
-                "Event list doesn't contain the event from the current RS ");
+        STEP(
+            "Check that both records inherit rootCategory2 retention schedule"
+        );
+        elRecord =
+            getRestAPIFactory().getRecordsAPI().getRecord(elRecord.getId());
+        nonElRecord =
+            getRestAPIFactory().getRecordsAPI().getRecord(nonElRecord.getId());
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionActionName()
+                .equalsIgnoreCase(RM_ACTIONS.CUT_OFF.getAction()),
+            "Disposition action should be cut off"
+        );
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriod()
+                .equalsIgnoreCase("none"),
+            "Disposition period property should be none"
+        );
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriodExpression()
+                .equalsIgnoreCase("0"),
+            "Disposition period expression should be 0"
+        );
+        assertFalse(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionEvents()
+                .contains(RMEvents.CASE_CLOSED.getEventName()),
+            "Event list contain the event from the previous RS "
+        );
+        assertTrue(
+            elRecord
+                .getProperties()
+                .getRecordSearchDispositionEvents()
+                .contains(RMEvents.OBSOLETE.getEventName()),
+            "Event list doesn't contain the event from the current RS "
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionActionName()
+                .equalsIgnoreCase(RM_ACTIONS.CUT_OFF.getAction()),
+            "Disposition action should be cut off"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriod()
+                .equalsIgnoreCase("none"),
+            "Disposition period property should be none"
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionPeriodExpression()
+                .equalsIgnoreCase("0"),
+            "Disposition period expression should be 0"
+        );
+        assertFalse(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionEvents()
+                .contains(RMEvents.CASE_CLOSED.getEventName()),
+            "Event list contain the event from the previous RS "
+        );
+        assertTrue(
+            nonElRecord
+                .getProperties()
+                .getRecordSearchDispositionEvents()
+                .contains(RMEvents.OBSOLETE.getEventName()),
+            "Event list doesn't contain the event from the current RS "
+        );
     }
 
-    @AfterMethod (alwaysRun = true)
-    public void cleanupMoveRecCategoriesWithRSTests()
-    {
-        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(rootCategory.getId());
-        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(rootCategory2.getId());
+    @AfterMethod(alwaysRun = true)
+    public void cleanupMoveRecCategoriesWithRSTests() {
+        getRestAPIFactory()
+            .getRecordCategoryAPI()
+            .deleteRecordCategory(rootCategory.getId());
+        getRestAPIFactory()
+            .getRecordCategoryAPI()
+            .deleteRecordCategory(rootCategory2.getId());
     }
 
     /**
@@ -252,17 +444,29 @@ public class MoveRecCategoriesWithRSTests extends BaseRMRestTest
      * electronic record
      * @return
      */
-    private RecordCategoryChild createSubCategoryWithRecords()
-    {
+    private RecordCategoryChild createSubCategoryWithRecords() {
         STEP("Create a subcategory with a record folder");
-        RecordCategoryChild subCategory = createRecordCategory(rootCategory.getId(), getRandomName("subCategory"));
-        RecordCategoryChild recFolder = createFolder(subCategory.getId(), getRandomName("recFolder"));
+        RecordCategoryChild subCategory = createRecordCategory(
+            rootCategory.getId(),
+            getRandomName("subCategory")
+        );
+        RecordCategoryChild recFolder = createFolder(
+            subCategory.getId(),
+            getRandomName("recFolder")
+        );
 
         STEP("Create 2 records in the record folder. Complete one of them.");
-        elRecord = createElectronicRecord(recFolder.getId(), getRandomName("elRecord"));
-        nonElRecord = createNonElectronicRecord(recFolder.getId(), getRandomName("nonElRecord"));
+        elRecord =
+            createElectronicRecord(
+                recFolder.getId(),
+                getRandomName("elRecord")
+            );
+        nonElRecord =
+            createNonElectronicRecord(
+                recFolder.getId(),
+                getRandomName("nonElRecord")
+            );
         getRestAPIFactory().getRecordsAPI().completeRecord(nonElRecord.getId());
         return subCategory;
     }
-
 }

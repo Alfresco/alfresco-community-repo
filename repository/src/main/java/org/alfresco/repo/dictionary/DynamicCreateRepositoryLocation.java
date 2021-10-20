@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,7 +29,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -51,140 +50,140 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * 
+ *
  * @author sglover
  *
  */
-public class DynamicCreateRepositoryLocation extends RepositoryLocation
-{
-    private static final Log logger = LogFactory.getLog(DynamicCreateRepositoryLocation.class);
+public class DynamicCreateRepositoryLocation extends RepositoryLocation {
 
-    private ImporterService importerService;
-	private String contentViewLocation;
-    private ResourceBundle bundle;
-    private NamespaceService namespaceService;
-    private SearchService searchService;
-    private TransactionService transactionService;
+  private static final Log logger = LogFactory.getLog(
+    DynamicCreateRepositoryLocation.class
+  );
 
-	public void setSearchService(SearchService searchService)
-	{
-		this.searchService = searchService;
-	}
+  private ImporterService importerService;
+  private String contentViewLocation;
+  private ResourceBundle bundle;
+  private NamespaceService namespaceService;
+  private SearchService searchService;
+  private TransactionService transactionService;
 
-	public void setNamespaceService(NamespaceService namespaceService)
-	{
-		this.namespaceService = namespaceService;
-	}
+  public void setSearchService(SearchService searchService) {
+    this.searchService = searchService;
+  }
 
-	public void setContentViewLocation(String contentViewLocation)
-	{
-		this.contentViewLocation = contentViewLocation;
-	}
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
 
-	public void setImporterService(ImporterService importerService)
-    {
-		this.importerService = importerService;
-	}
+  public void setContentViewLocation(String contentViewLocation) {
+    this.contentViewLocation = contentViewLocation;
+  }
 
-	public void setBundleName(String bundleName)
-	{
-        Locale bindingLocale = I18NUtil.getLocale();
-        this.bundle = ResourceBundle.getBundle(bundleName, bindingLocale);
-	}
+  public void setImporterService(ImporterService importerService) {
+    this.importerService = importerService;
+  }
 
-    public void checkAndCreate(NodeRef rootNodeRef)
-    {
-		List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, getPath(), null, namespaceService, false);
-		if(nodes.size() == 0)
-		{
-    		logger.info("Repository location " + getPath() + " does not exist for tenant "
-    				+ TenantUtil.getCurrentDomain() + ", creating");
-    		create();
-		}
+  public void setBundleName(String bundleName) {
+    Locale bindingLocale = I18NUtil.getLocale();
+    this.bundle = ResourceBundle.getBundle(bundleName, bindingLocale);
+  }
+
+  public void checkAndCreate(NodeRef rootNodeRef) {
+    List<NodeRef> nodes = searchService.selectNodes(
+      rootNodeRef,
+      getPath(),
+      null,
+      namespaceService,
+      false
+    );
+    if (nodes.size() == 0) {
+      logger.info(
+        "Repository location " +
+        getPath() +
+        " does not exist for tenant " +
+        TenantUtil.getCurrentDomain() +
+        ", creating"
+      );
+      create();
+    }
+  }
+
+  protected String getParentPath() {
+    String parentPath = null;
+
+    String path = getPath();
+    int idx = path.lastIndexOf("/");
+    if (idx != -1) {
+      parentPath = path.substring(0, idx);
+    } else {
+      parentPath = "/";
     }
 
-    protected String getParentPath()
-    {
-    	String parentPath = null;
+    return parentPath;
+  }
 
-    	String path = getPath();
-    	int idx = path.lastIndexOf("/");
-    	if(idx != -1)
-    	{
-    		parentPath = path.substring(0, idx);
-    	}
-    	else
-    	{
-    		parentPath = "/";
-    	}
+  protected void create() {
+    RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>() {
+      @Override
+      public Void execute() throws Throwable {
+        onCreateInTxn();
+        return null;
+      }
+    };
+    getTransactionService()
+      .getRetryingTransactionHelper()
+      .doInTransaction(initCallback, false, true);
+  }
 
-    	return parentPath;
-    }
+  private void onCreateInTxn() {
+    final File viewFile = ImporterBootstrap.getFile(contentViewLocation);
+    ImportPackageHandler acpHandler = new ACPImportPackageHandler(
+      viewFile,
+      null
+    );
+    Location location = new Location(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+    location.setPath(getParentPath());
 
-    protected void create()
-    {
-        RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                onCreateInTxn();
-                return null;
-            }
-        };
-        getTransactionService().getRetryingTransactionHelper().doInTransaction(initCallback, false, true);
+    final ImporterBinding binding = new ImporterBinding() {
+      @Override
+      public String getValue(String key) {
+        return bundle.getString(key);
+      }
 
-    }
-    private void onCreateInTxn()
-    {       
-        final File viewFile = ImporterBootstrap.getFile(contentViewLocation);
-        ImportPackageHandler acpHandler = new ACPImportPackageHandler(viewFile, null);
-        Location location = new Location(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        location.setPath(getParentPath());
+      @Override
+      public UUID_BINDING getUUIDBinding() {
+        return UUID_BINDING.CREATE_NEW;
+      }
 
-        final ImporterBinding binding = new ImporterBinding()
-        {
-            @Override
-            public String getValue(String key)
-            {
-                return bundle.getString(key);
-            }
+      @Override
+      public QName[] getExcludedClasses() {
+        return null;
+      }
 
-            @Override
-            public UUID_BINDING getUUIDBinding()
-            {
-                return UUID_BINDING.CREATE_NEW;
-            }
+      @Override
+      public boolean allowReferenceWithinTransaction() {
+        return false;
+      }
 
-            @Override
-            public QName[] getExcludedClasses()
-            {
-                return null;
-            }
+      @Override
+      public ImporterContentCache getImportConentCache() {
+        return null;
+      }
+    };
 
-            @Override
-            public boolean allowReferenceWithinTransaction()
-            {
-                return false;
-            }
-            
-            @Override
-            public ImporterContentCache getImportConentCache()
-            {
-                return null;
-            }
-        };
+    importerService.importView(
+      acpHandler,
+      location,
+      binding,
+      (ImporterProgress) null
+    );
+  }
 
-        importerService.importView(acpHandler, location, binding, (ImporterProgress) null);
-    }
+  public TransactionService getTransactionService() {
+    return transactionService;
+  }
 
-	public TransactionService getTransactionService() 
-	{
-		return transactionService;
-	}
-
-	public void setTransactionService(TransactionService transactionService) 
-	{
-		this.transactionService = transactionService;
-	}
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 }

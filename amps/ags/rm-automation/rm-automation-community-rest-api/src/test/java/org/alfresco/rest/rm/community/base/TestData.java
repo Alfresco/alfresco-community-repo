@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.base;
 
 import static com.google.common.collect.Sets.newHashSet;
-
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_ADMIN;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_MANAGER;
 import static org.alfresco.rest.rm.community.model.user.UserRoles.ROLE_RM_POWER_USER;
@@ -43,8 +42,7 @@ import java.util.Set;
  * @author Rodica Sutu
  * @since 2.6
  */
-public interface TestData
-{
+public interface TestData {
     /**
      * A user with ALFRESCO_ADMINISTRATORS role.
      * <p>"GROUP_ANOTHER_ADMIN_EXISTS" The ANOTHER_ADMIN user has been created.
@@ -64,39 +62,51 @@ public interface TestData
     /**
      * The default record category name used when creating categories
      */
-    public static String RECORD_CATEGORY_NAME = "CATEGORY NAME" + getRandomAlphanumeric();
+    public static String RECORD_CATEGORY_NAME =
+        "CATEGORY NAME" + getRandomAlphanumeric();
 
     /**
      * The default record category title used when creating categories
      */
-    public static String RECORD_CATEGORY_TITLE = "CATEGORY TITLE" + getRandomAlphanumeric();
+    public static String RECORD_CATEGORY_TITLE =
+        "CATEGORY TITLE" + getRandomAlphanumeric();
 
     /**
      * The default record folder name used when creating folders
      */
-    public static String RECORD_FOLDER_NAME = "FOLDER NAME" + getRandomAlphanumeric();
+    public static String RECORD_FOLDER_NAME =
+        "FOLDER NAME" + getRandomAlphanumeric();
 
     /**
      * The default record folder title used when creating folders
      */
-    public static  String RECORD_FOLDER_TITLE = "FOLDER TITLE" + getRandomAlphanumeric();
+    public static String RECORD_FOLDER_TITLE =
+        "FOLDER TITLE" + getRandomAlphanumeric();
 
     /**
      * The default electronic record name used when creating electronic records
      */
-    public static String ELECTRONIC_RECORD_NAME = "Record electronic" + getRandomAlphanumeric();
+    public static String ELECTRONIC_RECORD_NAME =
+        "Record electronic" + getRandomAlphanumeric();
 
     /**
      * The default non-electronic record name used when creating non-electronic records
      */
-    public static String NONELECTRONIC_RECORD_NAME = "Record nonelectronic" + getRandomAlphanumeric();
+    public static String NONELECTRONIC_RECORD_NAME =
+        "Record nonelectronic" + getRandomAlphanumeric();
 
-    public static final String ALFRESCO_ADMINISTRATORS = "ALFRESCO_ADMINISTRATORS";
+    public static final String ALFRESCO_ADMINISTRATORS =
+        "ALFRESCO_ADMINISTRATORS";
     /**
      * The ids of the default RM roles.
      */
-    public static final Set<String> RM_ROLES = newHashSet(ROLE_RM_ADMIN.roleId, ROLE_RM_MANAGER.roleId,
-            ROLE_RM_POWER_USER.roleId, ROLE_RM_SECURITY_OFFICER.roleId, ROLE_RM_USER.roleId);
+    public static final Set<String> RM_ROLES = newHashSet(
+        ROLE_RM_ADMIN.roleId,
+        ROLE_RM_MANAGER.roleId,
+        ROLE_RM_POWER_USER.roleId,
+        ROLE_RM_SECURITY_OFFICER.roleId,
+        ROLE_RM_USER.roleId
+    );
 
     /**
      * The default hold description
@@ -106,5 +116,6 @@ public interface TestData
     /**
      * The default hold reason
      */
-    String HOLD_REASON = "Active content to be reviewed for the CASE McDermott, FINRA ";
+    String HOLD_REASON =
+        "Active content to be reviewed for the CASE McDermott, FINRA ";
 }

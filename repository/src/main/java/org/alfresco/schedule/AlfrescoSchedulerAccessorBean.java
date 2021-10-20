@@ -43,41 +43,39 @@ import org.springframework.scheduling.quartz.SchedulerAccessorBean;
  *
  * @author amukha
  */
-public class AlfrescoSchedulerAccessorBean extends SchedulerAccessorBean implements DisposableBean
-{
-    @Nullable
-    private List<TriggerKey> triggerKeys;
-    private boolean enabled = true;
+public class AlfrescoSchedulerAccessorBean
+  extends SchedulerAccessorBean
+  implements DisposableBean {
 
-    public boolean isEnabled()
-    {
-        return enabled;
-    }
+  @Nullable
+  private List<TriggerKey> triggerKeys;
 
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
-    }
+  private boolean enabled = true;
 
-    @Override
-    public void setTriggers(Trigger... triggers)
-    {
-        super.setTriggers(triggers);
-        this.triggerKeys = Arrays.stream(triggers).map(Trigger::getKey).collect(Collectors.toList());
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    @Override
-    public void afterPropertiesSet() throws SchedulerException
-    {
-        if (isEnabled())
-        {
-            super.afterPropertiesSet();
-        }
-    }
+  public void setEnabled(boolean enabled) {
+    this.enabled = enabled;
+  }
 
-    @Override
-    public void destroy() throws Exception
-    {
-        getScheduler().unscheduleJobs(triggerKeys);
+  @Override
+  public void setTriggers(Trigger... triggers) {
+    super.setTriggers(triggers);
+    this.triggerKeys =
+      Arrays.stream(triggers).map(Trigger::getKey).collect(Collectors.toList());
+  }
+
+  @Override
+  public void afterPropertiesSet() throws SchedulerException {
+    if (isEnabled()) {
+      super.afterPropertiesSet();
     }
+  }
+
+  @Override
+  public void destroy() throws Exception {
+    getScheduler().unscheduleJobs(triggerKeys);
+  }
 }

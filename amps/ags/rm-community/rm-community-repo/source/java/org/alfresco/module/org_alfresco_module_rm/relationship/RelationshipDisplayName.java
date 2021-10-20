@@ -38,82 +38,79 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public class RelationshipDisplayName
-{
-    /** The source text of the relationship */
-    private String sourceText;
+public class RelationshipDisplayName {
 
-    /** The target text of the relationship */
-    private String targetText;
+  /** The source text of the relationship */
+  private String sourceText;
 
-    /**
-     * Constructor for creating the relationship display name.
-     * In case of a bidirectional relationship the source
-     * text and target text will be the same.
-     *
-     * @param sourceText The source text of the relationship
-     * @param targetText The target text of the relationship
-     */
-    public RelationshipDisplayName(String sourceText, String targetText)
-    {
-        mandatoryString("sourceText", sourceText);
-        mandatoryString("targetText", targetText);
+  /** The target text of the relationship */
+  private String targetText;
 
-        setSourceText(sourceText);
-        setTargetText(targetText);
-    }
+  /**
+   * Constructor for creating the relationship display name.
+   * In case of a bidirectional relationship the source
+   * text and target text will be the same.
+   *
+   * @param sourceText The source text of the relationship
+   * @param targetText The target text of the relationship
+   */
+  public RelationshipDisplayName(String sourceText, String targetText) {
+    mandatoryString("sourceText", sourceText);
+    mandatoryString("targetText", targetText);
 
-    /**
-     * Gets the source text of the relationship
-     *
-     * @return The source text of the relationship
-     */
-    public String getSourceText()
-    {
-        return this.sourceText;
-    }
+    setSourceText(sourceText);
+    setTargetText(targetText);
+  }
 
-    /**
-     * Sets the source text of the relationship
-     *
-     * @param sourceText The source text of the relationship
-     */
-    private void setSourceText(String sourceText)
-    {
-        this.sourceText = sourceText;
-    }
+  /**
+   * Gets the source text of the relationship
+   *
+   * @return The source text of the relationship
+   */
+  public String getSourceText() {
+    return this.sourceText;
+  }
 
-    /**
-     * Gets the target text of the relationship
-     *
-     * @return The target text of the relationship
-     */
-    public String getTargetText()
-    {
-        return this.targetText;
-    }
+  /**
+   * Sets the source text of the relationship
+   *
+   * @param sourceText The source text of the relationship
+   */
+  private void setSourceText(String sourceText) {
+    this.sourceText = sourceText;
+  }
 
-    /**
-     * Sets the target text of the relationship
-     *
-     * @param targetText The target text of the relationship
-     */
-    private void setTargetText(String targetText)
-    {
-        this.targetText = targetText;
-    }
+  /**
+   * Gets the target text of the relationship
+   *
+   * @return The target text of the relationship
+   */
+  public String getTargetText() {
+    return this.targetText;
+  }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append("(")
-          .append("source=").append(sourceText)
-          .append(", target=").append(targetText)
-          .append(")");
-        return sb.toString();
-    }
+  /**
+   * Sets the target text of the relationship
+   *
+   * @param targetText The target text of the relationship
+   */
+  private void setTargetText(String targetText) {
+    this.targetText = targetText;
+  }
+
+  /**
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb
+      .append("(")
+      .append("source=")
+      .append(sourceText)
+      .append(", target=")
+      .append(targetText)
+      .append(")");
+    return sb.toString();
+  }
 }

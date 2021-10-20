@@ -33,8 +33,7 @@ package org.alfresco.rest.rm.community.model.audit;
  * @since 2.7
  *
  */
-public enum AuditEvents
-{
+public enum AuditEvents {
     CREATE_PERSON("Create Person", "Create User"),
     DELETE_PERSON("Delete Person", "Delete User"),
     CREATE_USER_GROUP("Create User Group", "Create User Group"),
@@ -54,8 +53,7 @@ public enum AuditEvents
     /** display name for the event audited */
     public final String eventDisplayName;
 
-    AuditEvents(String event, String displayName)
-    {
+    AuditEvents(String event, String displayName) {
         this.event = event;
         this.eventDisplayName = displayName;
     }

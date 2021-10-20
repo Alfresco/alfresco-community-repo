@@ -23,6 +23,4 @@ package org.alfresco.util.testing.category;
  * of some component on the same system. It usually requires manually running them locally for multiple times and
  * comparing the results.
  */
-public interface PerformanceTests extends NonBuildTests
-{
-}
+public interface PerformanceTests extends NonBuildTests {}

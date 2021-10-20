@@ -26,10 +26,8 @@
  */
 package org.alfresco.rest.rm.community.model.common;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,17 +43,17 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class IdNamePair
-{
-    @JsonProperty (required = true)
+public class IdNamePair {
+
+    @JsonProperty(required = true)
     private String id;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private List<String> aspectNames;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String nodeType;
 }

@@ -28,7 +28,6 @@ package org.alfresco.repo.domain.dialect;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-
 import javax.sql.DataSource;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.jdbc.datasource.DataSourceUtils;
@@ -36,53 +35,46 @@ import org.springframework.jdbc.datasource.DataSourceUtils;
 /**
  * Factory for the DB dialect. Allows dialect detection logic to be centralized and the dialect to be injected
  * where required as a singleton from the container.
- * 
+ *
  * @author dward
  * @since 6.0
  */
-public class DialectFactoryBean implements FactoryBean<Dialect>
-{
-    private DataSource dataSource;
+public class DialectFactoryBean implements FactoryBean<Dialect> {
 
-    public void setDataSource(DataSource dataSource)
-    {
-        this.dataSource = dataSource;
-    }
+  private DataSource dataSource;
 
-    @Override
-    public Dialect getObject() throws SQLException
-    {
-        Connection con = null;
-        try
-        {
-            // make sure that we AUTO-COMMIT
-            con = DataSourceUtils.getConnection(dataSource);
-            con.setAutoCommit(true);
-            DatabaseMetaData meta = con.getMetaData();
-            Dialect dialect = DialectFactory.buildDialect(meta.getDatabaseProductName(), meta.getDatabaseMajorVersion(), meta.getDriverName());
-            return dialect;
-        }
-        finally
-        {
-            try
-            {
-                con.close();
-            }
-            catch (Exception e)
-            {
-            }
-        }
-    }
+  public void setDataSource(DataSource dataSource) {
+    this.dataSource = dataSource;
+  }
 
-    @Override
-    public Class<?> getObjectType()
-    {
-        return Dialect.class;
+  @Override
+  public Dialect getObject() throws SQLException {
+    Connection con = null;
+    try {
+      // make sure that we AUTO-COMMIT
+      con = DataSourceUtils.getConnection(dataSource);
+      con.setAutoCommit(true);
+      DatabaseMetaData meta = con.getMetaData();
+      Dialect dialect = DialectFactory.buildDialect(
+        meta.getDatabaseProductName(),
+        meta.getDatabaseMajorVersion(),
+        meta.getDriverName()
+      );
+      return dialect;
+    } finally {
+      try {
+        con.close();
+      } catch (Exception e) {}
     }
+  }
 
-    @Override
-    public boolean isSingleton()
-    {
-        return true;
-    }
+  @Override
+  public Class<?> getObjectType() {
+    return Dialect.class;
+  }
+
+  @Override
+  public boolean isSingleton() {
+    return true;
+  }
 }

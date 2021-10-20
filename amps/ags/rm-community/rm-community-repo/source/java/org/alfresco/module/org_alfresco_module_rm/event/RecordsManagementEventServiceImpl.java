@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -52,340 +51,371 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
-public class RecordsManagementEventServiceImpl implements RecordsManagementEventService
-{
-    /** Reference to the rm event config node */
-    private static final StoreRef SPACES_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+public class RecordsManagementEventServiceImpl
+  implements RecordsManagementEventService {
 
-    private static final NodeRef CONFIG_NODE_REF = new NodeRef(SPACES_STORE, "rm_event_config");
+  /** Reference to the rm event config node */
+  private static final StoreRef SPACES_STORE = new StoreRef(
+    StoreRef.PROTOCOL_WORKSPACE,
+    "SpacesStore"
+  );
 
-    /** Node service */
-    private NodeService nodeService;
+  private static final NodeRef CONFIG_NODE_REF = new NodeRef(
+    SPACES_STORE,
+    "rm_event_config"
+  );
 
-    /** Content service */
-    private ContentService contentService;
+  /** Node service */
+  private NodeService nodeService;
 
-    /** Registered event types */
-    private Map<String, RecordsManagementEventType> eventTypes = new HashMap<>(7);
+  /** Content service */
+  private ContentService contentService;
 
-    /** Available events */
-    private Map<String, RecordsManagementEvent> events;
+  /** Registered event types */
+  private Map<String, RecordsManagementEventType> eventTypes = new HashMap<>(7);
 
-    /**
-     * Set the node service
-     *
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+  /** Available events */
+  private Map<String, RecordsManagementEvent> events;
+
+  /**
+   * Set the node service
+   *
+   * @param nodeService node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * Set the content service
+   *
+   * @param contentService content service
+   */
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#registerEventType(org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType)
+   */
+  public void registerEventType(RecordsManagementEventType eventType) {
+    this.eventTypes.put(eventType.getName(), eventType);
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#getEventTypes()
+   */
+  public List<RecordsManagementEventType> getEventTypes() {
+    return new ArrayList<>(this.eventTypes.values());
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#getEvents()
+   */
+  public List<RecordsManagementEvent> getEvents() {
+    return new ArrayList<>(this.getEventMap().values());
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#getEvent(java.lang.String)
+   */
+  public RecordsManagementEvent getEvent(String eventName) {
+    if (!getEventMap().containsKey(eventName)) {
+      throw new AlfrescoRuntimeException(
+        "The event " + eventName + " does not exist."
+      );
+    }
+    return getEventMap().get(eventName);
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#existsEvent(java.lang.String)
+   */
+  public boolean existsEvent(String eventName) {
+    return getEventMap().containsKey(eventName);
+  }
+
+  /**
+   * Indicates whether a particular event display label exists.  Returns true if it does, false otherwise.
+   *
+   * @param eventDisplayLabel event display label
+   * @return boolean      true if event exists, false otherwise
+   */
+  public boolean existsEventDisplayLabel(String eventDisplayLabel) {
+    for (RecordsManagementEvent recordsManagementEvent : getEventMap()
+      .values()) {
+      if (
+        recordsManagementEvent
+          .getDisplayLabel()
+          .equalsIgnoreCase(eventDisplayLabel)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canCreateEvent(java.lang.String, java.lang.String)
+   */
+  @SuppressWarnings("rawtypes")
+  public boolean canCreateEvent(String eventDisplayLabel, String eventName) {
+    ParameterCheck.mandatoryString("eventDisplayLabel", eventDisplayLabel);
+    ParameterCheck.mandatoryString("eventName", eventName);
+
+    boolean canCreateEvent = true;
+
+    if (existsEvent(eventName)) {
+      canCreateEvent = false;
     }
 
-    /**
-     * Set the content service
-     *
-     * @param contentService content service
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#registerEventType(org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventType)
-     */
-    public void registerEventType(RecordsManagementEventType eventType)
-    {
-        this.eventTypes.put(eventType.getName(), eventType);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#getEventTypes()
-     */
-    public List<RecordsManagementEventType> getEventTypes()
-    {
-        return new ArrayList<>(this.eventTypes.values());
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#getEvents()
-     */
-    public List<RecordsManagementEvent> getEvents()
-    {
-        return new ArrayList<>(this.getEventMap().values());
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#getEvent(java.lang.String)
-     */
-    public RecordsManagementEvent getEvent(String eventName)
-    {
-        if (!getEventMap().containsKey(eventName)) { throw new AlfrescoRuntimeException("The event "
-                + eventName + " does not exist."); }
-        return getEventMap().get(eventName);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#existsEvent(java.lang.String)
-     */
-    public boolean existsEvent(String eventName)
-    {
-        return getEventMap().containsKey(eventName);
-    }
-
-    /**
-     * Indicates whether a particular event display label exists.  Returns true if it does, false otherwise.
-     *
-     * @param eventDisplayLabel event display label
-     * @return boolean      true if event exists, false otherwise
-     */
-    public boolean existsEventDisplayLabel(String eventDisplayLabel)
-    {
-        for (RecordsManagementEvent recordsManagementEvent : getEventMap().values())
-        {
-            if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel)) { return true; }
+    if (canCreateEvent) {
+      for (
+        Iterator iterator = getEventMap().values().iterator();
+        iterator.hasNext();
+      ) {
+        RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
+        if (
+          recordsManagementEvent
+            .getDisplayLabel()
+            .equalsIgnoreCase(eventDisplayLabel)
+        ) {
+          canCreateEvent = false;
+          break;
         }
-        return false;
+      }
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canCreateEvent(java.lang.String, java.lang.String)
-     */
-    @SuppressWarnings("rawtypes")
-    public boolean canCreateEvent(String eventDisplayLabel, String eventName)
-    {
-        ParameterCheck.mandatoryString("eventDisplayLabel", eventDisplayLabel);
-        ParameterCheck.mandatoryString("eventName", eventName);
+    return canCreateEvent;
+  }
 
-        boolean canCreateEvent = true;
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canEditEvent(java.lang.String, java.lang.String, java.lang.String)
+   */
+  @SuppressWarnings("rawtypes")
+  public boolean canEditEvent(
+    String eventDisplayLabel,
+    String eventName,
+    String eventType
+  ) {
+    ParameterCheck.mandatoryString("eventDisplayLabel", eventDisplayLabel);
+    ParameterCheck.mandatoryString("eventName", eventName);
+    ParameterCheck.mandatoryString("eventType", eventType);
 
-        if (existsEvent(eventName))
-        {
-            canCreateEvent = false;
-        }
+    boolean canEditEvent = true;
 
-        if (canCreateEvent)
-        {
-            for (Iterator iterator = getEventMap().values().iterator(); iterator.hasNext();)
-            {
-                RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
-                if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel))
-                {
-                    canCreateEvent = false;
-                    break;
-                }
-            }
-        }
-
-        return canCreateEvent;
+    if (!existsEvent(eventName)) {
+      throw new AlfrescoRuntimeException(
+        "The event '" + eventName + "' does not exist."
+      );
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#canEditEvent(java.lang.String, java.lang.String, java.lang.String)
-     */
-    @SuppressWarnings("rawtypes")
-	public boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
-    {
-        ParameterCheck.mandatoryString("eventDisplayLabel", eventDisplayLabel);
-        ParameterCheck.mandatoryString("eventName", eventName);
-        ParameterCheck.mandatoryString("eventType", eventType);
-
-        boolean canEditEvent = true;
-
-        if (!existsEvent(eventName))
-        {
-            throw new AlfrescoRuntimeException("The event '" + eventName + "' does not exist.");
+    for (
+      Iterator iterator = getEventMap().values().iterator();
+      iterator.hasNext();
+    ) {
+      RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
+      if (
+        recordsManagementEvent
+          .getDisplayLabel()
+          .equalsIgnoreCase(eventDisplayLabel)
+      ) {
+        if (recordsManagementEvent.getName().equalsIgnoreCase(eventName)) {
+          if (!recordsManagementEvent.getType().equalsIgnoreCase(eventType)) {
+            canEditEvent = true;
+          } else {
+            canEditEvent = false;
+          }
+        } else {
+          throw new AlfrescoRuntimeException(
+            "Cannot edit event. An event with the display label '" +
+            eventDisplayLabel +
+            "' already exist."
+          );
         }
-
-        for (Iterator iterator = getEventMap().values().iterator(); iterator.hasNext();)
-        {
-            RecordsManagementEvent recordsManagementEvent = (RecordsManagementEvent) iterator.next();
-            if (recordsManagementEvent.getDisplayLabel().equalsIgnoreCase(eventDisplayLabel))
-            {
-                if (recordsManagementEvent.getName().equalsIgnoreCase(eventName))
-                {
-                    if (!recordsManagementEvent.getType().equalsIgnoreCase(eventType))
-                    {
-                        canEditEvent = true;
-                    }
-                    else
-                    {
-                        canEditEvent = false;
-                    }
-                }
-                else
-                {
-                    throw new AlfrescoRuntimeException("Cannot edit event. An event with the display label '"
-                            + eventDisplayLabel + "' already exist.");
-                }
-                break;
-            }
-        }
-
-        return canEditEvent;
+        break;
+      }
     }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#addEvent(java.lang.String, java.lang.String, java.lang.String)
-     */
-    public RecordsManagementEvent addEvent(String eventType, String eventName, String eventDisplayLabel)
-    {
-        // Check that the eventType is valid
-        if (!eventTypes.containsKey(eventType))
-        {
+    return canEditEvent;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#addEvent(java.lang.String, java.lang.String, java.lang.String)
+   */
+  public RecordsManagementEvent addEvent(
+    String eventType,
+    String eventName,
+    String eventDisplayLabel
+  ) {
+    // Check that the eventType is valid
+    if (!eventTypes.containsKey(eventType)) {
+      throw new AlfrescoRuntimeException(
+        "Can not add event because event " +
+        eventName +
+        " has an undefined eventType. (" +
+        eventType +
+        ")"
+      );
+    }
+
+    // Create event and add to map
+    RecordsManagementEvent event = new RecordsManagementEvent(
+      eventTypes.get(eventType),
+      eventName,
+      eventDisplayLabel
+    );
+    getEventMap().put(event.getName(), event);
+
+    // Persist the changes to the event list
+    saveEvents();
+
+    return new RecordsManagementEvent(
+      eventTypes.get(eventType),
+      eventName,
+      eventDisplayLabel
+    );
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#removeEvent(java.lang.String)
+   */
+  public void removeEvent(String eventName) {
+    // Remove the event from the map
+    getEventMap().remove(eventName);
+
+    // Persist the changes to the event list
+    saveEvents();
+  }
+
+  /**
+   * Helper method to get the event map. Loads initial instance from persisted
+   * configuration file.
+   *
+   * @return Map<String, RecordsManagementEvent> map of available events by
+   *         event name
+   */
+  private Map<String, RecordsManagementEvent> getEventMap() {
+    if (this.events == null) {
+      loadEvents();
+    }
+    return this.events;
+  }
+
+  /**
+   * Load the events from the persistant storage
+   */
+  private void loadEvents() {
+    AuthenticationUtil.runAs(
+      new AuthenticationUtil.RunAsWork<Object>() {
+        public Object doWork() throws Exception {
+          // Get the event config node
+          if (!nodeService.exists(CONFIG_NODE_REF)) {
             throw new AlfrescoRuntimeException(
-                        "Can not add event because event " +
-                        eventName +
-                        " has an undefined eventType. ("
-                        + eventType + ")");
-        }
+              "Unable to find records management event configuration node."
+            );
+          }
 
-        // Create event and add to map
-        RecordsManagementEvent event = new RecordsManagementEvent(eventTypes.get(eventType), eventName, eventDisplayLabel);
-        getEventMap().put(event.getName(), event);
+          // Read content from config node
+          ContentReader reader = contentService.getReader(
+            CONFIG_NODE_REF,
+            ContentModel.PROP_CONTENT
+          );
+          String jsonString = reader.getContentString();
 
-        // Persist the changes to the event list
-        saveEvents();
+          JSONObject configJSON = new JSONObject(jsonString);
+          JSONArray eventsJSON = configJSON.getJSONArray("events");
 
-        return new RecordsManagementEvent(eventTypes.get(eventType), eventName, eventDisplayLabel);
-    }
+          events = new HashMap<>(eventsJSON.length());
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#removeEvent(java.lang.String)
-     */
-    public void removeEvent(String eventName)
-    {
-        // Remove the event from the map
-        getEventMap().remove(eventName);
+          for (int i = 0; i < eventsJSON.length(); i++) {
+            // Get the JSON object that represents the event
+            JSONObject eventJSON = eventsJSON.getJSONObject(i);
 
-        // Persist the changes to the event list
-        saveEvents();
-    }
+            // Get the details of the event
+            String eventType = eventJSON.getString("eventType");
+            String eventName = eventJSON.getString("eventName");
 
-    /**
-     * Helper method to get the event map. Loads initial instance from persisted
-     * configuration file.
-     *
-     * @return Map<String, RecordsManagementEvent> map of available events by
-     *         event name
-     */
-    private Map<String, RecordsManagementEvent> getEventMap()
-    {
-        if (this.events == null)
-        {
-            loadEvents();
-        }
-        return this.events;
-    }
-
-    /**
-     * Load the events from the persistant storage
-     */
-    private void loadEvents()
-    {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                // Get the event config node
-                if (!nodeService.exists(CONFIG_NODE_REF))
-                {
-                    throw new AlfrescoRuntimeException("Unable to find records management event configuration node.");
-                }
-
-                // Read content from config node
-                ContentReader reader = contentService.getReader(CONFIG_NODE_REF, ContentModel.PROP_CONTENT);
-                String jsonString = reader.getContentString();
-
-                JSONObject configJSON = new JSONObject(jsonString);
-                JSONArray eventsJSON = configJSON.getJSONArray("events");
-
-                events = new HashMap<>(eventsJSON.length());
-
-                for (int i = 0; i < eventsJSON.length(); i++)
-                {
-                    // Get the JSON object that represents the event
-                    JSONObject eventJSON = eventsJSON.getJSONObject(i);
-
-                    // Get the details of the event
-                    String eventType = eventJSON.getString("eventType");
-                    String eventName = eventJSON.getString("eventName");
-
-                    String eventDisplayLabel = eventJSON.getString("eventDisplayLabel");
-                    String translated = I18NUtil.getMessage(eventDisplayLabel);
-                    if (translated != null)
-                    {
-                        eventDisplayLabel = translated;
-                    }
-
-
-                    // Check that the eventType is valid
-                    if (!eventTypes.containsKey(eventType))
-                    {
-                        throw new AlfrescoRuntimeException(
-                                    "Can not load rm event configuration because event " +
-                                    eventName +
-                                    " has an undefined eventType. ("
-                                    + eventType + ")");
-                    }
-
-                    // Create event and add to map
-                    RecordsManagementEvent event = new RecordsManagementEvent(eventTypes.get(eventType), eventName, eventDisplayLabel);
-                    events.put(event.getName(), event);
-                }
-                return null;
+            String eventDisplayLabel = eventJSON.getString("eventDisplayLabel");
+            String translated = I18NUtil.getMessage(eventDisplayLabel);
+            if (translated != null) {
+              eventDisplayLabel = translated;
             }
 
-        }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * Save the events to the peristant storage
-     */
-    private void saveEvents()
-    {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-        {
-            public Object doWork() throws Exception
-            {
-                // Get the event config node
-                if (!nodeService.exists(CONFIG_NODE_REF))
-                {
-                    throw new AlfrescoRuntimeException("Unable to find records management event configuration node.");
-                }
-
-                JSONObject configJSON = new JSONObject();
-                JSONArray eventsJSON = new JSONArray();
-
-                int index = 0;
-                for (RecordsManagementEvent event : events.values())
-                {
-                    JSONObject eventJSON = new JSONObject();
-                    eventJSON.put("eventType", event.getType());
-                    eventJSON.put("eventName", event.getName());
-                    eventJSON.put("eventDisplayLabel", event.getDisplayLabel());
-
-                    eventsJSON.put(index, eventJSON);
-                    index++;
-                }
-                configJSON.put("events", eventsJSON);
-
-                // Get content writer
-                ContentWriter contentWriter = contentService
-                        .getWriter(CONFIG_NODE_REF, ContentModel.PROP_CONTENT, true);
-                contentWriter.putContent(configJSON.toString());
-
-                return null;
+            // Check that the eventType is valid
+            if (!eventTypes.containsKey(eventType)) {
+              throw new AlfrescoRuntimeException(
+                "Can not load rm event configuration because event " +
+                eventName +
+                " has an undefined eventType. (" +
+                eventType +
+                ")"
+              );
             }
 
-        }, AuthenticationUtil.getSystemUserName());
-    }
+            // Create event and add to map
+            RecordsManagementEvent event = new RecordsManagementEvent(
+              eventTypes.get(eventType),
+              eventName,
+              eventDisplayLabel
+            );
+            events.put(event.getName(), event);
+          }
+          return null;
+        }
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#getEventType(java.lang.String)
-     */
-    public RecordsManagementEventType getEventType(String eventTypeName)
-    {
-        return this.eventTypes.get(eventTypeName);
-    }
+  /**
+   * Save the events to the peristant storage
+   */
+  private void saveEvents() {
+    AuthenticationUtil.runAs(
+      new AuthenticationUtil.RunAsWork<Object>() {
+        public Object doWork() throws Exception {
+          // Get the event config node
+          if (!nodeService.exists(CONFIG_NODE_REF)) {
+            throw new AlfrescoRuntimeException(
+              "Unable to find records management event configuration node."
+            );
+          }
+
+          JSONObject configJSON = new JSONObject();
+          JSONArray eventsJSON = new JSONArray();
+
+          int index = 0;
+          for (RecordsManagementEvent event : events.values()) {
+            JSONObject eventJSON = new JSONObject();
+            eventJSON.put("eventType", event.getType());
+            eventJSON.put("eventName", event.getName());
+            eventJSON.put("eventDisplayLabel", event.getDisplayLabel());
+
+            eventsJSON.put(index, eventJSON);
+            index++;
+          }
+          configJSON.put("events", eventsJSON);
+
+          // Get content writer
+          ContentWriter contentWriter = contentService.getWriter(
+            CONFIG_NODE_REF,
+            ContentModel.PROP_CONTENT,
+            true
+          );
+          contentWriter.putContent(configJSON.toString());
+
+          return null;
+        }
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService#getEventType(java.lang.String)
+   */
+  public RecordsManagementEventType getEventType(String eventTypeName) {
+    return this.eventTypes.get(eventTypeName);
+  }
 }

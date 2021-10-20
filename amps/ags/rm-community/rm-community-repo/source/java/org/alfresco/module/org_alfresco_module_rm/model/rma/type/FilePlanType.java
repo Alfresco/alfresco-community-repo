@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
@@ -56,257 +55,267 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:filePlan"
-)
-public class FilePlanType extends    BaseBehaviourBean
-                          implements NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                     NodeServicePolicies.OnCreateNodePolicy,
-                                     NodeServicePolicies.OnDeleteNodePolicy,
-                                     NodeServicePolicies.BeforeDeleteNodePolicy
-{
-    private final static List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_HOLD_CONTAINER, TYPE_TRANSFER_CONTAINER, TYPE_UNFILED_RECORD_CONTAINER);
-    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_RECORD_CATEGORY);
-    private static final String BEHAVIOUR_NAME = "onDeleteFilePlan";
+@BehaviourBean(defaultType = "rma:filePlan")
+public class FilePlanType
+  extends BaseBehaviourBean
+  implements
+    NodeServicePolicies.OnCreateChildAssociationPolicy,
+    NodeServicePolicies.OnCreateNodePolicy,
+    NodeServicePolicies.OnDeleteNodePolicy,
+    NodeServicePolicies.BeforeDeleteNodePolicy {
 
-    /** file plan service */
-    private FilePlanService filePlanService;
+  private static final List<QName> ACCEPTED_UNIQUE_CHILD_TYPES = Arrays.asList(
+    TYPE_HOLD_CONTAINER,
+    TYPE_TRANSFER_CONTAINER,
+    TYPE_UNFILED_RECORD_CONTAINER
+  );
+  private static final List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(
+    TYPE_RECORD_CATEGORY
+  );
+  private static final String BEHAVIOUR_NAME = "onDeleteFilePlan";
 
-    /** record folder service */
-    private RecordFolderService recordFolderService;
+  /** file plan service */
+  private FilePlanService filePlanService;
 
-    /** identifier service */
-    private IdentifierService identifierService;
+  /** record folder service */
+  private RecordFolderService recordFolderService;
 
-    /** file plan role service */
-    private FilePlanRoleService filePlanRoleService;
+  /** identifier service */
+  private IdentifierService identifierService;
 
-    /**
-     * Unfiled Record Container Type behaviour bean
-     */
-    private UnfiledRecordContainerType unfiledRecordContainerType;
+  /** file plan role service */
+  private FilePlanRoleService filePlanRoleService;
 
-    /**
-     * Transfer Container Type behaviour bean
-     */
-    private TransferContainerType transferContainerType;
+  /**
+   * Unfiled Record Container Type behaviour bean
+   */
+  private UnfiledRecordContainerType unfiledRecordContainerType;
 
-    /**
-     * Hold Container Type behaviour bean
-     */
-    private HoldContainerType holdContainerType;
+  /**
+   * Transfer Container Type behaviour bean
+   */
+  private TransferContainerType transferContainerType;
 
-    /**
-     * @return File plan service
-     */
-    protected FilePlanService getFilePlanService()
-    {
-        return this.filePlanService;
+  /**
+   * Hold Container Type behaviour bean
+   */
+  private HoldContainerType holdContainerType;
+
+  /**
+   * @return File plan service
+   */
+  protected FilePlanService getFilePlanService() {
+    return this.filePlanService;
+  }
+
+  /**
+   * @return Record folder service
+   */
+  protected RecordFolderService getRecordFolderService() {
+    return this.recordFolderService;
+  }
+
+  /**
+   * @return Identifier service
+   */
+  protected IdentifierService getIdentifierService() {
+    return this.identifierService;
+  }
+
+  /**
+   * @return File plan role service
+   */
+  protected FilePlanRoleService getFilePlanRoleService() {
+    return this.filePlanRoleService;
+  }
+
+  /**
+   * @param filePlanService   file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
+
+  /**
+   * @param recordFolderService   record folder service
+   */
+  public void setRecordFolderService(RecordFolderService recordFolderService) {
+    this.recordFolderService = recordFolderService;
+  }
+
+  /**
+   * @param identifierService identifier service
+   */
+  public void setIdentifierService(IdentifierService identifierService) {
+    this.identifierService = identifierService;
+  }
+
+  /**
+   * @param filePlanRoleService   file plan role service
+   */
+  public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService) {
+    this.filePlanRoleService = filePlanRoleService;
+  }
+
+  /**
+   * @param unfiledRecordContainerType - unfiled record container type behaviour bean
+   */
+  public void setUnfiledRecordContainerType(
+    UnfiledRecordContainerType unfiledRecordContainerType
+  ) {
+    this.unfiledRecordContainerType = unfiledRecordContainerType;
+  }
+
+  /**
+   * @param transferContainerType - transfer container type behaviour bean
+   */
+  public void setTransferContainerType(
+    TransferContainerType transferContainerType
+  ) {
+    this.transferContainerType = transferContainerType;
+  }
+
+  /**
+   * @param holdContainerType - hold container type behaviour bean
+   */
+  public void setHoldContainerType(HoldContainerType holdContainerType) {
+    this.holdContainerType = holdContainerType;
+  }
+
+  /**
+   * Disable the behaviours for this transaction
+   *
+   */
+  public void disable() {
+    getBehaviour(BEHAVIOUR_NAME).disable();
+  }
+
+  /**
+   * Enable behaviours for this transaction
+   *
+   */
+  public void enable() {
+    getBehaviour(BEHAVIOUR_NAME).enable();
+  }
+
+  /**
+   * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+   */
+  @Behaviour(kind = BehaviourKind.ASSOCIATION)
+  @Override
+  public void onCreateChildAssociation(
+    ChildAssociationRef childAssocRef,
+    boolean bNew
+  ) {
+    // We need to automatically cast the created folder to category if it is a plain folder
+    // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
+    // Some modules use hidden files to store information (see RM-3283)
+    if (
+      nodeService
+        .getType(childAssocRef.getChildRef())
+        .equals(ContentModel.TYPE_FOLDER)
+    ) {
+      nodeService.setType(childAssocRef.getChildRef(), TYPE_RECORD_CATEGORY);
     }
 
-    /**
-     * @return Record folder service
-     */
-    protected RecordFolderService getRecordFolderService()
-    {
-        return this.recordFolderService;
-    }
+    // check the created child is of an accepted type
+    validateNewChildAssociation(
+      childAssocRef.getParentRef(),
+      childAssocRef.getChildRef(),
+      ACCEPTED_UNIQUE_CHILD_TYPES,
+      ACCEPTED_NON_UNIQUE_CHILD_TYPES
+    );
+  }
 
-    /**
-     * @return Identifier service
-     */
-    protected IdentifierService getIdentifierService()
-    {
-        return this.identifierService;
-    }
+  /**
+   * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+   */
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+  )
+  @Override
+  public void onCreateNode(final ChildAssociationRef childAssocRef) {
+    final NodeRef filePlan = childAssocRef.getChildRef();
 
-    /**
-     * @return File plan role service
-     */
-    protected FilePlanRoleService getFilePlanRoleService()
-    {
-        return this.filePlanRoleService;
-    }
+    AuthenticationUtil.runAsSystem(
+      new RunAsWork<Object>() {
+        public Object doWork() {
+          // ensure rules are not inherited
+          nodeService.addAspect(
+            filePlan,
+            RuleModel.ASPECT_IGNORE_INHERITED_RULES,
+            null
+          );
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
+          // set the identifier
+          if (nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null) {
+            String id = getIdentifierService().generateIdentifier(filePlan);
+            nodeService.setProperty(
+              filePlan,
+              RecordsManagementModel.PROP_IDENTIFIER,
+              id
+            );
+          }
 
-    /**
-     * @param recordFolderService   record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
-    }
-
-    /**
-     * @param identifierService identifier service
-     */
-    public void setIdentifierService(IdentifierService identifierService)
-    {
-        this.identifierService = identifierService;
-    }
-
-    /**
-     * @param filePlanRoleService   file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-
-    /**
-     * @param unfiledRecordContainerType - unfiled record container type behaviour bean
-     */
-    public void setUnfiledRecordContainerType(UnfiledRecordContainerType unfiledRecordContainerType)
-    {
-        this.unfiledRecordContainerType = unfiledRecordContainerType;
-    }
-
-    /**
-     * @param transferContainerType - transfer container type behaviour bean
-     */
-    public void setTransferContainerType(TransferContainerType transferContainerType)
-    {
-        this.transferContainerType = transferContainerType;
-    }
-
-    /**
-     * @param holdContainerType - hold container type behaviour bean
-     */
-    public void setHoldContainerType(HoldContainerType holdContainerType)
-    {
-        this.holdContainerType = holdContainerType;
-    }
-
-    /**
-     * Disable the behaviours for this transaction
-     *
-     */
-    public void disable()
-    {
-        getBehaviour(BEHAVIOUR_NAME).disable();
-    }
-
-    /**
-     * Enable behaviours for this transaction
-     *
-     */
-    public void enable()
-    {
-        getBehaviour(BEHAVIOUR_NAME).enable();
-    }
-
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
-     */
-    @Behaviour
-    (
-       kind = BehaviourKind.ASSOCIATION
-    )
-    @Override
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
-    {
-        // We need to automatically cast the created folder to category if it is a plain folder
-        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
-        // Some modules use hidden files to store information (see RM-3283)
-        if (nodeService.getType(childAssocRef.getChildRef()).equals(ContentModel.TYPE_FOLDER))
-        {
-            nodeService.setType(childAssocRef.getChildRef(), TYPE_RECORD_CATEGORY);
+          return null;
         }
+      }
+    );
 
-        // check the created child is of an accepted type
-        validateNewChildAssociation(childAssocRef.getParentRef(), childAssocRef.getChildRef(), ACCEPTED_UNIQUE_CHILD_TYPES, ACCEPTED_NON_UNIQUE_CHILD_TYPES);
-    }
+    // setup the file plan roles
+    getFilePlanRoleService().setupFilePlanRoles(filePlan);
+  }
 
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    @Override
-    public void onCreateNode(final ChildAssociationRef childAssocRef)
-    {
-        final NodeRef filePlan = childAssocRef.getChildRef();
+  /**
+   * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+   */
+  @Override
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    notificationFrequency = NotificationFrequency.FIRST_EVENT,
+    name = BEHAVIOUR_NAME
+  )
+  public void onDeleteNode(
+    ChildAssociationRef childAssocRef,
+    boolean archived
+  ) {
+    unfiledRecordContainerType.enable();
+    transferContainerType.enable();
+    holdContainerType.enable();
+    throw new IntegrityException(
+      "Operation failed. Deletion of File Plan is not allowed.",
+      null
+    );
+  }
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                // ensure rules are not inherited
-                nodeService.addAspect(filePlan, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+  /**
+   * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+   */
+  @Override
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    notificationFrequency = NotificationFrequency.FIRST_EVENT
+  )
+  public void beforeDeleteNode(NodeRef nodeRef) {
+    unfiledRecordContainerType.disable();
+    transferContainerType.disable();
+    holdContainerType.disable();
+  }
 
-                // set the identifier
-                if (nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
-                {
-                    String id = getIdentifierService().generateIdentifier(filePlan);
-                    nodeService.setProperty(filePlan, RecordsManagementModel.PROP_IDENTIFIER, id);
-                }
-
-                return null;
-            }
-        });
-
-        // setup the file plan roles
-        getFilePlanRoleService().setupFilePlanRoles(filePlan);
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
-     */
-    @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.FIRST_EVENT,
-       name = BEHAVIOUR_NAME
-    )
-    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean archived)
-    {
-        unfiledRecordContainerType.enable();
-        transferContainerType.enable();
-        holdContainerType.enable();
-        throw new IntegrityException("Operation failed. Deletion of File Plan is not allowed.", null);
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
-    )
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        unfiledRecordContainerType.disable();
-        transferContainerType.disable();
-        holdContainerType.disable();
-    }
-
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       policy = "alf:onDeleteNode",
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    public void onDeleteNodeOnCommit(ChildAssociationRef childAssocRef, boolean archived)
-    {
-        // tear down the file plan roles
-        getFilePlanRoleService().tearDownFilePlanRoles(childAssocRef.getChildRef());
-        unfiledRecordContainerType.enable();
-        transferContainerType.enable();
-        holdContainerType.enable();
-    }
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    policy = "alf:onDeleteNode",
+    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+  )
+  public void onDeleteNodeOnCommit(
+    ChildAssociationRef childAssocRef,
+    boolean archived
+  ) {
+    // tear down the file plan roles
+    getFilePlanRoleService().tearDownFilePlanRoles(childAssocRef.getChildRef());
+    unfiledRecordContainerType.enable();
+    transferContainerType.enable();
+    holdContainerType.enable();
+  }
 }

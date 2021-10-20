@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -33,47 +33,40 @@ import org.alfresco.rest.framework.resource.UniqueId;
  *
  * @author Gethin James
  */
-public class Sheep implements Animal
-{
-    private String id;
-    private String name = "Dolly";
-    private int age = 3;
-    
-    public Sheep(String id)
-    {
-        super();
-        this.id = id;
-    }
+public class Sheep implements Animal {
 
-    @JsonProperty("sheepGuid")
-    @UniqueId(name="sheepGuid")
-    public String getId()
-    {
-        return this.id;
-    }
+  private String id;
+  private String name = "Dolly";
+  private int age = 3;
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
+  public Sheep(String id) {
+    super();
+    this.id = id;
+  }
 
-    public String getName()
-    {
-        return this.name;
-    }
+  @JsonProperty("sheepGuid")
+  @UniqueId(name = "sheepGuid")
+  public String getId() {
+    return this.id;
+  }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public int getAge()
-    {
-        return this.age;
-    }
+  public String getName() {
+    return this.name;
+  }
 
-    public void setAge(int age)
-    {
-        this.age = age;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  public int getAge() {
+    return this.age;
+  }
+
+  public void setAge(int age) {
+    this.age = age;
+  }
 }

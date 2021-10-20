@@ -32,17 +32,21 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class FilePlanComponentType
-{
+public class FilePlanComponentType {
+
     public static final String FILE_PLAN_TYPE = "rma:filePlan";
     public static final String RECORD_CATEGORY_TYPE = "rma:recordCategory";
     public static final String RECORD_FOLDER_TYPE = "rma:recordFolder";
     public static final String RECORD_TYPE = "rma:record"; // generic record type
-    public static final String UNFILED_RECORD_FOLDER_TYPE = "rma:unfiledRecordFolder";
+    public static final String UNFILED_RECORD_FOLDER_TYPE =
+        "rma:unfiledRecordFolder";
     public static final String TRANSFER_TYPE = "rma:transfer";
-    public static final String TRANSFER_CONTAINER_TYPE = "rma:transferContainer";
-    public static final String UNFILED_CONTAINER_TYPE = "rma:unfiledRecordContainer";
+    public static final String TRANSFER_CONTAINER_TYPE =
+        "rma:transferContainer";
+    public static final String UNFILED_CONTAINER_TYPE =
+        "rma:unfiledRecordContainer";
     public static final String FOLDER_TYPE = "cm:folder";
     public static final String CONTENT_TYPE = "cm:content";
-    public static final String NON_ELECTRONIC_RECORD_TYPE = "rma:nonElectronicDocument";
+    public static final String NON_ELECTRONIC_RECORD_TYPE =
+        "rma:nonElectronicDocument";
 }

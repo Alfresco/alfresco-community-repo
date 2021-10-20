@@ -39,9 +39,9 @@ import org.springframework.context.ApplicationContext;
  * Tests marked as DBTests are automatically excluded and are run as part of {@link AllDBTestsTestSuite}.
  */
 @RunWith(Categories.class)
-@Categories.ExcludeCategory({DBTests.class, NonBuildTests.class})
-@Suite.SuiteClasses({
-
+@Categories.ExcludeCategory({ DBTests.class, NonBuildTests.class })
+@Suite.SuiteClasses(
+  {
     // ----------------------------------------------------------------------
     // Minimum context [classpath:alfresco/minimal-context.xml]
     // ----------------------------------------------------------------------
@@ -49,7 +49,6 @@ import org.springframework.context.ApplicationContext;
     // Metadata tests - replaced with simplified tests in LocalRenditionTest and ServiceRenditionTest
     org.alfresco.repo.content.metadata.RFC822MetadataExtracterTest.class,
     org.alfresco.repo.content.metadata.MappingMetadataExtracterTest.class,
-
     // ----------------------------------------------------------------------
     // Transformer/Rendition contexts
     //
@@ -60,65 +59,54 @@ import org.springframework.context.ApplicationContext;
     // [classpath:alfresco/application-context.xml, classpath:org/alfresco/repo/thumbnail/test-thumbnail-context.xml]
     // some tests fail locally - on windows
     org.alfresco.repo.thumbnail.ThumbnailServiceImplTest.class,
-
     // [classpath:/test/alfresco/test-renditions-context.xml, classpath:alfresco/application-context.xml,
     // classpath:alfresco/test/global-integration-test-context.xml]
     // this does NOT passes locally
     org.alfresco.repo.rendition.RenditionServicePermissionsTest.class,
-
     // ----------------------------------------------------------------------
     // Misc contexts
     // ----------------------------------------------------------------------
 
     // [classpath:alfresco/node-locator-context.xml, classpath:test-nodeLocatorServiceImpl-context.xml]
     org.alfresco.repo.nodelocator.NodeLocatorServiceImplTest.class,
-
     // [classpath*:alfresco/ibatis/ibatis-test-context.xml, classpath:alfresco/application-context.xml,
     // classpath:alfresco/test/global-integration-test-context.xml]
     org.alfresco.repo.domain.query.CannedQueryDAOTest.class,
     org.alfresco.repo.node.NodeServiceTest.class,
-
     // [classpath:alfresco/application-context.xml, classpath:alfresco/minimal-context.xml]
     org.alfresco.RepositoryStartStopTest.class,
-
     // [classpath:cachingstore/test-context.xml]
     org.alfresco.repo.content.caching.FullTest.class,
-
     // [classpath:cachingstore/test-cleaner-context.xml]
     org.alfresco.repo.content.caching.cleanup.CachedContentCleanupJobTest.class,
-
     // [classpath:cachingstore/test-std-quota-context.xml]
     org.alfresco.repo.content.caching.quota.StandardQuotaStrategyTest.class,
-
     // [classpath:cachingstore/test-slow-context.xml]
     org.alfresco.repo.content.caching.test.SlowContentStoreTest.class,
     org.alfresco.repo.content.caching.test.ConcurrentCachingStoreTest.class,
-
     // [classpath:org/alfresco/repo/jscript/test-context.xml]
     org.alfresco.repo.jscript.ScriptBehaviourTest.class,
-
     // [module/module-component-test-beans.xml]
     org.alfresco.repo.module.ComponentsTest.class,
-
     // [ibatis/hierarchy-test/hierarchy-test-context.xml]
-    org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class
-})
-public class MiscContextTestSuite
-{
-    /**
-     * Asks {@link ApplicationContextHelper} to give us a
-     *  suitable, perhaps cached context for use in our tests
-     */
-    public static ApplicationContext getMinimalContext() {
-        ApplicationContextHelper.setUseLazyLoading(false);
-        ApplicationContextHelper.setNoAutoStart(true);
-        return ApplicationContextHelper.getApplicationContext(
-            new String[] { "classpath:alfresco/minimal-context.xml" }
-        );
-    }
+    org.alfresco.ibatis.HierarchicalSqlSessionFactoryBeanTest.class,
+  }
+)
+public class MiscContextTestSuite {
 
-    static
-    {
-        getMinimalContext();
-    }
+  /**
+   * Asks {@link ApplicationContextHelper} to give us a
+   *  suitable, perhaps cached context for use in our tests
+   */
+  public static ApplicationContext getMinimalContext() {
+    ApplicationContextHelper.setUseLazyLoading(false);
+    ApplicationContextHelper.setNoAutoStart(true);
+    return ApplicationContextHelper.getApplicationContext(
+      new String[] { "classpath:alfresco/minimal-context.xml" }
+    );
+  }
+
+  static {
+    getMinimalContext();
+  }
 }

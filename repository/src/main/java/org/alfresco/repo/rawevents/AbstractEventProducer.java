@@ -26,13 +26,12 @@
 package org.alfresco.repo.rawevents;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
+import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.ProducerTemplate;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Abstract helper to send events to an endpoint. The
@@ -48,79 +47,80 @@ import java.util.Map;
  * sending the event.
  * <p/>
  */
-public abstract class AbstractEventProducer
-{
-    protected static final String ERROR_SENDING = "Could not send event";
-    public static final String JMS_AMQP_PREFIX = "JMS_AMQP_";
+public abstract class AbstractEventProducer {
 
-    public static final String MESSAGE_FORMAT = "MESSAGE_FORMAT";
-    public static final String JMS_AMQP_MESSAGE_FORMAT = JMS_AMQP_PREFIX + MESSAGE_FORMAT;
-    public static final short AMQP_UNKNOWN = 0;
+  protected static final String ERROR_SENDING = "Could not send event";
+  public static final String JMS_AMQP_PREFIX = "JMS_AMQP_";
 
-    protected ProducerTemplate producer;
-    protected String endpoint;
-    protected ObjectMapper objectMapper;
+  public static final String MESSAGE_FORMAT = "MESSAGE_FORMAT";
+  public static final String JMS_AMQP_MESSAGE_FORMAT =
+    JMS_AMQP_PREFIX + MESSAGE_FORMAT;
+  public static final short AMQP_UNKNOWN = 0;
 
-    public void setProducer(ProducerTemplate producer)
-    {
-        this.producer = producer;
+  protected ProducerTemplate producer;
+  protected String endpoint;
+  protected ObjectMapper objectMapper;
+
+  public void setProducer(ProducerTemplate producer) {
+    this.producer = producer;
+  }
+
+  public void setEndpoint(String endpoint) {
+    this.endpoint = endpoint;
+  }
+
+  public void setObjectMapper(ObjectMapper objectMapper) {
+    this.objectMapper = objectMapper;
+  }
+
+  protected Map<String, Object> addHeaders(Map<String, Object> origHeaders) {
+    if (origHeaders == null) {
+      origHeaders = new HashMap<>();
     }
 
-    public void setEndpoint(String endpoint)
-    {
-        this.endpoint = endpoint;
+    origHeaders.put(JMS_AMQP_MESSAGE_FORMAT, AMQP_UNKNOWN);
+    return origHeaders;
+  }
+
+  public void send(String endpointUri, Object event) {
+    send(endpointUri, event, null);
+  }
+
+  public void send(
+    String endpointUri,
+    Object event,
+    Map<String, Object> headers
+  ) {
+    send(endpointUri, null, event, headers);
+  }
+
+  public void send(
+    String endpointUri,
+    ExchangePattern exchangePattern,
+    Object event,
+    Map<String, Object> headers
+  ) {
+    try {
+      if (StringUtils.isEmpty(endpointUri)) {
+        endpointUri = this.endpoint;
+      }
+
+      if (this.objectMapper != null && !(event instanceof String)) {
+        event = this.objectMapper.writeValueAsString(event);
+      }
+
+      if (exchangePattern == null) {
+        exchangePattern = ExchangePattern.InOnly;
+      }
+
+      this.producer.sendBodyAndHeaders(
+          endpointUri,
+          exchangePattern,
+          event,
+          this.addHeaders(headers)
+        );
+    } catch (Exception e) {
+      throw new AlfrescoRuntimeException(ERROR_SENDING, e);
     }
-
-    public void setObjectMapper(ObjectMapper objectMapper)
-    {
-        this.objectMapper = objectMapper;
-    }
-
-    protected Map<String, Object> addHeaders(Map<String, Object> origHeaders)
-    {
-        if (origHeaders == null)
-        {
-            origHeaders = new HashMap<>();
-        }
-
-        origHeaders.put(JMS_AMQP_MESSAGE_FORMAT, AMQP_UNKNOWN);
-        return origHeaders;
-    }
-
-    public void send(String endpointUri, Object event)
-    {
-        send(endpointUri, event, null);
-    }
-
-    public void send(String endpointUri, Object event, Map<String, Object> headers)
-    {
-        send(endpointUri, null, event, headers);
-    }
-
-    public void send(String endpointUri, ExchangePattern exchangePattern, Object event, Map<String, Object> headers)
-    {
-        try
-        {
-            if (StringUtils.isEmpty(endpointUri))
-            {
-                endpointUri = this.endpoint;
-            }
-
-            if (this.objectMapper != null && !(event instanceof String))
-            {
-                event = this.objectMapper.writeValueAsString(event);
-            }
-
-            if (exchangePattern == null)
-            {
-                exchangePattern = ExchangePattern.InOnly;
-            }
-
-            this.producer.sendBodyAndHeaders(endpointUri, exchangePattern, event, this.addHeaders(headers));
-        }
-        catch (Exception e)
-        {
-            throw new AlfrescoRuntimeException(ERROR_SENDING, e);
-        }
-    }
+  }
 }

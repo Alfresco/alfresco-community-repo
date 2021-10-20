@@ -28,141 +28,117 @@ import java.util.Set;
 /**
  * @author Nick Smith
  */
-public class OneToManyHashBiMap<K, V> implements Map<K, Set<V>>, OneToManyBiMap<K, V>
-{
-    // The 'forward' map.
-    private OneToManyHashMap<K, V> map = new OneToManyHashMap<K, V>();
+public class OneToManyHashBiMap<K, V>
+  implements Map<K, Set<V>>, OneToManyBiMap<K, V> {
 
-    // The inverse map.
-    private Map<V, K> inverse = new HashMap<V, K>();
+  // The 'forward' map.
+  private OneToManyHashMap<K, V> map = new OneToManyHashMap<K, V>();
 
-    public void clear()
-    {
-        map.clear();
-        inverse.clear();
+  // The inverse map.
+  private Map<V, K> inverse = new HashMap<V, K>();
+
+  public void clear() {
+    map.clear();
+    inverse.clear();
+  }
+
+  public boolean containsKey(Object key) {
+    return map.containsKey(key);
+  }
+
+  public boolean containsValue(Object value) {
+    return map.containsValue(value);
+  }
+
+  public boolean containsSingleValue(V value) {
+    return inverse.containsKey(value);
+  }
+
+  public Set<Entry<K, Set<V>>> entrySet() {
+    return map.entrySet();
+  }
+
+  public Set<Entry<K, V>> entries() {
+    return map.entries();
+  }
+
+  public Set<V> get(Object key) {
+    return map.get(key);
+  }
+
+  /*
+   * @see org.alfresco.util.OneToManyBiMap#getKey(V)
+   */
+  public K getKey(V value) {
+    return inverse.get(value);
+  }
+
+  public boolean isEmpty() {
+    return map.isEmpty();
+  }
+
+  public Set<K> keySet() {
+    return map.keySet();
+  }
+
+  public Set<V> put(K key, Set<V> values) {
+    map.put(key, values);
+    for (V value : values) {
+      inverse.put(value, key);
     }
+    return null;
+  }
 
-    public boolean containsKey(Object key)
-    {
-        return map.containsKey(key);
-    }
+  public V putSingleValue(K key, V value) {
+    inverse.put(value, key);
+    return map.putSingleValue(key, value);
+  }
 
-    public boolean containsValue(Object value)
-    {
-        return map.containsValue(value);
-    }
-
-    public boolean containsSingleValue(V value)
-    {
-        return inverse.containsKey(value);
-    }
-
-    public Set<Entry<K, Set<V>>> entrySet()
-    {
-        return map.entrySet();
-    }
-
-    public Set<Entry<K, V>> entries()
-    {
-        return map.entries();
-    }
-
-    public Set<V> get(Object key)
-    {
-        return map.get(key);
-    }
-
-    /*
-     * @see org.alfresco.util.OneToManyBiMap#getKey(V)
-     */
-    public K getKey(V value)
-    {
-        return inverse.get(value);
-    }
-
-    public boolean isEmpty()
-    {
-        return map.isEmpty();
-    }
-
-    public Set<K> keySet()
-    {
-        return map.keySet();
-    }
-
-    public Set<V> put(K key, Set<V> values)
-    {
-        map.put(key, values);
-        for (V value : values)
-        {
-            inverse.put(value, key);
-        }
-        return null;
-    }
-
-    public V putSingleValue(K key, V value)
-    {
+  public void putAll(Map<? extends K, ? extends Set<V>> m) {
+    map.putAll(m);
+    for (Entry<? extends K, ? extends Set<V>> entry : m.entrySet()) {
+      K key = entry.getKey();
+      for (V value : entry.getValue()) {
         inverse.put(value, key);
-        return map.putSingleValue(key, value);
+      }
     }
+  }
 
-    public void putAll(Map<? extends K, ? extends Set<V>> m)
-    {
-        map.putAll(m);
-        for (Entry<? extends K, ? extends Set<V>> entry : m.entrySet())
-        {
-            K key = entry.getKey();
-            for (V value : entry.getValue())
-            {
-                inverse.put(value, key);
-            }
-        }
+  public void putAllSingleValues(Map<? extends K, ? extends V> m) {
+    map.putAllSingleValues(m);
+    for (Entry<? extends K, ? extends V> entry : m.entrySet()) {
+      inverse.put(entry.getValue(), entry.getKey());
     }
+  }
 
-    public void putAllSingleValues(Map<? extends K, ? extends V> m)
-    {
-        map.putAllSingleValues(m);
-        for (Entry<? extends K, ? extends V> entry : m.entrySet())
-        {
-            inverse.put(entry.getValue(), entry.getKey());
-        }
+  public Set<V> remove(Object key) {
+    Set<V> values = map.remove(key);
+    for (V value : values) {
+      inverse.remove(value);
     }
+    return values;
+  }
 
-    public Set<V> remove(Object key)
-    {
-        Set<V> values = map.remove(key);
-        for (V value : values)
-        {
-            inverse.remove(value);
-        }
-        return values;
-    }
+  /*
+   * @see org.alfresco.util.OneToManyBiMap#removeValue(V)
+   */
+  public K removeValue(V value) {
+    K key = inverse.remove(value);
+    Set<V> values = map.get(key);
+    values.remove(value);
+    if (values.size() == 0) map.remove(key);
+    return key;
+  }
 
-    /*
-     * @see org.alfresco.util.OneToManyBiMap#removeValue(V)
-     */
-    public K removeValue(V value)
-    {
-        K key = inverse.remove(value);
-        Set<V> values = map.get(key);
-        values.remove(value);
-        if (values.size() == 0) map.remove(key);
-        return key;
-    }
+  public int size() {
+    return map.size();
+  }
 
-    public int size()
-    {
-        return map.size();
-    }
+  public Collection<Set<V>> values() {
+    return map.values();
+  }
 
-    public Collection<Set<V>> values()
-    {
-        return map.values();
-    }
-
-    public Collection<V> flatValues()
-    {
-        return Collections.unmodifiableCollection(inverse.keySet());
-    }
-
+  public Collection<V> flatValues() {
+    return Collections.unmodifiableCollection(inverse.keySet());
+  }
 }

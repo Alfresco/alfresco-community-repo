@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,474 +26,473 @@
 package org.alfresco.repo.search.impl.lucene;
 
 import java.util.concurrent.ThreadPoolExecutor;
-
 import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.MLAnalysisMode;
 import org.springframework.context.ConfigurableApplicationContext;
 
-public interface LuceneConfig
-{
-    /**
-     * Set the lock dir - just to make sure - this should no longer be used.
-     * 
-     * @param lockDirectory String
-     */
-    public void setLockDirectory(String lockDirectory);
+public interface LuceneConfig {
+  /**
+   * Set the lock dir - just to make sure - this should no longer be used.
+   *
+   * @param lockDirectory String
+   */
+  public void setLockDirectory(String lockDirectory);
 
-    /**
-     * The path to the index location
-     * 
-     * @return String
-     */
-    public String getIndexRootLocation();
+  /**
+   * The path to the index location
+   *
+   * @return String
+   */
+  public String getIndexRootLocation();
 
-    /**
-     * The batch size in which to group flushes of the index.
-     * 
-     * @return int
-     */
-    public int getIndexerBatchSize();
+  /**
+   * The batch size in which to group flushes of the index.
+   *
+   * @return int
+   */
+  public int getIndexerBatchSize();
 
-    /**
-     * The maximum numbr of sub-queries the can be generated out of wild card expansion etc
-     * 
-     * @return int
-     */
-    public int getQueryMaxClauses();
+  /**
+   * The maximum numbr of sub-queries the can be generated out of wild card expansion etc
+   *
+   * @return int
+   */
+  public int getQueryMaxClauses();
 
-    /**
-     * The default mode for analysing ML text during index.
-     * 
-     * @return MLAnalysisMode
-     */
-    public MLAnalysisMode getDefaultMLIndexAnalysisMode();
+  /**
+   * The default mode for analysing ML text during index.
+   *
+   * @return MLAnalysisMode
+   */
+  public MLAnalysisMode getDefaultMLIndexAnalysisMode();
 
-    /**
-     * The default mode for analysis of ML text during search.
-     * 
-     * @return MLAnalysisMode
-     */
-    public MLAnalysisMode getDefaultMLSearchAnalysisMode();
+  /**
+   * The default mode for analysis of ML text during search.
+   *
+   * @return MLAnalysisMode
+   */
+  public MLAnalysisMode getDefaultMLSearchAnalysisMode();
 
-    /**
-     * Get the max field length that determine how many tokens are put into the index
-     * 
-     * @return int
-     */
-    public int getIndexerMaxFieldLength();
+  /**
+   * Get the max field length that determine how many tokens are put into the index
+   *
+   * @return int
+   */
+  public int getIndexerMaxFieldLength();
 
-    /**
-     * Get the thread pool for index merging etc
-     * 
-     * @return ThreadPoolExecutor
-     */
-    public ThreadPoolExecutor getThreadPoolExecutor();
+  /**
+   * Get the thread pool for index merging etc
+   *
+   * @return ThreadPoolExecutor
+   */
+  public ThreadPoolExecutor getThreadPoolExecutor();
 
-    /**
-     * Get preloader - may be null if preloading is not supported
-     */
-    public NodeBulkLoader getBulkLoader();
+  /**
+   * Get preloader - may be null if preloading is not supported
+   */
+  public NodeBulkLoader getBulkLoader();
 
-    /**
-     * Use the nio memory mapping (work arounf for bugs with some JVMs)
-     * @return boolean
-     */
-    public boolean getUseNioMemoryMapping();
-    
-    /**
-     * Max doc number that will merged in memory (and not on disk)
-     * 
-     * @return int
-     */
-    public int getMaxDocsForInMemoryMerge();
-    
-    /**
-     * Lucene writer config
-     * @return int
-     */
-    public int getWriterMaxBufferedDocs();
-    
-    /**
-     * Lucene writer config
-     * @return int
-     */
-    public int getWriterMergeFactor();
-    
-    /**
-     * Lucene writer config
-     * @return int
-     */
-    public int getWriterMaxMergeDocs();
-    
-    /**
-     * Lucene merger config
-     * @return int
-     */
-    public int getMergerMaxBufferedDocs();
-    
-    /**
-     * Lucene merger config
-     * @return int
-     */
-    public int getMergerMergeFactor();
-    
-    /**
-     * Lucene merger config
-     * @return int
-     */
-    public int getMergerMaxMergeDocs();
-    
-    /**
-     * Target overlays (will apply deletions and create indexes if over this limit)
-     * @return int
-     */
-    public int getMergerTargetOverlayCount();
-    
-    /**
-     * The factor by which the target overlay count is multiplied to determine the allowable number of overlays before
-     * blocking.
-     * 
-     * @return the factor by which the target overlay count is multiplied to determine the allowable number of overlays
-     *         before blocking
-     */
-    public int getMergerTargetOverlaysBlockingFactor();
+  /**
+   * Use the nio memory mapping (work arounf for bugs with some JVMs)
+   * @return boolean
+   */
+  public boolean getUseNioMemoryMapping();
 
-    /**
-     * Target index count. Over this indexes will be merged together.
-     * @return int
-     */
-    public int getMergerTargetIndexCount();
-    
-    /**
-     * Lucene term index interval
-     * @return int
-     */
-    public int getTermIndexInterval();
-    
-    /**
-     * Is caching enabled for each index fragment?
-     * @return boolean
-     */
-    public boolean isCacheEnabled();
-    
-    /**
-     * How many categories to cache (-ve => unbounded)
-     * @return int
-     */
-    public int getMaxIsCategoryCacheSize();
-    
-    /**
-     * How many documents to cache (-ve => unbounded)
-     * @return int
-     */
-    public int getMaxDocumentCacheSize();
-    
-    /**
-     * How many document ids to cache (-ve => unbounded)
-     * @return int
-     */
-    public int getMaxDocIdCacheSize();
-    
-    /**
-     * How many paths to cache (-ve => unbounded)
-     * @return int
-     */
-    public int getMaxPathCacheSize();
-    
-    /**
-     * How many types to cache (-ve => unbounded)
-     * @return int
-     */
-    public int getMaxTypeCacheSize();
-    
-    /**
-     * How many parents to cache (-ve => unbounded)
-     * @return int
-     */
-    public int getMaxParentCacheSize();
-   
-    /**
-     * How many link aspects to cache (-ve => unbounded)
-     * @return int
-     */
-    public int getMaxLinkAspectCacheSize();
+  /**
+   * Max doc number that will merged in memory (and not on disk)
+   *
+   * @return int
+   */
+  public int getMaxDocsForInMemoryMerge();
 
-    /**
-     * If we are using the DateAnalyser then lucene sort is only to the date, as that is all that is in the index.
-     * If this is true, a query that defines a sort on a datetime field will do a post sort in Java.
-     * 
-     * For the DateTimeAnalyser no post sort is done.
-     * (The default config does do a post sort)
-     * 
-     * In the future, this behaviour may also be set per query on the SearchParameters object.
-     * 
-     * @return boolean
-     */
-    public boolean getPostSortDateTime();
+  /**
+   * Lucene writer config
+   * @return int
+   */
+  public int getWriterMaxBufferedDocs();
 
-    /**
-     * Gets the application context through which events can be broadcast
-     * @return ConfigurableApplicationContext
-     */
-    public ConfigurableApplicationContext getApplicationContext();
+  /**
+   * Lucene writer config
+   * @return int
+   */
+  public int getWriterMergeFactor();
 
-    /**
-     * Ram based limit for in memory merges
-     * @return double
-     */
-    public double getMaxRamInMbForInMemoryMerge();
+  /**
+   * Lucene writer config
+   * @return int
+   */
+  public int getWriterMaxMergeDocs();
 
-    /**
-     * Ram based limit for in memory portion of writer index.
-     * @return double
-     */
-    public double getWriterRamBufferSizeMb();
+  /**
+   * Lucene merger config
+   * @return int
+   */
+  public int getMergerMaxBufferedDocs();
 
-    /**
-     * Ram based limit for in memory portion of merger index.
-     * @return double
-     */
-    public double getMergerRamBufferSizeMb();
+  /**
+   * Lucene merger config
+   * @return int
+   */
+  public int getMergerMergeFactor();
 
-    /**
-     * Max docs to allow for in memory indexes (does no apply to merges)
-     * @return int
-     */
-    public int getMaxDocsForInMemoryIndex();
+  /**
+   * Lucene merger config
+   * @return int
+   */
+  public int getMergerMaxMergeDocs();
 
-    /**
-     * Max Ram to allow for in memory indexes (does not apply to merges)
-     * @return double
-     */
-    public double getMaxRamInMbForInMemoryIndex();
+  /**
+   * Target overlays (will apply deletions and create indexes if over this limit)
+   * @return int
+   */
+  public int getMergerTargetOverlayCount();
 
-    /**
-     * Should we use a 'fair' locking policy, giving queue-like access behaviour to the indexes and avoiding starvation?
-     * Default is <code>false</code> since fair locking appears to cause deadlock on old JVMs.
-     * 
-     * @return <code>true</code> if a fair locking policy should be used
-     */
-    public boolean getFairLocking();
+  /**
+   * The factor by which the target overlay count is multiplied to determine the allowable number of overlays before
+   * blocking.
+   *
+   * @return the factor by which the target overlay count is multiplied to determine the allowable number of overlays
+   *         before blocking
+   */
+  public int getMergerTargetOverlaysBlockingFactor();
 
-    /**
-     * @param maxAtomicTransformationTime long
-     */
-    void setMaxAtomicTransformationTime(long maxAtomicTransformationTime);
+  /**
+   * Target index count. Over this indexes will be merged together.
+   * @return int
+   */
+  public int getMergerTargetIndexCount();
 
-    /**
-     * @return long
-     */
-    long getMaxTransformationTime();
+  /**
+   * Lucene term index interval
+   * @return int
+   */
+  public int getTermIndexInterval();
 
-    /**
-     * @return boolean
-     */
-    public boolean getUseInMemorySort();
+  /**
+   * Is caching enabled for each index fragment?
+   * @return boolean
+   */
+  public boolean isCacheEnabled();
 
-    /**
-     * @param indexerBatchSize int
-     */
-    void setIndexerBatchSize(int indexerBatchSize);
+  /**
+   * How many categories to cache (-ve => unbounded)
+   * @return int
+   */
+  public int getMaxIsCategoryCacheSize();
 
-    /**
-     * @param queryMaxClauses int
-     */
-    void setQueryMaxClauses(int queryMaxClauses);
+  /**
+   * How many documents to cache (-ve => unbounded)
+   * @return int
+   */
+  public int getMaxDocumentCacheSize();
 
-    /**
-     * @param timeout long
-     */
-    void setWriteLockTimeout(long timeout);
+  /**
+   * How many document ids to cache (-ve => unbounded)
+   * @return int
+   */
+  public int getMaxDocIdCacheSize();
 
-    /**
-     * @param timeout long
-     */
-    void setCommitLockTimeout(long timeout);
+  /**
+   * How many paths to cache (-ve => unbounded)
+   * @return int
+   */
+  public int getMaxPathCacheSize();
 
-    /**
-     * @return long
-     */
-    long getCommitLockTimeout();
+  /**
+   * How many types to cache (-ve => unbounded)
+   * @return int
+   */
+  public int getMaxTypeCacheSize();
 
-    /**
-     * @return long
-     */
-    long getWriteLockTimeout();
+  /**
+   * How many parents to cache (-ve => unbounded)
+   * @return int
+   */
+  public int getMaxParentCacheSize();
 
-    /**
-     * @param time long
-     */
-    void setLockPollInterval(long time);
+  /**
+   * How many link aspects to cache (-ve => unbounded)
+   * @return int
+   */
+  public int getMaxLinkAspectCacheSize();
 
-    /**
-     * @param indexerMaxFieldLength int
-     */
-    void setIndexerMaxFieldLength(int indexerMaxFieldLength);
+  /**
+   * If we are using the DateAnalyser then lucene sort is only to the date, as that is all that is in the index.
+   * If this is true, a query that defines a sort on a datetime field will do a post sort in Java.
+   *
+   * For the DateTimeAnalyser no post sort is done.
+   * (The default config does do a post sort)
+   *
+   * In the future, this behaviour may also be set per query on the SearchParameters object.
+   *
+   * @return boolean
+   */
+  public boolean getPostSortDateTime();
 
-    /**
-     * @param mode MLAnalysisMode
-     */
-    void setDefaultMLIndexAnalysisMode(MLAnalysisMode mode);
+  /**
+   * Gets the application context through which events can be broadcast
+   * @return ConfigurableApplicationContext
+   */
+  public ConfigurableApplicationContext getApplicationContext();
 
-    /**
-     * @param mode MLAnalysisMode
-     */
-    void setDefaultMLSearchAnalysisMode(MLAnalysisMode mode);
+  /**
+   * Ram based limit for in memory merges
+   * @return double
+   */
+  public double getMaxRamInMbForInMemoryMerge();
 
-    /**
-     * @param maxDocIdCacheSize int
-     */
-    void setMaxDocIdCacheSize(int maxDocIdCacheSize);
+  /**
+   * Ram based limit for in memory portion of writer index.
+   * @return double
+   */
+  public double getWriterRamBufferSizeMb();
 
-    /**
-     * @param maxDocsForInMemoryMerge int
-     */
-    void setMaxDocsForInMemoryMerge(int maxDocsForInMemoryMerge);
+  /**
+   * Ram based limit for in memory portion of merger index.
+   * @return double
+   */
+  public double getMergerRamBufferSizeMb();
 
-    /**
-     * @param maxDocumentCacheSize int
-     */
-    void setMaxDocumentCacheSize(int maxDocumentCacheSize);
+  /**
+   * Max docs to allow for in memory indexes (does no apply to merges)
+   * @return int
+   */
+  public int getMaxDocsForInMemoryIndex();
 
-    /**
-     * @param maxIsCategoryCacheSize int
-     */
-    void setMaxIsCategoryCacheSize(int maxIsCategoryCacheSize);
+  /**
+   * Max Ram to allow for in memory indexes (does not apply to merges)
+   * @return double
+   */
+  public double getMaxRamInMbForInMemoryIndex();
 
-    /**
-     * @param maxLinkAspectCacheSize int
-     */
-    void setMaxLinkAspectCacheSize(int maxLinkAspectCacheSize);
+  /**
+   * Should we use a 'fair' locking policy, giving queue-like access behaviour to the indexes and avoiding starvation?
+   * Default is <code>false</code> since fair locking appears to cause deadlock on old JVMs.
+   *
+   * @return <code>true</code> if a fair locking policy should be used
+   */
+  public boolean getFairLocking();
 
-    /**
-     * @param maxParentCacheSize int
-     */
-    void setMaxParentCacheSize(int maxParentCacheSize);
+  /**
+   * @param maxAtomicTransformationTime long
+   */
+  void setMaxAtomicTransformationTime(long maxAtomicTransformationTime);
 
-    /**
-     * @param maxPathCacheSize int
-     */
-    void setMaxPathCacheSize(int maxPathCacheSize);
+  /**
+   * @return long
+   */
+  long getMaxTransformationTime();
 
-    /**
-     * @param maxTypeCacheSize int
-     */
-    void setMaxTypeCacheSize(int maxTypeCacheSize);
+  /**
+   * @return boolean
+   */
+  public boolean getUseInMemorySort();
 
-    /**
-     * @param mergerMaxMergeDocs int
-     */
-    void setMergerMaxMergeDocs(int mergerMaxMergeDocs);
+  /**
+   * @param indexerBatchSize int
+   */
+  void setIndexerBatchSize(int indexerBatchSize);
 
-    /**
-     * @param mergerMergeFactor int
-     */
-    void setMergerMergeFactor(int mergerMergeFactor);
+  /**
+   * @param queryMaxClauses int
+   */
+  void setQueryMaxClauses(int queryMaxClauses);
 
-    /**
-     * @param mergerMaxBufferedDocs int
-     */
-    void setMergerMaxBufferedDocs(int mergerMaxBufferedDocs);
+  /**
+   * @param timeout long
+   */
+  void setWriteLockTimeout(long timeout);
 
-    /**
-     * @param mergerTargetIndexCount int
-     */
-    void setMergerTargetIndexCount(int mergerTargetIndexCount);
+  /**
+   * @param timeout long
+   */
+  void setCommitLockTimeout(long timeout);
 
-    /**
-     * @param mergerTargetOverlayCount int
-     */
-    void setMergerTargetOverlayCount(int mergerTargetOverlayCount);
+  /**
+   * @return long
+   */
+  long getCommitLockTimeout();
 
-    /**
-     * @param mergerTargetOverlaysBlockingFactor int
-     */
-    void setMergerTargetOverlaysBlockingFactor(int mergerTargetOverlaysBlockingFactor);
+  /**
+   * @return long
+   */
+  long getWriteLockTimeout();
 
-    /**
-     * @param fairLocking boolean
-     */
-    void setFairLocking(boolean fairLocking);
+  /**
+   * @param time long
+   */
+  void setLockPollInterval(long time);
 
-    /**
-     * @param termIndexInterval int
-     */
-    void setTermIndexInterval(int termIndexInterval);
+  /**
+   * @param indexerMaxFieldLength int
+   */
+  void setIndexerMaxFieldLength(int indexerMaxFieldLength);
 
-    /**
-     * @param useNioMemoryMapping boolean
-     */
-    void setUseNioMemoryMapping(boolean useNioMemoryMapping);
+  /**
+   * @param mode MLAnalysisMode
+   */
+  void setDefaultMLIndexAnalysisMode(MLAnalysisMode mode);
 
-    /**
-     * @param writerMaxMergeDocs int
-     */
-    void setWriterMaxMergeDocs(int writerMaxMergeDocs);
+  /**
+   * @param mode MLAnalysisMode
+   */
+  void setDefaultMLSearchAnalysisMode(MLAnalysisMode mode);
 
-    /**
-     * @param writerMergeFactor int
-     */
-    void setWriterMergeFactor(int writerMergeFactor);
+  /**
+   * @param maxDocIdCacheSize int
+   */
+  void setMaxDocIdCacheSize(int maxDocIdCacheSize);
 
-    /**
-     * @return int
-     */
-    public int getMaxRawResultSetSizeForInMemorySort();
+  /**
+   * @param maxDocsForInMemoryMerge int
+   */
+  void setMaxDocsForInMemoryMerge(int maxDocsForInMemoryMerge);
 
-    /**
-     * @param writerMaxBufferedDocs int
-     */
-    void setWriterMaxBufferedDocs(int writerMaxBufferedDocs);
+  /**
+   * @param maxDocumentCacheSize int
+   */
+  void setMaxDocumentCacheSize(int maxDocumentCacheSize);
 
-    /**
-     * @param cacheEnabled boolean
-     */
-    void setCacheEnabled(boolean cacheEnabled);
+  /**
+   * @param maxIsCategoryCacheSize int
+   */
+  void setMaxIsCategoryCacheSize(int maxIsCategoryCacheSize);
 
-    /**
-     * @param postSortDateTime boolean
-     */
-    void setPostSortDateTime(boolean postSortDateTime);
+  /**
+   * @param maxLinkAspectCacheSize int
+   */
+  void setMaxLinkAspectCacheSize(int maxLinkAspectCacheSize);
 
-    /**
-     * @param maxDocsForInMemoryIndex int
-     */
-    void setMaxDocsForInMemoryIndex(int maxDocsForInMemoryIndex);
+  /**
+   * @param maxParentCacheSize int
+   */
+  void setMaxParentCacheSize(int maxParentCacheSize);
 
-    /**
-     * @param maxRamInMbForInMemoryMerge double
-     */
-    void setMaxRamInMbForInMemoryMerge(double maxRamInMbForInMemoryMerge);
+  /**
+   * @param maxPathCacheSize int
+   */
+  void setMaxPathCacheSize(int maxPathCacheSize);
 
-    /**
-     * @param maxRamInMbForInMemoryIndex double
-     */
-    void setMaxRamInMbForInMemoryIndex(double maxRamInMbForInMemoryIndex);
+  /**
+   * @param maxTypeCacheSize int
+   */
+  void setMaxTypeCacheSize(int maxTypeCacheSize);
 
-    /**
-     * @param mergerRamBufferSizeMb double
-     */
-    void setMergerRamBufferSizeMb(double mergerRamBufferSizeMb);
+  /**
+   * @param mergerMaxMergeDocs int
+   */
+  void setMergerMaxMergeDocs(int mergerMaxMergeDocs);
 
-    /**
-     * @param writerRamBufferSizeMb double
-     */
-    void setWriterRamBufferSizeMb(double writerRamBufferSizeMb);
+  /**
+   * @param mergerMergeFactor int
+   */
+  void setMergerMergeFactor(int mergerMergeFactor);
 
-    
-    /**
-     * 
-     * @return if content indexing is enable.
-     */
-    boolean isContentIndexingEnabled();
-    
-    /**
-     * Enable/Disable the indexing of content 
-     * Content is not indexed and FTS disabled
-     * When disabled, documents are marked as requiring FTS indexing.
-     * When enabled the normal FTS process will catch up with content that was not indexed.
-     * @param contentIndexingEnabled boolean
-     */
-            
-    void setContentIndexingEnabled(boolean contentIndexingEnabled);
+  /**
+   * @param mergerMaxBufferedDocs int
+   */
+  void setMergerMaxBufferedDocs(int mergerMaxBufferedDocs);
+
+  /**
+   * @param mergerTargetIndexCount int
+   */
+  void setMergerTargetIndexCount(int mergerTargetIndexCount);
+
+  /**
+   * @param mergerTargetOverlayCount int
+   */
+  void setMergerTargetOverlayCount(int mergerTargetOverlayCount);
+
+  /**
+   * @param mergerTargetOverlaysBlockingFactor int
+   */
+  void setMergerTargetOverlaysBlockingFactor(
+    int mergerTargetOverlaysBlockingFactor
+  );
+
+  /**
+   * @param fairLocking boolean
+   */
+  void setFairLocking(boolean fairLocking);
+
+  /**
+   * @param termIndexInterval int
+   */
+  void setTermIndexInterval(int termIndexInterval);
+
+  /**
+   * @param useNioMemoryMapping boolean
+   */
+  void setUseNioMemoryMapping(boolean useNioMemoryMapping);
+
+  /**
+   * @param writerMaxMergeDocs int
+   */
+  void setWriterMaxMergeDocs(int writerMaxMergeDocs);
+
+  /**
+   * @param writerMergeFactor int
+   */
+  void setWriterMergeFactor(int writerMergeFactor);
+
+  /**
+   * @return int
+   */
+  public int getMaxRawResultSetSizeForInMemorySort();
+
+  /**
+   * @param writerMaxBufferedDocs int
+   */
+  void setWriterMaxBufferedDocs(int writerMaxBufferedDocs);
+
+  /**
+   * @param cacheEnabled boolean
+   */
+  void setCacheEnabled(boolean cacheEnabled);
+
+  /**
+   * @param postSortDateTime boolean
+   */
+  void setPostSortDateTime(boolean postSortDateTime);
+
+  /**
+   * @param maxDocsForInMemoryIndex int
+   */
+  void setMaxDocsForInMemoryIndex(int maxDocsForInMemoryIndex);
+
+  /**
+   * @param maxRamInMbForInMemoryMerge double
+   */
+  void setMaxRamInMbForInMemoryMerge(double maxRamInMbForInMemoryMerge);
+
+  /**
+   * @param maxRamInMbForInMemoryIndex double
+   */
+  void setMaxRamInMbForInMemoryIndex(double maxRamInMbForInMemoryIndex);
+
+  /**
+   * @param mergerRamBufferSizeMb double
+   */
+  void setMergerRamBufferSizeMb(double mergerRamBufferSizeMb);
+
+  /**
+   * @param writerRamBufferSizeMb double
+   */
+  void setWriterRamBufferSizeMb(double writerRamBufferSizeMb);
+
+  /**
+   *
+   * @return if content indexing is enable.
+   */
+  boolean isContentIndexingEnabled();
+
+  /**
+   * Enable/Disable the indexing of content
+   * Content is not indexed and FTS disabled
+   * When disabled, documents are marked as requiring FTS indexing.
+   * When enabled the normal FTS process will catch up with content that was not indexed.
+   * @param contentIndexingEnabled boolean
+   */
+
+  void setContentIndexingEnabled(boolean contentIndexingEnabled);
 }

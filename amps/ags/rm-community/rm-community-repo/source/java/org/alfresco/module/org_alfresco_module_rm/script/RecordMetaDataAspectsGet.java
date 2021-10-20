@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -47,104 +46,102 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Record metadata aspects GET
- * 
+ *
  * @author Roy Wetherall
  */
-public class RecordMetaDataAspectsGet extends DeclarativeWebScript
-{
-    /** parameters */
-    private static final String PARAM_NODEREF = "noderef";
-    
-    protected DictionaryService dictionaryService;
-    protected NamespaceService namespaceService;
-    protected RecordService recordService;
-    protected FilePlanService filePlanService;
-    
-    /**
-     * Set the dictionary service instance
-     * 
-     * @param dictionaryService the {@link DictionaryService} instance
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-    
-    /**
-     * Sets the {@link NamespaceService} instance
-     * 
-     * @param namespaceService The {@link NamespaceService} instance
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
+public class RecordMetaDataAspectsGet extends DeclarativeWebScript {
+
+  /** parameters */
+  private static final String PARAM_NODEREF = "noderef";
+
+  protected DictionaryService dictionaryService;
+  protected NamespaceService namespaceService;
+  protected RecordService recordService;
+  protected FilePlanService filePlanService;
+
+  /**
+   * Set the dictionary service instance
+   *
+   * @param dictionaryService the {@link DictionaryService} instance
+   */
+  public void setDictionaryService(DictionaryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
+
+  /**
+   * Sets the {@link NamespaceService} instance
+   *
+   * @param namespaceService The {@link NamespaceService} instance
+   */
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
+
+  /**
+   * @param recordService record service
+   */
+  public void setRecordService(RecordService recordService) {
+    this.recordService = recordService;
+  }
+
+  /**
+   * @param filePlanService   file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
+
+  /*
+   * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    // Get the nodeRef and confirm it is valid
+    NodeRef nodeRef = null;
+    String nodeRefValue = req.getParameter(PARAM_NODEREF);
+    if (nodeRefValue == null || nodeRefValue.trim().length() == 0) {
+      // get the file plan if a node ref hasn't been specified
+      // TODO will need to remove when multi file plans supported
+      nodeRef =
+        filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+    } else {
+      nodeRef = new NodeRef(nodeRefValue);
     }
 
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
+    // Get the details of all the aspects
+    Set<QName> aspectQNames = recordService.getRecordMetadataAspects(nodeRef);
+    List<Map<String, Object>> aspects = new ArrayList<>(
+      aspectQNames.size() + 1
+    );
+    for (QName aspectQName : aspectQNames) {
+      // Get the prefix aspect and default the label to the localname
+      String prefixString = aspectQName.toPrefixString(namespaceService);
+      String label = aspectQName.getLocalName();
+
+      Map<String, Object> aspect = new HashMap<>(2);
+      aspect.put("id", prefixString);
+
+      // Try and get the aspect definition
+      AspectDefinition aspectDefinition = dictionaryService.getAspect(
+        aspectQName
+      );
+      if (aspectDefinition != null) {
+        // Fet the label from the aspect definition
+        label = aspectDefinition.getTitle(dictionaryService);
+      }
+      aspect.put("value", label);
+
+      // Add the aspect details to the aspects list
+      aspects.add(aspect);
     }
-    
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
-    
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        // Get the nodeRef and confirm it is valid        
-        NodeRef nodeRef = null;
-        String nodeRefValue = req.getParameter(PARAM_NODEREF);
-        if (nodeRefValue == null || nodeRefValue.trim().length() == 0)
-        {
-            // get the file plan if a node ref hasn't been specified
-            // TODO will need to remove when multi file plans supported
-            nodeRef = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-               
-        }
-        else
-        {
-            nodeRef = new NodeRef(nodeRefValue);
-        }
-        
-        // Get the details of all the aspects
-        Set<QName> aspectQNames = recordService.getRecordMetadataAspects(nodeRef);        
-        List<Map<String, Object>> aspects = new ArrayList<>(aspectQNames.size() + 1);
-        for (QName aspectQName : aspectQNames)
-        {
-            // Get the prefix aspect and default the label to the localname 
-            String prefixString = aspectQName.toPrefixString(namespaceService);
-            String label = aspectQName.getLocalName();
-             
-            Map<String, Object> aspect = new HashMap<>(2);
-            aspect.put("id", prefixString);
-            
-            // Try and get the aspect definition 
-            AspectDefinition aspectDefinition = dictionaryService.getAspect(aspectQName);
-            if (aspectDefinition != null)
-            {
-                // Fet the label from the aspect definition
-                label = aspectDefinition.getTitle(dictionaryService);
-            }            
-            aspect.put("value", label);
-            
-            // Add the aspect details to the aspects list
-            aspects.add(aspect);
-        }
-        
-        // create model object with the lists model
-        Map<String, Object> model = new HashMap<>(1);
-        model.put("aspects", aspects);
-        return model;
-    }
+
+    // create model object with the lists model
+    Map<String, Object> model = new HashMap<>(1);
+    model.put("aspects", aspects);
+    return model;
+  }
 }

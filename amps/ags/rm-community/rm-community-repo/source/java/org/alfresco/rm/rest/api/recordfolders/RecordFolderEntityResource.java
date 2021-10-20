@@ -54,99 +54,115 @@ import org.springframework.beans.factory.InitializingBean;
  * @since 2.6
  */
 @EntityResource(name = "record-folders", title = "Record Folders")
-public class RecordFolderEntityResource implements EntityResourceAction.ReadById<RecordFolder>, EntityResourceAction.Delete,
-        EntityResourceAction.Update<RecordFolder>, InitializingBean
-{
+public class RecordFolderEntityResource
+  implements
+    EntityResourceAction.ReadById<RecordFolder>,
+    EntityResourceAction.Delete,
+    EntityResourceAction.Update<RecordFolder>,
+    InitializingBean {
 
-    private FilePlanComponentsApiUtils apiUtils;
-    private FileFolderService fileFolderService;
-    private ApiNodesModelFactory nodesModelFactory;
-    private TransactionService transactionService;
+  private FilePlanComponentsApiUtils apiUtils;
+  private FileFolderService fileFolderService;
+  private ApiNodesModelFactory nodesModelFactory;
+  private TransactionService transactionService;
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
-    }
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        mandatory("apiUtils", apiUtils);
-        mandatory("fileFolderService", fileFolderService);
-        mandatory("apiNodesModelFactory", nodesModelFactory);
-    }
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    mandatory("apiUtils", apiUtils);
+    mandatory("fileFolderService", fileFolderService);
+    mandatory("apiNodesModelFactory", nodesModelFactory);
+  }
 
-    @WebApiDescription(title = "Get record folder information", description = "Gets information for a record folder with id 'recordFolderId'")
-    @WebApiParam(name = "recordFolderId", title = "The record folder id")
-    public RecordFolder readById(String recordFolderId, Parameters parameters)
-    {
-        checkNotBlank("recordFolderId", recordFolderId);
-        mandatory("parameters", parameters);
+  @WebApiDescription(
+    title = "Get record folder information",
+    description = "Gets information for a record folder with id 'recordFolderId'"
+  )
+  @WebApiParam(name = "recordFolderId", title = "The record folder id")
+  public RecordFolder readById(String recordFolderId, Parameters parameters) {
+    checkNotBlank("recordFolderId", recordFolderId);
+    mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER);
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      recordFolderId,
+      RecordsManagementModel.TYPE_RECORD_FOLDER
+    );
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+    FileInfo info = fileFolderService.getFileInfo(nodeRef);
 
-        return nodesModelFactory.createRecordFolder(info, parameters, null, false);
-    }
+    return nodesModelFactory.createRecordFolder(info, parameters, null, false);
+  }
 
-    @Override
-    @WebApiDescription(title = "Update record folder", description = "Updates a record folder with id 'recordFolderId'")
-    public RecordFolder update(String recordFolderId, RecordFolder recordFolderInfo, Parameters parameters)
-    {
-        checkNotBlank("recordFolderId", recordFolderId);
-        mandatory("recordFolderInfo", recordFolderInfo);
-        mandatory("parameters", parameters);
+  @Override
+  @WebApiDescription(
+    title = "Update record folder",
+    description = "Updates a record folder with id 'recordFolderId'"
+  )
+  public RecordFolder update(
+    String recordFolderId,
+    RecordFolder recordFolderInfo,
+    Parameters parameters
+  ) {
+    checkNotBlank("recordFolderId", recordFolderId);
+    mandatory("recordFolderInfo", recordFolderInfo);
+    mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER);
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      recordFolderId,
+      RecordsManagementModel.TYPE_RECORD_FOLDER
+    );
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateNode(nodeRef, recordFolderInfo, parameters);
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+    RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
+      public Void execute() {
+        apiUtils.updateNode(nodeRef, recordFolderInfo, parameters);
+        return null;
+      }
+    };
+    transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(callback, false, true);
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+    RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
+      public FileInfo execute() {
+        return fileFolderService.getFileInfo(nodeRef);
+      }
+    };
+    FileInfo info = transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(readCallback, false, true);
 
-        return nodesModelFactory.createRecordFolder(info, parameters, null, false);
-    }
+    return nodesModelFactory.createRecordFolder(info, parameters, null, false);
+  }
 
-    @Override
-    @WebApiDescription(title = "Delete record folder", description = "Deletes a record folder with id 'recordFolderId'")
-    public void delete(String recordFolderId, Parameters parameters)
-    {
-        checkNotBlank("recordFolderId", recordFolderId);
-        mandatory("parameters", parameters);
+  @Override
+  @WebApiDescription(
+    title = "Delete record folder",
+    description = "Deletes a record folder with id 'recordFolderId'"
+  )
+  public void delete(String recordFolderId, Parameters parameters) {
+    checkNotBlank("recordFolderId", recordFolderId);
+    mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordFolderId, RecordsManagementModel.TYPE_RECORD_FOLDER);
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      recordFolderId,
+      RecordsManagementModel.TYPE_RECORD_FOLDER
+    );
 
-        fileFolderService.delete(nodeRef);
-    }
-
+    fileFolderService.delete(nodeRef);
+  }
 }

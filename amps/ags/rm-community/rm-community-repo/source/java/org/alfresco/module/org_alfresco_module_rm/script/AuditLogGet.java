@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.io.File;
 import java.io.IOException;
-
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditQueryParameters;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService.ReportFormat;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -50,139 +49,156 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  *
  * @author Gavin Cornwell
  */
-public class AuditLogGet extends BaseAuditRetrievalWebScript
-{
-    /** Logger */
-    private static Log logger = LogFactory.getLog(AuditLogGet.class);
+public class AuditLogGet extends BaseAuditRetrievalWebScript {
 
-    private static final String PARAM_EXPORT = "export";
-    private static final String ACCESS_AUDIT_CAPABILITY = "AccessAudit";
-    private static final int DEFAULT_VIEW_LOG_MAX_SIZE = 100;
+  /** Logger */
+  private static Log logger = LogFactory.getLog(AuditLogGet.class);
 
-    /** Content Streamer */
-    protected ContentStreamer contentStreamer;
-    
-    /** Capability service */
-    protected CapabilityService capabilityService;
+  private static final String PARAM_EXPORT = "export";
+  private static final String ACCESS_AUDIT_CAPABILITY = "AccessAudit";
+  private static final int DEFAULT_VIEW_LOG_MAX_SIZE = 100;
 
-    /** File plan service */
-    protected FilePlanService filePlanService;
-    
-    /** Maximum number of entries to be displayed in View Audit Log */
-    private int viewLogMaxSize;
+  /** Content Streamer */
+  protected ContentStreamer contentStreamer;
 
-    /**
-     * @param contentStreamer
-     */
-    public void setContentStreamer(ContentStreamer contentStreamer)
-    {
-        this.contentStreamer = contentStreamer;
-    }
-    
-    /**
-     * 
-     * @param capabilityService Capability Service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
-        this.capabilityService = capabilityService;
-    }
-    
-    /**
-     * 
-     * @param filePlanService File Plan Service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
+  /** Capability service */
+  protected CapabilityService capabilityService;
 
-    /**
-     * 
-     * @param viewLogMaxSize Maximum number of entries to be displayed in View Audit Log 
-     */
-    public void setViewLogMaxSize(int viewLogMaxSize)
-    {
-        this.viewLogMaxSize = (viewLogMaxSize <= 0 ? DEFAULT_VIEW_LOG_MAX_SIZE: viewLogMaxSize);
-    }
+  /** File plan service */
+  protected FilePlanService filePlanService;
 
-    @Override
-    public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
-    {
-        File auditTrail = null;
+  /** Maximum number of entries to be displayed in View Audit Log */
+  private int viewLogMaxSize;
 
-        try
-        {
-            RecordsManagementAuditQueryParameters queryParams = parseQueryParameters(req);
-            ReportFormat reportFormat = parseReportFormat(req);
+  /**
+   * @param contentStreamer
+   */
+  public void setContentStreamer(ContentStreamer contentStreamer) {
+    this.contentStreamer = contentStreamer;
+  }
 
-            if( !userCanAccessAudit(queryParams) )
-            {
-                throw new WebScriptException(Status.STATUS_FORBIDDEN, "Access denied because the user does not have the Access Audit capability");
-            }
-            
-            // limit the number of audit log entries to be returned
-            if (queryParams.getMaxEntries() <= 0 || queryParams.getMaxEntries() > viewLogMaxSize)
-            {
-                queryParams.setMaxEntries(viewLogMaxSize);
-            }
-            
-            // parse the parameters and get a file containing the audit trail
-            auditTrail = this.rmAuditService.getAuditTrailFile(queryParams, reportFormat);
+  /**
+   *
+   * @param capabilityService Capability Service
+   */
+  public void setCapabilityService(CapabilityService capabilityService) {
+    this.capabilityService = capabilityService;
+  }
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Streaming audit trail from file: " + auditTrail.getAbsolutePath());
-            }
+  /**
+   *
+   * @param filePlanService File Plan Service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
 
-            boolean attach = false;
-            String attachFileName = null;
-            String export = req.getParameter(PARAM_EXPORT);
-            if (Boolean.parseBoolean(export))
-            {
-                attach = true;
-                attachFileName = auditTrail.getName();
+  /**
+   *
+   * @param viewLogMaxSize Maximum number of entries to be displayed in View Audit Log
+   */
+  public void setViewLogMaxSize(int viewLogMaxSize) {
+    this.viewLogMaxSize =
+      (viewLogMaxSize <= 0 ? DEFAULT_VIEW_LOG_MAX_SIZE : viewLogMaxSize);
+  }
 
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Exporting audit trail using file name: " + attachFileName);
-                }
-            }
+  @Override
+  public void execute(WebScriptRequest req, WebScriptResponse res)
+    throws IOException {
+    File auditTrail = null;
 
-            // stream the file back to the client
-            contentStreamer.streamContent(req, res, auditTrail, null, attach, attachFileName, null);
+    try {
+      RecordsManagementAuditQueryParameters queryParams = parseQueryParameters(
+        req
+      );
+      ReportFormat reportFormat = parseReportFormat(req);
+
+      if (!userCanAccessAudit(queryParams)) {
+        throw new WebScriptException(
+          Status.STATUS_FORBIDDEN,
+          "Access denied because the user does not have the Access Audit capability"
+        );
+      }
+
+      // limit the number of audit log entries to be returned
+      if (
+        queryParams.getMaxEntries() <= 0 ||
+        queryParams.getMaxEntries() > viewLogMaxSize
+      ) {
+        queryParams.setMaxEntries(viewLogMaxSize);
+      }
+
+      // parse the parameters and get a file containing the audit trail
+      auditTrail =
+        this.rmAuditService.getAuditTrailFile(queryParams, reportFormat);
+
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+          "Streaming audit trail from file: " + auditTrail.getAbsolutePath()
+        );
+      }
+
+      boolean attach = false;
+      String attachFileName = null;
+      String export = req.getParameter(PARAM_EXPORT);
+      if (Boolean.parseBoolean(export)) {
+        attach = true;
+        attachFileName = auditTrail.getName();
+
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+            "Exporting audit trail using file name: " + attachFileName
+          );
         }
-        finally
-        {
-            if (auditTrail != null)
-            {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug(
-                            "Audit results written to file: \n" +
-                            "   File:      " + auditTrail + "\n" +
-                            "   Parameter: " + parseQueryParameters(req));
-                }
-                else
-                {
-                    auditTrail.delete();
-                }
-            }
-        }
-    }
+      }
 
-    private boolean userCanAccessAudit(RecordsManagementAuditQueryParameters queryParams) 
-    {
-        NodeRef targetNode = queryParams.getNodeRef();
-        if( targetNode == null )
-        {
-            targetNode = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-            if(targetNode == null)
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "The default RM site was not found");
-            }
+      // stream the file back to the client
+      contentStreamer.streamContent(
+        req,
+        res,
+        auditTrail,
+        null,
+        attach,
+        attachFileName,
+        null
+      );
+    } finally {
+      if (auditTrail != null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+            "Audit results written to file: \n" +
+            "   File:      " +
+            auditTrail +
+            "\n" +
+            "   Parameter: " +
+            parseQueryParameters(req)
+          );
+        } else {
+          auditTrail.delete();
         }
-        return AccessStatus.ALLOWED.equals(
-                capabilityService.getCapabilityAccessState(targetNode, ACCESS_AUDIT_CAPABILITY));
+      }
     }
+  }
+
+  private boolean userCanAccessAudit(
+    RecordsManagementAuditQueryParameters queryParams
+  ) {
+    NodeRef targetNode = queryParams.getNodeRef();
+    if (targetNode == null) {
+      targetNode =
+        filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+      if (targetNode == null) {
+        throw new WebScriptException(
+          Status.STATUS_NOT_FOUND,
+          "The default RM site was not found"
+        );
+      }
+    }
+    return AccessStatus.ALLOWED.equals(
+      capabilityService.getCapabilityAccessState(
+        targetNode,
+        ACCESS_AUDIT_CAPABILITY
+      )
+    );
+  }
 }

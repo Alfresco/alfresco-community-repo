@@ -26,12 +26,10 @@
  */
 package org.alfresco.rm.rest.api.util;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
+import java.io.IOException;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -42,32 +40,33 @@ import org.joda.time.format.ISODateTimeFormat;
  * @author Rodica Sutu
  * @since 3.0
  */
-public class CustomDateTimeSerializer extends StdSerializer<DateTime>
-{
-    /** Date time format */
-    private final static DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTime();
+public class CustomDateTimeSerializer extends StdSerializer<DateTime> {
 
-    public CustomDateTimeSerializer()
-    {
-        super(DateTime.class);
-    }
+  /** Date time format */
+  private static final DateTimeFormatter DATE_TIME_FORMAT = ISODateTimeFormat.dateTime();
 
-    protected CustomDateTimeSerializer(Class<DateTime> t)
-    {
-        super(t);
-    }
+  public CustomDateTimeSerializer() {
+    super(DateTime.class);
+  }
 
-    /**
-     * Custom serialize method to convert the org.joda.time.DateTime into string value using the DATE_TIME_FORMAT
-     *
-     * @param value datetime value
-     * @param jgen
-     * @param provider
-     * @throws IOException
-     */
-    @Override
-    public void serialize(DateTime value, JsonGenerator jgen, SerializerProvider provider) throws IOException
-    {
-        jgen.writeString(DATE_TIME_FORMAT.print(value));
-    }
+  protected CustomDateTimeSerializer(Class<DateTime> t) {
+    super(t);
+  }
+
+  /**
+   * Custom serialize method to convert the org.joda.time.DateTime into string value using the DATE_TIME_FORMAT
+   *
+   * @param value datetime value
+   * @param jgen
+   * @param provider
+   * @throws IOException
+   */
+  @Override
+  public void serialize(
+    DateTime value,
+    JsonGenerator jgen,
+    SerializerProvider provider
+  ) throws IOException {
+    jgen.writeString(DATE_TIME_FORMAT.print(value));
+  }
 }

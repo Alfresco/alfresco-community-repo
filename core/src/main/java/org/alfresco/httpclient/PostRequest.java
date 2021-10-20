@@ -22,23 +22,23 @@ import java.io.UnsupportedEncodingException;
 
 /**
  * HTTP POST Request
- * 
+ *
  * @since 4.0
  */
-public class PostRequest extends Request
-{
-    public PostRequest(String uri, String post, String contentType)
-        throws UnsupportedEncodingException 
-    {
-        super("post", uri);
-        setBody(getEncoding() == null ? post.getBytes() : post.getBytes(getEncoding()));
-        setType(contentType);
-    }
+public class PostRequest extends Request {
 
-    public PostRequest(String uri, byte[] post, String contentType)
-    {
-        super("post", uri);
-        setBody(post);
-        setType(contentType);
-    }
+  public PostRequest(String uri, String post, String contentType)
+    throws UnsupportedEncodingException {
+    super("post", uri);
+    setBody(
+      getEncoding() == null ? post.getBytes() : post.getBytes(getEncoding())
+    );
+    setType(contentType);
+  }
+
+  public PostRequest(String uri, byte[] post, String contentType) {
+    super("post", uri);
+    setBody(post);
+    setType(contentType);
+  }
 }

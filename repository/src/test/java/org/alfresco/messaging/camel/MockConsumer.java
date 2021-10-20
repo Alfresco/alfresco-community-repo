@@ -28,17 +28,15 @@ package org.alfresco.messaging.camel;
 /**
  * Consumer which just saves the last message received
  */
-public class MockConsumer
-{
-    private Object lastMessage;
+public class MockConsumer {
 
-    public Object getLastMessage()
-    {
-        return lastMessage;
-    }
+  private Object lastMessage;
 
-    public void onReceive(Object body)
-    {
-        lastMessage = body;
-    }
+  public Object getLastMessage() {
+    return lastMessage;
+  }
+
+  public void onReceive(Object body) {
+    lastMessage = body;
+  }
 }

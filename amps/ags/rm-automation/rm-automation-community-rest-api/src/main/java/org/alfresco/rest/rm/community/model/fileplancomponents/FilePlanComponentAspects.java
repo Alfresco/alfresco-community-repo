@@ -32,20 +32,19 @@ package org.alfresco.rest.rm.community.model.fileplancomponents;
  * @author Kristijan Conkas
  * @since 2.6
  */
-public class FilePlanComponentAspects
-{
+public class FilePlanComponentAspects {
+
     /** Private constructor to prevent instantiation. */
-    private FilePlanComponentAspects()
-    {
-    }
+    private FilePlanComponentAspects() {}
 
     // aspect present on completed records
     public static final String ASPECTS_COMPLETED_RECORD = "rma:declaredRecord";
 
-	// aspect present on record folders/categories with vital records
-    public static final String ASPECTS_VITAL_RECORD_DEFINITION= "rma:vitalRecordDefinition";
+    // aspect present on record folders/categories with vital records
+    public static final String ASPECTS_VITAL_RECORD_DEFINITION =
+        "rma:vitalRecordDefinition";
 
-	// aspect present on vital records
+    // aspect present on vital records
     public static final String ASPECTS_VITAL_RECORD = "rma:vitalRecord";
 
     // Frozen aspect

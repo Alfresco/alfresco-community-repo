@@ -35,43 +35,40 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class Hold
-{
-    /** Hold name */
-    private String name;
+public class Hold {
 
-    /** Hold node reference */
-    private NodeRef nodeRef;
+  /** Hold name */
+  private String name;
 
-    /**
-     * Constructor
-     *
-     * @param name The name of the hold
-     * @param nodeRef The {@link NodeRef} of the hold
-     */
-    public Hold(String name, NodeRef nodeRef)
-    {
-        this.name = name;
-        this.nodeRef = nodeRef;
-    }
+  /** Hold node reference */
+  private NodeRef nodeRef;
 
-    /**
-     * Gets the hold name
-     *
-     * @return The name of the hold
-     */
-    public String getName()
-    {
-        return this.name;
-    }
+  /**
+   * Constructor
+   *
+   * @param name The name of the hold
+   * @param nodeRef The {@link NodeRef} of the hold
+   */
+  public Hold(String name, NodeRef nodeRef) {
+    this.name = name;
+    this.nodeRef = nodeRef;
+  }
 
-    /**
-     * Gets the hold node reference
-     *
-     * @return The {@link NodeRef} of the hold
-     */
-    public NodeRef getNodeRef()
-    {
-        return this.nodeRef;
-    }
+  /**
+   * Gets the hold name
+   *
+   * @return The name of the hold
+   */
+  public String getName() {
+    return this.name;
+  }
+
+  /**
+   * Gets the hold node reference
+   *
+   * @return The {@link NodeRef} of the hold
+   */
+  public NodeRef getNodeRef() {
+    return this.nodeRef;
+  }
 }

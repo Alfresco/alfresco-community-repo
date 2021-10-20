@@ -49,23 +49,21 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class FilePlanAPI extends RMModelRequest
-{
+public class FilePlanAPI extends RMModelRequest {
+
     /**
      * Constructor.
      *
      * @param rmRestWrapper RM REST Wrapper
      */
-    public FilePlanAPI(RMRestWrapper rmRestWrapper)
-    {
+    public FilePlanAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
     /**
      * see {@link #getFilePlan(String, String)}
      */
-    public FilePlan getFilePlan(String filePlanId)
-    {
+    public FilePlan getFilePlan(String filePlanId) {
         mandatoryString("filePlanId", filePlanId);
 
         return getFilePlan(filePlanId, EMPTY);
@@ -85,23 +83,25 @@ public class FilePlanAPI extends RMModelRequest
      *  <li>{@code filePlanId} does not exist</li>
      * </ul>
      */
-    public FilePlan getFilePlan(String filePlanId, String parameters)
-    {
+    public FilePlan getFilePlan(String filePlanId, String parameters) {
         mandatoryString("filePlanId", filePlanId);
 
-        return getRmRestWrapper().processModel(FilePlan.class, simpleRequest(
-                GET,
-                "/file-plans/{filePlanId}?{parameters}",
-                filePlanId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                FilePlan.class,
+                simpleRequest(
+                    GET,
+                    "/file-plans/{filePlanId}?{parameters}",
+                    filePlanId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #getRootRecordCategories(String, String)}
      */
-    public RecordCategoryCollection getRootRecordCategories(String filePlanId)
-    {
+    public RecordCategoryCollection getRootRecordCategories(String filePlanId) {
         mandatoryString("filePlanId", filePlanId);
 
         return getRootRecordCategories(filePlanId, EMPTY);
@@ -120,23 +120,31 @@ public class FilePlanAPI extends RMModelRequest
      *  <li>{@code filePlanId} does not exist</li>
      *</ul>
      */
-    public RecordCategoryCollection getRootRecordCategories(String filePlanId, String parameters)
-    {
+    public RecordCategoryCollection getRootRecordCategories(
+        String filePlanId,
+        String parameters
+    ) {
         mandatoryString("filePlanId", filePlanId);
 
-        return getRmRestWrapper().processModels(RecordCategoryCollection.class, simpleRequest(
-            GET,
-            "file-plans/{filePlanId}/categories?{parameters}",
-            filePlanId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModels(
+                RecordCategoryCollection.class,
+                simpleRequest(
+                    GET,
+                    "file-plans/{filePlanId}/categories?{parameters}",
+                    filePlanId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #createRootRecordCategory(RecordCategory, String, String)}
      */
-    public RecordCategory createRootRecordCategory(RecordCategory recordCategoryModel, String filePlanId)
-    {
+    public RecordCategory createRootRecordCategory(
+        RecordCategory recordCategoryModel,
+        String filePlanId
+    ) {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("filePlanId", filePlanId);
 
@@ -160,25 +168,31 @@ public class FilePlanAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public RecordCategory createRootRecordCategory(RecordCategory recordCategoryModel, String filePlanId, String parameters)
-    {
+    public RecordCategory createRootRecordCategory(
+        RecordCategory recordCategoryModel,
+        String filePlanId,
+        String parameters
+    ) {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("filePlanId", filePlanId);
 
-        return getRmRestWrapper().processModel(RecordCategory.class, requestWithBody(
-                POST,
-                toJson(recordCategoryModel),
-                "file-plans/{filePlanId}/categories?{parameters}",
-                filePlanId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                RecordCategory.class,
+                requestWithBody(
+                    POST,
+                    toJson(recordCategoryModel),
+                    "file-plans/{filePlanId}/categories?{parameters}",
+                    filePlanId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #updateFilePlan(FilePlan, String, String)
      */
-    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId)
-    {
+    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId) {
         mandatoryObject("filePlanModel", filePlanModel);
         mandatoryString("filePlanId", filePlanId);
 
@@ -200,17 +214,24 @@ public class FilePlanAPI extends RMModelRequest
      *                   <li>model integrity exception, including file name with invalid characters</li>
      *                   </ul>
      */
-    public FilePlan updateFilePlan(FilePlan filePlanModel, String filePlanId, String parameters)
-    {
+    public FilePlan updateFilePlan(
+        FilePlan filePlanModel,
+        String filePlanId,
+        String parameters
+    ) {
         mandatoryObject("filePlanModel", filePlanModel);
         mandatoryString("filePlanId", filePlanId);
 
-        return getRmRestWrapper().processModel(FilePlan.class, requestWithBody(
-                PUT,
-                toJson(filePlanModel),
-                "file-plans/{filePlanId}?{parameters}",
-                filePlanId,
-                parameters));
+        return getRmRestWrapper()
+            .processModel(
+                FilePlan.class,
+                requestWithBody(
+                    PUT,
+                    toJson(filePlanModel),
+                    "file-plans/{filePlanId}?{parameters}",
+                    filePlanId,
+                    parameters
+                )
+            );
     }
-
 }

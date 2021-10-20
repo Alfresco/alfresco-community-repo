@@ -38,97 +38,98 @@ import org.alfresco.service.cmr.repository.Period;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RM994Test extends BaseRMTestCase
-{
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-    }
+public class RM994Test extends BaseRMTestCase {
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+  @Override
+  protected void initServices() {
+    super.initServices();
+  }
 
-    @Override
-    protected boolean isRecordTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-    public void testRM944() throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                checkVitalRecordNotSet(rmContainer);
-                checkVitalRecordNotSet(rmFolder);
-                checkVitalRecordNotSet(recordOne);
-                assertNull(nodeService.getProperty(recordOne, PROP_REVIEW_AS_OF));
+  @Override
+  protected boolean isRecordTest() {
+    return true;
+  }
 
-                vitalRecordService.setVitalRecordDefintion(rmContainer, true, new Period("month|1"));
+  public void testRM944() throws Exception {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          checkVitalRecordNotSet(rmContainer);
+          checkVitalRecordNotSet(rmFolder);
+          checkVitalRecordNotSet(recordOne);
+          assertNull(nodeService.getProperty(recordOne, PROP_REVIEW_AS_OF));
 
-                return null;
-            }
-        });
+          vitalRecordService.setVitalRecordDefintion(
+            rmContainer,
+            true,
+            new Period("month|1")
+          );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                checkVitalRecordSet(rmContainer);
-                checkVitalRecordSet(rmFolder);
-                checkVitalRecordSet(recordOne);
-                assertNotNull(nodeService.getProperty(recordOne, PROP_REVIEW_AS_OF));
-
-                recordService.createRecord(filePlan, dmDocument, true);
-
-                assertTrue(recordService.isRecord(dmDocument));
-                checkVitalRecordNotSet(dmDocument);
-
-                fileFolderService.move(dmDocument, rmFolder, null);
-
-                checkVitalRecordSet(dmDocument);
-
-                return null;
-            }
-        }, "admin");
-
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                checkVitalRecordSet(dmDocument);
-
-                return null;
-            }
-        });
-
-    }
-
-    private void checkVitalRecordSet(NodeRef nodeRef)
-    {
-        VitalRecordDefinition def = vitalRecordService.getVitalRecordDefinition(nodeRef);
-        assertNotNull(def);
-        assertTrue(def.isEnabled());
-        assertEquals("month", def.getReviewPeriod().getPeriodType());
-        assertEquals("1", def.getReviewPeriod().getExpression());
-    }
-
-    private void checkVitalRecordNotSet(NodeRef nodeRef)
-    {
-        VitalRecordDefinition recordDef = vitalRecordService.getVitalRecordDefinition(nodeRef);
-        if (recordDef != null)
-        {
-            assertFalse(recordDef.isEnabled());
-            assertEquals("none", recordDef.getReviewPeriod().getPeriodType());
-            assertNull(recordDef.getNextReviewDate());
+          return null;
         }
+      }
+    );
+
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() throws Exception {
+          checkVitalRecordSet(rmContainer);
+          checkVitalRecordSet(rmFolder);
+          checkVitalRecordSet(recordOne);
+          assertNotNull(nodeService.getProperty(recordOne, PROP_REVIEW_AS_OF));
+
+          recordService.createRecord(filePlan, dmDocument, true);
+
+          assertTrue(recordService.isRecord(dmDocument));
+          checkVitalRecordNotSet(dmDocument);
+
+          fileFolderService.move(dmDocument, rmFolder, null);
+
+          checkVitalRecordSet(dmDocument);
+
+          return null;
+        }
+      },
+      "admin"
+    );
+
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() throws Exception {
+          checkVitalRecordSet(dmDocument);
+
+          return null;
+        }
+      }
+    );
+  }
+
+  private void checkVitalRecordSet(NodeRef nodeRef) {
+    VitalRecordDefinition def = vitalRecordService.getVitalRecordDefinition(
+      nodeRef
+    );
+    assertNotNull(def);
+    assertTrue(def.isEnabled());
+    assertEquals("month", def.getReviewPeriod().getPeriodType());
+    assertEquals("1", def.getReviewPeriod().getExpression());
+  }
+
+  private void checkVitalRecordNotSet(NodeRef nodeRef) {
+    VitalRecordDefinition recordDef = vitalRecordService.getVitalRecordDefinition(
+      nodeRef
+    );
+    if (recordDef != null) {
+      assertFalse(recordDef.isEnabled());
+      assertEquals("none", recordDef.getReviewPeriod().getPeriodType());
+      assertNull(recordDef.getNextReviewDate());
     }
+  }
 }

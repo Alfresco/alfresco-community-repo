@@ -40,107 +40,102 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Abstract disposable item, containing commonality between record and record folder.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
-public abstract class AbstractDisposableItem extends BaseBehaviourBean
-{
-    /** unwanted aspects */
-    protected QName[] unwantedAspects =
-    {
-        ASPECT_VITAL_RECORD,
-        ASPECT_DISPOSITION_LIFECYCLE,
-        RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH
-    };
-    
-    /** disposition service */
-    protected DispositionService dispositionService;
+public abstract class AbstractDisposableItem extends BaseBehaviourBean {
 
-    /** record service */
-    protected RecordService recordService;
+  /** unwanted aspects */
+  protected QName[] unwantedAspects = {
+    ASPECT_VITAL_RECORD,
+    ASPECT_DISPOSITION_LIFECYCLE,
+    RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH,
+  };
 
-    /** record folder service */
-    protected RecordFolderService recordFolderService;
+  /** disposition service */
+  protected DispositionService dispositionService;
 
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
+  /** record service */
+  protected RecordService recordService;
+
+  /** record folder service */
+  protected RecordFolderService recordFolderService;
+
+  /**
+   * @param dispositionService    disposition service
+   */
+  public void setDispositionService(DispositionService dispositionService) {
+    this.dispositionService = dispositionService;
+  }
+
+  /**
+   * @param recordService    record service
+   */
+  public void setRecordService(RecordService recordService) {
+    this.recordService = recordService;
+  }
+
+  /**
+   * @param recordFolderService    record folder service
+   */
+  public void setRecordFolderService(RecordFolderService recordFolderService) {
+    this.recordFolderService = recordFolderService;
+  }
+
+  /**
+   * Removes unwanted aspects
+   *
+   * @param nodeService
+   * @param nodeRef
+   */
+  protected void cleanDisposableItem(NodeService nodeService, NodeRef nodeRef) {
+    // Remove unwanted aspects
+    for (QName aspect : unwantedAspects) {
+      if (nodeService.hasAspect(nodeRef, aspect)) {
+        nodeService.removeAspect(nodeRef, aspect);
+      }
     }
 
-    /**
-     * @param recordService    record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
+    // remove the current disposition action (if there is one)
+    DispositionAction dispositionAction = dispositionService.getNextDispositionAction(
+      nodeRef
+    );
+    if (dispositionAction != null) {
+      nodeService.deleteNode(dispositionAction.getNodeRef());
     }
+  }
 
-    /**
-     * @param recordFolderService    record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
-    }
-    
-    /**
-     * Removes unwanted aspects
-     *
-     * @param nodeService
-     * @param nodeRef
-     */
-    protected void cleanDisposableItem(NodeService nodeService, NodeRef nodeRef)
-    {
-        // Remove unwanted aspects
-        for (QName aspect : unwantedAspects)
-        {
-            if (nodeService.hasAspect(nodeRef, aspect))
-            {
-                nodeService.removeAspect(nodeRef, aspect);
-            }
+  /**
+   * Cleans and re-initiates the containing records
+   *
+   * @param childAssociationRef
+   */
+  protected void reinitializeRecordFolder(
+    ChildAssociationRef childAssociationRef
+  ) {
+    NodeRef newNodeRef = childAssociationRef.getChildRef();
+
+    AuthenticationUtil.runAs(
+      () -> {
+        // clean record folder
+        cleanDisposableItem(nodeService, newNodeRef);
+
+        // re-initialise the record folder
+        recordFolderService.setupRecordFolder(newNodeRef);
+
+        // sort out the child records
+        for (NodeRef record : recordService.getRecords(newNodeRef)) {
+          // clean record
+          cleanDisposableItem(nodeService, record);
+
+          // Re-initiate the records in the new folder.
+          recordService.file(record);
         }
-        
-        // remove the current disposition action (if there is one)
-        DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
-        if (dispositionAction != null)
-        {
-            nodeService.deleteNode(dispositionAction.getNodeRef());
-        }
-    }
 
-    /**
-     * Cleans and re-initiates the containing records
-     *
-     * @param childAssociationRef
-     */
-    protected void reinitializeRecordFolder(ChildAssociationRef childAssociationRef)
-    {
-
-        NodeRef newNodeRef = childAssociationRef.getChildRef();
-
-        AuthenticationUtil.runAs(() -> {
-            // clean record folder
-            cleanDisposableItem(nodeService, newNodeRef);
-
-            // re-initialise the record folder
-            recordFolderService.setupRecordFolder(newNodeRef);
-
-            // sort out the child records
-            for (NodeRef record : recordService.getRecords(newNodeRef))
-            {
-                // clean record
-                cleanDisposableItem(nodeService, record);
-
-                // Re-initiate the records in the new folder.
-                recordService.file(record);
-            }
-
-            return null;
-        }, AuthenticationUtil.getSystemUserName());
-    }
-
+        return null;
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
 }

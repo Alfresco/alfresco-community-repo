@@ -28,7 +28,6 @@ package org.alfresco.repo.event2.filter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.namespace.QName;
 
@@ -37,30 +36,32 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class NodePropertyFilter extends AbstractNodeEventFilter
-{
-    private static final String FILTERED_PROPERTIES = "sys:*";
-    // These properties are included as top-level info,
-    // so exclude them from the properties object
-    private static final Set<QName> EXCLUDED_TOP_LEVEL_PROPS = Set.of(ContentModel.PROP_NAME,
-                                                                      ContentModel.PROP_MODIFIER,
-                                                                      ContentModel.PROP_MODIFIED,
-                                                                      ContentModel.PROP_CREATOR,
-                                                                      ContentModel.PROP_CREATED,
-                                                                      ContentModel.PROP_CONTENT);
+public class NodePropertyFilter extends AbstractNodeEventFilter {
 
-    private final List<String> nodeAspectsBlackList;
+  private static final String FILTERED_PROPERTIES = "sys:*";
+  // These properties are included as top-level info,
+  // so exclude them from the properties object
+  private static final Set<QName> EXCLUDED_TOP_LEVEL_PROPS = Set.of(
+    ContentModel.PROP_NAME,
+    ContentModel.PROP_MODIFIER,
+    ContentModel.PROP_MODIFIED,
+    ContentModel.PROP_CREATOR,
+    ContentModel.PROP_CREATED,
+    ContentModel.PROP_CONTENT
+  );
 
-    public NodePropertyFilter()
-    {
-        this.nodeAspectsBlackList = parseFilterList(FILTERED_PROPERTIES);
-    }
+  private final List<String> nodeAspectsBlackList;
 
-    @Override
-    public Set<QName> getExcludedTypes()
-    {
-        Set<QName> result = new HashSet<>(EXCLUDED_TOP_LEVEL_PROPS);
-        nodeAspectsBlackList.forEach(nodeAspect -> result.addAll(expandTypeDef(nodeAspect)));
-        return result;
-    }
+  public NodePropertyFilter() {
+    this.nodeAspectsBlackList = parseFilterList(FILTERED_PROPERTIES);
+  }
+
+  @Override
+  public Set<QName> getExcludedTypes() {
+    Set<QName> result = new HashSet<>(EXCLUDED_TOP_LEVEL_PROPS);
+    nodeAspectsBlackList.forEach(nodeAspect ->
+      result.addAll(expandTypeDef(nodeAspect))
+    );
+    return result;
+  }
 }

@@ -36,26 +36,25 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.3
  */
 @AlfrescoPublicApi
-public interface RelationshipDefinition
-{
-    /**
-     * Gets the unique name of the relationship definition
-     *
-     * @return The unique name of the relationship definition
-     */
-    String getUniqueName();
+public interface RelationshipDefinition {
+  /**
+   * Gets the unique name of the relationship definition
+   *
+   * @return The unique name of the relationship definition
+   */
+  String getUniqueName();
 
-    /**
-     * Gets the type of the relationship definition
-     *
-     * @return The type of the relationship definition
-     */
-    RelationshipType getType();
+  /**
+   * Gets the type of the relationship definition
+   *
+   * @return The type of the relationship definition
+   */
+  RelationshipType getType();
 
-    /**
-     * Gets the display name of the relationship definition
-     *
-     * @return The display name of the relationship definition
-     */
-    RelationshipDisplayName getDisplayName();
+  /**
+   * Gets the display name of the relationship definition
+   *
+   * @return The display name of the relationship definition
+   */
+  RelationshipDisplayName getDisplayName();
 }

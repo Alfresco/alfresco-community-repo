@@ -36,17 +36,21 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.4.1
  *
  */
-public class MovableRecordFolderCapabilityCondition extends AbstractCapabilityCondition
-{
+public class MovableRecordFolderCapabilityCondition
+  extends AbstractCapabilityCondition {
 
-    /**
-     * A record folder should not be moved when it is cut off, but it should be possible to move it when it is destroyed.
-     */
-    @Override
-    public boolean evaluateImpl(NodeRef nodeRef)
-    {
-        if (nodeService.hasAspect(nodeRef, ASPECT_GHOSTED) && dispositionService.isDisposableItemCutoff(nodeRef))
-            return true;
-        return !(dispositionService.isDisposableItemCutoff(nodeRef) || recordFolderService.isRecordFolderClosed(nodeRef));
-    }
+  /**
+   * A record folder should not be moved when it is cut off, but it should be possible to move it when it is destroyed.
+   */
+  @Override
+  public boolean evaluateImpl(NodeRef nodeRef) {
+    if (
+      nodeService.hasAspect(nodeRef, ASPECT_GHOSTED) &&
+      dispositionService.isDisposableItemCutoff(nodeRef)
+    ) return true;
+    return !(
+      dispositionService.isDisposableItemCutoff(nodeRef) ||
+      recordFolderService.isRecordFolderClosed(nodeRef)
+    );
+  }
 }

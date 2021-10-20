@@ -35,88 +35,87 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public class ReportDetails
-{
-    /** Name */
-	protected String name;
+public class ReportDetails {
 
-	/** Description */
-	protected String description;
+  /** Name */
+  protected String name;
 
-	/** Search */
-	protected String search;
+  /** Description */
+  protected String description;
 
-	/** Search parameters */
-	protected RecordsManagementSearchParameters searchParameters;
+  /** Search */
+  protected String search;
 
-	/**
-	 *
-	 * @param name
-	 * @param description
-	 * @param search
-	 * @param searchParameters
-	 */
-	public ReportDetails(String name, String description, String search, RecordsManagementSearchParameters searchParameters)
-	{
-		this.name = name;
-		this.description = description;
-		this.search = search;
-		this.searchParameters = searchParameters;
-	}
+  /** Search parameters */
+  protected RecordsManagementSearchParameters searchParameters;
 
-	/**
-	 * @return {@link String}  name
-	 */
-	public String getName()
-	{
-		return name;
-	}
+  /**
+   *
+   * @param name
+   * @param description
+   * @param search
+   * @param searchParameters
+   */
+  public ReportDetails(
+    String name,
+    String description,
+    String search,
+    RecordsManagementSearchParameters searchParameters
+  ) {
+    this.name = name;
+    this.description = description;
+    this.search = search;
+    this.searchParameters = searchParameters;
+  }
 
-	/**
-	 * @return {@link String}  description
-	 */
-	public String getDescription()
-	{
-		return description;
-	}
+  /**
+   * @return {@link String}  name
+   */
+  public String getName() {
+    return name;
+  }
 
-	/**
-	 * @param description  description
-	 */
-	public void setDescription(String description)
-	{
-		this.description = description;
-	}
+  /**
+   * @return {@link String}  description
+   */
+  public String getDescription() {
+    return description;
+  }
 
-	/**
-	 * @return {@link String}  search string
-	 */
-	public String getSearch()
-    {
-        return search;
-    }
+  /**
+   * @param description  description
+   */
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-	/**
-	 * @param search query string
-	 */
-	public void setSearch(String search)
-    {
-        this.search = search;
-    }
+  /**
+   * @return {@link String}  search string
+   */
+  public String getSearch() {
+    return search;
+  }
 
-	/**
-	 * @return
-	 */
-	public RecordsManagementSearchParameters getSearchParameters()
-    {
-        return searchParameters;
-    }
+  /**
+   * @param search query string
+   */
+  public void setSearch(String search) {
+    this.search = search;
+  }
 
-	/**
-	 * @param searchParameters
-	 */
-	public void setSearchParameters(RecordsManagementSearchParameters searchParameters)
-    {
-        this.searchParameters = searchParameters;
-    }
+  /**
+   * @return
+   */
+  public RecordsManagementSearchParameters getSearchParameters() {
+    return searchParameters;
+  }
+
+  /**
+   * @param searchParameters
+   */
+  public void setSearchParameters(
+    RecordsManagementSearchParameters searchParameters
+  ) {
+    this.searchParameters = searchParameters;
+  }
 }

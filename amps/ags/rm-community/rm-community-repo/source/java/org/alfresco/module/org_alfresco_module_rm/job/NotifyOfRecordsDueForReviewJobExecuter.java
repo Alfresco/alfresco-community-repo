@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.job;
 
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -48,98 +47,100 @@ import org.apache.commons.logging.LogFactory;
  *
  * @author Neil McErlean
  */
-public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJobExecuter
-{
-    private static Log logger = LogFactory.getLog(NotifyOfRecordsDueForReviewJobExecuter.class);
+public class NotifyOfRecordsDueForReviewJobExecuter
+  extends RecordsManagementJobExecuter {
 
-    private RecordsManagementNotificationHelper recordsManagementNotificationHelper;
+  private static Log logger = LogFactory.getLog(
+    NotifyOfRecordsDueForReviewJobExecuter.class
+  );
 
-    private NodeService nodeService;
+  private RecordsManagementNotificationHelper recordsManagementNotificationHelper;
 
-    private SearchService searchService;
+  private NodeService nodeService;
 
-    public void setRecordsManagementNotificationHelper(
-            RecordsManagementNotificationHelper recordsManagementNotificationHelper)
-    {
-        this.recordsManagementNotificationHelper = recordsManagementNotificationHelper;
+  private SearchService searchService;
+
+  public void setRecordsManagementNotificationHelper(
+    RecordsManagementNotificationHelper recordsManagementNotificationHelper
+  ) {
+    this.recordsManagementNotificationHelper =
+      recordsManagementNotificationHelper;
+  }
+
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  public void setSearchService(SearchService searchService) {
+    this.searchService = searchService;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
+   */
+  public void executeImpl() {
+    if (logger.isDebugEnabled()) {
+      logger.debug("Job " + this.getClass().getSimpleName() + " starting.");
     }
 
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+    AuthenticationUtil.runAs(
+      new RunAsWork<Object>() {
+        public Object doWork() {
+          // Query is for all records that are due for review and for which
+          // notification has not been sent.
+          StringBuilder queryBuffer = new StringBuilder();
+          queryBuffer.append("ASPECT:\"rma:vitalRecord\" ");
+          queryBuffer.append("AND @rma\\:reviewAsOf:[MIN TO NOW] ");
+          // exclude destroyed electronic records and destroyed nonElectronic records with kept metadata
+          queryBuffer.append("AND -ASPECT:\"rma:ghosted\" ");
+          String query = queryBuffer.toString();
 
-    public void setSearchService(SearchService searchService)
-    {
-        this.searchService = searchService;
-    }
+          ResultSet results = searchService.query(
+            StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+            SearchService.LANGUAGE_FTS_ALFRESCO,
+            query
+          );
+          final List<NodeRef> resultNodes = results.getNodeRefs();
+          results.close();
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#execute()
-     */
-    public void executeImpl()
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Job " + this.getClass().getSimpleName() + " starting.");
-        }
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+              "Found " +
+              resultNodes.size() +
+              " nodes due for review and without notification."
+            );
+          }
 
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                // Query is for all records that are due for review and for which
-                // notification has not been sent.
-                StringBuilder queryBuffer = new StringBuilder();
-                queryBuffer.append("ASPECT:\"rma:vitalRecord\" ");
-                queryBuffer.append("AND @rma\\:reviewAsOf:[MIN TO NOW] ");
-                // exclude destroyed electronic records and destroyed nonElectronic records with kept metadata
-                queryBuffer.append("AND -ASPECT:\"rma:ghosted\" ");
-                String query = queryBuffer.toString();
+          //If we have something to do and a template to do it with
+          if (resultNodes.size() != 0) {
+            //Send the email message - but we must not retry since email is not transactional
+            RetryingTransactionCallback<Void> txCallbackSendEmail = new RetryingTransactionCallback<Void>() {
+              // Set the notification issued property.
+              public Void execute() {
+                // Send notification
+                recordsManagementNotificationHelper.recordsDueForReviewEmailNotification(
+                  resultNodes
+                );
 
-                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, query);
-                final List<NodeRef> resultNodes = results.getNodeRefs();
-                results.close();
-
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Found " + resultNodes.size() + " nodes due for review and without notification.");
-                }
-
-                //If we have something to do and a template to do it with
-                if(resultNodes.size() != 0)
-                {
-                    //Send the email message - but we must not retry since email is not transactional
-                    RetryingTransactionCallback<Void> txCallbackSendEmail = new RetryingTransactionCallback<Void>()
-                    {
-                        // Set the notification issued property.
-                        public Void execute()
-                        {
-                            // Send notification
-                            recordsManagementNotificationHelper.recordsDueForReviewEmailNotification(resultNodes);
-
-                            return null;
-                        }
-                    };
-
-                    /**
-                     * Now do the work, one action in each transaction
-                     */
-                    // don't retry the send email
-                    retryingTransactionHelper.setMaxRetries(0);
-                    retryingTransactionHelper.doInTransaction(txCallbackSendEmail);
-                }
                 return null;
-            }
+              }
+            };
 
-        }, AuthenticationUtil.getSystemUserName());
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Job " + this.getClass().getSimpleName() + " finished");
+            /**
+             * Now do the work, one action in each transaction
+             */
+            // don't retry the send email
+            retryingTransactionHelper.setMaxRetries(0);
+            retryingTransactionHelper.doInTransaction(txCallbackSendEmail);
+          }
+          return null;
         }
-    }  // end of execute method
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
 
+    if (logger.isDebugEnabled()) {
+      logger.debug("Job " + this.getClass().getSimpleName() + " finished");
+    }
+  } // end of execute method
 }
-
-

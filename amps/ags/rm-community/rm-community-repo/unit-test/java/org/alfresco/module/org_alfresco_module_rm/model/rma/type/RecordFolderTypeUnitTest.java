@@ -52,182 +52,245 @@ import org.mockito.MockitoAnnotations;
  * @since 2.6
  *
  */
-public class RecordFolderTypeUnitTest extends BaseUnitTest
-{
-    @Mock
-    private AuthenticationUtil mockAuthenticationUtil;
+public class RecordFolderTypeUnitTest extends BaseUnitTest {
 
-    @Mock
-    private VitalRecordService mockedVitalRecordService;
+  @Mock
+  private AuthenticationUtil mockAuthenticationUtil;
 
-    private @InjectMocks RecordFolderType recordFolderType;
+  @Mock
+  private VitalRecordService mockedVitalRecordService;
 
-    @Before
-    public void setup()
-    {
-        MockitoAnnotations.initMocks(this);
-        MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
-        when(mockedApplicationContext.getBean("dbNodeService")).thenReturn(mockedNodeService);
-    }
+  @InjectMocks
+  private RecordFolderType recordFolderType;
 
-    /**
-     * Given that we try to add one rma:transfer to a record folder,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testCreateTransferFolder() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_TRANSFER)).thenReturn(true);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociation(childAssocRef, true);
-    }
+  @Before
+  public void setup() {
+    MockitoAnnotations.initMocks(this);
+    MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
+    when(mockedApplicationContext.getBean("dbNodeService"))
+      .thenReturn(mockedNodeService);
+  }
 
-    /**
-     * Given that we try to add one record folder to a record folder,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testCreateRecordFolder() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_RECORD_FOLDER)).thenReturn(true);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociation(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add one rma:transfer to a record folder,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testCreateTransferFolder() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_TRANSFER))
+      .thenReturn(true);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociation(childAssocRef, true);
+  }
 
-    /**
-     * Given that we try to add sub-type of rma:recordsManagementContainer to a record folder,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testCreateSubTypesOfRecordManagementContainer() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_RECORDS_MANAGEMENT_CONTAINER)).thenReturn(true);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociation(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add one record folder to a record folder,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testCreateRecordFolder() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_RECORD_FOLDER))
+      .thenReturn(true);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociation(childAssocRef, true);
+  }
 
-    /**
-     * Given that we try to add cm:folder sub-type to a record folder,
-     * Then the operation is successful.
-     */
-    @Test
-    public void testCreateFolderSubType() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociation(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add sub-type of rma:recordsManagementContainer to a record folder,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testCreateSubTypesOfRecordManagementContainer() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    when(
+      mockedNodeTypeUtility.instanceOf(type, TYPE_RECORDS_MANAGEMENT_CONTAINER)
+    )
+      .thenReturn(true);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociation(childAssocRef, true);
+  }
 
-    /**
-     * Given that we try to add non cm:folder sub-type to a record folder,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testCreateNonFolderSubType() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociation(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add cm:folder sub-type to a record folder,
+   * Then the operation is successful.
+   */
+  @Test
+  public void testCreateFolderSubType() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociation(childAssocRef, true);
+  }
 
-    /**
-     * Given that we try to add cm:content sub-type to a record folder,
-     * Then the operation is successful.
-     */
-    public void testCreateContent() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_CONTENT)).thenReturn(true);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociation(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add non cm:folder sub-type to a record folder,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testCreateNonFolderSubType() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociation(childAssocRef, true);
+  }
 
-    /**
-     * Given that we try to add non cm:content or non cm:folder sub-type to a record folder,
-     * Then IntegrityException is thrown.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testCreateNonContent() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_CONTENT)).thenReturn(false);
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociation(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add cm:content sub-type to a record folder,
+   * Then the operation is successful.
+   */
+  public void testCreateContent() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_CONTENT)).thenReturn(true);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociation(childAssocRef, true);
+  }
 
-    /**
-     * Given that we try to add not hidden cm:folder sub-type to a record folder,
-     * Then IntegrityException is thrown on commit.
-     */
-    @Test(expected = IntegrityException.class)
-    public void testCreateNotHiddenFolderSubTypeOnCommit() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);
-    }
+  /**
+   * Given that we try to add non cm:content or non cm:folder sub-type to a record folder,
+   * Then IntegrityException is thrown.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testCreateNonContent() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_CONTENT))
+      .thenReturn(false);
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociation(childAssocRef, true);
+  }
 
-    /**
-     * Given that we try to add hidden cm:folder sub-type to a record folder,
-     * Then the operation is successful.
-     */
-    @Test
-    public void testCreateHiddenFolderSubTypeOnCommit() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+  /**
+   * Given that we try to add not hidden cm:folder sub-type to a record folder,
+   * Then IntegrityException is thrown on commit.
+   */
+  @Test(expected = IntegrityException.class)
+  public void testCreateNotHiddenFolderSubTypeOnCommit() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);
+  }
 
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
-        when(mockedNodeService.hasAspect(nodeRef, ASPECT_HIDDEN)).thenReturn(true);
+  /**
+   * Given that we try to add hidden cm:folder sub-type to a record folder,
+   * Then the operation is successful.
+   */
+  @Test
+  public void testCreateHiddenFolderSubTypeOnCommit() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
 
-        ChildAssociationRef mockedPrimaryParentAssoc = mock(ChildAssociationRef.class);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedPrimaryParentAssoc);
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(true);
+    when(mockedNodeService.hasAspect(nodeRef, ASPECT_HIDDEN)).thenReturn(true);
 
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);
-    }
+    ChildAssociationRef mockedPrimaryParentAssoc = mock(
+      ChildAssociationRef.class
+    );
+    when(mockedNodeService.getPrimaryParent(nodeRef))
+      .thenReturn(mockedPrimaryParentAssoc);
 
-    /**
-     * Given that we try to add non cm:folder sub-type to a record folder,
-     * Then the operation is successful.
-     */
-    @Test
-    public void testCreateNonFolderSubTypeOnCommit() throws Exception
-    {
-        NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(mockedNodeService, TYPE_RECORD_FOLDER);
-        QName type = AlfMock.generateQName();
-        NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);
+  }
 
-        when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
+  /**
+   * Given that we try to add non cm:folder sub-type to a record folder,
+   * Then the operation is successful.
+   */
+  @Test
+  public void testCreateNonFolderSubTypeOnCommit() throws Exception {
+    NodeRef recordFolderNodeRef = AlfMock.generateNodeRef(
+      mockedNodeService,
+      TYPE_RECORD_FOLDER
+    );
+    QName type = AlfMock.generateQName();
+    NodeRef nodeRef = AlfMock.generateNodeRef(mockedNodeService, type, true);
 
-        ChildAssociationRef mockedPrimaryParentAssoc = mock(ChildAssociationRef.class);
-        when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(mockedPrimaryParentAssoc);
+    when(mockedNodeTypeUtility.instanceOf(type, TYPE_FOLDER)).thenReturn(false);
 
-        ChildAssociationRef childAssocRef = generateChildAssociationRef(recordFolderNodeRef, nodeRef);
-        recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);
-    }
+    ChildAssociationRef mockedPrimaryParentAssoc = mock(
+      ChildAssociationRef.class
+    );
+    when(mockedNodeService.getPrimaryParent(nodeRef))
+      .thenReturn(mockedPrimaryParentAssoc);
+
+    ChildAssociationRef childAssocRef = generateChildAssociationRef(
+      recordFolderNodeRef,
+      nodeRef
+    );
+    recordFolderType.onCreateChildAssociationOnCommit(childAssocRef, true);
+  }
 }

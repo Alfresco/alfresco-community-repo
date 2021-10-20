@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -46,25 +45,37 @@ import org.alfresco.service.namespace.QName;
  * @since 2.6
  */
 @BehaviourBean(defaultType = "rma:unfiledRecordFolder")
-public class UnfiledRecordFolderType extends BaseBehaviourBean
-            implements NodeServicePolicies.OnCreateChildAssociationPolicy
-{
-    private final static List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(TYPE_UNFILED_RECORD_FOLDER, ContentModel.TYPE_CONTENT, TYPE_NON_ELECTRONIC_DOCUMENT);
+public class UnfiledRecordFolderType
+  extends BaseBehaviourBean
+  implements NodeServicePolicies.OnCreateChildAssociationPolicy {
 
-    @Override
-    @Behaviour(kind = BehaviourKind.ASSOCIATION)
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
-    {
-        // We need to automatically cast the created folder to record folder if it is a plain folder
-        // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
-        // Some modules use hidden folder subtypes to store information (see RM-3283).
-        QName childType = nodeService.getType(childAssocRef.getChildRef());
-        if (childType.equals(ContentModel.TYPE_FOLDER))
-        {
-            nodeService.setType(childAssocRef.getChildRef(), TYPE_UNFILED_RECORD_FOLDER);
-        }
+  private static final List<QName> ACCEPTED_NON_UNIQUE_CHILD_TYPES = Arrays.asList(
+    TYPE_UNFILED_RECORD_FOLDER,
+    ContentModel.TYPE_CONTENT,
+    TYPE_NON_ELECTRONIC_DOCUMENT
+  );
 
-        // check the created child is of an accepted type
-        validateNewChildAssociationSubTypesIncluded(childAssocRef.getChildRef(), ACCEPTED_NON_UNIQUE_CHILD_TYPES);
+  @Override
+  @Behaviour(kind = BehaviourKind.ASSOCIATION)
+  public void onCreateChildAssociation(
+    ChildAssociationRef childAssocRef,
+    boolean isNewNode
+  ) {
+    // We need to automatically cast the created folder to record folder if it is a plain folder
+    // This occurs if the RM folder has been created via IMap, WebDav, etc. Don't check subtypes.
+    // Some modules use hidden folder subtypes to store information (see RM-3283).
+    QName childType = nodeService.getType(childAssocRef.getChildRef());
+    if (childType.equals(ContentModel.TYPE_FOLDER)) {
+      nodeService.setType(
+        childAssocRef.getChildRef(),
+        TYPE_UNFILED_RECORD_FOLDER
+      );
     }
+
+    // check the created child is of an accepted type
+    validateNewChildAssociationSubTypesIncluded(
+      childAssocRef.getChildRef(),
+      ACCEPTED_NON_UNIQUE_CHILD_TYPES
+    );
+  }
 }

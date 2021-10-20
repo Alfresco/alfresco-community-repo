@@ -26,7 +26,6 @@
 package org.alfresco.messaging.camel;
 
 import java.util.ArrayList;
-
 import org.apache.camel.CamelContext;
 import org.apache.camel.model.ModelCamelContext;
 import org.apache.camel.model.RouteDefinition;
@@ -37,47 +36,43 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Injects a specified route context into a specified Camel context
- * 
+ *
  * @author Ray Gauss II
  */
-public class SpringContextRouteLoader implements ApplicationContextAware, InitializingBean
-{
+public class SpringContextRouteLoader
+  implements ApplicationContextAware, InitializingBean {
 
-    private ApplicationContext applicationContext;
-    private String camelContextId;
-    private String routeContextId;
+  private ApplicationContext applicationContext;
+  private String camelContextId;
+  private String routeContextId;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext)
+    throws BeansException {
+    this.applicationContext = applicationContext;
+  }
 
-    public void setCamelContextId(String camelContextId)
-    {
-        this.camelContextId = camelContextId;
-    }
+  public void setCamelContextId(String camelContextId) {
+    this.camelContextId = camelContextId;
+  }
 
-    public void setRouteContextId(String routeContextId)
-    {
-        this.routeContextId = routeContextId;
-    }
+  public void setRouteContextId(String routeContextId) {
+    this.routeContextId = routeContextId;
+  }
 
-    @SuppressWarnings("unchecked")
-    public void addRoutesToCamelContext() throws Exception
-    {
-        ModelCamelContext modelCamelContext = applicationContext
-            .getBean(camelContextId, CamelContext.class)
-            .adapt(ModelCamelContext.class);
-        ArrayList<RouteDefinition> routeDefinitions = (ArrayList<RouteDefinition>) applicationContext.getBean(routeContextId);
-        modelCamelContext.addRouteDefinitions(routeDefinitions);
-    }
+  @SuppressWarnings("unchecked")
+  public void addRoutesToCamelContext() throws Exception {
+    ModelCamelContext modelCamelContext = applicationContext
+      .getBean(camelContextId, CamelContext.class)
+      .adapt(ModelCamelContext.class);
+    ArrayList<RouteDefinition> routeDefinitions = (ArrayList<RouteDefinition>) applicationContext.getBean(
+      routeContextId
+    );
+    modelCamelContext.addRouteDefinitions(routeDefinitions);
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        addRoutesToCamelContext();
-    }
-
-
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    addRoutesToCamelContext();
+  }
 }

@@ -36,7 +36,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
@@ -47,96 +46,119 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
-* Update next disposition step integration tests.
-*
-* @author Roxana Lucanu
-* @since 2.3.1
-*/
-public class UpdateNextDispositionActionTest extends BaseRMTestCase
-{
-    /**
-     * Given a record with multiple dispositions
-     * When updating the next step
-     * Then the action is available
-     * <p>
-     * relates to https://issues.alfresco.com/jira/browse/RM-3060
-     */
-    public void testUpdateNextDispositionAction_RM3060() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            NodeRef record;
-            NodeRef folder2;
+ * Update next disposition step integration tests.
+ *
+ * @author Roxana Lucanu
+ * @since 2.3.1
+ */
+public class UpdateNextDispositionActionTest extends BaseRMTestCase {
 
-            @Override
-            public void given()
-            {
-                // create category1
-                NodeRef category1 = filePlanService.createRecordCategory(filePlan, generate());
+  /**
+   * Given a record with multiple dispositions
+   * When updating the next step
+   * Then the action is available
+   * <p>
+   * relates to https://issues.alfresco.com/jira/browse/RM-3060
+   */
+  public void testUpdateNextDispositionAction_RM3060() throws Exception {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        NodeRef record;
+        NodeRef folder2;
 
-                // create disposition schedule for category1
-                createDispositionSchedule(category1);
+        @Override
+        public void given() {
+          // create category1
+          NodeRef category1 = filePlanService.createRecordCategory(
+            filePlan,
+            generate()
+          );
 
-                // create category2
-                NodeRef category2 = filePlanService.createRecordCategory(filePlan, generate());
+          // create disposition schedule for category1
+          createDispositionSchedule(category1);
 
-                // create disposition schedule for category2
-                createDispositionSchedule(category2);
+          // create category2
+          NodeRef category2 = filePlanService.createRecordCategory(
+            filePlan,
+            generate()
+          );
 
-                // create folder2 inside category2
-                folder2 = recordFolderService.createRecordFolder(category2, generate());
+          // create disposition schedule for category2
+          createDispositionSchedule(category2);
 
-                // create folder1 inside category1
-                NodeRef folder1 = recordFolderService.createRecordFolder(category1, generate());
+          // create folder2 inside category2
+          folder2 =
+            recordFolderService.createRecordFolder(category2, generate());
 
-                // create record inside folder1
-                record = utils.createRecord(folder1, generate(), generate());
+          // create folder1 inside category1
+          NodeRef folder1 = recordFolderService.createRecordFolder(
+            category1,
+            generate()
+          );
 
-            }
-            @Override
-            public void when() throws Exception
-            {
-                // link the record to folder2
-                recordService.link(record, folder2);
+          // create record inside folder1
+          record = utils.createRecord(folder1, generate(), generate());
+        }
 
-                // complete record
-                utils.completeRecord(record);
+        @Override
+        public void when() throws Exception {
+          // link the record to folder2
+          recordService.link(record, folder2);
 
-                // cut off
-                rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null); 
-            }
+          // complete record
+          utils.completeRecord(record);
 
-            @Override
-            public void then() throws Exception
-            {
-                assertTrue("Record " + record + " doesn't have the cutOff aspect.", nodeService.hasAspect(record, ASPECT_CUT_OFF));
-            }
-        });
-    }
+          // cut off
+          rmActionService.executeRecordsManagementAction(
+            record,
+            CutOffAction.NAME,
+            null
+          );
+        }
 
-    private void createDispositionSchedule(NodeRef category)
-    {
-        DispositionSchedule ds = utils.createDispositionSchedule(category, DEFAULT_DISPOSITION_INSTRUCTIONS, DEFAULT_DISPOSITION_DESCRIPTION, true, false, false);
+        @Override
+        public void then() throws Exception {
+          assertTrue(
+            "Record " + record + " doesn't have the cutOff aspect.",
+            nodeService.hasAspect(record, ASPECT_CUT_OFF)
+          );
+        }
+      }
+    );
+  }
 
-        // create the properties for CUTOFF action and add it to the disposition action definition
-        Map<QName, Serializable> cutOff = new HashMap<>(3);
-        cutOff.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
-        cutOff.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        cutOff.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
-        dispositionService.addDispositionActionDefinition(ds, cutOff);
+  private void createDispositionSchedule(NodeRef category) {
+    DispositionSchedule ds = utils.createDispositionSchedule(
+      category,
+      DEFAULT_DISPOSITION_INSTRUCTIONS,
+      DEFAULT_DISPOSITION_DESCRIPTION,
+      true,
+      false,
+      false
+    );
 
-        // create the properties for TRANSFER action and add it to the disposition action definition
-        Map<QName, Serializable> transfer = new HashMap<>(3);
-        transfer.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
-        transfer.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        transfer.put(PROP_DISPOSITION_EVENT, (Serializable)Collections.singletonList(DEFAULT_EVENT_NAME));
-        dispositionService.addDispositionActionDefinition(ds, transfer);
+    // create the properties for CUTOFF action and add it to the disposition action definition
+    Map<QName, Serializable> cutOff = new HashMap<>(3);
+    cutOff.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
+    cutOff.put(PROP_DISPOSITION_DESCRIPTION, generate());
+    cutOff.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
+    dispositionService.addDispositionActionDefinition(ds, cutOff);
 
-        // create the properties for DESTROY action and add it to the disposition action definition
-        Map<QName, Serializable> destroy = new HashMap<>(3);
-        destroy.put(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME);
-        destroy.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        destroy.put(PROP_DISPOSITION_PERIOD, PERIOD_ONE_WEEK);
-        dispositionService.addDispositionActionDefinition(ds, destroy);
-    }
+    // create the properties for TRANSFER action and add it to the disposition action definition
+    Map<QName, Serializable> transfer = new HashMap<>(3);
+    transfer.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
+    transfer.put(PROP_DISPOSITION_DESCRIPTION, generate());
+    transfer.put(
+      PROP_DISPOSITION_EVENT,
+      (Serializable) Collections.singletonList(DEFAULT_EVENT_NAME)
+    );
+    dispositionService.addDispositionActionDefinition(ds, transfer);
+
+    // create the properties for DESTROY action and add it to the disposition action definition
+    Map<QName, Serializable> destroy = new HashMap<>(3);
+    destroy.put(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME);
+    destroy.put(PROP_DISPOSITION_DESCRIPTION, generate());
+    destroy.put(PROP_DISPOSITION_PERIOD, PERIOD_ONE_WEEK);
+    dispositionService.addDispositionActionDefinition(ds, destroy);
+  }
 }

@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.patch.v20;
 
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
@@ -47,110 +46,118 @@ import org.springframework.beans.factory.BeanNameAware;
  * @since 2.0
  */
 @SuppressWarnings("deprecation")
-public class RMv2ModelPatch extends ModulePatchComponent
-                            implements BeanNameAware, RecordsManagementModel, DOD5015Model
-{
-    private static final long BATCH_SIZE = 100000L;
+public class RMv2ModelPatch
+  extends ModulePatchComponent
+  implements BeanNameAware, RecordsManagementModel, DOD5015Model {
 
-    private PatchDAO patchDAO;
-    private NodeDAO nodeDAO;
-    private QNameDAO qnameDAO;
+  private static final long BATCH_SIZE = 100000L;
 
-    public void setPatchDAO(PatchDAO patchDAO)
-    {
-        this.patchDAO = patchDAO;
-    }
+  private PatchDAO patchDAO;
+  private NodeDAO nodeDAO;
+  private QNameDAO qnameDAO;
 
-    public void setNodeDAO(NodeDAO nodeDAO)
-    {
-        this.nodeDAO = nodeDAO;
-    }
+  public void setPatchDAO(PatchDAO patchDAO) {
+    this.patchDAO = patchDAO;
+  }
 
-    public void setQnameDAO(QNameDAO qnameDAO)
-    {
-        this.qnameDAO = qnameDAO;
+  public void setNodeDAO(NodeDAO nodeDAO) {
+    this.nodeDAO = nodeDAO;
+  }
+
+  public void setQnameDAO(QNameDAO qnameDAO) {
+    this.qnameDAO = qnameDAO;
+  }
+
+  /**
+   * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
+   */
+  @Override
+  protected void executePatch() {
+    updateQName(QName.createQName(DOD_URI, "filePlan"), TYPE_FILE_PLAN, "TYPE");
+    updateQName(
+      QName.createQName(DOD_URI, "recordCategory"),
+      TYPE_RECORD_CATEGORY,
+      "TYPE"
+    );
+    updateQName(
+      QName.createQName(DOD_URI, "ghosted"),
+      ASPECT_GHOSTED,
+      "ASPECT"
+    );
+  }
+
+  private void updateQName(
+    QName qnameBefore,
+    QName qnameAfter,
+    String reindexClass
+  ) {
+    Work work = new Work(qnameBefore, qnameAfter, reindexClass);
+    retryingTransactionHelper.doInTransaction(work, false, true);
+  }
+
+  private class Work
+    implements RetryingTransactionHelper.RetryingTransactionCallback<Integer> {
+
+    private QName qnameBefore;
+    private QName qnameAfter;
+    private String reindexClass;
+
+    /**
+     * Constructor
+     *
+     * @param qnameBefore   qname before
+     * @param qnameAfter    qname after
+     * @param reindexClass  reindex class
+     */
+    Work(QName qnameBefore, QName qnameAfter, String reindexClass) {
+      this.qnameBefore = qnameBefore;
+      this.qnameAfter = qnameAfter;
+      this.reindexClass = reindexClass;
     }
 
     /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
+     * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
      */
     @Override
-    protected void executePatch()
-    {
-        updateQName(QName.createQName(DOD_URI, "filePlan"), TYPE_FILE_PLAN, "TYPE");
-        updateQName(QName.createQName(DOD_URI, "recordCategory"), TYPE_RECORD_CATEGORY, "TYPE");
-        updateQName(QName.createQName(DOD_URI, "ghosted"), ASPECT_GHOSTED, "ASPECT");
-    }
+    public Integer execute() throws Throwable {
+      Long maxNodeId = patchDAO.getMaxAdmNodeID();
 
-    private void updateQName(QName qnameBefore, QName qnameAfter, String reindexClass)
-    {
-        Work work = new Work(qnameBefore, qnameAfter, reindexClass);
-        retryingTransactionHelper.doInTransaction(work, false, true);
-    }
+      Pair<Long, QName> before = qnameDAO.getQName(qnameBefore);
 
-    private class Work implements RetryingTransactionHelper.RetryingTransactionCallback<Integer>
-    {
-        private QName qnameBefore;
-        private QName qnameAfter;
-        private String reindexClass;
-
-        /**
-         * Constructor
-         *
-         * @param qnameBefore   qname before
-         * @param qnameAfter    qname after
-         * @param reindexClass  reindex class
-         */
-        Work(QName qnameBefore, QName qnameAfter, String reindexClass)
-        {
-            this.qnameBefore = qnameBefore;
-            this.qnameAfter  = qnameAfter;
-            this.reindexClass = reindexClass;
+      if (before != null) {
+        for (Long i = 0L; i < maxNodeId; i += BATCH_SIZE) {
+          if ("TYPE".equals(reindexClass)) {
+            List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(
+              before.getFirst(),
+              i,
+              i + BATCH_SIZE
+            );
+            nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+          } else if ("ASPECT".equals(reindexClass)) {
+            List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(
+              before.getFirst(),
+              i,
+              i + BATCH_SIZE
+            );
+            nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
+          }
         }
 
-        /**
-         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
-         */
-        @Override
-        public Integer execute() throws Throwable
-        {
-            Long maxNodeId = patchDAO.getMaxAdmNodeID();
+        qnameDAO.updateQName(qnameBefore, qnameAfter);
 
-            Pair<Long, QName> before = qnameDAO.getQName(qnameBefore);
-
-            if (before != null)
-            {
-            	for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
-            	{
-            		if ("TYPE".equals(reindexClass))
-            		{
-            			List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(before.getFirst(), i, i + BATCH_SIZE);
-            			nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
-            		}
-            		else if ("ASPECT".equals(reindexClass))
-            		{
-            			List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(before.getFirst(), i, i + BATCH_SIZE);
-            			nodeDAO.touchNodes(nodeDAO.getCurrentTransactionId(true), nodeIds);
-            		}
-            	}
-
-            	qnameDAO.updateQName(qnameBefore, qnameAfter);
-
-            	if (LOGGER.isDebugEnabled())
-            	{
-            		LOGGER.debug(" ... updated qname " + qnameBefore.toString());
-            	}
-        	}
-            else
-            {
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug(" ... no need to update qname " + qnameBefore.toString());
-                }
-            }
-
-        	//nothing to do
-        	return 0;
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug(" ... updated qname " + qnameBefore.toString());
         }
+      } else {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug(
+            " ... no need to update qname " + qnameBefore.toString()
+          );
+        }
+      }
+
+      //nothing to do
+      return 0;
     }
+  }
 }

@@ -27,13 +27,10 @@
 package org.alfresco.module.org_alfresco_module_rm.security;
 
 import static java.util.Collections.emptyMap;
-
 import static org.junit.Assert.assertEquals;
 
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
-
+import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.junit.Test;
 
@@ -42,50 +39,72 @@ import org.junit.Test;
  *
  * See RM-7119.
  */
-public class RMMethodSecurityPostProcessorUnitTest
-{
-    /** The class under test. */
-    private RMMethodSecurityPostProcessor rmMethodSecurityPostProcessor = new RMMethodSecurityPostProcessor();
+public class RMMethodSecurityPostProcessorUnitTest {
 
-    @Test
-    public void testConvertToMap_emptyString()
-    {
-        Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap("");
-        assertEquals("Unexpectedly included empty string in output.", emptyMap(), actual);
-    }
+  /** The class under test. */
+  private RMMethodSecurityPostProcessor rmMethodSecurityPostProcessor = new RMMethodSecurityPostProcessor();
 
-    @Test
-    public void testConvertToMap_normalPairs()
-    {
-        Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap("a=b\nc=d");
-        assertEquals("Failed to handle multiline input string.", ImmutableMap.of("a", "b", "c", "d"), actual);
-    }
+  @Test
+  public void testConvertToMap_emptyString() {
+    Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap("");
+    assertEquals(
+      "Unexpectedly included empty string in output.",
+      emptyMap(),
+      actual
+    );
+  }
 
-    @Test
-    public void testConvertToMap_stripWhitespace()
-    {
-        Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap(" \n \t a=b \n \t ");
-        assertEquals("Failed to strip whitespace.", ImmutableMap.of("a", "b"), actual);
-    }
+  @Test
+  public void testConvertToMap_normalPairs() {
+    Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap(
+      "a=b\nc=d"
+    );
+    assertEquals(
+      "Failed to handle multiline input string.",
+      ImmutableMap.of("a", "b", "c", "d"),
+      actual
+    );
+  }
 
-    @Test
-    public void testConvertToMap_ignoreBlankLine()
-    {
-        Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap("a=b\n\nc=d");
-        assertEquals("Failed to ignore blank line.", ImmutableMap.of("a", "b", "c", "d"), actual);
-    }
+  @Test
+  public void testConvertToMap_stripWhitespace() {
+    Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap(
+      " \n \t a=b \n \t "
+    );
+    assertEquals(
+      "Failed to strip whitespace.",
+      ImmutableMap.of("a", "b"),
+      actual
+    );
+  }
 
-    @Test
-    public void testConvertToMap_multipleEquals()
-    {
-        Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap("a=b=c\nd=e=f");
-        assertEquals("Issue with handling of = symbol in value.", ImmutableMap.of("a", "b=c", "d", "e=f"), actual);
-    }
+  @Test
+  public void testConvertToMap_ignoreBlankLine() {
+    Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap(
+      "a=b\n\nc=d"
+    );
+    assertEquals(
+      "Failed to ignore blank line.",
+      ImmutableMap.of("a", "b", "c", "d"),
+      actual
+    );
+  }
 
-    /** Check that if a line is missing an equals sign then we get an exception. */
-    @Test(expected = AlfrescoRuntimeException.class)
-    public void testConvertToMap_missingEquals()
-    {
-        rmMethodSecurityPostProcessor.convertToMap("a=b\ncd");
-    }
+  @Test
+  public void testConvertToMap_multipleEquals() {
+    Map<String, String> actual = rmMethodSecurityPostProcessor.convertToMap(
+      "a=b=c\nd=e=f"
+    );
+    assertEquals(
+      "Issue with handling of = symbol in value.",
+      ImmutableMap.of("a", "b=c", "d", "e=f"),
+      actual
+    );
+  }
+
+  /** Check that if a line is missing an equals sign then we get an exception. */
+  @Test(expected = AlfrescoRuntimeException.class)
+  public void testConvertToMap_missingEquals() {
+    rmMethodSecurityPostProcessor.convertToMap("a=b\ncd");
+  }
 }

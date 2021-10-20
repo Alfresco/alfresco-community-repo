@@ -36,7 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
@@ -52,176 +51,176 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RelationshipLabelsGet extends AbstractRmWebScript
-{
-    /** Constants */
-    private static final String RELATIONSHIP_LABELS = "relationshipLabels";
+public class RelationshipLabelsGet extends AbstractRmWebScript {
 
-    /** Relationship service */
-    private RelationshipService relationshipService;
+  /** Constants */
+  private static final String RELATIONSHIP_LABELS = "relationshipLabels";
+
+  /** Relationship service */
+  private RelationshipService relationshipService;
+
+  /**
+   * Gets the relationship service
+   *
+   * @return The relationship service
+   */
+  protected RelationshipService getRelationshipService() {
+    return this.relationshipService;
+  }
+
+  /**
+   * Sets the relationship service
+   *
+   * @param relationshipService The relationship service
+   */
+  public void setRelationshipService(RelationshipService relationshipService) {
+    this.relationshipService = relationshipService;
+  }
+
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+   *      org.springframework.extensions.webscripts.Status,
+   *      org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, Object> model = new HashMap<>(1);
+    model.put(RELATIONSHIP_LABELS, getRelationshipsLabels());
+    return model;
+  }
+
+  /**
+   * Gets the list of available relationship labels
+   *
+   * @return The list of available relationship labels
+   */
+  private List<RelationshipLabel> getRelationshipsLabels() {
+    List<RelationshipLabel> relationshipLabels = new ArrayList<>();
+
+    Set<RelationshipDefinition> relationshipDefinitions = getRelationshipService()
+      .getRelationshipDefinitions();
+    for (RelationshipDefinition relationshipDefinition : relationshipDefinitions) {
+      RelationshipType type = relationshipDefinition.getType();
+      String uniqueName = relationshipDefinition.getUniqueName();
+      RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
+      String sourceText = displayName.getSourceText();
+      String targetText = displayName.getTargetText();
+
+      if (RelationshipType.PARENTCHILD.equals(type)) {
+        relationshipLabels.add(
+          new RelationshipLabel(sourceText, uniqueName + INVERT)
+        );
+        relationshipLabels.add(new RelationshipLabel(targetText, uniqueName));
+      } else if (RelationshipType.BIDIRECTIONAL.equals(type)) {
+        if (!sourceText.equals(targetText)) {
+          throw new WebScriptException(
+            Status.STATUS_BAD_REQUEST,
+            "The source '" +
+            sourceText +
+            "' and target text '" +
+            targetText +
+            "' must be the same for a bidirectional relationship."
+          );
+        }
+        relationshipLabels.add(new RelationshipLabel(sourceText, uniqueName));
+      } else {
+        throw new WebScriptException(
+          Status.STATUS_BAD_REQUEST,
+          "Unknown relationship type '" + type + "'."
+        );
+      }
+    }
+
+    return sortRelationshipLabelsByName(relationshipLabels);
+  }
+
+  /**
+   * Helper method to sort the relationship labels by their names
+   *
+   * @param relationshipLabels Relationship labels to sort
+   * @return Sorted list of relationship labels
+   */
+  private List<RelationshipLabel> sortRelationshipLabelsByName(
+    List<RelationshipLabel> relationshipLabels
+  ) {
+    Collections.sort(
+      relationshipLabels,
+      new Comparator<RelationshipLabel>() {
+        @Override
+        public int compare(RelationshipLabel r1, RelationshipLabel r2) {
+          return r1
+            .getLabel()
+            .toLowerCase()
+            .compareTo(r2.getLabel().toLowerCase());
+        }
+      }
+    );
+    return relationshipLabels;
+  }
+
+  /**
+   * Relationship label helper class
+   */
+  public class RelationshipLabel {
+
+    /** Label of the relationship */
+    private String label;
+
+    /** Unique name of the relationship */
+    private String uniqueName;
 
     /**
-     * Gets the relationship service
+     * Constructor
      *
-     * @return The relationship service
+     * @param label Label of the relationship
+     * @param uniqueName Unique name of the relationship
      */
-    protected RelationshipService getRelationshipService()
-    {
-        return this.relationshipService;
+    public RelationshipLabel(String label, String uniqueName) {
+      mandatoryString("label", label);
+      mandatoryString("uniqueName", uniqueName);
+
+      setLabel(label);
+      setUniqueName(uniqueName);
     }
 
     /**
-     * Sets the relationship service
+     * Gets the label of the relationship
      *
-     * @param relationshipService The relationship service
+     * @return The label of the relationship
      */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
-        this.relationshipService = relationshipService;
+    public String getLabel() {
+      return this.label;
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<>(1);
-        model.put(RELATIONSHIP_LABELS, getRelationshipsLabels());
-        return model;
-    }
-
-    /**
-     * Gets the list of available relationship labels
+     * Sets the label of the relationship
      *
-     * @return The list of available relationship labels
+     * @param label The label of the relationship
      */
-    private List<RelationshipLabel> getRelationshipsLabels()
-    {
-        List<RelationshipLabel> relationshipLabels = new ArrayList<>();
-
-        Set<RelationshipDefinition> relationshipDefinitions = getRelationshipService().getRelationshipDefinitions();
-        for (RelationshipDefinition relationshipDefinition : relationshipDefinitions)
-        {
-            RelationshipType type = relationshipDefinition.getType();
-            String uniqueName = relationshipDefinition.getUniqueName();
-            RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
-            String sourceText = displayName.getSourceText();
-            String targetText = displayName.getTargetText();
-
-            if (RelationshipType.PARENTCHILD.equals(type))
-            {
-                relationshipLabels.add(new RelationshipLabel(sourceText, uniqueName + INVERT));
-                relationshipLabels.add(new RelationshipLabel(targetText, uniqueName));
-            }
-            else if (RelationshipType.BIDIRECTIONAL.equals(type))
-            {
-                if (!sourceText.equals(targetText))
-                {
-                    throw new WebScriptException(
-                            Status.STATUS_BAD_REQUEST,
-                            "The source '"
-                                    + sourceText
-                                    + "' and target text '"
-                                    + targetText
-                                    + "' must be the same for a bidirectional relationship.");
-                }
-                relationshipLabels.add(new RelationshipLabel(sourceText, uniqueName));
-            }
-            else
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unknown relationship type '" + type + "'.");
-            }
-        }
-
-        return sortRelationshipLabelsByName(relationshipLabels);
+    private void setLabel(String label) {
+      this.label = label;
     }
 
     /**
-     * Helper method to sort the relationship labels by their names
+     * Gets the unique name of the relationship
      *
-     * @param relationshipLabels Relationship labels to sort
-     * @return Sorted list of relationship labels
+     * @return The unique name of the relationship
      */
-    private List<RelationshipLabel> sortRelationshipLabelsByName(List<RelationshipLabel> relationshipLabels)
-    {
-        Collections.sort(relationshipLabels, new Comparator<RelationshipLabel>()
-        {
-            @Override
-            public int compare(RelationshipLabel r1, RelationshipLabel r2)
-            {
-                return r1.getLabel().toLowerCase().compareTo(r2.getLabel().toLowerCase());
-            }
-        });
-        return relationshipLabels;
+    public String getUniqueName() {
+      return this.uniqueName;
     }
 
     /**
-     * Relationship label helper class
+     * Sets the unique name of the relationship
+     *
+     * @param uniqueName The unique name of the relationship
      */
-    public class RelationshipLabel
-    {
-        /** Label of the relationship */
-        private String label;
-
-        /** Unique name of the relationship */
-        private String uniqueName;
-
-        /**
-         * Constructor
-         *
-         * @param label Label of the relationship
-         * @param uniqueName Unique name of the relationship
-         */
-        public RelationshipLabel(String label, String uniqueName)
-        {
-            mandatoryString("label", label);
-            mandatoryString("uniqueName", uniqueName);
-
-            setLabel(label);
-            setUniqueName(uniqueName);
-        }
-
-        /**
-         * Gets the label of the relationship
-         *
-         * @return The label of the relationship
-         */
-        public String getLabel()
-        {
-            return this.label;
-        }
-
-        /**
-         * Sets the label of the relationship
-         *
-         * @param label The label of the relationship
-         */
-        private void setLabel(String label)
-        {
-            this.label = label;
-        }
-
-        /**
-         * Gets the unique name of the relationship
-         *
-         * @return The unique name of the relationship
-         */
-        public String getUniqueName()
-        {
-            return this.uniqueName;
-        }
-
-        /**
-         * Sets the unique name of the relationship
-         *
-         * @param uniqueName The unique name of the relationship
-         */
-        private void setUniqueName(String uniqueName)
-        {
-            this.uniqueName = uniqueName;
-        }
+    private void setUniqueName(String uniqueName) {
+      this.uniqueName = uniqueName;
     }
+  }
 }

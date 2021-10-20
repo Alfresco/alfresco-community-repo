@@ -34,7 +34,4 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public class ProtectedAspect extends ProtectedModelArtifact
-{
-
-}
+public class ProtectedAspect extends ProtectedModelArtifact {}

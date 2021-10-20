@@ -29,7 +29,6 @@ package org.alfresco.rm.rest.api.model;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.service.cmr.site.SiteInfo;
 
@@ -39,61 +38,67 @@ import org.alfresco.service.cmr.site.SiteInfo;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class RMSite extends Site
-{
-    public static final String COMPLIANCE = "compliance";
-    private RMSiteCompliance compliance;
-    private Map<String, Boolean> setRMFields = new HashMap<>(7);
+public class RMSite extends Site {
 
-    public RMSiteCompliance getCompliance()
-    {
-        return compliance;
-    }
+  public static final String COMPLIANCE = "compliance";
+  private RMSiteCompliance compliance;
+  private Map<String, Boolean> setRMFields = new HashMap<>(7);
 
-    public void setCompliance(RMSiteCompliance compliance)
-    {
-        this.compliance = compliance;
-        setRMFields.put(COMPLIANCE, true);
-    }
+  public RMSiteCompliance getCompliance() {
+    return compliance;
+  }
 
-    @Override
-    public boolean wasSet(String fieldName)
-    {
-        if(COMPLIANCE.equalsIgnoreCase(fieldName))
-        {
-            Boolean b = setRMFields.get(fieldName);
-            return (b != null ? b : false);
-        }
-        return super.wasSet(fieldName);
-    }
+  public void setCompliance(RMSiteCompliance compliance) {
+    this.compliance = compliance;
+    setRMFields.put(COMPLIANCE, true);
+  }
 
-    public RMSite()
-    {
-        super();
+  @Override
+  public boolean wasSet(String fieldName) {
+    if (COMPLIANCE.equalsIgnoreCase(fieldName)) {
+      Boolean b = setRMFields.get(fieldName);
+      return (b != null ? b : false);
     }
+    return super.wasSet(fieldName);
+  }
 
-    public RMSite(Site site, RMSiteCompliance compliance)
-    {
-        setId(site.getId());
-        setGuid(site.getGuid());
-        setTitle(site.getTitle());
-        setDescription(site.getDescription());
-        setVisibility(site.getVisibility());
-        setRole(site.getRole());
-        setCompliance(compliance);
-    }
+  public RMSite() {
+    super();
+  }
 
-    public RMSite(SiteInfo siteInfo, String role, RMSiteCompliance compliance)
-    {
-        super(siteInfo, role);
-        setCompliance(compliance);
-    }
+  public RMSite(Site site, RMSiteCompliance compliance) {
+    setId(site.getId());
+    setGuid(site.getGuid());
+    setTitle(site.getTitle());
+    setDescription(site.getDescription());
+    setVisibility(site.getVisibility());
+    setRole(site.getRole());
+    setCompliance(compliance);
+  }
 
-    @Override
-    public String toString()
-    {
-        return "RMSite [id=" + id + ", guid=" + guid + ", title="
-                + title + ", description=" + description + ", visibility="
-                + visibility + ", role=" + role + ", compliance="+ compliance +"]";
-    }
+  public RMSite(SiteInfo siteInfo, String role, RMSiteCompliance compliance) {
+    super(siteInfo, role);
+    setCompliance(compliance);
+  }
+
+  @Override
+  public String toString() {
+    return (
+      "RMSite [id=" +
+      id +
+      ", guid=" +
+      guid +
+      ", title=" +
+      title +
+      ", description=" +
+      description +
+      ", visibility=" +
+      visibility +
+      ", role=" +
+      role +
+      ", compliance=" +
+      compliance +
+      "]"
+    );
+  }
 }

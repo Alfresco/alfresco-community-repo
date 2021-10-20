@@ -26,18 +26,16 @@
  */
 package org.alfresco.rest.rm.community.requests.gscore.api;
 
+import static io.restassured.RestAssured.basic;
+import static io.restassured.RestAssured.given;
 import static org.jglue.fluentjson.JsonBuilderFactory.buildObject;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.google.gson.JsonObject;
-
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-import static io.restassured.RestAssured.basic;
-import static io.restassured.RestAssured.given;
-
 import org.alfresco.dataprep.AlfrescoHttpClient;
 import org.alfresco.dataprep.AlfrescoHttpClientFactory;
 import org.alfresco.rest.core.RMRestProperties;
@@ -56,13 +54,12 @@ import org.alfresco.utility.model.UserModel;
 // FIXME: As of December 2016 there is no v1-style API for managing RM users and users'
 // roles/permissions. Until such APIs have become available, methods in this class are just proxies to
 // "old-style" API calls.
-public class RMUserAPI extends RMModelRequest
-{
+public class RMUserAPI extends RMModelRequest {
+
     /**
      * @param rmRestWrapper RM REST Wrapper
      */
-    public RMUserAPI(RMRestWrapper rmRestWrapper)
-    {
+    public RMUserAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
@@ -70,8 +67,7 @@ public class RMUserAPI extends RMModelRequest
      * Helper method to obtain {@link AlfrescoHttpClient}
      * @return Initialized {@link AlfrescoHttpClient} instance
      */
-    private AlfrescoHttpClient getAlfrescoHttpClient()
-    {
+    private AlfrescoHttpClient getAlfrescoHttpClient() {
         RMRestProperties properties = getRmRestWrapper().getRmRestProperties();
 
         AlfrescoHttpClientFactory factory = new AlfrescoHttpClientFactory();
@@ -89,8 +85,7 @@ public class RMUserAPI extends RMModelRequest
      * @param userRole User's RM role, one of {@link UserRoles} roles
      * @throws RuntimeException for failed requests
      */
-    public void assignRoleToUser(String userName, String userRole)
-    {
+    public void assignRoleToUser(String userName, String userRole) {
         UserModel adminUser = getRmRestWrapper().getTestUser();
 
         // get an "old-style" REST API client
@@ -98,22 +93,29 @@ public class RMUserAPI extends RMModelRequest
 
         // override v1 baseURI and basePath
         RequestSpecification spec = new RequestSpecBuilder()
-                .setBaseUri(client.getApiUrl())
-                .setBasePath("/")
-                .build();
+            .setBaseUri(client.getApiUrl())
+            .setBasePath("/")
+            .build();
 
         Response response = given()
-                .spec(spec)
-                .log().all()
-                .pathParam("role", userRole)
-                .pathParam("authority", userName)
-                .param("alf_ticket", client.getAlfTicket(adminUser.getUsername(),
-                        adminUser.getPassword()))
-                .when()
-                .post("/rm/roles/{role}/authorities/{authority}")
-                .prettyPeek()
-                .andReturn();
-        getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+            .spec(spec)
+            .log()
+            .all()
+            .pathParam("role", userRole)
+            .pathParam("authority", userName)
+            .param(
+                "alf_ticket",
+                client.getAlfTicket(
+                    adminUser.getUsername(),
+                    adminUser.getPassword()
+                )
+            )
+            .when()
+            .post("/rm/roles/{role}/authorities/{authority}")
+            .prettyPeek()
+            .andReturn();
+        getRmRestWrapper()
+            .setStatusCode(Integer.toString(response.getStatusCode()));
     }
 
     /**
@@ -122,40 +124,46 @@ public class RMUserAPI extends RMModelRequest
      * @param user {@link UserModel} for a user to be granted permission
      * @param permission {@link UserPermissions} to be granted
      */
-    public void addUserPermission(String filePlanComponentId, UserModel user, UserPermissions permission)
-    {
+    public void addUserPermission(
+        String filePlanComponentId,
+        UserModel user,
+        UserPermissions permission
+    ) {
         UserModel adminUser = getRmRestWrapper().getTestUser();
 
         // get an "old-style" REST API client
         AlfrescoHttpClient client = getAlfrescoHttpClient();
 
         JsonObject bodyJson = buildObject()
-                .addArray("permissions")
-                .addObject()
-                .add("authority", user.getUsername())
-                .add("role", permission.permissionId)
-                .end()
-                .getJson();
+            .addArray("permissions")
+            .addObject()
+            .add("authority", user.getUsername())
+            .add("role", permission.permissionId)
+            .end()
+            .getJson();
 
         // override v1 baseURI and basePath
         RequestSpecification spec = new RequestSpecBuilder()
-                .setBaseUri(client.getApiUrl())
-                .setBasePath("/")
-                .build();
+            .setBaseUri(client.getApiUrl())
+            .setBasePath("/")
+            .build();
 
         // execute an "old-style" API call
         Response response = given()
-                .spec(spec)
-                .auth().basic(adminUser.getUsername(), adminUser.getPassword())
-                .contentType(ContentType.JSON)
-                .body(bodyJson.toString())
-                .pathParam("nodeId", filePlanComponentId)
-                .log().all()
-                .when()
-                .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
-                .prettyPeek()
-                .andReturn();
-        getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+            .spec(spec)
+            .auth()
+            .basic(adminUser.getUsername(), adminUser.getPassword())
+            .contentType(ContentType.JSON)
+            .body(bodyJson.toString())
+            .pathParam("nodeId", filePlanComponentId)
+            .log()
+            .all()
+            .when()
+            .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
+            .prettyPeek()
+            .andReturn();
+        getRmRestWrapper()
+            .setStatusCode(Integer.toString(response.getStatusCode()));
     }
 
     /**
@@ -165,40 +173,44 @@ public class RMUserAPI extends RMModelRequest
      * @param isInherited          true if the permission is inherited
      *                             false if the permission inheritance is disabled
      */
-    public void setUserPermissionInheritance(String filePlanComponentId, Boolean isInherited)
-    {
+    public void setUserPermissionInheritance(
+        String filePlanComponentId,
+        Boolean isInherited
+    ) {
         final UserModel adminUser = getRmRestWrapper().getTestUser();
 
         // get an "old-style" REST API client
         final AlfrescoHttpClient client = getAlfrescoHttpClient();
 
         final JsonObject bodyJson = buildObject()
-                .addArray("permissions")
-                .end()
-                .add("isInherited", isInherited)
-                .getJson();
+            .addArray("permissions")
+            .end()
+            .add("isInherited", isInherited)
+            .getJson();
 
         // override v1 baseURI and basePath
         RequestSpecification spec = new RequestSpecBuilder()
-                .setBaseUri(client.getApiUrl())
-                .setBasePath("/")
-                .build();
+            .setBaseUri(client.getApiUrl())
+            .setBasePath("/")
+            .build();
 
         // execute an "old-style" API call
         final Response response = given()
-                .spec(spec)
-                .auth().basic(adminUser.getUsername(), adminUser.getPassword())
-                .contentType(ContentType.JSON)
-                .body(bodyJson.toString())
-                .pathParam("nodeId", filePlanComponentId)
-                .log().all()
-                .when()
-                .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
-                .prettyPeek()
-                .andReturn();
-        getRmRestWrapper().setStatusCode(Integer.toString(response.getStatusCode()));
+            .spec(spec)
+            .auth()
+            .basic(adminUser.getUsername(), adminUser.getPassword())
+            .contentType(ContentType.JSON)
+            .body(bodyJson.toString())
+            .pathParam("nodeId", filePlanComponentId)
+            .log()
+            .all()
+            .when()
+            .post("/node/workspace/SpacesStore/{nodeId}/rmpermissions")
+            .prettyPeek()
+            .andReturn();
+        getRmRestWrapper()
+            .setStatusCode(Integer.toString(response.getStatusCode()));
     }
-
 
     /**
      * Creates a user with the given name using the old APIs
@@ -208,8 +220,11 @@ public class RMUserAPI extends RMModelRequest
      * @param userEmail The user's e-mail address
      * @return <code>true</code> if the user was created successfully, <code>false</code> otherwise.
      */
-    public boolean createUser(String userName, String userPassword, String userEmail)
-    {
+    public boolean createUser(
+        String userName,
+        String userPassword,
+        String userEmail
+    ) {
         UserModel adminUser = getRmRestWrapper().getTestUser();
         final AlfrescoHttpClient client = getAlfrescoHttpClient();
 
@@ -232,8 +247,9 @@ public class RMUserAPI extends RMModelRequest
         // create POST request to "people" endpoint
         Response response = given()
             .spec(spec)
-            .log().all()
-        .when()
+            .log()
+            .all()
+            .when()
             .post("people")
             .prettyPeek()
             .andReturn();

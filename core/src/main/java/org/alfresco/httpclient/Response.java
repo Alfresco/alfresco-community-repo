@@ -22,21 +22,20 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * 
+ *
  * @since 4.0
  *
  */
-public interface Response
-{
-    public InputStream getContentAsStream() throws IOException;
-    
-    public String getHeader(String name);
-    
-    public String getContentType();
-    
-    public int getStatus();
-    
-//    public Long getRequestDuration();
-    
-    public void release();
+public interface Response {
+  public InputStream getContentAsStream() throws IOException;
+
+  public String getHeader(String name);
+
+  public String getContentType();
+
+  public int getStatus();
+
+  //    public Long getRequestDuration();
+
+  public void release();
 }

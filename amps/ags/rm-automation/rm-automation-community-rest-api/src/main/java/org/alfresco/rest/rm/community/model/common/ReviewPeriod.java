@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.model.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -43,11 +42,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewPeriod
-{
-    @JsonProperty (required = true)
+public class ReviewPeriod {
+
+    @JsonProperty(required = true)
     private String periodType;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String expression;
 }

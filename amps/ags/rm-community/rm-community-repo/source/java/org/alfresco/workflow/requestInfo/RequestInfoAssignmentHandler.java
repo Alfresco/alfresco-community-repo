@@ -30,7 +30,6 @@ package org.alfresco.workflow.requestInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.delegate.TaskListener;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -49,92 +48,98 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Tuna Aksoy
  * @since 2.1
  */
-public class RequestInfoAssignmentHandler implements TaskListener
-{
-    private static final long serialVersionUID = -3179929030094957978L;
+public class RequestInfoAssignmentHandler implements TaskListener {
 
-    /**
-     * @see org.activiti.engine.delegate.TaskListener#notify(org.activiti.engine.delegate.DelegateTask)
-     */
-    @Override
-    public void notify(DelegateTask delegateTask)
-    {
-        ParameterCheck.mandatory("delegateTask", delegateTask);
+  private static final long serialVersionUID = -3179929030094957978L;
 
-        // Set the workflow description for the task
-        delegateTask.setVariable("bpm_workflowDescription", getWorkflowDescription(RequestInfoUtils.getRecordName(delegateTask)));
+  /**
+   * @see org.activiti.engine.delegate.TaskListener#notify(org.activiti.engine.delegate.DelegateTask)
+   */
+  @Override
+  public void notify(DelegateTask delegateTask) {
+    ParameterCheck.mandatory("delegateTask", delegateTask);
 
-        // Get the list of user(s) and/or group(s)
-        ActivitiScriptNodeList usersAndGroups = (ActivitiScriptNodeList) delegateTask.getVariable("rmwf_mixedAssignees");
+    // Set the workflow description for the task
+    delegateTask.setVariable(
+      "bpm_workflowDescription",
+      getWorkflowDescription(RequestInfoUtils.getRecordName(delegateTask))
+    );
 
-        // Check if it was possible to extract the user(s) and/or group(s)
-        if (usersAndGroups == null)
-        {
-            throw new AlfrescoRuntimeException("It was not possible to extract the user(s) and/or group(s)!!!");
-        }
+    // Get the list of user(s) and/or group(s)
+    ActivitiScriptNodeList usersAndGroups = (ActivitiScriptNodeList) delegateTask.getVariable(
+      "rmwf_mixedAssignees"
+    );
 
-        // Define lists for candidate user(s)/group(s)
-        List<String> candidateUsers = new ArrayList<>();
-        List<String> candidateGroups = new ArrayList<>();
-
-        // Iterate through the list add user(s)/group(s) to the lists
-        for (ActivitiScriptNode activitiScriptNode : usersAndGroups)
-        {
-            // Get the node type
-            String type = activitiScriptNode.getType();
-            // Get the properties
-            Map<String, Object> properties = activitiScriptNode.getProperties();
-
-            // Check if it is a user or a group
-            if (type.equalsIgnoreCase(ContentModel.TYPE_PERSON.toString()))
-            {
-                // Add the user
-                candidateUsers.add((String) properties.get(ContentModel.PROP_USERNAME.toString()));
-            }
-            else if (type.equalsIgnoreCase(ContentModel.TYPE_AUTHORITY_CONTAINER.toString()))
-            {
-                // Add the group
-                candidateGroups.add((String) properties.get(ContentModel.PROP_AUTHORITY_NAME.toString()));
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("The type '" + type + "' is neither a user nor a group!!!");
-            }
-        }
-
-        // Check if there is at least one user or one group
-        if (candidateUsers.size() == 0 && candidateGroups.size() == 0)
-        {
-            throw new AlfrescoRuntimeException("Neither a user nor a group was found!!!");
-        }
-
-        // Add the user(s) to the task
-        if (candidateUsers.size() > 0)
-        {
-            delegateTask.addCandidateUsers(candidateUsers);
-        }
-
-        // Add the group(s) to the task
-        if (candidateGroups.size() > 0)
-        {
-            delegateTask.addCandidateGroups(candidateGroups);
-        }
+    // Check if it was possible to extract the user(s) and/or group(s)
+    if (usersAndGroups == null) {
+      throw new AlfrescoRuntimeException(
+        "It was not possible to extract the user(s) and/or group(s)!!!"
+      );
     }
 
-    /**
-     * Helper method for building the workflow description
-     *
-     * @param recordName The name of the record
-     * @return Returns the workflow description
-     */
-    private String getWorkflowDescription(String recordName)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.info.requested"));
-        sb.append(" '");
-        sb.append(recordName);
-        sb.append("'");
-        return  sb.toString();
+    // Define lists for candidate user(s)/group(s)
+    List<String> candidateUsers = new ArrayList<>();
+    List<String> candidateGroups = new ArrayList<>();
+
+    // Iterate through the list add user(s)/group(s) to the lists
+    for (ActivitiScriptNode activitiScriptNode : usersAndGroups) {
+      // Get the node type
+      String type = activitiScriptNode.getType();
+      // Get the properties
+      Map<String, Object> properties = activitiScriptNode.getProperties();
+
+      // Check if it is a user or a group
+      if (type.equalsIgnoreCase(ContentModel.TYPE_PERSON.toString())) {
+        // Add the user
+        candidateUsers.add(
+          (String) properties.get(ContentModel.PROP_USERNAME.toString())
+        );
+      } else if (
+        type.equalsIgnoreCase(ContentModel.TYPE_AUTHORITY_CONTAINER.toString())
+      ) {
+        // Add the group
+        candidateGroups.add(
+          (String) properties.get(ContentModel.PROP_AUTHORITY_NAME.toString())
+        );
+      } else {
+        throw new AlfrescoRuntimeException(
+          "The type '" + type + "' is neither a user nor a group!!!"
+        );
+      }
     }
 
+    // Check if there is at least one user or one group
+    if (candidateUsers.size() == 0 && candidateGroups.size() == 0) {
+      throw new AlfrescoRuntimeException(
+        "Neither a user nor a group was found!!!"
+      );
+    }
+
+    // Add the user(s) to the task
+    if (candidateUsers.size() > 0) {
+      delegateTask.addCandidateUsers(candidateUsers);
+    }
+
+    // Add the group(s) to the task
+    if (candidateGroups.size() > 0) {
+      delegateTask.addCandidateGroups(candidateGroups);
+    }
+  }
+
+  /**
+   * Helper method for building the workflow description
+   *
+   * @param recordName The name of the record
+   * @return Returns the workflow description
+   */
+  private String getWorkflowDescription(String recordName) {
+    StringBuilder sb = new StringBuilder();
+    sb.append(
+      I18NUtil.getMessage("activitiReviewPooled.workflow.info.requested")
+    );
+    sb.append(" '");
+    sb.append(recordName);
+    sb.append("'");
+    return sb.toString();
+  }
 }

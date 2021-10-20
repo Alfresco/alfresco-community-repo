@@ -26,13 +26,12 @@
  */
 package org.alfresco.rest.core.v0;
 
-import javax.json.Json;
-import javax.json.JsonReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-
+import javax.json.Json;
+import javax.json.JsonReader;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -48,19 +47,20 @@ import org.slf4j.LoggerFactory;
  * @author Tom Page
  * @since 2.6
  */
-public class APIUtils
-{
+public class APIUtils {
+
     /** Logger for this class. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(APIUtils.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        APIUtils.class
+    );
     /** The ISO instant formatter that formats or parses an instant in UTC, such as '2011-12-03T10:15:305Z'
      * similar with {@link DateTimeFormatter#ISO_INSTANT}, but with only 3 nanoseconds*/
-    public static final DateTimeFormatter ISO_INSTANT_FORMATTER =
-            new DateTimeFormatterBuilder().appendInstant(3).toFormatter();
+    public static final DateTimeFormatter ISO_INSTANT_FORMATTER = new DateTimeFormatterBuilder()
+        .appendInstant(3)
+        .toFormatter();
 
     /** Private constructor for helper class. */
-    private APIUtils()
-    {
-    }
+    private APIUtils() {}
 
     /**
      * Extract the body of a HTTP response as a JSON object.
@@ -68,16 +68,21 @@ public class APIUtils
      * @param httpResponse The HTTP response.
      * @return A JSON representation of the object.
      */
-    public static JSONObject convertHTTPResponseToJSON(HttpResponse httpResponse)
-    {
+    public static JSONObject convertHTTPResponseToJSON(
+        HttpResponse httpResponse
+    ) {
         String source = null;
-        try
-        {
-            source = IOUtils.toString(httpResponse.getEntity().getContent(), "UTF-8");
-        }
-        catch (IOException e)
-        {
-            throw new IllegalArgumentException("Could not extract JSON from HTTP response.", e);
+        try {
+            source =
+                IOUtils.toString(
+                    httpResponse.getEntity().getContent(),
+                    "UTF-8"
+                );
+        } catch (IOException e) {
+            throw new IllegalArgumentException(
+                "Could not extract JSON from HTTP response.",
+                e
+            );
         }
         LOGGER.info("Response body:\n{}", source);
         return new JSONObject(source);
@@ -89,30 +94,25 @@ public class APIUtils
      * @param httpResponse http response
      * @return error message from the http response
      */
-    public static String extractErrorMessageFromHttpResponse(HttpResponse httpResponse)
-    {
+    public static String extractErrorMessageFromHttpResponse(
+        HttpResponse httpResponse
+    ) {
         final HttpEntity entity = httpResponse.getEntity();
         JsonReader reader = null;
-        try
-        {
+        try {
             final InputStream responseStream = entity.getContent();
             reader = Json.createReader(responseStream);
             return reader.readObject().getString("message");
-        }
-        catch (JSONException error)
-        {
-
-            LOGGER.error("Converting message body to JSON failed. Body: {}", httpResponse, error);
-        }
-        catch (ParseException | IOException error)
-        {
-
+        } catch (JSONException error) {
+            LOGGER.error(
+                "Converting message body to JSON failed. Body: {}",
+                httpResponse,
+                error
+            );
+        } catch (ParseException | IOException error) {
             LOGGER.error("Parsing message body failed.", error);
-        }
-        finally
-        {
-            if (reader != null)
-            {
+        } finally {
+            if (reader != null) {
                 reader.close();
             }
         }

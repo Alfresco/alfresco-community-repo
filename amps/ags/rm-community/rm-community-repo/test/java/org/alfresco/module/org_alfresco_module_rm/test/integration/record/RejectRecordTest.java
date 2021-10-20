@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -63,240 +62,286 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class RejectRecordTest extends BaseRMTestCase
-{
-    private VersionService versionService;
-    private CheckOutCheckInService checkOutCheckInService;
+public class RejectRecordTest extends BaseRMTestCase {
 
-    private static final String REASON = GUID.generate();
-    private static final String FINAL_VERSION = "rm.service.final-version";
+  private VersionService versionService;
+  private CheckOutCheckInService checkOutCheckInService;
 
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+  private static final String REASON = GUID.generate();
+  private static final String FINAL_VERSION = "rm.service.final-version";
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-        versionService = (VersionService) applicationContext.getBean("VersionService");
-        checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("CheckOutCheckInService");
-    }
+  @Override
+  protected void initServices() {
+    super.initServices();
 
-    /**
-     *
-     */
-    public void testRejectedRecordInCorrectState() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            public void given()
-            {
-                assertFalse(recordService.isRecord(dmDocument));
-                ownableService.setOwner(dmDocument, userName);
+    versionService =
+      (VersionService) applicationContext.getBean("VersionService");
+    checkOutCheckInService =
+      (CheckOutCheckInService) applicationContext.getBean(
+        "CheckOutCheckInService"
+      );
+  }
 
-                // document is declared as a record by user
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception
-                    {
-                        // declare record
-                        recordService.createRecord(filePlan, dmDocument);
-                        return null;
-                    }
-                 }, userName);
-            }
+  /**
+   *
+   */
+  public void testRejectedRecordInCorrectState() throws Exception {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        public void given() {
+          assertFalse(recordService.isRecord(dmDocument));
+          ownableService.setOwner(dmDocument, userName);
 
-            public void when()
-            {
-                // sanity checks
-                assertTrue(recordService.isRecord(dmDocument));
-                assertTrue(permissionService.getInheritParentPermissions(dmDocument));
+          // document is declared as a record by user
+          AuthenticationUtil.runAs(
+            new RunAsWork<Void>() {
+              public Void doWork() throws Exception {
+                // declare record
+                recordService.createRecord(filePlan, dmDocument);
+                return null;
+              }
+            },
+            userName
+          );
+        }
 
-                // reject record
-                recordService.rejectRecord(dmDocument, REASON);
-            }
+        public void when() {
+          // sanity checks
+          assertTrue(recordService.isRecord(dmDocument));
+          assertTrue(permissionService.getInheritParentPermissions(dmDocument));
 
-            public void then()
-            {
-                // document is no longer a record
-                assertFalse(recordService.isRecord(dmDocument));
+          // reject record
+          recordService.rejectRecord(dmDocument, REASON);
+        }
 
-                // expected owner has be re-set
-                assertEquals(userName, ownableService.getOwner(dmDocument));
-                assertTrue(permissionService.getInheritParentPermissions(dmDocument));
-                assertFalse(nodeService.hasAspect(dmDocument, ASPECT_FILE_PLAN_COMPONENT));
-            }
-        });
-    }
+        public void then() {
+          // document is no longer a record
+          assertFalse(recordService.isRecord(dmDocument));
 
-    /**
-     *
-     */
-    public void testRevertAfterReject() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef document;
+          // expected owner has be re-set
+          assertEquals(userName, ownableService.getOwner(dmDocument));
+          assertTrue(permissionService.getInheritParentPermissions(dmDocument));
+          assertFalse(
+            nodeService.hasAspect(dmDocument, ASPECT_FILE_PLAN_COMPONENT)
+          );
+        }
+      }
+    );
+  }
 
-            public void given()
-            {
-                NodeRef folder = fileFolderService.create(documentLibrary, GUID.generate(), TYPE_FOLDER).getNodeRef();
-                document = fileFolderService.create(folder, GUID.generate(), TYPE_CONTENT).getNodeRef();
+  /**
+   *
+   */
+  public void testRevertAfterReject() throws Exception {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef document;
 
-                assertFalse(recordService.isRecord(document));
-                ownableService.setOwner(document, userName);
-                versionService.ensureVersioningEnabled(document, null);
+        public void given() {
+          NodeRef folder = fileFolderService
+            .create(documentLibrary, GUID.generate(), TYPE_FOLDER)
+            .getNodeRef();
+          document =
+            fileFolderService
+              .create(folder, GUID.generate(), TYPE_CONTENT)
+              .getNodeRef();
 
-                // document is declared as a record by user
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception
-                    {
-                        // declare record
-                        recordService.createRecord(filePlan, document);
-                        return null;
-                    }
-                 }, userName);
+          assertFalse(recordService.isRecord(document));
+          ownableService.setOwner(document, userName);
+          versionService.ensureVersioningEnabled(document, null);
 
-                assertTrue(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
-            }
-
-            public void when()
-            {
-                // reject the record
-                recordService.rejectRecord(document, REASON);
-                assertFalse(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
-
-                // upload a new version of the document
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception
-                    {
-                        ContentWriter writer = contentService.getWriter(document, ContentModel.PROP_CONTENT, true);
-                        writer.putContent("This is a change to the content and should force a new version");
-                        versionService.createVersion(document, null);
-
-                        return null;
-                    }
-                }, userName);
-
-                assertFalse(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
-
-                VersionHistory history = versionService.getVersionHistory(document);
-                assertEquals(2, history.getAllVersions().size());
-                final Version initial = history.getRootVersion();
-
-                assertFalse(nodeService.hasAspect(initial.getFrozenStateNodeRef(), ASPECT_FILE_PLAN_COMPONENT));
-
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception
-                    {
-                        // revert the document to a previous version
-                        versionService.revert(document, initial);
-
-                        return null;
-                    }
-                 }, userName);
-            }
-
-            public void then()
-            {
-                // document is no longer a record
-                assertFalse(recordService.isRecord(document));
-
-                // expected owner has be re-set
-                assertEquals(userName, ownableService.getOwner(document));
-            }
-        });
-    }
-
-    public void testRelationshipAfterRevertingRecord()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            // Test document
-            private NodeRef document;
-
-            public void given()
-            {
-                // Create a test document
-                NodeRef folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                document = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
-
-                // Set Auto-Declare Versions to "For all major and minor versions"
-                PropertyMap recordableVersionProperties = new PropertyMap(2);
-                recordableVersionProperties.put(PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.ALL);
-                recordableVersionProperties.put(PROP_FILE_PLAN, filePlan);
-                nodeService.addAspect(document, ASPECT_VERSIONABLE, recordableVersionProperties);
-
-                // Upload New Version
-                document = checkOutCheckInService.checkout(document);
-                Map<String, Serializable> props = new HashMap<>(2);
-                props.put(Version.PROP_DESCRIPTION, generate());
-                props.put(VersionModel.PROP_VERSION_TYPE, MINOR);
-                document = checkOutCheckInService.checkin(document, props);
-
-                // Check the declared version
-                List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(unfiledContainer);
-                assertEquals(1, childAssocs.size());
-
-                // Declare document as record
+          // document is declared as a record by user
+          AuthenticationUtil.runAs(
+            new RunAsWork<Void>() {
+              public Void doWork() throws Exception {
+                // declare record
                 recordService.createRecord(filePlan, document);
+                return null;
+              }
+            },
+            userName
+          );
 
-                // Check the declared versions
-                childAssocs = nodeService.getChildAssocs(unfiledContainer);
-                assertEquals(2, childAssocs.size());
+          assertTrue(
+            nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT)
+          );
+        }
 
-                // Check that the document is a file plan component
-                assertTrue(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
+        public void when() {
+          // reject the record
+          recordService.rejectRecord(document, REASON);
+          assertFalse(
+            nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT)
+          );
 
-                // Get the final version
-                NodeRef finalVersion = null;
-                for (ChildAssociationRef childAssociationRef : nodeService.getChildAssocs(unfiledContainer))
-                {
-                    NodeRef childRef = childAssociationRef.getChildRef();
-                    String label = (String) nodeService.getProperty(document, RecordableVersionModel.PROP_VERSION_LABEL);
+          // upload a new version of the document
+          AuthenticationUtil.runAs(
+            new RunAsWork<Void>() {
+              public Void doWork() throws Exception {
+                ContentWriter writer = contentService.getWriter(
+                  document,
+                  ContentModel.PROP_CONTENT,
+                  true
+                );
+                writer.putContent(
+                  "This is a change to the content and should force a new version"
+                );
+                versionService.createVersion(document, null);
 
-                    if (label.equals(I18NUtil.getMessage(FINAL_VERSION)))
-                    {
-                        finalVersion = childRef;
-                        break;
-                    }
-                }
+                return null;
+              }
+            },
+            userName
+          );
 
-                // The final version should be the declared record
-                assertEquals(document, finalVersion);
+          assertFalse(
+            nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT)
+          );
 
-                // Check the relationship
-                Set<Relationship> relationships = relationshipService.getRelationshipsFrom(document);
-                assertEquals(1, relationships.size());
-                Relationship relationship = relationships.iterator().next();
-                assertEquals(CUSTOM_REF_VERSIONS.getLocalName(), relationship.getUniqueName());
+          VersionHistory history = versionService.getVersionHistory(document);
+          assertEquals(2, history.getAllVersions().size());
+          final Version initial = history.getRootVersion();
+
+          assertFalse(
+            nodeService.hasAspect(
+              initial.getFrozenStateNodeRef(),
+              ASPECT_FILE_PLAN_COMPONENT
+            )
+          );
+
+          AuthenticationUtil.runAs(
+            new RunAsWork<Void>() {
+              public Void doWork() throws Exception {
+                // revert the document to a previous version
+                versionService.revert(document, initial);
+
+                return null;
+              }
+            },
+            userName
+          );
+        }
+
+        public void then() {
+          // document is no longer a record
+          assertFalse(recordService.isRecord(document));
+
+          // expected owner has be re-set
+          assertEquals(userName, ownableService.getOwner(document));
+        }
+      }
+    );
+  }
+
+  public void testRelationshipAfterRevertingRecord() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        // Test document
+        private NodeRef document;
+
+        public void given() {
+          // Create a test document
+          NodeRef folder = fileFolderService
+            .create(documentLibrary, generate(), TYPE_FOLDER)
+            .getNodeRef();
+          document =
+            fileFolderService
+              .create(folder, generate(), TYPE_CONTENT)
+              .getNodeRef();
+
+          // Set Auto-Declare Versions to "For all major and minor versions"
+          PropertyMap recordableVersionProperties = new PropertyMap(2);
+          recordableVersionProperties.put(
+            PROP_RECORDABLE_VERSION_POLICY,
+            RecordableVersionPolicy.ALL
+          );
+          recordableVersionProperties.put(PROP_FILE_PLAN, filePlan);
+          nodeService.addAspect(
+            document,
+            ASPECT_VERSIONABLE,
+            recordableVersionProperties
+          );
+
+          // Upload New Version
+          document = checkOutCheckInService.checkout(document);
+          Map<String, Serializable> props = new HashMap<>(2);
+          props.put(Version.PROP_DESCRIPTION, generate());
+          props.put(VersionModel.PROP_VERSION_TYPE, MINOR);
+          document = checkOutCheckInService.checkin(document, props);
+
+          // Check the declared version
+          List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(
+            unfiledContainer
+          );
+          assertEquals(1, childAssocs.size());
+
+          // Declare document as record
+          recordService.createRecord(filePlan, document);
+
+          // Check the declared versions
+          childAssocs = nodeService.getChildAssocs(unfiledContainer);
+          assertEquals(2, childAssocs.size());
+
+          // Check that the document is a file plan component
+          assertTrue(
+            nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT)
+          );
+
+          // Get the final version
+          NodeRef finalVersion = null;
+          for (ChildAssociationRef childAssociationRef : nodeService.getChildAssocs(
+            unfiledContainer
+          )) {
+            NodeRef childRef = childAssociationRef.getChildRef();
+            String label = (String) nodeService.getProperty(
+              document,
+              RecordableVersionModel.PROP_VERSION_LABEL
+            );
+
+            if (label.equals(I18NUtil.getMessage(FINAL_VERSION))) {
+              finalVersion = childRef;
+              break;
             }
+          }
 
-            public void when()
-            {
-                // Reject record
-                recordService.rejectRecord(document, generate());
-            }
+          // The final version should be the declared record
+          assertEquals(document, finalVersion);
 
-            public void then()
-            {
-                // Check the relationship
-                Set<Relationship> relationships = relationshipService.getRelationshipsFrom(document);
-                assertEquals(0, relationships.size());
-            }
-        });
-    }
+          // Check the relationship
+          Set<Relationship> relationships = relationshipService.getRelationshipsFrom(
+            document
+          );
+          assertEquals(1, relationships.size());
+          Relationship relationship = relationships.iterator().next();
+          assertEquals(
+            CUSTOM_REF_VERSIONS.getLocalName(),
+            relationship.getUniqueName()
+          );
+        }
+
+        public void when() {
+          // Reject record
+          recordService.rejectRecord(document, generate());
+        }
+
+        public void then() {
+          // Check the relationship
+          Set<Relationship> relationships = relationshipService.getRelationshipsFrom(
+            document
+          );
+          assertEquals(0, relationships.size());
+        }
+      }
+    );
+  }
 }

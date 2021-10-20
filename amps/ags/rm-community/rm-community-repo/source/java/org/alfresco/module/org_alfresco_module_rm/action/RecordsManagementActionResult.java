@@ -35,26 +35,24 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public class RecordsManagementActionResult
-{
-    /** Result value */
-    private Object value;
+public class RecordsManagementActionResult {
 
-    /**
-     * Constructor.
-     *
-     * @param value result value
-     */
-    public RecordsManagementActionResult(Object value)
-    {
-        this.value = value;
-    }
+  /** Result value */
+  private Object value;
 
-    /**
-     * @return  result value
-     */
-    public Object getValue()
-    {
-        return this.value;
-    }
+  /**
+   * Constructor.
+   *
+   * @param value result value
+   */
+  public RecordsManagementActionResult(Object value) {
+    this.value = value;
+  }
+
+  /**
+   * @return  result value
+   */
+  public Object getValue() {
+    return this.value;
+  }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,44 +27,37 @@ package org.alfresco.repo.domain.subscriptions;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
-public class SubscriptionNodeEntity
-{
-    private String protocol;
-    private String identifier;
-    private String id;
+public class SubscriptionNodeEntity {
 
-    public String getProtocol()
-    {
-        return protocol;
-    }
+  private String protocol;
+  private String identifier;
+  private String id;
 
-    public void setProtocol(String protocol)
-    {
-        this.protocol = protocol;
-    }
+  public String getProtocol() {
+    return protocol;
+  }
 
-    public String getIdentifier()
-    {
-        return identifier;
-    }
+  public void setProtocol(String protocol) {
+    this.protocol = protocol;
+  }
 
-    public void setIdentifier(String identifier)
-    {
-        this.identifier = identifier;
-    }
+  public String getIdentifier() {
+    return identifier;
+  }
 
-    public String getId()
-    {
-        return id;
-    }
+  public void setIdentifier(String identifier) {
+    this.identifier = identifier;
+  }
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public NodeRef getNodeRef()
-    {
-        return new NodeRef(protocol, identifier, id);
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public NodeRef getNodeRef() {
+    return new NodeRef(protocol, identifier, id);
+  }
 }

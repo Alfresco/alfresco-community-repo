@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
@@ -51,73 +50,91 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @author Roy Wetherall
  */
-public class RmRolePut extends RoleDeclarativeWebScript
-{
-    private CapabilityService capabilityService;
+public class RmRolePut extends RoleDeclarativeWebScript {
 
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
-        this.capabilityService = capabilityService;
+  private CapabilityService capabilityService;
+
+  public void setCapabilityService(CapabilityService capabilityService) {
+    this.capabilityService = capabilityService;
+  }
+
+  @Override
+  public Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, Object> model = new HashMap<>();
+    JSONObject json = null;
+    try {
+      // Role name
+      Map<String, String> templateVars = req
+        .getServiceMatch()
+        .getTemplateVars();
+      String roleParam = templateVars.get("rolename");
+      if (roleParam == null) {
+        throw new WebScriptException(
+          Status.STATUS_NOT_FOUND,
+          "No role name was provided on the URL."
+        );
+      }
+
+      json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+      String name = json.getString("name");
+      // TODO check
+      String displayLabel = json.getString("displayLabel");
+      // TODO check
+
+      JSONArray capabilitiesArray = json.getJSONArray("capabilities");
+      Set<Capability> capabilites = new HashSet<>(capabilitiesArray.length());
+      for (int i = 0; i < capabilitiesArray.length(); i++) {
+        Capability capability = capabilityService.getCapability(
+          capabilitiesArray.getString(i)
+        );
+        capabilites.add(capability);
+      }
+
+      // get the file plan
+      NodeRef filePlan = getFilePlan(req);
+      if (filePlan == null) {
+        throw new WebScriptException(
+          Status.STATUS_NOT_FOUND,
+          "File plan does not exist."
+        );
+      }
+
+      // Check that the role exists
+      if (!filePlanRoleService.existsRole(filePlan, roleParam)) {
+        throw new WebScriptException(
+          Status.STATUS_NOT_FOUND,
+          "The role " +
+          roleParam +
+          " does not exist on the records managment root " +
+          filePlan
+        );
+      }
+
+      Role role = filePlanRoleService.updateRole(
+        filePlan,
+        name,
+        displayLabel,
+        capabilites
+      );
+      model.put("role", new RoleItem(role));
+    } catch (IOException iox) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not read content from req.",
+        iox
+      );
+    } catch (JSONException je) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not parse JSON from req.",
+        je
+      );
     }
 
-    @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<>();
-        JSONObject json = null;
-        try
-        {
-            // Role name
-            Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-            String roleParam = templateVars.get("rolename");
-            if (roleParam == null)
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "No role name was provided on the URL.");
-            }
-
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            String name = json.getString("name");
-            // TODO check
-            String displayLabel = json.getString("displayLabel");
-            // TODO check
-
-            JSONArray capabilitiesArray = json.getJSONArray("capabilities");
-            Set<Capability> capabilites = new HashSet<>(capabilitiesArray.length());
-            for (int i = 0; i < capabilitiesArray.length(); i++)
-            {
-                Capability capability = capabilityService.getCapability(capabilitiesArray.getString(i));
-                capabilites.add(capability);
-            }
-
-            // get the file plan
-            NodeRef filePlan = getFilePlan(req);
-            if (filePlan == null)
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "File plan does not exist.");
-            }
-
-            // Check that the role exists
-            if (!filePlanRoleService.existsRole(filePlan, roleParam))
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND,
-                                             "The role " + roleParam + " does not exist on the records managment root " + filePlan);
-            }
-
-            Role role = filePlanRoleService.updateRole(filePlan, name, displayLabel, capabilites);
-            model.put("role", new RoleItem(role));
-
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
-        }
-
-        return model;
-    }
+    return model;
+  }
 }

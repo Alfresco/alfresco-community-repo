@@ -29,66 +29,70 @@ import org.alfresco.repo.domain.dialect.Dialect;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-public abstract class DialectUtil
-{
-    /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
-    public static final String PLACEHOLDER_DIALECT = "\\$\\{db\\.script\\.dialect\\}";
+public abstract class DialectUtil {
 
-    /**
-     * Replaces the dialect placeholder in the resource URL and attempts to find a
-     * file for it. If not found, the dialect hierarchy will be walked until a
-     * compatible resource is found. This makes it possible to have resources that
-     * are generic to all dialects.
-     *
-     * @return The Resource, otherwise null
-     */
-    public static Resource getDialectResource(ResourcePatternResolver resourcePatternResolver, Class<?> dialectClass, String resourceUrl)
-    {
-        // replace the dialect placeholder
-        String dialectResourceUrl = resolveDialectUrl(dialectClass, resourceUrl);
-        // get a handle on the resource
-        Resource resource = resourcePatternResolver.getResource(dialectResourceUrl);
-        if (!resource.exists())
-        {
-            // it wasn't found. Get the superclass of the dialect and try again
-            Class<?> superClass = dialectClass.getSuperclass();
-            if (Dialect.class.isAssignableFrom(superClass))
-            {
-                // we still have a Dialect - try again
-                return getDialectResource(resourcePatternResolver, superClass, resourceUrl);
-            }
-            else
-            {
-                // we have exhausted all options
-                return null;
-            }
-        }
-        else
-        {
-            // we have a handle to it
-            return resource;
-        }
-    }
+  /** The placeholder for the configured <code>Dialect</code> class name: <b>${db.script.dialect}</b> */
+  public static final String PLACEHOLDER_DIALECT =
+    "\\$\\{db\\.script\\.dialect\\}";
 
-    /**
-     * Takes resource URL containing the {@link DialectUtil#PLACEHOLDER_DIALECT
-     * dialect placeholder text} and substitutes the placeholder with the name of
-     * the given dialect's class.
-     * <p/>
-     * For example:
-     * 
-     * <pre>
-     * resolveDialectUrl(MySQLInnoDBDialect.class, "classpath:alfresco/db/${db.script.dialect}/myfile.xml")
-     * </pre>
-     * 
-     * would give the following String:
-     * 
-     * <pre>
-     *   classpath:alfresco/db/org.hibernate.dialect.MySQLInnoDBDialect/myfile.xml
-     * </pre>
-     */
-    public static String resolveDialectUrl(Class<?> dialectClass, String resourceUrl)
-    {
-        return resourceUrl.replaceAll(PLACEHOLDER_DIALECT, dialectClass.getName());
+  /**
+   * Replaces the dialect placeholder in the resource URL and attempts to find a
+   * file for it. If not found, the dialect hierarchy will be walked until a
+   * compatible resource is found. This makes it possible to have resources that
+   * are generic to all dialects.
+   *
+   * @return The Resource, otherwise null
+   */
+  public static Resource getDialectResource(
+    ResourcePatternResolver resourcePatternResolver,
+    Class<?> dialectClass,
+    String resourceUrl
+  ) {
+    // replace the dialect placeholder
+    String dialectResourceUrl = resolveDialectUrl(dialectClass, resourceUrl);
+    // get a handle on the resource
+    Resource resource = resourcePatternResolver.getResource(dialectResourceUrl);
+    if (!resource.exists()) {
+      // it wasn't found. Get the superclass of the dialect and try again
+      Class<?> superClass = dialectClass.getSuperclass();
+      if (Dialect.class.isAssignableFrom(superClass)) {
+        // we still have a Dialect - try again
+        return getDialectResource(
+          resourcePatternResolver,
+          superClass,
+          resourceUrl
+        );
+      } else {
+        // we have exhausted all options
+        return null;
+      }
+    } else {
+      // we have a handle to it
+      return resource;
     }
+  }
+
+  /**
+   * Takes resource URL containing the {@link DialectUtil#PLACEHOLDER_DIALECT
+   * dialect placeholder text} and substitutes the placeholder with the name of
+   * the given dialect's class.
+   * <p/>
+   * For example:
+   *
+   * <pre>
+   * resolveDialectUrl(MySQLInnoDBDialect.class, "classpath:alfresco/db/${db.script.dialect}/myfile.xml")
+   * </pre>
+   *
+   * would give the following String:
+   *
+   * <pre>
+   *   classpath:alfresco/db/org.hibernate.dialect.MySQLInnoDBDialect/myfile.xml
+   * </pre>
+   */
+  public static String resolveDialectUrl(
+    Class<?> dialectClass,
+    String resourceUrl
+  ) {
+    return resourceUrl.replaceAll(PLACEHOLDER_DIALECT, dialectClass.getName());
+  }
 }

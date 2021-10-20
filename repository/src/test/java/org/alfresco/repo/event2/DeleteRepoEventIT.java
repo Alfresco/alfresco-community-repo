@@ -40,71 +40,105 @@ import org.junit.Test;
 /**
  * @author Iulian Aftene
  */
-public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent
-{
-    @Test
-    public void testDeleteContent()
-    {
-        String localName = GUID.generate();
-        PropertyMap propertyMap = new PropertyMap();
-        propertyMap.put(ContentModel.PROP_TITLE, "test title");
-        NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, localName, propertyMap);
+public class DeleteRepoEventIT extends AbstractContextAwareRepoEvent {
 
-        NodeResource createdResource = getNodeResource(1);
+  @Test
+  public void testDeleteContent() {
+    String localName = GUID.generate();
+    PropertyMap propertyMap = new PropertyMap();
+    propertyMap.put(ContentModel.PROP_TITLE, "test title");
+    NodeRef nodeRef = createNode(
+      ContentModel.TYPE_CONTENT,
+      localName,
+      propertyMap
+    );
 
-        assertNotNull("Resource ID is null", createdResource.getId());
-        assertNotNull("Default aspects were not added. ", createdResource.getAspectNames());
-        assertNotNull("Missing createdByUser property.", createdResource.getCreatedByUser());
-        assertNotNull("Missing createdAt property.", createdResource.getCreatedAt());
-        assertNotNull("Missing modifiedByUser property.", createdResource.getModifiedByUser());
-        assertNotNull("Missing modifiedAt property.", createdResource.getModifiedAt());
-        assertNotNull("Missing node resource properties", createdResource.getProperties());
+    NodeResource createdResource = getNodeResource(1);
 
-        deleteNode(nodeRef);
-        final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(2);
+    assertNotNull("Resource ID is null", createdResource.getId());
+    assertNotNull(
+      "Default aspects were not added. ",
+      createdResource.getAspectNames()
+    );
+    assertNotNull(
+      "Missing createdByUser property.",
+      createdResource.getCreatedByUser()
+    );
+    assertNotNull(
+      "Missing createdAt property.",
+      createdResource.getCreatedAt()
+    );
+    assertNotNull(
+      "Missing modifiedByUser property.",
+      createdResource.getModifiedByUser()
+    );
+    assertNotNull(
+      "Missing modifiedAt property.",
+      createdResource.getModifiedAt()
+    );
+    assertNotNull(
+      "Missing node resource properties",
+      createdResource.getProperties()
+    );
 
-        assertEquals("Repo event type:", EventType.NODE_DELETED.getType(), resultRepoEvent.getType());
-        assertEquals(createdResource.getId(), getNodeResource(resultRepoEvent).getId());
-        assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, createdResource.getPrimaryAssocQName());
+    deleteNode(nodeRef);
+    final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(2);
 
-        // There should be no resourceBefore
-        EventData<NodeResource> eventData = getEventData(resultRepoEvent);
-        assertNull("There should be no 'resourceBefore' object for the Deleted event type.",
-            eventData.getResourceBefore());
-    }
+    assertEquals(
+      "Repo event type:",
+      EventType.NODE_DELETED.getType(),
+      resultRepoEvent.getType()
+    );
+    assertEquals(
+      createdResource.getId(),
+      getNodeResource(resultRepoEvent).getId()
+    );
+    assertEquals(
+      "Wrong primaryAssocQName prefix.",
+      "ce:" + localName,
+      createdResource.getPrimaryAssocQName()
+    );
 
-    @Test
-    public void testDeleteFolderWithContent()
-    {
-        NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER);
-        NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
-        createNode(ContentModel.TYPE_CONTENT, parent);
-        createNode(ContentModel.TYPE_CONTENT, parent);
+    // There should be no resourceBefore
+    EventData<NodeResource> eventData = getEventData(resultRepoEvent);
+    assertNull(
+      "There should be no 'resourceBefore' object for the Deleted event type.",
+      eventData.getResourceBefore()
+    );
+  }
 
-        // 4 Created Events
-        checkNumOfEvents(4);
+  @Test
+  public void testDeleteFolderWithContent() {
+    NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER);
+    NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
+    createNode(ContentModel.TYPE_CONTENT, parent);
+    createNode(ContentModel.TYPE_CONTENT, parent);
 
-        deleteNode(grandParent);
-        // 4 Deleted events + 4 created events
-        checkNumOfEvents(8);
-    }
+    // 4 Created Events
+    checkNumOfEvents(4);
 
-    @Test
-    public void testCreateDeleteNodeInTheSameTransaction()
-    {
-        retryingTransactionHelper.doInTransaction(() -> {
+    deleteNode(grandParent);
+    // 4 Deleted events + 4 created events
+    checkNumOfEvents(8);
+  }
 
-            NodeRef nodeRef = nodeService.createNode(
-                rootNodeRef,
-                ContentModel.ASSOC_CHILDREN,
-                QName.createQName(TEST_NAMESPACE, GUID.generate()),
-                ContentModel.TYPE_CONTENT).getChildRef();
+  @Test
+  public void testCreateDeleteNodeInTheSameTransaction() {
+    retryingTransactionHelper.doInTransaction(() -> {
+      NodeRef nodeRef = nodeService
+        .createNode(
+          rootNodeRef,
+          ContentModel.ASSOC_CHILDREN,
+          QName.createQName(TEST_NAMESPACE, GUID.generate()),
+          ContentModel.TYPE_CONTENT
+        )
+        .getChildRef();
 
-            nodeService.deleteNode(nodeRef);
-            return null;
-        });
-        //Create and delete node are done in the same transaction so no events are expected
-        // to be generated
-        checkNumOfEvents(0);
-    }
+      nodeService.deleteNode(nodeRef);
+      return null;
+    });
+    //Create and delete node are done in the same transaction so no events are expected
+    // to be generated
+    checkNumOfEvents(0);
+  }
 }

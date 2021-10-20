@@ -38,86 +38,84 @@ import org.alfresco.service.transaction.TransactionService;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
-
 /**
  * RM module bootstrap
  *
  * @author janv
  */
-public class RecordsManagementBootstrap extends AbstractLifecycleBean
-{
-    private TransactionService transactionService;
-    private RMCaveatConfigService caveatConfigService;
-    private CustomEmailMappingService customEmailMappingService;
-    private NodeParameterSuggesterBootstrap suggesterBootstrap;
+public class RecordsManagementBootstrap extends AbstractLifecycleBean {
 
-    public NodeParameterSuggesterBootstrap getSuggesterBootstrap() 
-    {
-        return suggesterBootstrap;
-    }
+  private TransactionService transactionService;
+  private RMCaveatConfigService caveatConfigService;
+  private CustomEmailMappingService customEmailMappingService;
+  private NodeParameterSuggesterBootstrap suggesterBootstrap;
 
-    public void setSuggesterBootstrap(NodeParameterSuggesterBootstrap suggesterBootstrap) 
-    {
-        this.suggesterBootstrap = suggesterBootstrap;
-    }
+  public NodeParameterSuggesterBootstrap getSuggesterBootstrap() {
+    return suggesterBootstrap;
+  }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+  public void setSuggesterBootstrap(
+    NodeParameterSuggesterBootstrap suggesterBootstrap
+  ) {
+    this.suggesterBootstrap = suggesterBootstrap;
+  }
 
-    public void setCaveatConfigService(RMCaveatConfigService caveatConfigService)
-    {
-        this.caveatConfigService = caveatConfigService;
-    }
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 
-    public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService)
-    {
-        this.customEmailMappingService = customEmailMappingService;
-    }
+  public void setCaveatConfigService(
+    RMCaveatConfigService caveatConfigService
+  ) {
+    this.caveatConfigService = caveatConfigService;
+  }
 
-    public CustomEmailMappingService getCustomEmailMappingService()
-    {
-        return customEmailMappingService;
-    }
+  public void setCustomEmailMappingService(
+    CustomEmailMappingService customEmailMappingService
+  ) {
+    this.customEmailMappingService = customEmailMappingService;
+  }
 
-    @Override
-    protected void onBootstrap(ApplicationEvent event)
-    {
-        // run as System on bootstrap
-        AuthenticationUtil.runAs(new RunAsWork<Object>()
-        {
-            public Object doWork()
-            {
-                RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-                {
-                    public Void execute()
-                    {
-                        // initialise caveat config
-                        caveatConfigService.init();
-                        
-                        // Initialize the suggester after the model
-                        // in case it contains namespaces from custom models
-                        suggesterBootstrap.init();
+  public CustomEmailMappingService getCustomEmailMappingService() {
+    return customEmailMappingService;
+  }
 
-                        // Initialise the SplitEmailAction
-                        SplitEmailAction action = (SplitEmailAction)getApplicationContext().getBean("splitEmail");
-                        action.bootstrap();
+  @Override
+  protected void onBootstrap(ApplicationEvent event) {
+    // run as System on bootstrap
+    AuthenticationUtil.runAs(
+      new RunAsWork<Object>() {
+        public Object doWork() {
+          RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
+            public Void execute() {
+              // initialise caveat config
+              caveatConfigService.init();
 
-                        return null;
-                    }
-                };
-                transactionService.getRetryingTransactionHelper().doInTransaction(callback);
+              // Initialize the suggester after the model
+              // in case it contains namespaces from custom models
+              suggesterBootstrap.init();
 
-                return null;
+              // Initialise the SplitEmailAction
+              SplitEmailAction action = (SplitEmailAction) getApplicationContext()
+                .getBean("splitEmail");
+              action.bootstrap();
+
+              return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
-    }
+          };
+          transactionService
+            .getRetryingTransactionHelper()
+            .doInTransaction(callback);
 
-    @Override
-    protected void onShutdown(ApplicationEvent event)
-    {
-        // NOOP
-    }
+          return null;
+        }
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
+
+  @Override
+  protected void onShutdown(ApplicationEvent event) {
+    // NOOP
+  }
 }
-

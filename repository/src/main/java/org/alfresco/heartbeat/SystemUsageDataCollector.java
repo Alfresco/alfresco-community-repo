@@ -27,6 +27,9 @@ package org.alfresco.heartbeat;
 
 import com.sun.management.OperatingSystemMXBean;
 import com.sun.management.UnixOperatingSystemMXBean;
+import java.lang.management.ManagementFactory;
+import java.util.*;
+import javax.sql.DataSource;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.descriptor.DescriptorDAO;
@@ -35,10 +38,6 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-
-import javax.sql.DataSource;
-import java.lang.management.ManagementFactory;
-import java.util.*;
 
 /**
  * A collector of data related the <code>Runtime</code> data of the system. Every Java application has a single instance of class
@@ -76,95 +75,108 @@ import java.util.*;
  *
  * @author eknizat
  */
-public class SystemUsageDataCollector extends HBBaseDataCollector implements InitializingBean
-{
-    /** The logger. */
-    private static final Log logger = LogFactory.getLog(SystemUsageDataCollector.class);
+public class SystemUsageDataCollector
+  extends HBBaseDataCollector
+  implements InitializingBean {
 
-    /** DAO for current repository descriptor. */
-    private DescriptorDAO currentRepoDescriptorDAO;
-    private DataSource dataSource;
+  /** The logger. */
+  private static final Log logger = LogFactory.getLog(
+    SystemUsageDataCollector.class
+  );
 
-    public SystemUsageDataCollector(String collectorId, String collectorVersion, String cronExpression,
-                                    HeartBeatJobScheduler hbJobScheduler)
-    {
-        super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
+  /** DAO for current repository descriptor. */
+  private DescriptorDAO currentRepoDescriptorDAO;
+  private DataSource dataSource;
+
+  public SystemUsageDataCollector(
+    String collectorId,
+    String collectorVersion,
+    String cronExpression,
+    HeartBeatJobScheduler hbJobScheduler
+  ) {
+    super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
+  }
+
+  public void setCurrentRepoDescriptorDAO(
+    DescriptorDAO currentRepoDescriptorDAO
+  ) {
+    this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
+  }
+
+  public void setDataSource(DataSource dataSource) {
+    this.dataSource = dataSource;
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    PropertyCheck.mandatory(
+      this,
+      "currentRepoDescriptorDAO",
+      currentRepoDescriptorDAO
+    );
+    PropertyCheck.mandatory(this, "dataSource", dataSource);
+  }
+
+  @Override
+  public List<HBData> collectData() {
+    logger.debug("Preparing repository usage (system) data...");
+
+    Runtime runtime = Runtime.getRuntime();
+    Map<String, Object> systemUsageValues = new HashMap<>();
+
+    // operating system MBean info
+    Map<String, Object> cpu = new HashMap<>();
+    OperatingSystemMXBean osMBean = ManagementFactory.getPlatformMXBean(
+      OperatingSystemMXBean.class
+    );
+    if (osMBean != null) {
+      if (osMBean instanceof UnixOperatingSystemMXBean) {
+        long openFileDescriptorCount =
+          ((UnixOperatingSystemMXBean) osMBean).getOpenFileDescriptorCount();
+        systemUsageValues.put(
+          "openFileDescriptorCount",
+          new Long(openFileDescriptorCount)
+        );
+      }
+
+      // processor info
+      double processCpuLoad = osMBean.getProcessCpuLoad() * 100;
+      double systemCpuLoad = osMBean.getSystemCpuLoad() * 100;
+      int intProcessCpuLoad = (int) Math.round(processCpuLoad);
+      int intSystemCpuLoad = (int) Math.round(systemCpuLoad);
+
+      cpu.put("percentageProcessLoad", new Integer(intProcessCpuLoad));
+      cpu.put("percentageSystemLoad", new Integer(intSystemCpuLoad));
+      cpu.put("systemLoadAverage", new Double(osMBean.getSystemLoadAverage()));
+    }
+    cpu.put("availableProcessors", new Integer(runtime.availableProcessors()));
+    systemUsageValues.put("cpu", cpu);
+
+    // database connections info
+    if (dataSource instanceof BasicDataSource) {
+      Map<String, Object> db = new HashMap<>();
+      int idleConnections = ((BasicDataSource) dataSource).getNumIdle();
+      int activeConnections = ((BasicDataSource) dataSource).getNumActive();
+      db.put("idleConnections", new Integer(idleConnections));
+      db.put("activeConnections", new Integer(activeConnections));
+      systemUsageValues.put("db", db);
     }
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
-        this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
-    }
+    // memory info
+    Map<String, Object> mem = new HashMap<>();
+    mem.put("free", runtime.freeMemory());
+    mem.put("max", runtime.maxMemory());
+    mem.put("total", runtime.totalMemory());
+    systemUsageValues.put("mem", mem);
 
-    public void setDataSource( DataSource dataSource )
-    {
-        this.dataSource = dataSource;
-    }
+    HBData systemUsageData = new HBData(
+      this.currentRepoDescriptorDAO.getDescriptor().getId(),
+      this.getCollectorId(),
+      this.getCollectorVersion(),
+      new Date(),
+      systemUsageValues
+    );
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "currentRepoDescriptorDAO", currentRepoDescriptorDAO);
-        PropertyCheck.mandatory(this, "dataSource", dataSource);
-    }
-
-    @Override
-    public List<HBData> collectData()
-    {
-        logger.debug("Preparing repository usage (system) data...");
-
-        Runtime runtime = Runtime.getRuntime();
-        Map<String, Object> systemUsageValues = new HashMap<>();
-
-        // operating system MBean info
-        Map<String, Object> cpu = new HashMap<>();
-        OperatingSystemMXBean osMBean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-        if (osMBean != null)
-        {
-            if (osMBean instanceof UnixOperatingSystemMXBean)
-            {
-                long openFileDescriptorCount = ((UnixOperatingSystemMXBean) osMBean).getOpenFileDescriptorCount();
-                systemUsageValues.put("openFileDescriptorCount", new Long(openFileDescriptorCount));
-            }
-
-            // processor info
-            double processCpuLoad = osMBean.getProcessCpuLoad() * 100;
-            double systemCpuLoad  = osMBean.getSystemCpuLoad()  * 100;
-            int intProcessCpuLoad = (int) Math.round(processCpuLoad);
-            int intSystemCpuLoad  = (int) Math.round(systemCpuLoad);
-
-            cpu.put("percentageProcessLoad", new Integer(intProcessCpuLoad) );
-            cpu.put("percentageSystemLoad", new Integer(intSystemCpuLoad));
-            cpu.put("systemLoadAverage", new Double(osMBean.getSystemLoadAverage()));
-        }
-        cpu.put("availableProcessors", new Integer( runtime.availableProcessors()));
-        systemUsageValues.put("cpu", cpu);
-
-        // database connections info
-        if (dataSource instanceof BasicDataSource)
-        {
-            Map<String, Object> db = new HashMap<>();
-            int idleConnections = ((BasicDataSource) dataSource).getNumIdle();
-            int activeConnections = ((BasicDataSource) dataSource).getNumActive();
-            db.put("idleConnections", new Integer(idleConnections));
-            db.put("activeConnections", new Integer(activeConnections));
-            systemUsageValues.put("db", db);
-        }
-
-        // memory info
-        Map<String, Object> mem = new HashMap<>();
-        mem.put("free", runtime.freeMemory());
-        mem.put("max", runtime.maxMemory());
-        mem.put("total", runtime.totalMemory());
-        systemUsageValues.put( "mem", mem);
-
-        HBData systemUsageData = new HBData(
-                this.currentRepoDescriptorDAO.getDescriptor().getId(),
-                this.getCollectorId(),
-                this.getCollectorVersion(),
-                new Date(),
-                systemUsageValues);
-
-        return Arrays.asList(systemUsageData);
-    }
+    return Arrays.asList(systemUsageData);
+  }
 }

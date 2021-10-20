@@ -41,12 +41,12 @@ package org.alfresco.rest.rm.community.model.site;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class RMSiteFields
-{
+public class RMSiteFields {
+
     public static final String ID = "id";
     public static final String COMPLIANCE = "compliance";
     public static final String TITLE = "title";
     public static final String DESCRIPTION = "description";
-    public static final String VISIBILITY ="visibility";
+    public static final String VISIBILITY = "visibility";
     public static final String ROLE = "role";
 }

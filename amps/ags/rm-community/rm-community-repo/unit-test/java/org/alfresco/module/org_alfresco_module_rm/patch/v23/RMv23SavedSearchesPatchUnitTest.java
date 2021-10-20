@@ -37,7 +37,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -57,68 +56,70 @@ import org.mockito.MockitoAnnotations;
  * @author Ross Gale
  * @since 2.3
  */
-public class RMv23SavedSearchesPatchUnitTest
-{
+public class RMv23SavedSearchesPatchUnitTest {
 
-    @Mock
-    private NodeService nodeService;
+  @Mock
+  private NodeService nodeService;
 
-    @Mock
-    private SiteService siteService;
+  @Mock
+  private SiteService siteService;
 
-    @Mock
-    private SiteInfo siteInfo;
+  @Mock
+  private SiteInfo siteInfo;
 
-    @Mock
-    private RecordsManagementSearchServiceImpl recordsManagementSearchService;
+  @Mock
+  private RecordsManagementSearchServiceImpl recordsManagementSearchService;
 
-    @Mock
-    private SavedSearchDetails mockSavedSearchDetails1, mockSavedSearchDetails2;
+  @Mock
+  private SavedSearchDetails mockSavedSearchDetails1, mockSavedSearchDetails2;
 
-    @InjectMocks
-    private RMv23SavedSearchesPatch patch;
+  @InjectMocks
+  private RMv23SavedSearchesPatch patch;
 
-    @Before
-    public void setUp()
-    {
-        MockitoAnnotations.initMocks(this);
-    }
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+  }
 
-    /**
-     * Given that I am upgrading an existing repository to v2.3
-     * When I execute the patch
-     * Then any existing rm saved searches will have the saved search aspect applied
-     */
-    @Test
-    public void executePatch()
-    {
-        NodeRef noderef1 = new NodeRef("foo://123/456");
-        NodeRef noderef2 = new NodeRef("bar://123/456");
-        List<SavedSearchDetails> searches = asList(mockSavedSearchDetails1, mockSavedSearchDetails2);
-        when(mockSavedSearchDetails1.getNodeRef()).thenReturn(noderef1);
-        when(mockSavedSearchDetails2.getNodeRef()).thenReturn(noderef2);
-        when(recordsManagementSearchService.getSavedSearches("rm")).thenReturn(searches);
-        when(siteService.getSite(DEFAULT_SITE_NAME)).thenReturn(siteInfo);
+  /**
+   * Given that I am upgrading an existing repository to v2.3
+   * When I execute the patch
+   * Then any existing rm saved searches will have the saved search aspect applied
+   */
+  @Test
+  public void executePatch() {
+    NodeRef noderef1 = new NodeRef("foo://123/456");
+    NodeRef noderef2 = new NodeRef("bar://123/456");
+    List<SavedSearchDetails> searches = asList(
+      mockSavedSearchDetails1,
+      mockSavedSearchDetails2
+    );
+    when(mockSavedSearchDetails1.getNodeRef()).thenReturn(noderef1);
+    when(mockSavedSearchDetails2.getNodeRef()).thenReturn(noderef2);
+    when(recordsManagementSearchService.getSavedSearches("rm"))
+      .thenReturn(searches);
+    when(siteService.getSite(DEFAULT_SITE_NAME)).thenReturn(siteInfo);
 
-        // execute patch
-        patch.applyInternal();
+    // execute patch
+    patch.applyInternal();
 
-        verify(nodeService, times(1)).addAspect(noderef1, ASPECT_SAVED_SEARCH, null);
-        verify(nodeService, times(1)).addAspect(noderef2, ASPECT_SAVED_SEARCH, null);
-    }
+    verify(nodeService, times(1))
+      .addAspect(noderef1, ASPECT_SAVED_SEARCH, null);
+    verify(nodeService, times(1))
+      .addAspect(noderef2, ASPECT_SAVED_SEARCH, null);
+  }
 
-    /**
-     * Test patch code doesnt run with an rm site
-     */
-    @Test
-    public void testPatchDoesntRunWithoutRmSite()
-    {
-        when(siteService.getSite(DEFAULT_SITE_NAME)).thenReturn(null);
+  /**
+   * Test patch code doesnt run with an rm site
+   */
+  @Test
+  public void testPatchDoesntRunWithoutRmSite() {
+    when(siteService.getSite(DEFAULT_SITE_NAME)).thenReturn(null);
 
-        // execute patch
-        patch.applyInternal();
+    // execute patch
+    patch.applyInternal();
 
-        verify(nodeService, times(0)).addAspect(any(NodeRef.class), any(QName.class), anyMap());
-    }
-
+    verify(nodeService, times(0))
+      .addAspect(any(NodeRef.class), any(QName.class), anyMap());
+  }
 }

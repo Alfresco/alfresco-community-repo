@@ -1,7 +1,6 @@
 package org.alfresco.tas.integration;
 
 import java.lang.reflect.Method;
-
 import org.alfresco.cmis.CmisProperties;
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.WorkflowService;
@@ -29,78 +28,74 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
 @ContextConfiguration("classpath:alfresco-integration-context.xml")
-public abstract class IntegrationTest extends AbstractTestNGSpringContextTests
-{
-    private static Logger LOG = LogFactory.getLogger();
-    
-    @Autowired
-    protected DataUser dataUser;
+public abstract class IntegrationTest extends AbstractTestNGSpringContextTests {
 
-    @Autowired
-    protected DataSite dataSite;
-    
-    @Autowired
-    protected DataContent dataContent;
-    
-    @Autowired
-    protected DataGroup dataGroup;
+  private static Logger LOG = LogFactory.getLogger();
 
-    @Autowired
-    protected DataWorkflow dataWorkflow;
+  @Autowired
+  protected DataUser dataUser;
 
-    @Autowired 
-    protected WorkflowService workflow;
+  @Autowired
+  protected DataSite dataSite;
 
-    @Autowired
-    protected FTPWrapper ftpProtocol;
+  @Autowired
+  protected DataContent dataContent;
 
-    @Autowired
-    protected WebDavWrapper webDavProtocol;
+  @Autowired
+  protected DataGroup dataGroup;
 
-    @Autowired
-    protected CmisWrapper cmisAPI;
-    
-    @Autowired
-    protected CmisProperties cmisProperties;
+  @Autowired
+  protected DataWorkflow dataWorkflow;
 
-    @Autowired
-    protected ImapWrapper imapProtocol;
+  @Autowired
+  protected WorkflowService workflow;
 
-    @Autowired
-    protected RestWrapper restAPI;
+  @Autowired
+  protected FTPWrapper ftpProtocol;
 
-    @Autowired
-    protected ServerHealth serverHealth;
+  @Autowired
+  protected WebDavWrapper webDavProtocol;
 
-    @Autowired
-    protected RestProperties restProperties;
+  @Autowired
+  protected CmisWrapper cmisAPI;
 
-    @Autowired
-    protected ExtentionPointTestUtility extentionPointTestUtility;
+  @Autowired
+  protected CmisProperties cmisProperties;
 
-    @Autowired
-    protected SmtpWrapper smtpProtocol;
+  @Autowired
+  protected ImapWrapper imapProtocol;
 
-    @Autowired
-    EmailProperties emailProperties;
+  @Autowired
+  protected RestWrapper restAPI;
 
-    @BeforeSuite(alwaysRun = true)
-    public void checkServerHealth() throws Exception
-    {
-        super.springTestContextPrepareTestInstance();
-        serverHealth.assertServerIsOnline();
-    }
+  @Autowired
+  protected ServerHealth serverHealth;
 
-    @BeforeMethod(alwaysRun=true)
-    public void showStartTestInfo(Method method)
-    {
-        LOG.info(String.format("*** STARTING Test: [%s] ***",method.getName()));
-    }
+  @Autowired
+  protected RestProperties restProperties;
 
-    @AfterMethod(alwaysRun=true)
-    public void showEndTestInfo(Method method)
-    {
-        LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
-    }
+  @Autowired
+  protected ExtentionPointTestUtility extentionPointTestUtility;
 
+  @Autowired
+  protected SmtpWrapper smtpProtocol;
+
+  @Autowired
+  EmailProperties emailProperties;
+
+  @BeforeSuite(alwaysRun = true)
+  public void checkServerHealth() throws Exception {
+    super.springTestContextPrepareTestInstance();
+    serverHealth.assertServerIsOnline();
+  }
+
+  @BeforeMethod(alwaysRun = true)
+  public void showStartTestInfo(Method method) {
+    LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
+  }
+
+  @AfterMethod(alwaysRun = true)
+  public void showEndTestInfo(Method method) {
+    LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
+  }
 }

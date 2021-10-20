@@ -30,28 +30,24 @@ package org.alfresco.repo.rawevents.types;
  * node are changed; the specific properties are irrelevant. This is primarily
  * useful to determine when a new file is introduced into the system.
  */
-public class OnContentUpdatePolicyEvent extends EventImpl
-{
-    private String nodeRef;
-    private boolean newContent;
+public class OnContentUpdatePolicyEvent extends EventImpl {
 
-    public String getNodeRef()
-    {
-        return nodeRef;
-    }
+  private String nodeRef;
+  private boolean newContent;
 
-    public void setNodeRef(String nodeRef)
-    {
-        this.nodeRef = nodeRef;
-    }
+  public String getNodeRef() {
+    return nodeRef;
+  }
 
-    public boolean isNewContent()
-    {
-        return newContent;
-    }
+  public void setNodeRef(String nodeRef) {
+    this.nodeRef = nodeRef;
+  }
 
-    public void setNewContent(boolean newContent)
-    {
-        this.newContent = newContent;
-    }
+  public boolean isNewContent() {
+    return newContent;
+  }
+
+  public void setNewContent(boolean newContent) {
+    this.newContent = newContent;
+  }
 }

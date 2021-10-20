@@ -27,7 +27,6 @@
 package org.alfresco.module.org_alfresco_module_rm.util;
 
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
@@ -38,36 +37,40 @@ import org.alfresco.util.ParameterCheck;
  * @author Claudia Agache
  * @since 3.2
  */
-public class NodeTypeUtility
-{
-    /** Static cache for results of types that are instances of other Alfresco types. */
-    private static ConcurrentHashMap<String, Boolean> instanceOfCache = new ConcurrentHashMap<>();
+public class NodeTypeUtility {
 
-    /** Dictionary service */
-    private DictionaryService dictionaryService;
+  /** Static cache for results of types that are instances of other Alfresco types. */
+  private static ConcurrentHashMap<String, Boolean> instanceOfCache = new ConcurrentHashMap<>();
 
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
+  /** Dictionary service */
+  private DictionaryService dictionaryService;
 
-    /**
-     * Utility method to quickly determine whether one class is equal to or sub of another.
-     *
-     * @param className     class name
-     * @param ofClassName   class name to check against
-     * @return boolean      true if equal to or sub, false otherwise
-     */
-    public boolean instanceOf(QName className, QName ofClassName)
-    {
-        ParameterCheck.mandatory("className", className);
-        ParameterCheck.mandatory("ofClassName", ofClassName);
+  /**
+   * @param dictionaryService dictionary service
+   */
+  public void setDictionaryService(DictionaryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
 
-        String key = className.toString() + "|" + ofClassName.toString();
-        return instanceOfCache.computeIfAbsent(key, k ->
-                (ofClassName.equals(className) || dictionaryService.isSubClass(className, ofClassName)));
-    }
+  /**
+   * Utility method to quickly determine whether one class is equal to or sub of another.
+   *
+   * @param className     class name
+   * @param ofClassName   class name to check against
+   * @return boolean      true if equal to or sub, false otherwise
+   */
+  public boolean instanceOf(QName className, QName ofClassName) {
+    ParameterCheck.mandatory("className", className);
+    ParameterCheck.mandatory("ofClassName", ofClassName);
+
+    String key = className.toString() + "|" + ofClassName.toString();
+    return instanceOfCache.computeIfAbsent(
+      key,
+      k ->
+        (
+          ofClassName.equals(className) ||
+          dictionaryService.isSubClass(className, ofClassName)
+        )
+    );
+  }
 }

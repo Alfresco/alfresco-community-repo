@@ -20,48 +20,40 @@ package org.alfresco.httpclient;
 
 import java.io.IOException;
 import java.io.InputStream;
-
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
 
 /**
- * 
+ *
  * @since 4.0
  *
  */
-public class HttpMethodResponse implements Response
-{
-    protected HttpMethod method;
+public class HttpMethodResponse implements Response {
 
-    public HttpMethodResponse(HttpMethod method) throws IOException
-    {
-        this.method = method;
-    }
-    
-    public void release()
-    {
-        method.releaseConnection();
-    }
+  protected HttpMethod method;
 
-    public InputStream getContentAsStream() throws IOException
-    {
-        return method.getResponseBodyAsStream();
-    }
+  public HttpMethodResponse(HttpMethod method) throws IOException {
+    this.method = method;
+  }
 
-    public String getContentType()
-    {
-        return getHeader("Content-Type");
-    }
+  public void release() {
+    method.releaseConnection();
+  }
 
-    public String getHeader(String name)
-    {
-        Header header = method.getResponseHeader(name);
-        return (header != null) ? header.getValue() : null;
-    }
+  public InputStream getContentAsStream() throws IOException {
+    return method.getResponseBodyAsStream();
+  }
 
-    public int getStatus()
-    {
-        return method.getStatusCode();
-    }
+  public String getContentType() {
+    return getHeader("Content-Type");
+  }
 
+  public String getHeader(String name) {
+    Header header = method.getResponseHeader(name);
+    return (header != null) ? header.getValue() : null;
+  }
+
+  public int getStatus() {
+    return method.getStatusCode();
+  }
 }

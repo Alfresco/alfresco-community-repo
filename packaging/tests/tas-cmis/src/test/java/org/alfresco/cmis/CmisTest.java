@@ -1,7 +1,6 @@
 package org.alfresco.cmis;
 
 import java.lang.reflect.Method;
-
 import org.alfresco.utility.LogFactory;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
@@ -20,48 +19,44 @@ import org.testng.annotations.BeforeSuite;
 @ContextConfiguration("classpath:alfresco-cmis-context.xml")
 @Component
 @Scope(value = "prototype")
-public abstract class CmisTest extends AbstractTestNGSpringContextTests
-{
-    private static Logger LOG = LogFactory.getLogger();
+public abstract class CmisTest extends AbstractTestNGSpringContextTests {
 
-    @Autowired
-    protected CmisWrapper cmisApi;
+  private static Logger LOG = LogFactory.getLogger();
 
-    @Autowired
-    protected DataUserAIS dataUser;
+  @Autowired
+  protected CmisWrapper cmisApi;
 
-    @Autowired
-    protected DataSite dataSite;
+  @Autowired
+  protected DataUserAIS dataUser;
 
-    @Autowired
-    protected DataContent dataContent;
+  @Autowired
+  protected DataSite dataSite;
 
-    @Autowired
-    ServerHealth serverHealth;
+  @Autowired
+  protected DataContent dataContent;
 
-    public String documentContent = "CMIS document content";
+  @Autowired
+  ServerHealth serverHealth;
 
-    @BeforeSuite(alwaysRun = true)
-    public void checkServerHealth() throws Exception
-    {        
-        super.springTestContextPrepareTestInstance();
-        serverHealth.assertServerIsOnline();
-    }
+  public String documentContent = "CMIS document content";
 
-    @BeforeMethod(alwaysRun = true)
-    public void showStartTestInfo(Method method)
-    {
-        LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
-    }
+  @BeforeSuite(alwaysRun = true)
+  public void checkServerHealth() throws Exception {
+    super.springTestContextPrepareTestInstance();
+    serverHealth.assertServerIsOnline();
+  }
 
-    @AfterMethod(alwaysRun = true)
-    public void showEndTestInfo(Method method)
-    {
-        LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
-    }
-    
-    public Integer getSolrWaitTimeInSeconds()
-    {
-        return cmisApi.cmisProperties.envProperty().getSolrWaitTimeInSeconds();
-    }
+  @BeforeMethod(alwaysRun = true)
+  public void showStartTestInfo(Method method) {
+    LOG.info(String.format("*** STARTING Test: [%s] ***", method.getName()));
+  }
+
+  @AfterMethod(alwaysRun = true)
+  public void showEndTestInfo(Method method) {
+    LOG.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
+  }
+
+  public Integer getSolrWaitTimeInSeconds() {
+    return cmisApi.cmisProperties.envProperty().getSolrWaitTimeInSeconds();
+  }
 }

@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.search.impl.querymodel.impl.db;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.TransactionalCache;
@@ -48,213 +52,225 @@ import org.alfresco.util.testing.category.DBTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+@Category({ OwnJVMTestsCategory.class, DBTests.class })
+public class ACS1907Test extends TestCase {
 
-@Category({OwnJVMTestsCategory.class, DBTests.class})
-public class ACS1907Test extends TestCase
-{
+  private ApplicationContext ctx;
 
-    private ApplicationContext ctx;
+  private NodeService nodeService;
+  private AuthenticationComponent authenticationComponent;
+  private MutableAuthenticationService authenticationService;
+  private MutableAuthenticationDao authenticationDAO;
+  private SearchService pubSearchService;
+  private PermissionService pubPermissionService;
+  private TransactionService transactionService;
+  private RetryingTransactionHelper txnHelper;
+  private DBQueryEngine queryEngine;
 
-    private NodeService nodeService;
-    private AuthenticationComponent authenticationComponent;
-    private MutableAuthenticationService authenticationService;
-    private MutableAuthenticationDao authenticationDAO;
-    private SearchService pubSearchService;
-    private PermissionService pubPermissionService;
-    private TransactionService transactionService;
-    private RetryingTransactionHelper txnHelper;
-    private DBQueryEngine queryEngine;
+  private TransactionalCache<Serializable, AccessControlList> aclCache;
+  private TransactionalCache<Serializable, Object> aclEntityCache;
+  private TransactionalCache<Serializable, Object> permissionEntityCache;
 
-    private TransactionalCache<Serializable, AccessControlList> aclCache;
-    private TransactionalCache<Serializable, Object> aclEntityCache;
-    private TransactionalCache<Serializable, Object> permissionEntityCache;
+  private NodeRef rootNodeRef;
 
-    private NodeRef rootNodeRef;
+  @Override
+  public void setUp() throws Exception {
+    setupServices();
+    this.authenticationComponent.setSystemUserAsCurrentUser();
+    rootNodeRef =
+      nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+    setupTestUsers();
+    setupTestContent();
+    dropCaches();
+  }
 
-    @Override
-    public void setUp() throws Exception
-    {
-        setupServices();
-        this.authenticationComponent.setSystemUserAsCurrentUser();
-        rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        setupTestUsers();
-        setupTestContent();
-        dropCaches();
+  @Override
+  protected void tearDown() throws Exception {
+    authenticationComponent.clearCurrentSecurityContext();
+  }
+
+  private void setupServices() {
+    ctx = ApplicationContextHelper.getApplicationContext();
+    nodeService = (NodeService) ctx.getBean("dbNodeService");
+    authenticationComponent =
+      (AuthenticationComponent) ctx.getBean("authenticationComponent");
+    authenticationService =
+      (MutableAuthenticationService) ctx.getBean("authenticationService");
+    authenticationDAO =
+      (MutableAuthenticationDao) ctx.getBean("authenticationDao");
+    pubSearchService = (SearchService) ctx.getBean("SearchService");
+    pubPermissionService = (PermissionService) ctx.getBean("PermissionService");
+    transactionService = (TransactionService) ctx.getBean("TransactionService");
+    aclCache = (TransactionalCache) ctx.getBean("aclCache");
+    aclEntityCache = (TransactionalCache) ctx.getBean("aclEntityCache");
+    permissionEntityCache =
+      (TransactionalCache) ctx.getBean("permissionEntityCache");
+    SwitchableApplicationContextFactory searchContextFactory = (SwitchableApplicationContextFactory) ctx.getBean(
+      "Search"
+    );
+    ApplicationContext searchCtx = searchContextFactory.getApplicationContext();
+    queryEngine = (DBQueryEngine) searchCtx.getBean("search.dbQueryEngineImpl");
+    txnHelper = new RetryingTransactionHelper();
+    txnHelper.setTransactionService(transactionService);
+    txnHelper.setReadOnly(false);
+    txnHelper.setMaxRetries(1);
+    txnHelper.setMinRetryWaitMs(1);
+    txnHelper.setMaxRetryWaitMs(10);
+    txnHelper.setRetryWaitIncrementMs(1);
+  }
+
+  private void setupTestUser(String userName) {
+    if (!authenticationDAO.userExists(userName)) {
+      authenticationService.createAuthentication(
+        userName,
+        userName.toCharArray()
+      );
     }
+  }
 
-    @Override
-    protected void tearDown() throws Exception
-    {
-        authenticationComponent.clearCurrentSecurityContext();
-    }
-
-    private void setupServices()
-    {
-        ctx = ApplicationContextHelper.getApplicationContext();
-        nodeService = (NodeService) ctx.getBean("dbNodeService");
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
-        authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
-        pubSearchService = (SearchService) ctx.getBean("SearchService");
-        pubPermissionService = (PermissionService) ctx.getBean("PermissionService");
-        transactionService = (TransactionService) ctx.getBean("TransactionService");
-        aclCache = (TransactionalCache) ctx.getBean("aclCache");
-        aclEntityCache = (TransactionalCache) ctx.getBean("aclEntityCache");
-        permissionEntityCache = (TransactionalCache) ctx.getBean("permissionEntityCache");
-        SwitchableApplicationContextFactory searchContextFactory = (SwitchableApplicationContextFactory) ctx.getBean("Search");
-        ApplicationContext searchCtx = searchContextFactory.getApplicationContext();
-        queryEngine = (DBQueryEngine) searchCtx.getBean("search.dbQueryEngineImpl");
-        txnHelper = new RetryingTransactionHelper();
-        txnHelper.setTransactionService(transactionService);
-        txnHelper.setReadOnly(false);
-        txnHelper.setMaxRetries(1);
-        txnHelper.setMinRetryWaitMs(1);
-        txnHelper.setMaxRetryWaitMs(10);
-        txnHelper.setRetryWaitIncrementMs(1);
-    }
-
-    private void setupTestUser(String userName)
-    {
-        if (!authenticationDAO.userExists(userName))
-        {
-            authenticationService.createAuthentication(userName, userName.toCharArray());
+  private void setupTestUsers() {
+    txnHelper.doInTransaction(
+      new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
+        @Override
+        public Object execute() throws Throwable {
+          setupTestUser("userA");
+          setupTestUser("userB");
+          setupTestUser(AuthenticationUtil.getAdminUserName());
+          return null;
         }
-    }
+      },
+      false,
+      false
+    );
+  }
 
-    private void setupTestUsers()
-    {
-        txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
-            @Override
-            public Object execute() throws Throwable {
-                setupTestUser("userA");
-                setupTestUser("userB");
-                setupTestUser(AuthenticationUtil.getAdminUserName());
-                return null;
+  private void setupTestContent() {
+    for (int f = 0; f < 5; f++) {
+      final int ff = f;
+      txnHelper.doInTransaction(
+        new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
+          @Override
+          public Object execute() throws Throwable {
+            Map<QName, Serializable> testFolderProps = new HashMap<>();
+            testFolderProps.put(ContentModel.PROP_NAME, "folder" + ff);
+            NodeRef testFolder = nodeService
+              .createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName("https://example.com/test", "folder" + ff),
+                ContentModel.TYPE_FOLDER,
+                testFolderProps
+              )
+              .getChildRef();
+            for (int c = 0; c < 5; c++) {
+              Map<QName, Serializable> testContentProps = new HashMap<>();
+              testContentProps.put(ContentModel.PROP_NAME, "content" + c);
+              NodeRef testContent = nodeService
+                .createNode(
+                  testFolder,
+                  ContentModel.ASSOC_CONTAINS,
+                  QName.createQName("https://example.com/test", "content" + c),
+                  ContentModel.TYPE_CONTENT,
+                  testContentProps
+                )
+                .getChildRef();
+              String user = c % 2 == 0 ? "userA" : "userB";
+              pubPermissionService.setPermission(
+                testContent,
+                user,
+                "Read",
+                true
+              );
             }
-        }, false, false);
+            return null;
+          }
+        },
+        false,
+        false
+      );
     }
+  }
 
-    private void setupTestContent()
-    {
-        for(int f = 0; f < 5; f++)
-        {
-            final int ff = f;
-            txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
-                @Override
-                public Object execute() throws Throwable {
-                    Map<QName, Serializable> testFolderProps = new HashMap<>();
-                    testFolderProps.put(ContentModel.PROP_NAME, "folder"+ff);
-                    NodeRef testFolder = nodeService.createNode(
-                            rootNodeRef,
-                            ContentModel.ASSOC_CHILDREN,
-                            QName.createQName("https://example.com/test", "folder"+ff),
-                            ContentModel.TYPE_FOLDER,
-                            testFolderProps
-                    ).getChildRef();
-                    for(int c = 0; c < 5; c++)
-                    {
-                        Map<QName, Serializable> testContentProps = new HashMap<>();
-                        testContentProps.put(ContentModel.PROP_NAME, "content"+c);
-                        NodeRef testContent = nodeService.createNode(
-                                testFolder,
-                                ContentModel.ASSOC_CONTAINS,
-                                QName.createQName("https://example.com/test", "content"+c),
-                                ContentModel.TYPE_CONTENT,
-                                testContentProps
-                        ).getChildRef();
-                        String user = c % 2 == 0 ? "userA" : "userB";
-                        pubPermissionService.setPermission(testContent, user, "Read", true);
-                    }
-                    return null;
+  private void dropCaches() {
+    aclCache.clear();
+    aclEntityCache.clear();
+    permissionEntityCache.clear();
+  }
+
+  public void testACS1907() {
+    txnHelper.doInTransaction(
+      new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
+        @Override
+        public Object execute() throws Throwable {
+          AuthenticationUtil.runAs(
+            new AuthenticationUtil.RunAsWork<Object>() {
+              @Override
+              public Object doWork() throws Exception {
+                SearchParameters sp = new SearchParameters();
+                sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+                sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+                sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+                sp.setQuery("TYPE:\"cm:content\"");
+                ResultSet rs = pubSearchService.query(sp);
+                int cnt = 0;
+                for (ResultSetRow row : rs) {
+                  assertNotNull(row.getValue(ContentModel.PROP_NAME));
+                  cnt++;
                 }
-            }, false, false);
-        }
-    }
-
-    private void dropCaches()
-    {
-        aclCache.clear();
-        aclEntityCache.clear();
-        permissionEntityCache.clear();
-    }
-
-    public void testACS1907()
-    {
-        txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Object>() {
-            @Override
-            public Object execute() throws Throwable {
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>() {
-                    @Override
-                    public Object doWork() throws Exception {
-                        SearchParameters sp = new SearchParameters();
-                        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-                        sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
-                        sp.setQuery("TYPE:\"cm:content\"");
-                        ResultSet rs = pubSearchService.query(sp);
-                        int cnt = 0;
-                        for (ResultSetRow row : rs)
-                        {
-                            assertNotNull(row.getValue(ContentModel.PROP_NAME));
-                            cnt++;
-                        }
-                        return null;
-                    }
-                }, "userA");
                 return null;
-            }
-        }, false, false);
-    }
-
-    public void testPaging()
-    {
-        HashSet<NodeRef> resultPageSize2 = queryNodes(2);
-        HashSet<NodeRef> resultPageSize5 = queryNodes(5);
-        HashSet<NodeRef> resultPageSize10 = queryNodes(10);
-        HashSet<NodeRef> resultPageSizeAll = queryNodes(10000);
-        // all result sets must be equal, independent of page size used to retrieve them
-        assertTrue(resultPageSize2.size() >= 25);
-        assertTrue(resultPageSize5.size() >= 25);
-        assertTrue(resultPageSize10.size() >= 25);
-        assertTrue(resultPageSizeAll.size() >= 25);
-        assertTrue(resultPageSize2.containsAll(resultPageSize5));
-        assertTrue(resultPageSize2.containsAll(resultPageSize10));
-        assertTrue(resultPageSize2.containsAll(resultPageSizeAll));
-        assertTrue(resultPageSize5.containsAll(resultPageSize2));
-        assertTrue(resultPageSize5.containsAll(resultPageSize10));
-        assertTrue(resultPageSize5.containsAll(resultPageSizeAll));
-        assertTrue(resultPageSize10.containsAll(resultPageSize2));
-        assertTrue(resultPageSize10.containsAll(resultPageSize5));
-        assertTrue(resultPageSize10.containsAll(resultPageSizeAll));
-        assertTrue(resultPageSizeAll.containsAll(resultPageSize2));
-        assertTrue(resultPageSizeAll.containsAll(resultPageSize5));
-        assertTrue(resultPageSizeAll.containsAll(resultPageSize10));
-        // reset
-        queryEngine.setMinPagingBatchSize(2500);
-        queryEngine.setMaxPagingBatchSize(10000);
-    }
-
-    HashSet<NodeRef> queryNodes(int pageSize)
-    {
-        queryEngine.setMinPagingBatchSize(pageSize);
-        queryEngine.setMaxPagingBatchSize(pageSize);
-        HashSet<NodeRef> result = new HashSet<>();
-        SearchParameters sp = new SearchParameters();
-        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-        sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
-        sp.setQuery("TYPE:\"cm:content\"");
-        ResultSet rs = pubSearchService.query(sp);
-        int cnt = 0;
-        for (ResultSetRow row : rs)
-        {
-            result.add(row.getNodeRef());
+              }
+            },
+            "userA"
+          );
+          return null;
         }
-        return result;
-    }
+      },
+      false,
+      false
+    );
+  }
 
+  public void testPaging() {
+    HashSet<NodeRef> resultPageSize2 = queryNodes(2);
+    HashSet<NodeRef> resultPageSize5 = queryNodes(5);
+    HashSet<NodeRef> resultPageSize10 = queryNodes(10);
+    HashSet<NodeRef> resultPageSizeAll = queryNodes(10000);
+    // all result sets must be equal, independent of page size used to retrieve them
+    assertTrue(resultPageSize2.size() >= 25);
+    assertTrue(resultPageSize5.size() >= 25);
+    assertTrue(resultPageSize10.size() >= 25);
+    assertTrue(resultPageSizeAll.size() >= 25);
+    assertTrue(resultPageSize2.containsAll(resultPageSize5));
+    assertTrue(resultPageSize2.containsAll(resultPageSize10));
+    assertTrue(resultPageSize2.containsAll(resultPageSizeAll));
+    assertTrue(resultPageSize5.containsAll(resultPageSize2));
+    assertTrue(resultPageSize5.containsAll(resultPageSize10));
+    assertTrue(resultPageSize5.containsAll(resultPageSizeAll));
+    assertTrue(resultPageSize10.containsAll(resultPageSize2));
+    assertTrue(resultPageSize10.containsAll(resultPageSize5));
+    assertTrue(resultPageSize10.containsAll(resultPageSizeAll));
+    assertTrue(resultPageSizeAll.containsAll(resultPageSize2));
+    assertTrue(resultPageSizeAll.containsAll(resultPageSize5));
+    assertTrue(resultPageSizeAll.containsAll(resultPageSize10));
+    // reset
+    queryEngine.setMinPagingBatchSize(2500);
+    queryEngine.setMaxPagingBatchSize(10000);
+  }
+
+  HashSet<NodeRef> queryNodes(int pageSize) {
+    queryEngine.setMinPagingBatchSize(pageSize);
+    queryEngine.setMaxPagingBatchSize(pageSize);
+    HashSet<NodeRef> result = new HashSet<>();
+    SearchParameters sp = new SearchParameters();
+    sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+    sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+    sp.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+    sp.setQuery("TYPE:\"cm:content\"");
+    ResultSet rs = pubSearchService.query(sp);
+    int cnt = 0;
+    for (ResultSetRow row : rs) {
+      result.add(row.getNodeRef());
+    }
+    return result;
+  }
 }

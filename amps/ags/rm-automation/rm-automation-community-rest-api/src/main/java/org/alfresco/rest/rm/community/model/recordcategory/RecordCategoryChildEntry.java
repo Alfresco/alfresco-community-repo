@@ -27,11 +27,9 @@
 package org.alfresco.rest.rm.community.model.recordcategory;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import org.alfresco.rest.core.RestModels;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.alfresco.rest.core.RestModels;
 
 /**
  * POJO for record category child entry
@@ -41,8 +39,9 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class RecordCategoryChildEntry extends RestModels<RecordCategory, RecordCategoryChildEntry>
-{
+public class RecordCategoryChildEntry
+    extends RestModels<RecordCategory, RecordCategoryChildEntry> {
+
     @JsonProperty
     private RecordCategoryChild entry;
 }

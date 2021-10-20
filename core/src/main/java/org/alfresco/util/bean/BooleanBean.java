@@ -18,13 +18,12 @@
  */
 package org.alfresco.util.bean;
 
-import org.alfresco.api.AlfrescoPublicApi;     
+import org.alfresco.api.AlfrescoPublicApi;
 
 /**
  * Interface that may be implemented to return a boolean value in Spring bean configuration.
  */
 @AlfrescoPublicApi
-public interface BooleanBean
-{
-    public boolean isTrue();
+public interface BooleanBean {
+  public boolean isTrue();
 }

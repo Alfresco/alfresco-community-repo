@@ -23,44 +23,40 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 /**
  * Utility functions guided by the
  * <a href="http://en.wikipedia.org/wiki/Normal_distribution">Normal Distribution</a>.
- * 
+ *
  * @author Derek Hulley
  * @since 5.1
  */
-public class NormalDistributionHelper
-{
-    private final NormalDistribution normalDistribution;
-    
-    /**
-     * Use a simple normal distribution to generate random numbers
-     */
-    public NormalDistributionHelper()
-    {
-        this.normalDistribution = new NormalDistribution();
+public class NormalDistributionHelper {
+
+  private final NormalDistribution normalDistribution;
+
+  /**
+   * Use a simple normal distribution to generate random numbers
+   */
+  public NormalDistributionHelper() {
+    this.normalDistribution = new NormalDistribution();
+  }
+
+  /**
+   * Get a random long where a standard deviation of 1.0 corresponds to the
+   * min and max values provided.  The sampling is repeated until a value is
+   * found within the range given.
+   */
+  public long getValue(long min, long max) {
+    if (min > max) {
+      throw new IllegalArgumentException("Min must less than or equal to max.");
     }
-    
-    /**
-     * Get a random long where a standard deviation of 1.0 corresponds to the
-     * min and max values provided.  The sampling is repeated until a value is
-     * found within the range given.
-     */
-    public long getValue(long min, long max)
-    {
-        if (min > max)
-        {
-            throw new IllegalArgumentException("Min must less than or equal to max.");
-        }
-        
-        double sample = -2.0;
-        // Keep sampling until we get something within bounds of the standard deviation
-        while (sample < -1.0 || sample > 1.0)
-        {
-            sample = normalDistribution.sample();
-        }
-        long halfRange = (max - min)/2L;
-        long mean = min + halfRange;
-        long ret = mean + (long) (halfRange * sample);
-        // Done
-        return ret;
+
+    double sample = -2.0;
+    // Keep sampling until we get something within bounds of the standard deviation
+    while (sample < -1.0 || sample > 1.0) {
+      sample = normalDistribution.sample();
     }
+    long halfRange = (max - min) / 2L;
+    long mean = min + halfRange;
+    long ret = mean + (long) (halfRange * sample);
+    // Done
+    return ret;
+  }
 }

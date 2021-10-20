@@ -27,15 +27,13 @@
 
 package org.alfresco.rest.rm.community.model.transfer;
 
-import org.alfresco.rest.core.RestModels;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.alfresco.rest.core.RestModels;
 
 /**
  * POJO for transfer child entry
@@ -48,8 +46,9 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransferChildEntry extends RestModels<Transfer, TransferChildEntry>
-{
+public class TransferChildEntry
+    extends RestModels<Transfer, TransferChildEntry> {
+
     @JsonProperty
     private TransferChild entry;
 }

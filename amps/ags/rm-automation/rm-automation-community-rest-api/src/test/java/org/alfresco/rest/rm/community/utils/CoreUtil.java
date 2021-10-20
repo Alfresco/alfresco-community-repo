@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.utils;
 
 import java.lang.reflect.InvocationTargetException;
-
 import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
 import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
@@ -39,10 +38,9 @@ import org.alfresco.utility.model.RepoTestModel;
  * @author Rodica Sutu
  * @since 2.6
  */
-public class CoreUtil
-{
-    private CoreUtil()
-    {
+public class CoreUtil {
+
+    private CoreUtil() {
         // Intentionally blank
     }
 
@@ -52,8 +50,9 @@ public class CoreUtil
      * @param nodeId The node id
      * @return The {@link RestNodeBodyMoveCopyModel} with for the given node id
      */
-    public static RestNodeBodyMoveCopyModel createBodyForMoveCopy(String nodeId)
-    {
+    public static RestNodeBodyMoveCopyModel createBodyForMoveCopy(
+        String nodeId
+    ) {
         RestNodeBodyMoveCopyModel moveDestinationInfo = new RestNodeBodyMoveCopyModel();
         moveDestinationInfo.setTargetParentId(nodeId);
         return moveDestinationInfo;
@@ -64,8 +63,7 @@ public class CoreUtil
      *
      * @return ContentModel
      */
-    public static ContentModel toContentModel(String nodeId)
-    {
+    public static ContentModel toContentModel(String nodeId) {
         return toModel(nodeId, ContentModel.class);
     }
 
@@ -74,9 +72,8 @@ public class CoreUtil
      *
      * @return ContentModel
      */
-    public  static FileModel toFileModel(String nodeId)
-    {
-        return toModel(nodeId,FileModel.class);
+    public static FileModel toFileModel(String nodeId) {
+        return toModel(nodeId, FileModel.class);
     }
 
     /**
@@ -86,22 +83,23 @@ public class CoreUtil
      * @param classOf repo test model class
      * @return
      */
-    private static <T extends RepoTestModel> T toModel(String nodeId, Class classOf)
-    {
+    private static <T extends RepoTestModel> T toModel(
+        String nodeId,
+        Class classOf
+    ) {
         T target = null;
-        try
-        {
+        try {
             target = (T) classOf.getDeclaredConstructor().newInstance();
-        }
-        catch (InvocationTargetException| NoSuchMethodException| IllegalAccessException | InstantiationException e)
-        {
+        } catch (
+            InvocationTargetException
+            | NoSuchMethodException
+            | IllegalAccessException
+            | InstantiationException e
+        ) {
             e.printStackTrace();
         }
 
         target.setNodeRef(nodeId);
         return target;
-
     }
-
-
 }

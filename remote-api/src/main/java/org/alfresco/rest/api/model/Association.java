@@ -28,131 +28,128 @@ package org.alfresco.rest.api.model;
 
 import java.util.Objects;
 
-public class Association
-{
-    private String id;
-    private String title;
-    private String description;
-    private Boolean isChild;
-    private Boolean isProtected;
-    private AssociationSource source = null;
-    private AssociationSource target = null;
+public class Association {
 
-    public Association()
-    {
-    }
+  private String id;
+  private String title;
+  private String description;
+  private Boolean isChild;
+  private Boolean isProtected;
+  private AssociationSource source = null;
+  private AssociationSource target = null;
 
-    public Association(String id, String title, String description, Boolean isChild, Boolean isProtected, AssociationSource source, AssociationSource target)
-    {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.isChild = isChild;
-        this.isProtected = isProtected;
-        this.source = source;
-        this.target = target;
-    }
+  public Association() {}
 
-    public String getId()
-    {
-        return id;
-    }
+  public Association(
+    String id,
+    String title,
+    String description,
+    Boolean isChild,
+    Boolean isProtected,
+    AssociationSource source,
+    AssociationSource target
+  ) {
+    this.id = id;
+    this.title = title;
+    this.description = description;
+    this.isChild = isChild;
+    this.isProtected = isProtected;
+    this.source = source;
+    this.target = target;
+  }
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public String getTitle()
-    {
-        return title;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public void setTitle(String title)
-    {
-        this.title = title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getDescription()
-    {
-        return description;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public void setDescription(String description)
-    {
-        this.description = description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public Boolean getIsChild()
-    {
-        return isChild;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setIsChild(Boolean isChild)
-    {
-        this.isChild = isChild;
-    }
+  public Boolean getIsChild() {
+    return isChild;
+  }
 
-    public Boolean getIsProtected()
-    {
-        return isProtected;
-    }
+  public void setIsChild(Boolean isChild) {
+    this.isChild = isChild;
+  }
 
-    public void setIsProtected(Boolean isProtected)
-    {
-        this.isProtected = isProtected;
-    }
+  public Boolean getIsProtected() {
+    return isProtected;
+  }
 
-    public AssociationSource getSource()
-    {
-        return source;
-    }
+  public void setIsProtected(Boolean isProtected) {
+    this.isProtected = isProtected;
+  }
 
-    public void setSource(AssociationSource source)
-    {
-        this.source = source;
-    }
+  public AssociationSource getSource() {
+    return source;
+  }
 
-    public AssociationSource getTarget()
-    {
-        return target;
-    }
+  public void setSource(AssociationSource source) {
+    this.source = source;
+  }
 
-    public void setTarget(AssociationSource target)
-    {
-        this.target = target;
-    }
+  public AssociationSource getTarget() {
+    return target;
+  }
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        Association other = (Association) obj;
-        return Objects.equals(id, other.getId()) &&
-                Objects.equals(title, other.getTitle()) &&
-                Objects.equals(description, other.getDescription()) &&
-                Objects.equals(isChild, other.getIsChild()) &&
-                Objects.equals(isProtected, other.getIsProtected()) &&
-                Objects.equals(source, other.getSource()) &&
-                Objects.equals(target, other.getTarget());
-    }
+  public void setTarget(AssociationSource target) {
+    this.target = target;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder(512);
-        builder.append("Association [id=").append(this.id)
-                .append(", title=").append(this.title)
-                .append(", description=").append(this.description)
-                .append(", isChild=").append(isChild)
-                .append(", isProtected=").append(isProtected)
-                .append(", source=").append(source)
-                .append(", target=").append(target)
-                .append(']');
-        return builder.toString();
-    }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    Association other = (Association) obj;
+    return (
+      Objects.equals(id, other.getId()) &&
+      Objects.equals(title, other.getTitle()) &&
+      Objects.equals(description, other.getDescription()) &&
+      Objects.equals(isChild, other.getIsChild()) &&
+      Objects.equals(isProtected, other.getIsProtected()) &&
+      Objects.equals(source, other.getSource()) &&
+      Objects.equals(target, other.getTarget())
+    );
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder(512);
+    builder
+      .append("Association [id=")
+      .append(this.id)
+      .append(", title=")
+      .append(this.title)
+      .append(", description=")
+      .append(this.description)
+      .append(", isChild=")
+      .append(isChild)
+      .append(", isProtected=")
+      .append(isProtected)
+      .append(", source=")
+      .append(source)
+      .append(", target=")
+      .append(target)
+      .append(']');
+    return builder.toString();
+  }
 }

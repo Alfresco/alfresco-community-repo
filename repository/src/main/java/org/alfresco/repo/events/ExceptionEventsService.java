@@ -27,7 +27,6 @@ package org.alfresco.repo.events;
 
 import java.io.IOException;
 
-public interface ExceptionEventsService
-{
-	void exceptionGenerated(String txnId, Throwable t) throws IOException;
+public interface ExceptionEventsService {
+  void exceptionGenerated(String txnId, Throwable t) throws IOException;
 }

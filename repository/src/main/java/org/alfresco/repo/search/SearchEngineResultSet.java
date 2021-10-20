@@ -25,33 +25,32 @@
  */
 package org.alfresco.repo.search;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.GenericFacetResponse;
 import org.alfresco.repo.search.impl.solr.facet.facetsresponse.Metric;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.util.Pair;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Supertype layer interface for all resultset coming from a search engine (e.g. Elasticsearch, Solr)
  * This interface has been originally extracted from the Apache Solr ResultSet implementation,
  * that's the reason why the naming used for denoting some things (e.g. facets) is tied to the Solr world.
  */
-public interface SearchEngineResultSet extends ResultSet, SearchEngineResultMetadata
-{
-    Map<String, List<Pair<String, Integer>>> getFieldFacets();
+public interface SearchEngineResultSet
+  extends ResultSet, SearchEngineResultMetadata {
+  Map<String, List<Pair<String, Integer>>> getFieldFacets();
 
-    Map<String, List<Pair<String, Integer>>> getFacetIntervals();
+  Map<String, List<Pair<String, Integer>>> getFacetIntervals();
 
-    Map<String, List<Map<String, String>>> getFacetRanges();
+  Map<String, List<Map<String, String>>> getFacetRanges();
 
-    List<GenericFacetResponse> getPivotFacets();
+  List<GenericFacetResponse> getPivotFacets();
 
-    Map<String, Set<Metric>> getStats();
+  Map<String, Set<Metric>> getStats();
 
-    long getLastIndexedTxId();
+  long getLastIndexedTxId();
 
-    boolean getProcessedDenies();
+  boolean getProcessedDenies();
 }

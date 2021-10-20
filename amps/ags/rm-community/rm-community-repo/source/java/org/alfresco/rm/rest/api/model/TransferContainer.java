@@ -27,12 +27,10 @@
 
 package org.alfresco.rm.rest.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -42,136 +40,113 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class TransferContainer
-{
-    protected NodeRef nodeRef;
-    protected NodeRef parentNodeRef;
-    protected String name;
-    protected String nodeType;
+public class TransferContainer {
 
-    protected Date createdAt;
-    protected UserInfo createdByUser;
-    protected Date modifiedAt;
-    protected UserInfo modifiedByUser;
-    // optional properties
-    protected List<String> aspectNames;
-    protected Map<String, Object> properties;
-    protected List<String> allowableOperations;
+  protected NodeRef nodeRef;
+  protected NodeRef parentNodeRef;
+  protected String name;
+  protected String nodeType;
 
-    public TransferContainer()
-    {
-        //Default constructor
-    }
+  protected Date createdAt;
+  protected UserInfo createdByUser;
+  protected Date modifiedAt;
+  protected UserInfo modifiedByUser;
+  // optional properties
+  protected List<String> aspectNames;
+  protected Map<String, Object> properties;
+  protected List<String> allowableOperations;
 
-    @JsonProperty ("id")
-    @UniqueId
-    public NodeRef getNodeRef()
-    {
-        return nodeRef;
-    }
+  public TransferContainer() {
+    //Default constructor
+  }
 
-    public void setNodeRef(NodeRef nodeRef)
-    {
-        this.nodeRef = nodeRef;
-    }
+  @JsonProperty("id")
+  @UniqueId
+  public NodeRef getNodeRef() {
+    return nodeRef;
+  }
 
-    public NodeRef getParentId()
-    {
-        return parentNodeRef;
-    }
+  public void setNodeRef(NodeRef nodeRef) {
+    this.nodeRef = nodeRef;
+  }
 
-    public void setParentId(NodeRef parentNodeRef)
-    {
-        this.parentNodeRef = parentNodeRef;
-    }
+  public NodeRef getParentId() {
+    return parentNodeRef;
+  }
 
-    public String getName()
-    {
-        return name;
-    }
+  public void setParentId(NodeRef parentNodeRef) {
+    this.parentNodeRef = parentNodeRef;
+  }
 
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public String getNodeType()
-    {
-        return nodeType;
-    }
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    public void setNodeType(String nodeType)
-    {
-        this.nodeType = nodeType;
-    }
+  public String getNodeType() {
+    return nodeType;
+  }
 
-    public Date getCreatedAt()
-    {
-        return createdAt;
-    }
+  public void setNodeType(String nodeType) {
+    this.nodeType = nodeType;
+  }
 
-    public void setCreatedAt(Date createdAt)
-    {
-        this.createdAt = createdAt;
-    }
+  public Date getCreatedAt() {
+    return createdAt;
+  }
 
-    public Date getModifiedAt()
-    {
-        return modifiedAt;
-    }
+  public void setCreatedAt(Date createdAt) {
+    this.createdAt = createdAt;
+  }
 
-    public void setModifiedAt(Date modifiedAt)
-    {
-        this.modifiedAt = modifiedAt;
-    }
+  public Date getModifiedAt() {
+    return modifiedAt;
+  }
 
-    public UserInfo getCreatedByUser()
-    {
-        return createdByUser;
-    }
+  public void setModifiedAt(Date modifiedAt) {
+    this.modifiedAt = modifiedAt;
+  }
 
-    public void setCreatedByUser(UserInfo createdByUser)
-    {
-        this.createdByUser = createdByUser;
-    }
+  public UserInfo getCreatedByUser() {
+    return createdByUser;
+  }
 
-    public UserInfo getModifiedByUser()
-    {
-        return modifiedByUser;
-    }
+  public void setCreatedByUser(UserInfo createdByUser) {
+    this.createdByUser = createdByUser;
+  }
 
-    public void setModifiedByUser(UserInfo modifiedByUser)
-    {
-        this.modifiedByUser = modifiedByUser;
-    }
+  public UserInfo getModifiedByUser() {
+    return modifiedByUser;
+  }
 
-    public List<String> getAspectNames()
-    {
-        return aspectNames;
-    }
+  public void setModifiedByUser(UserInfo modifiedByUser) {
+    this.modifiedByUser = modifiedByUser;
+  }
 
-    public void setAspectNames(List<String> aspectNames)
-    {
-        this.aspectNames = aspectNames;
-    }
+  public List<String> getAspectNames() {
+    return aspectNames;
+  }
 
-    public Map<String, Object> getProperties()
-    {
-        return properties;
-    }
+  public void setAspectNames(List<String> aspectNames) {
+    this.aspectNames = aspectNames;
+  }
 
-    public void setProperties(Map<String, Object> properties)
-    {
-        this.properties = properties;
-    }
+  public Map<String, Object> getProperties() {
+    return properties;
+  }
 
-    public List<String> getAllowableOperations()
-    {
-        return allowableOperations;
-    }
+  public void setProperties(Map<String, Object> properties) {
+    this.properties = properties;
+  }
 
-    public void setAllowableOperations(List<String> allowableOperations)
-    {
-        this.allowableOperations = allowableOperations;
-    }
+  public List<String> getAllowableOperations() {
+    return allowableOperations;
+  }
+
+  public void setAllowableOperations(List<String> allowableOperations) {
+    this.allowableOperations = allowableOperations;
+  }
 }

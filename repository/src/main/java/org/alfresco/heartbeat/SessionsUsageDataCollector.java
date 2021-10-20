@@ -25,20 +25,17 @@
  */
 package org.alfresco.heartbeat;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.jobs.HeartBeatJobScheduler;
 import org.alfresco.repo.admin.RepoServerMgmtMBean;
 import org.alfresco.repo.descriptor.DescriptorDAO;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Date;
-
-
 
 /**
  * <ul>
@@ -52,45 +49,54 @@ import java.util.Date;
  *
  * @author eknizat
  */
-public class SessionsUsageDataCollector extends HBBaseDataCollector
-{
-    /** The logger. */
-    private static final Log logger = LogFactory.getLog(SessionsUsageDataCollector.class);
+public class SessionsUsageDataCollector extends HBBaseDataCollector {
 
-    /** DAO for current repository descriptor. */
-    private DescriptorDAO currentRepoDescriptorDAO;
+  /** The logger. */
+  private static final Log logger = LogFactory.getLog(
+    SessionsUsageDataCollector.class
+  );
 
-    private RepoServerMgmtMBean repoServerMgmt;
+  /** DAO for current repository descriptor. */
+  private DescriptorDAO currentRepoDescriptorDAO;
 
-    public SessionsUsageDataCollector(String collectorId, String collectorVersion, String cronExpression, HeartBeatJobScheduler hbJobScheduler)
-    {
-        super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
-    }
+  private RepoServerMgmtMBean repoServerMgmt;
 
-    public void setCurrentRepoDescriptorDAO(DescriptorDAO currentRepoDescriptorDAO)
-    {
-        this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
-    }
+  public SessionsUsageDataCollector(
+    String collectorId,
+    String collectorVersion,
+    String cronExpression,
+    HeartBeatJobScheduler hbJobScheduler
+  ) {
+    super(collectorId, collectorVersion, cronExpression, hbJobScheduler);
+  }
 
-    public void setRepoServerMgmt(RepoServerMgmtMBean repoServerMgmt)
-    {
-        this.repoServerMgmt = repoServerMgmt;
-    }
+  public void setCurrentRepoDescriptorDAO(
+    DescriptorDAO currentRepoDescriptorDAO
+  ) {
+    this.currentRepoDescriptorDAO = currentRepoDescriptorDAO;
+  }
 
-    @Override
-    public List<HBData> collectData()
-    {
-        Map<String, Object> sessionValues = new HashMap<>();
+  public void setRepoServerMgmt(RepoServerMgmtMBean repoServerMgmt) {
+    this.repoServerMgmt = repoServerMgmt;
+  }
 
-        sessionValues.put("activeTickets", repoServerMgmt.getTicketCountNonExpired());
+  @Override
+  public List<HBData> collectData() {
+    Map<String, Object> sessionValues = new HashMap<>();
 
-        HBData sessionsData = new HBData(
-                this.currentRepoDescriptorDAO.getDescriptor().getId(),
-                this.getCollectorId(),
-                this.getCollectorVersion(),
-                new Date(),
-                sessionValues);
+    sessionValues.put(
+      "activeTickets",
+      repoServerMgmt.getTicketCountNonExpired()
+    );
 
-        return Arrays.asList(sessionsData);
-    }
+    HBData sessionsData = new HBData(
+      this.currentRepoDescriptorDAO.getDescriptor().getId(),
+      this.getCollectorId(),
+      this.getCollectorVersion(),
+      new Date(),
+      sessionValues
+    );
+
+    return Arrays.asList(sessionsData);
+  }
 }

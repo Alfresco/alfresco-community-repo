@@ -49,15 +49,14 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RecordCategoryAPI extends RMModelRequest
-{
+public class RecordCategoryAPI extends RMModelRequest {
+
     /**
      * Constructor.
      *
      * @param rmRestWrapper RM REST Wrapper
      */
-    public RecordCategoryAPI(RMRestWrapper rmRestWrapper)
-    {
+    public RecordCategoryAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
@@ -74,22 +73,23 @@ public class RecordCategoryAPI extends RMModelRequest
      *  <li>{@code recordCategoryId} is locked and cannot be deleted</li>
      * </ul>
      */
-    public void deleteRecordCategory(String recordCategoryId)
-    {
+    public void deleteRecordCategory(String recordCategoryId) {
         mandatoryString("recordCategoryId", recordCategoryId);
 
-        getRmRestWrapper().processEmptyModel(simpleRequest(
-                DELETE,
-                "record-categories/{recordCategoryId}",
-                recordCategoryId
-        ));
+        getRmRestWrapper()
+            .processEmptyModel(
+                simpleRequest(
+                    DELETE,
+                    "record-categories/{recordCategoryId}",
+                    recordCategoryId
+                )
+            );
     }
 
     /**
      * see {@link #getRecordCategory(String, String)}
      */
-    public RecordCategory getRecordCategory(String recordCategoryId)
-    {
+    public RecordCategory getRecordCategory(String recordCategoryId) {
         mandatoryString("recordCategoryId", recordCategoryId);
 
         return getRecordCategory(recordCategoryId, EMPTY);
@@ -109,27 +109,39 @@ public class RecordCategoryAPI extends RMModelRequest
      *  <li>{@code recordCategoryId} does not exist</li>
      * </ul>
      */
-    public RecordCategory getRecordCategory(String recordCategoryId, String parameters)
-    {
+    public RecordCategory getRecordCategory(
+        String recordCategoryId,
+        String parameters
+    ) {
         mandatoryString("recordCategoryId", recordCategoryId);
 
-        return getRmRestWrapper().processModel(RecordCategory.class, simpleRequest(
-                GET,
-                "record-categories/{recordCategoryId}?{parameters}",
-                recordCategoryId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                RecordCategory.class,
+                simpleRequest(
+                    GET,
+                    "record-categories/{recordCategoryId}?{parameters}",
+                    recordCategoryId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #updateRecordCategory(RecordCategory, String, String)
      */
-    public RecordCategory updateRecordCategory(RecordCategory recordCategoryModel, String recordCategoryId)
-    {
+    public RecordCategory updateRecordCategory(
+        RecordCategory recordCategoryModel,
+        String recordCategoryId
+    ) {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("recordCategoryId", recordCategoryId);
 
-        return updateRecordCategory(recordCategoryModel, recordCategoryId, EMPTY);
+        return updateRecordCategory(
+            recordCategoryModel,
+            recordCategoryId,
+            EMPTY
+        );
     }
 
     /**
@@ -149,25 +161,33 @@ public class RecordCategoryAPI extends RMModelRequest
      *  <li>model integrity exception, including file name with invalid characters</li>
      * </ul>
      */
-    public RecordCategory updateRecordCategory(RecordCategory recordCategoryModel, String recordCategoryId, String parameters)
-    {
+    public RecordCategory updateRecordCategory(
+        RecordCategory recordCategoryModel,
+        String recordCategoryId,
+        String parameters
+    ) {
         mandatoryObject("recordCategoryModel", recordCategoryModel);
         mandatoryString("recordCategoryId", recordCategoryId);
 
-        return getRmRestWrapper().processModel(RecordCategory.class, requestWithBody(
-                PUT,
-                toJson(recordCategoryModel),
-                "record-categories/{recordCategoryId}?{parameters}",
-                recordCategoryId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                RecordCategory.class,
+                requestWithBody(
+                    PUT,
+                    toJson(recordCategoryModel),
+                    "record-categories/{recordCategoryId}?{parameters}",
+                    recordCategoryId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #getRecordCategoryChildren(String, String)}
      */
-    public RecordCategoryChildCollection getRecordCategoryChildren(String recordCategoryId)
-    {
+    public RecordCategoryChildCollection getRecordCategoryChildren(
+        String recordCategoryId
+    ) {
         mandatoryString("recordCategoryId", recordCategoryId);
 
         return getRecordCategoryChildren(recordCategoryId, EMPTY);
@@ -186,27 +206,39 @@ public class RecordCategoryAPI extends RMModelRequest
      *  <li>{@code recordCategoryId} does not exist</li>
      *</ul>
      */
-    public RecordCategoryChildCollection getRecordCategoryChildren(String recordCategoryId, String parameters)
-    {
+    public RecordCategoryChildCollection getRecordCategoryChildren(
+        String recordCategoryId,
+        String parameters
+    ) {
         mandatoryString("recordCategoryId", recordCategoryId);
 
-        return getRmRestWrapper().processModels(RecordCategoryChildCollection.class, simpleRequest(
-            GET,
-            "record-categories/{recordCategoryId}/children?{parameters}",
-            recordCategoryId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModels(
+                RecordCategoryChildCollection.class,
+                simpleRequest(
+                    GET,
+                    "record-categories/{recordCategoryId}/children?{parameters}",
+                    recordCategoryId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #createRecordCategoryChild(RecordCategoryChild, String, String)}
      */
-    public RecordCategoryChild createRecordCategoryChild(RecordCategoryChild recordCategoryChildModel, String recordCategoryId)
-    {
+    public RecordCategoryChild createRecordCategoryChild(
+        RecordCategoryChild recordCategoryChildModel,
+        String recordCategoryId
+    ) {
         mandatoryObject("recordCategoryChildModel", recordCategoryChildModel);
         mandatoryString("recordCategoryId", recordCategoryId);
 
-        return createRecordCategoryChild(recordCategoryChildModel, recordCategoryId, EMPTY);
+        return createRecordCategoryChild(
+            recordCategoryChildModel,
+            recordCategoryId,
+            EMPTY
+        );
     }
 
     /**
@@ -226,17 +258,27 @@ public class RecordCategoryAPI extends RMModelRequest
      *  <li>model integrity exception, including node name with invalid characters</li>
      * </ul>
      */
-    public RecordCategoryChild createRecordCategoryChild(RecordCategoryChild recordCategoryChildModel, String recordCategoryId, String parameters)
-    {
-        mandatoryObject("filePlanComponentProperties", recordCategoryChildModel);
+    public RecordCategoryChild createRecordCategoryChild(
+        RecordCategoryChild recordCategoryChildModel,
+        String recordCategoryId,
+        String parameters
+    ) {
+        mandatoryObject(
+            "filePlanComponentProperties",
+            recordCategoryChildModel
+        );
         mandatoryString("recordCategoryId", recordCategoryId);
 
-        return getRmRestWrapper().processModel(RecordCategoryChild.class, requestWithBody(
-                POST,
-                toJson(recordCategoryChildModel),
-                "record-categories/{recordCategoryId}/children?{parameters}",
-                recordCategoryId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                RecordCategoryChild.class,
+                requestWithBody(
+                    POST,
+                    toJson(recordCategoryChildModel),
+                    "record-categories/{recordCategoryId}/children?{parameters}",
+                    recordCategoryId,
+                    parameters
+                )
+            );
     }
 }

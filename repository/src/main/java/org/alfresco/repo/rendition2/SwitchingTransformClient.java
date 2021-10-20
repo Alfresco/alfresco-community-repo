@@ -32,44 +32,68 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author adavis
  */
-public class SwitchingTransformClient implements TransformClient
-{
-    private final TransformClient primary;
-    private final TransformClient secondary;
-    private ThreadLocal<TransformClient> transformClient = new ThreadLocal<>();
+public class SwitchingTransformClient implements TransformClient {
 
-    public SwitchingTransformClient(TransformClient primary, TransformClient secondary)
-    {
-        this.primary = primary;
-        this.secondary = secondary;
-    }
+  private final TransformClient primary;
+  private final TransformClient secondary;
+  private ThreadLocal<TransformClient> transformClient = new ThreadLocal<>();
 
-    @Override
-    public void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype, long sourceSizeInBytes, String contentUrl)
-    {
-        try
-        {
-            primary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
-            transformClient.set(primary);
-        }
-        catch (UnsupportedOperationException e)
-        {
-            try
-            {
-                secondary.checkSupported(sourceNodeRef, renditionDefinition, sourceMimetype, sourceSizeInBytes, contentUrl);
-                transformClient.set(secondary);
-            }
-            catch (UnsupportedOperationException e2)
-            {
-                transformClient.set(null);
-                throw e2;
-            }
-        }
-    }
+  public SwitchingTransformClient(
+    TransformClient primary,
+    TransformClient secondary
+  ) {
+    this.primary = primary;
+    this.secondary = secondary;
+  }
 
-    @Override
-    public void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user, int sourceContentHashCode)
-    {
-        transformClient.get().transform(sourceNodeRef, renditionDefinition, user, sourceContentHashCode);
+  @Override
+  public void checkSupported(
+    NodeRef sourceNodeRef,
+    RenditionDefinition2 renditionDefinition,
+    String sourceMimetype,
+    long sourceSizeInBytes,
+    String contentUrl
+  ) {
+    try {
+      primary.checkSupported(
+        sourceNodeRef,
+        renditionDefinition,
+        sourceMimetype,
+        sourceSizeInBytes,
+        contentUrl
+      );
+      transformClient.set(primary);
+    } catch (UnsupportedOperationException e) {
+      try {
+        secondary.checkSupported(
+          sourceNodeRef,
+          renditionDefinition,
+          sourceMimetype,
+          sourceSizeInBytes,
+          contentUrl
+        );
+        transformClient.set(secondary);
+      } catch (UnsupportedOperationException e2) {
+        transformClient.set(null);
+        throw e2;
+      }
     }
+  }
+
+  @Override
+  public void transform(
+    NodeRef sourceNodeRef,
+    RenditionDefinition2 renditionDefinition,
+    String user,
+    int sourceContentHashCode
+  ) {
+    transformClient
+      .get()
+      .transform(
+        sourceNodeRef,
+        renditionDefinition,
+        user,
+        sourceContentHashCode
+      );
+  }
 }

@@ -31,7 +31,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
@@ -44,363 +43,473 @@ import org.alfresco.util.GUID;
 
 /**
  * Declare as record version integration tests
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3
  */
-public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
-{
-    /** recordable version service */
-    private RecordableVersionService recordableVersionService;
+public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest {
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
-     */
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-        recordableVersionService = (RecordableVersionService) applicationContext.getBean("RecordableVersionService");
-    }
+  /** recordable version service */
+  private RecordableVersionService recordableVersionService;
 
-    /**
-     * Given versionable content with a non-recorded latest version 
-     * When I declare a version record 
-     * Then the latest version is recorded and a record is created
-     */
-    public void testDeclareLatestVersionAsRecord()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
-            private NodeRef versionRecord;
-            private Map<String, Serializable> versionProperties;
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
+   */
+  @Override
+  protected void initServices() {
+    super.initServices();
+    recordableVersionService =
+      (RecordableVersionService) applicationContext.getBean(
+        "RecordableVersionService"
+      );
+  }
 
-            public void given() throws Exception
-            {
-                // setup version properties
-                versionProperties = new HashMap<>(4);
-                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
-                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+  /**
+   * Given versionable content with a non-recorded latest version
+   * When I declare a version record
+   * Then the latest version is recorded and a record is created
+   */
+  public void testDeclareLatestVersionAsRecord() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(dmCollaborator) {
+        private NodeRef versionRecord;
+        private Map<String, Serializable> versionProperties;
 
-                //remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
-                // content property via NodeService.addProperties
-                nodeService.removeProperty(dmDocument, ContentModel.PROP_CONTENT);
+        public void given() throws Exception {
+          // setup version properties
+          versionProperties = new HashMap<>(4);
+          versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+          versionProperties.put(
+            VersionModel.PROP_VERSION_TYPE,
+            VersionType.MINOR
+          );
 
-                // create version
-                versionService.createVersion(dmDocument, versionProperties);
+          //remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
+          // content property via NodeService.addProperties
+          nodeService.removeProperty(dmDocument, ContentModel.PROP_CONTENT);
 
-                // assert that the latest version is not recorded
-                assertFalse(recordableVersionService.isCurrentVersionRecorded(dmDocument));
-            }
+          // create version
+          versionService.createVersion(dmDocument, versionProperties);
 
-            public void when()
-            {
-                // create version record from latest version
-                versionRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, dmDocument);
-            }
+          // assert that the latest version is not recorded
+          assertFalse(
+            recordableVersionService.isCurrentVersionRecorded(dmDocument)
+          );
+        }
 
-            public void then()
-            {
-                // check the created record
-                assertNotNull(versionRecord);
-                assertTrue(recordService.isRecord(versionRecord));
+        public void when() {
+          // create version record from latest version
+          versionRecord =
+            recordableVersionService.createRecordFromLatestVersion(
+              filePlan,
+              dmDocument
+            );
+        }
 
-                // assert the current version is recorded
-                assertTrue(recordableVersionService.isCurrentVersionRecorded(dmDocument));
+        public void then() {
+          // check the created record
+          assertNotNull(versionRecord);
+          assertTrue(recordService.isRecord(versionRecord));
 
-                // check the recorded version
-                checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
-            }
-        });
-    }
+          // assert the current version is recorded
+          assertTrue(
+            recordableVersionService.isCurrentVersionRecorded(dmDocument)
+          );
 
-    /**
-     * Given versionable content with a recorded latest version
-     * When I declare a version record
-     * Then nothing happens since the latest version is already recorded
-     * And a warning is logged
-     */
-    public void testDeclareLatestVersionAsRecordButAlreadyRecorded()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
-            private NodeRef versionRecord;
-            private Map<String, Serializable> versionProperties;
+          // check the recorded version
+          checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
+        }
+      }
+    );
+  }
 
-            public void given() throws Exception
-            {
-                // setup version properties
-                versionProperties = new HashMap<>(4);
-                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
-                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-                versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
-                versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
+  /**
+   * Given versionable content with a recorded latest version
+   * When I declare a version record
+   * Then nothing happens since the latest version is already recorded
+   * And a warning is logged
+   */
+  public void testDeclareLatestVersionAsRecordButAlreadyRecorded() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(dmCollaborator) {
+        private NodeRef versionRecord;
+        private Map<String, Serializable> versionProperties;
 
-                // create version
-                versionService.createVersion(dmDocument, versionProperties);
+        public void given() throws Exception {
+          // setup version properties
+          versionProperties = new HashMap<>(4);
+          versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+          versionProperties.put(
+            VersionModel.PROP_VERSION_TYPE,
+            VersionType.MINOR
+          );
+          versionProperties.put(
+            RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION,
+            true
+          );
+          versionProperties.put(
+            RecordableVersionServiceImpl.KEY_FILE_PLAN,
+            filePlan
+          );
 
-                // assert that the latest version is not recorded
-                assertTrue(recordableVersionService.isCurrentVersionRecorded(dmDocument));
-            }
+          // create version
+          versionService.createVersion(dmDocument, versionProperties);
 
-            public void when()
-            {
-                // create version record from latest version
-                versionRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, dmDocument);
-            }
+          // assert that the latest version is not recorded
+          assertTrue(
+            recordableVersionService.isCurrentVersionRecorded(dmDocument)
+          );
+        }
 
-            public void then()
-            {
-                // check that a record was not created
-                assertNull(versionRecord);
+        public void when() {
+          // create version record from latest version
+          versionRecord =
+            recordableVersionService.createRecordFromLatestVersion(
+              filePlan,
+              dmDocument
+            );
+        }
 
-                // assert the current version is recorded
-                assertTrue(recordableVersionService.isCurrentVersionRecorded(dmDocument));
+        public void then() {
+          // check that a record was not created
+          assertNull(versionRecord);
 
-                // check the recorded version
-                checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
-            }
-        });
-    }
+          // assert the current version is recorded
+          assertTrue(
+            recordableVersionService.isCurrentVersionRecorded(dmDocument)
+          );
 
-    /**
-     * Given that a document is a specialized type 
-     * When version is declared as a record 
-     * Then the record is the same type as the source document
-     * 
-     * @see https://issues.alfresco.com/jira/browse/RM-2194
-     */
-    public void testSpecializedContentType()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
-            private NodeRef customDocument;
-            private NodeRef versionRecord;
-            private Map<String, Serializable> versionProperties;
+          // check the recorded version
+          checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
+        }
+      }
+    );
+  }
 
-            public void given() throws Exception
-            {
-                // create content
-                customDocument = fileFolderService.create(dmFolder, GUID.generate(), TYPE_CUSTOM_TYPE).getNodeRef();
-                prepareContent(customDocument);
+  /**
+   * Given that a document is a specialized type
+   * When version is declared as a record
+   * Then the record is the same type as the source document
+   *
+   * @see https://issues.alfresco.com/jira/browse/RM-2194
+   */
+  public void testSpecializedContentType() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(dmCollaborator) {
+        private NodeRef customDocument;
+        private NodeRef versionRecord;
+        private Map<String, Serializable> versionProperties;
 
-                // setup version properties
-                versionProperties = new HashMap<>(2);
-                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
-                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-                //remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
-                // content property via NodeService.addProperties
-                nodeService.removeProperty(customDocument, PROP_CONTENT);
-                // create version
-                versionService.createVersion(customDocument, versionProperties);
+        public void given() throws Exception {
+          // create content
+          customDocument =
+            fileFolderService
+              .create(dmFolder, GUID.generate(), TYPE_CUSTOM_TYPE)
+              .getNodeRef();
+          prepareContent(customDocument);
 
-                // assert that the latest version is not recorded
-                assertFalse(recordableVersionService.isCurrentVersionRecorded(customDocument));
-            }
+          // setup version properties
+          versionProperties = new HashMap<>(2);
+          versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+          versionProperties.put(
+            VersionModel.PROP_VERSION_TYPE,
+            VersionType.MINOR
+          );
+          //remove the content property as ContentPropertyRestrictionInterceptor will not allow update of
+          // content property via NodeService.addProperties
+          nodeService.removeProperty(customDocument, PROP_CONTENT);
+          // create version
+          versionService.createVersion(customDocument, versionProperties);
 
-            public void when()
-            {
-                // create version record from latest version
-                versionRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, customDocument);
-            }
+          // assert that the latest version is not recorded
+          assertFalse(
+            recordableVersionService.isCurrentVersionRecorded(customDocument)
+          );
+        }
 
-            public void then()
-            {
-                // check the created record
-                assertNotNull(versionRecord);
-                assertTrue(recordService.isRecord(versionRecord));
+        public void when() {
+          // create version record from latest version
+          versionRecord =
+            recordableVersionService.createRecordFromLatestVersion(
+              filePlan,
+              customDocument
+            );
+        }
 
-                // check the record type is correct
-                assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(versionRecord));
+        public void then() {
+          // check the created record
+          assertNotNull(versionRecord);
+          assertTrue(recordService.isRecord(versionRecord));
 
-                // assert the current version is recorded
-                assertTrue(recordableVersionService.isCurrentVersionRecorded(customDocument));
+          // check the record type is correct
+          assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(versionRecord));
 
-                // check the recorded version
-                checkRecordedVersion(customDocument, DESCRIPTION, "0.1");
-            }
-        });
+          // assert the current version is recorded
+          assertTrue(
+            recordableVersionService.isCurrentVersionRecorded(customDocument)
+          );
 
-    }
+          // check the recorded version
+          checkRecordedVersion(customDocument, DESCRIPTION, "0.1");
+        }
+      }
+    );
+  }
 
-    /**
-     * Given versionable content with a recorded latest version and autoversion is true
-     * When I declare this version record and contains local modifications 
-     * Then a new minor version is created for document 
-     * 
-     * @see https://issues.alfresco.com/jira/browse/RM-2368
-     */
-    public void testCreateRecordFromLatestVersionAutoTrue()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
-            private NodeRef myDocument;
-            private NodeRef versionedRecord;
-            private Map<String, Serializable> versionProperties;
-            private Date createdDate;
-            private Date modificationDate;
-            private String record_name = "initial_name";
-            private String AUTO_VERSION_DESCRIPTION = "Auto Version on Record Creation";
-            private boolean autoVersion = true;
+  /**
+   * Given versionable content with a recorded latest version and autoversion is true
+   * When I declare this version record and contains local modifications
+   * Then a new minor version is created for document
+   *
+   * @see https://issues.alfresco.com/jira/browse/RM-2368
+   */
+  public void testCreateRecordFromLatestVersionAutoTrue() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(dmCollaborator) {
+        private NodeRef myDocument;
+        private NodeRef versionedRecord;
+        private Map<String, Serializable> versionProperties;
+        private Date createdDate;
+        private Date modificationDate;
+        private String record_name = "initial_name";
+        private String AUTO_VERSION_DESCRIPTION =
+          "Auto Version on Record Creation";
+        private boolean autoVersion = true;
 
-            public void given() throws Exception
-            {
-                // create a document
-                myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                createdDate = (Date) nodeService.getProperty(myDocument, ContentModel.PROP_CREATED);
-                modificationDate = (Date) nodeService.getProperty(myDocument, ContentModel.PROP_MODIFIED);
-                assertTrue("Modified date must be after or on creation date", createdDate.getTime() == modificationDate.getTime());
+        public void given() throws Exception {
+          // create a document
+          myDocument =
+            fileFolderService
+              .create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT)
+              .getNodeRef();
+          createdDate =
+            (Date) nodeService.getProperty(
+              myDocument,
+              ContentModel.PROP_CREATED
+            );
+          modificationDate =
+            (Date) nodeService.getProperty(
+              myDocument,
+              ContentModel.PROP_MODIFIED
+            );
+          assertTrue(
+            "Modified date must be after or on creation date",
+            createdDate.getTime() == modificationDate.getTime()
+          );
 
-                // Set initial set of properties
-                Map<QName, Serializable> properties = new HashMap<>(3);
-                // Ensure default behaviour autoversion on change properties is set to false
-                properties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
-                // Set initial name
-                properties.put(ContentModel.PROP_NAME, "initial_name");
-                nodeService.setProperties(myDocument, properties);
-                nodeService.setProperty(myDocument, ContentModel.PROP_DESCRIPTION, DESCRIPTION);
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_OWNABLE, null);
-                // make sure document is versionable
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, null);
-                // Change Type to a custom document
-                nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
+          // Set initial set of properties
+          Map<QName, Serializable> properties = new HashMap<>(3);
+          // Ensure default behaviour autoversion on change properties is set to false
+          properties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+          // Set initial name
+          properties.put(ContentModel.PROP_NAME, "initial_name");
+          nodeService.setProperties(myDocument, properties);
+          nodeService.setProperty(
+            myDocument,
+            ContentModel.PROP_DESCRIPTION,
+            DESCRIPTION
+          );
+          nodeService.addAspect(myDocument, ContentModel.ASPECT_OWNABLE, null);
+          // make sure document is versionable
+          nodeService.addAspect(
+            myDocument,
+            ContentModel.ASPECT_VERSIONABLE,
+            null
+          );
+          // Change Type to a custom document
+          nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
 
-                // setup version properties
-                versionProperties = new HashMap<>(2);
-                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
-                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+          // setup version properties
+          versionProperties = new HashMap<>(2);
+          versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+          versionProperties.put(
+            VersionModel.PROP_VERSION_TYPE,
+            VersionType.MAJOR
+          );
 
-                // create initial version
-                versionService.createVersion(myDocument, versionProperties);
-            }
+          // create initial version
+          versionService.createVersion(myDocument, versionProperties);
+        }
 
-            public void when()
-            {
-                // Apply a custom aspect
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_TITLED, null);
-                // Update properties
-                nodeService.setProperty(myDocument, ContentModel.PROP_NAME, "updated_name");
-                nodeService.setProperty(myDocument, ContentModel.PROP_DESCRIPTION, DESCRIPTION);
-                // test RM-2368
-                versionedRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, myDocument, autoVersion);
-            }
+        public void when() {
+          // Apply a custom aspect
+          nodeService.addAspect(myDocument, ContentModel.ASPECT_TITLED, null);
+          // Update properties
+          nodeService.setProperty(
+            myDocument,
+            ContentModel.PROP_NAME,
+            "updated_name"
+          );
+          nodeService.setProperty(
+            myDocument,
+            ContentModel.PROP_DESCRIPTION,
+            DESCRIPTION
+          );
+          // test RM-2368
+          versionedRecord =
+            recordableVersionService.createRecordFromLatestVersion(
+              filePlan,
+              myDocument,
+              autoVersion
+            );
+        }
 
-            public void then()
-            {
-                // Properties updated / flag as modified
-                // check the created record
-                assertNotNull(versionedRecord);
-                assertTrue(recordService.isRecord(versionedRecord));
+        public void then() {
+          // Properties updated / flag as modified
+          // check the created record
+          assertNotNull(versionedRecord);
+          assertTrue(recordService.isRecord(versionedRecord));
 
-                // check the record type is correct
-                assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(versionedRecord));
+          // check the record type is correct
+          assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(versionedRecord));
 
-                // assert the current version is recorded
-                assertTrue(recordableVersionService.isCurrentVersionRecorded(myDocument));
+          // assert the current version is recorded
+          assertTrue(
+            recordableVersionService.isCurrentVersionRecorded(myDocument)
+          );
 
-                // get name of record
-                record_name = (String) nodeService.getProperty(versionedRecord, ContentModel.PROP_NAME);
+          // get name of record
+          record_name =
+            (String) nodeService.getProperty(
+              versionedRecord,
+              ContentModel.PROP_NAME
+            );
 
-                // new version is create, current node was modified
-                assertTrue("Name was updated:", record_name.contains("updated_name"));
-                // check record
-                checkRecordedVersion(myDocument, AUTO_VERSION_DESCRIPTION, "1.1");
+          // new version is create, current node was modified
+          assertTrue("Name was updated:", record_name.contains("updated_name"));
+          // check record
+          checkRecordedVersion(myDocument, AUTO_VERSION_DESCRIPTION, "1.1");
+        }
+      }
+    );
+  }
 
-            }
+  /**
+   *
+   * Given versionable content with a recorded latest version and autoversion is false
+   * When I declare this version record and contains local modifications
+   * Then a record is created from latest version
+   *
+   * @see https://issues.alfresco.com/jira/browse/RM-2368
+   */
+  public void testCreateRecordFromLatestVersion() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest(dmCollaborator) {
+        private NodeRef myDocument;
+        private NodeRef versionedRecord;
+        private Map<String, Serializable> versionProperties;
+        private Date createdDate;
+        private Date modificationDate;
+        private String record_name = "initial_name";
+        private boolean autoVersion = false;
 
-        });
+        public void given() throws Exception {
+          // create a document
+          myDocument =
+            fileFolderService
+              .create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT)
+              .getNodeRef();
+          createdDate =
+            (Date) nodeService.getProperty(
+              myDocument,
+              ContentModel.PROP_CREATED
+            );
+          modificationDate =
+            (Date) nodeService.getProperty(
+              myDocument,
+              ContentModel.PROP_MODIFIED
+            );
+          assertTrue(
+            "Modified date must be after or on creation date",
+            createdDate.getTime() == modificationDate.getTime()
+          );
 
-    }
-    
-    
-    /**
-     * 
-     * Given versionable content with a recorded latest version and autoversion is false
-     * When I declare this version record and contains local modifications 
-     * Then a record is created from latest version
-     *
-     * @see https://issues.alfresco.com/jira/browse/RM-2368
-     */
-    public void testCreateRecordFromLatestVersion()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
-        {
-            private NodeRef myDocument;
-            private NodeRef versionedRecord;
-            private Map<String, Serializable> versionProperties;
-            private Date createdDate;
-            private Date modificationDate;
-            private String record_name = "initial_name";
-            private boolean autoVersion = false;
+          // Set initial set of properties
+          Map<QName, Serializable> properties = new HashMap<>(3);
+          // Ensure default behaviour autoversion on change properties is set to false
+          properties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+          // Set initial name
+          properties.put(ContentModel.PROP_NAME, "initial_name");
+          nodeService.setProperties(myDocument, properties);
+          nodeService.setProperty(
+            myDocument,
+            ContentModel.PROP_DESCRIPTION,
+            DESCRIPTION
+          );
+          nodeService.addAspect(myDocument, ContentModel.ASPECT_OWNABLE, null);
+          // make sure document is versionable
+          nodeService.addAspect(
+            myDocument,
+            ContentModel.ASPECT_VERSIONABLE,
+            null
+          );
+          // Change Type to a custom document
+          nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
 
-            public void given() throws Exception
-            {
-                // create a document
-                myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                createdDate = (Date) nodeService.getProperty(myDocument, ContentModel.PROP_CREATED);
-                modificationDate = (Date) nodeService.getProperty(myDocument, ContentModel.PROP_MODIFIED);
-                assertTrue("Modified date must be after or on creation date", createdDate.getTime() == modificationDate.getTime());
+          // setup version properties
+          versionProperties = new HashMap<>(2);
+          versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+          versionProperties.put(
+            VersionModel.PROP_VERSION_TYPE,
+            VersionType.MAJOR
+          );
 
-                // Set initial set of properties
-                Map<QName, Serializable> properties = new HashMap<>(3);
-                // Ensure default behaviour autoversion on change properties is set to false
-                properties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
-                // Set initial name
-                properties.put(ContentModel.PROP_NAME, "initial_name");
-                nodeService.setProperties(myDocument, properties);
-                nodeService.setProperty(myDocument, ContentModel.PROP_DESCRIPTION, DESCRIPTION);
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_OWNABLE, null);
-                // make sure document is versionable
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, null);
-                // Change Type to a custom document
-                nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
+          // create initial version
+          versionService.createVersion(myDocument, versionProperties);
+        }
 
-                // setup version properties
-                versionProperties = new HashMap<>(2);
-                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
-                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
+        public void when() {
+          // Apply a custom aspect
+          nodeService.addAspect(myDocument, ContentModel.ASPECT_TITLED, null);
+          // Update properties
+          nodeService.setProperty(
+            myDocument,
+            ContentModel.PROP_NAME,
+            "initial_name"
+          );
+          nodeService.setProperty(
+            myDocument,
+            ContentModel.PROP_DESCRIPTION,
+            DESCRIPTION
+          );
+          // test RM-2368
+          versionedRecord =
+            recordableVersionService.createRecordFromLatestVersion(
+              filePlan,
+              myDocument,
+              autoVersion
+            );
+        }
 
-                // create initial version
-                versionService.createVersion(myDocument, versionProperties);
-            }
+        public void then() {
+          // Properties updated / flag as modified
+          // check the created record
+          assertNotNull(versionedRecord);
+          assertTrue(recordService.isRecord(versionedRecord));
 
-            public void when()
-            {
-                // Apply a custom aspect
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_TITLED, null);
-                // Update properties
-                nodeService.setProperty(myDocument, ContentModel.PROP_NAME, "initial_name");
-                nodeService.setProperty(myDocument, ContentModel.PROP_DESCRIPTION, DESCRIPTION);
-                // test RM-2368
-                versionedRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, myDocument, autoVersion);
-            }
+          // check the record type is correct
+          assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(versionedRecord));
 
-            public void then()
-            {
-                // Properties updated / flag as modified
-                // check the created record
-                assertNotNull(versionedRecord);
-                assertTrue(recordService.isRecord(versionedRecord));
+          // assert the current version is recorded
+          assertTrue(
+            recordableVersionService.isCurrentVersionRecorded(myDocument)
+          );
 
-                // check the record type is correct
-                assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(versionedRecord));
+          // get name of record
+          record_name =
+            (String) nodeService.getProperty(
+              versionedRecord,
+              ContentModel.PROP_NAME
+            );
 
-                // assert the current version is recorded
-                assertTrue(recordableVersionService.isCurrentVersionRecorded(myDocument));
-
-                // get name of record
-                record_name = (String) nodeService.getProperty(versionedRecord, ContentModel.PROP_NAME);
-
-                // record is created based on existing frozen, which does not contain any modification of node
-                assertTrue("Name is not modified: ", record_name.contains("initial_name"));
-                checkRecordedVersion(myDocument, DESCRIPTION, "1.0");
- 
-            }
- 
-
-        });
-
-    }
-
-
+          // record is created based on existing frozen, which does not contain any modification of node
+          assertTrue(
+            "Name is not modified: ",
+            record_name.contains("initial_name")
+          );
+          checkRecordedVersion(myDocument, DESCRIPTION, "1.0");
+        }
+      }
+    );
+  }
 }

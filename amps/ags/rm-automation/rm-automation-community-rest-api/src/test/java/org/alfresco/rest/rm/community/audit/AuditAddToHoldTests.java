@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.audit;
 
 import static java.util.Arrays.asList;
-
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.model.audit.AuditEvents.ADD_TO_HOLD;
@@ -41,12 +40,10 @@ import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertTrue;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.google.common.collect.ImmutableMap;
-
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.audit.AuditEntry;
@@ -75,17 +72,19 @@ import org.testng.annotations.Test;
  * @author Claudia Agache
  * @since 3.3
  */
-@AlfrescoTest (jira = "RM-6859")
-public class AuditAddToHoldTests extends BaseRMRestTest
-{
+@AlfrescoTest(jira = "RM-6859")
+public class AuditAddToHoldTests extends BaseRMRestTest {
+
     private final String PREFIX = generateTestPrefix(AuditAddToHoldTests.class);
     private final String HOLD1 = PREFIX + "hold1";
     private final String HOLD2 = PREFIX + "hold2";
 
     @Autowired
     private RMAuditService rmAuditService;
+
     @Autowired
     private HoldsAPI holdsAPI;
+
     @Autowired
     private RoleService roleService;
 
@@ -98,30 +97,53 @@ public class AuditAddToHoldTests extends BaseRMRestTest
     private List<String> holdsListRef = new ArrayList<>();
     private String hold1NodeRef;
 
-    @BeforeClass (alwaysRun = true)
-    public void preconditionForAuditAddToHoldTests()
-    {
+    @BeforeClass(alwaysRun = true)
+    public void preconditionForAuditAddToHoldTests() {
         STEP("Create 2 holds.");
-        hold1NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(),
-                getAdminUser().getPassword(), HOLD1, HOLD_REASON, HOLD_DESCRIPTION);
-        String hold2NodeRef = holdsAPI.createHoldAndGetNodeRef(getAdminUser().getUsername(), getAdminUser().getPassword(), HOLD2, HOLD_REASON, HOLD_DESCRIPTION);
+        hold1NodeRef =
+            holdsAPI.createHoldAndGetNodeRef(
+                getAdminUser().getUsername(),
+                getAdminUser().getPassword(),
+                HOLD1,
+                HOLD_REASON,
+                HOLD_DESCRIPTION
+            );
+        String hold2NodeRef = holdsAPI.createHoldAndGetNodeRef(
+            getAdminUser().getUsername(),
+            getAdminUser().getPassword(),
+            HOLD2,
+            HOLD_REASON,
+            HOLD_DESCRIPTION
+        );
         holdsListRef = asList(hold1NodeRef, hold2NodeRef);
 
         STEP("Create a new record category with a record folder.");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
-        recordFolder = createRecordFolder(recordCategory.getId(), PREFIX + "recFolder");
+        recordFolder =
+            createRecordFolder(recordCategory.getId(), PREFIX + "recFolder");
 
         STEP("Create an user with full rights to add content to a hold.");
-        rmAdmin = roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
+        rmAdmin =
+            roleService.createUserWithRMRole(UserRoles.ROLE_RM_ADMIN.roleId);
 
         STEP("Create a collaboration site.");
         privateSite = dataSite.usingUser(rmAdmin).createPrivateRandomSite();
 
         STEP("Create users without rights to add content to a hold.");
-        rmManagerNoReadOnHold = roleService.createUserWithSiteRoleRMRoleAndPermission(privateSite,
-                UserRole.SiteManager, recordCategory.getId(), UserRoles.ROLE_RM_MANAGER, UserPermissions.PERMISSION_FILING);
-        rmManagerNoReadOnNode = roleService.createUserWithRMRoleAndRMNodePermission(UserRoles.ROLE_RM_MANAGER.roleId,
-                hold1NodeRef, UserPermissions.PERMISSION_FILING);
+        rmManagerNoReadOnHold =
+            roleService.createUserWithSiteRoleRMRoleAndPermission(
+                privateSite,
+                UserRole.SiteManager,
+                recordCategory.getId(),
+                UserRoles.ROLE_RM_MANAGER,
+                UserPermissions.PERMISSION_FILING
+            );
+        rmManagerNoReadOnNode =
+            roleService.createUserWithRMRoleAndRMNodePermission(
+                UserRoles.ROLE_RM_MANAGER.roleId,
+                hold1NodeRef,
+                UserPermissions.PERMISSION_FILING
+            );
     }
 
     /**
@@ -129,27 +151,53 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      *
      * @return the node id, the node name and the node path
      */
-    @DataProvider (name = "validNodesForAddToHold")
-    public Object[][] getValidNodesForAddToHold()
-    {
-        FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
-                                                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        RecordCategoryChild recordFolderToBeAdded = createRecordFolder(recordCategory.getId(), PREFIX + "recFolderToBeAdded");
-        Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
-        String recordFolderPath = removeLastSlash(buildPath(FILE_PLAN_PATH, recordCategory.getName(),
-                recordFolderToBeAdded.getName()));
-        String recordPath = removeLastSlash(buildPath(FILE_PLAN_PATH, recordCategory.getName(),
-                recordFolder.getName(), recordToBeAdded.getName()));
-        String contentPath = "/Company Home" + contentToBeAdded.getCmisLocation();
+    @DataProvider(name = "validNodesForAddToHold")
+    public Object[][] getValidNodesForAddToHold() {
+        FileModel contentToBeAdded = dataContent
+            .usingAdmin()
+            .usingSite(privateSite)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        RecordCategoryChild recordFolderToBeAdded = createRecordFolder(
+            recordCategory.getId(),
+            PREFIX + "recFolderToBeAdded"
+        );
+        Record recordToBeAdded = createElectronicRecord(
+            recordFolder.getId(),
+            PREFIX + "record"
+        );
+        String recordFolderPath = removeLastSlash(
+            buildPath(
+                FILE_PLAN_PATH,
+                recordCategory.getName(),
+                recordFolderToBeAdded.getName()
+            )
+        );
+        String recordPath = removeLastSlash(
+            buildPath(
+                FILE_PLAN_PATH,
+                recordCategory.getName(),
+                recordFolder.getName(),
+                recordToBeAdded.getName()
+            )
+        );
+        String contentPath =
+            "/Company Home" + contentToBeAdded.getCmisLocation();
 
-        return new String[][]
-        {
+        return new String[][] {
             // a record folder
-            { recordFolderToBeAdded.getId(), recordFolderToBeAdded.getName(), recordFolderPath },
+            {
+                recordFolderToBeAdded.getId(),
+                recordFolderToBeAdded.getName(),
+                recordFolderPath,
+            },
             // a record
             { recordToBeAdded.getId(), recordToBeAdded.getName(), recordPath },
             //an active content,
-            { contentToBeAdded.getNodeRefWithoutVersion(), contentToBeAdded.getName(), contentPath }
+            {
+                contentToBeAdded.getNodeRefWithoutVersion(),
+                contentToBeAdded.getName(),
+                contentPath,
+            },
         };
     }
 
@@ -163,18 +211,50 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      *      date the content was added
      *      path of the node
      */
-    @Test (dataProvider = "validNodesForAddToHold")
-    public void addToHoldEventIsAudited(String nodeId, String nodeName, String nodePath)
-    {
+    @Test(dataProvider = "validNodesForAddToHold")
+    public void addToHoldEventIsAudited(
+        String nodeId,
+        String nodeName,
+        String nodePath
+    ) {
         rmAuditService.clearAuditLog();
 
         STEP("Add node to hold.");
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), nodeId, HOLD1);
+        holdsAPI.addItemToHold(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            nodeId,
+            HOLD1
+        );
 
-        STEP("Check the audit log contains the entry for the add to hold event.");
-        rmAuditService.checkAuditLogForEvent(getAdminUser(), ADD_TO_HOLD, rmAdmin, nodeName, nodePath,
-                asList(ImmutableMap.of("new", nodeName, "previous", "", "name", "Name"),
-                        ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name")));
+        STEP(
+            "Check the audit log contains the entry for the add to hold event."
+        );
+        rmAuditService.checkAuditLogForEvent(
+            getAdminUser(),
+            ADD_TO_HOLD,
+            rmAdmin,
+            nodeName,
+            nodePath,
+            asList(
+                ImmutableMap.of(
+                    "new",
+                    nodeName,
+                    "previous",
+                    "",
+                    "name",
+                    "Name"
+                ),
+                ImmutableMap.of(
+                    "new",
+                    HOLD1,
+                    "previous",
+                    "",
+                    "name",
+                    "Hold Name"
+                )
+            )
+        );
     }
 
     /**
@@ -183,21 +263,33 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Then the add to hold event isn't audited
      */
     @Test
-    public void unsuccessfulAddToHoldIsNotAudited()
-    {
+    public void unsuccessfulAddToHoldIsNotAudited() {
         STEP("Create a new record");
-        Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
+        Record recordToBeAdded = createElectronicRecord(
+            recordFolder.getId(),
+            PREFIX + "record"
+        );
 
         rmAuditService.clearAuditLog();
 
         STEP("Try to add the record to a hold by an user with no rights.");
-        holdsAPI.addItemsToHolds(rmManagerNoReadOnHold.getUsername(), rmManagerNoReadOnHold.getPassword(),
-                SC_INTERNAL_SERVER_ERROR, Collections.singletonList(recordToBeAdded.getId()),
-                Collections.singletonList(hold1NodeRef));
+        holdsAPI.addItemsToHolds(
+            rmManagerNoReadOnHold.getUsername(),
+            rmManagerNoReadOnHold.getPassword(),
+            SC_INTERNAL_SERVER_ERROR,
+            Collections.singletonList(recordToBeAdded.getId()),
+            Collections.singletonList(hold1NodeRef)
+        );
 
-        STEP("Check the audit log doesn't contain the entry for the unsuccessful add to hold.");
-        assertTrue("The list of events should not contain Add to Hold entry ",
-                rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD).isEmpty());
+        STEP(
+            "Check the audit log doesn't contain the entry for the unsuccessful add to hold."
+        );
+        assertTrue(
+            "The list of events should not contain Add to Hold entry ",
+            rmAuditService
+                .getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD)
+                .isEmpty()
+        );
     }
 
     /**
@@ -206,23 +298,46 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Then only an entry has been created in the audit log for the record folder added
      */
     @Test
-    public void addToHoldIsNotAuditedForRecordFolderChildren()
-    {
+    public void addToHoldIsNotAuditedForRecordFolderChildren() {
         STEP("Create a new record folder with a record inside");
-        RecordCategoryChild notEmptyRecFolder = createRecordFolder(recordCategory.getId(), PREFIX + "notEmptyRecFolder");
-        Record record = createElectronicRecord(notEmptyRecFolder.getId(), PREFIX + "record");
+        RecordCategoryChild notEmptyRecFolder = createRecordFolder(
+            recordCategory.getId(),
+            PREFIX + "notEmptyRecFolder"
+        );
+        Record record = createElectronicRecord(
+            notEmptyRecFolder.getId(),
+            PREFIX + "record"
+        );
 
         rmAuditService.clearAuditLog();
 
         STEP("Add record folder to hold.");
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), notEmptyRecFolder.getId(), HOLD1);
+        holdsAPI.addItemToHold(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            notEmptyRecFolder.getId(),
+            HOLD1
+        );
 
-        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD);
+        auditEntries =
+            rmAuditService.getAuditEntriesFilteredByEvent(
+                getAdminUser(),
+                ADD_TO_HOLD
+            );
 
         STEP("Check the audit log contains only an entry for add to hold.");
-        assertEquals("The list of events should contain only an entry", 1, auditEntries.size());
-        assertTrue("The list of events should not contain Add to Hold entry for the record",
-                auditEntries.stream().noneMatch(entry -> entry.getNodeName().equals(record.getName())));
+        assertEquals(
+            "The list of events should contain only an entry",
+            1,
+            auditEntries.size()
+        );
+        assertTrue(
+            "The list of events should not contain Add to Hold entry for the record",
+            auditEntries
+                .stream()
+                .noneMatch(entry -> entry.getNodeName().equals(record.getName())
+                )
+        );
     }
 
     /**
@@ -231,27 +346,73 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Then multiple entries have been created in the audit log for each add to hold event
      */
     @Test
-    public void addToHoldIsAuditedInBulkAddition()
-    {
+    public void addToHoldIsAuditedInBulkAddition() {
         STEP("Create a new record");
-        Record recordToBeAdded = createElectronicRecord(recordFolder.getId(), PREFIX + "record");
+        Record recordToBeAdded = createElectronicRecord(
+            recordFolder.getId(),
+            PREFIX + "record"
+        );
 
         rmAuditService.clearAuditLog();
 
         STEP("Add record to multiple holds.");
-        holdsAPI.addItemsToHolds(rmAdmin.getUsername(), rmAdmin.getPassword(),
-                Collections.singletonList(recordToBeAdded.getId()), holdsList);
+        holdsAPI.addItemsToHolds(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            Collections.singletonList(recordToBeAdded.getId()),
+            holdsList
+        );
 
-        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), ADD_TO_HOLD);
+        auditEntries =
+            rmAuditService.getAuditEntriesFilteredByEvent(
+                getAdminUser(),
+                ADD_TO_HOLD
+            );
 
         STEP("Check the audit log contains entries for both additions.");
-        assertEquals("The list of events should contain Add to Hold entries for both holds", 2, auditEntries.size());
-        assertTrue("The hold name value for the first add to hold is not audited.",
-                auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                        ImmutableMap.of("new", HOLD1, "previous", "", "name", "Hold Name"))));
-        assertTrue("The hold name value for the second add to hold is not audited.",
-                auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                        ImmutableMap.of("new", HOLD2, "previous", "", "name", "Hold Name"))));
+        assertEquals(
+            "The list of events should contain Add to Hold entries for both holds",
+            2,
+            auditEntries.size()
+        );
+        assertTrue(
+            "The hold name value for the first add to hold is not audited.",
+            auditEntries
+                .stream()
+                .anyMatch(entry ->
+                    entry
+                        .getChangedValues()
+                        .contains(
+                            ImmutableMap.of(
+                                "new",
+                                HOLD1,
+                                "previous",
+                                "",
+                                "name",
+                                "Hold Name"
+                            )
+                        )
+                )
+        );
+        assertTrue(
+            "The hold name value for the second add to hold is not audited.",
+            auditEntries
+                .stream()
+                .anyMatch(entry ->
+                    entry
+                        .getChangedValues()
+                        .contains(
+                            ImmutableMap.of(
+                                "new",
+                                HOLD2,
+                                "previous",
+                                "",
+                                "name",
+                                "Hold Name"
+                            )
+                        )
+                )
+        );
     }
 
     /**
@@ -260,19 +421,34 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Then the add to hold entry isn't visible
      */
     @Test
-    public void addToHoldAuditEntryNotVisible()
-    {
+    public void addToHoldAuditEntryNotVisible() {
         STEP("Create a new file");
-        FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
-                                                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel contentToBeAdded = dataContent
+            .usingAdmin()
+            .usingSite(privateSite)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         rmAuditService.clearAuditLog();
 
         STEP("Add file to hold.");
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), contentToBeAdded.getNodeRefWithoutVersion(), HOLD1);
+        holdsAPI.addItemToHold(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            contentToBeAdded.getNodeRefWithoutVersion(),
+            HOLD1
+        );
 
-        STEP("Check that an user with no Read permissions can't see the entry for the add to hold event.");
-        assertTrue("The list of events should not contain Add to Hold entry ",
-            rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnNode, ADD_TO_HOLD).isEmpty());
+        STEP(
+            "Check that an user with no Read permissions can't see the entry for the add to hold event."
+        );
+        assertTrue(
+            "The list of events should not contain Add to Hold entry ",
+            rmAuditService
+                .getAuditEntriesFilteredByEvent(
+                    rmManagerNoReadOnNode,
+                    ADD_TO_HOLD
+                )
+                .isEmpty()
+        );
     }
 
     /**
@@ -281,32 +457,67 @@ public class AuditAddToHoldTests extends BaseRMRestTest
      * Then the the hold name is replaced in the add to hold entry
      */
     @Test
-    public void addToHoldAuditEntryHoldNameNotVisible()
-    {
+    public void addToHoldAuditEntryHoldNameNotVisible() {
         STEP("Create a new file");
-        FileModel contentToBeAdded = dataContent.usingAdmin().usingSite(privateSite)
-                                                .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        FileModel contentToBeAdded = dataContent
+            .usingAdmin()
+            .usingSite(privateSite)
+            .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         rmAuditService.clearAuditLog();
 
         STEP("Add file to hold.");
-        holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), contentToBeAdded.getNodeRefWithoutVersion(), HOLD1);
+        holdsAPI.addItemToHold(
+            rmAdmin.getUsername(),
+            rmAdmin.getPassword(),
+            contentToBeAdded.getNodeRefWithoutVersion(),
+            HOLD1
+        );
 
-        auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(rmManagerNoReadOnHold, ADD_TO_HOLD);
+        auditEntries =
+            rmAuditService.getAuditEntriesFilteredByEvent(
+                rmManagerNoReadOnHold,
+                ADD_TO_HOLD
+            );
 
-        STEP("Check that an user with no Read permissions can't see the hold name in the add to hold event.");
-        String replacementHoldName = "You don't have permission to view this hold.";
-        assertEquals("The list of events should contain the Add to Hold entry", 1, auditEntries.size());
-        assertTrue("The hold name should not be visible in the Add to Hold entry ",
-            auditEntries.stream().anyMatch(entry -> entry.getChangedValues().contains(
-                ImmutableMap.of("new", replacementHoldName, "previous", "", "name", "Hold Name"))));
+        STEP(
+            "Check that an user with no Read permissions can't see the hold name in the add to hold event."
+        );
+        String replacementHoldName =
+            "You don't have permission to view this hold.";
+        assertEquals(
+            "The list of events should contain the Add to Hold entry",
+            1,
+            auditEntries.size()
+        );
+        assertTrue(
+            "The hold name should not be visible in the Add to Hold entry ",
+            auditEntries
+                .stream()
+                .anyMatch(entry ->
+                    entry
+                        .getChangedValues()
+                        .contains(
+                            ImmutableMap.of(
+                                "new",
+                                replacementHoldName,
+                                "previous",
+                                "",
+                                "name",
+                                "Hold Name"
+                            )
+                        )
+                )
+        );
     }
 
-    @AfterClass (alwaysRun = true)
-    public void cleanUpAuditAddToHoldTests()
-    {
-        holdsListRef.forEach(holdRef -> holdsAPI.deleteHold(getAdminUser(), holdRef));
+    @AfterClass(alwaysRun = true)
+    public void cleanUpAuditAddToHoldTests() {
+        holdsListRef.forEach(holdRef ->
+            holdsAPI.deleteHold(getAdminUser(), holdRef)
+        );
         dataSite.usingAdmin().deleteSite(privateSite);
-        asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode).forEach(user -> getDataUser().usingAdmin().deleteUser(user));
+        asList(rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode)
+            .forEach(user -> getDataUser().usingAdmin().deleteUser(user));
         deleteRecordCategory(recordCategory.getId());
     }
 }

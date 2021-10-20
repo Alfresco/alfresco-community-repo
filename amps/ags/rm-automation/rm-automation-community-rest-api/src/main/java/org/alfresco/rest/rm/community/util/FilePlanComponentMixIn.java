@@ -27,7 +27,6 @@
 package org.alfresco.rest.rm.community.util;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
 import org.alfresco.rest.rm.community.model.record.RecordProperties;
 
 /**
@@ -38,8 +37,8 @@ import org.alfresco.rest.rm.community.model.record.RecordProperties;
  * @author Rodica Sutu
  * @since 2.6
  */
-public abstract class FilePlanComponentMixIn
-{
+public abstract class FilePlanComponentMixIn {
+
     /**
      * Annotation used to indicate that a property should be serialized "unwrapped"
      * Its properties are instead included as properties of its containing Object

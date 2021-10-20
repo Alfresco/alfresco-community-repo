@@ -33,7 +33,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -49,129 +48,122 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @author Roy Wetherall
  */
-public class CustomisableGet extends DeclarativeWebScript
-{
-    /** Records management admin service */
-    private RecordsManagementAdminService rmAdminService;
+public class CustomisableGet extends DeclarativeWebScript {
 
-    /** Dictionary service */
-    private DictionaryService dictionaryService;
+  /** Records management admin service */
+  private RecordsManagementAdminService rmAdminService;
 
-    /** Namespace service */
-    private NamespaceService namespaceService;
+  /** Dictionary service */
+  private DictionaryService dictionaryService;
 
-    /**
-     * @param rmAdminService	records management admin service
-     */
-    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
-    {
-        this.rmAdminService = rmAdminService;
+  /** Namespace service */
+  private NamespaceService namespaceService;
+
+  /**
+   * @param rmAdminService	records management admin service
+   */
+  public void setRecordsManagementAdminService(
+    RecordsManagementAdminService rmAdminService
+  ) {
+    this.rmAdminService = rmAdminService;
+  }
+
+  /**
+   * @param namespaceService	namespace service
+   */
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
+
+  /**
+   * @param dictionaryService dictionary service
+   */
+  public void setDictionaryService(DictionaryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
+
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  public Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, Object> model = new HashMap<>();
+
+    Set<QName> qnames = rmAdminService.getCustomisable();
+    ArrayList<Item> items = new ArrayList<>(qnames.size());
+    for (QName qname : qnames) {
+      ClassDefinition definition = dictionaryService.getClass(qname);
+      if (definition != null) {
+        String name = qname.toPrefixString(namespaceService);
+        String title = definition.getTitle(dictionaryService);
+        if (title == null || title.length() == 0) {
+          title = qname.getLocalName();
+        }
+        boolean isAspect = definition.isAspect();
+
+        items.add(new Item(name, isAspect, title));
+      }
     }
 
-    /**
-     * @param namespaceService	namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-		this.namespaceService = namespaceService;
-	}
+    // Sort the customisable types and aspects by title
+    Collections.sort(
+      items,
+      new Comparator<Item>() {
+        @Override
+        public int compare(Item o1, Item o2) {
+          return o1.title.compareToIgnoreCase(o2.title);
+        }
+      }
+    );
 
-    /**
-     * @param dictionaryService dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-		this.dictionaryService = dictionaryService;
-	}
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
-     */
+    model.put("items", items);
+    return model;
+  }
+
+  /**
+   * Model items
+   */
+  public class Item {
+
+    private String name;
+    private boolean isAspect;
+    private String title;
+
+    public Item(String name, boolean isAspect, String title) {
+      this.name = name;
+      this.isAspect = isAspect;
+      this.title = title;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public boolean getIsAspect() {
+      return isAspect;
+    }
+
+    public String getTitle() {
+      return title;
+    }
+
     @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, Object> model = new HashMap<>();
-
-        Set<QName> qnames = rmAdminService.getCustomisable();
-        ArrayList<Item> items = new ArrayList<>(qnames.size());
-        for (QName qname : qnames)
-        {
-            ClassDefinition definition = dictionaryService.getClass(qname);
-            if (definition != null)
-            {
-                String name = qname.toPrefixString(namespaceService);
-                String title = definition.getTitle(dictionaryService);
-                if (title == null || title.length() == 0)
-                {
-                    title = qname.getLocalName();
-                }
-                boolean isAspect = definition.isAspect();
-
-                items.add(new Item(name, isAspect, title));
-            }
-        }
-
-        // Sort the customisable types and aspects by title
-        Collections.sort(items, new Comparator<Item>()
-        {
-            @Override
-            public int compare(Item o1, Item o2)
-            {
-                return o1.title.compareToIgnoreCase(o2.title);
-            }});
-
-        model.put("items", items);
-        return model;
+    public int hashCode() {
+      int varCode = (null == name ? 0 : name.hashCode());
+      return 31 + varCode;
     }
 
-    /**
-     * Model items
-     */
-    public class Item
-    {
-        private String name;
-        private boolean isAspect;
-        private String title;
-
-        public Item(String name, boolean isAspect, String title)
-        {
-            this.name = name;
-            this.isAspect = isAspect;
-            this.title = title;
-        }
-
-        public String getName()
-        {
-            return name;
-        }
-
-        public boolean getIsAspect()
-        {
-            return isAspect;
-        }
-
-        public String getTitle()
-        {
-            return title;
-        }
-
-        @Override
-        public int hashCode()
-        {
-            int varCode = (null == name ? 0 : name.hashCode());
-            return 31 + varCode;
-        }
-
-        @Override
-        public boolean equals(Object obj)
-        {
-            if (obj == null || (obj.getClass() != this.getClass()))
-            {
-                return false;
-            }
-            else
-            {
-                return this.name.equals(((Item)obj).name);
-            }
-        }
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null || (obj.getClass() != this.getClass())) {
+        return false;
+      } else {
+        return this.name.equals(((Item) obj).name);
+      }
     }
+  }
 }

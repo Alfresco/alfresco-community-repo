@@ -29,101 +29,99 @@ package org.alfresco.rest.api.model;
 import java.util.Objects;
 
 public class AssociationSource {
-    private String role = null;
-    private String cls = null;
-    private Boolean isMany = null;
-    private Boolean isMandatory = null;
-    private Boolean isMandatoryEnforced = null;
 
-    public AssociationSource()
-    {
-    }
+  private String role = null;
+  private String cls = null;
+  private Boolean isMany = null;
+  private Boolean isMandatory = null;
+  private Boolean isMandatoryEnforced = null;
 
-    public AssociationSource(String role, String cls, Boolean isMany, Boolean isMandatory, Boolean isMandatoryEnforced)
-    {
-        this.role = role;
-        this.cls = cls;
-        this.isMany = isMany;
-        this.isMandatory = isMandatory;
-        this.isMandatoryEnforced = isMandatoryEnforced;
-    }
+  public AssociationSource() {}
 
-    public String getRole()
-    {
-        return role;
-    }
+  public AssociationSource(
+    String role,
+    String cls,
+    Boolean isMany,
+    Boolean isMandatory,
+    Boolean isMandatoryEnforced
+  ) {
+    this.role = role;
+    this.cls = cls;
+    this.isMany = isMany;
+    this.isMandatory = isMandatory;
+    this.isMandatoryEnforced = isMandatoryEnforced;
+  }
 
-    public void setRole(String role)
-    {
-        this.role = role;
-    }
+  public String getRole() {
+    return role;
+  }
 
-    public String getCls()
-    {
-        return cls;
-    }
+  public void setRole(String role) {
+    this.role = role;
+  }
 
-    public void setCls(String cls)
-    {
-        this.cls = cls;
-    }
+  public String getCls() {
+    return cls;
+  }
 
-    public Boolean getIsMany()
-    {
-        return isMany;
-    }
+  public void setCls(String cls) {
+    this.cls = cls;
+  }
 
-    public void setIsMany(Boolean isMany)
-    {
-        this.isMany = isMany;
-    }
+  public Boolean getIsMany() {
+    return isMany;
+  }
 
-    public Boolean getIsMandatory()
-    {
-        return isMandatory;
-    }
+  public void setIsMany(Boolean isMany) {
+    this.isMany = isMany;
+  }
 
-    public void setIsMandatory(Boolean isMandatory)
-    {
-        this.isMandatory = isMandatory;
-    }
+  public Boolean getIsMandatory() {
+    return isMandatory;
+  }
 
-    public Boolean getIsMandatoryEnforced()
-    {
-        return isMandatoryEnforced;
-    }
+  public void setIsMandatory(Boolean isMandatory) {
+    this.isMandatory = isMandatory;
+  }
 
-    public void setIsMandatoryEnforced(Boolean isMandatoryEnforced)
-    {
-        this.isMandatoryEnforced = isMandatoryEnforced;
-    }
+  public Boolean getIsMandatoryEnforced() {
+    return isMandatoryEnforced;
+  }
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        AssociationSource other = (AssociationSource) obj;
-        return Objects.equals(role, other.getRole()) &&
-                        Objects.equals(cls, other.getCls()) &&
-                        Objects.equals(isMany, other.getIsMany()) &&
-                        Objects.equals(isMandatory, other.getIsMandatory()) &&
-                        Objects.equals(isMandatoryEnforced, other.getIsMandatoryEnforced());
-    }
+  public void setIsMandatoryEnforced(Boolean isMandatoryEnforced) {
+    this.isMandatoryEnforced = isMandatoryEnforced;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder(512);
-        builder.append("AssociationSource [role=").append(this.role)
-                .append(", cls=").append(this.cls)
-                .append(", isMany=").append(this.isMany)
-                .append(", isMandatory=").append(isMandatory)
-                .append(", isMandatoryEnforced=").append(isMandatoryEnforced)
-                .append(']');
-        return builder.toString();
-    }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    AssociationSource other = (AssociationSource) obj;
+    return (
+      Objects.equals(role, other.getRole()) &&
+      Objects.equals(cls, other.getCls()) &&
+      Objects.equals(isMany, other.getIsMany()) &&
+      Objects.equals(isMandatory, other.getIsMandatory()) &&
+      Objects.equals(isMandatoryEnforced, other.getIsMandatoryEnforced())
+    );
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder(512);
+    builder
+      .append("AssociationSource [role=")
+      .append(this.role)
+      .append(", cls=")
+      .append(this.cls)
+      .append(", isMany=")
+      .append(this.isMany)
+      .append(", isMandatory=")
+      .append(isMandatory)
+      .append(", isMandatoryEnforced=")
+      .append(isMandatoryEnforced)
+      .append(']');
+    return builder.toString();
+  }
 }

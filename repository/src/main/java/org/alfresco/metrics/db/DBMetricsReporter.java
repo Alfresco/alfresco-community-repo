@@ -27,22 +27,25 @@ package org.alfresco.metrics.db;
 
 import org.alfresco.metrics.MetricsReporter;
 
-public interface DBMetricsReporter extends MetricsReporter
-{
-    /**
-     * Report the time it took to execute a query.
-     * queryType and statementID will be used as tags for the recorded metric
-     *
-     * @param milliseconds the delta time to record in milliseconds  - must be positive
-     * @param queryTpe     mandatory, the type of query that we report for: e.g: "select", "insert", "update", "delete"
-     * @param statementID  optional. if this parameter is not provided, a metric without it will be recorded;
-     *                     this parameter is used only if "isQueryStatementsMetricsEnabled()" is true
-     */
-    void reportQueryExecutionTime(final long milliseconds, final String queryTpe, final String statementID);
+public interface DBMetricsReporter extends MetricsReporter {
+  /**
+   * Report the time it took to execute a query.
+   * queryType and statementID will be used as tags for the recorded metric
+   *
+   * @param milliseconds the delta time to record in milliseconds  - must be positive
+   * @param queryTpe     mandatory, the type of query that we report for: e.g: "select", "insert", "update", "delete"
+   * @param statementID  optional. if this parameter is not provided, a metric without it will be recorded;
+   *                     this parameter is used only if "isQueryStatementsMetricsEnabled()" is true
+   */
+  void reportQueryExecutionTime(
+    final long milliseconds,
+    final String queryTpe,
+    final String statementID
+  );
 
-    boolean isEnabled();
+  boolean isEnabled();
 
-    boolean isQueryMetricsEnabled();
+  boolean isQueryMetricsEnabled();
 
-    boolean isQueryStatementsMetricsEnabled();
+  boolean isQueryStatementsMetricsEnabled();
 }

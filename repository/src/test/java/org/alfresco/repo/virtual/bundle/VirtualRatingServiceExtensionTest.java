@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -40,110 +40,100 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Before;
 import org.junit.Test;
 
-public class VirtualRatingServiceExtensionTest extends VirtualizationIntegrationTest
-{
-    private final static String LIKES_RATING_SCHEME = "likesRatingScheme";
+public class VirtualRatingServiceExtensionTest
+  extends VirtualizationIntegrationTest {
 
-    private final static String FIVE_STAR_RATING_SCHEME = "fiveStarRatingScheme";
+  private static final String LIKES_RATING_SCHEME = "likesRatingScheme";
 
-    private RatingService ratingService;
+  private static final String FIVE_STAR_RATING_SCHEME = "fiveStarRatingScheme";
 
-    private NodeRef vf1Node2;
+  private RatingService ratingService;
 
-    private NodeRef virtualContent;
+  private NodeRef vf1Node2;
 
-    private String user1;
+  private NodeRef virtualContent;
 
-    private String user2;
+  private String user1;
 
-    @Before
-    public void setUp() throws Exception
-    {
-        super.setUp();
+  private String user2;
 
-        ratingService = ctx.getBean("ratingService",
-                                                                          RatingService.class);
+  @Before
+  public void setUp() throws Exception {
+    super.setUp();
 
-        user1 = "user1";
+    ratingService = ctx.getBean("ratingService", RatingService.class);
 
-        user2 = "user2";
+    user1 = "user1";
 
-        vf1Node2 = nodeService.getChildByName(this.virtualFolder1NodeRef,
-                                              ContentModel.ASSOC_CONTAINS,
-                                              "Node2");
+    user2 = "user2";
 
-        virtualContent = createContent(vf1Node2,
-                                       "virtualContent").getChildRef();
-    }
+    vf1Node2 =
+      nodeService.getChildByName(
+        this.virtualFolder1NodeRef,
+        ContentModel.ASSOC_CONTAINS,
+        "Node2"
+      );
 
-    private void applyRatingAs(final NodeRef targetNode, final float rating, final String ratingSchemeName,
-                String asUser) throws RatingServiceException
-    {
+    virtualContent = createContent(vf1Node2, "virtualContent").getChildRef();
+  }
 
-        String fau = AuthenticationUtil.getFullyAuthenticatedUser();
-        try
-        {
-            AuthenticationUtil.setFullyAuthenticatedUser(asUser);
-            RunAsWork<Void> applyRatingsAsWork = new RunAsWork<Void>()
-            {
-
-                @Override
-                public Void doWork() throws Exception
-                {
-                    ratingService.applyRating(targetNode,
-                                              rating,
-                                              ratingSchemeName);
-                    return null;
-                }
-
-            };
-            AuthenticationUtil.runAs(applyRatingsAsWork,
-                                     asUser);
+  private void applyRatingAs(
+    final NodeRef targetNode,
+    final float rating,
+    final String ratingSchemeName,
+    String asUser
+  ) throws RatingServiceException {
+    String fau = AuthenticationUtil.getFullyAuthenticatedUser();
+    try {
+      AuthenticationUtil.setFullyAuthenticatedUser(asUser);
+      RunAsWork<Void> applyRatingsAsWork = new RunAsWork<Void>() {
+        @Override
+        public Void doWork() throws Exception {
+          ratingService.applyRating(targetNode, rating, ratingSchemeName);
+          return null;
         }
-        finally
-        {
-            AuthenticationUtil.setFullyAuthenticatedUser(fau);
-        }
+      };
+      AuthenticationUtil.runAs(applyRatingsAsWork, asUser);
+    } finally {
+      AuthenticationUtil.setFullyAuthenticatedUser(fau);
     }
+  }
 
-    @Test
-    public void testApplyRatings() throws Exception
-    {
-    	Reference reference = Reference.fromNodeRef(virtualContent);
-        assertNotNull(reference);
-        NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(environment));
+  @Test
+  public void testApplyRatings() throws Exception {
+    Reference reference = Reference.fromNodeRef(virtualContent);
+    assertNotNull(reference);
+    NodeRef actualNodeRef = reference.execute(
+      new GetActualNodeRefMethod(environment)
+    );
 
-        applyRatingAs(virtualContent,
-                      1f,
-                      LIKES_RATING_SCHEME,
-                      user1);
+    applyRatingAs(virtualContent, 1f, LIKES_RATING_SCHEME, user1);
 
-        applyRatingAs(virtualContent,
-                      1f,
-                      LIKES_RATING_SCHEME,
-                      user2);
-        
-        double delta = 0.0000001;
-        assertEquals(1f,
-                     ratingService.getAverageRating(virtualContent,
-                                                    LIKES_RATING_SCHEME), delta);
-        assertEquals(1f,
-                     ratingService.getAverageRating(actualNodeRef,
-                                                    LIKES_RATING_SCHEME), delta);
+    applyRatingAs(virtualContent, 1f, LIKES_RATING_SCHEME, user2);
 
-        applyRatingAs(virtualContent,
-                      1f,
-                      FIVE_STAR_RATING_SCHEME,
-                      user1);
-        applyRatingAs(virtualContent,
-                      3f,
-                      FIVE_STAR_RATING_SCHEME,
-                      user2);
-        assertEquals(2f,
-                     ratingService.getAverageRating(virtualContent,
-                                                    FIVE_STAR_RATING_SCHEME), delta);
-        assertEquals(2f,
-                     ratingService.getAverageRating(actualNodeRef,
-                                                    FIVE_STAR_RATING_SCHEME), delta);
-    }
+    double delta = 0.0000001;
+    assertEquals(
+      1f,
+      ratingService.getAverageRating(virtualContent, LIKES_RATING_SCHEME),
+      delta
+    );
+    assertEquals(
+      1f,
+      ratingService.getAverageRating(actualNodeRef, LIKES_RATING_SCHEME),
+      delta
+    );
+
+    applyRatingAs(virtualContent, 1f, FIVE_STAR_RATING_SCHEME, user1);
+    applyRatingAs(virtualContent, 3f, FIVE_STAR_RATING_SCHEME, user2);
+    assertEquals(
+      2f,
+      ratingService.getAverageRating(virtualContent, FIVE_STAR_RATING_SCHEME),
+      delta
+    );
+    assertEquals(
+      2f,
+      ratingService.getAverageRating(actualNodeRef, FIVE_STAR_RATING_SCHEME),
+      delta
+    );
+  }
 }

@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
@@ -50,315 +49,370 @@ import org.springframework.util.StringUtils;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class FileToActionTest extends BaseRMTestCase
-{
-    private static final String PATH = "rmContainer/rmFolder";
-    private static final String PATH2 = "/rmContainer/rmFolder";
-    private static final String PATH_BAD = "monkey/rmFolder";
-    private static final String PATH_CREATE = "rmContainer/newRmFolder";
-    private static final String LONG_PATH_CREATE = "/rmContainer/one/two/three/four/newRmFolder";
+public class FileToActionTest extends BaseRMTestCase {
 
-    private static final String PATH_SUB1 = "rmContainer/${node.cm:title}";
+  private static final String PATH = "rmContainer/rmFolder";
+  private static final String PATH2 = "/rmContainer/rmFolder";
+  private static final String PATH_BAD = "monkey/rmFolder";
+  private static final String PATH_CREATE = "rmContainer/newRmFolder";
+  private static final String LONG_PATH_CREATE =
+    "/rmContainer/one/two/three/four/newRmFolder";
 
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
+  private static final String PATH_SUB1 = "rmContainer/${node.cm:title}";
 
-    @Override
-    protected boolean isUserTest()
-    {
-        return true;
-    }
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-    public void testFileToNodeRef()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            @Override
-            public void given() throws Exception
-            {
-                initRecord();
+  @Override
+  protected boolean isUserTest() {
+    return true;
+  }
 
-                NodeRef unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
+  public void testFileToNodeRef() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        @Override
+        public void given() throws Exception {
+          initRecord();
 
-                Capability capability = capabilityService.getCapability("FileUnfiledRecords");
-                assertNotNull(capability);
-                assertEquals(AccessStatus.ALLOWED, capability.hasPermission(dmDocument));
-            }
+          NodeRef unfiledContainer = filePlanService.getUnfiledContainer(
+            filePlan
+          );
+          assertEquals(
+            AccessStatus.ALLOWED,
+            permissionService.hasPermission(
+              unfiledContainer,
+              RMPermissionModel.FILING
+            )
+          );
+          assertEquals(
+            AccessStatus.ALLOWED,
+            permissionService.hasPermission(rmFolder, RMPermissionModel.FILING)
+          );
 
-            @Override
-            public void when() throws Exception
-            {
-                // set parameters
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(FileToAction.PARAM_DESTINATION_RECORD_FOLDER, rmFolder);
+          Capability capability = capabilityService.getCapability(
+            "FileUnfiledRecords"
+          );
+          assertNotNull(capability);
+          assertEquals(
+            AccessStatus.ALLOWED,
+            capability.hasPermission(dmDocument)
+          );
+        }
 
-                // execute file-to action
-                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-            }
+        @Override
+        public void when() throws Exception {
+          // set parameters
+          Map<String, Serializable> params = new HashMap<>(1);
+          params.put(FileToAction.PARAM_DESTINATION_RECORD_FOLDER, rmFolder);
 
-            @Override
-            public void then() throws Exception
-            {
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertTrue(recordService.isFiled(dmDocument));
+          // execute file-to action
+          rmActionService.executeRecordsManagementAction(
+            dmDocument,
+            FileToAction.NAME,
+            params
+          );
+        }
 
-                // is the record folder the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(rmFolder, parent);
-            }
-        });
-    }
+        @Override
+        public void then() throws Exception {
+          // check things have gone according to plan
+          assertTrue(recordService.isRecord(dmDocument));
+          assertTrue(recordService.isFiled(dmDocument));
 
-    private void initRecord()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                nodeService.setProperty(dmDocument, ContentModel.PROP_TITLE, "mytestvalue");
+          // is the record folder the primary parent of the filed record
+          NodeRef parent = nodeService
+            .getPrimaryParent(dmDocument)
+            .getParentRef();
+          assertEquals(rmFolder, parent);
+        }
+      }
+    );
+  }
 
-                // create record from document
-                recordService.createRecord(filePlan, dmDocument);
+  private void initRecord() {
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() {
+          nodeService.setProperty(
+            dmDocument,
+            ContentModel.PROP_TITLE,
+            "mytestvalue"
+          );
 
-                return null;
-            }
+          // create record from document
+          recordService.createRecord(filePlan, dmDocument);
 
-            @Override
-            public void test(Void result) throws Exception 
-            {
-                AuthenticationUtil.runAs(() ->
-                {
-                    // check things have gone according to plan
-                    assertTrue(recordService.isRecord(dmDocument));
-                    assertFalse(recordService.isFiled(dmDocument));
+          return null;
+        }
 
-                    // is the unfiled container the primary parent of the filed
-                    // record
-                    NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                    assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+        @Override
+        public void test(Void result) throws Exception {
+          AuthenticationUtil.runAs(
+            () -> {
+              // check things have gone according to plan
+              assertTrue(recordService.isRecord(dmDocument));
+              assertFalse(recordService.isFiled(dmDocument));
 
-                    return null;
-                }, AuthenticationUtil.getAdminUserName());
-            }
-            
-        }, dmCollaborator);
-    }
+              // is the unfiled container the primary parent of the filed
+              // record
+              NodeRef parent = nodeService
+                .getPrimaryParent(dmDocument)
+                .getParentRef();
+              assertEquals(
+                filePlanService.getUnfiledContainer(filePlan),
+                parent
+              );
 
-    public void testFileToPath()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            @Override
-            public void given() throws Exception
-            {
-                initRecord();
-            }
+              return null;
+            },
+            AuthenticationUtil.getAdminUserName()
+          );
+        }
+      },
+      dmCollaborator
+    );
+  }
 
-            @Override
-            public void when() throws Exception
-            {
-                // set parameters
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(FileToAction.PARAM_PATH, PATH);
+  public void testFileToPath() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        @Override
+        public void given() throws Exception {
+          initRecord();
+        }
 
-                // execute file-to action
-                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-            }
+        @Override
+        public void when() throws Exception {
+          // set parameters
+          Map<String, Serializable> params = new HashMap<>(1);
+          params.put(FileToAction.PARAM_PATH, PATH);
 
-            @Override
-            public void then() throws Exception
-            {
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertTrue(recordService.isFiled(dmDocument));
+          // execute file-to action
+          rmActionService.executeRecordsManagementAction(
+            dmDocument,
+            FileToAction.NAME,
+            params
+          );
+        }
 
-                // is the record folder the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(rmFolder, parent);
-            }
-        });
-    }
+        @Override
+        public void then() throws Exception {
+          // check things have gone according to plan
+          assertTrue(recordService.isRecord(dmDocument));
+          assertTrue(recordService.isFiled(dmDocument));
 
-    public void testFileToPath2()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            @Override
-            public void given() throws Exception
-            {
-                initRecord();
-            }
+          // is the record folder the primary parent of the filed record
+          NodeRef parent = nodeService
+            .getPrimaryParent(dmDocument)
+            .getParentRef();
+          assertEquals(rmFolder, parent);
+        }
+      }
+    );
+  }
 
-            @Override
-            public void when() throws Exception
-            {
-                // set parameters
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(FileToAction.PARAM_PATH, PATH2);
+  public void testFileToPath2() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        @Override
+        public void given() throws Exception {
+          initRecord();
+        }
 
-                // execute file-to action
-                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-            }
+        @Override
+        public void when() throws Exception {
+          // set parameters
+          Map<String, Serializable> params = new HashMap<>(1);
+          params.put(FileToAction.PARAM_PATH, PATH2);
 
-            @Override
-            public void then() throws Exception
-            {
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertTrue(recordService.isFiled(dmDocument));
+          // execute file-to action
+          rmActionService.executeRecordsManagementAction(
+            dmDocument,
+            FileToAction.NAME,
+            params
+          );
+        }
 
-                // is the record folder the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(rmFolder, parent);
-            }
-        });
-    }
+        @Override
+        public void then() throws Exception {
+          // check things have gone according to plan
+          assertTrue(recordService.isRecord(dmDocument));
+          assertTrue(recordService.isFiled(dmDocument));
 
-    public void testCreate() throws Exception
-    {
-        initRecord();
-        createRecord(PATH_CREATE, "newRmFolder");
-    }
+          // is the record folder the primary parent of the filed record
+          NodeRef parent = nodeService
+            .getPrimaryParent(dmDocument)
+            .getParentRef();
+          assertEquals(rmFolder, parent);
+        }
+      }
+    );
+  }
 
-    public void testCreateSub() throws Exception
-    {
-        initRecord();
-        createRecord(PATH_SUB1, "mytestvalue", "rmContainer/mytestvalue");
-    }
+  public void testCreate() throws Exception {
+    initRecord();
+    createRecord(PATH_CREATE, "newRmFolder");
+  }
 
-    public void testCreatePath() throws Exception
-    {
-        initRecord();
-        createRecord(LONG_PATH_CREATE, "newRmFolder", "rmContainer/one/two/three/four/newRmFolder");
-    }
+  public void testCreateSub() throws Exception {
+    initRecord();
+    createRecord(PATH_SUB1, "mytestvalue", "rmContainer/mytestvalue");
+  }
 
-    private void createRecord(String path, String name)
-    {
-        createRecord(path, name, path);
-    }
+  public void testCreatePath() throws Exception {
+    initRecord();
+    createRecord(
+      LONG_PATH_CREATE,
+      "newRmFolder",
+      "rmContainer/one/two/three/four/newRmFolder"
+    );
+  }
 
-    private void createRecord(final String path, final String name, final String resolvedPath)
-    {
-        final String[] pathValues = StringUtils.tokenizeToStringArray(resolvedPath, "/");
+  private void createRecord(String path, String name) {
+    createRecord(path, name, path);
+  }
 
-        // set parameters
-        Map<String, Serializable> params = new HashMap<>(1);
-        params.put(FileToAction.PARAM_PATH, path);
-        params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
+  private void createRecord(
+    final String path,
+    final String name,
+    final String resolvedPath
+  ) {
+    final String[] pathValues = StringUtils.tokenizeToStringArray(
+      resolvedPath,
+      "/"
+    );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run() throws Exception
-            {
-                // show the folder doesn't exist to begin with
-                FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<>(Arrays.asList(pathValues)), false);
-                assertNull(createdRecordFolder);
+    // set parameters
+    Map<String, Serializable> params = new HashMap<>(1);
+    params.put(FileToAction.PARAM_PATH, path);
+    params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
-                // set parameters
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(FileToAction.PARAM_PATH, path);
-                params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() throws Exception {
+          // show the folder doesn't exist to begin with
+          FileInfo createdRecordFolder = fileFolderService.resolveNamePath(
+            filePlan,
+            new ArrayList<>(Arrays.asList(pathValues)),
+            false
+          );
+          assertNull(createdRecordFolder);
 
-                return null;
-            }
-        }, ADMIN_USER);
+          // set parameters
+          Map<String, Serializable> params = new HashMap<>(1);
+          params.put(FileToAction.PARAM_PATH, path);
+          params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run() throws Exception
-            {
-                // execute file-to action
-                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-                return null;
-            }
-        });
+          return null;
+        }
+      },
+      ADMIN_USER
+    );
 
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run() throws Exception
-            {
-                // show the folder has now been created
-            	FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<>(Arrays.asList(pathValues)), false);
-                assertNotNull(createdRecordFolder);
-                assertEquals(name, createdRecordFolder.getName());
-                NodeRef createdRecordFolderNodeRef = createdRecordFolder.getNodeRef();
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() throws Exception {
+          // execute file-to action
+          rmActionService.executeRecordsManagementAction(
+            dmDocument,
+            FileToAction.NAME,
+            params
+          );
+          return null;
+        }
+      }
+    );
 
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertTrue(recordService.isFiled(dmDocument));
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() throws Exception {
+          // show the folder has now been created
+          FileInfo createdRecordFolder = fileFolderService.resolveNamePath(
+            filePlan,
+            new ArrayList<>(Arrays.asList(pathValues)),
+            false
+          );
+          assertNotNull(createdRecordFolder);
+          assertEquals(name, createdRecordFolder.getName());
+          NodeRef createdRecordFolderNodeRef = createdRecordFolder.getNodeRef();
 
-                // is the record folder the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(createdRecordFolderNodeRef, parent);
+          // check things have gone according to plan
+          assertTrue(recordService.isRecord(dmDocument));
+          assertTrue(recordService.isFiled(dmDocument));
 
-                return null;
-            }
-        }, ADMIN_USER);
-    }
+          // is the record folder the primary parent of the filed record
+          NodeRef parent = nodeService
+            .getPrimaryParent(dmDocument)
+            .getParentRef();
+          assertEquals(createdRecordFolderNodeRef, parent);
 
-    public void failureTests() throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // create record from document
-                recordService.createRecord(filePlan, dmDocument);
+          return null;
+        }
+      },
+      ADMIN_USER
+    );
+  }
 
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(recordService.isFiled(dmDocument));
+  public void failureTests() throws Exception {
+    doTestInTransaction(
+      new Test<Void>() {
+        public Void run() {
+          // create record from document
+          recordService.createRecord(filePlan, dmDocument);
 
-                // is the unfiled container the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+          // check things have gone according to plan
+          assertTrue(recordService.isRecord(dmDocument));
+          assertFalse(recordService.isFiled(dmDocument));
 
-                return null;
-            }
-        }, dmCollaborator);
+          // is the unfiled container the primary parent of the filed record
+          NodeRef parent = nodeService
+            .getPrimaryParent(dmDocument)
+            .getParentRef();
+          assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
 
-        doTestInTransaction(new FailureTest
-        (
-            "Path is invalid and record create not set."
-        )
-        {
-            @Override
-            public void run() throws Exception
-            {
-                // set parameters
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(FileToAction.PARAM_PATH, PATH_BAD);
+          return null;
+        }
+      },
+      dmCollaborator
+    );
 
-                // execute file-to action
-                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+    doTestInTransaction(
+      new FailureTest("Path is invalid and record create not set.") {
+        @Override
+        public void run() throws Exception {
+          // set parameters
+          Map<String, Serializable> params = new HashMap<>(1);
+          params.put(FileToAction.PARAM_PATH, PATH_BAD);
 
-            }
-        });
+          // execute file-to action
+          rmActionService.executeRecordsManagementAction(
+            dmDocument,
+            FileToAction.NAME,
+            params
+          );
+        }
+      }
+    );
 
-        doTestInTransaction(new FailureTest
-        (
-            "Path is for a new folder, but create not set."
-        )
-        {
-            @Override
-            public void run() throws Exception
-            {
-                // set parameters
-                Map<String, Serializable> params = new HashMap<>(1);
-                params.put(FileToAction.PARAM_PATH, PATH_CREATE);
+    doTestInTransaction(
+      new FailureTest("Path is for a new folder, but create not set.") {
+        @Override
+        public void run() throws Exception {
+          // set parameters
+          Map<String, Serializable> params = new HashMap<>(1);
+          params.put(FileToAction.PARAM_PATH, PATH_CREATE);
 
-                // execute file-to action
-                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
-
-            }
-        });
-
-    }
-
+          // execute file-to action
+          rmActionService.executeRecordsManagementAction(
+            dmDocument,
+            FileToAction.NAME,
+            params
+          );
+        }
+      }
+    );
+  }
 }

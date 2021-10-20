@@ -32,7 +32,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
@@ -45,140 +44,125 @@ import org.apache.log4j.Logger;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public abstract class AbstractNodeEventFilter implements EventFilter<QName>
-{
-    private static final Logger LOGGER = Logger.getLogger(AbstractNodeEventFilter.class);
+public abstract class AbstractNodeEventFilter implements EventFilter<QName> {
 
-    private static final String MARKER_INCLUDE_SUBTYPES = "include_subtypes";
-    private static final String WILDCARD = "*";
+  private static final Logger LOGGER = Logger.getLogger(
+    AbstractNodeEventFilter.class
+  );
 
-    protected DictionaryService dictionaryService;
-    protected NamespaceService namespaceService;
+  private static final String MARKER_INCLUDE_SUBTYPES = "include_subtypes";
+  private static final String WILDCARD = "*";
 
-    private Set<QName> excludedTypes;
-    private Set<String> excludedNamespaceURI;
+  protected DictionaryService dictionaryService;
+  protected NamespaceService namespaceService;
 
-    public AbstractNodeEventFilter()
-    {
-        this.excludedTypes = new HashSet<>();
-        this.excludedNamespaceURI = new HashSet<>();
+  private Set<QName> excludedTypes;
+  private Set<String> excludedNamespaceURI;
+
+  public AbstractNodeEventFilter() {
+    this.excludedTypes = new HashSet<>();
+    this.excludedNamespaceURI = new HashSet<>();
+  }
+
+  public final void init() {
+    preprocessExcludedTypes(getExcludedTypes());
+  }
+
+  public void setDictionaryService(DictionaryService dictionaryService) {
+    this.dictionaryService = dictionaryService;
+  }
+
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
+
+  @Override
+  public boolean isExcluded(QName qName) {
+    if (qName != null) {
+      return (
+        excludedTypes.contains(qName) ||
+        excludedNamespaceURI.contains(qName.getNamespaceURI())
+      );
     }
+    return false;
+  }
 
-    public final void init()
-    {
-        preprocessExcludedTypes(getExcludedTypes());
-    }
+  protected abstract Set<QName> getExcludedTypes();
 
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
+  protected List<String> parseFilterList(String unparsedFilterList) {
+    List<String> list = new LinkedList<>();
 
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
-    @Override
-    public boolean isExcluded(QName qName)
-    {
-        if (qName != null)
-        {
-            return excludedTypes.contains(qName) || excludedNamespaceURI.contains(qName.getNamespaceURI());
+    StringTokenizer st = new StringTokenizer(unparsedFilterList, ",");
+    while (st.hasMoreTokens()) {
+      String entry = st.nextToken().trim();
+      if (!entry.isEmpty()) {
+        if (!entry.equals("none") && !entry.contains("${")) {
+          list.add(entry);
         }
-        return false;
+      }
+    }
+    return list;
+  }
+
+  /**
+   * Processes the user-defined list of types into valid QNames. It
+   * validates them against the dictionary and also supports wildcards
+   */
+  private void preprocessExcludedTypes(Set<QName> excluded) {
+    excluded.forEach(qName -> {
+      if (WILDCARD.equals(qName.getLocalName())) {
+        //excludedPrefixes.add(getPrefix(qName));
+        excludedNamespaceURI.add(qName.getNamespaceURI());
+      } else {
+        excludedTypes.add(qName);
+      }
+    });
+
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Excluded namespace URIs:" + excludedNamespaceURI);
+      LOGGER.debug("Excluded types:" + excludedTypes);
+    }
+  }
+
+  private QName getQName(String type) {
+    return QName.createQName(type, namespaceService);
+  }
+
+  protected Collection<QName> expandTypeDef(String typeDef) {
+    if (
+      (typeDef == null) ||
+      typeDef.isEmpty() ||
+      typeDef.equals("none") ||
+      typeDef.contains("${")
+    ) {
+      return Collections.emptyList();
     }
 
-    protected abstract Set<QName> getExcludedTypes();
-
-    protected List<String> parseFilterList(String unparsedFilterList)
-    {
-        List<String> list = new LinkedList<>();
-
-        StringTokenizer st = new StringTokenizer(unparsedFilterList, ",");
-        while (st.hasMoreTokens())
-        {
-            String entry = st.nextToken().trim();
-            if (!entry.isEmpty())
-            {
-                if (!entry.equals("none") && !entry.contains("${"))
-                {
-                    list.add(entry);
-                }
-            }
-        }
-        return list;
+    if (typeDef.indexOf(' ') < 0) {
+      return Collections.singleton(getQName(typeDef));
     }
 
-    /**
-     * Processes the user-defined list of types into valid QNames. It
-     * validates them against the dictionary and also supports wildcards
-     */
-    private void preprocessExcludedTypes(Set<QName> excluded)
-    {
-        excluded.forEach(qName -> {
-            if (WILDCARD.equals(qName.getLocalName()))
-            {
-                //excludedPrefixes.add(getPrefix(qName));
-                excludedNamespaceURI.add(qName.getNamespaceURI());
-            }
-            else
-            {
-                excludedTypes.add(qName);
-            }
-        });
-
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug("Excluded namespace URIs:" + excludedNamespaceURI);
-            LOGGER.debug("Excluded types:" + excludedTypes);
-        }
+    String[] typeDefParts = typeDef.split(" ");
+    if (typeDefParts.length != 2) {
+      LOGGER.warn("Ignoring invalid blacklist type pattern: " + typeDef);
+      return Collections.emptyList();
     }
 
-    private QName getQName(String type)
-    {
-        return QName.createQName(type, namespaceService);
-    }
-
-    protected Collection<QName> expandTypeDef(String typeDef)
-    {
-        if ((typeDef == null) || typeDef.isEmpty() || typeDef.equals("none") || typeDef.contains("${"))
-        {
-            return Collections.emptyList();
-        }
-
-        if (typeDef.indexOf(' ') < 0)
-        {
-            return Collections.singleton(getQName(typeDef));
-        }
-
-        String[] typeDefParts = typeDef.split(" ");
-        if (typeDefParts.length != 2)
-        {
-            LOGGER.warn("Ignoring invalid blacklist type pattern: " + typeDef);
-            return Collections.emptyList();
-        }
-
-        if (typeDefParts[1].equals(MARKER_INCLUDE_SUBTYPES))
-        {
-            if (typeDefParts[0].indexOf('*') >= 0)
-            {
-                LOGGER.warn("Ignoring invalid blacklist type pattern: " + typeDef);
-                return Collections.emptyList();
-            }
-            QName baseType;
-            try
-            {
-                baseType = getQName(typeDefParts[0]);
-            }
-            catch (NamespaceException ne)
-            {
-                return Collections.emptyList();
-            }
-            return dictionaryService.getSubTypes(baseType, true);
-        }
-
+    if (typeDefParts[1].equals(MARKER_INCLUDE_SUBTYPES)) {
+      if (typeDefParts[0].indexOf('*') >= 0) {
         LOGGER.warn("Ignoring invalid blacklist type pattern: " + typeDef);
         return Collections.emptyList();
+      }
+      QName baseType;
+      try {
+        baseType = getQName(typeDefParts[0]);
+      } catch (NamespaceException ne) {
+        return Collections.emptyList();
+      }
+      return dictionaryService.getSubTypes(baseType, true);
     }
+
+    LOGGER.warn("Ignoring invalid blacklist type pattern: " + typeDef);
+    return Collections.emptyList();
+  }
 }

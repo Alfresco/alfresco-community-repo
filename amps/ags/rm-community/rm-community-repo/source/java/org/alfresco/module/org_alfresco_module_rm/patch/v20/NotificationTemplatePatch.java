@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
@@ -55,157 +54,172 @@ import org.springframework.beans.factory.BeanNameAware;
  * @since 2.0
  */
 @SuppressWarnings("deprecation")
-public class NotificationTemplatePatch extends ModulePatchComponent
-                                       implements BeanNameAware
-{
-    /** Last patch update property */
-    private static final QName PROP_LAST_PATCH_UPDATE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "lastPatchUpdate");
+public class NotificationTemplatePatch
+  extends ModulePatchComponent
+  implements BeanNameAware {
 
-    private static final String PATH_DUE_FOR_REVIEW = "alfresco/module/org_alfresco_module_rm/bootstrap/content/notify-records-due-for-review-email.ftl";
-    private static final String PATH_SUPERSEDED = "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-superseded-email.ftl";
+  /** Last patch update property */
+  private static final QName PROP_LAST_PATCH_UPDATE = QName.createQName(
+    NamespaceService.CONTENT_MODEL_1_0_URI,
+    "lastPatchUpdate"
+  );
 
-    /** Records management notification helper */
-    private RecordsManagementNotificationHelper notificationHelper;
+  private static final String PATH_DUE_FOR_REVIEW =
+    "alfresco/module/org_alfresco_module_rm/bootstrap/content/notify-records-due-for-review-email.ftl";
+  private static final String PATH_SUPERSEDED =
+    "alfresco/module/org_alfresco_module_rm/bootstrap/content/record-superseded-email.ftl";
 
-    /** Node service */
-    private NodeService nodeService;
+  /** Records management notification helper */
+  private RecordsManagementNotificationHelper notificationHelper;
 
-    /** Content service */
-    private ContentService contentService;
+  /** Node service */
+  private NodeService nodeService;
 
-    /** Version service */
-    private VersionService versionService;
+  /** Content service */
+  private ContentService contentService;
 
-    /** Audit service */
-    private AuditService auditService;
+  /** Version service */
+  private VersionService versionService;
 
-    /** Bean name */
-    private String name;
+  /** Audit service */
+  private AuditService auditService;
 
-    /**
-     * @param notificationHelper    notification helper
-     */
-    public void setNotificationHelper(RecordsManagementNotificationHelper notificationHelper)
-    {
-        this.notificationHelper = notificationHelper;
-    }
+  /** Bean name */
+  private String name;
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /**
+   * @param notificationHelper    notification helper
+   */
+  public void setNotificationHelper(
+    RecordsManagementNotificationHelper notificationHelper
+  ) {
+    this.notificationHelper = notificationHelper;
+  }
 
-    /**
-     * @param contentService content service
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
+  /**
+   * @param nodeService   node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-    /**
-     * @param versionService    version service
-     */
-    public void setVersionService(VersionService versionService)
-    {
-        this.versionService = versionService;
-    }
+  /**
+   * @param contentService content service
+   */
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
 
-    /**
-     * @param auditService  audit service
-     */
-    public void setAuditService(AuditService auditService)
-    {
-        this.auditService = auditService;
-    }
+  /**
+   * @param versionService    version service
+   */
+  public void setVersionService(VersionService versionService) {
+    this.versionService = versionService;
+  }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#setBeanName(java.lang.String)
-     */
-    @Override
-    public void setBeanName(String name)
-    {
-        this.name = name;
-    }
+  /**
+   * @param auditService  audit service
+   */
+  public void setAuditService(AuditService auditService) {
+    this.auditService = auditService;
+  }
 
-    /**
-     * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
-     */
-    @Override
-    protected void executePatch()
-    {
-        NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
-        updateTemplate(supersededTemplate, PATH_SUPERSEDED);
+  /**
+   * @see org.alfresco.repo.module.AbstractModuleComponent#setBeanName(java.lang.String)
+   */
+  @Override
+  public void setBeanName(String name) {
+    this.name = name;
+  }
 
-        NodeRef dueForReviewTemplate = notificationHelper.getDueForReviewTemplate();
-        updateTemplate(dueForReviewTemplate, PATH_DUE_FOR_REVIEW);
-    }
+  /**
+   * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
+   */
+  @Override
+  protected void executePatch() {
+    NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
+    updateTemplate(supersededTemplate, PATH_SUPERSEDED);
 
-    /**
-     * Attempt to update the template with the updated version
-     *
-     * @param template
-     * @param updatedTemplate
-     */
-    private void updateTemplate(NodeRef template, String templateUpdate)
-    {
-        if (template == null || !nodeService.exists(template))
-        {
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Skipping template update, because template has not been bootstraped.");
-            }
+    NodeRef dueForReviewTemplate = notificationHelper.getDueForReviewTemplate();
+    updateTemplate(dueForReviewTemplate, PATH_DUE_FOR_REVIEW);
+  }
+
+  /**
+   * Attempt to update the template with the updated version
+   *
+   * @param template
+   * @param updatedTemplate
+   */
+  private void updateTemplate(NodeRef template, String templateUpdate) {
+    if (template == null || !nodeService.exists(template)) {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(
+          "Skipping template update, because template has not been bootstraped."
+        );
+      }
+    } else {
+      // Check to see if this template has already been updated
+      String lastPatchUpdate = (String) nodeService.getProperty(
+        template,
+        PROP_LAST_PATCH_UPDATE
+      );
+      if (lastPatchUpdate == null || !name.equals(lastPatchUpdate)) {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug(
+            "Applying update to template. (template=" +
+            template.toString() +
+            ", templateUpdate=" +
+            templateUpdate +
+            ")"
+          );
         }
-        else
-        {
-            // Check to see if this template has already been updated
-            String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
-            if (lastPatchUpdate == null || !name.equals(lastPatchUpdate))
-            {
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug("Applying update to template. (template=" + template.toString() + ", templateUpdate=" + templateUpdate + ")");
-                }
 
-                // Make sure the template is versionable
-                if (!nodeService.hasAspect(template, ContentModel.ASPECT_VERSIONABLE))
-                {
-                    nodeService.addAspect(template, ContentModel.ASPECT_VERSIONABLE, null);
+        // Make sure the template is versionable
+        if (!nodeService.hasAspect(template, ContentModel.ASPECT_VERSIONABLE)) {
+          nodeService.addAspect(
+            template,
+            ContentModel.ASPECT_VERSIONABLE,
+            null
+          );
 
-                    // Create version (before template is updated)
-                    Map<String, Serializable> versionProperties = new HashMap<>(2);
-                    versionProperties.put(Version.PROP_DESCRIPTION, "Initial version");
-                    versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-                    versionService.createVersion(template, versionProperties);
-                }
-
-                // Update the content of the template
-                InputStream is = getClass().getClassLoader().getResourceAsStream(templateUpdate);
-                ContentWriter writer = contentService.getWriter(template, ContentModel.PROP_CONTENT, true);
-                writer.putContent(is);
-
-                boolean enabled = auditService.isAuditEnabled();
-                auditService.setAuditEnabled(false);
-                try
-                {
-                    // Set the last patch update property
-                    nodeService.setProperty(template, PROP_LAST_PATCH_UPDATE, name);
-                }
-                finally
-                {
-                    auditService.setAuditEnabled(enabled);
-                }
-            }
-            else
-            {
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug("Skipping template update, because template has already been patched. (template=" + template.toString() + ")");
-                }
-            }
+          // Create version (before template is updated)
+          Map<String, Serializable> versionProperties = new HashMap<>(2);
+          versionProperties.put(Version.PROP_DESCRIPTION, "Initial version");
+          versionProperties.put(
+            VersionModel.PROP_VERSION_TYPE,
+            VersionType.MINOR
+          );
+          versionService.createVersion(template, versionProperties);
         }
+
+        // Update the content of the template
+        InputStream is = getClass()
+          .getClassLoader()
+          .getResourceAsStream(templateUpdate);
+        ContentWriter writer = contentService.getWriter(
+          template,
+          ContentModel.PROP_CONTENT,
+          true
+        );
+        writer.putContent(is);
+
+        boolean enabled = auditService.isAuditEnabled();
+        auditService.setAuditEnabled(false);
+        try {
+          // Set the last patch update property
+          nodeService.setProperty(template, PROP_LAST_PATCH_UPDATE, name);
+        } finally {
+          auditService.setAuditEnabled(enabled);
+        }
+      } else {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug(
+            "Skipping template update, because template has already been patched. (template=" +
+            template.toString() +
+            ")"
+          );
+        }
+      }
     }
+  }
 }

@@ -34,7 +34,5 @@ import org.alfresco.rest.core.RestModels;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class TransferChildCollection extends RestModels<TransferChildEntry, TransferChildCollection>
-{
-
-}
+public class TransferChildCollection
+    extends RestModels<TransferChildEntry, TransferChildCollection> {}

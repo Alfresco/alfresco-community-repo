@@ -47,81 +47,149 @@ import org.mockito.MockitoAnnotations;
  * @author Ramona Popa
  * @since 3.3
  */
-public class RMv33HoldAuditEntryValuesPatchUnitTest
-{
-    @Mock
-    private RecordsManagementQueryDAO mockedRecordsManagementQueryDAO;
+public class RMv33HoldAuditEntryValuesPatchUnitTest {
 
-    @InjectMocks
-    private RMv33HoldAuditEntryValuesPatch patch;
+  @Mock
+  private RecordsManagementQueryDAO mockedRecordsManagementQueryDAO;
 
+  @InjectMocks
+  private RMv33HoldAuditEntryValuesPatch patch;
 
-    @Before
-    public void setUp()
-    {
-        MockitoAnnotations.initMocks(this);
-    }
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+  }
 
-    /**
-     * addtohold, removeFromHold and deleteHold audit entries values are updated after the patch is executed
-     */
-    @Test
-    public void holdAuditEntriesAreUpdatedAfterUpgrade()
-    {
-        PropertyStringValueEntity addToHoldPropertyStringValueEntity = new PropertyStringValueEntity();
-        addToHoldPropertyStringValueEntity.setValue("addToHold");
-        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("addToHold")).thenReturn(addToHoldPropertyStringValueEntity);
-        when(mockedRecordsManagementQueryDAO.updatePropertyStringValueEntity(addToHoldPropertyStringValueEntity)).thenReturn(1);
+  /**
+   * addtohold, removeFromHold and deleteHold audit entries values are updated after the patch is executed
+   */
+  @Test
+  public void holdAuditEntriesAreUpdatedAfterUpgrade() {
+    PropertyStringValueEntity addToHoldPropertyStringValueEntity = new PropertyStringValueEntity();
+    addToHoldPropertyStringValueEntity.setValue("addToHold");
+    when(
+      mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("addToHold")
+    )
+      .thenReturn(addToHoldPropertyStringValueEntity);
+    when(
+      mockedRecordsManagementQueryDAO.updatePropertyStringValueEntity(
+        addToHoldPropertyStringValueEntity
+      )
+    )
+      .thenReturn(1);
 
-        PropertyStringValueEntity removeFromHoldPropertyStringValueEntity = new PropertyStringValueEntity();
-        removeFromHoldPropertyStringValueEntity.setValue("removeFromHold");
-        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("removeFromHold")).thenReturn(removeFromHoldPropertyStringValueEntity);
-        when(mockedRecordsManagementQueryDAO.updatePropertyStringValueEntity(removeFromHoldPropertyStringValueEntity)).thenReturn(1);
+    PropertyStringValueEntity removeFromHoldPropertyStringValueEntity = new PropertyStringValueEntity();
+    removeFromHoldPropertyStringValueEntity.setValue("removeFromHold");
+    when(
+      mockedRecordsManagementQueryDAO.getPropertyStringValueEntity(
+        "removeFromHold"
+      )
+    )
+      .thenReturn(removeFromHoldPropertyStringValueEntity);
+    when(
+      mockedRecordsManagementQueryDAO.updatePropertyStringValueEntity(
+        removeFromHoldPropertyStringValueEntity
+      )
+    )
+      .thenReturn(1);
 
-        PropertyStringValueEntity deleteHoldPropertyStringValueEntity = new PropertyStringValueEntity();
-        deleteHoldPropertyStringValueEntity.setValue("deleteHold");
-        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("deleteHold")).thenReturn(deleteHoldPropertyStringValueEntity);
-        when(mockedRecordsManagementQueryDAO.updatePropertyStringValueEntity(deleteHoldPropertyStringValueEntity)).thenReturn(1);
+    PropertyStringValueEntity deleteHoldPropertyStringValueEntity = new PropertyStringValueEntity();
+    deleteHoldPropertyStringValueEntity.setValue("deleteHold");
+    when(
+      mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("deleteHold")
+    )
+      .thenReturn(deleteHoldPropertyStringValueEntity);
+    when(
+      mockedRecordsManagementQueryDAO.updatePropertyStringValueEntity(
+        deleteHoldPropertyStringValueEntity
+      )
+    )
+      .thenReturn(1);
 
-        patch.applyInternal();
+    patch.applyInternal();
 
-        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("addToHold");
-        verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(addToHoldPropertyStringValueEntity);
-        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("removeFromHold");
-        verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(removeFromHoldPropertyStringValueEntity);
-        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("deleteHold");
-        verify(mockedRecordsManagementQueryDAO, times(1)).updatePropertyStringValueEntity(deleteHoldPropertyStringValueEntity);
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .getPropertyStringValueEntity("addToHold");
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .updatePropertyStringValueEntity(addToHoldPropertyStringValueEntity);
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .getPropertyStringValueEntity("removeFromHold");
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .updatePropertyStringValueEntity(removeFromHoldPropertyStringValueEntity);
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .getPropertyStringValueEntity("deleteHold");
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .updatePropertyStringValueEntity(deleteHoldPropertyStringValueEntity);
 
-        assertEquals("Add To Hold", addToHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("add to hold", addToHoldPropertyStringValueEntity.getStringEndLower());
-        assertEquals(Long.valueOf(770_786_109L), addToHoldPropertyStringValueEntity.getStringCrc());
+    assertEquals(
+      "Add To Hold",
+      addToHoldPropertyStringValueEntity.getStringValue()
+    );
+    assertEquals(
+      "add to hold",
+      addToHoldPropertyStringValueEntity.getStringEndLower()
+    );
+    assertEquals(
+      Long.valueOf(770_786_109L),
+      addToHoldPropertyStringValueEntity.getStringCrc()
+    );
 
-        assertEquals("Remove From Hold", removeFromHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("remove from hold", removeFromHoldPropertyStringValueEntity.getStringEndLower());
-        assertEquals(Long.valueOf(2_967_613_012L), removeFromHoldPropertyStringValueEntity.getStringCrc());
+    assertEquals(
+      "Remove From Hold",
+      removeFromHoldPropertyStringValueEntity.getStringValue()
+    );
+    assertEquals(
+      "remove from hold",
+      removeFromHoldPropertyStringValueEntity.getStringEndLower()
+    );
+    assertEquals(
+      Long.valueOf(2_967_613_012L),
+      removeFromHoldPropertyStringValueEntity.getStringCrc()
+    );
 
-        assertEquals("Delete Hold", deleteHoldPropertyStringValueEntity.getStringValue());
-        assertEquals("delete hold", deleteHoldPropertyStringValueEntity.getStringEndLower());
-        assertEquals(Long.valueOf(132_640_810L), deleteHoldPropertyStringValueEntity.getStringCrc());
-    }
+    assertEquals(
+      "Delete Hold",
+      deleteHoldPropertyStringValueEntity.getStringValue()
+    );
+    assertEquals(
+      "delete hold",
+      deleteHoldPropertyStringValueEntity.getStringEndLower()
+    );
+    assertEquals(
+      Long.valueOf(132_640_810L),
+      deleteHoldPropertyStringValueEntity.getStringCrc()
+    );
+  }
 
-    /**
-     * if there are no hold audit entries, the patch is executed with success; no entries are updated
-     */
-    @Test
-    public void patchRunWithSuccessWhenNoHoldEntries()
-    {
-        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("addToHold")).thenReturn(null);
-        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("removeFromHold")).thenReturn(null);
-        when(mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("deleteHold")).thenReturn(null);
+  /**
+   * if there are no hold audit entries, the patch is executed with success; no entries are updated
+   */
+  @Test
+  public void patchRunWithSuccessWhenNoHoldEntries() {
+    when(
+      mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("addToHold")
+    )
+      .thenReturn(null);
+    when(
+      mockedRecordsManagementQueryDAO.getPropertyStringValueEntity(
+        "removeFromHold"
+      )
+    )
+      .thenReturn(null);
+    when(
+      mockedRecordsManagementQueryDAO.getPropertyStringValueEntity("deleteHold")
+    )
+      .thenReturn(null);
 
-        patch.applyInternal();
+    patch.applyInternal();
 
-        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("addToHold");
-        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("removeFromHold");
-        verify(mockedRecordsManagementQueryDAO, times(1)).getPropertyStringValueEntity("deleteHold");
-        verify(mockedRecordsManagementQueryDAO, times(0)).updatePropertyStringValueEntity(any());
-    }
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .getPropertyStringValueEntity("addToHold");
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .getPropertyStringValueEntity("removeFromHold");
+    verify(mockedRecordsManagementQueryDAO, times(1))
+      .getPropertyStringValueEntity("deleteHold");
+    verify(mockedRecordsManagementQueryDAO, times(0))
+      .updatePropertyStringValueEntity(any());
+  }
 }
-
-

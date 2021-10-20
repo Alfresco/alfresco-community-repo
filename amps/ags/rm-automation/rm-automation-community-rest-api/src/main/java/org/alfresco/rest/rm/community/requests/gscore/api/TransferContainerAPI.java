@@ -47,21 +47,19 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Silviu Dinuta
  * @since 2.6
  */
-public class TransferContainerAPI extends RMModelRequest
-{
+public class TransferContainerAPI extends RMModelRequest {
+
     /**
      * @param rmRestWrapper RM REST Wrapper
      */
-    public TransferContainerAPI(RMRestWrapper rmRestWrapper)
-    {
+    public TransferContainerAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
     /**
      * see {@link #getTransferContainer(String, String)}
      */
-    public TransferContainer getTransferContainer(String transferContainerId)
-    {
+    public TransferContainer getTransferContainer(String transferContainerId) {
         mandatoryString("transferContainerId", transferContainerId);
 
         return getTransferContainer(transferContainerId, EMPTY);
@@ -81,27 +79,39 @@ public class TransferContainerAPI extends RMModelRequest
      *  <li>{@code transferContainerId} does not exist</li>
      * </ul>
      */
-    public TransferContainer getTransferContainer(String transferContainerId, String parameters)
-    {
+    public TransferContainer getTransferContainer(
+        String transferContainerId,
+        String parameters
+    ) {
         mandatoryString("transferContainerId", transferContainerId);
 
-        return getRmRestWrapper().processModel(TransferContainer.class, simpleRequest(
-                GET,
-                "/transfer-containers/{transferContainerId}?{parameters}",
-                transferContainerId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                TransferContainer.class,
+                simpleRequest(
+                    GET,
+                    "/transfer-containers/{transferContainerId}?{parameters}",
+                    transferContainerId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #updateTransferContainer(TransferContainer, String, String)
      */
-    public TransferContainer updateTransferContainer(TransferContainer transferContainerModel, String transferContainerId)
-    {
+    public TransferContainer updateTransferContainer(
+        TransferContainer transferContainerModel,
+        String transferContainerId
+    ) {
         mandatoryObject("transferContainerModel", transferContainerModel);
         mandatoryString("transferContainerId", transferContainerId);
 
-        return updateTransferContainer(transferContainerModel, transferContainerId, EMPTY);
+        return updateTransferContainer(
+            transferContainerModel,
+            transferContainerId,
+            EMPTY
+        );
     }
 
     /**
@@ -121,25 +131,31 @@ public class TransferContainerAPI extends RMModelRequest
      *  <li>model integrity exception, including transfer container name with invalid characters</li>
      * </ul>
      */
-    public TransferContainer updateTransferContainer(TransferContainer transferContainerModel, String transferContainerId, String parameters)
-    {
+    public TransferContainer updateTransferContainer(
+        TransferContainer transferContainerModel,
+        String transferContainerId,
+        String parameters
+    ) {
         mandatoryObject("transferContainerModel", transferContainerModel);
         mandatoryString("transferContainerId", transferContainerId);
 
-        return getRmRestWrapper().processModel(TransferContainer.class, requestWithBody(
-                PUT,
-                toJson(transferContainerModel),
-                "transfer-containers/{transferContainerId}?{parameters}",
-                transferContainerId,
-                parameters
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                TransferContainer.class,
+                requestWithBody(
+                    PUT,
+                    toJson(transferContainerModel),
+                    "transfer-containers/{transferContainerId}?{parameters}",
+                    transferContainerId,
+                    parameters
+                )
+            );
     }
 
     /**
      * see {@link #getTransfers(String, String)}
      */
-    public TransferCollection getTransfers(String transferContainerId)
-    {
+    public TransferCollection getTransfers(String transferContainerId) {
         mandatoryString("transferContainerId", transferContainerId);
 
         return getTransfers(transferContainerId, EMPTY);
@@ -158,15 +174,21 @@ public class TransferContainerAPI extends RMModelRequest
      *  <li>{@code filePlanId} does not exist</li>
      *</ul>
      */
-    public TransferCollection getTransfers(String transferContainerId, String parameters)
-    {
+    public TransferCollection getTransfers(
+        String transferContainerId,
+        String parameters
+    ) {
         mandatoryString("transferContainerId", transferContainerId);
 
-        return getRmRestWrapper().processModels(TransferCollection.class, simpleRequest(
-            GET,
-            "transfer-containers/{filePlanId}/transfers?{parameters}",
-            transferContainerId,
-            parameters
-        ));
+        return getRmRestWrapper()
+            .processModels(
+                TransferCollection.class,
+                simpleRequest(
+                    GET,
+                    "transfer-containers/{filePlanId}/transfers?{parameters}",
+                    transferContainerId,
+                    parameters
+                )
+            );
     }
 }

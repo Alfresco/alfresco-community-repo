@@ -31,11 +31,12 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ EventFilterUnitTest.class,
-                EventConsolidatorUnitTest.class,
-                EventJSONSchemaUnitTest.class,
-                EventGeneratorQueueUnitTest.class
-})
-public class RepoEvent2UnitSuite
-{
-}
+@SuiteClasses(
+  {
+    EventFilterUnitTest.class,
+    EventConsolidatorUnitTest.class,
+    EventJSONSchemaUnitTest.class,
+    EventGeneratorQueueUnitTest.class,
+  }
+)
+public class RepoEvent2UnitSuite {}

@@ -30,7 +30,6 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
@@ -48,168 +47,251 @@ import org.springframework.beans.factory.annotation.Autowired;
 /**
  * @author Iulian Aftene
  */
-public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
-{
+public class CreateRepoEventIT extends AbstractContextAwareRepoEvent {
 
-    @Autowired
-    private NodeDAO nodeDAO;
+  @Autowired
+  private NodeDAO nodeDAO;
 
-    @Test
-    public void testCreateEvent()
-    {
-        // Create a node without content
-        final String name = "TestFile-" + System.currentTimeMillis() + ".txt";
-        String localName = GUID.generate();
-        PropertyMap propertyMap = new PropertyMap();
-        propertyMap.put(ContentModel.PROP_TITLE, "test title");
-        propertyMap.put(ContentModel.PROP_NAME, name);
-        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, localName, propertyMap);
+  @Test
+  public void testCreateEvent() {
+    // Create a node without content
+    final String name = "TestFile-" + System.currentTimeMillis() + ".txt";
+    String localName = GUID.generate();
+    PropertyMap propertyMap = new PropertyMap();
+    propertyMap.put(ContentModel.PROP_TITLE, "test title");
+    propertyMap.put(ContentModel.PROP_NAME, name);
+    final NodeRef nodeRef = createNode(
+      ContentModel.TYPE_CONTENT,
+      localName,
+      propertyMap
+    );
 
-        final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
-        // Repo event attributes
-        assertEquals("Repo event type", EventType.NODE_CREATED.getType(), resultRepoEvent.getType());
-        assertNotNull("Repo event ID is not available. ", resultRepoEvent.getId());
-        assertNotNull(resultRepoEvent.getSource());
-        assertEquals("Repo event source is not available. ",
-            "/" + descriptorService.getCurrentRepositoryDescriptor().getId(),
-            resultRepoEvent.getSource().toString());
-        assertNotNull("Repo event creation time is not available. ", resultRepoEvent.getTime());
-        assertEquals("Repo event datacontenttype", "application/json", resultRepoEvent.getDatacontenttype());
-        assertNotNull(resultRepoEvent.getDataschema());
-        assertEquals(EventJSONSchema.NODE_CREATED_V1.getSchema(), resultRepoEvent.getDataschema());
+    final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
+    // Repo event attributes
+    assertEquals(
+      "Repo event type",
+      EventType.NODE_CREATED.getType(),
+      resultRepoEvent.getType()
+    );
+    assertNotNull("Repo event ID is not available. ", resultRepoEvent.getId());
+    assertNotNull(resultRepoEvent.getSource());
+    assertEquals(
+      "Repo event source is not available. ",
+      "/" + descriptorService.getCurrentRepositoryDescriptor().getId(),
+      resultRepoEvent.getSource().toString()
+    );
+    assertNotNull(
+      "Repo event creation time is not available. ",
+      resultRepoEvent.getTime()
+    );
+    assertEquals(
+      "Repo event datacontenttype",
+      "application/json",
+      resultRepoEvent.getDatacontenttype()
+    );
+    assertNotNull(resultRepoEvent.getDataschema());
+    assertEquals(
+      EventJSONSchema.NODE_CREATED_V1.getSchema(),
+      resultRepoEvent.getDataschema()
+    );
 
-        final EventData<NodeResource> nodeResourceEventData = getEventData(resultRepoEvent);
-        // EventData attributes
-        assertNotNull("Event data group ID is not available. ", nodeResourceEventData.getEventGroupId());
-        assertNull("resourceBefore property is not available", nodeResourceEventData.getResourceBefore());
-        final NodeResource nodeResource = getNodeResource(resultRepoEvent);
+    final EventData<NodeResource> nodeResourceEventData = getEventData(
+      resultRepoEvent
+    );
+    // EventData attributes
+    assertNotNull(
+      "Event data group ID is not available. ",
+      nodeResourceEventData.getEventGroupId()
+    );
+    assertNull(
+      "resourceBefore property is not available",
+      nodeResourceEventData.getResourceBefore()
+    );
+    final NodeResource nodeResource = getNodeResource(resultRepoEvent);
 
-        // NodeResource attributes
-        assertEquals(nodeRef.getId(), nodeResource.getId());
-        assertEquals(name, nodeResource.getName());
-        assertEquals("cm:content", nodeResource.getNodeType());
-        assertNotNull(nodeResource.getPrimaryHierarchy());
-        assertNotNull("Default aspects were not added. ", nodeResource.getAspectNames());
-        assertEquals("test title", getProperty(nodeResource, "cm:title"));
-        assertNull("There is no content.", nodeResource.getContent());
+    // NodeResource attributes
+    assertEquals(nodeRef.getId(), nodeResource.getId());
+    assertEquals(name, nodeResource.getName());
+    assertEquals("cm:content", nodeResource.getNodeType());
+    assertNotNull(nodeResource.getPrimaryHierarchy());
+    assertNotNull(
+      "Default aspects were not added. ",
+      nodeResource.getAspectNames()
+    );
+    assertEquals("test title", getProperty(nodeResource, "cm:title"));
+    assertNull("There is no content.", nodeResource.getContent());
 
-        assertNotNull("Missing createdByUser property.", nodeResource.getCreatedByUser());
-        assertEquals("Wrong node creator id.", "admin", nodeResource.getCreatedByUser().getId());
-        assertEquals("Wrong node creator display name.", "Administrator",
-            nodeResource.getCreatedByUser().getDisplayName());
-        assertNotNull("Missing createdAt property.", nodeResource.getCreatedAt());
+    assertNotNull(
+      "Missing createdByUser property.",
+      nodeResource.getCreatedByUser()
+    );
+    assertEquals(
+      "Wrong node creator id.",
+      "admin",
+      nodeResource.getCreatedByUser().getId()
+    );
+    assertEquals(
+      "Wrong node creator display name.",
+      "Administrator",
+      nodeResource.getCreatedByUser().getDisplayName()
+    );
+    assertNotNull("Missing createdAt property.", nodeResource.getCreatedAt());
 
-        assertNotNull("Missing modifiedByUser property.", nodeResource.getModifiedByUser());
-        assertEquals("Wrong node modifier id.", "admin", nodeResource.getModifiedByUser().getId());
-        assertEquals("Wrong node modifier display name.", "Administrator",
-            nodeResource.getModifiedByUser().getDisplayName());
-        assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
-        assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, nodeResource.getPrimaryAssocQName());
-    }
+    assertNotNull(
+      "Missing modifiedByUser property.",
+      nodeResource.getModifiedByUser()
+    );
+    assertEquals(
+      "Wrong node modifier id.",
+      "admin",
+      nodeResource.getModifiedByUser().getId()
+    );
+    assertEquals(
+      "Wrong node modifier display name.",
+      "Administrator",
+      nodeResource.getModifiedByUser().getDisplayName()
+    );
+    assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
+    assertEquals(
+      "Wrong primaryAssocQName prefix.",
+      "ce:" + localName,
+      nodeResource.getPrimaryAssocQName()
+    );
+  }
 
-    @Test
-    public void testCreateContentInFolderStructure()
-    {
-        final NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER);
-        final NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
-        createNode(ContentModel.TYPE_CONTENT, parent);
+  @Test
+  public void testCreateContentInFolderStructure() {
+    final NodeRef grandParent = createNode(ContentModel.TYPE_FOLDER);
+    final NodeRef parent = createNode(ContentModel.TYPE_FOLDER, grandParent);
+    createNode(ContentModel.TYPE_CONTENT, parent);
 
-        final NodeResource resource = getNodeResource(3);
+    final NodeResource resource = getNodeResource(3);
 
-        List<String> primaryHierarchy = resource.getPrimaryHierarchy();
-        assertNotNull(primaryHierarchy);
-        assertEquals("Wrong hierarchy", 3, primaryHierarchy.size());
-        assertEquals("Wrong parent", parent.getId(), primaryHierarchy.get(0));
-    }
+    List<String> primaryHierarchy = resource.getPrimaryHierarchy();
+    assertNotNull(primaryHierarchy);
+    assertEquals("Wrong hierarchy", 3, primaryHierarchy.size());
+    assertEquals("Wrong parent", parent.getId(), primaryHierarchy.get(0));
+  }
 
-    @Test
-    public void testCreateNodeWithId()
-    {
-        final String uuid = GUID.generate();
-        PropertyMap properties = new PropertyMap();
-        properties.put(ContentModel.PROP_NODE_UUID, uuid);
+  @Test
+  public void testCreateNodeWithId() {
+    final String uuid = GUID.generate();
+    PropertyMap properties = new PropertyMap();
+    properties.put(ContentModel.PROP_NODE_UUID, uuid);
 
-        // create a node with an explicit UUID
-        createNode(ContentModel.TYPE_CONTENT, properties);
+    // create a node with an explicit UUID
+    createNode(ContentModel.TYPE_CONTENT, properties);
 
-        final NodeResource resource = getNodeResource(1);
+    final NodeResource resource = getNodeResource(1);
 
-        assertEquals("Failed to create node with a chosen ID", uuid, resource.getId());
-    }
+    assertEquals(
+      "Failed to create node with a chosen ID",
+      uuid,
+      resource.getId()
+    );
+  }
 
-    @Test
-    public void testFolderNodeType()
-    {
-        createNode(ContentModel.TYPE_FOLDER);
+  @Test
+  public void testFolderNodeType() {
+    createNode(ContentModel.TYPE_FOLDER);
 
-        final NodeResource resource = getNodeResource(1);
+    final NodeResource resource = getNodeResource(1);
 
-        assertEquals("cm:content node type was not found", "cm:folder", resource.getNodeType());
-        assertFalse("isFile flag should be FALSE for nodeType=cm:folder. ", resource.isFile());
-        assertTrue("isFolder flag should be TRUE for nodeType=cm:folder. ", resource.isFolder());
-    }
+    assertEquals(
+      "cm:content node type was not found",
+      "cm:folder",
+      resource.getNodeType()
+    );
+    assertFalse(
+      "isFile flag should be FALSE for nodeType=cm:folder. ",
+      resource.isFile()
+    );
+    assertTrue(
+      "isFolder flag should be TRUE for nodeType=cm:folder. ",
+      resource.isFolder()
+    );
+  }
 
-    @Test
-    public void testFileNodeType()
-    {
-        createNode(ContentModel.TYPE_CONTENT);
+  @Test
+  public void testFileNodeType() {
+    createNode(ContentModel.TYPE_CONTENT);
 
-        final NodeResource resource = getNodeResource(1);
+    final NodeResource resource = getNodeResource(1);
 
-        assertEquals("cm:content node type was not found", "cm:content", resource.getNodeType());
-        assertTrue("isFile flag should be TRUE for nodeType=cm:content. ", resource.isFile());
-        assertFalse("isFolder flag should be FALSE for nodeType=cm:content. ", resource.isFolder());
-    }
-    
-    @Test
-    public void testEventTimestampEqualsToTransactionCommitTime()
-    {
-        String name = "TestFile-" + System.currentTimeMillis() + ".txt";
-        PropertyMap propertyMap = new PropertyMap();
-        propertyMap.put(ContentModel.PROP_NAME, name);
-        
-        //create a node and return the transaction id required later
-        Long transactionId = retryingTransactionHelper.doInTransaction(() -> {
-            nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                    QName.createQName(TEST_NAMESPACE, GUID.generate()), ContentModel.TYPE_CONTENT, propertyMap).getChildRef();
-            return nodeDAO.getCurrentTransactionId(false);
-        });
+    assertEquals(
+      "cm:content node type was not found",
+      "cm:content",
+      resource.getNodeType()
+    );
+    assertTrue(
+      "isFile flag should be TRUE for nodeType=cm:content. ",
+      resource.isFile()
+    );
+    assertFalse(
+      "isFolder flag should be FALSE for nodeType=cm:content. ",
+      resource.isFolder()
+    );
+  }
 
-        RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
+  @Test
+  public void testEventTimestampEqualsToTransactionCommitTime() {
+    String name = "TestFile-" + System.currentTimeMillis() + ".txt";
+    PropertyMap propertyMap = new PropertyMap();
+    propertyMap.put(ContentModel.PROP_NAME, name);
 
-        Transaction transaction = nodeDAO.getTxnById(transactionId);
-        Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
-        ZonedDateTime timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
-        
-        assertEquals(timestamp, resultRepoEvent.getTime());
-    }
+    //create a node and return the transaction id required later
+    Long transactionId = retryingTransactionHelper.doInTransaction(() -> {
+      nodeService
+        .createNode(
+          rootNodeRef,
+          ContentModel.ASSOC_CHILDREN,
+          QName.createQName(TEST_NAMESPACE, GUID.generate()),
+          ContentModel.TYPE_CONTENT,
+          propertyMap
+        )
+        .getChildRef();
+      return nodeDAO.getCurrentTransactionId(false);
+    });
 
-    @Test
-    public void testCreateMultipleNodesInTheSameTransaction()
-    {
-        retryingTransactionHelper.doInTransaction(() -> {
-            for (int i = 0; i < 3; i++)
-            {
-                nodeService.createNode(
-                    rootNodeRef,
-                    ContentModel.ASSOC_CHILDREN,
-                    QName.createQName(TEST_NAMESPACE, GUID.generate()),
-                    ContentModel.TYPE_CONTENT);
-            }
-            return null;
-        });
+    RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
 
-        checkNumOfEvents(3);
+    Transaction transaction = nodeDAO.getTxnById(transactionId);
+    Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
+    ZonedDateTime timestamp = ZonedDateTime.ofInstant(
+      commitTimeMs,
+      ZoneOffset.UTC
+    );
 
-        RepoEventContainer repoEventsContainer = getRepoEventsContainer();
-        final String eventGroupId1 =
-            getEventData(repoEventsContainer.getEvent(1)).getEventGroupId();
-        final String eventGroupId2 =
-            getEventData(repoEventsContainer.getEvent(2)).getEventGroupId();
-        final String eventGroupId3 =
-            getEventData(repoEventsContainer.getEvent(3)).getEventGroupId();
+    assertEquals(timestamp, resultRepoEvent.getTime());
+  }
 
-        //All events in the transaction should have the same eventGroupId
-        assertTrue(eventGroupId1.equals(eventGroupId2) && eventGroupId2.equals(eventGroupId3));
-    }
+  @Test
+  public void testCreateMultipleNodesInTheSameTransaction() {
+    retryingTransactionHelper.doInTransaction(() -> {
+      for (int i = 0; i < 3; i++) {
+        nodeService.createNode(
+          rootNodeRef,
+          ContentModel.ASSOC_CHILDREN,
+          QName.createQName(TEST_NAMESPACE, GUID.generate()),
+          ContentModel.TYPE_CONTENT
+        );
+      }
+      return null;
+    });
+
+    checkNumOfEvents(3);
+
+    RepoEventContainer repoEventsContainer = getRepoEventsContainer();
+    final String eventGroupId1 = getEventData(repoEventsContainer.getEvent(1))
+      .getEventGroupId();
+    final String eventGroupId2 = getEventData(repoEventsContainer.getEvent(2))
+      .getEventGroupId();
+    final String eventGroupId3 = getEventData(repoEventsContainer.getEvent(3))
+      .getEventGroupId();
+
+    //All events in the transaction should have the same eventGroupId
+    assertTrue(
+      eventGroupId1.equals(eventGroupId2) && eventGroupId2.equals(eventGroupId3)
+    );
+  }
 }

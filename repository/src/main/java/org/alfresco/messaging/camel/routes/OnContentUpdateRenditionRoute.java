@@ -27,7 +27,6 @@ package org.alfresco.messaging.camel.routes;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.policy.Behaviour;
@@ -48,58 +47,73 @@ import org.springframework.stereotype.Component;
 
 /**
  * Rendition listener for on content update raw event.
- * 
+ *
  * @author Cristian Turlica
  */
 @Component
-public class OnContentUpdateRenditionRoute extends RouteBuilder
-{
-    private static Log logger = LogFactory.getLog(OnContentUpdateRenditionRoute.class);
+public class OnContentUpdateRenditionRoute extends RouteBuilder {
 
-    @Value("${acs.repo.rendition.events.endpoint}")
-    public String sourceQueue;
+  private static Log logger = LogFactory.getLog(
+    OnContentUpdateRenditionRoute.class
+  );
 
-    // Not restricted for now, should be restricted after performance tests.
-    private ExecutorService executorService = Executors.newCachedThreadPool();
+  @Value("${acs.repo.rendition.events.endpoint}")
+  public String sourceQueue;
 
-    @Autowired
-    private TransactionAwareEventProducer transactionAwareEventProducer;
+  // Not restricted for now, should be restricted after performance tests.
+  private ExecutorService executorService = Executors.newCachedThreadPool();
 
-    @Autowired
-    private PolicyComponent policyComponent;
+  @Autowired
+  private TransactionAwareEventProducer transactionAwareEventProducer;
 
-    @Override
-    public void configure() throws Exception
-    {
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("OnContentUpdate rendition events route config: ");
-            logger.debug("SourceQueue is " + sourceQueue);
-        }
+  @Autowired
+  private PolicyComponent policyComponent;
 
-        EventBehaviour eventBehaviour = new EventBehaviour(transactionAwareEventProducer, sourceQueue, this, "createOnContentUpdateEvent",
-                Behaviour.NotificationFrequency.EVERY_EVENT);
-        policyComponent.bindClassBehaviour(ContentServicePolicies.OnContentUpdatePolicy.QNAME, RenditionModel.ASPECT_RENDITIONED, eventBehaviour);
-
-        from(sourceQueue).threads().executorService(executorService).process("renditionEventProcessor").end();
+  @Override
+  public void configure() throws Exception {
+    if (logger.isDebugEnabled()) {
+      logger.debug("OnContentUpdate rendition events route config: ");
+      logger.debug("SourceQueue is " + sourceQueue);
     }
 
-    @SuppressWarnings("unused")
-    public OnContentUpdatePolicyEvent createOnContentUpdateEvent(NodeRef sourceNodeRef, boolean newContent)
-    {
-        OnContentUpdatePolicyEvent event = new OnContentUpdatePolicyEvent();
+    EventBehaviour eventBehaviour = new EventBehaviour(
+      transactionAwareEventProducer,
+      sourceQueue,
+      this,
+      "createOnContentUpdateEvent",
+      Behaviour.NotificationFrequency.EVERY_EVENT
+    );
+    policyComponent.bindClassBehaviour(
+      ContentServicePolicies.OnContentUpdatePolicy.QNAME,
+      RenditionModel.ASPECT_RENDITIONED,
+      eventBehaviour
+    );
 
-        // Raw event specific
-        event.setId(GUID.generate());
-        event.setType(EventType.CONTENT_UPDATED.toString());
-        event.setAuthenticatedUser(AuthenticationUtil.getFullyAuthenticatedUser());
-        event.setExecutingUser(AuthenticationUtil.getRunAsUser());
-        event.setTimestamp(System.currentTimeMillis());
-        event.setSchema(1);
+    from(sourceQueue)
+      .threads()
+      .executorService(executorService)
+      .process("renditionEventProcessor")
+      .end();
+  }
 
-        // On content update policy event specific
-        event.setNodeRef(sourceNodeRef.toString());
-        event.setNewContent(newContent);
-        return event;
-    }
+  @SuppressWarnings("unused")
+  public OnContentUpdatePolicyEvent createOnContentUpdateEvent(
+    NodeRef sourceNodeRef,
+    boolean newContent
+  ) {
+    OnContentUpdatePolicyEvent event = new OnContentUpdatePolicyEvent();
+
+    // Raw event specific
+    event.setId(GUID.generate());
+    event.setType(EventType.CONTENT_UPDATED.toString());
+    event.setAuthenticatedUser(AuthenticationUtil.getFullyAuthenticatedUser());
+    event.setExecutingUser(AuthenticationUtil.getRunAsUser());
+    event.setTimestamp(System.currentTimeMillis());
+    event.setSchema(1);
+
+    // On content update policy event specific
+    event.setNodeRef(sourceNodeRef.toString());
+    event.setNewContent(newContent);
+    return event;
+  }
 }

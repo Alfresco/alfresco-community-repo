@@ -19,51 +19,102 @@ import org.testng.annotations.Test;
 /**
  * @author iulia.cojocea
  */
-public class DeleteProcessVariableSanityTests extends RestTest
-{
-    private FileModel document;
-    private SiteModel siteModel;
-    private UserModel userWhoStartsTask, assignee, adminUser;
-    private RestProcessModel processModel;
-    private RestProcessVariableModel variableModel;
+public class DeleteProcessVariableSanityTests extends RestTest {
 
-    @BeforeClass(alwaysRun = true)
-    public void dataPreparation() throws Exception
-    {
-        adminUser = dataUser.getAdminUser();
-        userWhoStartsTask = dataUser.createRandomTestUser();
-        assignee = dataUser.createRandomTestUser();
-        siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
-        document = dataContent.usingUser(userWhoStartsTask).usingSite(siteModel).createContent(DocumentType.TEXT_PLAIN);
-        dataWorkflow.usingUser(userWhoStartsTask).usingSite(siteModel).usingResource(document).createNewTaskAndAssignTo(assignee);
-        processModel = restClient.authenticateUser(adminUser).withWorkflowAPI().addProcess("activitiAdhoc", adminUser, false, Priority.Normal);
-    }
+  private FileModel document;
+  private SiteModel siteModel;
+  private UserModel userWhoStartsTask, assignee, adminUser;
+  private RestProcessModel processModel;
+  private RestProcessVariableModel variableModel;
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
-            description = "Delete existing variable")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void deleteProcessVariable() throws Exception
-    {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
-        restClient.withWorkflowAPI().usingProcess(processModel).getProcessVariables()
-                .assertThat().entriesListDoesNotContain("name", variableModel.getName());
-    }
+  @BeforeClass(alwaysRun = true)
+  public void dataPreparation() throws Exception {
+    adminUser = dataUser.getAdminUser();
+    userWhoStartsTask = dataUser.createRandomTestUser();
+    assignee = dataUser.createRandomTestUser();
+    siteModel = dataSite.usingUser(userWhoStartsTask).createPublicRandomSite();
+    document =
+      dataContent
+        .usingUser(userWhoStartsTask)
+        .usingSite(siteModel)
+        .createContent(DocumentType.TEXT_PLAIN);
+    dataWorkflow
+      .usingUser(userWhoStartsTask)
+      .usingSite(siteModel)
+      .usingResource(document)
+      .createNewTaskAndAssignTo(assignee);
+    processModel =
+      restClient
+        .authenticateUser(adminUser)
+        .withWorkflowAPI()
+        .addProcess("activitiAdhoc", adminUser, false, Priority.Normal);
+  }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
-            description = "Try to delete existing variable using invalid processId")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
-    public void deleteProcessVariableUsingInvalidProcessId() throws Exception
-    {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        restClient.withWorkflowAPI().usingProcess(processModel).addProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-        processModel.setId("incorrectProcessId");
-        restClient.withWorkflowAPI().usingProcess(processModel).deleteProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "incorrectProcessId"));
+  @TestRail(
+    section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES },
+    executionType = ExecutionType.SANITY,
+    description = "Delete existing variable"
+  )
+  @Test(
+    groups = {
+      TestGroup.REST_API,
+      TestGroup.WORKFLOW,
+      TestGroup.PROCESSES,
+      TestGroup.SANITY,
     }
+  )
+  public void deleteProcessVariable() throws Exception {
+    variableModel =
+      RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+    restClient
+      .withWorkflowAPI()
+      .usingProcess(processModel)
+      .addProcessVariable(variableModel);
+    restClient.assertStatusCodeIs(HttpStatus.CREATED);
+    restClient
+      .withWorkflowAPI()
+      .usingProcess(processModel)
+      .deleteProcessVariable(variableModel);
+    restClient.assertStatusCodeIs(HttpStatus.NO_CONTENT);
+    restClient
+      .withWorkflowAPI()
+      .usingProcess(processModel)
+      .getProcessVariables()
+      .assertThat()
+      .entriesListDoesNotContain("name", variableModel.getName());
+  }
+
+  @TestRail(
+    section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES },
+    executionType = ExecutionType.SANITY,
+    description = "Try to delete existing variable using invalid processId"
+  )
+  @Test(
+    groups = {
+      TestGroup.REST_API,
+      TestGroup.WORKFLOW,
+      TestGroup.PROCESSES,
+      TestGroup.SANITY,
+    }
+  )
+  public void deleteProcessVariableUsingInvalidProcessId() throws Exception {
+    variableModel =
+      RestProcessVariableModel.getRandomProcessVariableModel("d:text");
+    restClient
+      .withWorkflowAPI()
+      .usingProcess(processModel)
+      .addProcessVariable(variableModel);
+    restClient.assertStatusCodeIs(HttpStatus.CREATED);
+    processModel.setId("incorrectProcessId");
+    restClient
+      .withWorkflowAPI()
+      .usingProcess(processModel)
+      .deleteProcessVariable(variableModel);
+    restClient
+      .assertStatusCodeIs(HttpStatus.NOT_FOUND)
+      .assertLastError()
+      .containsSummary(
+        String.format(RestErrorModel.ENTITY_NOT_FOUND, "incorrectProcessId")
+      );
+  }
 }

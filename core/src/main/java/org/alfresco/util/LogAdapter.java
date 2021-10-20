@@ -18,154 +18,128 @@
  */
 package org.alfresco.util;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.apache.commons.logging.Log;
-
-import org.alfresco.api.AlfrescoPublicApi;     
 
 /**
  * Utility class to adapt a {@link Log} class.
- * 
+ *
  * @since 4.2
- * 
+ *
  * @author Alan Davis
  */
 @AlfrescoPublicApi
-public abstract class LogAdapter implements Log
-{
-    final protected Log log;
-    
-    /**
-     * Constructor of an optional wrapped {@link Log}.
-     * @param log
-     */
-    protected LogAdapter(Log log)
-    {
-        this.log = log;
-    }
+public abstract class LogAdapter implements Log {
 
-    @Override
-    public void trace(Object arg0)
-    {
-        trace(arg0, null);
-    }
-    
-    @Override
-    public void trace(Object arg0, Throwable arg1)
-    {
-        if (log != null)
-        {
-            log.trace(arg0, arg1);
-        }
-    }
+  protected final Log log;
 
-    @Override
-    public void debug(Object arg0)
-    {
-        debug(arg0, null);
-    }
+  /**
+   * Constructor of an optional wrapped {@link Log}.
+   * @param log
+   */
+  protected LogAdapter(Log log) {
+    this.log = log;
+  }
 
-    @Override
-    public void debug(Object arg0, Throwable arg1)
-    {
-        if (log != null)
-        {
-            log.debug(arg0, arg1);
-        }
-    }
+  @Override
+  public void trace(Object arg0) {
+    trace(arg0, null);
+  }
 
-    @Override
-    public void info(Object arg0)
-    {
-        info(arg0, null);
+  @Override
+  public void trace(Object arg0, Throwable arg1) {
+    if (log != null) {
+      log.trace(arg0, arg1);
     }
+  }
 
-    @Override
-    public void info(Object arg0, Throwable arg1)
-    {
-        if (log != null)
-        {
-            log.info(arg0, arg1);
-        }
-    }
+  @Override
+  public void debug(Object arg0) {
+    debug(arg0, null);
+  }
 
-    @Override
-    public void warn(Object arg0)
-    {
-        warn(arg0, null);
+  @Override
+  public void debug(Object arg0, Throwable arg1) {
+    if (log != null) {
+      log.debug(arg0, arg1);
     }
+  }
 
-    @Override
-    public void warn(Object arg0, Throwable arg1)
-    {
-        if (log != null)
-        {
-            log.warn(arg0, arg1);
-        }
-    }
+  @Override
+  public void info(Object arg0) {
+    info(arg0, null);
+  }
 
-    @Override
-    public void error(Object arg0)
-    {
-        error(arg0, null);
+  @Override
+  public void info(Object arg0, Throwable arg1) {
+    if (log != null) {
+      log.info(arg0, arg1);
     }
+  }
 
-    @Override
-    public void error(Object arg0, Throwable arg1)
-    {
-        if (log != null)
-        {
-            log.error(arg0, arg1);
-        }
-    }
+  @Override
+  public void warn(Object arg0) {
+    warn(arg0, null);
+  }
 
-    @Override
-    public void fatal(Object arg0)
-    {
-        fatal(arg0, null);
+  @Override
+  public void warn(Object arg0, Throwable arg1) {
+    if (log != null) {
+      log.warn(arg0, arg1);
     }
+  }
 
-    @Override
-    public void fatal(Object arg0, Throwable arg1)
-    {
-        if (log != null)
-        {
-            log.fatal(arg0, arg1);
-        }
-    }
+  @Override
+  public void error(Object arg0) {
+    error(arg0, null);
+  }
 
-    @Override
-    public boolean isTraceEnabled()
-    {
-        return log != null && log.isTraceEnabled();
+  @Override
+  public void error(Object arg0, Throwable arg1) {
+    if (log != null) {
+      log.error(arg0, arg1);
     }
+  }
 
-    @Override
-    public boolean isDebugEnabled()
-    {
-        return log != null && log.isDebugEnabled();
-    }
+  @Override
+  public void fatal(Object arg0) {
+    fatal(arg0, null);
+  }
 
-    @Override
-    public boolean isInfoEnabled()
-    {
-        return log != null && log.isInfoEnabled();
+  @Override
+  public void fatal(Object arg0, Throwable arg1) {
+    if (log != null) {
+      log.fatal(arg0, arg1);
     }
+  }
 
-    @Override
-    public boolean isWarnEnabled()
-    {
-        return log != null && log.isWarnEnabled();
-    }
+  @Override
+  public boolean isTraceEnabled() {
+    return log != null && log.isTraceEnabled();
+  }
 
-    @Override
-    public boolean isErrorEnabled()
-    {
-        return log != null && log.isErrorEnabled();
-    }
+  @Override
+  public boolean isDebugEnabled() {
+    return log != null && log.isDebugEnabled();
+  }
 
-    @Override
-    public boolean isFatalEnabled()
-    {
-        return log != null && log.isFatalEnabled();
-    }
+  @Override
+  public boolean isInfoEnabled() {
+    return log != null && log.isInfoEnabled();
+  }
+
+  @Override
+  public boolean isWarnEnabled() {
+    return log != null && log.isWarnEnabled();
+  }
+
+  @Override
+  public boolean isErrorEnabled() {
+    return log != null && log.isErrorEnabled();
+  }
+
+  @Override
+  public boolean isFatalEnabled() {
+    return log != null && log.isFatalEnabled();
+  }
 }

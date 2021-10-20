@@ -20,15 +20,14 @@ package org.alfresco.processor;
 
 /**
  * Interface to represent a server side script implementation
- * 
+ *
  * @author Roy Wetherall
  */
-public interface ProcessorExtension 
-{
-    /**
-     * Returns the name of the extension 
-     * 
-     * @return the name of the extension
-     */
-    String getExtensionName();
+public interface ProcessorExtension {
+  /**
+   * Returns the name of the extension
+   *
+   * @return the name of the extension
+   */
+  String getExtensionName();
 }

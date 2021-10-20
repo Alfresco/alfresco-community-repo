@@ -25,6 +25,4 @@ package org.alfresco.util.testing.category;
  * Use the {@link NeverRunsTests} interface if the reason a test is not run is unknown. Also see {@link DebugTests},
  * {@link PerformanceTests} if the reason is known.
  */
-public interface RedundantTests extends NonBuildTests
-{
-}
+public interface RedundantTests extends NonBuildTests {}

@@ -28,13 +28,11 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.disposition;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.bdt.BehaviourTest.test;
 
+import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import com.google.common.collect.ImmutableMap;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
@@ -56,117 +54,169 @@ import org.springframework.extensions.webscripts.GUID;
  * @author Tom Page
  * @since 2.3.1
  */
-public class UpdateDispositionScheduleTest extends BaseRMTestCase
-{
-    /** A unique prefix for the constants in this test. */
-    protected static final String TEST_PREFIX = UpdateDispositionScheduleTest.class.getName() + GUID.generate() + "_";
-    /** The name to use for the category. */
-    protected static final String CATEGORY_NAME = TEST_PREFIX + "Category";
-    /** The name to use for the folder. */
-    protected static final String FOLDER_NAME = TEST_PREFIX + "Folder";
-    /** The name to use for the record. */
-    protected static final String RECORD_NAME = TEST_PREFIX + "Record";
+public class UpdateDispositionScheduleTest extends BaseRMTestCase {
 
-    /** The executor for the disposition update job. */
-    private DispositionActionDefinitionPublishExecutor dispositionActionDefinitionPublishExecutor;
-    /** The internal disposition service is used to avoid permissions issues when updating the record. */
-    private DispositionService internalDispositionService;
+  /** A unique prefix for the constants in this test. */
+  protected static final String TEST_PREFIX =
+    UpdateDispositionScheduleTest.class.getName() + GUID.generate() + "_";
+  /** The name to use for the category. */
+  protected static final String CATEGORY_NAME = TEST_PREFIX + "Category";
+  /** The name to use for the folder. */
+  protected static final String FOLDER_NAME = TEST_PREFIX + "Folder";
+  /** The name to use for the record. */
+  protected static final String RECORD_NAME = TEST_PREFIX + "Record";
 
-    /** The category node. */
-    private NodeRef category;
-    /** The folder node. */
-    private NodeRef folder;
-    /** The record node. */
-    private NodeRef record;
-    /** The 'disposition as of' date from before the 'when' step. */
-    private Date originalAsOfDate;
+  /** The executor for the disposition update job. */
+  private DispositionActionDefinitionPublishExecutor dispositionActionDefinitionPublishExecutor;
+  /** The internal disposition service is used to avoid permissions issues when updating the record. */
+  private DispositionService internalDispositionService;
 
-    @Override
-    protected void setUp() throws Exception
-    {
-        super.setUp();
+  /** The category node. */
+  private NodeRef category;
+  /** The folder node. */
+  private NodeRef folder;
+  /** The record node. */
+  private NodeRef record;
+  /** The 'disposition as of' date from before the 'when' step. */
+  private Date originalAsOfDate;
 
-        BehaviourTest.initBehaviourTests(retryingTransactionHelper);
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
 
-        // Get the application context
-        applicationContext = ApplicationContextHelper.getApplicationContext(getConfigLocations());
-        dispositionActionDefinitionPublishExecutor = applicationContext.getBean(DispositionActionDefinitionPublishExecutor.class);
-        internalDispositionService = (DispositionService) applicationContext.getBean("dispositionService");
-    }
+    BehaviourTest.initBehaviourTests(retryingTransactionHelper);
 
-    /**
-     * <a href="https://issues.alfresco.com/jira/browse/RM-3386">RM-3386</a>
-     * <p><pre>
-     * Given a record subject to a disposition schedule
-     * And the next step is due to run at some period after the date the content was created
-     * When I update the period of the next step (and wait for this to be processed)
-     * Then the "as of" date is updated to be at the new period after the creation date.
-     * </pre>
-     */
-    public void testUpdatePeriod()
-    {
-        test()
-            .given(() -> {
-                // Create a category.
-                category = filePlanService.createRecordCategory(filePlan, CATEGORY_NAME);
-                // Create a disposition schedule for the category (Cut off immediately, then Destroy 1 year after the creation date).
-                DispositionSchedule dispSched = utils.createBasicDispositionSchedule(category, "instructions", "authority", true, false);
-                Map<QName, Serializable> cutOffParams = ImmutableMap.of(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME,
-                                PROP_DISPOSITION_DESCRIPTION, "description",
-                                PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
-                dispositionService.addDispositionActionDefinition(dispSched, cutOffParams);
-                Map<QName, Serializable> destroyParams = ImmutableMap.of(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME,
-                PROP_DISPOSITION_DESCRIPTION, "description",
-                PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_ONE_YEAR,
-                PROP_DISPOSITION_PERIOD_PROPERTY, ContentModel.PROP_CREATED);
-                dispositionService.addDispositionActionDefinition(dispSched, destroyParams);
-                // Create a folder containing a record within the category.
-                folder = recordFolderService.createRecordFolder(category, FOLDER_NAME);
-                record = fileFolderService.create(folder, RECORD_NAME, ContentModel.TYPE_CONTENT).getNodeRef();
+    // Get the application context
+    applicationContext =
+      ApplicationContextHelper.getApplicationContext(getConfigLocations());
+    dispositionActionDefinitionPublishExecutor =
+      applicationContext.getBean(
+        DispositionActionDefinitionPublishExecutor.class
+      );
+    internalDispositionService =
+      (DispositionService) applicationContext.getBean("dispositionService");
+  }
 
-                dispositionService.cutoffDisposableItem(record);
-                // Ensure the update has been applied to the record.
-                internalDispositionService.updateNextDispositionAction(record);
+  /**
+   * <a href="https://issues.alfresco.com/jira/browse/RM-3386">RM-3386</a>
+   * <p><pre>
+   * Given a record subject to a disposition schedule
+   * And the next step is due to run at some period after the date the content was created
+   * When I update the period of the next step (and wait for this to be processed)
+   * Then the "as of" date is updated to be at the new period after the creation date.
+   * </pre>
+   */
+  public void testUpdatePeriod() {
+    test()
+      .given(() -> {
+        // Create a category.
+        category =
+          filePlanService.createRecordCategory(filePlan, CATEGORY_NAME);
+        // Create a disposition schedule for the category (Cut off immediately, then Destroy 1 year after the creation date).
+        DispositionSchedule dispSched = utils.createBasicDispositionSchedule(
+          category,
+          "instructions",
+          "authority",
+          true,
+          false
+        );
+        Map<QName, Serializable> cutOffParams = ImmutableMap.of(
+          PROP_DISPOSITION_ACTION_NAME,
+          CutOffAction.NAME,
+          PROP_DISPOSITION_DESCRIPTION,
+          "description",
+          PROP_DISPOSITION_PERIOD,
+          CommonRMTestUtils.PERIOD_IMMEDIATELY
+        );
+        dispositionService.addDispositionActionDefinition(
+          dispSched,
+          cutOffParams
+        );
+        Map<QName, Serializable> destroyParams = ImmutableMap.of(
+          PROP_DISPOSITION_ACTION_NAME,
+          DestroyAction.NAME,
+          PROP_DISPOSITION_DESCRIPTION,
+          "description",
+          PROP_DISPOSITION_PERIOD,
+          CommonRMTestUtils.PERIOD_ONE_YEAR,
+          PROP_DISPOSITION_PERIOD_PROPERTY,
+          ContentModel.PROP_CREATED
+        );
+        dispositionService.addDispositionActionDefinition(
+          dispSched,
+          destroyParams
+        );
+        // Create a folder containing a record within the category.
+        folder = recordFolderService.createRecordFolder(category, FOLDER_NAME);
+        record =
+          fileFolderService
+            .create(folder, RECORD_NAME, ContentModel.TYPE_CONTENT)
+            .getNodeRef();
 
-                originalAsOfDate = dispositionService.getNextDispositionAction(record).getAsOfDate();
-            })
-            .when(() -> {
-                // Update the Destroy step to be 3 years after the creation date.
-                DispositionSchedule dispSched = dispositionService.getDispositionSchedule(category);
-                DispositionActionDefinition destroy = dispSched.getDispositionActionDefinitionByName(DestroyAction.NAME);
-                Map<QName, Serializable> destroyParams = ImmutableMap.of(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME,
-                                PROP_DISPOSITION_DESCRIPTION, "description",
-                                PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_THREE_YEARS,
-                                PROP_DISPOSITION_PERIOD_PROPERTY, ContentModel.PROP_CREATED);
-                dispositionService.updateDispositionActionDefinition(destroy, destroyParams);
+        dispositionService.cutoffDisposableItem(record);
+        // Ensure the update has been applied to the record.
+        internalDispositionService.updateNextDispositionAction(record);
 
-                // Make the disposition action definition update job run.
-                dispositionActionDefinitionPublishExecutor.publish(destroy.getNodeRef());
-            })
-            .then()
-                .expect(true)
-                    .from(() -> aboutTwoYearsApart(originalAsOfDate, dispositionService.getNextDispositionAction(record).getAsOfDate()))
-                    .because("Increasing the destroy period by two years should increase the 'as of' date by two years.");
-    }
+        originalAsOfDate =
+          dispositionService.getNextDispositionAction(record).getAsOfDate();
+      })
+      .when(() -> {
+        // Update the Destroy step to be 3 years after the creation date.
+        DispositionSchedule dispSched = dispositionService.getDispositionSchedule(
+          category
+        );
+        DispositionActionDefinition destroy = dispSched.getDispositionActionDefinitionByName(
+          DestroyAction.NAME
+        );
+        Map<QName, Serializable> destroyParams = ImmutableMap.of(
+          PROP_DISPOSITION_ACTION_NAME,
+          DestroyAction.NAME,
+          PROP_DISPOSITION_DESCRIPTION,
+          "description",
+          PROP_DISPOSITION_PERIOD,
+          CommonRMTestUtils.PERIOD_THREE_YEARS,
+          PROP_DISPOSITION_PERIOD_PROPERTY,
+          ContentModel.PROP_CREATED
+        );
+        dispositionService.updateDispositionActionDefinition(
+          destroy,
+          destroyParams
+        );
 
-    /**
-     * Check that the two given dates are approximately two years apart.
-     * <p>
-     * This actually just checks that they're more than one and less than three years apart, because leap years make
-     * things hard to calculate.
-     *
-     * @return true if the two dates are about two years apart.
-     */
-    private boolean aboutTwoYearsApart(Date start, Date end)
-    {
-        long days = daysBetween(start, end);
-        long yearInDays = 365;
-        return (yearInDays < days) && (days < 3 * yearInDays);
-    }
+        // Make the disposition action definition update job run.
+        dispositionActionDefinitionPublishExecutor.publish(
+          destroy.getNodeRef()
+        );
+      })
+      .then()
+      .expect(true)
+      .from(() ->
+        aboutTwoYearsApart(
+          originalAsOfDate,
+          dispositionService.getNextDispositionAction(record).getAsOfDate()
+        )
+      )
+      .because(
+        "Increasing the destroy period by two years should increase the 'as of' date by two years."
+      );
+  }
 
-    /** Find the number of days between the two dates. */
-    private long daysBetween(Date start, Date end)
-    {
-        return TimeUnit.MILLISECONDS.toDays(end.getTime() - start.getTime());
-    }
+  /**
+   * Check that the two given dates are approximately two years apart.
+   * <p>
+   * This actually just checks that they're more than one and less than three years apart, because leap years make
+   * things hard to calculate.
+   *
+   * @return true if the two dates are about two years apart.
+   */
+  private boolean aboutTwoYearsApart(Date start, Date end) {
+    long days = daysBetween(start, end);
+    long yearInDays = 365;
+    return (yearInDays < days) && (days < 3 * yearInDays);
+  }
+
+  /** Find the number of days between the two dates. */
+  private long daysBetween(Date start, Date end) {
+    return TimeUnit.MILLISECONDS.toDays(end.getTime() - start.getTime());
+  }
 }

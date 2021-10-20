@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -53,218 +52,204 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ExtendedRuleServiceImpl extends RuleServiceImpl
-{
-    private static final String MSG_RETENTION_PERIOD_NOT_VALID = "rm.action.worm-retention-period-not-valid";
-    private static final String PARAM_RETENTION_PERIOD = "retentionPeriod";
-    private static final String POSITIVE_INTEGERS_PATTERN = "^\\+?([1-9]\\d*)$";
-    private static final String WORM_LOCK_ACTION = "wormLock";
+public class ExtendedRuleServiceImpl extends RuleServiceImpl {
 
-	/** indicates whether the rules should be run as admin or not */
-    private boolean runAsAdmin = true;
+  private static final String MSG_RETENTION_PERIOD_NOT_VALID =
+    "rm.action.worm-retention-period-not-valid";
+  private static final String PARAM_RETENTION_PERIOD = "retentionPeriod";
+  private static final String POSITIVE_INTEGERS_PATTERN = "^\\+?([1-9]\\d*)$";
+  private static final String WORM_LOCK_ACTION = "wormLock";
 
-    /** ignore types */
-    private Set<QName> ignoredTypes = new HashSet<>();
+  /** indicates whether the rules should be run as admin or not */
+  private boolean runAsAdmin = true;
 
-    /** file plan service */
-    private FilePlanService filePlanService;
+  /** ignore types */
+  private Set<QName> ignoredTypes = new HashSet<>();
 
-    /** node service */
-    protected NodeService nodeService;
+  /** file plan service */
+  private FilePlanService filePlanService;
 
-    /** Record service */
-    protected RecordService recordService;
+  /** node service */
+  protected NodeService nodeService;
 
-    /**
-     * @param nodeService	node service
-     */
-    public void setNodeService2(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /** Record service */
+  protected RecordService recordService;
 
-    /**
-     * @param filePlanService   file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
+  /**
+   * @param nodeService	node service
+   */
+  public void setNodeService2(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-    /**
-     * @param recordService   record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
+  /**
+   * @param filePlanService   file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
 
-    /**
-     * @param runAsAdmin  true if run rules as admin, false otherwise
-     */
-    public void setRunAsAdmin(boolean runAsAdmin)
-    {
-        this.runAsAdmin = runAsAdmin;
-    }
+  /**
+   * @param recordService   record service
+   */
+  public void setRecordService(RecordService recordService) {
+    this.recordService = recordService;
+  }
 
-    /**
-     * Init method
-     */
-    @Override
-    public void init()
-    {
-        super.init();
+  /**
+   * @param runAsAdmin  true if run rules as admin, false otherwise
+   */
+  public void setRunAsAdmin(boolean runAsAdmin) {
+    this.runAsAdmin = runAsAdmin;
+  }
 
-        // Specify a set of system types to be ignored by rule executions
-        ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE);
-        ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_ACTION);
-        ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION);
-        ignoredTypes.add(RecordsManagementModel.TYPE_EVENT_EXECUTION);
-    }
+  /**
+   * Init method
+   */
+  @Override
+  public void init() {
+    super.init();
 
-    private void validateWormLockRuleAction(final Rule rule)
-    {
-        try
-        {
-            CompositeActionImpl compositeAction = (CompositeActionImpl) rule.getAction();
-            Pattern pattern = Pattern.compile(POSITIVE_INTEGERS_PATTERN);
-            for (Action action : compositeAction.getActions())
-            {
-                if (WORM_LOCK_ACTION.equals(action.getActionDefinitionName()))
-                {
-                    String retentionPeriodParamValue = (String) action.getParameterValue(PARAM_RETENTION_PERIOD);
-                    if (retentionPeriodParamValue != null)
-                    {
-                        Matcher matcher = pattern.matcher(retentionPeriodParamValue);
-                        if (!matcher.matches())
-                        {
-                            throw new IntegrityException(I18NUtil.getMessage(MSG_RETENTION_PERIOD_NOT_VALID), null);
-                        }
-                    }
-                }
+    // Specify a set of system types to be ignored by rule executions
+    ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_SCHEDULE);
+    ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_ACTION);
+    ignoredTypes.add(RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION);
+    ignoredTypes.add(RecordsManagementModel.TYPE_EVENT_EXECUTION);
+  }
+
+  private void validateWormLockRuleAction(final Rule rule) {
+    try {
+      CompositeActionImpl compositeAction = (CompositeActionImpl) rule.getAction();
+      Pattern pattern = Pattern.compile(POSITIVE_INTEGERS_PATTERN);
+      for (Action action : compositeAction.getActions()) {
+        if (WORM_LOCK_ACTION.equals(action.getActionDefinitionName())) {
+          String retentionPeriodParamValue = (String) action.getParameterValue(
+            PARAM_RETENTION_PERIOD
+          );
+          if (retentionPeriodParamValue != null) {
+            Matcher matcher = pattern.matcher(retentionPeriodParamValue);
+            if (!matcher.matches()) {
+              throw new IntegrityException(
+                I18NUtil.getMessage(MSG_RETENTION_PERIOD_NOT_VALID),
+                null
+              );
             }
-        } catch (PatternSyntaxException ex)
-        {
-            throw new IntegrityException (I18NUtil.getMessage(MSG_RETENTION_PERIOD_NOT_VALID), null);
-        } catch (ClassCastException ex1)
-        {
-            //do nothing, not a composite action for validation
+          }
         }
+      }
+    } catch (PatternSyntaxException ex) {
+      throw new IntegrityException(
+        I18NUtil.getMessage(MSG_RETENTION_PERIOD_NOT_VALID),
+        null
+      );
+    } catch (ClassCastException ex1) {
+      //do nothing, not a composite action for validation
     }
+  }
 
-    /**
-     * @see org.alfresco.repo.rule.RuleServiceImpl#saveRule(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
-     */
-    @Override
-    public void saveRule(final NodeRef nodeRef, final Rule rule)
-    {
-        validateWormLockRuleAction(rule);
-        if (filePlanService.isFilePlanComponent(nodeRef))
-        {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
+  /**
+   * @see org.alfresco.repo.rule.RuleServiceImpl#saveRule(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
+   */
+  @Override
+  public void saveRule(final NodeRef nodeRef, final Rule rule) {
+    validateWormLockRuleAction(rule);
+    if (filePlanService.isFilePlanComponent(nodeRef)) {
+      AuthenticationUtil.runAsSystem(
+        new RunAsWork<Void>() {
+          @Override
+          public Void doWork() {
+            ExtendedRuleServiceImpl.super.saveRule(nodeRef, rule);
+            return null;
+          }
+        }
+      );
+    } else {
+      super.saveRule(nodeRef, rule);
+    }
+  }
+
+  /**
+   * @see org.alfresco.repo.rule.RuleServiceImpl#removeRule(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
+   */
+  @Override
+  public void removeRule(final NodeRef nodeRef, final Rule rule) {
+    if (filePlanService.isFilePlanComponent(nodeRef)) {
+      AuthenticationUtil.runAsSystem(
+        new RunAsWork<Void>() {
+          @Override
+          public Void doWork() {
+            ExtendedRuleServiceImpl.super.removeRule(nodeRef, rule);
+            return null;
+          }
+        }
+      );
+    } else {
+      super.removeRule(nodeRef, rule);
+    }
+  }
+
+  /**
+   * @see org.alfresco.repo.rule.RuleServiceImpl#executeRule(org.alfresco.service.cmr.rule.Rule, org.alfresco.service.cmr.repository.NodeRef, java.util.Set)
+   */
+  @Override
+  public void executeRule(
+    final Rule rule,
+    final NodeRef nodeRef,
+    final Set<ExecutedRuleData> executedRules
+  ) {
+    if (nodeService.exists(nodeRef)) {
+      QName typeQName = nodeService.getType(nodeRef);
+
+      // check if this is a rm rule on a rm artifact
+      if (
+        filePlanService.isFilePlanComponent(nodeRef) &&
+        isFilePlanComponentRule(rule)
+      ) {
+        // ignore and
+        if (!isIgnoredType(typeQName)) {
+          if (runAsAdmin) {
+            AuthenticationUtil.runAs(
+              new RunAsWork<Void>() {
                 @Override
-                public Void doWork()
-                {
-                    ExtendedRuleServiceImpl.super.saveRule(nodeRef, rule);
-                    return null;
+                public Void doWork() {
+                  ExtendedRuleServiceImpl.super.executeRule(
+                    rule,
+                    nodeRef,
+                    executedRules
+                  );
+                  return null;
                 }
-
-            });
+              },
+              AuthenticationUtil.getAdminUserName()
+            );
+          } else {
+            // run as current user
+            super.executeRule(rule, nodeRef, executedRules);
+          }
         }
-        else
-        {
-            super.saveRule(nodeRef, rule);
-        }
+      } else {
+        // just execute the rule as the current user
+        super.executeRule(rule, nodeRef, executedRules);
+      }
     }
+  }
 
-    /**
-     * @see org.alfresco.repo.rule.RuleServiceImpl#removeRule(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
-     */
-    @Override
-    public void removeRule(final NodeRef nodeRef, final Rule rule)
-    {
-        if (filePlanService.isFilePlanComponent(nodeRef))
-        {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-            {
-                @Override
-                public Void doWork()
-                {
-                    ExtendedRuleServiceImpl.super.removeRule(nodeRef, rule);
-                    return null;
-                }
+  /**
+   * Indicates whether the rule is a file plan component
+   *
+   * @param rule		rule
+   * @return boolean	true if rule is set on a file plan component, false otherwise
+   */
+  private boolean isFilePlanComponentRule(Rule rule) {
+    NodeRef nodeRef = getOwningNodeRef(rule);
+    return filePlanService.isFilePlanComponent(nodeRef);
+  }
 
-            });
-        }
-        else
-        {
-            super.removeRule(nodeRef, rule);
-        }
-    }
-
-    /**
-     * @see org.alfresco.repo.rule.RuleServiceImpl#executeRule(org.alfresco.service.cmr.rule.Rule, org.alfresco.service.cmr.repository.NodeRef, java.util.Set)
-     */
-    @Override
-    public void executeRule(final Rule rule, final NodeRef nodeRef, final Set<ExecutedRuleData> executedRules)
-    {
-        if (nodeService.exists(nodeRef))
-        {
-            QName typeQName = nodeService.getType(nodeRef);
-
-            // check if this is a rm rule on a rm artifact
-            if (filePlanService.isFilePlanComponent(nodeRef) &&
-            	isFilePlanComponentRule(rule))
-            {
-            	// ignore and
-                if (!isIgnoredType(typeQName))
-    	        {
-    	        	if (runAsAdmin)
-    	            {
-    	            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-                        {
-                            @Override
-                            public Void doWork()
-                            {
-                                ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-                                return null;
-                            }
-                        }, AuthenticationUtil.getAdminUserName());
-                	}
-                	else
-                	{
-                		// run as current user
-                		super.executeRule(rule, nodeRef, executedRules);
-                	}
-    	        }
-            }
-            else
-            {
-                // just execute the rule as the current user
-                super.executeRule(rule, nodeRef, executedRules);
-            }
-        }
-    }
-
-    /**
-     * Indicates whether the rule is a file plan component
-     *
-     * @param rule		rule
-     * @return boolean	true if rule is set on a file plan component, false otherwise
-     */
-    private boolean isFilePlanComponentRule(Rule rule)
-    {
-        NodeRef nodeRef = getOwningNodeRef(rule);
-        return filePlanService.isFilePlanComponent(nodeRef);
-    }
-
-    /**
-     * @param  typeQName	type qname
-     * @return boolean		true if ignore type, false otherwise
-     */
-    private boolean isIgnoredType(QName typeQName)
-    {
-        return ignoredTypes.contains(typeQName);
-    }
+  /**
+   * @param  typeQName	type qname
+   * @return boolean		true if ignore type, false otherwise
+   */
+  private boolean isIgnoredType(QName typeQName) {
+    return ignoredTypes.contains(typeQName);
+  }
 }

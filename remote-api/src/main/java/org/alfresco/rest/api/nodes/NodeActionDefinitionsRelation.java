@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -35,31 +37,33 @@ import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ParameterCheck;
 
-import java.util.List;
-import java.util.stream.Collectors;
+@RelationshipResource(
+  name = "action-definitions",
+  entityResource = NodesEntityResource.class,
+  title = "Node action definitions"
+)
+public class NodeActionDefinitionsRelation
+  extends AbstractNodeRelation
+  implements RelationshipResourceAction.Read<ActionDefinition> {
 
-@RelationshipResource(name = "action-definitions",  entityResource = NodesEntityResource.class, title = "Node action definitions")
-public class NodeActionDefinitionsRelation extends AbstractNodeRelation
-        implements RelationshipResourceAction.Read<ActionDefinition>
-{
-    private Actions actions;
+  private Actions actions;
 
-    @Override
-    public void afterPropertiesSet()
-    {
-        super.afterPropertiesSet();
-        ParameterCheck.mandatory("actions", actions);
-    }
+  @Override
+  public void afterPropertiesSet() {
+    super.afterPropertiesSet();
+    ParameterCheck.mandatory("actions", actions);
+  }
 
-    public void setActions(Actions actions)
-    {
-        this.actions = actions;
-    }
+  public void setActions(Actions actions) {
+    this.actions = actions;
+  }
 
-    @Override
-    public CollectionWithPagingInfo<ActionDefinition> readAll(String entityResourceId, Parameters params)
-    {
-        NodeRef parentNodeRef = nodes.validateOrLookupNode(entityResourceId, null);
-        return actions.getActionDefinitions(parentNodeRef, params);
-    }
+  @Override
+  public CollectionWithPagingInfo<ActionDefinition> readAll(
+    String entityResourceId,
+    Parameters params
+  ) {
+    NodeRef parentNodeRef = nodes.validateOrLookupNode(entityResourceId, null);
+    return actions.getActionDefinitions(parentNodeRef, params);
+  }
 }

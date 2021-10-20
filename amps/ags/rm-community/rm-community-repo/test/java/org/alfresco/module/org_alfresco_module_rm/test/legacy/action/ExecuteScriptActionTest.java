@@ -44,128 +44,177 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Eva Vasques
  */
-public class ExecuteScriptActionTest extends BaseRMTestCase
-{
-    
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
-    
-    public void testExecuteScript()
-    {
+public class ExecuteScriptActionTest extends BaseRMTestCase {
 
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        String fileOriginalName = (String) nodeService.getProperty(dmDocument, ContentModel.PROP_NAME);
+  @Override
+  protected boolean isCollaborationSiteTest() {
+    return true;
+  }
 
-        // Valid Script
-        NodeRef validScriptRef = addTempScript("valid-rm-script.js",
-                "document.properties.name = \"Valid_\" + document.properties.name;\ndocument.save();");
+  public void testExecuteScript() {
+    AuthenticationUtil.setFullyAuthenticatedUser(
+      AuthenticationUtil.getAdminUserName()
+    );
+    String fileOriginalName = (String) nodeService.getProperty(
+      dmDocument,
+      ContentModel.PROP_NAME
+    );
 
-        // Invalid Script
-        NodeRef invalidScriptRef = addTempScript("invalid-rm-script.js",
-                "document.properties.name = \"Invalid_\" + document.properties.name;\ndocument.save();", dmFolder);
+    // Valid Script
+    NodeRef validScriptRef = addTempScript(
+      "valid-rm-script.js",
+      "document.properties.name = \"Valid_\" + document.properties.name;\ndocument.save();"
+    );
 
-        // Attempt to execute a script not in RM Scripts folder should fail
-        doTestInTransaction(new FailureTest("Script outside proper Data Dictionary folder should not be executed",
-                IllegalStateException.class)
-        {
-            public void run() throws Exception
-            {
-                executeAction(invalidScriptRef, dmDocument);
-            }
-        }, dmCollaborator);
+    // Invalid Script
+    NodeRef invalidScriptRef = addTempScript(
+      "invalid-rm-script.js",
+      "document.properties.name = \"Invalid_\" + document.properties.name;\ndocument.save();",
+      dmFolder
+    );
 
-        // Scripts in correct data dictionary folder should be executed
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run() throws Exception
-            {
-                executeAction(validScriptRef, dmDocument);
-                return null;
-            }
+    // Attempt to execute a script not in RM Scripts folder should fail
+    doTestInTransaction(
+      new FailureTest(
+        "Script outside proper Data Dictionary folder should not be executed",
+        IllegalStateException.class
+      ) {
+        public void run() throws Exception {
+          executeAction(invalidScriptRef, dmDocument);
+        }
+      },
+      dmCollaborator
+    );
 
-            @Override
-            public void test(Void result) throws Exception
-            {
-                // Assert the script was executed and the document was renamed
-                String currentName = (String) nodeService.getProperty(dmDocument, ContentModel.PROP_NAME);
-                assertEquals(currentName, "Valid_" + fileOriginalName);
-            }
-        }, dmCollaborator);
+    // Scripts in correct data dictionary folder should be executed
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() throws Exception {
+          executeAction(validScriptRef, dmDocument);
+          return null;
+        }
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                // Set the name back to what it was
-                nodeService.setProperty(dmDocument, ContentModel.PROP_NAME, fileOriginalName);
-                return null;
-            }
-        });
-    }
+        @Override
+        public void test(Void result) throws Exception {
+          // Assert the script was executed and the document was renamed
+          String currentName = (String) nodeService.getProperty(
+            dmDocument,
+            ContentModel.PROP_NAME
+          );
+          assertEquals(currentName, "Valid_" + fileOriginalName);
+        }
+      },
+      dmCollaborator
+    );
 
-    private NodeRef addTempScript(final String scriptFileName, final String javaScript, final NodeRef parentRef)
-    {
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute() throws Throwable
-            {
+    retryingTransactionHelper.doInTransaction(
+      new RetryingTransactionCallback<Void>() {
+        public Void execute() throws Throwable {
+          // Set the name back to what it was
+          nodeService.setProperty(
+            dmDocument,
+            ContentModel.PROP_NAME,
+            fileOriginalName
+          );
+          return null;
+        }
+      }
+    );
+  }
 
-                NodeRef script = nodeService.getChildByName(parentRef, ContentModel.ASSOC_CONTAINS, scriptFileName);
+  private NodeRef addTempScript(
+    final String scriptFileName,
+    final String javaScript,
+    final NodeRef parentRef
+  ) {
+    AuthenticationUtil.setFullyAuthenticatedUser(
+      AuthenticationUtil.getAdminUserName()
+    );
+    return retryingTransactionHelper.doInTransaction(
+      new RetryingTransactionCallback<NodeRef>() {
+        public NodeRef execute() throws Throwable {
+          NodeRef script = nodeService.getChildByName(
+            parentRef,
+            ContentModel.ASSOC_CONTAINS,
+            scriptFileName
+          );
 
-                if (script == null)
-                {
-                    // Create the script node reference
-                    script = nodeService.createNode(parentRef, ContentModel.ASSOC_CONTAINS,
-                            QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, scriptFileName), ContentModel.TYPE_CONTENT)
-                            .getChildRef();
+          if (script == null) {
+            // Create the script node reference
+            script =
+              nodeService
+                .createNode(
+                  parentRef,
+                  ContentModel.ASSOC_CONTAINS,
+                  QName.createQName(
+                    NamespaceService.CONTENT_MODEL_1_0_URI,
+                    scriptFileName
+                  ),
+                  ContentModel.TYPE_CONTENT
+                )
+                .getChildRef();
 
-                    nodeService.setProperty(script, ContentModel.PROP_NAME, scriptFileName);
+            nodeService.setProperty(
+              script,
+              ContentModel.PROP_NAME,
+              scriptFileName
+            );
 
-                    ContentWriter contentWriter = contentService.getWriter(script, ContentModel.PROP_CONTENT, true);
-                    contentWriter.setMimetype(MimetypeMap.MIMETYPE_JAVASCRIPT);
-                    contentWriter.setEncoding("UTF-8");
-                    contentWriter.putContent(javaScript);
+            ContentWriter contentWriter = contentService.getWriter(
+              script,
+              ContentModel.PROP_CONTENT,
+              true
+            );
+            contentWriter.setMimetype(MimetypeMap.MIMETYPE_JAVASCRIPT);
+            contentWriter.setEncoding("UTF-8");
+            contentWriter.putContent(javaScript);
+          }
+          return script;
+        }
+      }
+    );
+  }
 
-                }
-                return script;
-            }
-        });
-    }
+  private NodeRef addTempScript(
+    final String scriptFileName,
+    final String javaScript
+  ) {
+    AuthenticationUtil.setFullyAuthenticatedUser(
+      AuthenticationUtil.getAdminUserName()
+    );
+    return retryingTransactionHelper.doInTransaction(
+      new RetryingTransactionCallback<NodeRef>() {
+        public NodeRef execute() throws Throwable {
+          // get the company_home
+          NodeRef companyHomeRef = repositoryHelper.getCompanyHome();
+          // get the Data Dictionary
+          NodeRef dataDictionaryRef = nodeService.getChildByName(
+            companyHomeRef,
+            ContentModel.ASSOC_CONTAINS,
+            "Data Dictionary"
+          );
+          // get the Scripts Folder
+          NodeRef rmFolder = nodeService.getChildByName(
+            dataDictionaryRef,
+            ContentModel.ASSOC_CONTAINS,
+            "Records Management"
+          );
+          NodeRef scriptsRef = nodeService.getChildByName(
+            rmFolder,
+            ContentModel.ASSOC_CONTAINS,
+            "Records Management Scripts"
+          );
 
-    private NodeRef addTempScript(final String scriptFileName, final String javaScript)
-    {
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute() throws Throwable
-            {
+          return addTempScript(scriptFileName, javaScript, scriptsRef);
+        }
+      }
+    );
+  }
 
-                // get the company_home
-                NodeRef companyHomeRef = repositoryHelper.getCompanyHome();
-                // get the Data Dictionary
-                NodeRef dataDictionaryRef = nodeService.getChildByName(companyHomeRef, ContentModel.ASSOC_CONTAINS,
-                        "Data Dictionary");
-                // get the Scripts Folder
-                NodeRef rmFolder = nodeService.getChildByName(dataDictionaryRef, ContentModel.ASSOC_CONTAINS,
-                        "Records Management");
-                NodeRef scriptsRef = nodeService.getChildByName(rmFolder, ContentModel.ASSOC_CONTAINS,
-                        "Records Management Scripts");
-
-                return addTempScript(scriptFileName, javaScript, scriptsRef);
-            }
-        });
-    }
-
-    private void executeAction(NodeRef scriptRef, NodeRef nodeRef)
-    {
-        Action action = actionService.createAction("rmscript");
-        action.setParameterValue(ExecuteScriptAction.PARAM_SCRIPTREF, scriptRef);
-        actionService.executeAction(action, nodeRef);
-    }
-
+  private void executeAction(NodeRef scriptRef, NodeRef nodeRef) {
+    Action action = actionService.createAction("rmscript");
+    action.setParameterValue(ExecuteScriptAction.PARAM_SCRIPTREF, scriptRef);
+    actionService.executeAction(action, nodeRef);
+  }
 }

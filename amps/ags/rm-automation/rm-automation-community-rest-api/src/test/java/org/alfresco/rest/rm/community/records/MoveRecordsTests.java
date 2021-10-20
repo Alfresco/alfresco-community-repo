@@ -44,20 +44,30 @@ import org.testng.annotations.Test;
  * @author Claudia Agache
  * @since 3.3
  */
-public class MoveRecordsTests extends BaseRMRestTest
-{
-    @Test (description = "rma:recordSearch aspect is reapplied after record move")
-    @AlfrescoTest (jira = "RM-7060")
-    public void moveRecord() throws Exception
-    {
+public class MoveRecordsTests extends BaseRMRestTest {
+
+    @Test(
+        description = "rma:recordSearch aspect is reapplied after record move"
+    )
+    @AlfrescoTest(jira = "RM-7060")
+    public void moveRecord() throws Exception {
         String parentFolderId = createCategoryFolderInFilePlan().getId();
         String targetFolderId = createCategoryFolderInFilePlan().getId();
-        String electronicRecordId = createElectronicRecord(parentFolderId, ELECTRONIC_RECORD_NAME).getId();
+        String electronicRecordId = createElectronicRecord(
+            parentFolderId,
+            ELECTRONIC_RECORD_NAME
+        )
+            .getId();
         STEP("Move record from one folder to the other");
-        getRestAPIFactory().getNodeAPI(toContentModel(electronicRecordId)).move(createBodyForMoveCopy(targetFolderId));
+        getRestAPIFactory()
+            .getNodeAPI(toContentModel(electronicRecordId))
+            .move(createBodyForMoveCopy(targetFolderId));
         assertStatusCode(OK);
 
         STEP("Check the record still has rma:recordSearch aspect.");
-        assertTrue(hasAspect(electronicRecordId, RECORD_SEARCH_ASPECT), "recordSearch aspect is lost after move!");
+        assertTrue(
+            hasAspect(electronicRecordId, RECORD_SEARCH_ASPECT),
+            "recordSearch aspect is lost after move!"
+        );
     }
 }

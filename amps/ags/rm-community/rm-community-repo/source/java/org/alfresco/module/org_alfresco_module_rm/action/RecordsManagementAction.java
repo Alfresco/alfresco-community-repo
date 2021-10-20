@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.io.Serializable;
 import java.util.Map;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -39,66 +38,68 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  */
 @AlfrescoPublicApi
-public interface RecordsManagementAction
-{
-    /**
-     * Get the name of the action
-     *
-     * @return  String  action name
-     */
-    String getName();
+public interface RecordsManagementAction {
+  /**
+   * Get the name of the action
+   *
+   * @return  String  action name
+   */
+  String getName();
 
-    /**
-     * Get the label of the action
-     *
-     * @return  String  action label
-     */
-    String getLabel();
+  /**
+   * Get the label of the action
+   *
+   * @return  String  action label
+   */
+  String getLabel();
 
-    /**
-     * Get the description of the action
-     *
-     * @return  String  action description
-     */
-    String getDescription();
+  /**
+   * Get the description of the action
+   *
+   * @return  String  action description
+   */
+  String getDescription();
 
-    /**
-     * Indicates whether this is a disposition action or not
-     *
-     * @return  boolean     true if a disposition action, false otherwise
-     */
-    boolean isDispositionAction();
+  /**
+   * Indicates whether this is a disposition action or not
+   *
+   * @return  boolean     true if a disposition action, false otherwise
+   */
+  boolean isDispositionAction();
 
-    /**
-     * Execution of the action
-     *
-     * @param filePlanComponent     file plan component the action is executed upon
-     * @param parameters            action parameters
-     * @return The result of the executed action
-     */
-    RecordsManagementActionResult execute(NodeRef filePlanComponent, Map<String, Serializable> parameters);
+  /**
+   * Execution of the action
+   *
+   * @param filePlanComponent     file plan component the action is executed upon
+   * @param parameters            action parameters
+   * @return The result of the executed action
+   */
+  RecordsManagementActionResult execute(
+    NodeRef filePlanComponent,
+    Map<String, Serializable> parameters
+  );
 
-    /**
-     * Some admin-related rmActions execute against a target nodeRef which is not provided
-     * by the calling code, but is instead an implementation detail of the action.
-     *
-     * @return the target nodeRef
-     */
-    NodeRef getImplicitTargetNodeRef();
+  /**
+   * Some admin-related rmActions execute against a target nodeRef which is not provided
+   * by the calling code, but is instead an implementation detail of the action.
+   *
+   * @return the target nodeRef
+   */
+  NodeRef getImplicitTargetNodeRef();
 
-    /**
-     * Get the records management action definition.
-     *
-     * @return The records management action definition.
-     * @since 2.1
-     */
-    RecordsManagementActionDefinition getRecordsManagementActionDefinition();
+  /**
+   * Get the records management action definition.
+   *
+   * @return The records management action definition.
+   * @since 2.1
+   */
+  RecordsManagementActionDefinition getRecordsManagementActionDefinition();
 
-    /**
-     * Indicates whether the action is public or not
-     *
-     * @return <code>true</code> if the action is public, <code>false</code> otherwise
-     * @since 2.1
-     */
-    boolean isPublicAction();
+  /**
+   * Indicates whether the action is public or not
+   *
+   * @return <code>true</code> if the action is public, <code>false</code> otherwise
+   * @since 2.1
+   */
+  boolean isPublicAction();
 }

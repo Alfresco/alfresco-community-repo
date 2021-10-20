@@ -35,7 +35,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.query.PagingResults;
 import org.alfresco.rest.api.impl.Util;
@@ -56,85 +55,107 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
-* Transfer Container children relation
-*
-* @author Silviu Dinuta
-* @since 2.6
-*/
-@RelationshipResource(name="transfers", entityResource = TransferContainerEntityResource.class, title = "Children of a transfer container")
-public class TransferContainerChildrenRelation implements RelationshipResourceAction.Read<Transfer>
-{
-    private FilePlanComponentsApiUtils apiUtils;
-    private SearchTypesFactory searchTypesFactory;
-    private FileFolderService fileFolderService;
-    private ApiNodesModelFactory nodesModelFactory;
+ * Transfer Container children relation
+ *
+ * @author Silviu Dinuta
+ * @since 2.6
+ */
+@RelationshipResource(
+  name = "transfers",
+  entityResource = TransferContainerEntityResource.class,
+  title = "Children of a transfer container"
+)
+public class TransferContainerChildrenRelation
+  implements RelationshipResourceAction.Read<Transfer> {
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
+  private FilePlanComponentsApiUtils apiUtils;
+  private SearchTypesFactory searchTypesFactory;
+  private FileFolderService fileFolderService;
+  private ApiNodesModelFactory nodesModelFactory;
+
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
+
+  public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory) {
+    this.searchTypesFactory = searchTypesFactory;
+  }
+
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
+
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
+
+  @Override
+  @WebApiDescription(
+    title = "Return a paged list of transfers for the transfer container identified by 'transferContainerId'"
+  )
+  public CollectionWithPagingInfo<Transfer> readAll(
+    String transferContainerId,
+    Parameters parameters
+  ) {
+    checkNotBlank("transferContainerId", transferContainerId);
+    mandatory("parameters", parameters);
+
+    NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(
+      transferContainerId,
+      RecordsManagementModel.TYPE_TRANSFER_CONTAINER
+    );
+
+    // list transfers
+    Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesForTransferContainersEndpoint();
+
+    final PagingResults<FileInfo> pagingResults = fileFolderService.list(
+      parentNodeRef,
+      null,
+      searchTypeQNames,
+      null,
+      apiUtils.getSortProperties(parameters),
+      null,
+      Util.getPagingRequest(parameters.getPaging())
+    );
+
+    final List<FileInfo> page = pagingResults.getPage();
+    Map<String, UserInfo> mapUserInfo = new HashMap<>();
+    List<Transfer> nodes = new AbstractList<Transfer>() {
+      @Override
+      public Transfer get(int index) {
+        FileInfo info = page.get(index);
+        return nodesModelFactory.createTransfer(
+          info,
+          parameters,
+          mapUserInfo,
+          true
+        );
+      }
+
+      @Override
+      public int size() {
+        return page.size();
+      }
+    };
+
+    TransferContainer sourceEntity = null;
+    if (parameters.includeSource()) {
+      FileInfo info = fileFolderService.getFileInfo(parentNodeRef);
+      sourceEntity =
+        nodesModelFactory.createTransferContainer(
+          info,
+          parameters,
+          mapUserInfo,
+          true
+        );
     }
 
-    public void setSearchTypesFactory(SearchTypesFactory searchTypesFactory)
-    {
-        this.searchTypesFactory = searchTypesFactory;
-    }
-
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
-
-    @Override
-    @WebApiDescription(title = "Return a paged list of transfers for the transfer container identified by 'transferContainerId'")
-    public CollectionWithPagingInfo<Transfer> readAll(String transferContainerId, Parameters parameters)
-    {
-        checkNotBlank("transferContainerId", transferContainerId);
-        mandatory("parameters", parameters);
-
-        NodeRef parentNodeRef = apiUtils.lookupAndValidateNodeType(transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
-
-        // list transfers
-        Set<QName> searchTypeQNames = searchTypesFactory.buildSearchTypesForTransferContainersEndpoint();
-
-        final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef,
-                null,
-                searchTypeQNames,
-                null,
-                apiUtils.getSortProperties(parameters),
-                null,
-                Util.getPagingRequest(parameters.getPaging()));
-
-        final List<FileInfo> page = pagingResults.getPage();
-        Map<String, UserInfo> mapUserInfo = new HashMap<>();
-        List<Transfer> nodes = new AbstractList<Transfer>()
-        {
-            @Override
-            public Transfer get(int index)
-            {
-                FileInfo info = page.get(index);
-                return nodesModelFactory.createTransfer(info, parameters, mapUserInfo, true);
-            }
-
-            @Override
-            public int size()
-            {
-                return page.size();
-            }
-        };
-
-        TransferContainer sourceEntity = null;
-        if (parameters.includeSource())
-        {
-            FileInfo info = fileFolderService.getFileInfo(parentNodeRef);
-            sourceEntity = nodesModelFactory.createTransferContainer(info, parameters, mapUserInfo, true);
-        }
-
-        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), nodes, pagingResults.hasMoreItems(),
-                pagingResults.getTotalResultCount().getFirst(), sourceEntity);
-    }
+    return CollectionWithPagingInfo.asPaged(
+      parameters.getPaging(),
+      nodes,
+      pagingResults.hasMoreItems(),
+      pagingResults.getTotalResultCount().getFirst(),
+      sourceEntity
+    );
+  }
 }

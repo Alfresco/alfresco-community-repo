@@ -42,59 +42,62 @@ import org.springframework.context.ApplicationContext;
  * @author Ana Manolache
  * @since 2.6
  */
-public class UserAndGroupsUtils
-{
-    protected FilePlanRoleService filePlanRoleService;
-    protected AuthorityService authorityService;
+public class UserAndGroupsUtils {
 
-    /**
-     * @param applicationContext the application context
-     */
-    public UserAndGroupsUtils(ApplicationContext applicationContext)
-    {
-        filePlanRoleService = (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
-        authorityService = (AuthorityService) applicationContext.getBean("AuthorityService");
+  protected FilePlanRoleService filePlanRoleService;
+  protected AuthorityService authorityService;
+
+  /**
+   * @param applicationContext the application context
+   */
+  public UserAndGroupsUtils(ApplicationContext applicationContext) {
+    filePlanRoleService =
+      (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
+    authorityService =
+      (AuthorityService) applicationContext.getBean("AuthorityService");
+  }
+
+  /**
+   * Add a user to an RM role
+   *
+   * @param userName the username of the user to add to the role
+   * @param role the role to add the user to
+   */
+  public void addUserToRole(NodeRef filePlan, String userName, RMRole role) {
+    // Find the authority for the given role
+    Role roleObj = filePlanRoleService.getRole(filePlan, role.getGroupName());
+    assertNotNull(
+      "Notification role " + role.getGroupName() + " could not be retrieved",
+      roleObj
+    );
+    String roleGroup = roleObj.getRoleGroupName();
+    assertNotNull(
+      "Notification role group " + roleGroup + " can not be null.",
+      roleGroup
+    );
+
+    // Add user to notification role group
+    authorityService.addAuthority(roleGroup, userName);
+  }
+
+  /**
+   * An enum of RM Roles
+   */
+  public enum RMRole {
+    RM_ADMINISTRATOR("Administrator"),
+    RM_MANAGER("RecordsManager"),
+    RM_POWER_USER("PowerUser"),
+    RM_SECURITY_OFFICER("SecurityOfficer"),
+    RM_USER("User");
+
+    private String groupName;
+
+    private RMRole(String groupName) {
+      this.groupName = groupName;
     }
 
-    /**
-     * Add a user to an RM role
-     *
-     * @param userName the username of the user to add to the role
-     * @param role the role to add the user to
-     */
-    public void addUserToRole(NodeRef filePlan, String userName, RMRole role)
-    {
-        // Find the authority for the given role
-        Role roleObj = filePlanRoleService.getRole(filePlan, role.getGroupName());
-        assertNotNull("Notification role " + role.getGroupName() + " could not be retrieved", roleObj);
-        String roleGroup = roleObj.getRoleGroupName();
-        assertNotNull("Notification role group " + roleGroup + " can not be null.", roleGroup);
-
-        // Add user to notification role group
-        authorityService.addAuthority(roleGroup, userName);
+    public String getGroupName() {
+      return this.groupName;
     }
-
-    /**
-     * An enum of RM Roles
-     */
-    public enum RMRole
-    {
-        RM_ADMINISTRATOR("Administrator"),
-        RM_MANAGER("RecordsManager"),
-        RM_POWER_USER("PowerUser"),
-        RM_SECURITY_OFFICER("SecurityOfficer"),
-        RM_USER("User");
-
-        private String groupName;
-
-        private RMRole(String groupName)
-        {
-            this.groupName = groupName;
-        }
-
-        public String getGroupName()
-        {
-            return this.groupName;
-        }
-    }
+  }
 }

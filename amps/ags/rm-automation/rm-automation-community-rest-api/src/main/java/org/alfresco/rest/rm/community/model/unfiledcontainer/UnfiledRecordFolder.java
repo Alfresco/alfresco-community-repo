@@ -26,20 +26,17 @@
  */
 package org.alfresco.rest.rm.community.model.unfiledcontainer;
 
-import java.util.List;
-
-import org.alfresco.rest.model.RestByUserModel;
-import org.alfresco.rest.rm.community.model.common.Path;
-import org.alfresco.rest.rm.community.model.record.RecordContent;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import org.alfresco.rest.model.RestByUserModel;
+import org.alfresco.rest.rm.community.model.common.Path;
+import org.alfresco.rest.rm.community.model.record.RecordContent;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * POJO for unfiled container
@@ -52,33 +49,33 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class UnfiledRecordFolder extends TestModel
-{
+public class UnfiledRecordFolder extends TestModel {
+
     /*************************/
     /** Mandatory parameters */
     /*************************/
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String createdAt;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private RestByUserModel createdByUser;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String modifiedAt;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private RestByUserModel modifiedByUser;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String name;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String id;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String nodeType;
 
-    @JsonProperty (required = true)
+    @JsonProperty(required = true)
     private String parentId;
 
     /************************/

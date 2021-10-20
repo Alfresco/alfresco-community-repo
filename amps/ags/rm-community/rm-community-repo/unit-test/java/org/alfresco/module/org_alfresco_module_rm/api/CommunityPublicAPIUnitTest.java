@@ -28,15 +28,16 @@
 package org.alfresco.module.org_alfresco_module_rm.api;
 
 import com.google.common.collect.HashMultimap;
-
 import org.junit.Test;
 
-public class CommunityPublicAPIUnitTest
-{
-    @Test
-    public void testPublicAPIConsistency()
-    {
-        HashMultimap<Class<?>, Class<?>> knownBadReferences = HashMultimap.create();
-        PublicAPITestUtil.testPublicAPIConsistency("org.alfresco.module.org_alfresco_module_rm", knownBadReferences);
-    }
+public class CommunityPublicAPIUnitTest {
+
+  @Test
+  public void testPublicAPIConsistency() {
+    HashMultimap<Class<?>, Class<?>> knownBadReferences = HashMultimap.create();
+    PublicAPITestUtil.testPublicAPIConsistency(
+      "org.alfresco.module.org_alfresco_module_rm",
+      knownBadReferences
+    );
+  }
 }

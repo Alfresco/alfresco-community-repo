@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,121 +27,113 @@ package org.alfresco.rest.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Date;
-
 import org.alfresco.rest.framework.resource.UniqueId;
 
 /**
  * Represents a node rating.
- * 
+ *
  * @author steveglover
  *
  */
-public class NodeRating implements Comparable<NodeRating>
-{
-	private String ratingSchemeId;
-	private Object myRating;
-    private Date ratedAt;
-	private DocumentRatingSummary documentRatingSummary;
+public class NodeRating implements Comparable<NodeRating> {
 
-	public NodeRating()
-	{
-	}
+  private String ratingSchemeId;
+  private Object myRating;
+  private Date ratedAt;
+  private DocumentRatingSummary documentRatingSummary;
 
-	public NodeRating(String ratingSchemeId, Object myRating, Date ratedAt, DocumentRatingSummary documentRatingSummary)
-	{
-		if(ratingSchemeId == null)
-		{
-			throw new IllegalArgumentException();
-		}
+  public NodeRating() {}
 
-		this.ratingSchemeId = ratingSchemeId;
-		this.documentRatingSummary = documentRatingSummary;
-		this.myRating = myRating;
-		this.ratedAt = ratedAt;
-	}
+  public NodeRating(
+    String ratingSchemeId,
+    Object myRating,
+    Date ratedAt,
+    DocumentRatingSummary documentRatingSummary
+  ) {
+    if (ratingSchemeId == null) {
+      throw new IllegalArgumentException();
+    }
 
-	@JsonProperty("id")
-	@UniqueId
-	public String getScheme()
-	{
-		return ratingSchemeId;
-	}
+    this.ratingSchemeId = ratingSchemeId;
+    this.documentRatingSummary = documentRatingSummary;
+    this.myRating = myRating;
+    this.ratedAt = ratedAt;
+  }
 
-	public void setScheme(String ratingSchemeId)
-	{
-		if(ratingSchemeId == null)
-		{
-			throw new IllegalArgumentException();
-		}
-		this.ratingSchemeId = ratingSchemeId;
-	}
+  @JsonProperty("id")
+  @UniqueId
+  public String getScheme() {
+    return ratingSchemeId;
+  }
 
-	public Date getRatedAt()
-	{
-		return ratedAt;
-	}
+  public void setScheme(String ratingSchemeId) {
+    if (ratingSchemeId == null) {
+      throw new IllegalArgumentException();
+    }
+    this.ratingSchemeId = ratingSchemeId;
+  }
 
-	public Object getMyRating()
-	{
-		return myRating;
-	}
+  public Date getRatedAt() {
+    return ratedAt;
+  }
 
-	public void setMyRating(Object myRating)
-	{
-		this.myRating = myRating;
-	}
-	
-	public DocumentRatingSummary getAggregate()
-	{
-		return documentRatingSummary;
-	}
+  public Object getMyRating() {
+    return myRating;
+  }
 
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((ratingSchemeId == null) ? 0 : ratingSchemeId.hashCode());
-		return result;
-	}
+  public void setMyRating(Object myRating) {
+    this.myRating = myRating;
+  }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		NodeRating other = (NodeRating) obj;
-		if (ratingSchemeId == null) {
-			if (other.getScheme() != null)
-				return false;
-		} else if (!ratingSchemeId.equals(other.getScheme()))
-			return false;
-		return true;
-	}
+  public DocumentRatingSummary getAggregate() {
+    return documentRatingSummary;
+  }
 
-	@Override
-	public int compareTo(NodeRating other)
-	{
-		if(other != null)
-		{
-			int ret = (ratingSchemeId.compareTo(other.getScheme()));
-			return ret;
-		}
-		else
-		{
-			throw new IllegalArgumentException();
-		}
-	}
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result =
+      prime *
+      result +
+      ((ratingSchemeId == null) ? 0 : ratingSchemeId.hashCode());
+    return result;
+  }
 
-	@Override
-	public String toString()
-	{
-		return "NodeRating [scheme=" + ratingSchemeId + ", myRating=" + myRating
-				+ ", ratedAt=" + ratedAt
-				+ ", documentRatingSummary=" + documentRatingSummary + "]";
-	}
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    NodeRating other = (NodeRating) obj;
+    if (ratingSchemeId == null) {
+      if (other.getScheme() != null) return false;
+    } else if (!ratingSchemeId.equals(other.getScheme())) return false;
+    return true;
+  }
+
+  @Override
+  public int compareTo(NodeRating other) {
+    if (other != null) {
+      int ret = (ratingSchemeId.compareTo(other.getScheme()));
+      return ret;
+    } else {
+      throw new IllegalArgumentException();
+    }
+  }
+
+  @Override
+  public String toString() {
+    return (
+      "NodeRating [scheme=" +
+      ratingSchemeId +
+      ", myRating=" +
+      myRating +
+      ", ratedAt=" +
+      ratedAt +
+      ", documentRatingSummary=" +
+      documentRatingSummary +
+      "]"
+    );
+  }
 }

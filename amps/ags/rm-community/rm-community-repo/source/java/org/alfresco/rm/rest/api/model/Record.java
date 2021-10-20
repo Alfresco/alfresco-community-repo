@@ -34,32 +34,28 @@ import org.alfresco.rest.api.model.ContentInfo;
  * @author Ana Bozianu
  * @since 2.6
  */
-public class Record extends RMNode
-{
-    public static final String PARAM_HIDE_RECORD = "hideRecord";
-    public static final String PARAM_IS_COMPLETED = "isCompleted";
-    public static final String PARAM_CONTENT = "content";
+public class Record extends RMNode {
 
-    protected Boolean isCompleted;
-    protected ContentInfo content;
+  public static final String PARAM_HIDE_RECORD = "hideRecord";
+  public static final String PARAM_IS_COMPLETED = "isCompleted";
+  public static final String PARAM_CONTENT = "content";
 
-    public Boolean getIsCompleted()
-    {
-        return isCompleted;
-    }
+  protected Boolean isCompleted;
+  protected ContentInfo content;
 
-    public void setIsCompleted(Boolean isCompleted)
-    {
-        this.isCompleted = isCompleted;
-    }
+  public Boolean getIsCompleted() {
+    return isCompleted;
+  }
 
-    public ContentInfo getContent()
-    {
-        return content;
-    }
+  public void setIsCompleted(Boolean isCompleted) {
+    this.isCompleted = isCompleted;
+  }
 
-    public void setContent(ContentInfo content)
-    {
-        this.content = content;
-    }
+  public ContentInfo getContent() {
+    return content;
+  }
+
+  public void setContent(ContentInfo content) {
+    this.content = content;
+  }
 }

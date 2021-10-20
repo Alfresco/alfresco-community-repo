@@ -39,31 +39,32 @@ import org.springframework.context.event.ContextClosedEvent;
  *
  * @author adavis
  */
-public class ShutdownIndicator implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>
-{
-    private boolean shuttingDown;
-    private ApplicationContext applicationContext;
+public class ShutdownIndicator
+  implements
+    ApplicationContextAware, ApplicationListener<ApplicationContextEvent> {
 
-    public synchronized boolean isShuttingDown()
-    {
-        return shuttingDown;
-    }
+  private boolean shuttingDown;
+  private ApplicationContext applicationContext;
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
+  public synchronized boolean isShuttingDown() {
+    return shuttingDown;
+  }
 
-    @Override
-    public void onApplicationEvent(ApplicationContextEvent event)
-    {
-        if (event instanceof ContextClosedEvent && event.getSource() == applicationContext)
-        {
-            synchronized (this)
-            {
-                shuttingDown = true;
-            }
-        }
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext)
+    throws BeansException {
+    this.applicationContext = applicationContext;
+  }
+
+  @Override
+  public void onApplicationEvent(ApplicationContextEvent event) {
+    if (
+      event instanceof ContextClosedEvent &&
+      event.getSource() == applicationContext
+    ) {
+      synchronized (this) {
+        shuttingDown = true;
+      }
     }
+  }
 }

@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,76 +29,74 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-public interface CMISNodeInfo
-{
-    String getObjectId();
+public interface CMISNodeInfo {
+  String getObjectId();
 
-    CMISObjectVariant getObjectVariant();
+  CMISObjectVariant getObjectVariant();
 
-    boolean isVariant(CMISObjectVariant var);
+  boolean isVariant(CMISObjectVariant var);
 
-    NodeRef getNodeRef();
+  NodeRef getNodeRef();
 
-    String getCurrentNodeId();
+  String getCurrentNodeId();
 
-    NodeRef getCurrentNodeNodeRef();
+  NodeRef getCurrentNodeNodeRef();
 
-    String getCurrentObjectId();
+  String getCurrentObjectId();
 
-    boolean isCurrentVersion();
+  boolean isCurrentVersion();
 
-    boolean isPWC();
+  boolean isPWC();
 
-    boolean hasPWC();
+  boolean hasPWC();
 
-    boolean isVersion();
+  boolean isVersion();
 
-    boolean isLatestVersion();
+  boolean isLatestVersion();
 
-    boolean isLatestMajorVersion();
+  boolean isLatestMajorVersion();
 
-    boolean isMajorVersion();
+  boolean isMajorVersion();
 
-    String getVersionLabel();
+  String getVersionLabel();
 
-    String getCheckinComment();
+  String getCheckinComment();
 
-    AssociationRef getAssociationRef();
+  AssociationRef getAssociationRef();
 
-    TypeDefinitionWrapper getType();
+  TypeDefinitionWrapper getType();
 
-    boolean isFolder();
+  boolean isFolder();
 
-    boolean isRootFolder();
+  boolean isRootFolder();
 
-    boolean isDocument();
+  boolean isDocument();
 
-    boolean isRelationship();
-    
-    boolean isItem();
+  boolean isRelationship();
 
-    String getName();
+  boolean isItem();
 
-    String getPath();
+  String getName();
 
-    Serializable getCreationDate();
+  String getPath();
 
-    Serializable getModificationDate();
+  Serializable getCreationDate();
 
-    Serializable getPropertyValue(String id);
+  Serializable getModificationDate();
 
-    boolean containsPropertyValue(String id);
+  Serializable getPropertyValue(String id);
 
-    void putPropertyValue(String id, Serializable value);
+  boolean containsPropertyValue(String id);
 
-    List<CMISNodeInfo> getParents();
+  void putPropertyValue(String id, Serializable value);
 
-    Map<QName, Serializable> getNodeProps();
+  List<CMISNodeInfo> getParents();
 
-    Set<QName> getNodeAspects();
+  Map<QName, Serializable> getNodeProps();
+
+  Set<QName> getNodeAspects();
 }

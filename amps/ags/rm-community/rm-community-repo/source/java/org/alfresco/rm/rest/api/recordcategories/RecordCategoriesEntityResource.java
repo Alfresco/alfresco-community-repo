@@ -54,103 +54,133 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Tuna Aksoy
  * @since 2.6
  */
-@EntityResource(name="record-categories", title = "Record Categories")
-public class RecordCategoriesEntityResource implements
-        EntityResourceAction.ReadById<RecordCategory>,
-        EntityResourceAction.Delete,
-        EntityResourceAction.Update<RecordCategory>,
-        InitializingBean
-{
-    private FilePlanComponentsApiUtils apiUtils;
-    private FileFolderService fileFolderService;
-    private ApiNodesModelFactory nodesModelFactory;
-    private TransactionService transactionService;
+@EntityResource(name = "record-categories", title = "Record Categories")
+public class RecordCategoriesEntityResource
+  implements
+    EntityResourceAction.ReadById<RecordCategory>,
+    EntityResourceAction.Delete,
+    EntityResourceAction.Update<RecordCategory>,
+    InitializingBean {
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
-    }
+  private FilePlanComponentsApiUtils apiUtils;
+  private FileFolderService fileFolderService;
+  private ApiNodesModelFactory nodesModelFactory;
+  private TransactionService transactionService;
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        mandatory("apiUtils", apiUtils);
-        mandatory("fileFolderService", fileFolderService);
-        mandatory("apiNodesModelFactory", nodesModelFactory);
-    }
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 
-    @WebApiDescription(title = "Get record category information", description = "Gets information for a record category with id 'recordCategoryId'")
-    @WebApiParam(name = "recordCategoryId", title = "The record category id")
-    public RecordCategory readById(String recordCategoryId, Parameters parameters)
-    {
-        checkNotBlank("recordCategoryId", recordCategoryId);
-        mandatory("parameters", parameters);
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    mandatory("apiUtils", apiUtils);
+    mandatory("fileFolderService", fileFolderService);
+    mandatory("apiNodesModelFactory", nodesModelFactory);
+  }
 
-        String relativePath = parameters.getParameter(Nodes.PARAM_RELATIVE_PATH);
+  @WebApiDescription(
+    title = "Get record category information",
+    description = "Gets information for a record category with id 'recordCategoryId'"
+  )
+  @WebApiParam(name = "recordCategoryId", title = "The record category id")
+  public RecordCategory readById(
+    String recordCategoryId,
+    Parameters parameters
+  ) {
+    checkNotBlank("recordCategoryId", recordCategoryId);
+    mandatory("parameters", parameters);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY, relativePath, true);
+    String relativePath = parameters.getParameter(Nodes.PARAM_RELATIVE_PATH);
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      recordCategoryId,
+      RecordsManagementModel.TYPE_RECORD_CATEGORY,
+      relativePath,
+      true
+    );
 
-        return nodesModelFactory.createRecordCategory(info, parameters, null, false);
-    }
+    FileInfo info = fileFolderService.getFileInfo(nodeRef);
 
-    @Override
-    @WebApiDescription(title="Update record category", description = "Updates a record category with id 'recordCategoryId'")
-    public RecordCategory update(String recordCategoryId, RecordCategory recordCategoryInfo, Parameters parameters)
-    {
-        checkNotBlank("recordCategoryId", recordCategoryId);
-        mandatory("recordCategoryInfo", recordCategoryInfo);
-        mandatory("parameters", parameters);
+    return nodesModelFactory.createRecordCategory(
+      info,
+      parameters,
+      null,
+      false
+    );
+  }
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
+  @Override
+  @WebApiDescription(
+    title = "Update record category",
+    description = "Updates a record category with id 'recordCategoryId'"
+  )
+  public RecordCategory update(
+    String recordCategoryId,
+    RecordCategory recordCategoryInfo,
+    Parameters parameters
+  ) {
+    checkNotBlank("recordCategoryId", recordCategoryId);
+    mandatory("recordCategoryInfo", recordCategoryInfo);
+    mandatory("parameters", parameters);
 
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateNode(nodeRef, recordCategoryInfo, parameters);
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      recordCategoryId,
+      RecordsManagementModel.TYPE_RECORD_CATEGORY
+    );
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
-        
-        return nodesModelFactory.createRecordCategory(info, parameters, null, false);
-    }
+    RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
+      public Void execute() {
+        apiUtils.updateNode(nodeRef, recordCategoryInfo, parameters);
+        return null;
+      }
+    };
+    transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(callback, false, true);
 
-    @Override
-    @WebApiDescription(title = "Delete record category", description="Deletes a record category with id 'recordCategoryId'")
-    public void delete(String recordCategoryId, Parameters parameters)
-    {
-        checkNotBlank("recordCategoryId", recordCategoryId);
-        mandatory("parameters", parameters);
+    RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
+      public FileInfo execute() {
+        return fileFolderService.getFileInfo(nodeRef);
+      }
+    };
+    FileInfo info = transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(readCallback, false, true);
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(recordCategoryId, RecordsManagementModel.TYPE_RECORD_CATEGORY);
+    return nodesModelFactory.createRecordCategory(
+      info,
+      parameters,
+      null,
+      false
+    );
+  }
 
-        fileFolderService.delete(nodeRef);
-    }
+  @Override
+  @WebApiDescription(
+    title = "Delete record category",
+    description = "Deletes a record category with id 'recordCategoryId'"
+  )
+  public void delete(String recordCategoryId, Parameters parameters) {
+    checkNotBlank("recordCategoryId", recordCategoryId);
+    mandatory("parameters", parameters);
+
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      recordCategoryId,
+      RecordsManagementModel.TYPE_RECORD_CATEGORY
+    );
+
+    fileFolderService.delete(nodeRef);
+  }
 }

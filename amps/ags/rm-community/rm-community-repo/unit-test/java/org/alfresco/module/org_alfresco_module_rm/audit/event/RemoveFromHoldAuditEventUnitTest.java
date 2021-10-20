@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -53,43 +52,49 @@ import org.mockito.Mock;
  * @author Chris Shields
  * @since 3.3
  */
-public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
-{
-    @InjectMocks
-    private RemoveFromHoldAuditEvent removeFromHoldAuditEvent;
+public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest {
 
-    @Mock
-    private NodeService mockedNodeService;
+  @InjectMocks
+  private RemoveFromHoldAuditEvent removeFromHoldAuditEvent;
 
-    private NodeRef holdNodeRef;
-    private NodeRef contentNodeRef;
+  @Mock
+  private NodeService mockedNodeService;
 
-    /**
-     * Set up the mocks.
-     */
-    @Before
-    public void setUp()
-    {
-        initMocks(this);
+  private NodeRef holdNodeRef;
+  private NodeRef contentNodeRef;
 
-        holdNodeRef = generateNodeRef();
-        String holdName = "Hold " + GUID.generate();
+  /**
+   * Set up the mocks.
+   */
+  @Before
+  public void setUp() {
+    initMocks(this);
 
-        contentNodeRef = generateNodeRef();
-        String contentName = "Content " + GUID.generate();
+    holdNodeRef = generateNodeRef();
+    String holdName = "Hold " + GUID.generate();
 
-        when(mockedNodeService.getProperty(holdNodeRef, PROP_NAME)).thenReturn(holdName);
-        when(mockedNodeService.getProperty(contentNodeRef, PROP_NAME)).thenReturn(contentName);
-    }
+    contentNodeRef = generateNodeRef();
+    String contentName = "Content " + GUID.generate();
 
-    /**
-     * Check that the remove from hold event calls an audit event.
-     */
-    @Test
-    public void testRemoveFromHoldCausesAuditEvent()
-    {
-        removeFromHoldAuditEvent.onRemoveFromHold(holdNodeRef, contentNodeRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), any(String.class), any(Map.class), isNull(Map.class), eq(true));
-    }
+    when(mockedNodeService.getProperty(holdNodeRef, PROP_NAME))
+      .thenReturn(holdName);
+    when(mockedNodeService.getProperty(contentNodeRef, PROP_NAME))
+      .thenReturn(contentName);
+  }
 
+  /**
+   * Check that the remove from hold event calls an audit event.
+   */
+  @Test
+  public void testRemoveFromHoldCausesAuditEvent() {
+    removeFromHoldAuditEvent.onRemoveFromHold(holdNodeRef, contentNodeRef);
+    verify(mockedRecordsManagementAuditService, times(1))
+      .auditEvent(
+        eq(contentNodeRef),
+        any(String.class),
+        any(Map.class),
+        isNull(Map.class),
+        eq(true)
+      );
+  }
 }

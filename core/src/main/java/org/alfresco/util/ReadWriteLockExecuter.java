@@ -28,91 +28,74 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * <p>
  * Client code should construct an instance of this class for each resource
  * (or set of resources) that need to be protected.
- * 
+ *
  * @author Derek Hulley
  * @since 3.4
  */
-public abstract class ReadWriteLockExecuter<T>
-{
-    private ReentrantReadWriteLock.ReadLock readLock;
-    private ReentrantReadWriteLock.WriteLock writeLock;
+public abstract class ReadWriteLockExecuter<T> {
 
-    /**
-     * Default constructor
-     */
-    public ReadWriteLockExecuter()
-    {
-        ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-        readLock = lock.readLock();
-        writeLock = lock.writeLock();
-    }
-    
-    /**
-     * Execute the read-only part of the work.
-     * 
-     * @return              Returns a value of interest or <tt>null</tt> if
-     *                      the {@link #getWithWriteLock()} method must be
-     *                      called
-     * @throws Throwable    all checked exceptions are wrapped in a <tt>RuntimeException</tt>
-     */
-    protected abstract T getWithReadLock() throws Throwable;
-    
-    /**
-     * Execute the write part of the work.
-     * <p>
-     * <b>NOTE:</b> It is important to perform a double-check on the resource
-     * before assuming it is not null; there is a window between the {@link #getWithReadLock()}
-     * and the {@link #getWithWriteLock()} during which another thread may have populated
-     * the resource of interest.
-     * 
-     * @return              Returns the value of interest of <tt>null</tt>
-     * @throws Throwable    all checked exceptions are wrapped in a <tt>RuntimeException</tt>
-     */
-    protected abstract T getWithWriteLock() throws Throwable;
+  private ReentrantReadWriteLock.ReadLock readLock;
+  private ReentrantReadWriteLock.WriteLock writeLock;
 
-    public T execute()
-    {
-        T ret = null;
-        readLock.lock();
-        try
-        {
-            ret = this.getWithReadLock();
-            // We do the null check here so that less time is spent outside of the lock
-            if (ret != null)
-            {
-                return ret;
-            }
-        }
-        catch (RuntimeException e)
-        {
-            throw e;
-        }
-        catch (Throwable e)
-        {
-            throw new RuntimeException("Exception during 'getWithReadLock'", e);
-        }
-        finally
-        {
-            readLock.unlock();
-        }
-        // If we got here, then we didn't get a result and need to go for the write lock
-        writeLock.lock();
-        try
-        {
-            // The return value is not of interest to us
-            return this.getWithWriteLock();
-        }
-        catch (RuntimeException e)
-        {
-            throw e;
-        }
-        catch (Throwable e)
-        {
-            throw new RuntimeException("Exception during 'getWithWriteLock'", e);
-        }
-        finally
-        {
-            writeLock.unlock();
-        }
+  /**
+   * Default constructor
+   */
+  public ReadWriteLockExecuter() {
+    ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    readLock = lock.readLock();
+    writeLock = lock.writeLock();
+  }
+
+  /**
+   * Execute the read-only part of the work.
+   *
+   * @return              Returns a value of interest or <tt>null</tt> if
+   *                      the {@link #getWithWriteLock()} method must be
+   *                      called
+   * @throws Throwable    all checked exceptions are wrapped in a <tt>RuntimeException</tt>
+   */
+  protected abstract T getWithReadLock() throws Throwable;
+
+  /**
+   * Execute the write part of the work.
+   * <p>
+   * <b>NOTE:</b> It is important to perform a double-check on the resource
+   * before assuming it is not null; there is a window between the {@link #getWithReadLock()}
+   * and the {@link #getWithWriteLock()} during which another thread may have populated
+   * the resource of interest.
+   *
+   * @return              Returns the value of interest of <tt>null</tt>
+   * @throws Throwable    all checked exceptions are wrapped in a <tt>RuntimeException</tt>
+   */
+  protected abstract T getWithWriteLock() throws Throwable;
+
+  public T execute() {
+    T ret = null;
+    readLock.lock();
+    try {
+      ret = this.getWithReadLock();
+      // We do the null check here so that less time is spent outside of the lock
+      if (ret != null) {
+        return ret;
+      }
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Throwable e) {
+      throw new RuntimeException("Exception during 'getWithReadLock'", e);
+    } finally {
+      readLock.unlock();
     }
+    // If we got here, then we didn't get a result and need to go for the write lock
+    writeLock.lock();
+    try {
+      // The return value is not of interest to us
+      return this.getWithWriteLock();
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Throwable e) {
+      throw new RuntimeException("Exception during 'getWithWriteLock'", e);
+    } finally {
+      writeLock.unlock();
+    }
+  }
 }

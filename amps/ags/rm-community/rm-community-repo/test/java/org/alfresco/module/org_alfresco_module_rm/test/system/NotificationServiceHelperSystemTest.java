@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.system;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -44,113 +43,115 @@ import org.alfresco.util.PropertyMap;
  *
  * @author Roy Wetherall
  */
-public class NotificationServiceHelperSystemTest extends BaseRMTestCase
-{
-    private static final String NOTIFICATION_ROLE = "RecordsManager";
-    private static final String EMAIL_ADDRESS = "roy.wetherall@alfreso.com";
+public class NotificationServiceHelperSystemTest extends BaseRMTestCase {
 
-    /** Services */
-    private RecordsManagementNotificationHelper notificationHelper;
+  private static final String NOTIFICATION_ROLE = "RecordsManager";
+  private static final String EMAIL_ADDRESS = "roy.wetherall@alfreso.com";
 
-    /** Test data */
-    private NodeRef record;
-    private List<NodeRef> records;
-    private String userName;
-    private NodeRef person;
+  /** Services */
+  private RecordsManagementNotificationHelper notificationHelper;
 
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
+  /** Test data */
+  private NodeRef record;
+  private List<NodeRef> records;
+  private String userName;
+  private NodeRef person;
 
-        // Get the notification helper
-        notificationHelper = (RecordsManagementNotificationHelper)applicationContext.getBean("recordsManagementNotificationHelper");
-    }
+  @Override
+  protected void initServices() {
+    super.initServices();
 
-    @Override
-    protected void setupTestData()
-    {
-        super.setupTestData();
+    // Get the notification helper
+    notificationHelper =
+      (RecordsManagementNotificationHelper) applicationContext.getBean(
+        "recordsManagementNotificationHelper"
+      );
+  }
 
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            @Override
-            public Object execute() throws Throwable
-            {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+  @Override
+  protected void setupTestData() {
+    super.setupTestData();
 
-                // Create a user
-                userName = GUID.generate();
-                authenticationService.createAuthentication(userName, "".toCharArray());
-                PropertyMap props = new PropertyMap();
-                props.put(PROP_USERNAME, userName);
-                props.put(PROP_FIRSTNAME, "Test");
-                props.put(PROP_LASTNAME, "User");
-                props.put(PROP_EMAIL, EMAIL_ADDRESS);
-                person = personService.createPerson(props);
+    retryingTransactionHelper.doInTransaction(
+      new RetryingTransactionCallback<Object>() {
+        @Override
+        public Object execute() throws Throwable {
+          AuthenticationUtil.setFullyAuthenticatedUser(
+            AuthenticationUtil.getAdminUserName()
+          );
 
-                // Find the authority for the given role
-                Role role = filePlanRoleService.getRole(filePlan, NOTIFICATION_ROLE);
-                assertNotNull("Notification role could not be retrieved", role);
-                String roleGroup = role.getRoleGroupName();
-                assertNotNull("Notification role group can not be null.", roleGroup);
+          // Create a user
+          userName = GUID.generate();
+          authenticationService.createAuthentication(
+            userName,
+            "".toCharArray()
+          );
+          PropertyMap props = new PropertyMap();
+          props.put(PROP_USERNAME, userName);
+          props.put(PROP_FIRSTNAME, "Test");
+          props.put(PROP_LASTNAME, "User");
+          props.put(PROP_EMAIL, EMAIL_ADDRESS);
+          person = personService.createPerson(props);
 
-                // Add user to notification role group
-                authorityService.addAuthority(roleGroup, userName);
+          // Find the authority for the given role
+          Role role = filePlanRoleService.getRole(filePlan, NOTIFICATION_ROLE);
+          assertNotNull("Notification role could not be retrieved", role);
+          String roleGroup = role.getRoleGroupName();
+          assertNotNull("Notification role group can not be null.", roleGroup);
 
-                return null;
-            }
-        });
-    }
+          // Add user to notification role group
+          authorityService.addAuthority(roleGroup, userName);
 
-    @Override
-    protected void setupTestDataImpl()
-    {
-        super.setupTestDataImpl();
+          return null;
+        }
+      }
+    );
+  }
 
-        // Create a few test records
-        record = utils.createRecord(rmFolder, "recordOne");
-        NodeRef record2 = utils.createRecord(rmFolder, "recordTwo");
-        NodeRef record3 = utils.createRecord(rmFolder, "recordThree");
+  @Override
+  protected void setupTestDataImpl() {
+    super.setupTestDataImpl();
 
-        records = new ArrayList<>(3);
-        records.add(record);
-        records.add(record2);
-        records.add(record3);
-    }
+    // Create a few test records
+    record = utils.createRecord(rmFolder, "recordOne");
+    NodeRef record2 = utils.createRecord(rmFolder, "recordTwo");
+    NodeRef record3 = utils.createRecord(rmFolder, "recordThree");
 
-    @Override
-    protected void tearDownImpl()
-    {
-        super.tearDownImpl();
+    records = new ArrayList<>(3);
+    records.add(record);
+    records.add(record2);
+    records.add(record3);
+  }
 
-        // Delete the person and user
-        personService.deletePerson(person);
-    }
+  @Override
+  protected void tearDownImpl() {
+    super.tearDownImpl();
 
-    public void testSendDueForReviewNotification()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                notificationHelper.recordsDueForReviewEmailNotification(records);
-                return null;
-            }
-        });
-    }
+    // Delete the person and user
+    personService.deletePerson(person);
+  }
 
-    public void testSendSupersededNotification()
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                notificationHelper.recordSupersededEmailNotification(record);
-                return null;
-            }
-        });
-    }
+  public void testSendDueForReviewNotification() {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          notificationHelper.recordsDueForReviewEmailNotification(records);
+          return null;
+        }
+      }
+    );
+  }
+
+  public void testSendSupersededNotification() {
+    doTestInTransaction(
+      new Test<Void>() {
+        @Override
+        public Void run() {
+          notificationHelper.recordSupersededEmailNotification(record);
+          return null;
+        }
+      }
+    );
+  }
 }

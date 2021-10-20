@@ -55,97 +55,105 @@ import org.springframework.beans.factory.InitializingBean;
  * @since 2.6
  */
 @EntityResource(name = "file-plans", title = "File plans")
-public class FilePlanEntityResource implements EntityResourceAction.ReadById<FilePlan>,
-                                                EntityResourceAction.Update<FilePlan>,
-                                                InitializingBean
-{
+public class FilePlanEntityResource
+  implements
+    EntityResourceAction.ReadById<FilePlan>,
+    EntityResourceAction.Update<FilePlan>,
+    InitializingBean {
 
-    private FilePlanComponentsApiUtils apiUtils;
-    private FileFolderService fileFolderService;
-    private ApiNodesModelFactory nodesModelFactory;
-    private TransactionService transactionService;
+  private FilePlanComponentsApiUtils apiUtils;
+  private FileFolderService fileFolderService;
+  private ApiNodesModelFactory nodesModelFactory;
+  private TransactionService transactionService;
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
+
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
+
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
+
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
+
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    ParameterCheck.mandatory("apiUtils", this.apiUtils);
+    ParameterCheck.mandatory("fileFolderService", this.fileFolderService);
+    ParameterCheck.mandatory("nodesModelFactory", this.nodesModelFactory);
+  }
+
+  @WebApiDescription(
+    title = "Get file plan information",
+    description = "Get information for a file plan with id 'filePlanId'"
+  )
+  @WebApiParam(name = "filePlanId", title = "The file plan id")
+  public FilePlan readById(String filePlanId, Parameters parameters) {
+    checkNotBlank("filePlanId", filePlanId);
+    mandatory("parameters", parameters);
+
+    QName filePlanType = apiUtils.getFilePlanType();
+    if (filePlanType == null) { // rm site not created
+      throw new EntityNotFoundException(filePlanId);
     }
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      filePlanId,
+      filePlanType
+    );
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
+    FileInfo info = fileFolderService.getFileInfo(nodeRef);
+
+    return nodesModelFactory.createFilePlan(info, parameters, null, false);
+  }
+
+  @Override
+  @WebApiDescription(
+    title = "Update file plan",
+    description = "Updates a filePlan with id 'filePlanId'"
+  )
+  public FilePlan update(
+    String filePlanId,
+    FilePlan filePlanInfo,
+    Parameters parameters
+  ) {
+    checkNotBlank("filePlanId", filePlanId);
+    mandatory("filePlanInfo", filePlanInfo);
+    mandatory("parameters", parameters);
+
+    QName filePlanType = apiUtils.getFilePlanType();
+    if (filePlanType == null) { // rm site not created
+      throw new EntityNotFoundException(filePlanId);
     }
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      filePlanId,
+      filePlanType
+    );
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
+    RetryingTransactionCallback<Void> updateCallback = new RetryingTransactionCallback<Void>() {
+      public Void execute() {
+        apiUtils.updateNode(nodeRef, filePlanInfo, parameters);
+        return null;
+      }
+    };
+    transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(updateCallback, false, true);
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+    RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
+      public FileInfo execute() {
+        return fileFolderService.getFileInfo(nodeRef);
+      }
+    };
+    FileInfo info = transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(readCallback, false, true);
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        ParameterCheck.mandatory("apiUtils", this.apiUtils);
-        ParameterCheck.mandatory("fileFolderService", this.fileFolderService);
-        ParameterCheck.mandatory("nodesModelFactory", this.nodesModelFactory);
-    }
-
-    @WebApiDescription(title = "Get file plan information", description = "Get information for a file plan with id 'filePlanId'")
-    @WebApiParam(name = "filePlanId", title = "The file plan id")
-    public FilePlan readById(String filePlanId, Parameters parameters)
-    {
-        checkNotBlank("filePlanId", filePlanId);
-        mandatory("parameters", parameters);
-
-        QName filePlanType = apiUtils.getFilePlanType();
-        if(filePlanType == null)// rm site not created
-        {
-            throw new EntityNotFoundException(filePlanId);
-        }
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanType);
-
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
-
-        return nodesModelFactory.createFilePlan(info, parameters, null, false);
-    }
-
-    @Override
-    @WebApiDescription(title = "Update file plan", description = "Updates a filePlan with id 'filePlanId'")
-    public FilePlan update(String filePlanId, FilePlan filePlanInfo, Parameters parameters)
-    {
-        checkNotBlank("filePlanId", filePlanId);
-        mandatory("filePlanInfo", filePlanInfo);
-        mandatory("parameters", parameters);
-
-        QName filePlanType = apiUtils.getFilePlanType();
-        if(filePlanType == null)// rm site not created
-        {
-            throw new EntityNotFoundException(filePlanId);
-        }
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(filePlanId, filePlanType);
-
-        RetryingTransactionCallback<Void> updateCallback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateNode(nodeRef, filePlanInfo, parameters);
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(updateCallback, false, true);
-
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
-
-        return nodesModelFactory.createFilePlan(info, parameters, null, false);
-    }
+    return nodesModelFactory.createFilePlan(info, parameters, null, false);
+  }
 }

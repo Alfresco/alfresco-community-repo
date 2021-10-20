@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -47,36 +46,45 @@ import org.alfresco.service.namespace.QName;
  * @since 2.7
  */
 @BehaviourBean
-public class DeleteUserGroupAuditEvent extends AuditEvent implements BeforeDeleteNodePolicy
-{
-    /** Node Service */
-    private NodeService nodeService;
+public class DeleteUserGroupAuditEvent
+  extends AuditEvent
+  implements BeforeDeleteNodePolicy {
 
-    /**
-     * Sets the node service
-     *
-     * @param nodeService nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /** Node Service */
+  private NodeService nodeService;
 
-    /**
-     * Behaviour that will audit user group deletion
-     *
-     * @param nodeRef the node to be deleted
-     */
-    @Override
-    @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        // Retrieve the authority name property to be audited
-        Map<QName, Serializable> auditProperties = new HashMap<>();
-        auditProperties.put(ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
-                    nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_DISPLAY_NAME));
+  /**
+   * Sets the node service
+   *
+   * @param nodeService nodeService to set
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-        //audit the property values before the delete event
-        recordsManagementAuditService.auditEvent(nodeRef, getName(), auditProperties, null, true, false);
-    }
+  /**
+   * Behaviour that will audit user group deletion
+   *
+   * @param nodeRef the node to be deleted
+   */
+  @Override
+  @Behaviour(kind = BehaviourKind.CLASS, type = "cm:authorityContainer")
+  public void beforeDeleteNode(NodeRef nodeRef) {
+    // Retrieve the authority name property to be audited
+    Map<QName, Serializable> auditProperties = new HashMap<>();
+    auditProperties.put(
+      ContentModel.PROP_AUTHORITY_DISPLAY_NAME,
+      nodeService.getProperty(nodeRef, ContentModel.PROP_AUTHORITY_DISPLAY_NAME)
+    );
+
+    //audit the property values before the delete event
+    recordsManagementAuditService.auditEvent(
+      nodeRef,
+      getName(),
+      auditProperties,
+      null,
+      true,
+      false
+    );
+  }
 }

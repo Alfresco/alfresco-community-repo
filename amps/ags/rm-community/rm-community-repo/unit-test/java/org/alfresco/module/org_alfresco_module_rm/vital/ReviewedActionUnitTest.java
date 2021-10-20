@@ -26,20 +26,17 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.vital;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Date;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.repo.dictionary.types.period.Days;
 import org.alfresco.repo.dictionary.types.period.Immediately;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Date;
-
-import static org.mockito.Mockito.verify;
-
 import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.Before;
@@ -51,90 +48,103 @@ import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Unit test for {@link ReviewedAction} class
- * 
+ *
  * @author Ana Bozianu
  * @sincev 2.6
  */
-public class ReviewedActionUnitTest implements RecordsManagementModel
-{
-    private @Mock VitalRecordService mockedVitalRecordService;
-    private @Mock RecordService mockedRecordService;
-    private @Mock NodeService mockedNodeService;
+public class ReviewedActionUnitTest implements RecordsManagementModel {
 
-    private @InjectMocks ReviewedAction reviewedAction;
+  @Mock
+  private VitalRecordService mockedVitalRecordService;
 
-    @Before
-    public void testSetup()
-    {
-        MockitoAnnotations.initMocks(this);
-    }
+  @Mock
+  private RecordService mockedRecordService;
 
-    /**
-     * Given a record having the vital record definition of immediately 
-     * When I mark the record as reviewed 
-     * Then review as of date is removed from the record
+  @Mock
+  private NodeService mockedNodeService;
+
+  @InjectMocks
+  private ReviewedAction reviewedAction;
+
+  @Before
+  public void testSetup() {
+    MockitoAnnotations.initMocks(this);
+  }
+
+  /**
+   * Given a record having the vital record definition of immediately
+   * When I mark the record as reviewed
+   * Then review as of date is removed from the record
+   */
+  @Test
+  public void testReviewRecordWithAdHocReviewPeriod() {
+    /*
+     * Given
      */
-    @Test
-    public void testReviewRecordWithAdHocReviewPeriod()
-    {
-        /*
-         * Given
-         */
-        NodeRef mockedRecord = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-        when(mockedRecordService.isRecord(mockedRecord)).thenReturn(true);
+    NodeRef mockedRecord = new NodeRef(
+      StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+      GUID.generate()
+    );
+    when(mockedRecordService.isRecord(mockedRecord)).thenReturn(true);
 
-        VitalRecordDefinition mockedVRDef = mock(VitalRecordDefinition.class);
-        when(mockedVRDef.isEnabled()).thenReturn(true);
-        when(mockedVitalRecordService.getVitalRecordDefinition(mockedRecord)).thenReturn(mockedVRDef);
+    VitalRecordDefinition mockedVRDef = mock(VitalRecordDefinition.class);
+    when(mockedVRDef.isEnabled()).thenReturn(true);
+    when(mockedVitalRecordService.getVitalRecordDefinition(mockedRecord))
+      .thenReturn(mockedVRDef);
 
-        Period mockedReviewPeriod = mock(Period.class);
-        when(mockedReviewPeriod.getPeriodType()).thenReturn(Immediately.PERIOD_TYPE);
-        when(mockedVRDef.getReviewPeriod()).thenReturn(mockedReviewPeriod);
+    Period mockedReviewPeriod = mock(Period.class);
+    when(mockedReviewPeriod.getPeriodType())
+      .thenReturn(Immediately.PERIOD_TYPE);
+    when(mockedVRDef.getReviewPeriod()).thenReturn(mockedReviewPeriod);
 
-        /*
-         * When
-         */
-        reviewedAction.executeImpl(null, mockedRecord);
-
-        /*
-         * Then
-         */
-        verify(mockedNodeService).removeProperty(mockedRecord, PROP_REVIEW_AS_OF);
-    }
-
-    /**
-     * Given a record having a recurent vital record definition 
-     * When I mark the record as reviewed 
-     * Then the review as of date is updated according to the next review period computed by the vital record definition
+    /*
+     * When
      */
-    @Test
-    public void testReviewRecordWithRecurentReviewPeriod()
-    {
-        /*
-         * Given
-         */
-        NodeRef mockedRecord = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-        when(mockedRecordService.isRecord(mockedRecord)).thenReturn(true);
+    reviewedAction.executeImpl(null, mockedRecord);
 
-        VitalRecordDefinition mockedVRDef = mock(VitalRecordDefinition.class);
-        when(mockedVRDef.isEnabled()).thenReturn(true);
-        when(mockedVitalRecordService.getVitalRecordDefinition(mockedRecord)).thenReturn(mockedVRDef);
+    /*
+     * Then
+     */
+    verify(mockedNodeService).removeProperty(mockedRecord, PROP_REVIEW_AS_OF);
+  }
 
-        Date mockedNextReviewDate = mock(Date.class);
-        when(mockedVRDef.getNextReviewDate()).thenReturn(mockedNextReviewDate);
+  /**
+   * Given a record having a recurent vital record definition
+   * When I mark the record as reviewed
+   * Then the review as of date is updated according to the next review period computed by the vital record definition
+   */
+  @Test
+  public void testReviewRecordWithRecurentReviewPeriod() {
+    /*
+     * Given
+     */
+    NodeRef mockedRecord = new NodeRef(
+      StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+      GUID.generate()
+    );
+    when(mockedRecordService.isRecord(mockedRecord)).thenReturn(true);
 
-        Period mockedReviewPeriod = mock(Period.class);
-        when(mockedReviewPeriod.getPeriodType()).thenReturn(Days.PERIOD_TYPE);
-        when(mockedVRDef.getReviewPeriod()).thenReturn(mockedReviewPeriod);
+    VitalRecordDefinition mockedVRDef = mock(VitalRecordDefinition.class);
+    when(mockedVRDef.isEnabled()).thenReturn(true);
+    when(mockedVitalRecordService.getVitalRecordDefinition(mockedRecord))
+      .thenReturn(mockedVRDef);
 
-        /*
-         * When
-         */
-        reviewedAction.executeImpl(null, mockedRecord);
+    Date mockedNextReviewDate = mock(Date.class);
+    when(mockedVRDef.getNextReviewDate()).thenReturn(mockedNextReviewDate);
 
-        /*
-         * Then
-         */
-        verify(mockedNodeService).setProperty(mockedRecord, PROP_REVIEW_AS_OF, mockedNextReviewDate);
-    }
+    Period mockedReviewPeriod = mock(Period.class);
+    when(mockedReviewPeriod.getPeriodType()).thenReturn(Days.PERIOD_TYPE);
+    when(mockedVRDef.getReviewPeriod()).thenReturn(mockedReviewPeriod);
+
+    /*
+     * When
+     */
+    reviewedAction.executeImpl(null, mockedRecord);
+
+    /*
+     * Then
+     */
+    verify(mockedNodeService)
+      .setProperty(mockedRecord, PROP_REVIEW_AS_OF, mockedNextReviewDate);
+  }
 }

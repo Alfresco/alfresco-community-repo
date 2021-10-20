@@ -29,7 +29,6 @@ package org.alfresco.rest.v0;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.text.MessageFormat;
-
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.custom.CustomDefinitions;
 import org.json.JSONArray;
@@ -46,22 +45,26 @@ import org.springframework.stereotype.Component;
  * @since 2.6
  */
 @Component
-public class CustomDefinitionsAPI extends BaseAPI
-{
+public class CustomDefinitionsAPI extends BaseAPI {
+
     /**
      * custom references endpoint
      */
-    private static final String CUSTOM_REFERENCE_API_ENDPOINT = "{0}rma/admin/customreferencedefinitions";
+    private static final String CUSTOM_REFERENCE_API_ENDPOINT =
+        "{0}rma/admin/customreferencedefinitions";
 
     /**
      * create reference endpoint
      */
-    private static final String CREATE_RELATIONSHIP_API_ENDPOINT = "{0}node/{1}/customreferences";
+    private static final String CREATE_RELATIONSHIP_API_ENDPOINT =
+        "{0}node/{1}/customreferences";
 
     /**
      * logger
      */
-    private static final Logger LOGGER = LoggerFactory.getLogger(CustomDefinitionsAPI.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(
+        CustomDefinitionsAPI.class
+    );
 
     /**
      * Helper method to get the reference id for a custom reference
@@ -73,39 +76,43 @@ public class CustomDefinitionsAPI extends BaseAPI
      *          <code> null </code> otherwise
      *
      */
-    public String getCustomReferenceId(String adminUser, String adminPassword, String customDefinition)
-    {
-
-        JSONObject getResponse = doGetRequest(adminUser, adminPassword, CUSTOM_REFERENCE_API_ENDPOINT);
-        if (getResponse != null)
-        {
-            try
-            {
-                JSONArray customDefinitions = getResponse.getJSONObject("data").getJSONArray("customReferences");
-                for (int i = 0; i < customDefinitions.length(); i++)
-                {
+    public String getCustomReferenceId(
+        String adminUser,
+        String adminPassword,
+        String customDefinition
+    ) {
+        JSONObject getResponse = doGetRequest(
+            adminUser,
+            adminPassword,
+            CUSTOM_REFERENCE_API_ENDPOINT
+        );
+        if (getResponse != null) {
+            try {
+                JSONArray customDefinitions = getResponse
+                    .getJSONObject("data")
+                    .getJSONArray("customReferences");
+                for (int i = 0; i < customDefinitions.length(); i++) {
                     JSONObject item = customDefinitions.getJSONObject(i);
                     boolean hasSource = customDefinition.equalsIgnoreCase(
-                            item.has("source") ? item.getString("source") : null
-                                                                         );
+                        item.has("source") ? item.getString("source") : null
+                    );
 
                     boolean hasTarget = customDefinition.equalsIgnoreCase(
-                            item.has("target") ? item.getString("target") : null
-                                                                         );
+                        item.has("target") ? item.getString("target") : null
+                    );
 
                     boolean hasLabel = customDefinition.equalsIgnoreCase(
-                            item.has("label") ? item.getString("label") : null
-                                                                        );
-                    if ( hasSource || hasTarget || hasLabel)
-                    {
+                        item.has("label") ? item.getString("label") : null
+                    );
+                    if (hasSource || hasTarget || hasLabel) {
                         return item.getString("refId");
                     }
                 }
-
-            }
-            catch (JSONException error)
-            {
-                LOGGER.error("Unable to get the refId for the custom reference definition {}", customDefinition);
+            } catch (JSONException error) {
+                LOGGER.error(
+                    "Unable to get the refId for the custom reference definition {}",
+                    customDefinition
+                );
             }
         }
         return null;
@@ -122,23 +129,48 @@ public class CustomDefinitionsAPI extends BaseAPI
      * @throws AssertionError if the creation fails.
      */
     public void createRelationship(
-            String adminUser,
-            String adminPassword,
-            String recordNodeIdFrom,
-            String recordNodeIdTo,
-            CustomDefinitions relationshipType)
-    {
-       //create the request body
+        String adminUser,
+        String adminPassword,
+        String recordNodeIdFrom,
+        String recordNodeIdTo,
+        CustomDefinitions relationshipType
+    ) {
+        //create the request body
         JSONObject requestParams = new JSONObject();
-        requestParams.put("toNode", NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdTo);
-        requestParams.put("refId", getCustomReferenceId(adminUser, adminPassword, relationshipType
-                .getDefinition()));
+        requestParams.put(
+            "toNode",
+            NODE_REF_WORKSPACE_SPACES_STORE + recordNodeIdTo
+        );
+        requestParams.put(
+            "refId",
+            getCustomReferenceId(
+                adminUser,
+                adminPassword,
+                relationshipType.getDefinition()
+            )
+        );
         //send the API request to create the relationship
-        JSONObject setRelationshipStatus = doPostRequest(adminUser, adminPassword, requestParams,
-                MessageFormat.format(CREATE_RELATIONSHIP_API_ENDPOINT, "{0}", NODE_PREFIX + recordNodeIdFrom));
+        JSONObject setRelationshipStatus = doPostRequest(
+            adminUser,
+            adminPassword,
+            requestParams,
+            MessageFormat.format(
+                CREATE_RELATIONSHIP_API_ENDPOINT,
+                "{0}",
+                NODE_PREFIX + recordNodeIdFrom
+            )
+        );
         //check the response
-        boolean success = (setRelationshipStatus != null) && setRelationshipStatus.getBoolean("success");
-        assertTrue("Creating relationship from " + recordNodeIdFrom + " to " + recordNodeIdTo + " failed.", success);
+        boolean success =
+            (setRelationshipStatus != null) &&
+            setRelationshipStatus.getBoolean("success");
+        assertTrue(
+            "Creating relationship from " +
+            recordNodeIdFrom +
+            " to " +
+            recordNodeIdTo +
+            " failed.",
+            success
+        );
     }
-
 }

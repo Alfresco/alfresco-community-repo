@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,69 +26,64 @@
 package org.alfresco.repo.node.getchildren;
 
 import java.util.Date;
-
 import org.alfresco.repo.query.NodeBackedEntity;
 
 /**
  * Parameter objects for {@link GetChildrenAuditableCannedQuery}.
- * 
+ *
  * @author Nick Burch
  * @since 4.0
  */
-public class GetChildrenAuditableCannedQueryParams extends NodeBackedEntity
-{
-    private String creatorFilter;
-    private Date   createdBefore;
-    private Date   createdAfter;
-    private String modifierFilter;
-    private Date   modifiedBefore;
-    private Date   modifiedAfter;
-    
-    public GetChildrenAuditableCannedQueryParams(Long parentNodeId,
-                                         Long nameQNameId,
-                                         Long contentTypeQNameId,
-                                         String creatorFilter,
-                                         Date createdFrom, Date createdTo,
-                                         String modifierFilter,
-                                         Date modifiedFrom, Date modifiedTo)
-                                         
-    {
-        super(parentNodeId, nameQNameId, contentTypeQNameId);
-        this.creatorFilter = creatorFilter;
-        this.createdAfter  = createdFrom;
-        this.createdBefore = createdTo;
-        this.modifierFilter = modifierFilter;
-        this.modifiedAfter  = modifiedFrom;
-        this.modifiedBefore = modifiedTo;
-    }
+public class GetChildrenAuditableCannedQueryParams extends NodeBackedEntity {
 
-   public String getCreatorFilter() 
-   {
-      return creatorFilter;
-   }
+  private String creatorFilter;
+  private Date createdBefore;
+  private Date createdAfter;
+  private String modifierFilter;
+  private Date modifiedBefore;
+  private Date modifiedAfter;
 
-   public Date getCreatedBefore() 
-   {
-      return createdBefore;
-   }
+  public GetChildrenAuditableCannedQueryParams(
+    Long parentNodeId,
+    Long nameQNameId,
+    Long contentTypeQNameId,
+    String creatorFilter,
+    Date createdFrom,
+    Date createdTo,
+    String modifierFilter,
+    Date modifiedFrom,
+    Date modifiedTo
+  ) {
+    super(parentNodeId, nameQNameId, contentTypeQNameId);
+    this.creatorFilter = creatorFilter;
+    this.createdAfter = createdFrom;
+    this.createdBefore = createdTo;
+    this.modifierFilter = modifierFilter;
+    this.modifiedAfter = modifiedFrom;
+    this.modifiedBefore = modifiedTo;
+  }
 
-   public Date getCreatedAfter() 
-   {
-      return createdAfter;
-   }
+  public String getCreatorFilter() {
+    return creatorFilter;
+  }
 
-   public String getModifierFilter() 
-   {
-      return modifierFilter;
-   }
+  public Date getCreatedBefore() {
+    return createdBefore;
+  }
 
-   public Date getModifiedBefore() 
-   {
-      return modifiedBefore;
-   }
+  public Date getCreatedAfter() {
+    return createdAfter;
+  }
 
-   public Date getModifiedAfter() 
-   {
-      return modifiedAfter;
-   }
+  public String getModifierFilter() {
+    return modifierFilter;
+  }
+
+  public Date getModifiedBefore() {
+    return modifiedBefore;
+  }
+
+  public Date getModifiedAfter() {
+    return modifiedAfter;
+  }
 }

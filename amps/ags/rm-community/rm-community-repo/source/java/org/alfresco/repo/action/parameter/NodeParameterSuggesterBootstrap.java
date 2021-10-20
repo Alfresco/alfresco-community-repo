@@ -40,62 +40,61 @@ import org.alfresco.util.ParameterCheck;
  * @author Mark Hibbins
  * @since 2.2
  */
-public class NodeParameterSuggesterBootstrap
-{
-    /** namespace service */
-    private NamespaceService namespaceService;
+public class NodeParameterSuggesterBootstrap {
 
-    /** configured node parameter processor aspect and type names, comma separated */
-    private String nodeParameterProcessorAspectsNames;
+  /** namespace service */
+  private NamespaceService namespaceService;
 
-    /** node parameter processor */
-    private NodeParameterProcessor nodeParameterProcessor;
+  /** configured node parameter processor aspect and type names, comma separated */
+  private String nodeParameterProcessorAspectsNames;
 
-    /**
-     * @param nodeParameterProcessorAspectsNames map of record metadata aspects against file plan types
-     */
-    public void setNodeParameterProcessorAspects(String nodeParameterProcessorAspectsNames)
-    {
-        this.nodeParameterProcessorAspectsNames = nodeParameterProcessorAspectsNames;
-    }
+  /** node parameter processor */
+  private NodeParameterProcessor nodeParameterProcessor;
 
-    /**
-     * @param namespaceService  namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
+  /**
+   * @param nodeParameterProcessorAspectsNames map of record metadata aspects against file plan types
+   */
+  public void setNodeParameterProcessorAspects(
+    String nodeParameterProcessorAspectsNames
+  ) {
+    this.nodeParameterProcessorAspectsNames =
+      nodeParameterProcessorAspectsNames;
+  }
 
-    /**
-     * @param nodeParameterProcessor  Node parameter processor
-     */
-    public void setNodeParameterProcessor(NodeParameterProcessor nodeParameterProcessor)
-    {
-        this.nodeParameterProcessor = nodeParameterProcessor;
-    }
+  /**
+   * @param namespaceService  namespace service
+   */
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
 
-    /**
-     * Init method
-     */
-    public void init()
-    {
-        ParameterCheck.mandatory("namespaceService", namespaceService);
+  /**
+   * @param nodeParameterProcessor  Node parameter processor
+   */
+  public void setNodeParameterProcessor(
+    NodeParameterProcessor nodeParameterProcessor
+  ) {
+    this.nodeParameterProcessor = nodeParameterProcessor;
+  }
 
-        if (nodeParameterProcessorAspectsNames != null)
-        {
-            String[] aspectsNames = this.nodeParameterProcessorAspectsNames.split(",");
-            for (String name : aspectsNames)
-            {
-                if((name != null) && !"".equals(name.trim()))
-                {
-                    // convert to qname and save it
-                    QName aspect = QName.createQName(name.trim(), namespaceService);
+  /**
+   * Init method
+   */
+  public void init() {
+    ParameterCheck.mandatory("namespaceService", namespaceService);
 
-                    // register with node parameter processor
-                    this.nodeParameterProcessor.addSuggestionDefinition(aspect);
-                }
-            }
+    if (nodeParameterProcessorAspectsNames != null) {
+      String[] aspectsNames =
+        this.nodeParameterProcessorAspectsNames.split(",");
+      for (String name : aspectsNames) {
+        if ((name != null) && !"".equals(name.trim())) {
+          // convert to qname and save it
+          QName aspect = QName.createQName(name.trim(), namespaceService);
+
+          // register with node parameter processor
+          this.nodeParameterProcessor.addSuggestionDefinition(aspect);
         }
+      }
     }
+  }
 }

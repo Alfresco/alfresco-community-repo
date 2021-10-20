@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -29,7 +29,6 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.OpenCMISClientContext;
@@ -77,131 +76,160 @@ import org.junit.experimental.categories.Category;
 
 /**
  * OpenCMIS TCK unit tests.
- * 
+ *
  * @author steveglover
  *
  */
-public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTest
-{
-	private static final String CMIS_URL = "http://{0}:{1}/{2}/cmisatom";
-	protected static final Log logger = LogFactory.getLog(TestEnterpriseAtomPubTCK.class);
+public class TestEnterpriseAtomPubTCK
+  extends AbstractEnterpriseOpenCMIS10TCKTest {
 
-	@Before
-	public void setup() throws Exception
-	{
-		JettyComponent jetty = getTestFixture().getJettyComponent();
-		
-		final SearchService searchService = (SearchService)jetty.getApplicationContext().getBean("searchService");;
-		final NodeService nodeService = (NodeService)jetty.getApplicationContext().getBean("nodeService");
-		final FileFolderService fileFolderService = (FileFolderService)jetty.getApplicationContext().getBean("fileFolderService");
-		final NamespaceService namespaceService = (NamespaceService)jetty.getApplicationContext().getBean("namespaceService");
-		final TransactionService transactionService = (TransactionService)jetty.getApplicationContext().getBean("transactionService");
-		final String name = "abc" + System.currentTimeMillis();
+  private static final String CMIS_URL = "http://{0}:{1}/{2}/cmisatom";
+  protected static final Log logger = LogFactory.getLog(
+    TestEnterpriseAtomPubTCK.class
+  );
 
-		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-		{
-			@Override
-			public Void execute() throws Throwable
-			{
-				AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+  @Before
+  public void setup() throws Exception {
+    JettyComponent jetty = getTestFixture().getJettyComponent();
 
-                Repository repositoryHelper = (Repository)jetty.getApplicationContext().getBean("repositoryHelper");
-				NodeRef companyHome = repositoryHelper.getCompanyHome();
-				fileFolderService.create(companyHome, name, ContentModel.TYPE_FOLDER).getNodeRef();
+    final SearchService searchService = (SearchService) jetty
+      .getApplicationContext()
+      .getBean("searchService");
+    final NodeService nodeService = (NodeService) jetty
+      .getApplicationContext()
+      .getBean("nodeService");
+    final FileFolderService fileFolderService = (FileFolderService) jetty
+      .getApplicationContext()
+      .getBean("fileFolderService");
+    final NamespaceService namespaceService = (NamespaceService) jetty
+      .getApplicationContext()
+      .getBean("namespaceService");
+    final TransactionService transactionService = (TransactionService) jetty
+      .getApplicationContext()
+      .getBean("transactionService");
+    final String name = "abc" + System.currentTimeMillis();
+    transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(
+        new RetryingTransactionCallback<Void>() {
+          @Override
+          public Void execute() throws Throwable {
+            AuthenticationUtil.setFullyAuthenticatedUser(
+              AuthenticationUtil.getAdminUserName()
+            );
 
-				return null;
-			}
-		}, false, true);
+            Repository repositoryHelper = (Repository) jetty
+              .getApplicationContext()
+              .getBean("repositoryHelper");
+            NodeRef companyHome = repositoryHelper.getCompanyHome();
+            fileFolderService
+              .create(companyHome, name, ContentModel.TYPE_FOLDER)
+              .getNodeRef();
 
-    	int port = jetty.getPort();
-    	Map<String, String> cmisParameters = new HashMap<String, String>();
-    	cmisParameters.put(TestParameters.DEFAULT_RELATIONSHIP_TYPE, "R:cm:replaces");
-    	cmisParameters.put(TestParameters.DEFAULT_TEST_FOLDER_PARENT, "/" + name);
-    	clientContext = new OpenCMISClientContext(BindingType.ATOMPUB,
-    			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco"), "admin", "admin", cmisParameters, jetty.getApplicationContext());
+            return null;
+          }
+        },
+        false,
+        true
+      );
 
-        overrideVersionableAspectProperties(jetty.getApplicationContext());
-	}
+    int port = jetty.getPort();
 
-// Commented out: See https://issues.alfresco.com/jira/browse/MNT-11123?focusedCommentId=339130&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-339130
-//    @Test
-//    public void testCMISTCKBasics() throws Exception
-//    {
-//        BasicsTestGroup basicsTestGroup = new BasicsTestGroup();
-//        JUnitHelper.run(basicsTestGroup);
-//    }
-    
-    @Test
-    public void testCMISTCKCRUD() throws Exception
-    {
-        CRUDTestGroup crudTestGroup = new CRUDTestGroup();
-        JUnitHelper.run(crudTestGroup);
+    Map<String, String> cmisParameters = new HashMap<String, String>();
+    cmisParameters.put(
+      TestParameters.DEFAULT_RELATIONSHIP_TYPE,
+      "R:cm:replaces"
+    );
+    cmisParameters.put(TestParameters.DEFAULT_TEST_FOLDER_PARENT, "/" + name);
+    clientContext =
+      new OpenCMISClientContext(
+        BindingType.ATOMPUB,
+        MessageFormat.format(
+          CMIS_URL,
+          "localhost",
+          String.valueOf(port),
+          "alfresco"
+        ),
+        "admin",
+        "admin",
+        cmisParameters,
+        jetty.getApplicationContext()
+      );
+    overrideVersionableAspectProperties(jetty.getApplicationContext());
+  }
+
+  // Commented out: See https://issues.alfresco.com/jira/browse/MNT-11123?focusedCommentId=339130&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-339130
+  //    @Test
+  //    public void testCMISTCKBasics() throws Exception
+  //    {
+  //        BasicsTestGroup basicsTestGroup = new BasicsTestGroup();
+  //        JUnitHelper.run(basicsTestGroup);
+  //    }
+
+  @Test
+  public void testCMISTCKCRUD() throws Exception {
+    CRUDTestGroup crudTestGroup = new CRUDTestGroup();
+    JUnitHelper.run(crudTestGroup);
+  }
+
+  @Test
+  public void testCMISTCKVersioning() throws Exception {
+    OverrideVersioningTestGroup versioningTestGroup = new OverrideVersioningTestGroup();
+    JUnitHelper.run(versioningTestGroup);
+  }
+
+  @Test
+  public void testCMISTCKFiling() throws Exception {
+    FilingTestGroup filingTestGroup = new FilingTestGroup();
+    JUnitHelper.run(filingTestGroup);
+  }
+
+  @Test
+  public void testCMISTCKControl() throws Exception {
+    ControlTestGroup controlTestGroup = new ControlTestGroup();
+    JUnitHelper.run(controlTestGroup);
+  }
+
+  @Test
+  @Category({ LuceneTests.class, RedundantTests.class })
+  public void testCMISTCKQuery() throws Exception {
+    OverrideQueryTestGroup queryTestGroup = new OverrideQueryTestGroup();
+    JUnitHelper.run(queryTestGroup);
+  }
+
+  private class OverrideVersioningTestGroup extends AbstractSessionTestGroup {
+
+    @Override
+    public void init(Map<String, String> parameters) throws Exception {
+      super.init(parameters);
+
+      setName("Versioning Test Group");
+      setDescription("Versioning tests.");
+
+      addTest(new VersioningSmokeTest());
+      addTest(new VersionDeleteTest());
+      addTest(new VersioningStateCreateTest());
+      // relies on Solr being available
+      addTest(new CheckedOutTest());
     }
+  }
 
-    @Test
-    public void testCMISTCKVersioning() throws Exception
-    {
-        OverrideVersioningTestGroup versioningTestGroup = new OverrideVersioningTestGroup();
-        JUnitHelper.run(versioningTestGroup);
+  private class OverrideQueryTestGroup extends AbstractSessionTestGroup {
+
+    @Override
+    public void init(Map<String, String> parameters) throws Exception {
+      super.init(parameters);
+
+      setName("Query Test Group");
+      setDescription("Query and content changes tests.");
+
+      addTest(new QuerySmokeTest());
+      // The test fails on Lucene see MNT-11223
+      // addTest(new QueryRootFolderTest());
+      addTest(new QueryForObjectCustom());
+      addTest(new QueryLikeTestCustom());
+      addTest(new QueryInFolderTestCustom());
+      addTest(new ContentChangesSmokeTest());
     }
-    
-    @Test
-    public void testCMISTCKFiling() throws Exception
-    {
-        FilingTestGroup filingTestGroup = new FilingTestGroup();
-        JUnitHelper.run(filingTestGroup);
-    }
-    
-    @Test
-    public void testCMISTCKControl() throws Exception
-    {
-        ControlTestGroup controlTestGroup = new ControlTestGroup();
-        JUnitHelper.run(controlTestGroup);
-    }
-
-    @Test
-    @Category({LuceneTests.class, RedundantTests.class})
-    public void testCMISTCKQuery() throws Exception
-    {
-        OverrideQueryTestGroup queryTestGroup = new OverrideQueryTestGroup();
-        JUnitHelper.run(queryTestGroup);
-    }
-
-    private class OverrideVersioningTestGroup extends AbstractSessionTestGroup
-    {
-        @Override
-        public void init(Map<String, String> parameters) throws Exception
-        {
-            super.init(parameters);
-
-            setName("Versioning Test Group");
-            setDescription("Versioning tests.");
-
-            addTest(new VersioningSmokeTest());
-            addTest(new VersionDeleteTest());
-            addTest(new VersioningStateCreateTest());
-            // relies on Solr being available
-            addTest(new CheckedOutTest());
-        }
-    }
-
-    private class OverrideQueryTestGroup extends AbstractSessionTestGroup
-    {
-        @Override
-        public void init(Map<String, String> parameters) throws Exception
-        {
-            super.init(parameters);
-
-            setName("Query Test Group");
-            setDescription("Query and content changes tests.");
-
-            addTest(new QuerySmokeTest());
-            // The test fails on Lucene see MNT-11223
-            // addTest(new QueryRootFolderTest());
-            addTest(new QueryForObjectCustom());
-            addTest(new QueryLikeTestCustom());
-            addTest(new QueryInFolderTestCustom());
-            addTest(new ContentChangesSmokeTest());
-        }
-    }
+  }
 }

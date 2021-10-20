@@ -32,6 +32,4 @@ package org.alfresco.rm.rest.api.model;
  * @author Ana Bozianu
  * @since 2.6
  */
-public class UnfiledContainerChild extends UnfiledChild
-{
-}
+public class UnfiledContainerChild extends UnfiledChild {}

@@ -42,74 +42,84 @@ import org.mockito.InjectMocks;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class FileReportActionUnitTest extends BaseActionUnitTest
-{
-    /** actioned upon node reference */
-    private NodeRef actionedUponNodeRef;
+public class FileReportActionUnitTest extends BaseActionUnitTest {
 
-    /** file report action */
-    private @InjectMocks FileReportAction fileReportAction;
+  /** actioned upon node reference */
+  private NodeRef actionedUponNodeRef;
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
-     */
-    @Override
-    public void before() throws Exception
-    {
-        super.before();
+  /** file report action */
+  @InjectMocks
+  private FileReportAction fileReportAction;
 
-        // actioned upon node reference
-        actionedUponNodeRef = generateRecord();
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
+   */
+  @Override
+  public void before() throws Exception {
+    super.before();
 
-        // mocked action
-        fileReportAction.setAuditable(false);
-    }
+    // actioned upon node reference
+    actionedUponNodeRef = generateRecord();
 
-    /**
-     * given the destination is not set, ensure that an exception is thrown
-     */
-    @Test
-    public void destinationNotSet()
-    {
-        // == given ==
+    // mocked action
+    fileReportAction.setAuditable(false);
+  }
 
-        // set action parameter values
-        mockActionParameterValue(FileReportAction.MIMETYPE, MimetypeMap.MIMETYPE_HTML);
-        mockActionParameterValue(FileReportAction.REPORT_TYPE, "rma:destructionReport");
+  /**
+   * given the destination is not set, ensure that an exception is thrown
+   */
+  @Test
+  public void destinationNotSet() {
+    // == given ==
 
-        // expected exception
-        exception.expect(AlfrescoRuntimeException.class);
+    // set action parameter values
+    mockActionParameterValue(
+      FileReportAction.MIMETYPE,
+      MimetypeMap.MIMETYPE_HTML
+    );
+    mockActionParameterValue(
+      FileReportAction.REPORT_TYPE,
+      "rma:destructionReport"
+    );
 
-        // == when ==
+    // expected exception
+    exception.expect(AlfrescoRuntimeException.class);
 
-        // execute action
-        fileReportAction.executeImpl(getMockedAction(), actionedUponNodeRef);
+    // == when ==
 
-        // == then ==
-        verifyZeroInteractions(mockedReportService, mockedNodeService);
-    }
+    // execute action
+    fileReportAction.executeImpl(getMockedAction(), actionedUponNodeRef);
 
-    /**
-     * given no report type set, ensure that an exception is thrown
-     */
-    @Test
-    public void reportTypeNotSet()
-    {
-        // == given ==
+    // == then ==
+    verifyZeroInteractions(mockedReportService, mockedNodeService);
+  }
 
-        // set action parameter values
-        mockActionParameterValue(FileReportAction.MIMETYPE, MimetypeMap.MIMETYPE_HTML);
-        mockActionParameterValue(FileReportAction.DESTINATION, generateNodeRef().toString());
+  /**
+   * given no report type set, ensure that an exception is thrown
+   */
+  @Test
+  public void reportTypeNotSet() {
+    // == given ==
 
-        // expected exception
-        exception.expect(AlfrescoRuntimeException.class);
+    // set action parameter values
+    mockActionParameterValue(
+      FileReportAction.MIMETYPE,
+      MimetypeMap.MIMETYPE_HTML
+    );
+    mockActionParameterValue(
+      FileReportAction.DESTINATION,
+      generateNodeRef().toString()
+    );
 
-        // == when ==
+    // expected exception
+    exception.expect(AlfrescoRuntimeException.class);
 
-        // execute action
-        fileReportAction.executeImpl(getMockedAction(), actionedUponNodeRef);
+    // == when ==
 
-        // == then ==
-        verifyZeroInteractions(mockedReportService, mockedNodeService);
-    }
+    // execute action
+    fileReportAction.executeImpl(getMockedAction(), actionedUponNodeRef);
+
+    // == then ==
+    verifyZeroInteractions(mockedReportService, mockedNodeService);
+  }
 }

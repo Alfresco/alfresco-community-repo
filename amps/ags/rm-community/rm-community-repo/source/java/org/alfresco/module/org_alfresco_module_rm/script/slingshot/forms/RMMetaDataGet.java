@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,174 +51,160 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @author Roy Wetherall
  */
-public class RMMetaDataGet extends DeclarativeWebScript
-{
-    /** Query parameters */
-    private static final String PARAM_NODEREF = "noderef";
-    private static final String PARAM_TYPE = "type";
-    private static final String PARAM_EXTENDED = "extended";
+public class RMMetaDataGet extends DeclarativeWebScript {
 
-    /** NodeRef pattern */
-    private static final Pattern NODE_REF_PATTERN = Pattern.compile(".+://.+/.+");
+  /** Query parameters */
+  private static final String PARAM_NODEREF = "noderef";
+  private static final String PARAM_TYPE = "type";
+  private static final String PARAM_EXTENDED = "extended";
 
-    /** QName pattern */
-    private static final Pattern QNAME_PATTERN = Pattern.compile(".+:[^=,]+");
+  /** NodeRef pattern */
+  private static final Pattern NODE_REF_PATTERN = Pattern.compile(".+://.+/.+");
 
-    /** Namespace service */
-    private NamespaceService namespaceService;
+  /** QName pattern */
+  private static final Pattern QNAME_PATTERN = Pattern.compile(".+:[^=,]+");
 
-    /** Node service */
-    private NodeService nodeService;
+  /** Namespace service */
+  private NamespaceService namespaceService;
 
-    /** File Plan Service */
-    private FilePlanService filePlanService;
+  /** Node service */
+  private NodeService nodeService;
 
-    /**
-     * @param namespaceService  namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
+  /** File Plan Service */
+  private FilePlanService filePlanService;
 
-    /**
-     * @param filePlanService	file plan service
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-		this.filePlanService = filePlanService;
-	}
+  /**
+   * @param namespaceService  namespace service
+   */
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
 
-    /**
-     * @param nodeService   node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+  /**
+   * @param filePlanService	file plan service
+   */
+  public void setFilePlanService(FilePlanService filePlanService) {
+    this.filePlanService = filePlanService;
+  }
 
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        // create model object with the lists model
-        Map<String, Object> model = new HashMap<>(1);
+  /**
+   * @param nodeService   node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
 
-        boolean extended = false;
-        String result = "NONE";
+  /*
+   * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    // create model object with the lists model
+    Map<String, Object> model = new HashMap<>(1);
 
-        // Get the nodeRef and confirm it is valid
-        String nodeRef = req.getParameter(PARAM_NODEREF);
-        if (nodeRef == null || nodeRef.length() == 0)
-        {
-            String type = req.getParameter(PARAM_TYPE);
-            if (type != null && type.length() != 0 && type.indexOf(':') != -1)
-            {
-            	Matcher m = QNAME_PATTERN.matcher(type);
-            	if (m.matches())
-            	{
-	                QName qname = QName.createQName(type, namespaceService);
-	                FilePlanComponentKind kind = filePlanService.getFilePlanComponentKindFromType(qname);
-	                if (kind != null)
-	                {
-	                    result = kind.toString();
-	                }
-            	}
+    boolean extended = false;
+    String result = "NONE";
+
+    // Get the nodeRef and confirm it is valid
+    String nodeRef = req.getParameter(PARAM_NODEREF);
+    if (nodeRef == null || nodeRef.length() == 0) {
+      String type = req.getParameter(PARAM_TYPE);
+      if (type != null && type.length() != 0 && type.indexOf(':') != -1) {
+        Matcher m = QNAME_PATTERN.matcher(type);
+        if (m.matches()) {
+          QName qname = QName.createQName(type, namespaceService);
+          FilePlanComponentKind kind = filePlanService.getFilePlanComponentKindFromType(
+            qname
+          );
+          if (kind != null) {
+            result = kind.toString();
+          }
+        }
+      }
+    } else {
+      // quick test before running slow match for full NodeRef pattern
+      if (nodeRef.indexOf(':') != -1) {
+        Matcher m = NODE_REF_PATTERN.matcher(nodeRef);
+        if (m.matches()) {
+          NodeRef nodeRefObj = new NodeRef(nodeRef);
+
+          FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(
+            nodeRefObj
+          );
+          if (kind != null) {
+            result = kind.toString();
+          }
+
+          String extendedValue = req.getParameter(PARAM_EXTENDED);
+          if (extendedValue != null && extendedValue.length() != 0) {
+            extended = Boolean.parseBoolean(extendedValue);
+            if (extended) {
+              // get the aspects of the node
+              model.put("aspects", getAspects(nodeRefObj));
             }
+          }
         }
-        else
-        {
-            // quick test before running slow match for full NodeRef pattern
-            if (nodeRef.indexOf(':') != -1)
-            {
-                Matcher m = NODE_REF_PATTERN.matcher(nodeRef);
-                if (m.matches())
-                {
-                    NodeRef nodeRefObj = new NodeRef(nodeRef);
-
-                    FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRefObj);
-                    if (kind != null)
-                    {
-                        result = kind.toString();
-                    }
-
-                    String extendedValue = req.getParameter(PARAM_EXTENDED);
-                    if (extendedValue != null && extendedValue.length() != 0)
-                    {
-                        extended = Boolean.parseBoolean(extendedValue);
-                        if (extended)
-                        {
-                            // get the aspects of the node
-                            model.put("aspects", getAspects(nodeRefObj));
-                        }
-                    }
-                }
-            }
-        }
-
-        model.put("kind", result);
-        model.put("extended", extended);
-        return model;
+      }
     }
 
-    /**
-     * Gets the current node aspects
-     *
-     * @return node aspects
-     */
-    public List<Aspect> getAspects(NodeRef nodeRef)
-    {
-        Set<QName> qnames = nodeService.getAspects(nodeRef);
-        List<Aspect> aspects = new ArrayList<>(qnames.size());
-        for (QName qname : qnames)
-        {
-            aspects.add(new Aspect(qname));
-        }
-        return aspects;
+    model.put("kind", result);
+    model.put("extended", extended);
+    return model;
+  }
+
+  /**
+   * Gets the current node aspects
+   *
+   * @return node aspects
+   */
+  public List<Aspect> getAspects(NodeRef nodeRef) {
+    Set<QName> qnames = nodeService.getAspects(nodeRef);
+    List<Aspect> aspects = new ArrayList<>(qnames.size());
+    for (QName qname : qnames) {
+      aspects.add(new Aspect(qname));
+    }
+    return aspects;
+  }
+
+  /**
+   * Qname wrapper class
+   */
+  public class QNameBean implements Serializable {
+
+    private static final long serialVersionUID = 6982292337846270774L;
+
+    protected QName name;
+
+    public QNameBean(QName name) {
+      this.name = name;
     }
 
-    /**
-     * Qname wrapper class
-     */
-    public class QNameBean implements Serializable
-    {
-        private static final long serialVersionUID = 6982292337846270774L;
-
-        protected QName name;
-
-        public QNameBean(QName name)
-        {
-            this.name = name;
-        }
-
-        public String getName()
-        {
-            return name.toString();
-        }
-
-        public String getPrefixedName()
-        {
-            return name.toPrefixString(namespaceService);
-        }
-
-        public String toString()
-        {
-            return getName();
-        }
+    public String getName() {
+      return name.toString();
     }
 
-    /**
-     * Aspect wrapper class
-     */
-    public class Aspect extends QNameBean
-    {
-        private static final long serialVersionUID = -6448182941386934326L;
-
-        public Aspect(QName name)
-        {
-            super(name);
-        }
+    public String getPrefixedName() {
+      return name.toPrefixString(namespaceService);
     }
+
+    public String toString() {
+      return getName();
+    }
+  }
+
+  /**
+   * Aspect wrapper class
+   */
+  public class Aspect extends QNameBean {
+
+    private static final long serialVersionUID = -6448182941386934326L;
+
+    public Aspect(QName name) {
+      super(name);
+    }
+  }
 }

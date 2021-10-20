@@ -41,84 +41,87 @@ import org.springframework.aop.framework.ProxyFactoryBean;
  *
  * @author Roy Wetherall
  */
-public class RMActionProxyFactoryBean extends ProxyFactoryBean
-{
-    private static final long serialVersionUID = 539749542853266449L;
+public class RMActionProxyFactoryBean extends ProxyFactoryBean {
 
-    /** Runtime action service */
-    protected RuntimeActionService runtimeActionService;
+  private static final long serialVersionUID = 539749542853266449L;
 
-    /** Records management action service */
-    protected RecordsManagementActionService recordsManagementActionService;
+  /** Runtime action service */
+  protected RuntimeActionService runtimeActionService;
 
-    /** Records management audit service */
-    protected RecordsManagementAuditService recordsManagementAuditService;
+  /** Records management action service */
+  protected RecordsManagementActionService recordsManagementActionService;
 
-    /** transaction service */
-    private TransactionService transactionService;
+  /** Records management audit service */
+  protected RecordsManagementAuditService recordsManagementAuditService;
 
-    /**
-     * Set action service
-     *
-     * @param runtimeActionService
-     */
-    public void setRuntimeActionService(RuntimeActionService runtimeActionService)
-    {
-        this.runtimeActionService = runtimeActionService;
-    }
+  /** transaction service */
+  private TransactionService transactionService;
 
-    /**
-     * Set records management service
-     *
-     * @param recordsManagementActionService
-     */
-    public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
-    {
-        this.recordsManagementActionService = recordsManagementActionService;
-    }
+  /**
+   * Set action service
+   *
+   * @param runtimeActionService
+   */
+  public void setRuntimeActionService(
+    RuntimeActionService runtimeActionService
+  ) {
+    this.runtimeActionService = runtimeActionService;
+  }
 
-    /**
-     * Set records management service
-     *
-     * @param recordsManagementAuditService
-     */
-    public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
-    {
-        this.recordsManagementAuditService = recordsManagementAuditService;
-    }
+  /**
+   * Set records management service
+   *
+   * @param recordsManagementActionService
+   */
+  public void setRecordsManagementActionService(
+    RecordsManagementActionService recordsManagementActionService
+  ) {
+    this.recordsManagementActionService = recordsManagementActionService;
+  }
 
-    /**
-     * @param transactionService    transaction service
-     * @since 2.4.a
-     */
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+  /**
+   * Set records management service
+   *
+   * @param recordsManagementAuditService
+   */
+  public void setRecordsManagementAuditService(
+    RecordsManagementAuditService recordsManagementAuditService
+  ) {
+    this.recordsManagementAuditService = recordsManagementAuditService;
+  }
 
-    /**
-     * Register the action
-     */
-    public void registerAction()
-    {
-        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
-        {
-            public Void doWork()
-            {
-                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-                {
-                    public Void execute() throws Throwable
-                    {
-                        RecordsManagementAction action = (RecordsManagementAction)getObject();
-                        recordsManagementActionService.register(action);
+  /**
+   * @param transactionService    transaction service
+   * @since 2.4.a
+   */
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 
-                        return null;
-                    }
-                });
+  /**
+   * Register the action
+   */
+  public void registerAction() {
+    AuthenticationUtil.runAs(
+      new AuthenticationUtil.RunAsWork<Void>() {
+        public Void doWork() {
+          transactionService
+            .getRetryingTransactionHelper()
+            .doInTransaction(
+              new RetryingTransactionCallback<Void>() {
+                public Void execute() throws Throwable {
+                  RecordsManagementAction action = (RecordsManagementAction) getObject();
+                  recordsManagementActionService.register(action);
 
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+                  return null;
+                }
+              }
+            );
 
-    }
+          return null;
+        }
+      },
+      AuthenticationUtil.getSystemUserName()
+    );
+  }
 }

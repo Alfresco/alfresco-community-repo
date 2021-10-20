@@ -46,59 +46,75 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class DictionaryBootstrapPostProcessorUnitTest extends BaseUnitTest
-{
-    /** bean id's */
-    private static final String BEAN_SITESERVICE_BOOTSTRAP = "siteService_dictionaryBootstrap";
-    private static final String BEAN_RM_DICTIONARY_BOOTSTRAP = "org_alfresco_module_rm_dictionaryBootstrap";
+public class DictionaryBootstrapPostProcessorUnitTest extends BaseUnitTest {
 
-    @Mock private ConfigurableListableBeanFactory mockedBeanFactory;
-    @Mock private BeanDefinition mockedBeanDefinition;
+  /** bean id's */
+  private static final String BEAN_SITESERVICE_BOOTSTRAP =
+    "siteService_dictionaryBootstrap";
+  private static final String BEAN_RM_DICTIONARY_BOOTSTRAP =
+    "org_alfresco_module_rm_dictionaryBootstrap";
 
-    @InjectMocks private DictionaryBootstrapPostProcessor postProcessor;
+  @Mock
+  private ConfigurableListableBeanFactory mockedBeanFactory;
 
-    /**
-     * given the bean factory does not contain the site service bootstrap bean then ensure that it is
-     * not added as a dependency
-     */
-    @Test
-    public void noSiteServiceBootstrapBeanAvailable()
-    {
-        // === given ====
-        doReturn(false).when(mockedBeanFactory).containsBean(BEAN_SITESERVICE_BOOTSTRAP);
+  @Mock
+  private BeanDefinition mockedBeanDefinition;
 
-        // === when ===
-        postProcessor.postProcessBeanFactory(mockedBeanFactory);
+  @InjectMocks
+  private DictionaryBootstrapPostProcessor postProcessor;
 
-        // === then ===
-        verify(mockedBeanFactory, times(1)).containsBean(BEAN_SITESERVICE_BOOTSTRAP);
-        verifyNoMoreInteractions(mockedBeanFactory);
-        verifyZeroInteractions(mockedBeanDefinition);
-    }
+  /**
+   * given the bean factory does not contain the site service bootstrap bean then ensure that it is
+   * not added as a dependency
+   */
+  @Test
+  public void noSiteServiceBootstrapBeanAvailable() {
+    // === given ====
+    doReturn(false)
+      .when(mockedBeanFactory)
+      .containsBean(BEAN_SITESERVICE_BOOTSTRAP);
 
-    /**
-     * given that the site service bootstrap bean is contained within the bean factory, ensure that
-     * it is added as a dependency
-     */
-    @Test
-    public void siteServiceBootstrapBeanAvailable()
-    {
-        // === given ====
-        doReturn(true).when(mockedBeanFactory).containsBean(BEAN_SITESERVICE_BOOTSTRAP);
-        doReturn(true).when(mockedBeanFactory).containsBean(BEAN_RM_DICTIONARY_BOOTSTRAP);
-        doReturn(mockedBeanDefinition).when(mockedBeanFactory).getBeanDefinition(BEAN_RM_DICTIONARY_BOOTSTRAP);
+    // === when ===
+    postProcessor.postProcessBeanFactory(mockedBeanFactory);
 
-        // === when ===
-        postProcessor.postProcessBeanFactory(mockedBeanFactory);
+    // === then ===
+    verify(mockedBeanFactory, times(1))
+      .containsBean(BEAN_SITESERVICE_BOOTSTRAP);
+    verifyNoMoreInteractions(mockedBeanFactory);
+    verifyZeroInteractions(mockedBeanDefinition);
+  }
 
-        // === then ===
-        verify(mockedBeanFactory, times(1)).containsBean(BEAN_SITESERVICE_BOOTSTRAP);
-        verify(mockedBeanFactory, times(1)).containsBean(BEAN_RM_DICTIONARY_BOOTSTRAP);
+  /**
+   * given that the site service bootstrap bean is contained within the bean factory, ensure that
+   * it is added as a dependency
+   */
+  @Test
+  public void siteServiceBootstrapBeanAvailable() {
+    // === given ====
+    doReturn(true)
+      .when(mockedBeanFactory)
+      .containsBean(BEAN_SITESERVICE_BOOTSTRAP);
+    doReturn(true)
+      .when(mockedBeanFactory)
+      .containsBean(BEAN_RM_DICTIONARY_BOOTSTRAP);
+    doReturn(mockedBeanDefinition)
+      .when(mockedBeanFactory)
+      .getBeanDefinition(BEAN_RM_DICTIONARY_BOOTSTRAP);
 
-        verify(mockedBeanFactory, times(1)).getBeanDefinition(BEAN_RM_DICTIONARY_BOOTSTRAP);
-        verify(mockedBeanDefinition, times(1)).setDependsOn(new String[]{BEAN_SITESERVICE_BOOTSTRAP});
+    // === when ===
+    postProcessor.postProcessBeanFactory(mockedBeanFactory);
 
-        verifyNoMoreInteractions(mockedBeanFactory, mockedBeanDefinition);
+    // === then ===
+    verify(mockedBeanFactory, times(1))
+      .containsBean(BEAN_SITESERVICE_BOOTSTRAP);
+    verify(mockedBeanFactory, times(1))
+      .containsBean(BEAN_RM_DICTIONARY_BOOTSTRAP);
 
-    }
+    verify(mockedBeanFactory, times(1))
+      .getBeanDefinition(BEAN_RM_DICTIONARY_BOOTSTRAP);
+    verify(mockedBeanDefinition, times(1))
+      .setDependsOn(new String[] { BEAN_SITESERVICE_BOOTSTRAP });
+
+    verifyNoMoreInteractions(mockedBeanFactory, mockedBeanDefinition);
+  }
 }

@@ -29,8 +29,8 @@ package org.alfresco.rest.rm.community.utils;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.DOD5015;
 import static org.alfresco.rest.rm.community.model.site.RMSiteCompliance.STANDARD;
 
-import org.alfresco.rest.rm.community.model.site.RMSiteCompliance;
 import org.alfresco.rest.rm.community.model.site.RMSite;
+import org.alfresco.rest.rm.community.model.site.RMSiteCompliance;
 
 /**
  * Utility class for the RM Site
@@ -38,10 +38,9 @@ import org.alfresco.rest.rm.community.model.site.RMSite;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RMSiteUtil
-{
-    private RMSiteUtil()
-    {
+public class RMSiteUtil {
+
+    private RMSiteUtil() {
         // Intentionally blank
     }
 
@@ -59,9 +58,17 @@ public class RMSiteUtil
      * @param description The site description
      * @return The {@link RMSite} with the given details
      */
-    public static RMSite createRMSiteModel(RMSiteCompliance compliance, String title, String description)
-    {
-        return RMSite.builder().compliance(compliance).title(title).description(description).build();
+    public static RMSite createRMSiteModel(
+        RMSiteCompliance compliance,
+        String title,
+        String description
+    ) {
+        return RMSite
+            .builder()
+            .compliance(compliance)
+            .title(title)
+            .description(description)
+            .build();
     }
 
     /**
@@ -70,8 +77,7 @@ public class RMSiteUtil
      * @param compliance The RM site compliance
      * @return The {@link RMSite} with the given details
      */
-    private static RMSite createRMSiteModel(RMSiteCompliance compliance)
-    {
+    private static RMSite createRMSiteModel(RMSiteCompliance compliance) {
         return createRMSiteModel(compliance, RM_TITLE, RM_DESCRIPTION);
     }
 
@@ -80,8 +86,7 @@ public class RMSiteUtil
      *
      * @return The standard RM site
      */
-    public static RMSite createStandardRMSiteModel()
-    {
+    public static RMSite createStandardRMSiteModel() {
         return createRMSiteModel(STANDARD);
     }
 
@@ -90,8 +95,7 @@ public class RMSiteUtil
      *
      * @return The DOD5015 compliance RM site
      */
-    public static RMSite createDOD5015RMSiteModel()
-    {
+    public static RMSite createDOD5015RMSiteModel() {
         return createRMSiteModel(DOD5015);
     }
 }

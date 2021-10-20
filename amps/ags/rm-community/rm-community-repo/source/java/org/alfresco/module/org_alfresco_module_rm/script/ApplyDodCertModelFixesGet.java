@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
@@ -71,147 +70,164 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author neilm
  */
 @Deprecated
-public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
-                                  implements RecordsManagementModel
-{
-    private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef("workspace://SpacesStore/records_management_custom_model");
-    private static final String RMC_CUSTOM_RECORD_SERIES_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordSeriesProperties";
-    private static final String RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordCategoryProperties";
-    private static final String RMC_CUSTOM_RECORD_FOLDER_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordFolderProperties";
-    private static final String RMC_CUSTOM_RECORD_PROPERTIES = RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordProperties";
+public class ApplyDodCertModelFixesGet
+  extends DeclarativeWebScript
+  implements RecordsManagementModel {
 
-    /** Logger */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ApplyDodCertModelFixesGet.class);
+  private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef(
+    "workspace://SpacesStore/records_management_custom_model"
+  );
+  private static final String RMC_CUSTOM_RECORD_SERIES_PROPERTIES =
+    RecordsManagementCustomModel.RM_CUSTOM_PREFIX +
+    ":customRecordSeriesProperties";
+  private static final String RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES =
+    RecordsManagementCustomModel.RM_CUSTOM_PREFIX +
+    ":customRecordCategoryProperties";
+  private static final String RMC_CUSTOM_RECORD_FOLDER_PROPERTIES =
+    RecordsManagementCustomModel.RM_CUSTOM_PREFIX +
+    ":customRecordFolderProperties";
+  private static final String RMC_CUSTOM_RECORD_PROPERTIES =
+    RecordsManagementCustomModel.RM_CUSTOM_PREFIX + ":customRecordProperties";
 
-    private ContentService contentService;
-    private NamespaceService namespaceService;
+  /** Logger */
+  private static final Logger LOGGER = LoggerFactory.getLogger(
+    ApplyDodCertModelFixesGet.class
+  );
 
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
+  private ContentService contentService;
+  private NamespaceService namespaceService;
+
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
+
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
+
+  @Override
+  public Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    LOGGER.info(
+      "Applying webscript-based patches to RM custom model in the repo."
+    );
+
+    M2Model customModel = readCustomContentModel();
+    if (customModel == null) {
+      final String msg = "Custom content model could not be read";
+      LOGGER.error(msg);
+      throw new AlfrescoRuntimeException(msg);
     }
 
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
+    String customAspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(
+      namespaceService
+    );
+    M2Aspect customAssocsAspect = customModel.getAspect(customAspectName);
+
+    if (customAssocsAspect == null) {
+      final String msg = "Unknown aspect: " + customAspectName;
+      LOGGER.error(msg);
+      throw new AlfrescoRuntimeException(msg);
     }
 
-    @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        LOGGER.info("Applying webscript-based patches to RM custom model in the repo.");
+    // MOB-1573. All custom references should have many-many multiplicity.
+    LOGGER.info(
+      "MOB-1573. All custom references should have many-many multiplicity."
+    );
 
-        M2Model customModel = readCustomContentModel();
-        if (customModel == null)
-        {
-            final String msg = "Custom content model could not be read";
-            LOGGER.error(msg);
-            throw new AlfrescoRuntimeException(msg);
-        }
-
-        String customAspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(namespaceService);
-        M2Aspect customAssocsAspect = customModel.getAspect(customAspectName);
-
-        if (customAssocsAspect == null)
-        {
-            final String msg = "Unknown aspect: " + customAspectName;
-            LOGGER.error(msg);
-            throw new AlfrescoRuntimeException(msg);
-        }
-
-        // MOB-1573. All custom references should have many-many multiplicity.
-        LOGGER.info("MOB-1573. All custom references should have many-many multiplicity.");
-
-        for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations())
-        {
-            classAssoc.setSourceMany(true);
-            classAssoc.setTargetMany(true);
-
-        }
-
-        //MOB-1621. Custom fields should be created as untokenized by default.
-        LOGGER.info("MOB-1621. Custom fields should be created as untokenized by default.");
-
-        List<String> allCustomPropertiesAspects = new ArrayList<>(4);
-        allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_SERIES_PROPERTIES);
-        allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES);
-        allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_FOLDER_PROPERTIES);
-        allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_PROPERTIES);
-        for (String aspectName : allCustomPropertiesAspects)
-        {
-            M2Aspect aspectObj = customModel.getAspect(aspectName);
-            List<M2Property> customProperties = aspectObj.getProperties();
-            for (M2Property propertyObj : customProperties)
-            {
-                propertyObj.setIndexed(true);
-                propertyObj.setIndexedAtomically(true);
-                propertyObj.setStoredInIndex(false);
-                propertyObj.setIndexTokenisationMode(IndexTokenisationMode.FALSE);
-            }
-        }
-
-
-        writeCustomContentModel(customModel);
-
-        LOGGER.info("Completed application of webscript-based patches to RM custom model in the repo.");
-
-        Map<String, Object> model = new HashMap<>(1, 1.0f);
-    	model.put("success", true);
-
-        return model;
+    for (M2ClassAssociation classAssoc : customAssocsAspect.getAssociations()) {
+      classAssoc.setSourceMany(true);
+      classAssoc.setTargetMany(true);
     }
 
-    private M2Model readCustomContentModel()
-    {
-        ContentReader reader = this.contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT);
+    //MOB-1621. Custom fields should be created as untokenized by default.
+    LOGGER.info(
+      "MOB-1621. Custom fields should be created as untokenized by default."
+    );
 
-        if (!reader.exists()) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
-
-        InputStream contentIn = null;
-        M2Model deserializedModel = null;
-        try
-        {
-            contentIn = reader.getContentInputStream();
-            deserializedModel = M2Model.createModel(contentIn);
-        }
-        finally
-        {
-            try
-            {
-                if (contentIn != null)
-                {
-                    contentIn.close();
-                }
-            }
-            catch (IOException ignored)
-            {
-                // Intentionally empty.`
-            }
-        }
-        return deserializedModel;
+    List<String> allCustomPropertiesAspects = new ArrayList<>(4);
+    allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_SERIES_PROPERTIES);
+    allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_CATEGORY_PROPERTIES);
+    allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_FOLDER_PROPERTIES);
+    allCustomPropertiesAspects.add(RMC_CUSTOM_RECORD_PROPERTIES);
+    for (String aspectName : allCustomPropertiesAspects) {
+      M2Aspect aspectObj = customModel.getAspect(aspectName);
+      List<M2Property> customProperties = aspectObj.getProperties();
+      for (M2Property propertyObj : customProperties) {
+        propertyObj.setIndexed(true);
+        propertyObj.setIndexedAtomically(true);
+        propertyObj.setStoredInIndex(false);
+        propertyObj.setIndexTokenisationMode(IndexTokenisationMode.FALSE);
+      }
     }
 
-    private void writeCustomContentModel(M2Model deserializedModel)
-    {
-        ContentWriter writer = this.contentService.getWriter(RM_CUSTOM_MODEL_NODE_REF,
-                                                             ContentModel.TYPE_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_XML);
-        writer.setEncoding("UTF-8");
+    writeCustomContentModel(customModel);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        deserializedModel.toXML(baos);
+    LOGGER.info(
+      "Completed application of webscript-based patches to RM custom model in the repo."
+    );
 
-        String updatedModelXml;
-        try
-        {
-            updatedModelXml = baos.toString("UTF-8");
-            writer.putContent(updatedModelXml);
-            // putContent closes all resources.
-            // so we don't have to.
-        } catch (UnsupportedEncodingException uex)
-        {
-            throw new AlfrescoRuntimeException("Exception when writing custom model xml.", uex);
-        }
+    Map<String, Object> model = new HashMap<>(1, 1.0f);
+    model.put("success", true);
+
+    return model;
+  }
+
+  private M2Model readCustomContentModel() {
+    ContentReader reader =
+      this.contentService.getReader(
+          RM_CUSTOM_MODEL_NODE_REF,
+          ContentModel.TYPE_CONTENT
+        );
+
+    if (!reader.exists()) {
+      throw new AlfrescoRuntimeException("RM CustomModel has no content.");
     }
+
+    InputStream contentIn = null;
+    M2Model deserializedModel = null;
+    try {
+      contentIn = reader.getContentInputStream();
+      deserializedModel = M2Model.createModel(contentIn);
+    } finally {
+      try {
+        if (contentIn != null) {
+          contentIn.close();
+        }
+      } catch (IOException ignored) {
+        // Intentionally empty.`
+      }
+    }
+    return deserializedModel;
+  }
+
+  private void writeCustomContentModel(M2Model deserializedModel) {
+    ContentWriter writer =
+      this.contentService.getWriter(
+          RM_CUSTOM_MODEL_NODE_REF,
+          ContentModel.TYPE_CONTENT,
+          true
+        );
+    writer.setMimetype(MimetypeMap.MIMETYPE_XML);
+    writer.setEncoding("UTF-8");
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    deserializedModel.toXML(baos);
+
+    String updatedModelXml;
+    try {
+      updatedModelXml = baos.toString("UTF-8");
+      writer.putContent(updatedModelXml);
+      // putContent closes all resources.
+      // so we don't have to.
+    } catch (UnsupportedEncodingException uex) {
+      throw new AlfrescoRuntimeException(
+        "Exception when writing custom model xml.",
+        uex
+      );
+    }
+  }
 }

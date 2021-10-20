@@ -27,9 +27,7 @@
 package org.alfresco.messaging.camel.configuration;
 
 import java.security.SecureRandom;
-
 import javax.jms.ConnectionFactory;
-
 import org.alfresco.encryption.AlfrescoKeyStore;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
@@ -46,51 +44,52 @@ import org.springframework.context.annotation.Configuration;
  */
 
 @Configuration
-public class ConnectionFactoryConfiguration
-{
+public class ConnectionFactoryConfiguration {
 
-    @Value("${messaging.broker.url}")
-    private String brokerUrl = "notset"; //defaults to an invalid notset value
+  @Value("${messaging.broker.url}")
+  private String brokerUrl = "notset"; //defaults to an invalid notset value
 
-    @Value("${messaging.broker.ssl}")
-    private boolean useSSL = false; //defaults to false
+  @Value("${messaging.broker.ssl}")
+  private boolean useSSL = false; //defaults to false
 
-    @Autowired(required = false)
-    @Qualifier("ssl.keyStore")
-    private AlfrescoKeyStore keyStore;
+  @Autowired(required = false)
+  @Qualifier("ssl.keyStore")
+  private AlfrescoKeyStore keyStore;
 
-    @Autowired(required = false)
-    @Qualifier("ssl.trustStore")
-    private AlfrescoKeyStore trustStore;
+  @Autowired(required = false)
+  @Qualifier("ssl.trustStore")
+  private AlfrescoKeyStore trustStore;
 
-    @Value("${messaging.broker.username}")
-    private String username;
+  @Value("${messaging.broker.username}")
+  private String username;
 
-    @Value("${messaging.broker.password}")
-    private String password;
+  @Value("${messaging.broker.password}")
+  private String password;
 
-    @Bean
-    public ConnectionFactory activeMqConnectionFactory()
-    {
-        if (useSSL)
-        {
-            return createSecureConnectionFactory();
-        }
-        //Default is not SSL
-        return createConnectionFactory();
+  @Bean
+  public ConnectionFactory activeMqConnectionFactory() {
+    if (useSSL) {
+      return createSecureConnectionFactory();
     }
+    //Default is not SSL
+    return createConnectionFactory();
+  }
 
-    protected ConnectionFactory createConnectionFactory()
-    {
-        return new ActiveMQConnectionFactory(username, password, brokerUrl);
-    }
+  protected ConnectionFactory createConnectionFactory() {
+    return new ActiveMQConnectionFactory(username, password, brokerUrl);
+  }
 
-    protected ConnectionFactory createSecureConnectionFactory()
-    {
-        ActiveMQSslConnectionFactory factory = new ActiveMQSslConnectionFactory(brokerUrl);
-        factory.setKeyAndTrustManagers(keyStore.createKeyManagers(), trustStore.createTrustManagers(), new SecureRandom());
-        factory.setUserName(username);
-        factory.setPassword(password);
-        return factory;
-    }
+  protected ConnectionFactory createSecureConnectionFactory() {
+    ActiveMQSslConnectionFactory factory = new ActiveMQSslConnectionFactory(
+      brokerUrl
+    );
+    factory.setKeyAndTrustManagers(
+      keyStore.createKeyManagers(),
+      trustStore.createTrustManagers(),
+      new SecureRandom()
+    );
+    factory.setUserName(username);
+    factory.setPassword(password);
+    return factory;
+  }
 }

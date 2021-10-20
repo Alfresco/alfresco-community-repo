@@ -20,67 +20,64 @@ package org.alfresco.util.cache;
 
 /**
  * A generic event with the cache id and affected tenant
- * 
+ *
  * @author Andy
  */
-public abstract class AbstractRefreshableCacheEvent implements RefreshableCacheEvent
-{
-    private static final long serialVersionUID = 1324638640132648062L;
+public abstract class AbstractRefreshableCacheEvent
+  implements RefreshableCacheEvent {
 
-    private String cacheId;
-    private String key;
+  private static final long serialVersionUID = 1324638640132648062L;
 
-    AbstractRefreshableCacheEvent(String cacheId, String key)
-    {
-        this.cacheId = cacheId;
-        this.key = key;
-    }
+  private String cacheId;
+  private String key;
 
-    @Override
-    public String getCacheId()
-    {
-        return cacheId;
-    }
+  AbstractRefreshableCacheEvent(String cacheId, String key) {
+    this.cacheId = cacheId;
+    this.key = key;
+  }
 
-    @Override
-    public String getKey()
-    {
-        return key;
-    }
+  @Override
+  public String getCacheId() {
+    return cacheId;
+  }
 
-    @Override
-    public String toString()
-    {
-        return "AbstractRefreshableCacheEvent [cacheId=" + cacheId + ", tenantId=" + key + "]";
-    }
+  @Override
+  public String getKey() {
+    return key;
+  }
 
-    @Override
-    public int hashCode()
-    {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((cacheId == null) ? 0 : cacheId.hashCode());
-        result = prime * result + ((key == null) ? 0 : key.hashCode());
-        return result;
-    }
+  @Override
+  public String toString() {
+    return (
+      "AbstractRefreshableCacheEvent [cacheId=" +
+      cacheId +
+      ", tenantId=" +
+      key +
+      "]"
+    );
+  }
 
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj) return true;
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        AbstractRefreshableCacheEvent other = (AbstractRefreshableCacheEvent) obj;
-        if (cacheId == null)
-        {
-            if (other.cacheId != null) return false;
-        }
-        else if (!cacheId.equals(other.cacheId)) return false;
-        if (key == null)
-        {
-            if (other.key != null) return false;
-        }
-        else if (!key.equals(other.key)) return false;
-        return true;
-    }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((cacheId == null) ? 0 : cacheId.hashCode());
+    result = prime * result + ((key == null) ? 0 : key.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    AbstractRefreshableCacheEvent other = (AbstractRefreshableCacheEvent) obj;
+    if (cacheId == null) {
+      if (other.cacheId != null) return false;
+    } else if (!cacheId.equals(other.cacheId)) return false;
+    if (key == null) {
+      if (other.key != null) return false;
+    } else if (!key.equals(other.key)) return false;
+    return true;
+  }
 }

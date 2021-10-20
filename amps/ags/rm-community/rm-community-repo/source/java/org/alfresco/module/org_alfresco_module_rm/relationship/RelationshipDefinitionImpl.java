@@ -36,89 +36,86 @@ import static org.alfresco.util.ParameterCheck.mandatoryString;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RelationshipDefinitionImpl implements RelationshipDefinition
-{
-    /** The unique name of the relationship definition */
-    private String uniqueName;
+public class RelationshipDefinitionImpl implements RelationshipDefinition {
 
-    /** The type of the relationship definition */
-    private RelationshipType type;
+  /** The unique name of the relationship definition */
+  private String uniqueName;
 
-    /** The display name of the relationship definition */
-    private RelationshipDisplayName displayName;
+  /** The type of the relationship definition */
+  private RelationshipType type;
 
-    /**
-     * Constructor for creating a relationship definition
-     *
-     * @param uniqueName The unique name of the relationship definition
-     * @param type The type of the relationship definition
-     * @param displayName The display name of the relationship definition
-     */
-    public RelationshipDefinitionImpl(String uniqueName, RelationshipType type, RelationshipDisplayName displayName)
-    {
-        mandatoryString("uniqueName", uniqueName);
-        mandatory("type", type);
-        mandatory("displayName", displayName);
+  /** The display name of the relationship definition */
+  private RelationshipDisplayName displayName;
 
-        setUniqueName(uniqueName);
-        setType(type);
-        setDisplayName(displayName);
-    }
+  /**
+   * Constructor for creating a relationship definition
+   *
+   * @param uniqueName The unique name of the relationship definition
+   * @param type The type of the relationship definition
+   * @param displayName The display name of the relationship definition
+   */
+  public RelationshipDefinitionImpl(
+    String uniqueName,
+    RelationshipType type,
+    RelationshipDisplayName displayName
+  ) {
+    mandatoryString("uniqueName", uniqueName);
+    mandatory("type", type);
+    mandatory("displayName", displayName);
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getUniqueName()
-     */
-    @Override
-    public String getUniqueName()
-    {
-        return this.uniqueName;
-    }
+    setUniqueName(uniqueName);
+    setType(type);
+    setDisplayName(displayName);
+  }
 
-    /**
-     * Sets the name of the relationship definition
-     *
-     * @param uniqueName The name of the relationship definition
-     */
-    private void setUniqueName(String uniqueName)
-    {
-        this.uniqueName = uniqueName;
-    }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getUniqueName()
+   */
+  @Override
+  public String getUniqueName() {
+    return this.uniqueName;
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getType()
-     */
-    @Override
-    public RelationshipType getType()
-    {
-        return this.type;
-    }
+  /**
+   * Sets the name of the relationship definition
+   *
+   * @param uniqueName The name of the relationship definition
+   */
+  private void setUniqueName(String uniqueName) {
+    this.uniqueName = uniqueName;
+  }
 
-    /**
-     * Sets the type of the relationship definition
-     *
-     * @param type The type of the relationship definition
-     */
-    private void setType(RelationshipType type)
-    {
-        this.type = type;
-    }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getType()
+   */
+  @Override
+  public RelationshipType getType() {
+    return this.type;
+  }
 
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getDisplayName()
-     */
-    @Override
-    public RelationshipDisplayName getDisplayName()
-    {
-        return this.displayName;
-    }
+  /**
+   * Sets the type of the relationship definition
+   *
+   * @param type The type of the relationship definition
+   */
+  private void setType(RelationshipType type) {
+    this.type = type;
+  }
 
-    /**
-     * Sets the display name of the relationship definition
-     *
-     * @param displayName The display name of the relationship definition
-     */
-    private void setDisplayName(RelationshipDisplayName displayName)
-    {
-        this.displayName = displayName;
-    }
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition#getDisplayName()
+   */
+  @Override
+  public RelationshipDisplayName getDisplayName() {
+    return this.displayName;
+  }
+
+  /**
+   * Sets the display name of the relationship definition
+   *
+   * @param displayName The display name of the relationship definition
+   */
+  private void setDisplayName(RelationshipDisplayName displayName) {
+    this.displayName = displayName;
+  }
 }

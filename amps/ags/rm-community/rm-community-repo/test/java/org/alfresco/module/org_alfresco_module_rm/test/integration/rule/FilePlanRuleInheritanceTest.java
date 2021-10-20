@@ -28,7 +28,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.rule;
 
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.action.Action;
@@ -39,251 +38,246 @@ import org.springframework.extensions.webscripts.GUID;
 
 /**
  * File plan rule inheritance test
- * 
+ *
  * @author Roy Wetherall
  * @since 2.4
  */
-public class FilePlanRuleInheritanceTest extends BaseRMTestCase
-{
-    private RuleService ruleService;
-    
-    @Override
-    protected void initServices()
-    {
-        super.initServices();
-        ruleService = (RuleService)applicationContext.getBean("RuleService");
-    }
-    
-    @Override
-    protected boolean isRMSiteTest()
-    {
-        return false;
-    }
-    
-    private NodeRef createFilePlan()
-    {
-        return filePlanService.createFilePlan(folder, "My File Plan");
-    }
-    
-    /** 
-     * Given that a single rule is set on the parent folder of the file plan root
-     * And that it is configured to apply to children
-     * When we ask for the rules on the file plan, including those inherited
-     * Then it will not include those defined on the parent folder
-     */
-    public void testFilePlanDoesNotInheritRulesFromParentFolder()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef filePlan = null;
-            private Rule rule = null;
-            private List<Rule> rules = null;
-            
-            public void given()
-            {
-                filePlan = createFilePlan();
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
-            }
+public class FilePlanRuleInheritanceTest extends BaseRMTestCase {
 
-            public void when()
-            {
-                // save rule on file plan root parent folder
-                ruleService.saveRule(folder, rule);
-            }
+  private RuleService ruleService;
 
-            public void then()
-            {
-                // get rules, including those inherited
-                rules = ruleService.getRules(filePlan, true);
+  @Override
+  protected void initServices() {
+    super.initServices();
+    ruleService = (RuleService) applicationContext.getBean("RuleService");
+  }
 
-                // rules aren't inhreited from file plan root parent folder
-                assertEquals(0, rules.size());
-            }
-        }); 
-    }
-    
-    /** 
-     *  Given that a single rule is set on the file plan root
-     *  And that it is configured to apply to children
-     *  When we ask for the rules on the unfiled record container including those inherited 
-     *  Then it will not include those defined on the file plan root
-     *  
-     *  See https://issues.alfresco.com/jira/browse/RM-3148
-     */
-    public void testFilePlanRulesInheritedInUnfiledContainer()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef filePlan = null;
-            private List<Rule> rules = null;
-            private Rule rule = null;
+  @Override
+  protected boolean isRMSiteTest() {
+    return false;
+  }
 
-            public void given()
-            {
-                filePlan = createFilePlan();
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
-            }
+  private NodeRef createFilePlan() {
+    return filePlanService.createFilePlan(folder, "My File Plan");
+  }
 
-            public void when()
-            {
-                // save rule on file plan root
-                ruleService.saveRule(filePlan, rule);
-            }
+  /**
+   * Given that a single rule is set on the parent folder of the file plan root
+   * And that it is configured to apply to children
+   * When we ask for the rules on the file plan, including those inherited
+   * Then it will not include those defined on the parent folder
+   */
+  public void testFilePlanDoesNotInheritRulesFromParentFolder() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef filePlan = null;
+        private Rule rule = null;
+        private List<Rule> rules = null;
 
-            public void then()
-            {
-                // get rules, including those inherited
-                NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-                rules = ruleService.getRules(unfiledRecordContainer, true);
+        public void given() {
+          filePlan = createFilePlan();
 
-                // rules aren't inhreited from file plan root
-                assertEquals(0, rules.size());
-            }
-        }); 
-    }
-    
-    /** 
-     *  Given that a single rule is set on the file plan root
-     *  And that it is configured to apply to children
-     *  When we ask for the rules on the hold container including those inherited 
-     *  Then it will not include those defined on the file plan root
-     */
-    public void testFilePlanRulesInheritedInHoldContainer()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef filePlan = null;
-            private List<Rule> rules = null;
-            private Rule rule = null;
+          // create a rule that applies to childre
+          Action completeRecordAction = actionService.createAction(
+            DeclareRecordAction.NAME
+          );
+          rule = new Rule();
+          rule.setRuleType("inbound");
+          rule.setAction(completeRecordAction);
+          rule.applyToChildren(true);
+        }
 
-            public void given()
-            {
-                filePlan = createFilePlan();
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
-            }
+        public void when() {
+          // save rule on file plan root parent folder
+          ruleService.saveRule(folder, rule);
+        }
 
-            public void when()
-            {
-                // save rule on file plan root
-                ruleService.saveRule(filePlan, rule);
-            }
+        public void then() {
+          // get rules, including those inherited
+          rules = ruleService.getRules(filePlan, true);
 
-            public void then()
-            {
-                // get rules, including those inherited
-                NodeRef container = filePlanService.getHoldContainer(filePlan);
-                rules = ruleService.getRules(container, true);
+          // rules aren't inhreited from file plan root parent folder
+          assertEquals(0, rules.size());
+        }
+      }
+    );
+  }
 
-                // rules aren't inhreited from file plan root
-                assertEquals(0, rules.size());
-            }
-        }); 
-    }
-    
-    /** 
-     *  Given that a single rule is set on the file plan root
-     *  And that it is configured to apply to children
-     *  When we ask for the rules on the transfer container including those inherited 
-     *  Then it will not include those defined on the file plan root
-     */
-    public void testFilePlanRulesInheritedInTransferContainer()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef filePlan = null;
-            private List<Rule> rules = null;
-            private Rule rule = null;
+  /**
+   *  Given that a single rule is set on the file plan root
+   *  And that it is configured to apply to children
+   *  When we ask for the rules on the unfiled record container including those inherited
+   *  Then it will not include those defined on the file plan root
+   *
+   *  See https://issues.alfresco.com/jira/browse/RM-3148
+   */
+  public void testFilePlanRulesInheritedInUnfiledContainer() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef filePlan = null;
+        private List<Rule> rules = null;
+        private Rule rule = null;
 
-            public void given()
-            {
-                filePlan = createFilePlan();
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
-            }
+        public void given() {
+          filePlan = createFilePlan();
 
-            public void when()
-            {
-                // save rule on file plan root
-                ruleService.saveRule(filePlan, rule);
-            }
+          // create a rule that applies to childre
+          Action completeRecordAction = actionService.createAction(
+            DeclareRecordAction.NAME
+          );
+          rule = new Rule();
+          rule.setRuleType("inbound");
+          rule.setAction(completeRecordAction);
+          rule.applyToChildren(true);
+        }
 
-            public void then()
-            {
-                // get rules, including those inherited
-                NodeRef container = filePlanService.getTransferContainer(filePlan);
-                rules = ruleService.getRules(container, true);
+        public void when() {
+          // save rule on file plan root
+          ruleService.saveRule(filePlan, rule);
+        }
 
-                // rules aren't inhreited from file plan root
-                assertEquals(0, rules.size());
-            }
-        }); 
-    }
-    
-    /** 
-     *  Given that a single rule is set on the file plan root
-     *  And that it is configured to apply to children
-     *  When we ask for the rules on a record category including those inherited 
-     *  Then it will include those defined on the file plan root
-     */
-    public void testFilePlanRulesInheritedOnRecordCategory()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef filePlan = null;
-            private NodeRef recordCategory = null;
-            private List<Rule> rules = null;
-            private Rule rule = null;
+        public void then() {
+          // get rules, including those inherited
+          NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(
+            filePlan
+          );
+          rules = ruleService.getRules(unfiledRecordContainer, true);
 
-            public void given()
-            {
-                filePlan = createFilePlan();
-                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
-            }
+          // rules aren't inhreited from file plan root
+          assertEquals(0, rules.size());
+        }
+      }
+    );
+  }
 
-            public void when()
-            {
-                // save rule on file plan root
-                ruleService.saveRule(filePlan, rule);
-            }
+  /**
+   *  Given that a single rule is set on the file plan root
+   *  And that it is configured to apply to children
+   *  When we ask for the rules on the hold container including those inherited
+   *  Then it will not include those defined on the file plan root
+   */
+  public void testFilePlanRulesInheritedInHoldContainer() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef filePlan = null;
+        private List<Rule> rules = null;
+        private Rule rule = null;
 
-            public void then()
-            {
-                // get rules, including those inherited
-                rules = ruleService.getRules(recordCategory, true);
+        public void given() {
+          filePlan = createFilePlan();
 
-                // rules aren't inhreited from file plan root
-                assertEquals(1, rules.size());
-            }
-        }); 
-    }
+          // create a rule that applies to childre
+          Action completeRecordAction = actionService.createAction(
+            DeclareRecordAction.NAME
+          );
+          rule = new Rule();
+          rule.setRuleType("inbound");
+          rule.setAction(completeRecordAction);
+          rule.applyToChildren(true);
+        }
+
+        public void when() {
+          // save rule on file plan root
+          ruleService.saveRule(filePlan, rule);
+        }
+
+        public void then() {
+          // get rules, including those inherited
+          NodeRef container = filePlanService.getHoldContainer(filePlan);
+          rules = ruleService.getRules(container, true);
+
+          // rules aren't inhreited from file plan root
+          assertEquals(0, rules.size());
+        }
+      }
+    );
+  }
+
+  /**
+   *  Given that a single rule is set on the file plan root
+   *  And that it is configured to apply to children
+   *  When we ask for the rules on the transfer container including those inherited
+   *  Then it will not include those defined on the file plan root
+   */
+  public void testFilePlanRulesInheritedInTransferContainer() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef filePlan = null;
+        private List<Rule> rules = null;
+        private Rule rule = null;
+
+        public void given() {
+          filePlan = createFilePlan();
+
+          // create a rule that applies to childre
+          Action completeRecordAction = actionService.createAction(
+            DeclareRecordAction.NAME
+          );
+          rule = new Rule();
+          rule.setRuleType("inbound");
+          rule.setAction(completeRecordAction);
+          rule.applyToChildren(true);
+        }
+
+        public void when() {
+          // save rule on file plan root
+          ruleService.saveRule(filePlan, rule);
+        }
+
+        public void then() {
+          // get rules, including those inherited
+          NodeRef container = filePlanService.getTransferContainer(filePlan);
+          rules = ruleService.getRules(container, true);
+
+          // rules aren't inhreited from file plan root
+          assertEquals(0, rules.size());
+        }
+      }
+    );
+  }
+
+  /**
+   *  Given that a single rule is set on the file plan root
+   *  And that it is configured to apply to children
+   *  When we ask for the rules on a record category including those inherited
+   *  Then it will include those defined on the file plan root
+   */
+  public void testFilePlanRulesInheritedOnRecordCategory() {
+    doBehaviourDrivenTest(
+      new BehaviourDrivenTest() {
+        private NodeRef filePlan = null;
+        private NodeRef recordCategory = null;
+        private List<Rule> rules = null;
+        private Rule rule = null;
+
+        public void given() {
+          filePlan = createFilePlan();
+          recordCategory =
+            filePlanService.createRecordCategory(filePlan, GUID.generate());
+
+          // create a rule that applies to childre
+          Action completeRecordAction = actionService.createAction(
+            DeclareRecordAction.NAME
+          );
+          rule = new Rule();
+          rule.setRuleType("inbound");
+          rule.setAction(completeRecordAction);
+          rule.applyToChildren(true);
+        }
+
+        public void when() {
+          // save rule on file plan root
+          ruleService.saveRule(filePlan, rule);
+        }
+
+        public void then() {
+          // get rules, including those inherited
+          rules = ruleService.getRules(recordCategory, true);
+
+          // rules aren't inhreited from file plan root
+          assertEquals(1, rules.size());
+        }
+      }
+    );
+  }
 }

@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.report;
 
 import java.io.Serializable;
 import java.util.Map;
-
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.QName;
@@ -41,26 +40,24 @@ import org.alfresco.service.namespace.QName;
  * @since 2.1
  */
 @AlfrescoPublicApi
-public interface Report
-{
-    /**
-     * @return  {@link QName} report type
-     */
-    QName getReportType();
+public interface Report {
+  /**
+   * @return  {@link QName} report type
+   */
+  QName getReportType();
 
-    /**
-     * @return  {@link String}  report name
-     */
-    String getReportName();
+  /**
+   * @return  {@link String}  report name
+   */
+  String getReportName();
 
-    /**
-     * @return  {@link Map}&lt;{@link QName},{@link Serializable}&gt;  report properties
-     */
-    Map<QName, Serializable> getReportProperties();
+  /**
+   * @return  {@link Map}&lt;{@link QName},{@link Serializable}&gt;  report properties
+   */
+  Map<QName, Serializable> getReportProperties();
 
-    /**
-     * @return {@link ContentReader}  content reader to report content
-     */
-    ContentReader getReportContent();
-
+  /**
+   * @return {@link ContentReader}  content reader to report content
+   */
+  ContentReader getReportContent();
 }

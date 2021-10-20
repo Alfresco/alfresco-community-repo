@@ -46,15 +46,14 @@ import org.alfresco.rest.rm.community.requests.RMModelRequest;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RMSiteAPI extends RMModelRequest
-{
+public class RMSiteAPI extends RMModelRequest {
+
     /**
      * Constructor
      *
      * @param rmRestWrapper RM REST Wrapper
      */
-    public RMSiteAPI(RMRestWrapper rmRestWrapper)
-    {
+    public RMSiteAPI(RMRestWrapper rmRestWrapper) {
         super(rmRestWrapper);
     }
 
@@ -70,12 +69,9 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public RMSite getSite()
-    {
-        return getRmRestWrapper().processModel(RMSite.class, simpleRequest(
-                GET,
-                "gs-sites/rm"
-        ));
+    public RMSite getSite() {
+        return getRmRestWrapper()
+            .processModel(RMSite.class, simpleRequest(GET, "gs-sites/rm"));
     }
 
     /**
@@ -91,15 +87,14 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public RMSite createRMSite(RMSite rmSiteModel)
-    {
+    public RMSite createRMSite(RMSite rmSiteModel) {
         mandatoryObject("rmSiteModel", rmSiteModel);
 
-        return getRmRestWrapper().processModel(RMSite.class, requestWithBody(
-                POST,
-                toJson(rmSiteModel),
-                "gs-sites"
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                RMSite.class,
+                requestWithBody(POST, toJson(rmSiteModel), "gs-sites")
+            );
     }
 
     /**
@@ -113,12 +108,9 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public void deleteRMSite()
-    {
-        getRmRestWrapper().processEmptyModel(simpleRequest(
-                DELETE,
-                "gs-sites/rm"
-        ));
+    public void deleteRMSite() {
+        getRmRestWrapper()
+            .processEmptyModel(simpleRequest(DELETE, "gs-sites/rm"));
     }
 
     /**
@@ -135,15 +127,14 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error,model integrity exception</li>
      * </ul>
      */
-    public RMSite updateRMSite(RMSite rmSiteModel)
-    {
+    public RMSite updateRMSite(RMSite rmSiteModel) {
         mandatoryObject("rmSiteProperties", rmSiteModel);
 
-        return getRmRestWrapper().processModel(RMSite.class, requestWithBody(
-                PUT,
-                toJson(rmSiteModel),
-                "gs-sites/rm"
-        ));
+        return getRmRestWrapper()
+            .processModel(
+                RMSite.class,
+                requestWithBody(PUT, toJson(rmSiteModel), "gs-sites/rm")
+            );
     }
 
     /**
@@ -158,9 +149,10 @@ public class RMSiteAPI extends RMModelRequest
      *  <li>Api Response code default Unexpected error</li>
      * </ul>
      */
-    public boolean existsRMSite()
-    {
+    public boolean existsRMSite() {
         getSite();
-        return getRmRestWrapper().getStatusCode().equals(String.valueOf(OK.value()));
+        return getRmRestWrapper()
+            .getStatusCode()
+            .equals(String.valueOf(OK.value()));
     }
 }

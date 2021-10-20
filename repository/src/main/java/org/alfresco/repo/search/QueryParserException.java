@@ -25,72 +25,69 @@
  */
 package org.alfresco.repo.search;
 
+import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.http.HttpStatus;
-
-import java.util.List;
 
 /**
  * @author Andy
  *
  */
-public class QueryParserException extends AlfrescoRuntimeException
-{
-    /** Serial version UUID. */
-    private static final long serialVersionUID = 4886993838297301968L;
-    /** Http Status Code that should be returned by Remote API. */
-    private int httpStatusCode;
+public class QueryParserException extends AlfrescoRuntimeException {
 
-    /**
-     * @param msgId
-     */
-    public QueryParserException(String msgId)
-    {
-        super(msgId);
-    }
+  /** Serial version UUID. */
+  private static final long serialVersionUID = 4886993838297301968L;
+  /** Http Status Code that should be returned by Remote API. */
+  private int httpStatusCode;
 
-    /**
-     * @param msgId
-     * @param msgParams
-     */
-    public QueryParserException(String msgId, Object[] msgParams)
-    {
-        super(msgId, msgParams);
-    }
+  /**
+   * @param msgId
+   */
+  public QueryParserException(String msgId) {
+    super(msgId);
+  }
 
-    /**
-     * @param msgId
-     * @param cause
-     */
-    public QueryParserException(String msgId, Throwable cause)
-    {
-        super(msgId, cause);
-    }
+  /**
+   * @param msgId
+   * @param msgParams
+   */
+  public QueryParserException(String msgId, Object[] msgParams) {
+    super(msgId, msgParams);
+  }
 
-    /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
-     */
-    public QueryParserException(String msgId, Object[] msgParams, Throwable cause)
-    {
-        super(msgId, msgParams, cause);
-    }
+  /**
+   * @param msgId
+   * @param cause
+   */
+  public QueryParserException(String msgId, Throwable cause) {
+    super(msgId, cause);
+  }
 
-    /**
-     * Constructor for exception that allows setting an HTTP status code.
-     *
-     * @param msgId Message for the exception
-     * @param httpStatusCode Status code to return for exception
-     */
-    public QueryParserException(String msgId, int httpStatusCode)
-    {
-        super(msgId);
-        this.httpStatusCode = httpStatusCode;
-    }
+  /**
+   * @param msgId
+   * @param msgParams
+   * @param cause
+   */
+  public QueryParserException(
+    String msgId,
+    Object[] msgParams,
+    Throwable cause
+  ) {
+    super(msgId, msgParams, cause);
+  }
 
-    public int getHttpStatusCode()
-    {
-        return httpStatusCode;
-    }
+  /**
+   * Constructor for exception that allows setting an HTTP status code.
+   *
+   * @param msgId Message for the exception
+   * @param httpStatusCode Status code to return for exception
+   */
+  public QueryParserException(String msgId, int httpStatusCode) {
+    super(msgId);
+    this.httpStatusCode = httpStatusCode;
+  }
+
+  public int getHttpStatusCode() {
+    return httpStatusCode;
+  }
 }

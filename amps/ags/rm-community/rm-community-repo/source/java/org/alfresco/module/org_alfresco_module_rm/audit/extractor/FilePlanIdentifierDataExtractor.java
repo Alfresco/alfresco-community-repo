@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 
 import java.io.Serializable;
 import java.util.Objects;
-
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -43,63 +42,61 @@ import org.alfresco.service.cmr.repository.NodeService;
  * @author Derek Hulley
  * @since 3.2
  */
-public final class FilePlanIdentifierDataExtractor extends AbstractDataExtractor
-{
-    private NodeService nodeService;
+public final class FilePlanIdentifierDataExtractor
+  extends AbstractDataExtractor {
 
-    /**
-     * Used to check that the node in the context is a fileplan component
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+  private NodeService nodeService;
+
+  /**
+   * Used to check that the node in the context is a fileplan component
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
+   *                      a fileplan component
+   */
+  public boolean isSupported(Serializable data) {
+    if (!(data instanceof NodeRef)) {
+      return false;
     }
+    return nodeService.hasAspect(
+      (NodeRef) data,
+      RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID
+    );
+  }
 
-    /**
-     * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
-     *                      a fileplan component
-     */
-    public boolean isSupported(Serializable data)
-    {
-        if (!(data instanceof NodeRef))
-        {
-            return false;
-        }
-        return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_RECORD_COMPONENT_ID);
+  public Serializable extractData(Serializable value) {
+    NodeRef nodeRef = (NodeRef) value;
+
+    String identifier = (String) nodeService.getProperty(
+      nodeRef,
+      RecordsManagementModel.PROP_IDENTIFIER
+    );
+
+    // Done
+    return identifier;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
-
-    public Serializable extractData(Serializable value)
-    {
-        NodeRef nodeRef = (NodeRef) value;
-
-        String identifier = (String) nodeService.getProperty(nodeRef, RecordsManagementModel.PROP_IDENTIFIER);
-
-        // Done
-        return identifier;
+    if (o == null || getClass() != o.getClass()) {
+      return false;
     }
-
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o)
-        {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass())
-        {
-            return false;
-        }
-        if (!super.equals(o))
-        {
-            return false;
-        }
-        FilePlanIdentifierDataExtractor that = (FilePlanIdentifierDataExtractor) o;
-        return Objects.equals(nodeService, that.nodeService);
+    if (!super.equals(o)) {
+      return false;
     }
+    FilePlanIdentifierDataExtractor that = (FilePlanIdentifierDataExtractor) o;
+    return Objects.equals(nodeService, that.nodeService);
+  }
 
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(nodeService);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(nodeService);
+  }
 }

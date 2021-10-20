@@ -25,7 +25,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -34,124 +33,99 @@ import org.springframework.util.ResourceUtils;
 
 /**
  * Loads key resources (key store and key store passwords) from the Spring classpath.
- * 
+ *
  * @since 4.0
  *
  */
-public class SpringKeyResourceLoader implements KeyResourceLoader, ApplicationContextAware
-{
-    /**
-     * The application context might not be available, in which case the usual URL
-     * loading is used.
-     */
-    private ApplicationContext applicationContext;
+public class SpringKeyResourceLoader
+  implements KeyResourceLoader, ApplicationContextAware {
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
+  /**
+   * The application context might not be available, in which case the usual URL
+   * loading is used.
+   */
+  private ApplicationContext applicationContext;
+
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext)
+    throws BeansException {
+    this.applicationContext = applicationContext;
+  }
+
+  /**
+   * Helper method to switch between application context resource loading or
+   * simpler current classloader resource loading.
+   */
+  private InputStream getSafeInputStream(String location) {
+    try {
+      final InputStream is;
+      if (applicationContext != null) {
+        Resource resource = applicationContext.getResource(location);
+        if (resource.exists()) {
+          is = new BufferedInputStream(resource.getInputStream());
+        } else {
+          // Fall back to conventional loading
+          File file = ResourceUtils.getFile(location);
+          if (file.exists()) {
+            is = new BufferedInputStream(new FileInputStream(file));
+          } else {
+            is = null;
+          }
+        }
+      } else {
+        // Load conventionally (i.e. we are in a unit test)
+        File file = ResourceUtils.getFile(location);
+        if (file.exists()) {
+          is = new BufferedInputStream(new FileInputStream(file));
+        } else {
+          is = null;
+        }
+      }
+
+      return is;
+    } catch (IOException e) {
+      return null;
     }
-    
-    /**
-     * Helper method to switch between application context resource loading or
-     * simpler current classloader resource loading.
-     */
-    private InputStream getSafeInputStream(String location)
-    {
-        try
-        {
-            final InputStream is;
-            if (applicationContext != null)
-            {
-                Resource resource = applicationContext.getResource(location);
-                if (resource.exists())
-                {
-                    is = new BufferedInputStream(resource.getInputStream());
-                }
-                else
-                {
-                    // Fall back to conventional loading
-                    File file = ResourceUtils.getFile(location);
-                    if (file.exists())
-                    {
-                        is = new BufferedInputStream(new FileInputStream(file));
-                    }
-                    else
-                    {
-                        is = null;
-                    }
-                }
-            }
-            else
-            {
-                // Load conventionally (i.e. we are in a unit test)
-                File file = ResourceUtils.getFile(location);
-                if (file.exists())
-                {
-                    is = new BufferedInputStream(new FileInputStream(file));
-                }
-                else
-                {
-                    is = null;
-                }
-            }
+  }
 
-            return is;
-        }
-        catch (IOException e) 
-        {
-            return null;
-        }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public InputStream getKeyStore(String keyStoreLocation) {
+    if (keyStoreLocation == null) {
+      return null;
     }
+    return getSafeInputStream(keyStoreLocation);
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public InputStream getKeyStore(String keyStoreLocation)
-    {
-        if (keyStoreLocation == null)
-        {
-            return null;
-        }
-        return getSafeInputStream(keyStoreLocation);
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Properties loadKeyMetaData(String keyMetaDataFileLocation)
+    throws IOException {
+    if (keyMetaDataFileLocation == null) {
+      return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Properties loadKeyMetaData(String keyMetaDataFileLocation) throws IOException
-    {
-        if (keyMetaDataFileLocation == null)
-        {
-            return null;
+    try {
+      InputStream is = getSafeInputStream(keyMetaDataFileLocation);
+      if (is == null) {
+        return null;
+      } else {
+        try {
+          Properties p = new Properties();
+          p.load(is);
+          return p;
+        } finally {
+          try {
+            is.close();
+          } catch (Throwable e) {}
         }
-
-        try
-        {
-            InputStream is = getSafeInputStream(keyMetaDataFileLocation);
-            if (is == null)
-            {
-                return null;
-            }
-            else
-            {
-                try
-                {
-                    Properties p = new Properties();
-                    p.load(is);
-                    return p;
-                }
-                finally
-                {
-                    try { is.close(); } catch (Throwable e) {}
-                }
-            }
-        }
-        catch(FileNotFoundException e)
-        {
-            return null;
-        }
+      }
+    } catch (FileNotFoundException e) {
+      return null;
     }
+  }
 }

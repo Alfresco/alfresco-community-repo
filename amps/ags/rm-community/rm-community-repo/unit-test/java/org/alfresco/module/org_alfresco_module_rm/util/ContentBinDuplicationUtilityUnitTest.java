@@ -37,7 +37,6 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAO;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -57,131 +56,165 @@ import org.mockito.MockitoAnnotations;
  * @author Ross Gale
  * @since 2.7.2
  */
-public class ContentBinDuplicationUtilityUnitTest
-{
-    private final static NodeRef NODE_REF = new NodeRef("some://test/noderef");
-    private final static NodeRef NODE_REF2 = new NodeRef("some://test/anothernoderef");
-    private final static String CONTENT_URL = "someContentUrl";
+public class ContentBinDuplicationUtilityUnitTest {
 
-    @Mock
-    private ContentService mockContentService;
+  private static final NodeRef NODE_REF = new NodeRef("some://test/noderef");
+  private static final NodeRef NODE_REF2 = new NodeRef(
+    "some://test/anothernoderef"
+  );
+  private static final String CONTENT_URL = "someContentUrl";
 
-    @Mock
-    private BehaviourFilter mockBehaviourFilter;
+  @Mock
+  private ContentService mockContentService;
 
-    @Mock
-    private ContentReader mockContentReader;
+  @Mock
+  private BehaviourFilter mockBehaviourFilter;
 
-    @Mock
-    private ContentWriter mockContentWriter;
-    @Mock
-    private NodeService mockNodeService;
+  @Mock
+  private ContentReader mockContentReader;
 
-    @Mock
-    private RecordsManagementQueryDAO recordsManagementQueryDAO;
+  @Mock
+  private ContentWriter mockContentWriter;
 
-    @InjectMocks
-    private ContentBinDuplicationUtility contentBinDuplicationUtility;
+  @Mock
+  private NodeService mockNodeService;
 
-    @Before
-    public void setUp()
-    {
-        MockitoAnnotations.initMocks(this);
-    }
+  @Mock
+  private RecordsManagementQueryDAO recordsManagementQueryDAO;
 
-    /**
-     * Tests that the requests are made to disable and re-enable the audit and versioning and to update the content bin
-     */
-    @Test
-    public void testContentUrlIsUpdated()
-    {
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getWriter(NODE_REF, ContentModel.PROP_CONTENT, true)).thenReturn(mockContentWriter);
-        contentBinDuplicationUtility.duplicate(NODE_REF);
-        verify(mockContentWriter, times(1)).putContent(mockContentReader);
-        checkBehaviours(1);
-    }
+  @InjectMocks
+  private ContentBinDuplicationUtility contentBinDuplicationUtility;
 
-    /**
-     * Test content duplication doesn't happen when node has no content
-     */
-    @Test
-    public void testDuplicationDoesntHappenWithNoContent()
-    {
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(null);
-        contentBinDuplicationUtility.duplicate(NODE_REF);
-        verify(mockContentWriter, times(0)).putContent(mockContentReader);
-        checkBehaviours(1);
-    }
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+  }
 
-    /**
-     * This is testing the fix for RM-6788 where archived content couldn't be declared as a record
-     * This was caused by attempting to copy the bin file and updating the content url of the
-     * archived piece of content which failed as this is a protected property. This is done if
-     * the node is/has a copy but the same duplication already happens during archive.
-     */
-    @Test
-    public void testBinFileNotDuplicatedForArchivedContent()
-    {
-        NodeRef nodeRef = new NodeRef("some://test/noderef");
-        when(mockNodeService.hasAspect(nodeRef, ASPECT_ARCHIVED)).thenReturn(true);
-        contentBinDuplicationUtility.duplicate(nodeRef);
-        verify(mockContentReader, times(0)).getReader();
-        checkBehaviours(0);
-    }
-    /**
-     * Test hasAtLeastOneOtherReference returns true when node has another reference to it
-     */
-    @Test
-    public void testHasAtLeastOneOtherReference()
-    {
-        Set<NodeRef> multipleReferences = new HashSet<>();
-        Collections.addAll(multipleReferences, NODE_REF, NODE_REF2);
+  /**
+   * Tests that the requests are made to disable and re-enable the audit and versioning and to update the content bin
+   */
+  @Test
+  public void testContentUrlIsUpdated() {
+    when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT))
+      .thenReturn(mockContentReader);
+    when(
+      mockContentService.getWriter(NODE_REF, ContentModel.PROP_CONTENT, true)
+    )
+      .thenReturn(mockContentWriter);
+    contentBinDuplicationUtility.duplicate(NODE_REF);
+    verify(mockContentWriter, times(1)).putContent(mockContentReader);
+    checkBehaviours(1);
+  }
 
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);
-        when(recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)).thenReturn(multipleReferences);
+  /**
+   * Test content duplication doesn't happen when node has no content
+   */
+  @Test
+  public void testDuplicationDoesntHappenWithNoContent() {
+    when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT))
+      .thenReturn(null);
+    contentBinDuplicationUtility.duplicate(NODE_REF);
+    verify(mockContentWriter, times(0)).putContent(mockContentReader);
+    checkBehaviours(1);
+  }
 
-        assertTrue(contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF));
-    }
+  /**
+   * This is testing the fix for RM-6788 where archived content couldn't be declared as a record
+   * This was caused by attempting to copy the bin file and updating the content url of the
+   * archived piece of content which failed as this is a protected property. This is done if
+   * the node is/has a copy but the same duplication already happens during archive.
+   */
+  @Test
+  public void testBinFileNotDuplicatedForArchivedContent() {
+    NodeRef nodeRef = new NodeRef("some://test/noderef");
+    when(mockNodeService.hasAspect(nodeRef, ASPECT_ARCHIVED)).thenReturn(true);
+    contentBinDuplicationUtility.duplicate(nodeRef);
+    verify(mockContentReader, times(0)).getReader();
+    checkBehaviours(0);
+  }
 
-    /**
-     * Test hasAtLeastOneOtherReference returns false when node has no other reference to it other than its own content ref
-     */
-    @Test
-    public void testHasNoOtherReference()
-    {
-        Set<NodeRef> singleReference = Collections.singleton(NODE_REF);
+  /**
+   * Test hasAtLeastOneOtherReference returns true when node has another reference to it
+   */
+  @Test
+  public void testHasAtLeastOneOtherReference() {
+    Set<NodeRef> multipleReferences = new HashSet<>();
+    Collections.addAll(multipleReferences, NODE_REF, NODE_REF2);
 
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);
-        when(recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)).thenReturn(singleReference);
+    when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT))
+      .thenReturn(mockContentReader);
+    when(
+      mockContentService
+        .getReader(NODE_REF, ContentModel.PROP_CONTENT)
+        .getContentUrl()
+    )
+      .thenReturn(CONTENT_URL);
+    when(
+      recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)
+    )
+      .thenReturn(multipleReferences);
 
-        assertFalse(contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF));
-    }
+    assertTrue(
+      contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF)
+    );
+  }
 
-    /**
-     * Test hasAtLeastOneOtherReference returns false when node has no references to it at all
-     */
-    @Test
-    public void testHasNoReferences()
-    {
-        Set<NodeRef> noReferences = Collections.<NodeRef> emptySet();
+  /**
+   * Test hasAtLeastOneOtherReference returns false when node has no other reference to it other than its own content ref
+   */
+  @Test
+  public void testHasNoOtherReference() {
+    Set<NodeRef> singleReference = Collections.singleton(NODE_REF);
 
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentReader);
-        when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT).getContentUrl()).thenReturn(CONTENT_URL);
-        when(recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)).thenReturn(noReferences);
+    when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT))
+      .thenReturn(mockContentReader);
+    when(
+      mockContentService
+        .getReader(NODE_REF, ContentModel.PROP_CONTENT)
+        .getContentUrl()
+    )
+      .thenReturn(CONTENT_URL);
+    when(
+      recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)
+    )
+      .thenReturn(singleReference);
 
-        assertFalse(contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF));
-    }
+    assertFalse(
+      contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF)
+    );
+  }
 
-    /**
-     * Check that the behaviours are disabled and re-enabled the correct number of times
-     * @param times the times the behaviours should be called
-     */
-    private void checkBehaviours(int times)
-    {
-        verify(mockBehaviourFilter, times(times)).disableBehaviour();
-        verify(mockBehaviourFilter, times(times)).enableBehaviour();
-    }
+  /**
+   * Test hasAtLeastOneOtherReference returns false when node has no references to it at all
+   */
+  @Test
+  public void testHasNoReferences() {
+    Set<NodeRef> noReferences = Collections.<NodeRef>emptySet();
+
+    when(mockContentService.getReader(NODE_REF, ContentModel.PROP_CONTENT))
+      .thenReturn(mockContentReader);
+    when(
+      mockContentService
+        .getReader(NODE_REF, ContentModel.PROP_CONTENT)
+        .getContentUrl()
+    )
+      .thenReturn(CONTENT_URL);
+    when(
+      recordsManagementQueryDAO.getNodeRefsWhichReferenceContentUrl(CONTENT_URL)
+    )
+      .thenReturn(noReferences);
+
+    assertFalse(
+      contentBinDuplicationUtility.hasAtLeastOneOtherReference(NODE_REF)
+    );
+  }
+
+  /**
+   * Check that the behaviours are disabled and re-enabled the correct number of times
+   * @param times the times the behaviours should be called
+   */
+  private void checkBehaviours(int times) {
+    verify(mockBehaviourFilter, times(times)).disableBehaviour();
+    verify(mockBehaviourFilter, times(times)).enableBehaviour();
+  }
 }

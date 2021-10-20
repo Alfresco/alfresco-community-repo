@@ -26,67 +26,57 @@
 package org.alfresco.rest.api.model;
 
 import java.util.Map;
+
 /**
  * Represents a constraint of a node definition property.
  *
  * @author gfertuso
  */
-public class ConstraintDefinition
-{
-    private String id;
-    private String type;
-    private String title;
-    private String description;
-    private Map<String, Object> parameters;
+public class ConstraintDefinition {
 
-    public String getId()
-    {
-        return id;
-    }
+  private String id;
+  private String type;
+  private String title;
+  private String description;
+  private Map<String, Object> parameters;
 
-    public void setId(String id) 
-    {
-        this.id = id;
-    }
+  public String getId() {
+    return id;
+  }
 
-    public String getType() 
-    {
-        return type;
-    }
+  public void setId(String id) {
+    this.id = id;
+  }
 
-    public void setType(String type) 
-    {
-        this.type = type;
-    }
+  public String getType() {
+    return type;
+  }
 
-    public String getTitle() 
-    {
-        return title;
-    }
+  public void setType(String type) {
+    this.type = type;
+  }
 
-    public void setTitle(String title) 
-    {
-        this.title = title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public String getDescription() 
-    {
-        return description;
-    }
+  public void setTitle(String title) {
+    this.title = title;
+  }
 
-    public void setDescription(String description) 
-    {
-        this.description = description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public Map<String, Object> getParameters() 
-    {
-        return parameters;
-    }
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-    public void setParameters(Map<String, Object> parameters)
-    {
-        this.parameters = parameters;
-    }
-    
+  public Map<String, Object> getParameters() {
+    return parameters;
+  }
+
+  public void setParameters(Map<String, Object> parameters) {
+    this.parameters = parameters;
+  }
 }

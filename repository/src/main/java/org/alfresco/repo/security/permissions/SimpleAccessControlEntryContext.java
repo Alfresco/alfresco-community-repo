@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -26,48 +26,41 @@
 
 package org.alfresco.repo.security.permissions;
 
-public class SimpleAccessControlEntryContext implements AccessControlEntryContext
-{
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -5679179194140822827L;
+public class SimpleAccessControlEntryContext
+  implements AccessControlEntryContext {
 
-    private String classContext;
-    
-    private String KVPContext;
+  /**
+   *
+   */
+  private static final long serialVersionUID = -5679179194140822827L;
 
-    private String propertyContext;
-    
-    public String getClassContext()
-    {
-        return classContext;
-    }
+  private String classContext;
 
-    public String getKVPContext()
-    {
-        return KVPContext;
-    }
+  private String KVPContext;
 
-    public String getPropertyContext()
-    {
-        return propertyContext;
-    }
+  private String propertyContext;
 
-    public void setClassContext(String classContext)
-    {
-        this.classContext = classContext;
-    }
+  public String getClassContext() {
+    return classContext;
+  }
 
-    public void setKVPContext(String context)
-    {
-        KVPContext = context;
-    }
+  public String getKVPContext() {
+    return KVPContext;
+  }
 
-    public void setPropertyContext(String propertyContext)
-    {
-        this.propertyContext = propertyContext;
-    }
-    
+  public String getPropertyContext() {
+    return propertyContext;
+  }
 
+  public void setClassContext(String classContext) {
+    this.classContext = classContext;
+  }
+
+  public void setKVPContext(String context) {
+    KVPContext = context;
+  }
+
+  public void setPropertyContext(String propertyContext) {
+    this.propertyContext = propertyContext;
+  }
 }

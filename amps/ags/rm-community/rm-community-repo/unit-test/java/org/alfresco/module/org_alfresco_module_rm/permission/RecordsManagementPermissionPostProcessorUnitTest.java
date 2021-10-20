@@ -32,8 +32,8 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Sets;
 import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
@@ -49,8 +49,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.google.common.collect.Sets;
-
 /**
  * Unit tests for {@link RecordsManagementPermissionPostProcessor}.
  *
@@ -58,109 +56,169 @@ import com.google.common.collect.Sets;
  * @author Tom Page
  * @since 2.4.1
  */
-public class RecordsManagementPermissionPostProcessorUnitTest
-{
-    @InjectMocks
-    private RecordsManagementPermissionPostProcessor recordsManagementPermissionPostProcessor = new RecordsManagementPermissionPostProcessor();
+public class RecordsManagementPermissionPostProcessorUnitTest {
 
-    @Mock
-    private NodeService mockNodeService;
-    @Mock
-    private PermissionService mockPermissionService;
-    @Mock
-    private PermissionModel mockPermissionModel;
+  @InjectMocks
+  private RecordsManagementPermissionPostProcessor recordsManagementPermissionPostProcessor = new RecordsManagementPermissionPostProcessor();
 
-    @Before
-    public void setup()
-    {
-        MockitoAnnotations.initMocks(this);
-    }
+  @Mock
+  private NodeService mockNodeService;
 
-    /**
-     * Given the configured permissions are set
-     * When process is called
-     * Then access is allowed
-     */
-    @Test
-    public void configurePermissionsAllowed()
-    {
-        AccessStatus accessStatus = AccessStatus.DENIED;
-        NodeRef nodeRef = new NodeRef("node://ref/");
-        String perm = AlfMock.generateText();
-        // permissions includes the perm created above
-        List<String> configuredReadPermissions = asList("ReadProperties", "ReadChildren", perm);
-        List<String> configuredFilePermissions = asList("WriteProperties", "AddChildren");
+  @Mock
+  private PermissionService mockPermissionService;
 
-        when(mockNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-            .thenReturn(true);
-        when(mockPermissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
+  @Mock
+  private PermissionModel mockPermissionModel;
 
-        AccessStatus result = recordsManagementPermissionPostProcessor.process(accessStatus, nodeRef, perm, configuredReadPermissions, configuredFilePermissions);
+  @Before
+  public void setup() {
+    MockitoAnnotations.initMocks(this);
+  }
 
-        assertEquals(AccessStatus.ALLOWED, result);
-    }
+  /**
+   * Given the configured permissions are set
+   * When process is called
+   * Then access is allowed
+   */
+  @Test
+  public void configurePermissionsAllowed() {
+    AccessStatus accessStatus = AccessStatus.DENIED;
+    NodeRef nodeRef = new NodeRef("node://ref/");
+    String perm = AlfMock.generateText();
+    // permissions includes the perm created above
+    List<String> configuredReadPermissions = asList(
+      "ReadProperties",
+      "ReadChildren",
+      perm
+    );
+    List<String> configuredFilePermissions = asList(
+      "WriteProperties",
+      "AddChildren"
+    );
 
-    /**
-     * Given the configured permissions are not set
-     * When process is called
-     * Then access is denied
-     */
-    @Test
-    public void configurePermissionsDenied()
-    {
-        AccessStatus accessStatus = AccessStatus.DENIED;
-        NodeRef nodeRef = new NodeRef("node://ref/");
-        String perm = AlfMock.generateText();
-        // permissions do not include perm created above
-        List<String> configuredReadPermissions = asList("ReadProperties", "ReadChildren");
-        List<String> configuredFilePermissions = asList("WriteProperties", "AddChildren");
+    when(
+      mockNodeService.hasAspect(
+        nodeRef,
+        RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT
+      )
+    )
+      .thenReturn(true);
+    when(
+      mockPermissionService.hasPermission(
+        nodeRef,
+        RMPermissionModel.READ_RECORDS
+      )
+    )
+      .thenReturn(AccessStatus.ALLOWED);
 
-        when(mockNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-            .thenReturn(true);
-        when(mockPermissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
+    AccessStatus result = recordsManagementPermissionPostProcessor.process(
+      accessStatus,
+      nodeRef,
+      perm,
+      configuredReadPermissions,
+      configuredFilePermissions
+    );
 
-        AccessStatus result = recordsManagementPermissionPostProcessor.process(accessStatus, nodeRef, perm, configuredReadPermissions, configuredFilePermissions);
+    assertEquals(AccessStatus.ALLOWED, result);
+  }
 
-        assertEquals(AccessStatus.DENIED, result);
-    }
+  /**
+   * Given the configured permissions are not set
+   * When process is called
+   * Then access is denied
+   */
+  @Test
+  public void configurePermissionsDenied() {
+    AccessStatus accessStatus = AccessStatus.DENIED;
+    NodeRef nodeRef = new NodeRef("node://ref/");
+    String perm = AlfMock.generateText();
+    // permissions do not include perm created above
+    List<String> configuredReadPermissions = asList(
+      "ReadProperties",
+      "ReadChildren"
+    );
+    List<String> configuredFilePermissions = asList(
+      "WriteProperties",
+      "AddChildren"
+    );
 
-    /**
-     * Test that the permission groups configured in the global properties file imply descendant permission groups.
-     * <p>
-     * Given a configured permission is an ancestor of another permission P
-     * And the post processor checks if the user has P
-     * Then the post processor says that they do.
-     */
-    @Test
-    public void permissionInherittedFromConfiguredGroup()
-    {
-        NodeRef nodeRef = new NodeRef("node://ref/");
-        // permissions do not include perm created above
-        List<String> configuredReadPermissions = asList();
-        List<String> configuredFilePermissions = asList("WriteProperties");
+    when(
+      mockNodeService.hasAspect(
+        nodeRef,
+        RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT
+      )
+    )
+      .thenReturn(true);
+    when(
+      mockPermissionService.hasPermission(
+        nodeRef,
+        RMPermissionModel.READ_RECORDS
+      )
+    )
+      .thenReturn(AccessStatus.ALLOWED);
 
-        when(mockNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-            .thenReturn(true);
-        when(mockPermissionService.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS))
-            .thenReturn(AccessStatus.ALLOWED);
+    AccessStatus result = recordsManagementPermissionPostProcessor.process(
+      accessStatus,
+      nodeRef,
+      perm,
+      configuredReadPermissions,
+      configuredFilePermissions
+    );
 
-        // Set up "WriteProperties" to imply three other permission groups.
-        PermissionReference mockWritePropsPermRef = mock(PermissionReference.class);
-        when(mockPermissionModel.getPermissionReference(null, "WriteProperties")).thenReturn(mockWritePropsPermRef);
-        PermissionReference childOne = mock(PermissionReference.class);
-        when(childOne.getName()).thenReturn("Not this one");
-        PermissionReference childTwo = mock(PermissionReference.class);
-        when(childTwo.getName()).thenReturn("This is the requested permission");
-        PermissionReference childThree = mock(PermissionReference.class);
-        when(childThree.getName()).thenReturn("Not this one either");
-        when(mockPermissionModel.getGranteePermissions(mockWritePropsPermRef)).thenReturn(Sets.newHashSet(childOne, childTwo, childThree));
+    assertEquals(AccessStatus.DENIED, result);
+  }
 
-        // Call the method under test.
-        AccessStatus result = recordsManagementPermissionPostProcessor.process(AccessStatus.DENIED, nodeRef,
-                    "This is the requested permission", configuredReadPermissions, configuredFilePermissions);
+  /**
+   * Test that the permission groups configured in the global properties file imply descendant permission groups.
+   * <p>
+   * Given a configured permission is an ancestor of another permission P
+   * And the post processor checks if the user has P
+   * Then the post processor says that they do.
+   */
+  @Test
+  public void permissionInherittedFromConfiguredGroup() {
+    NodeRef nodeRef = new NodeRef("node://ref/");
+    // permissions do not include perm created above
+    List<String> configuredReadPermissions = asList();
+    List<String> configuredFilePermissions = asList("WriteProperties");
 
-        assertEquals(AccessStatus.ALLOWED, result);
-    }
+    when(
+      mockNodeService.hasAspect(
+        nodeRef,
+        RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT
+      )
+    )
+      .thenReturn(true);
+    when(
+      mockPermissionService.hasPermission(
+        nodeRef,
+        RMPermissionModel.FILE_RECORDS
+      )
+    )
+      .thenReturn(AccessStatus.ALLOWED);
+
+    // Set up "WriteProperties" to imply three other permission groups.
+    PermissionReference mockWritePropsPermRef = mock(PermissionReference.class);
+    when(mockPermissionModel.getPermissionReference(null, "WriteProperties"))
+      .thenReturn(mockWritePropsPermRef);
+    PermissionReference childOne = mock(PermissionReference.class);
+    when(childOne.getName()).thenReturn("Not this one");
+    PermissionReference childTwo = mock(PermissionReference.class);
+    when(childTwo.getName()).thenReturn("This is the requested permission");
+    PermissionReference childThree = mock(PermissionReference.class);
+    when(childThree.getName()).thenReturn("Not this one either");
+    when(mockPermissionModel.getGranteePermissions(mockWritePropsPermRef))
+      .thenReturn(Sets.newHashSet(childOne, childTwo, childThree));
+
+    // Call the method under test.
+    AccessStatus result = recordsManagementPermissionPostProcessor.process(
+      AccessStatus.DENIED,
+      nodeRef,
+      "This is the requested permission",
+      configuredReadPermissions,
+      configuredFilePermissions
+    );
+
+    assertEquals(AccessStatus.ALLOWED, result);
+  }
 }

@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.repo.version.VersionModel;
@@ -51,84 +50,94 @@ import org.alfresco.service.cmr.version.VersionType;
  * @author Ramona Popa
  * @since 3.2
  */
-public class RMv32HoldReportUpdatePatch extends AbstractModulePatch
-{
-    /**
-     * Hold report template path
-     */
-    private static final String HOLD_REPORT_TEMPLATE_PATH = "alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_holdReport.html.ftl";
+public class RMv32HoldReportUpdatePatch extends AbstractModulePatch {
 
-    /**
-     * Hold report template config node IDs
-     */
-    private static final NodeRef HOLD_REPORT = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rmr_holdReport");
+  /**
+   * Hold report template path
+   */
+  private static final String HOLD_REPORT_TEMPLATE_PATH =
+    "alfresco/module/org_alfresco_module_rm/bootstrap/report/report_rmr_holdReport.html.ftl";
 
-    /**
-     * Node service
-     */
-    private NodeService nodeService;
+  /**
+   * Hold report template config node IDs
+   */
+  private static final NodeRef HOLD_REPORT = new NodeRef(
+    StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+    "rmr_holdReport"
+  );
 
-    /**
-     * Content service
-     */
-    private ContentService contentService;
+  /**
+   * Node service
+   */
+  private NodeService nodeService;
 
-    /**
-     * Version service
-     */
-    private VersionService versionService;
+  /**
+   * Content service
+   */
+  private ContentService contentService;
 
-    /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+  /**
+   * Version service
+   */
+  private VersionService versionService;
+
+  /**
+   * @param nodeService node service
+   */
+  public void setNodeService(NodeService nodeService) {
+    this.nodeService = nodeService;
+  }
+
+  /**
+   * @param contentService content service
+   */
+  public void setContentService(ContentService contentService) {
+    this.contentService = contentService;
+  }
+
+  /**
+   * @param versionService version service
+   */
+  public void setVersionService(VersionService versionService) {
+    this.versionService = versionService;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
+   */
+  @Override
+  public void applyInternal() {
+    if (nodeService.exists(HOLD_REPORT)) {
+      // Make sure the template is versionable
+      if (
+        !nodeService.hasAspect(HOLD_REPORT, ContentModel.ASPECT_VERSIONABLE)
+      ) {
+        nodeService.addAspect(
+          HOLD_REPORT,
+          ContentModel.ASPECT_VERSIONABLE,
+          null
+        );
+
+        // Create version (before template is updated)
+        Map<String, Serializable> versionProperties = new HashMap<>(2);
+        versionProperties.put(Version.PROP_DESCRIPTION, "Template updated");
+        versionProperties.put(
+          VersionModel.PROP_VERSION_TYPE,
+          VersionType.MINOR
+        );
+        versionService.createVersion(HOLD_REPORT, versionProperties);
+      }
+
+      // Update the content of the template
+      InputStream is = getClass()
+        .getClassLoader()
+        .getResourceAsStream(HOLD_REPORT_TEMPLATE_PATH);
+      ContentWriter writer = contentService.getWriter(
+        HOLD_REPORT,
+        ContentModel.PROP_CONTENT,
+        true
+      );
+      writer.putContent(is);
     }
-
-    /**
-     * @param contentService content service
-     */
-    public void setContentService(ContentService contentService)
-    {
-        this.contentService = contentService;
-    }
-
-    /**
-     * @param versionService version service
-     */
-    public void setVersionService(VersionService versionService)
-    {
-        this.versionService = versionService;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
-     */
-    @Override
-    public void applyInternal()
-    {
-        if (nodeService.exists(HOLD_REPORT))
-        {
-
-            // Make sure the template is versionable
-            if (!nodeService.hasAspect(HOLD_REPORT, ContentModel.ASPECT_VERSIONABLE))
-            {
-                nodeService.addAspect(HOLD_REPORT, ContentModel.ASPECT_VERSIONABLE, null);
-
-                // Create version (before template is updated)
-                Map<String, Serializable> versionProperties = new HashMap<>(2);
-                versionProperties.put(Version.PROP_DESCRIPTION, "Template updated");
-                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
-                versionService.createVersion(HOLD_REPORT, versionProperties);
-            }
-
-            // Update the content of the template
-            InputStream is = getClass().getClassLoader().getResourceAsStream(HOLD_REPORT_TEMPLATE_PATH);
-            ContentWriter writer = contentService.getWriter(HOLD_REPORT, ContentModel.PROP_CONTENT, true);
-            writer.putContent(is);
-
-        }
-    }
-
+  }
 }

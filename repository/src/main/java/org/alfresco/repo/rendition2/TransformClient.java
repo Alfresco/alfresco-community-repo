@@ -34,37 +34,44 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author adavis
  */
-public interface TransformClient
-{
-    /**
-     * Checks the transformation required for the rendition is supported.
-     * @param sourceNodeRef the source node
-     * @param renditionDefinition which rendition to perform
-     * @param sourceMimetype the mometype of the source
-     * @param sourceSizeInBytes the size in bytes of the source
-     * @param contentUrl the url of the source (used in debug).
-     * @return and object that contains information that will be passed to
-     * {@link #transform(NodeRef, RenditionDefinition2, String, int)} as the {@code transformInfo} parameter to
-     * avoid having to work it out again.
-     * @throws UnsupportedOperationException if the transform is not supported.
-     */
-    void checkSupported(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String sourceMimetype,
-                        long sourceSizeInBytes, String contentUrl);
+public interface TransformClient {
+  /**
+   * Checks the transformation required for the rendition is supported.
+   * @param sourceNodeRef the source node
+   * @param renditionDefinition which rendition to perform
+   * @param sourceMimetype the mometype of the source
+   * @param sourceSizeInBytes the size in bytes of the source
+   * @param contentUrl the url of the source (used in debug).
+   * @return and object that contains information that will be passed to
+   * {@link #transform(NodeRef, RenditionDefinition2, String, int)} as the {@code transformInfo} parameter to
+   * avoid having to work it out again.
+   * @throws UnsupportedOperationException if the transform is not supported.
+   */
+  void checkSupported(
+    NodeRef sourceNodeRef,
+    RenditionDefinition2 renditionDefinition,
+    String sourceMimetype,
+    long sourceSizeInBytes,
+    String contentUrl
+  );
 
-    /**
-     * Requests an asynchronous transform and the subsequent linkage of that transform as a rendition.
-     * The call to this method <b>MUST</b> be proceeded by a successful call to
-     * {@link #checkSupported(NodeRef, RenditionDefinition2, String, long, String)} in the <b>SAME</b> Thread.
-     * @param sourceNodeRef the source node
-     * @param renditionDefinition which rendition to perform
-     * @param user that requested the transform.
-     * @param sourceContentHashCode the hash code of the source node's content URL. Used to check the transform result
-     * @throws UnsupportedTransformationException if there is an unexpected failure to transform, normally in a
-     *         pipeline, where an intermediate transform may not be performed after all because an intermediate
-     *         conversion is too big.
-     * @throws ContentIOException  there is an unexpected communication or transformation failure.
-     */
-    void transform(NodeRef sourceNodeRef, RenditionDefinition2 renditionDefinition, String user,
-                   int sourceContentHashCode)
-        throws UnsupportedTransformationException, ContentIOException;
+  /**
+   * Requests an asynchronous transform and the subsequent linkage of that transform as a rendition.
+   * The call to this method <b>MUST</b> be proceeded by a successful call to
+   * {@link #checkSupported(NodeRef, RenditionDefinition2, String, long, String)} in the <b>SAME</b> Thread.
+   * @param sourceNodeRef the source node
+   * @param renditionDefinition which rendition to perform
+   * @param user that requested the transform.
+   * @param sourceContentHashCode the hash code of the source node's content URL. Used to check the transform result
+   * @throws UnsupportedTransformationException if there is an unexpected failure to transform, normally in a
+   *         pipeline, where an intermediate transform may not be performed after all because an intermediate
+   *         conversion is too big.
+   * @throws ContentIOException  there is an unexpected communication or transformation failure.
+   */
+  void transform(
+    NodeRef sourceNodeRef,
+    RenditionDefinition2 renditionDefinition,
+    String user,
+    int sourceContentHashCode
+  ) throws UnsupportedTransformationException, ContentIOException;
 }

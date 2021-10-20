@@ -26,41 +26,35 @@ import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
-public class SchedulerStarterBean extends AbstractLifecycleBean
-{
-    protected final static Log log = LogFactory.getLog(SchedulerStarterBean.class);    
-    
-    private Scheduler scheduler;
+public class SchedulerStarterBean extends AbstractLifecycleBean {
 
-    @Override
-    protected void onBootstrap(ApplicationEvent event)
-    {
-        try
-        {
-            log.info("Scheduler started");
-            scheduler.start();
-        }
-        catch (SchedulerException e)
-        {
-            throw new AlfrescoRuntimeException("Scheduler failed to start", e);
-        }
+  protected static final Log log = LogFactory.getLog(
+    SchedulerStarterBean.class
+  );
+
+  private Scheduler scheduler;
+
+  @Override
+  protected void onBootstrap(ApplicationEvent event) {
+    try {
+      log.info("Scheduler started");
+      scheduler.start();
+    } catch (SchedulerException e) {
+      throw new AlfrescoRuntimeException("Scheduler failed to start", e);
     }
+  }
 
-    @Override
-    protected void onShutdown(ApplicationEvent event)
-    {
-        // Nothing required
-        // This is done by the SchedulerFactoryBean.destroy() - DisposableBean 
-    }
+  @Override
+  protected void onShutdown(ApplicationEvent event) {
+    // Nothing required
+    // This is done by the SchedulerFactoryBean.destroy() - DisposableBean
+  }
 
-    public Scheduler getScheduler()
-    {
-        return scheduler;
-    }
+  public Scheduler getScheduler() {
+    return scheduler;
+  }
 
-    public void setScheduler(Scheduler scheduler)
-    {
-        this.scheduler = scheduler;
-    }
-
+  public void setScheduler(Scheduler scheduler) {
+    this.scheduler = scheduler;
+  }
 }

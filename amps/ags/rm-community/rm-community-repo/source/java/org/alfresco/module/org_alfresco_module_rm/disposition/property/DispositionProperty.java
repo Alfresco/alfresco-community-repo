@@ -34,7 +34,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -59,209 +58,212 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 @BehaviourBean
-public class DispositionProperty extends BaseBehaviourBean
-                                 implements NodeServicePolicies.OnUpdatePropertiesPolicy
-{
-    /** Property QName */
-    private QName propertyName;
+public class DispositionProperty
+  extends BaseBehaviourBean
+  implements NodeServicePolicies.OnUpdatePropertiesPolicy {
 
-    /** Namespace service */
-    private NamespaceService namespaceService;
+  /** Property QName */
+  private QName propertyName;
 
-    /** Disposition service */
-    private DispositionService dispositionService;
+  /** Namespace service */
+  private NamespaceService namespaceService;
 
-    /** Indicates whether this disposition property applies to a folder level disposition */
-    private boolean appliesToFolderLevel = true;
+  /** Disposition service */
+  private DispositionService dispositionService;
 
-    /** Indicates whether this disposition property applies to a record level disposition */
-    private boolean appliesToRecordLevel = true;
+  /** Indicates whether this disposition property applies to a folder level disposition */
+  private boolean appliesToFolderLevel = true;
 
-    /** Set of disposition actions this property does not apply to */
-    private Set<String> excludedDispositionActions;
+  /** Indicates whether this disposition property applies to a record level disposition */
+  private boolean appliesToRecordLevel = true;
 
-    /**
-     * @param namespaceService  namespace service
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
+  /** Set of disposition actions this property does not apply to */
+  private Set<String> excludedDispositionActions;
 
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
-    }
+  /**
+   * @param namespaceService  namespace service
+   */
+  public void setNamespaceService(NamespaceService namespaceService) {
+    this.namespaceService = namespaceService;
+  }
 
-    /**
-     * @param propertyName property name (as string)
-     */
-    public void setName(String propertyName)
-    {
-        this.propertyName = QName.createQName(propertyName, namespaceService);
-    }
+  /**
+   * @param dispositionService    disposition service
+   */
+  public void setDispositionService(DispositionService dispositionService) {
+    this.dispositionService = dispositionService;
+  }
 
-    /**
-     * @return  property QName
-     */
-    public QName getQName()
-    {
-        return this.propertyName;
-    }
+  /**
+   * @param propertyName property name (as string)
+   */
+  public void setName(String propertyName) {
+    this.propertyName = QName.createQName(propertyName, namespaceService);
+  }
 
-    /**
-     * @return  property definition
-     */
-    public PropertyDefinition getPropertyDefinition()
-    {
-        return dictionaryService.getProperty(propertyName);
-    }
+  /**
+   * @return  property QName
+   */
+  public QName getQName() {
+    return this.propertyName;
+  }
 
-    /**
-     * @param excludedDispositionActions    list of excluded disposition actions
-     */
-    public void setExcludedDispositionActions(Set<String> excludedDispositionActions)
-    {
-        this.excludedDispositionActions = excludedDispositionActions;
-    }
+  /**
+   * @return  property definition
+   */
+  public PropertyDefinition getPropertyDefinition() {
+    return dictionaryService.getProperty(propertyName);
+  }
 
-    /**
-     * @param appliesToFolderLevel
-     */
-    public void setAppliesToFolderLevel(boolean appliesToFolderLevel)
-    {
-        this.appliesToFolderLevel = appliesToFolderLevel;
-    }
+  /**
+   * @param excludedDispositionActions    list of excluded disposition actions
+   */
+  public void setExcludedDispositionActions(
+    Set<String> excludedDispositionActions
+  ) {
+    this.excludedDispositionActions = excludedDispositionActions;
+  }
 
-    /**
-     * @param appliesToRecordLevel
-     */
-    public void setAppliesToRecordLevel(boolean appliesToRecordLevel)
-    {
-        this.appliesToRecordLevel = appliesToRecordLevel;
-    }
+  /**
+   * @param appliesToFolderLevel
+   */
+  public void setAppliesToFolderLevel(boolean appliesToFolderLevel) {
+    this.appliesToFolderLevel = appliesToFolderLevel;
+  }
 
-    /**
-     * Bean initialisation method
-     */
-    public void init()
-    {
-        // register with disposition service
-        dispositionService.registerDispositionProperty(this);
-    }
+  /**
+   * @param appliesToRecordLevel
+   */
+  public void setAppliesToRecordLevel(boolean appliesToRecordLevel) {
+    this.appliesToRecordLevel = appliesToRecordLevel;
+  }
 
-    /**
-     * Indicates whether the disposition property applies given the context.
-     *
-     * @param isRecordLevel      true if record level disposition schedule, false otherwise
-     * @param dispositionAction  disposition action name
-     * @return boolean           true if applies, false otherwise
-     */
-    public boolean applies(boolean isRecordLevel, String dispositionAction)
-    {
-        boolean result = false;
+  /**
+   * Bean initialisation method
+   */
+  public void init() {
+    // register with disposition service
+    dispositionService.registerDispositionProperty(this);
+  }
 
-        if ((isRecordLevel && appliesToRecordLevel) ||
-            (!isRecordLevel && appliesToFolderLevel))
-        {
-            if (excludedDispositionActions != null && excludedDispositionActions.size() != 0)
-            {
-                if (!excludedDispositionActions.contains(dispositionAction))
-                {
-                    result = true;
-                }
-            }
-            else
-            {
-                result = true;
-            }
+  /**
+   * Indicates whether the disposition property applies given the context.
+   *
+   * @param isRecordLevel      true if record level disposition schedule, false otherwise
+   * @param dispositionAction  disposition action name
+   * @return boolean           true if applies, false otherwise
+   */
+  public boolean applies(boolean isRecordLevel, String dispositionAction) {
+    boolean result = false;
+
+    if (
+      (isRecordLevel && appliesToRecordLevel) ||
+      (!isRecordLevel && appliesToFolderLevel)
+    ) {
+      if (
+        excludedDispositionActions != null &&
+        excludedDispositionActions.size() != 0
+      ) {
+        if (!excludedDispositionActions.contains(dispositionAction)) {
+          result = true;
         }
-
-        return result;
+      } else {
+        result = true;
+      }
     }
 
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
-     */
-    @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            type = "rma:dispositionLifecycle",
-            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    public void onUpdateProperties(
-            final NodeRef nodeRef,
-            final Map<QName, Serializable> before,
-            final Map<QName, Serializable> after)
-    {
-        if (nodeService.exists(nodeRef))
-        {
-            // has the property we care about changed?
-            if (isPropertyUpdated(before, after))
-            {
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    @Override
-                    public Void doWork()
-                    {
-                        Date updatedDateValue = (Date)after.get(propertyName);
-                        if (updatedDateValue != null)
-                        {
-                            DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
-                            if (dispositionAction != null)
-                            {
-                                DispositionActionDefinition daDefinition = dispositionAction.getDispositionActionDefinition();
-                                // check whether the next disposition action matches this disposition property
-                                if (daDefinition != null && propertyName.equals(daDefinition.getPeriodProperty()))
-                                {
-                                    Period period = daDefinition.getPeriod();
-                                    Date updatedAsOf = period.getNextDate(updatedDateValue);
+    return result;
+  }
 
-                                    // update asOf date on the disposition action based on the new property value
-                                    NodeRef daNodeRef = dispositionAction.getNodeRef();
-                                    // Don't overwrite a manually set "disposition as of" date.
-                                    if (isNotTrue((Boolean) nodeService.getProperty(daNodeRef, PROP_MANUALLY_SET_AS_OF)))
-                                    {
-                                        nodeService.setProperty(daNodeRef, PROP_DISPOSITION_AS_OF, updatedAsOf);
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // throw an exception if the property is being 'cleared'
-                            if (before.get(propertyName) != null)
-                            {
-                                throw new AlfrescoRuntimeException(
-                                        "Error updating property " + propertyName.toPrefixString(namespaceService) +
-                                        " to null, because property is being used to determine a disposition date.");
-                            }
-                        }
+  /**
+   * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+   */
+  @Override
+  @Behaviour(
+    kind = BehaviourKind.CLASS,
+    type = "rma:dispositionLifecycle",
+    notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+  )
+  public void onUpdateProperties(
+    final NodeRef nodeRef,
+    final Map<QName, Serializable> before,
+    final Map<QName, Serializable> after
+  ) {
+    if (nodeService.exists(nodeRef)) {
+      // has the property we care about changed?
+      if (isPropertyUpdated(before, after)) {
+        AuthenticationUtil.runAs(
+          new RunAsWork<Void>() {
+            @Override
+            public Void doWork() {
+              Date updatedDateValue = (Date) after.get(propertyName);
+              if (updatedDateValue != null) {
+                DispositionAction dispositionAction = dispositionService.getNextDispositionAction(
+                  nodeRef
+                );
+                if (dispositionAction != null) {
+                  DispositionActionDefinition daDefinition = dispositionAction.getDispositionActionDefinition();
+                  // check whether the next disposition action matches this disposition property
+                  if (
+                    daDefinition != null &&
+                    propertyName.equals(daDefinition.getPeriodProperty())
+                  ) {
+                    Period period = daDefinition.getPeriod();
+                    Date updatedAsOf = period.getNextDate(updatedDateValue);
 
-                        return null;
+                    // update asOf date on the disposition action based on the new property value
+                    NodeRef daNodeRef = dispositionAction.getNodeRef();
+                    // Don't overwrite a manually set "disposition as of" date.
+                    if (
+                      isNotTrue(
+                        (Boolean) nodeService.getProperty(
+                          daNodeRef,
+                          PROP_MANUALLY_SET_AS_OF
+                        )
+                      )
+                    ) {
+                      nodeService.setProperty(
+                        daNodeRef,
+                        PROP_DISPOSITION_AS_OF,
+                        updatedAsOf
+                      );
                     }
+                  }
+                }
+              } else {
+                // throw an exception if the property is being 'cleared'
+                if (before.get(propertyName) != null) {
+                  throw new AlfrescoRuntimeException(
+                    "Error updating property " +
+                    propertyName.toPrefixString(namespaceService) +
+                    " to null, because property is being used to determine a disposition date."
+                  );
+                }
+              }
 
-                }, AuthenticationUtil.getSystemUserName());
+              return null;
             }
-        }
+          },
+          AuthenticationUtil.getSystemUserName()
+        );
+      }
     }
+  }
 
-    /**
-     * Indicates whether the property has been updated or not.
-     *
-     * @param before
-     * @param after
-     * @return
-     */
-    private boolean isPropertyUpdated(Map<QName, Serializable> before, Map<QName, Serializable> after)
-    {
-        Serializable beforeValue = before.get(propertyName);
-        Serializable afterValue = after.get(propertyName);
+  /**
+   * Indicates whether the property has been updated or not.
+   *
+   * @param before
+   * @param after
+   * @return
+   */
+  private boolean isPropertyUpdated(
+    Map<QName, Serializable> before,
+    Map<QName, Serializable> after
+  ) {
+    Serializable beforeValue = before.get(propertyName);
+    Serializable afterValue = after.get(propertyName);
 
-        return !Objects.equals(beforeValue, afterValue);
-    }
+    return !Objects.equals(beforeValue, afterValue);
+  }
 }

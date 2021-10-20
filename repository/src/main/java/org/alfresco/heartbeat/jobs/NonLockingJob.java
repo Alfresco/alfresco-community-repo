@@ -25,6 +25,7 @@
  */
 package org.alfresco.heartbeat.jobs;
 
+import java.util.List;
 import org.alfresco.heartbeat.HBBaseDataCollector;
 import org.alfresco.heartbeat.datasender.HBData;
 import org.alfresco.heartbeat.datasender.HBDataSenderService;
@@ -36,45 +37,51 @@ import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
-import java.util.List;
-
 /**
  *
  *  This Heartbeat job collects data and passes it to the {@link HBDataSenderService}.
  *  @author eknizat
  */
-public class NonLockingJob implements Job
-{
-    /** The logger. */
-    private static final Log logger = LogFactory.getLog(NonLockingJob.class);
+public class NonLockingJob implements Job {
 
-    public static final String COLLECTOR_KEY = "collector";
-    public static final String DATA_SENDER_SERVICE_KEY = "hbDataSenderService";
+  /** The logger. */
+  private static final Log logger = LogFactory.getLog(NonLockingJob.class);
 
-    @Override
-    public void execute(final JobExecutionContext jobExecutionContext) throws JobExecutionException
-    {
-        final JobDataMap dataMap = jobExecutionContext.getJobDetail().getJobDataMap();
-        final HBBaseDataCollector collector = (HBBaseDataCollector) dataMap.get(COLLECTOR_KEY);
-        final HBDataSenderService hbDataSenderService = (HBDataSenderService) dataMap.get(DATA_SENDER_SERVICE_KEY);
+  public static final String COLLECTOR_KEY = "collector";
+  public static final String DATA_SENDER_SERVICE_KEY = "hbDataSenderService";
 
-        ParameterCheck.mandatory( COLLECTOR_KEY, collector);
-        ParameterCheck.mandatory( DATA_SENDER_SERVICE_KEY, hbDataSenderService);
+  @Override
+  public void execute(final JobExecutionContext jobExecutionContext)
+    throws JobExecutionException {
+    final JobDataMap dataMap = jobExecutionContext
+      .getJobDetail()
+      .getJobDataMap();
+    final HBBaseDataCollector collector = (HBBaseDataCollector) dataMap.get(
+      COLLECTOR_KEY
+    );
+    final HBDataSenderService hbDataSenderService = (HBDataSenderService) dataMap.get(
+      DATA_SENDER_SERVICE_KEY
+    );
 
-        try
-        {
-            List<HBData> data = collector.collectData();
-            hbDataSenderService.sendData(data);
+    ParameterCheck.mandatory(COLLECTOR_KEY, collector);
+    ParameterCheck.mandatory(DATA_SENDER_SERVICE_KEY, hbDataSenderService);
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Finished collector job. ID:" + collector.getCollectorId());
-            }
-        }
-        catch (final Exception e)
-        {
-            // Log the error but don't rethrow, collector errors are non fatal
-            logger.error("Heartbeat failed to collect data for collector ID: " + collector.getCollectorId(), e);
-        }
+    try {
+      List<HBData> data = collector.collectData();
+      hbDataSenderService.sendData(data);
+
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+          "Finished collector job. ID:" + collector.getCollectorId()
+        );
+      }
+    } catch (final Exception e) {
+      // Log the error but don't rethrow, collector errors are non fatal
+      logger.error(
+        "Heartbeat failed to collect data for collector ID: " +
+        collector.getCollectorId(),
+        e
+      );
     }
+  }
 }

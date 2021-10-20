@@ -53,90 +53,120 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Silviu Dinuta
  * @since 2.6
  */
-@EntityResource(name="transfer-containers", title = "Transfer Containers")
-public class TransferContainerEntityResource implements
-        EntityResourceAction.ReadById<TransferContainer>,
-        EntityResourceAction.Update<TransferContainer>,
-        InitializingBean
-{
-    private FilePlanComponentsApiUtils apiUtils;
-    private FileFolderService fileFolderService;
-    private ApiNodesModelFactory nodesModelFactory;
-    private TransactionService transactionService;
+@EntityResource(name = "transfer-containers", title = "Transfer Containers")
+public class TransferContainerEntityResource
+  implements
+    EntityResourceAction.ReadById<TransferContainer>,
+    EntityResourceAction.Update<TransferContainer>,
+    InitializingBean {
 
-    public void setApiUtils(FilePlanComponentsApiUtils apiUtils)
-    {
-        this.apiUtils = apiUtils;
-    }
+  private FilePlanComponentsApiUtils apiUtils;
+  private FileFolderService fileFolderService;
+  private ApiNodesModelFactory nodesModelFactory;
+  private TransactionService transactionService;
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
+  public void setApiUtils(FilePlanComponentsApiUtils apiUtils) {
+    this.apiUtils = apiUtils;
+  }
 
-    public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory)
-    {
-        this.nodesModelFactory = nodesModelFactory;
-    }
+  public void setFileFolderService(FileFolderService fileFolderService) {
+    this.fileFolderService = fileFolderService;
+  }
 
-    public void setTransactionService(TransactionService transactionService)
-    {
-        this.transactionService = transactionService;
-    }
+  public void setNodesModelFactory(ApiNodesModelFactory nodesModelFactory) {
+    this.nodesModelFactory = nodesModelFactory;
+  }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        mandatory("apiUtils", apiUtils);
-        mandatory("fileFolderService", fileFolderService);
-        mandatory("apiNodesModelFactory", nodesModelFactory);
-    }
+  public void setTransactionService(TransactionService transactionService) {
+    this.transactionService = transactionService;
+  }
 
-    @WebApiDescription(title = "Get transfer container information", description = "Gets information for a transfer container with id 'transferContainerId'")
-    @WebApiParam(name = "transferContainerId", title = "The transfer container id")
-    @Override
-    public TransferContainer readById(String transferContainerId, Parameters parameters) throws EntityNotFoundException
-    {
-        checkNotBlank("transferContainerId", transferContainerId);
-        mandatory("parameters", parameters);
+  @Override
+  public void afterPropertiesSet() throws Exception {
+    mandatory("apiUtils", apiUtils);
+    mandatory("fileFolderService", fileFolderService);
+    mandatory("apiNodesModelFactory", nodesModelFactory);
+  }
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
+  @WebApiDescription(
+    title = "Get transfer container information",
+    description = "Gets information for a transfer container with id 'transferContainerId'"
+  )
+  @WebApiParam(
+    name = "transferContainerId",
+    title = "The transfer container id"
+  )
+  @Override
+  public TransferContainer readById(
+    String transferContainerId,
+    Parameters parameters
+  ) throws EntityNotFoundException {
+    checkNotBlank("transferContainerId", transferContainerId);
+    mandatory("parameters", parameters);
 
-        FileInfo info = fileFolderService.getFileInfo(nodeRef);
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      transferContainerId,
+      RecordsManagementModel.TYPE_TRANSFER_CONTAINER
+    );
 
-        return nodesModelFactory.createTransferContainer(info, parameters, null, false);
-    }
+    FileInfo info = fileFolderService.getFileInfo(nodeRef);
 
-    @Override
-    @WebApiDescription(title="Update transfer container", description = "Updates a transfer container with id 'transferContainerId'")
-    public TransferContainer update(String transferContainerId, TransferContainer transferContainerInfo, Parameters parameters)
-    {
-        checkNotBlank("transferContainerId", transferContainerId);
-        mandatory("transferContainerInfo", transferContainerInfo);
-        mandatory("parameters", parameters);
+    return nodesModelFactory.createTransferContainer(
+      info,
+      parameters,
+      null,
+      false
+    );
+  }
 
-        NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(transferContainerId, RecordsManagementModel.TYPE_TRANSFER_CONTAINER);
+  @Override
+  @WebApiDescription(
+    title = "Update transfer container",
+    description = "Updates a transfer container with id 'transferContainerId'"
+  )
+  public TransferContainer update(
+    String transferContainerId,
+    TransferContainer transferContainerInfo,
+    Parameters parameters
+  ) {
+    checkNotBlank("transferContainerId", transferContainerId);
+    mandatory("transferContainerInfo", transferContainerInfo);
+    mandatory("parameters", parameters);
 
-        // update info
-        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
-        {
-            public Void execute()
-            {
-                apiUtils.updateTransferContainer(nodeRef, transferContainerInfo, parameters);
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+    NodeRef nodeRef = apiUtils.lookupAndValidateNodeType(
+      transferContainerId,
+      RecordsManagementModel.TYPE_TRANSFER_CONTAINER
+    );
 
-        RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>()
-        {
-            public FileInfo execute()
-            {
-                return fileFolderService.getFileInfo(nodeRef);
-            }
-        };
-        FileInfo info = transactionService.getRetryingTransactionHelper().doInTransaction(readCallback, false, true);
+    // update info
+    RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>() {
+      public Void execute() {
+        apiUtils.updateTransferContainer(
+          nodeRef,
+          transferContainerInfo,
+          parameters
+        );
+        return null;
+      }
+    };
+    transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(callback, false, true);
 
-        return nodesModelFactory.createTransferContainer(info, parameters, null, false);
-    }
+    RetryingTransactionCallback<FileInfo> readCallback = new RetryingTransactionCallback<FileInfo>() {
+      public FileInfo execute() {
+        return fileFolderService.getFileInfo(nodeRef);
+      }
+    };
+    FileInfo info = transactionService
+      .getRetryingTransactionHelper()
+      .doInTransaction(readCallback, false, true);
+
+    return nodesModelFactory.createTransferContainer(
+      info,
+      parameters,
+      null,
+      false
+    );
+  }
 }

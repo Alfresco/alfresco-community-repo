@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -31,22 +31,30 @@ import org.alfresco.service.cmr.subscriptions.PagingFollowingResults;
 import org.alfresco.service.cmr.subscriptions.PagingSubscriptionResults;
 import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 
-public interface SubscriptionsDAO
-{
-    PagingSubscriptionResults selectSubscriptions(String userId, SubscriptionItemTypeEnum type,
-            PagingRequest pagingRequest);
+public interface SubscriptionsDAO {
+  PagingSubscriptionResults selectSubscriptions(
+    String userId,
+    SubscriptionItemTypeEnum type,
+    PagingRequest pagingRequest
+  );
 
-    int countSubscriptions(String userId, SubscriptionItemTypeEnum type);
+  int countSubscriptions(String userId, SubscriptionItemTypeEnum type);
 
-    void insertSubscription(String userId, NodeRef node);
+  void insertSubscription(String userId, NodeRef node);
 
-    void deleteSubscription(String userId, NodeRef node);
+  void deleteSubscription(String userId, NodeRef node);
 
-    boolean hasSubscribed(String userId, NodeRef node);
+  boolean hasSubscribed(String userId, NodeRef node);
 
-    PagingFollowingResults selectFollowing(String userId, PagingRequest pagingRequest);
+  PagingFollowingResults selectFollowing(
+    String userId,
+    PagingRequest pagingRequest
+  );
 
-    PagingFollowingResults selectFollowers(String userId, PagingRequest pagingRequest);
+  PagingFollowingResults selectFollowers(
+    String userId,
+    PagingRequest pagingRequest
+  );
 
-    int countFollowers(String userId);
+  int countFollowers(String userId);
 }

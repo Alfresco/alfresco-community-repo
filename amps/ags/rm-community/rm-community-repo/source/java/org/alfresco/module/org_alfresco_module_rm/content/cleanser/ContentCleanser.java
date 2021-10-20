@@ -33,95 +33,87 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Random;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
  * Content cleanser base implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.4.a
  */
-public abstract class ContentCleanser
-{
-    /**
-     * Cleanse file
-     * 
-     * @param file  file to cleanse
-     */
-    public abstract void cleanse(File file);
+public abstract class ContentCleanser {
 
-    /**
-     * Overwrite files bytes with provided overwrite operation
-     * 
-     * @param file                  file
-     * @param overwriteOperation    overwrite operation
-     */
-    protected void overwrite(File file, OverwriteOperation overwriteOperation)
-    {
-        // get the number of bytes
-        long bytes = file.length();
-        try
-        {
-            // get an output stream
-            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file)))
-            {
-                for (int i = 0; i < bytes; i++)
-                {
-                    // overwrite byte
-                    overwriteOperation.operation(os);
-                }
-            }
+  /**
+   * Cleanse file
+   *
+   * @param file  file to cleanse
+   */
+  public abstract void cleanse(File file);
+
+  /**
+   * Overwrite files bytes with provided overwrite operation
+   *
+   * @param file                  file
+   * @param overwriteOperation    overwrite operation
+   */
+  protected void overwrite(File file, OverwriteOperation overwriteOperation) {
+    // get the number of bytes
+    long bytes = file.length();
+    try {
+      // get an output stream
+      try (
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(file))
+      ) {
+        for (int i = 0; i < bytes; i++) {
+          // overwrite byte
+          overwriteOperation.operation(os);
         }
-        catch (IOException ioException)
-        {
-            // re-throw
-            throw new AlfrescoRuntimeException("Unable to overwrite file", ioException);
-        }
+      }
+    } catch (IOException ioException) {
+      // re-throw
+      throw new AlfrescoRuntimeException(
+        "Unable to overwrite file",
+        ioException
+      );
     }
+  }
 
-    /**
-     * Overwrite operation
-     */
-    protected abstract class OverwriteOperation
-    {
-        public abstract void operation(OutputStream os) throws IOException;
+  /**
+   * Overwrite operation
+   */
+  protected abstract class OverwriteOperation {
+
+    public abstract void operation(OutputStream os) throws IOException;
+  }
+
+  /**
+   * Overwrite with zeros operation
+   */
+  protected OverwriteOperation overwriteZeros = new OverwriteOperation() {
+    public void operation(OutputStream os) throws IOException {
+      os.write(0);
     }
+  };
 
-    /**
-     * Overwrite with zeros operation
-     */
-    protected OverwriteOperation overwriteZeros = new OverwriteOperation()
-    {
-        public void operation(OutputStream os) throws IOException
-        {
-            os.write(0);
-        }
-    };
+  /**
+   * Overwrite with ones operation
+   */
+  protected OverwriteOperation overwriteOnes = new OverwriteOperation() {
+    public void operation(OutputStream os) throws IOException {
+      os.write(0xff);
+    }
+  };
 
-    /**
-     * Overwrite with ones operation
-     */
-    protected OverwriteOperation overwriteOnes = new OverwriteOperation()
-    {
-        public void operation(OutputStream os) throws IOException
-        {
-            os.write(0xff);
-        }
-    };
+  /**
+   * Overwrite with random operation
+   */
+  protected OverwriteOperation overwriteRandom = new OverwriteOperation() {
+    private Random random = new Random();
 
-    /**
-     * Overwrite with random operation
-     */
-    protected OverwriteOperation overwriteRandom = new OverwriteOperation()
-    {
-        private Random random = new Random();
-
-        public void operation(OutputStream os) throws IOException
-        {
-            byte[] randomByte = new byte[1];
-            random.nextBytes(randomByte);
-            os.write(randomByte[0]);
-        }
-    };
+    public void operation(OutputStream os) throws IOException {
+      byte[] randomByte = new byte[1];
+      random.nextBytes(randomByte);
+      os.write(randomByte[0]);
+    }
+  };
 }

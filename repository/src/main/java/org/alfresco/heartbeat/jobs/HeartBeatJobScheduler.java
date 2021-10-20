@@ -35,8 +35,7 @@ import org.alfresco.heartbeat.HBDataCollectorServiceImpl;
  *
  * @author eknizat
  */
-public interface HeartBeatJobScheduler
-{
-    void scheduleJob(HBBaseDataCollector collector);
-    void unscheduleJob(HBBaseDataCollector collector);
+public interface HeartBeatJobScheduler {
+  void scheduleJob(HBBaseDataCollector collector);
+  void unscheduleJob(HBBaseDataCollector collector);
 }

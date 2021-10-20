@@ -19,77 +19,70 @@
 package org.alfresco.encryption;
 
 import java.security.Key;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * 
+ *
  * Provides system-wide secret keys for symmetric database encryption from a key store
  * in the filesystem. Just wraps a key store.
- * 
+ *
  * @author Derek Hulley
  * @since 4.0
  */
-public class KeystoreKeyProvider extends AbstractKeyProvider
-{
-    private static final Log logger = LogFactory.getLog(KeystoreKeyProvider.class);
+public class KeystoreKeyProvider extends AbstractKeyProvider {
 
-    private AlfrescoKeyStore keyStore;
-    private boolean useBackupKeys = false;
+  private static final Log logger = LogFactory.getLog(
+    KeystoreKeyProvider.class
+  );
 
-    /**
-     * Constructs the provider with required defaults
-     */
-    public KeystoreKeyProvider()
-    {
-    }
+  private AlfrescoKeyStore keyStore;
+  private boolean useBackupKeys = false;
 
-    public KeystoreKeyProvider(KeyStoreParameters keyStoreParameters, KeyResourceLoader keyResourceLoader)
-    {
-        this();
-        this.keyStore = new AlfrescoKeyStoreImpl(keyStoreParameters, keyResourceLoader);
-        init();
-    }
-    
-    public void setUseBackupKeys(boolean useBackupKeys)
-    {
-        this.useBackupKeys = useBackupKeys;
-    }
+  /**
+   * Constructs the provider with required defaults
+   */
+  public KeystoreKeyProvider() {}
 
-    /**
-     * 
-     * @param keyStore
-     */
-    public KeystoreKeyProvider(AlfrescoKeyStore keyStore)
-    {
-        this();
-        this.keyStore = keyStore;
-        init();
-    }
-    
-    public void setKeyStore(AlfrescoKeyStore keyStore)
-    {
-        this.keyStore = keyStore;
-    }
+  public KeystoreKeyProvider(
+    KeyStoreParameters keyStoreParameters,
+    KeyResourceLoader keyResourceLoader
+  ) {
+    this();
+    this.keyStore =
+      new AlfrescoKeyStoreImpl(keyStoreParameters, keyResourceLoader);
+    init();
+  }
 
-    public void init()
-    {
-    }
+  public void setUseBackupKeys(boolean useBackupKeys) {
+    this.useBackupKeys = useBackupKeys;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Key getKey(String keyAlias)
-    {
-        if(useBackupKeys)
-        {
-            return keyStore.getBackupKey(keyAlias);            
-        }
-        else
-        {
-            return keyStore.getKey(keyAlias);
-        }
+  /**
+   *
+   * @param keyStore
+   */
+  public KeystoreKeyProvider(AlfrescoKeyStore keyStore) {
+    this();
+    this.keyStore = keyStore;
+    init();
+  }
+
+  public void setKeyStore(AlfrescoKeyStore keyStore) {
+    this.keyStore = keyStore;
+  }
+
+  public void init() {}
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public Key getKey(String keyAlias) {
+    if (useBackupKeys) {
+      return keyStore.getBackupKey(keyAlias);
+    } else {
+      return keyStore.getKey(keyAlias);
     }
+  }
 }

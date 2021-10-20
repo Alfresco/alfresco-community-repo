@@ -27,105 +27,100 @@ package org.alfresco.util;
 
 /**
  * Utility class for containing three things that aren't like each other.
- * 
+ *
  * @since 4.0
  */
-public final class Triple<T, U, V>
-{
-    /**
-     * The first member of the triple.
-     */
-    private final T first;
-    
-    /**
-     * The second member of the triple.
-     */
-    private final U second;
-    
-    /**
-     * The third member of the triple.
-     */
-    private final V third;
-    
-    /**
-     * Make a new one.
-     * 
-     * @param first  The first member.
-     * @param second The second member.
-     * @param third  The third member.
-     */
-    public Triple(final T first, final U second, final V third)
-    {
-        this.first  = first;
-        this.second = second;
-        this.third  = third;
-    }
-    
-    /**
-     * Get the first member of the tuple.
-     * @return The first member.
-     */
-    public T getFirst()
-    {
-        return first;
-    }
-    
-    /**
-     * Get the second member of the tuple.
-     * @return The second member.
-     */
-    public U getSecond()
-    {
-        return second;
-    }
-    
-    /**
-     * Get the third member of the tuple.
-     * @return The third member.
-     */
-    public V getThird()
-    {
-        return third;
-    }
-    
-    /**
-     * Override of equals.
-     * @param other The thing to compare to.
-     * @return equality.
-     */
-    public boolean equals(final Object other)
-    {
-        if (this == other)
-        {
-            return true;
-        }
-        
-        if (!(other instanceof Triple))
-        {
-            return false;
-        }
-        
-        Triple<?, ?, ?> o = (Triple<?, ?, ?>)other;
-        return (first.equals(o.getFirst()) &&
-                second.equals(o.getSecond()) &&
-                third.equals(o.getThird()));
-    }
-    
-    /**
-     * Override of hashCode.
-     */
-    public int hashCode()
-    {
-        return ((first  == null ? 0 : first.hashCode()) +
-                (second == null ? 0 : second.hashCode()) +
-                (third  == null ? 0 : third.hashCode()));
+public final class Triple<T, U, V> {
+
+  /**
+   * The first member of the triple.
+   */
+  private final T first;
+
+  /**
+   * The second member of the triple.
+   */
+  private final U second;
+
+  /**
+   * The third member of the triple.
+   */
+  private final V third;
+
+  /**
+   * Make a new one.
+   *
+   * @param first  The first member.
+   * @param second The second member.
+   * @param third  The third member.
+   */
+  public Triple(final T first, final U second, final V third) {
+    this.first = first;
+    this.second = second;
+    this.third = third;
+  }
+
+  /**
+   * Get the first member of the tuple.
+   * @return The first member.
+   */
+  public T getFirst() {
+    return first;
+  }
+
+  /**
+   * Get the second member of the tuple.
+   * @return The second member.
+   */
+  public U getSecond() {
+    return second;
+  }
+
+  /**
+   * Get the third member of the tuple.
+   * @return The third member.
+   */
+  public V getThird() {
+    return third;
+  }
+
+  /**
+   * Override of equals.
+   * @param other The thing to compare to.
+   * @return equality.
+   */
+  public boolean equals(final Object other) {
+    if (this == other) {
+      return true;
     }
 
-    /**
-     * @see java.lang.Object#toString()
-     */
-    public String toString()
-    {
-        return "(" + first + ", " + second + ", " + third + ")";
+    if (!(other instanceof Triple)) {
+      return false;
     }
+
+    Triple<?, ?, ?> o = (Triple<?, ?, ?>) other;
+    return (
+      first.equals(o.getFirst()) &&
+      second.equals(o.getSecond()) &&
+      third.equals(o.getThird())
+    );
+  }
+
+  /**
+   * Override of hashCode.
+   */
+  public int hashCode() {
+    return (
+      (first == null ? 0 : first.hashCode()) +
+      (second == null ? 0 : second.hashCode()) +
+      (third == null ? 0 : third.hashCode())
+    );
+  }
+
+  /**
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    return "(" + first + ", " + second + ", " + third + ")";
+  }
 }

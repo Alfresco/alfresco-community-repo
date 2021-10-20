@@ -39,125 +39,107 @@ import org.alfresco.traitextender.SpringBeanExtension;
  * @author Oussama Messeguem
  */
 public class VirtualBehaviourFilterExtension
-        extends SpringBeanExtension<BehaviourFilterExtension, BehaviourFilterTrait>
-        implements BehaviourFilterExtension
-{
+  extends SpringBeanExtension<BehaviourFilterExtension, BehaviourFilterTrait>
+  implements BehaviourFilterExtension {
 
-    private VirtualStore smartStore;
+  private VirtualStore smartStore;
 
-    public VirtualBehaviourFilterExtension()
-    {
-        super(BehaviourFilterTrait.class);
-    }
+  public VirtualBehaviourFilterExtension() {
+    super(BehaviourFilterTrait.class);
+  }
 
-    public void setSmartStore(VirtualStore smartStore)
-    {
-        this.smartStore = smartStore;
-    }
+  public void setSmartStore(VirtualStore smartStore) {
+    this.smartStore = smartStore;
+  }
 
-    @Override
-    public void disableBehaviour(NodeRef nodeRef, QName className)
-    {
-        getTrait().disableBehaviour(smartStore.materializeIfPossible(nodeRef), className);
-    }
+  @Override
+  public void disableBehaviour(NodeRef nodeRef, QName className) {
+    getTrait()
+      .disableBehaviour(smartStore.materializeIfPossible(nodeRef), className);
+  }
 
-    @Override
-    public void disableBehaviour(NodeRef nodeRef)
-    {
-        getTrait().disableBehaviour(smartStore.materializeIfPossible(nodeRef));
-    }
+  @Override
+  public void disableBehaviour(NodeRef nodeRef) {
+    getTrait().disableBehaviour(smartStore.materializeIfPossible(nodeRef));
+  }
 
-    @Override
-    public void enableBehaviour(NodeRef nodeRef, QName className)
-    {
-        getTrait().enableBehaviour(smartStore.materializeIfPossible(nodeRef), className);
-    }
+  @Override
+  public void enableBehaviour(NodeRef nodeRef, QName className) {
+    getTrait()
+      .enableBehaviour(smartStore.materializeIfPossible(nodeRef), className);
+  }
 
-    @Override
-    public void enableBehaviour(NodeRef nodeRef)
-    {
-        getTrait().enableBehaviour(smartStore.materializeIfPossible(nodeRef));
-    }
+  @Override
+  public void enableBehaviour(NodeRef nodeRef) {
+    getTrait().enableBehaviour(smartStore.materializeIfPossible(nodeRef));
+  }
 
-    @Override
-    public boolean isEnabled(NodeRef nodeRef, QName className)
-    {
-        return getTrait().isEnabled(smartStore.materializeIfPossible(nodeRef), className);
-    }
+  @Override
+  public boolean isEnabled(NodeRef nodeRef, QName className) {
+    return getTrait()
+      .isEnabled(smartStore.materializeIfPossible(nodeRef), className);
+  }
 
-    @Override
-    public boolean isEnabled(NodeRef nodeRef)
-    {
-        return getTrait().isEnabled(smartStore.materializeIfPossible(nodeRef));
-    }
+  @Override
+  public boolean isEnabled(NodeRef nodeRef) {
+    return getTrait().isEnabled(smartStore.materializeIfPossible(nodeRef));
+  }
 
-    @Override
-    public void disableBehaviour()
-    {
-        getTrait().disableBehaviour();
-    }
+  @Override
+  public void disableBehaviour() {
+    getTrait().disableBehaviour();
+  }
 
-    @Override
-    public void disableBehaviour(QName className)
-    {
-        getTrait().disableBehaviour(className);
-    }
+  @Override
+  public void disableBehaviour(QName className) {
+    getTrait().disableBehaviour(className);
+  }
 
-    @Override
-    public void disableBehaviour(QName className, boolean includeSubClasses)
-    {
-        getTrait().disableBehaviour(className, includeSubClasses);
-    }
+  @Override
+  public void disableBehaviour(QName className, boolean includeSubClasses) {
+    getTrait().disableBehaviour(className, includeSubClasses);
+  }
 
-    @Override
-    public void enableBehaviour()
-    {
-        getTrait().enableBehaviour();
-    }
+  @Override
+  public void enableBehaviour() {
+    getTrait().enableBehaviour();
+  }
 
-    @Override
-    public void enableBehaviour(QName className)
-    {
-        getTrait().enableBehaviour(className);
-    }
+  @Override
+  public void enableBehaviour(QName className) {
+    getTrait().enableBehaviour(className);
+  }
 
-    @Override
-    public boolean isEnabled()
-    {
-        return getTrait().isEnabled();
-    }
+  @Override
+  public boolean isEnabled() {
+    return getTrait().isEnabled();
+  }
 
-    @Override
-    public boolean isEnabled(QName className)
-    {
-        return getTrait().isEnabled(className);
-    }
+  @Override
+  public boolean isEnabled(QName className) {
+    return getTrait().isEnabled(className);
+  }
 
-    @Override
-    public boolean isActivated()
-    {
-        return getTrait().isActivated();
-    }
+  @Override
+  public boolean isActivated() {
+    return getTrait().isActivated();
+  }
 
-    @Deprecated
-    @Override
-    public void enableBehaviours(NodeRef nodeRef)
-    {
-        getTrait().enableBehaviours(smartStore.materializeIfPossible(nodeRef));
-    }
+  @Deprecated
+  @Override
+  public void enableBehaviours(NodeRef nodeRef) {
+    getTrait().enableBehaviours(smartStore.materializeIfPossible(nodeRef));
+  }
 
-    @Deprecated
-    @Override
-    public void disableAllBehaviours()
-    {
-        getTrait().disableAllBehaviours();
-    }
+  @Deprecated
+  @Override
+  public void disableAllBehaviours() {
+    getTrait().disableAllBehaviours();
+  }
 
-    @Deprecated
-    @Override
-    public void enableAllBehaviours()
-    {
-        getTrait().enableAllBehaviours();
-    }
-
+  @Deprecated
+  @Override
+  public void enableAllBehaviours() {
+    getTrait().enableAllBehaviours();
+  }
 }

@@ -35,57 +35,70 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.aopalliance.intercept.MethodInvocation;
 
-public class AssocPolicy extends AbstractBasePolicy
-{
+public class AssocPolicy extends AbstractBasePolicy {
 
-    @SuppressWarnings("rawtypes")
-	public int evaluate(
-            MethodInvocation invocation,
-            Class[] params,
-            ConfigAttributeDefinition cad)
-    {
-        NodeRef source = null;
-        if (cad.getParameters().get(0) > -1)
-        {
-            source = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        }
-
-        NodeRef target = null;
-        if (cad.getParameters().get(1) > -1)
-        {
-            target = getTestNode(invocation, params, cad.getParameters().get(1), cad.isParent());
-        }
-
-        if (source != null && target != null)
-        {
-            // check the source node ref is a file plan component
-            if (nodeService.hasAspect(source, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-            {
-                return getCapabilityService().getCapability(ViewRecordsCapability.NAME).evaluate(source);
-            }
-            else
-            {
-                final boolean isFilePlanComponent = nodeService.hasAspect(target, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
-                final boolean hasViewRecordCapability = getCapabilityService().hasCapability(target, ViewRecordsCapability.NAME);
-                // allow association between a source non rm node and an rm node if the user
-                // has ViewRecordsCapability on the RM target node and  write properties on the dm node
-                if ( isFilePlanComponent &&
-                        hasViewRecordCapability &&
-                        permissionService.hasPermission(source, PermissionService.WRITE_PROPERTIES).equals(AccessStatus.ALLOWED))
-                {
-                    return AccessDecisionVoter.ACCESS_GRANTED;
-                }
-                else
-                {
-                    return AccessDecisionVoter.ACCESS_DENIED;
-                }
-            }
-        }
-        else
-        {
-            return AccessDecisionVoter.ACCESS_DENIED;
-        }
+  @SuppressWarnings("rawtypes")
+  public int evaluate(
+    MethodInvocation invocation,
+    Class[] params,
+    ConfigAttributeDefinition cad
+  ) {
+    NodeRef source = null;
+    if (cad.getParameters().get(0) > -1) {
+      source =
+        getTestNode(
+          invocation,
+          params,
+          cad.getParameters().get(0),
+          cad.isParent()
+        );
     }
 
-}
+    NodeRef target = null;
+    if (cad.getParameters().get(1) > -1) {
+      target =
+        getTestNode(
+          invocation,
+          params,
+          cad.getParameters().get(1),
+          cad.isParent()
+        );
+    }
 
+    if (source != null && target != null) {
+      // check the source node ref is a file plan component
+      if (
+        nodeService.hasAspect(
+          source,
+          RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT
+        )
+      ) {
+        return getCapabilityService()
+          .getCapability(ViewRecordsCapability.NAME)
+          .evaluate(source);
+      } else {
+        final boolean isFilePlanComponent = nodeService.hasAspect(
+          target,
+          RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT
+        );
+        final boolean hasViewRecordCapability = getCapabilityService()
+          .hasCapability(target, ViewRecordsCapability.NAME);
+        // allow association between a source non rm node and an rm node if the user
+        // has ViewRecordsCapability on the RM target node and  write properties on the dm node
+        if (
+          isFilePlanComponent &&
+          hasViewRecordCapability &&
+          permissionService
+            .hasPermission(source, PermissionService.WRITE_PROPERTIES)
+            .equals(AccessStatus.ALLOWED)
+        ) {
+          return AccessDecisionVoter.ACCESS_GRANTED;
+        } else {
+          return AccessDecisionVoter.ACCESS_DENIED;
+        }
+      }
+    } else {
+      return AccessDecisionVoter.ACCESS_DENIED;
+    }
+  }
+}

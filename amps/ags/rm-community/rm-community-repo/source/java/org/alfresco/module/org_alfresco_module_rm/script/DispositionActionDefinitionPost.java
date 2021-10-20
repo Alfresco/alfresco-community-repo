@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -52,123 +51,148 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @author Gavin Cornwell
  */
-public class DispositionActionDefinitionPost extends DispositionAbstractBase
-{
-    /*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
-     */
-    @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        // parse the request to retrieve the schedule object
-        DispositionSchedule schedule = parseRequestForSchedule(req);
+public class DispositionActionDefinitionPost extends DispositionAbstractBase {
 
-        // retrieve the rest of the post body and create the action
-        //       definition
-        JSONObject json = null;
-        DispositionActionDefinition actionDef = null;
-        try
-        {
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            actionDef = createActionDefinition(json, schedule);
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
-        }
+  /*
+   * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+   */
+  @Override
+  protected Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    // parse the request to retrieve the schedule object
+    DispositionSchedule schedule = parseRequestForSchedule(req);
 
-        // create model object with just the action data
-        Map<String, Object> model = new HashMap<>(1);
-        model.put("action", createActionDefModel(actionDef, req.getURL() + "/" + actionDef.getId()));
-        return model;
+    // retrieve the rest of the post body and create the action
+    //       definition
+    JSONObject json = null;
+    DispositionActionDefinition actionDef = null;
+    try {
+      json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+      actionDef = createActionDefinition(json, schedule);
+    } catch (IOException iox) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not read content from req.",
+        iox
+      );
+    } catch (JSONException je) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not parse JSON from req.",
+        je
+      );
     }
 
-    /**
-     * Creates a dispositionActionDefinition node in the repo.
-     *
-     * @param json The JSON to use to create the action definition
-     * @param schedule The DispositionSchedule the action is for
-     * @return The DispositionActionDefinition representing the new action definition
-     */
-    protected DispositionActionDefinition createActionDefinition(JSONObject json,
-              DispositionSchedule schedule) throws JSONException
-    {
-        // extract the data from the JSON request
-        if (!json.has("name"))
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Mandatory 'name' parameter was not provided in request body");
-        }
+    // create model object with just the action data
+    Map<String, Object> model = new HashMap<>(1);
+    model.put(
+      "action",
+      createActionDefModel(actionDef, req.getURL() + "/" + actionDef.getId())
+    );
+    return model;
+  }
 
-        // create the properties for the action definition
-        Map<QName, Serializable> props = new HashMap<>(8);
-        String name = json.getString("name");
-        props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, name);
-
-        if (json.has("description"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION, json.getString("description"));
-        }
-
-        if (json.has("period"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD, json.getString("period"));
-        }
-
-        if (json.has("periodProperty"))
-        {
-            QName periodProperty = QName.createQName(json.getString("periodProperty"), getNamespaceService());
-            props.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
-        }
-
-        if (json.has("eligibleOnFirstCompleteEvent"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
-                        json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and");
-        }
-
-        if (json.has(COMBINE_DISPOSITION_STEP_CONDITIONS))
-        {
-            props.put(RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
-                    json.getBoolean(COMBINE_DISPOSITION_STEP_CONDITIONS));
-        }
-
-        if (json.has("location"))
-        {
-            props.put(RecordsManagementModel.PROP_DISPOSITION_LOCATION,
-                      json.getString("location"));
-        }
-
-        if (json.has("events"))
-        {
-            JSONArray events = json.getJSONArray("events");
-            List<String> eventsList = new ArrayList<>(events.length());
-            for (int x = 0; x < events.length(); x++)
-            {
-                eventsList.add(events.getString(x));
-            }
-            props.put(RecordsManagementModel.PROP_DISPOSITION_EVENT, (Serializable)eventsList);
-        }
-
-        if (json.has("name") && "destroy".equals(json.getString("name")))
-        {
-            if (json.has("ghostOnDestroy"))
-            {
-                props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "ghost");
-            }
-            else
-            {
-                props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY, "delete");
-            }
-        }
-
-        // add the action definition to the schedule
-        return getDispositionService().addDispositionActionDefinition(schedule, props);
+  /**
+   * Creates a dispositionActionDefinition node in the repo.
+   *
+   * @param json The JSON to use to create the action definition
+   * @param schedule The DispositionSchedule the action is for
+   * @return The DispositionActionDefinition representing the new action definition
+   */
+  protected DispositionActionDefinition createActionDefinition(
+    JSONObject json,
+    DispositionSchedule schedule
+  ) throws JSONException {
+    // extract the data from the JSON request
+    if (!json.has("name")) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Mandatory 'name' parameter was not provided in request body"
+      );
     }
+
+    // create the properties for the action definition
+    Map<QName, Serializable> props = new HashMap<>(8);
+    String name = json.getString("name");
+    props.put(RecordsManagementModel.PROP_DISPOSITION_ACTION_NAME, name);
+
+    if (json.has("description")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_DESCRIPTION,
+        json.getString("description")
+      );
+    }
+
+    if (json.has("period")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_PERIOD,
+        json.getString("period")
+      );
+    }
+
+    if (json.has("periodProperty")) {
+      QName periodProperty = QName.createQName(
+        json.getString("periodProperty"),
+        getNamespaceService()
+      );
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY,
+        periodProperty
+      );
+    }
+
+    if (json.has("eligibleOnFirstCompleteEvent")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_EVENT_COMBINATION,
+        json.getBoolean("eligibleOnFirstCompleteEvent") ? "or" : "and"
+      );
+    }
+
+    if (json.has(COMBINE_DISPOSITION_STEP_CONDITIONS)) {
+      props.put(
+        RecordsManagementModel.PROP_COMBINE_DISPOSITION_STEP_CONDITIONS,
+        json.getBoolean(COMBINE_DISPOSITION_STEP_CONDITIONS)
+      );
+    }
+
+    if (json.has("location")) {
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_LOCATION,
+        json.getString("location")
+      );
+    }
+
+    if (json.has("events")) {
+      JSONArray events = json.getJSONArray("events");
+      List<String> eventsList = new ArrayList<>(events.length());
+      for (int x = 0; x < events.length(); x++) {
+        eventsList.add(events.getString(x));
+      }
+      props.put(
+        RecordsManagementModel.PROP_DISPOSITION_EVENT,
+        (Serializable) eventsList
+      );
+    }
+
+    if (json.has("name") && "destroy".equals(json.getString("name"))) {
+      if (json.has("ghostOnDestroy")) {
+        props.put(
+          RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY,
+          "ghost"
+        );
+      } else {
+        props.put(
+          RecordsManagementModel.PROP_DISPOSITION_ACTION_GHOST_ON_DESTROY,
+          "delete"
+        );
+      }
+    }
+
+    // add the action definition to the schedule
+    return getDispositionService()
+      .addDispositionActionDefinition(schedule, props);
+  }
 }

@@ -33,27 +33,24 @@ import java.util.stream.Stream;
 /**
  * Whitelisted DM actions in RM
  */
-public enum WhitelistedDMActions
-{
-    ARCHIVE("archive"),
-    RESTORE("restore");
+public enum WhitelistedDMActions {
+  ARCHIVE("archive"),
+  RESTORE("restore");
 
-    private final String value;
+  private final String value;
 
-    WhitelistedDMActions(String value)
-    {
-        this.value = value;
-    }
+  WhitelistedDMActions(String value) {
+    this.value = value;
+  }
 
-    public String getValue()
-    {
-        return this.value;
-    }
+  public String getValue() {
+    return this.value;
+  }
 
-    public static List<String> getActionsList()
-    {
-        return Stream.of(WhitelistedDMActions.values())
-                     .map(WhitelistedDMActions::getValue)
-                     .collect(Collectors.toList());
-    }
+  public static List<String> getActionsList() {
+    return Stream
+      .of(WhitelistedDMActions.values())
+      .map(WhitelistedDMActions::getValue)
+      .collect(Collectors.toList());
+  }
 }

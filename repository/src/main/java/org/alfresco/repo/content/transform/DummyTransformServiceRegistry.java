@@ -25,28 +25,34 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.transform.client.registry.TransformServiceRegistry;
-
 import java.util.Map;
+import org.alfresco.transform.client.registry.TransformServiceRegistry;
 
 /**
  * A place holder for the remote transform service registry.
  *
  * @author adavis
  */
-public class DummyTransformServiceRegistry implements TransformServiceRegistry
-{
-    @Override
-    public long findMaxSize(String sourceMimetype, String targetMimetype, Map<String, String> actualOptions,
-                            String transformName)
-    {
-        return 0;
-    }
+public class DummyTransformServiceRegistry implements TransformServiceRegistry {
 
-    @Override
-    public String findTransformerName(String sourceMimetype, long sourceSizeInBytes, String targetMimetype,
-                                      Map<String, String> actualOptions, String renditionName)
-    {
-        return null;
-    }
+  @Override
+  public long findMaxSize(
+    String sourceMimetype,
+    String targetMimetype,
+    Map<String, String> actualOptions,
+    String transformName
+  ) {
+    return 0;
+  }
+
+  @Override
+  public String findTransformerName(
+    String sourceMimetype,
+    long sourceSizeInBytes,
+    String targetMimetype,
+    Map<String, String> actualOptions,
+    String renditionName
+  ) {
+    return null;
+  }
 }

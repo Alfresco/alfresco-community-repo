@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * This file is part of the Alfresco software.
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
- * 
+ *
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -27,9 +27,7 @@ package org.alfresco.repo.web.scripts.workflow;
 
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -40,52 +38,57 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author unknown
  * @since 3.4
  */
-public class WorkflowInstanceGet extends AbstractWorkflowWebscript
-{
-    public static final String PARAM_INCLUDE_TASKS = "includeTasks";
+public class WorkflowInstanceGet extends AbstractWorkflowWebscript {
 
-    @Override
-    protected Map<String, Object> buildModel(WorkflowModelBuilder modelBuilder, WebScriptRequest req, Status status, Cache cache)
-    {
-        Map<String, String> params = req.getServiceMatch().getTemplateVars();
+  public static final String PARAM_INCLUDE_TASKS = "includeTasks";
 
-        // getting workflow instance id from request parameters
-        String workflowInstanceId = params.get("workflow_instance_id");
+  @Override
+  protected Map<String, Object> buildModel(
+    WorkflowModelBuilder modelBuilder,
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    Map<String, String> params = req.getServiceMatch().getTemplateVars();
 
-        boolean includeTasks = getIncludeTasks(req);
+    // getting workflow instance id from request parameters
+    String workflowInstanceId = params.get("workflow_instance_id");
 
-        WorkflowInstance workflowInstance = workflowService.getWorkflowById(workflowInstanceId);
+    boolean includeTasks = getIncludeTasks(req);
 
-        // task was not found -> return 404
-        if (workflowInstance == null)
-        {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find workflow instance with id: " + workflowInstanceId);
-        }
+    WorkflowInstance workflowInstance = workflowService.getWorkflowById(
+      workflowInstanceId
+    );
 
-        Map<String, Object> model = new HashMap<String, Object>();
-        // build the model for ftl
-        model.put("workflowInstance", modelBuilder.buildDetailed(workflowInstance, includeTasks));
-
-        return model;
+    // task was not found -> return 404
+    if (workflowInstance == null) {
+      throw new WebScriptException(
+        HttpServletResponse.SC_NOT_FOUND,
+        "Unable to find workflow instance with id: " + workflowInstanceId
+      );
     }
 
-    private boolean getIncludeTasks(WebScriptRequest req)
-    {
-        String includeTasks = req.getParameter(PARAM_INCLUDE_TASKS);
-        if (includeTasks != null)
-        {
-            try
-            {
-                return Boolean.valueOf(includeTasks);
-            }
-            catch (Exception e)
-            {
-                // do nothing, false will be returned
-            }
-        }
+    Map<String, Object> model = new HashMap<String, Object>();
+    // build the model for ftl
+    model.put(
+      "workflowInstance",
+      modelBuilder.buildDetailed(workflowInstance, includeTasks)
+    );
 
-        // Defaults to false.
-        return false;
+    return model;
+  }
+
+  private boolean getIncludeTasks(WebScriptRequest req) {
+    String includeTasks = req.getParameter(PARAM_INCLUDE_TASKS);
+    if (includeTasks != null) {
+      try {
+        return Boolean.valueOf(includeTasks);
+      } catch (Exception e) {
+        // do nothing, false will be returned
+      }
     }
 
+    // Defaults to false.
+    return false;
+  }
 }

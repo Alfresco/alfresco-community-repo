@@ -40,41 +40,55 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.2
  * @version 1.0
  */
-public class RM1429Test extends DeleteHoldTest
-{
-    public void testDeleteHoldWithoutPermissionsOnChildren()
-    {
-        final NodeRef hold = doTestInTransaction(new Test<NodeRef>()
-        {
-           @Override
-           public NodeRef run()
-           {
-               // Create the test hold
-               NodeRef hold = createAndCheckHold();
-               
-               // Add the user to the RM Manager role
-               filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
+public class RM1429Test extends DeleteHoldTest {
 
-               // Give the user filing permissions on the hold
-               permissionService.setPermission(hold, userName, RMPermissionModel.FILING, true);
+  public void testDeleteHoldWithoutPermissionsOnChildren() {
+    final NodeRef hold = doTestInTransaction(
+      new Test<NodeRef>() {
+        @Override
+        public NodeRef run() {
+          // Create the test hold
+          NodeRef hold = createAndCheckHold();
 
-               // Give the user read permissions on the record folder
-               permissionService.setPermission(rmFolder, userName, RMPermissionModel.READ_RECORDS, true);
+          // Add the user to the RM Manager role
+          filePlanRoleService.assignRoleToAuthority(
+            filePlan,
+            FilePlanRoleService.ROLE_RECORDS_MANAGER,
+            userName
+          );
 
-               // Add record folder to the hold
-               holdService.addToHold(hold, rmFolder);
+          // Give the user filing permissions on the hold
+          permissionService.setPermission(
+            hold,
+            userName,
+            RMPermissionModel.FILING,
+            true
+          );
 
-               return hold;
-           }
-        });
+          // Give the user read permissions on the record folder
+          permissionService.setPermission(
+            rmFolder,
+            userName,
+            RMPermissionModel.READ_RECORDS,
+            true
+          );
 
-        doTestInTransaction(new FailureTest(AlfrescoRuntimeException.class)
-        {
-            @Override
-            public void run()
-            {
-                holdService.deleteHold(hold);
-            }
-        }, userName);
-    }
+          // Add record folder to the hold
+          holdService.addToHold(hold, rmFolder);
+
+          return hold;
+        }
+      }
+    );
+
+    doTestInTransaction(
+      new FailureTest(AlfrescoRuntimeException.class) {
+        @Override
+        public void run() {
+          holdService.deleteHold(hold);
+        }
+      },
+      userName
+    );
+  }
 }

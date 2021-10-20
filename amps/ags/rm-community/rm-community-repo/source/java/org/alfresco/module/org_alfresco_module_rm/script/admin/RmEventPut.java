@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.script.admin;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
@@ -48,110 +47,124 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  * @author Roy Wetherall
  */
-public class RmEventPut extends RMEventBase
-{
-	/** Parameter names */
-	public static final String PARAM_EVENTNAME = "eventname";
+public class RmEventPut extends RMEventBase {
 
-    /** Records management event service */
-    private RecordsManagementEventService rmEventService;
+  /** Parameter names */
+  public static final String PARAM_EVENTNAME = "eventname";
 
-    /**
-     * Set the records management event service
-     *
-     * @param rmEventService
-     */
-    public void setRecordsManagementEventService(RecordsManagementEventService rmEventService)
-    {
-        this.rmEventService = rmEventService;
+  /** Records management event service */
+  private RecordsManagementEventService rmEventService;
+
+  /**
+   * Set the records management event service
+   *
+   * @param rmEventService
+   */
+  public void setRecordsManagementEventService(
+    RecordsManagementEventService rmEventService
+  ) {
+    this.rmEventService = rmEventService;
+  }
+
+  /**
+   * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+   *      org.springframework.extensions.webscripts.Status,
+   *      org.springframework.extensions.webscripts.Cache)
+   */
+  @Override
+  public Map<String, Object> executeImpl(
+    WebScriptRequest req,
+    Status status,
+    Cache cache
+  ) {
+    ParameterCheck.mandatory("req", req);
+
+    Map<String, Object> model = new HashMap<>();
+    JSONObject json = null;
+    try {
+      // Convert the request content to JSON
+      json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+
+      // Check the event name
+      Map<String, String> templateVars = req
+        .getServiceMatch()
+        .getTemplateVars();
+      String eventName = templateVars.get(PARAM_EVENTNAME);
+      if (
+        eventName == null ||
+        eventName.isEmpty() ||
+        !rmEventService.existsEvent(eventName)
+      ) {
+        throw new WebScriptException(
+          Status.STATUS_NOT_FOUND,
+          "No event name was provided."
+        );
+      }
+
+      // Check the event display label
+      String eventDisplayLabel = getValue(json, "eventDisplayLabel");
+      doCheck(eventDisplayLabel, "No event display label was provided.");
+
+      // Check the event type
+      String eventType = getValue(json, "eventType");
+      doCheck(eventType, "No event type was provided.");
+
+      // Check if the event can be edited or not
+      RecordsManagementEvent event = null;
+      if (canEditEvent(eventDisplayLabel, eventName, eventType)) {
+        // Create event
+        event =
+          rmEventService.addEvent(eventType, eventName, eventDisplayLabel);
+      } else {
+        // Get event
+        event = rmEventService.getEvent(eventName);
+      }
+
+      model.put("event", event);
+    } catch (IOException iox) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not read content from req.",
+        iox
+      );
+    } catch (JSONException je) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        "Could not parse JSON from req.",
+        je
+      );
     }
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
-     */
-    @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
-    {
-        ParameterCheck.mandatory("req", req);
+    return model;
+  }
 
-        Map<String, Object> model = new HashMap<>();
-        JSONObject json = null;
-        try
-        {
-            // Convert the request content to JSON
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+  /**
+   * Helper method for checking if an event can be edited or not. Throws an
+   * error if an event with the same display label already exists.
+   *
+   * @param eventDisplayLabel The display label of the event
+   * @param eventName The name of the event
+   * @param eventType The type of the event
+   * @return true if the event can be edited, false otherwise
+   */
+  private boolean canEditEvent(
+    String eventDisplayLabel,
+    String eventName,
+    String eventType
+  ) {
+    boolean canEditEvent;
 
-            // Check the event name
-            Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-            String eventName = templateVars.get(PARAM_EVENTNAME);
-            if (eventName == null ||
-                eventName.isEmpty() ||
-                !rmEventService.existsEvent(eventName))
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "No event name was provided.");
-            }
-
-            // Check the event display label
-            String eventDisplayLabel = getValue(json, "eventDisplayLabel");
-            doCheck(eventDisplayLabel, "No event display label was provided.");
-
-            // Check the event type
-            String eventType = getValue(json, "eventType");
-            doCheck(eventType, "No event type was provided.");
-
-            // Check if the event can be edited or not
-            RecordsManagementEvent event = null;
-            if (canEditEvent(eventDisplayLabel, eventName, eventType))
-            {
-                // Create event
-                event = rmEventService.addEvent(eventType, eventName, eventDisplayLabel);
-            }
-            else
-            {
-                // Get event
-                event = rmEventService.getEvent(eventName);
-            }
-
-            model.put("event", event);
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
-        }
-
-        return model;
+    try {
+      canEditEvent =
+        rmEventService.canEditEvent(eventDisplayLabel, eventName, eventType);
+    } catch (AlfrescoRuntimeException are) {
+      throw new WebScriptException(
+        Status.STATUS_BAD_REQUEST,
+        are.getLocalizedMessage(),
+        are
+      );
     }
 
-    /**
-     * Helper method for checking if an event can be edited or not. Throws an
-     * error if an event with the same display label already exists.
-     *
-     * @param eventDisplayLabel The display label of the event
-     * @param eventName The name of the event
-     * @param eventType The type of the event
-     * @return true if the event can be edited, false otherwise
-     */
-    private boolean canEditEvent(String eventDisplayLabel, String eventName, String eventType)
-    {
-        boolean canEditEvent;
-
-        try
-        {
-           canEditEvent = rmEventService.canEditEvent(eventDisplayLabel, eventName, eventType);
-        }
-        catch (AlfrescoRuntimeException are)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, are.getLocalizedMessage(), are);
-        }
-
-        return canEditEvent;
-    }
+    return canEditEvent;
+  }
 }

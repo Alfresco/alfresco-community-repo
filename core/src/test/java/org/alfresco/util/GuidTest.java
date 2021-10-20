@@ -24,81 +24,73 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import junit.framework.TestCase;
-
 import org.junit.Assert;
 
 /**
  * Test class for GUID generation
- * 
+ *
  * @author Andreea Dragoi
  *
  */
-public class GuidTest extends TestCase
-{
-    class GuidRunner implements Runnable
-    {
-        @Override
-        public void run()
-        {
-            GUID.generate();
-        }
+public class GuidTest extends TestCase {
+
+  class GuidRunner implements Runnable {
+
+    @Override
+    public void run() {
+      GUID.generate();
     }
-    
-    /**
-     * Tests the improvement added by using a SecureRandom pool when generating GUID's 
-     */
-    public void testGuid()
-    {
-        // warm-up (to pre-init the secureRandomArray)
-        GUID.generate();
+  }
 
-        List<Thread> threads = new ArrayList<>();
-        int n = 30;
-        
-        for (int i = 0; i < n; i++)
-        {
-            Thread thread = new Thread(new GuidRunner());
-            threads.add(thread);
-            thread.start();
-        }
-        
-        Set<String> blocked = new HashSet<String>();
-        Set<String> terminated = new HashSet<String>();
+  /**
+   * Tests the improvement added by using a SecureRandom pool when generating GUID's
+   */
+  public void testGuid() {
+    // warm-up (to pre-init the secureRandomArray)
+    GUID.generate();
 
-        int maxItemsBlocked = 0;
+    List<Thread> threads = new ArrayList<>();
+    int n = 30;
 
-        while (terminated.size() != n)
-        {
-            for (Thread current : threads)
-            {
-                State state = current.getState();
-                String name = current.getName();
-
-                if (state == State.BLOCKED)
-                {
-                    if (!blocked.contains(name))
-                    {
-                        blocked.add(name);
-                        maxItemsBlocked = blocked.size() > maxItemsBlocked ? blocked.size() : maxItemsBlocked;
-                    }
-                }
-                else // not BLOCKED, eg. RUNNABLE, TERMINATED, ...
-                {
-                    blocked.remove(name);
-                    if (state == State.TERMINATED && !terminated.contains(name))
-                    {
-                        terminated.add(name);
-                    }
-                }
-            }
-        }
-        
-        //worst case scenario : max number of threads blocked at a moment = number of threads - 2 ( usually ~5 for 30 threads)
-        //the implementation without RandomSecure pool reaches constantly (number of threads - 1) max blocked threads  
-        Assert.assertTrue("Exceeded number of blocked threads : " + maxItemsBlocked, maxItemsBlocked < n-2);
+    for (int i = 0; i < n; i++) {
+      Thread thread = new Thread(new GuidRunner());
+      threads.add(thread);
+      thread.start();
     }
 
+    Set<String> blocked = new HashSet<String>();
+    Set<String> terminated = new HashSet<String>();
+
+    int maxItemsBlocked = 0;
+
+    while (terminated.size() != n) {
+      for (Thread current : threads) {
+        State state = current.getState();
+        String name = current.getName();
+
+        if (state == State.BLOCKED) {
+          if (!blocked.contains(name)) {
+            blocked.add(name);
+            maxItemsBlocked =
+              blocked.size() > maxItemsBlocked
+                ? blocked.size()
+                : maxItemsBlocked;
+          }
+        } else { // not BLOCKED, eg. RUNNABLE, TERMINATED, ...
+          blocked.remove(name);
+          if (state == State.TERMINATED && !terminated.contains(name)) {
+            terminated.add(name);
+          }
+        }
+      }
+    }
+
+    //worst case scenario : max number of threads blocked at a moment = number of threads - 2 ( usually ~5 for 30 threads)
+    //the implementation without RandomSecure pool reaches constantly (number of threads - 1) max blocked threads
+    Assert.assertTrue(
+      "Exceeded number of blocked threads : " + maxItemsBlocked,
+      maxItemsBlocked < n - 2
+    );
+  }
 }
-

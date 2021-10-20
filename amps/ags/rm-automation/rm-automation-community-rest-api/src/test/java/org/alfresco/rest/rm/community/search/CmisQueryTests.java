@@ -34,7 +34,6 @@ import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertFalse;
 import static org.testng.AssertJUnit.assertTrue;
 
-
 import org.alfresco.dataprep.ContentActions;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
@@ -63,11 +62,15 @@ import org.testng.annotations.Test;
  * @since 2.5.4
  * @since 3.3
  */
-public class CmisQueryTests extends BaseRMRestTest
-{
-    private static final String SEARCH_TERM = generateTestPrefix(CmisQueryTests.class);
+public class CmisQueryTests extends BaseRMRestTest {
+
+    private static final String SEARCH_TERM = generateTestPrefix(
+        CmisQueryTests.class
+    );
     private static final String sqlWithName =
-            "SELECT cmis:name FROM cmis:document where CONTAINS('cmis:name:*" + SEARCH_TERM + "*')";
+        "SELECT cmis:name FROM cmis:document where CONTAINS('cmis:name:*" +
+        SEARCH_TERM +
+        "*')";
 
     private SiteModel collaborationSite;
     private UserModel nonRMUser, rmUser;
@@ -75,6 +78,7 @@ public class CmisQueryTests extends BaseRMRestTest
 
     @Autowired
     private ContentActions contentActions;
+
     @Autowired
     private RoleService roleService;
 
@@ -88,54 +92,105 @@ public class CmisQueryTests extends BaseRMRestTest
      *     - a user with rights to see the records and the other documents created
      * </pre>
      */
-    @BeforeClass (alwaysRun = true)
-    public void setupCmisQuery() throws Exception
-    {
+    @BeforeClass(alwaysRun = true)
+    public void setupCmisQuery() throws Exception {
         STEP("Create a collaboration site");
         collaborationSite = dataSite.usingAdmin().createPrivateRandomSite();
 
         STEP("Create 10 documents ending with SEARCH_TERM");
-        for (int i = 0; ++i <= 10; )
-        {
-            FileModel fileModel = new FileModel(String.format("%s%s%s.%s", "Doc", i, SEARCH_TERM,
-                    FileType.TEXT_PLAIN.extension));
-            dataContent.usingAdmin().usingSite(collaborationSite).createContent(fileModel);
+        for (int i = 0; ++i <= 10;) {
+            FileModel fileModel = new FileModel(
+                String.format(
+                    "%s%s%s.%s",
+                    "Doc",
+                    i,
+                    SEARCH_TERM,
+                    FileType.TEXT_PLAIN.extension
+                )
+            );
+            dataContent
+                .usingAdmin()
+                .usingSite(collaborationSite)
+                .createContent(fileModel);
         }
 
         STEP("Create a collaborator user for the collaboration site");
         nonRMUser = getDataUser().createRandomTestUser();
-        getDataUser().addUserToSite(nonRMUser, collaborationSite, UserRole.SiteCollaborator);
+        getDataUser()
+            .addUserToSite(
+                nonRMUser,
+                collaborationSite,
+                UserRole.SiteCollaborator
+            );
 
         STEP("Create 10 documents and declare as records");
-        for (int i = 0; ++i <= 10; )
-        {
-            FileModel fileModel = new FileModel(String.format("%s%s%s.%s", "InPlace ", SEARCH_TERM, i,
-                    FileType.TEXT_PLAIN.extension));
-            fileModel = dataContent.usingUser(nonRMUser).usingSite(collaborationSite).createContent(fileModel);
-            getRestAPIFactory().getFilesAPI(nonRMUser).declareAsRecord(fileModel.getNodeRefWithoutVersion());
+        for (int i = 0; ++i <= 10;) {
+            FileModel fileModel = new FileModel(
+                String.format(
+                    "%s%s%s.%s",
+                    "InPlace ",
+                    SEARCH_TERM,
+                    i,
+                    FileType.TEXT_PLAIN.extension
+                )
+            );
+            fileModel =
+                dataContent
+                    .usingUser(nonRMUser)
+                    .usingSite(collaborationSite)
+                    .createContent(fileModel);
+            getRestAPIFactory()
+                .getFilesAPI(nonRMUser)
+                .declareAsRecord(fileModel.getNodeRefWithoutVersion());
         }
 
         STEP("Create record folder and some records ");
         recordFolder = createCategoryFolderInFilePlan();
-        for (int i = 0; ++i <= 10; )
-        {
-            createElectronicRecord(recordFolder.getId(), String.format("%s%s%s.%s", "Record ", SEARCH_TERM, i,
-                    FileType.TEXT_PLAIN.extension));
+        for (int i = 0; ++i <= 10;) {
+            createElectronicRecord(
+                recordFolder.getId(),
+                String.format(
+                    "%s%s%s.%s",
+                    "Record ",
+                    SEARCH_TERM,
+                    i,
+                    FileType.TEXT_PLAIN.extension
+                )
+            );
         }
-        STEP("Create an rm user with read permission over the category created and contributor role within the " +
-                "collaboration site");
-        rmUser = roleService.createUserWithSiteRoleRMRoleAndPermission(collaborationSite, UserRole.SiteContributor,
-                recordFolder.getParentId(), ROLE_RM_MANAGER, UserPermissions.PERMISSION_READ_RECORDS);
+        STEP(
+            "Create an rm user with read permission over the category created and contributor role within the " +
+            "collaboration site"
+        );
+        rmUser =
+            roleService.createUserWithSiteRoleRMRoleAndPermission(
+                collaborationSite,
+                UserRole.SiteContributor,
+                recordFolder.getParentId(),
+                ROLE_RM_MANAGER,
+                UserPermissions.PERMISSION_READ_RECORDS
+            );
 
         //do a cmis query to wait for solr indexing
-        Utility.sleep(5000, 80000, () ->
-        {
-            ItemIterable<QueryResult> results =
-                    contentActions.getCMISSession(getAdminUser().getUsername(), getAdminUser().getPassword()).query(sqlWithName,
-                            false);
-            assertEquals("Total number of items is not 30, got  " + results.getTotalNumItems() + " total items",
-                    30, results.getTotalNumItems());
-        });
+        Utility.sleep(
+            5000,
+            80000,
+            () -> {
+                ItemIterable<QueryResult> results = contentActions
+                    .getCMISSession(
+                        getAdminUser().getUsername(),
+                        getAdminUser().getPassword()
+                    )
+                    .query(sqlWithName, false);
+                assertEquals(
+                    "Total number of items is not 30, got  " +
+                    results.getTotalNumItems() +
+                    " total items",
+                    30,
+                    results.getTotalNumItems()
+                );
+            }
+        );
     }
 
     /**
@@ -146,21 +201,31 @@ public class CmisQueryTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    @AlfrescoTest (jira = "MNT-19442")
-    public void getAllDocumentsNamesCmisQuery()
-    {
+    @AlfrescoTest(jira = "MNT-19442")
+    public void getAllDocumentsNamesCmisQuery() {
         // execute the cmis query
         String cq = "SELECT cmis:name FROM cmis:document";
-        ItemIterable<QueryResult> results =
-                contentActions.getCMISSession(getAdminUser().getUsername(), getAdminUser().getPassword()).query(cq,
-                        false);
+        ItemIterable<QueryResult> results = contentActions
+            .getCMISSession(
+                getAdminUser().getUsername(),
+                getAdminUser().getPassword()
+            )
+            .query(cq, false);
 
         // check the total number of items is greater than 100 and has more items is true
         assertTrue("Has more items not true.", results.getHasMoreItems());
-        assertTrue("Total number of items is not greater than 100. Total number of items received" + results.getTotalNumItems(),
-                results.getTotalNumItems() > 100);
-        assertEquals("Expected 100 items per page and got " + results.getPageNumItems() + " per page.", 100,
-                results.getPageNumItems());
+        assertTrue(
+            "Total number of items is not greater than 100. Total number of items received" +
+            results.getTotalNumItems(),
+            results.getTotalNumItems() > 100
+        );
+        assertEquals(
+            "Expected 100 items per page and got " +
+            results.getPageNumItems() +
+            " per page.",
+            100,
+            results.getPageNumItems()
+        );
     }
 
     /**
@@ -171,19 +236,28 @@ public class CmisQueryTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    @AlfrescoTest (jira = "MNT-19442")
-    public void getDocumentsWithSpecificNamesCmisQuery()
-    {
+    @AlfrescoTest(jira = "MNT-19442")
+    public void getDocumentsWithSpecificNamesCmisQuery() {
         // execute the cmis query
-        ItemIterable<QueryResult> results =
-                contentActions.getCMISSession(nonRMUser.getUsername(), nonRMUser.getPassword()).query(sqlWithName,
-                        false);
-        assertEquals("Total number of items is not 20, got  " + results.getTotalNumItems() + " total items",
-                20, results.getTotalNumItems());
+        ItemIterable<QueryResult> results = contentActions
+            .getCMISSession(nonRMUser.getUsername(), nonRMUser.getPassword())
+            .query(sqlWithName, false);
+        assertEquals(
+            "Total number of items is not 20, got  " +
+            results.getTotalNumItems() +
+            " total items",
+            20,
+            results.getTotalNumItems()
+        );
         // check the has more items is false
         assertFalse("Has more items not false.", results.getHasMoreItems());
-        assertEquals("Expected 20 items per page and got " + results.getPageNumItems() + " per page.", 20,
-                results.getPageNumItems());
+        assertEquals(
+            "Expected 20 items per page and got " +
+            results.getPageNumItems() +
+            " per page.",
+            20,
+            results.getPageNumItems()
+        );
     }
 
     /**
@@ -194,26 +268,33 @@ public class CmisQueryTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    @AlfrescoTest (jira = "MNT-19442")
-    public void getDocumentsCmisQueryWithPagination()
-    {
+    @AlfrescoTest(jira = "MNT-19442")
+    public void getDocumentsCmisQueryWithPagination() {
         OperationContext oc = new OperationContextImpl();
         oc.setMaxItemsPerPage(10);
-        ItemIterable<QueryResult> results =
-                contentActions.getCMISSession(rmUser.getUsername(), rmUser.getPassword()).query(sqlWithName,
-                        false, oc);
+        ItemIterable<QueryResult> results = contentActions
+            .getCMISSession(rmUser.getUsername(), rmUser.getPassword())
+            .query(sqlWithName, false, oc);
 
         // check the total number of items and has more items is true
         assertTrue("Has more items not true. ", results.getHasMoreItems());
-        assertEquals("Total number of items is not 30, got " + results.getTotalNumItems(), 30,
-                results.getTotalNumItems());
-        assertEquals("Expected 10 items per page and got " + results.getPageNumItems() + " per page.",
-                10, results.getPageNumItems());
+        assertEquals(
+            "Total number of items is not 30, got " +
+            results.getTotalNumItems(),
+            30,
+            results.getTotalNumItems()
+        );
+        assertEquals(
+            "Expected 10 items per page and got " +
+            results.getPageNumItems() +
+            " per page.",
+            10,
+            results.getPageNumItems()
+        );
     }
 
     @AfterClass
-    private void clearCmisQueryTests()
-    {
+    private void clearCmisQueryTests() {
         dataSite.usingAdmin().deleteSite(collaborationSite);
         deleteRecordCategory(recordFolder.getParentId());
         getDataUser().usingAdmin().deleteUser(rmUser);

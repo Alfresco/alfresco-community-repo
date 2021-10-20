@@ -1,4 +1,7 @@
 ---
+import:
+  - source: Alfresco/alfresco-build-tools:.travis.pre-commit.yml@v1.1.5
+
 dist: focal
 language: java
 jdk: openjdk11
@@ -31,6 +34,7 @@ env:
     - LOG_WARN="-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 
 stages:
+  - name: lint
   - name: test
     if: commit_message !~ /\[skip tests\]/
   - name: release
@@ -45,12 +49,14 @@ jobs:
   include:
 
     - name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       script:
         - travis_retry mvn -B test -pl core,data-model
         - travis_retry mvn -B test -pl repository -Dtest=AllUnitTestsSuite
 
     - name: "Repository - AppContext01TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -59,6 +65,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext02TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -66,6 +73,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext03TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -74,6 +82,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext04TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -82,6 +91,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContext05TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -101,6 +111,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContext06TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - AppContextExtraTestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -109,6 +120,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - MiscContextTestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -117,6 +129,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=MiscContextTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - SearchTestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -124,6 +137,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=SearchTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
 
     - name: "Repository - MariaDB 10.2.18 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.2.18 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
@@ -131,6 +145,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 
     - name: "Repository - MariaDB 10.4 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.4 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
@@ -138,6 +153,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 
     - name: "Repository - MariaDB 10.5 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 3307:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco mariadb:10.5 --transaction-isolation=READ-COMMITTED --max-connections=300 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
@@ -145,6 +161,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 
     - name: "Repository - MariaDB 10.6 tests"
+      stage: test
       # We run tests on the latest version of MariaDB on pull requests plus the normal master and release branches - ignored on feature branches
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/                         ) OR commit_message =~ /\[db\]/ OR commit_message =~ /\[latest db\]/
       before_script:
@@ -153,6 +170,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 
     - name: "Repository - MySQL 5.7.23 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:5.7.23 --transaction-isolation='READ-COMMITTED'
@@ -160,6 +178,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - MySQL 8 tests"
+      stage: test
       # We run tests on the latest version of MySQL on pull requests plus the normal master and release branches - ignored on feature branches
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/                         ) OR commit_message =~ /\[db\]/ OR commit_message =~ /\[latest db\]/
       before_script:
@@ -168,6 +187,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - PostgreSQL 10.9 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:10.9 postgres -c 'max_connections=300'
@@ -175,6 +195,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - PostgreSQL 11.7 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.7 postgres -c 'max_connections=300'
@@ -182,6 +203,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - PostgreSQL 11.12 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:11.12 postgres -c 'max_connections=300'
@@ -189,6 +211,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - PostgreSQL 12.4 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:12.4 postgres -c 'max_connections=300'
@@ -196,6 +219,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - PostgreSQL 12.7 tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:12.7 postgres -c 'max_connections=300'
@@ -203,6 +227,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - PostgreSQL 13.1 tests"
+      stage: test
       # We only run DB tests on the latest version of PostgreSQL on feature branches
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       before_script:
@@ -211,6 +236,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - PostgreSQL 13.3 tests"
+      stage: test
       # We only run DB tests on the latest version of PostgreSQL on feature branches
       if: commit_message !~ /\[skip db\]/ OR commit_message =~ /\[latest db\]/
       before_script:
@@ -219,12 +245,14 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Repository - Messaging tests"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
       script: travis_wait 20 mvn -B test -pl repository -Dtest=CamelRoutesTest,CamelComponentsTest
 
     - name: "Remote-api - AppContext01TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -232,6 +260,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContext02TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -240,6 +269,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContext03TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -248,6 +278,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext03TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContext04TestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -256,6 +287,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContext04TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "Remote-api - AppContextExtraTestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
@@ -263,6 +295,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl remote-api -Dtest=AppContextExtraTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "REST API TAS tests part1"
+      stage: test
       # TAS tests are generally skipped on feature branches as they will be repeated on the enterprise repo or community packaging builds
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
@@ -271,6 +304,7 @@ jobs:
       script: travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
 
     - name: "REST API TAS tests part2"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
@@ -278,6 +312,7 @@ jobs:
       script: travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part2 -Denvironment=default -DrunBugs=false
 
     - name: "REST API TAS tests part3"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
@@ -285,6 +320,7 @@ jobs:
       script: travis_wait 60 mvn -B install -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part3 -Denvironment=default -DrunBugs=false
 
     - name: "CMIS TAS tests - BROWSER binding"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
@@ -292,6 +328,7 @@ jobs:
       script: travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-browser -Denvironment=default -DrunBugs=false
 
     - name: "CMIS TAS tests - ATOM binding"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
@@ -299,6 +336,7 @@ jobs:
       script: travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-atom -Denvironment=default -DrunBugs=false
 
     - name: "CMIS TAS tests - WEBSERVICES binding"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
@@ -306,6 +344,7 @@ jobs:
       script: travis_wait 40 mvn -B install -f packaging/tests/tas-cmis/pom.xml -Pall-tas-tests,run-cmis-webservices -Denvironment=default -DrunBugs=false
 
     - name: "Email TAS tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
@@ -313,6 +352,7 @@ jobs:
       script: travis_wait 30 mvn -B install -f packaging/tests/tas-email/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "WebDAV TAS tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
@@ -320,6 +360,7 @@ jobs:
       script: travis_wait 30 mvn -B install -f packaging/tests/tas-webdav/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "Integration TAS tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
@@ -327,36 +368,44 @@ jobs:
       script: travis_wait 30 mvn -B install -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
 
     - name: "Share Services - ShareServicesTestSuite"
+      stage: test
       if: commit_message !~ /\[skip repo\]/
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
       script: travis_wait 20 mvn -B test -pl :alfresco-share-services -Dtest=ShareServicesTestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
     - name: "AGS Unit & Integration Tests 01 (PostgreSQL)"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 02 (PostgreSQL)"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt2 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 03 (PostgreSQL)"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt3 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Unit & Integration Tests 01 (MySQL) "
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 02 (MySQL) "
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt2 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 03 (MySQL) "
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt3 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Community Rest API Tests"
+      stage: test
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
       addons:
         artifacts:

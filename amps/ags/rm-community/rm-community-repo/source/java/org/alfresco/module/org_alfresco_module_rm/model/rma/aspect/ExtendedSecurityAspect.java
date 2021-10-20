@@ -43,35 +43,31 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.2
  */
-@BehaviourBean
-(
-   defaultType = "rma:extendedSecurity"
-)
-public class ExtendedSecurityAspect extends BaseBehaviourBean
-{
-    /** extended security service */
-    protected ExtendedSecurityService extendedSecurityService;
+@BehaviourBean(defaultType = "rma:extendedSecurity")
+public class ExtendedSecurityAspect extends BaseBehaviourBean {
 
-    /**
-     * @param extendedSecurityService   extended security service
-     */
-    public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
-    {
-        this.extendedSecurityService = extendedSecurityService;
-    }
+  /** extended security service */
+  protected ExtendedSecurityService extendedSecurityService;
 
-    /**
-     * Copy callback.
-     *
-     * Aspect should not be copied.
-     */
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            policy = "alf:getCopyCallback"
-    )
-    public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
-    {
-        return new DoNothingCopyBehaviourCallback();
-    }
+  /**
+   * @param extendedSecurityService   extended security service
+   */
+  public void setExtendedSecurityService(
+    ExtendedSecurityService extendedSecurityService
+  ) {
+    this.extendedSecurityService = extendedSecurityService;
+  }
+
+  /**
+   * Copy callback.
+   *
+   * Aspect should not be copied.
+   */
+  @Behaviour(kind = BehaviourKind.CLASS, policy = "alf:getCopyCallback")
+  public CopyBehaviourCallback getCopyCallback(
+    QName classRef,
+    CopyDetails copyDetails
+  ) {
+    return new DoNothingCopyBehaviourCallback();
+  }
 }

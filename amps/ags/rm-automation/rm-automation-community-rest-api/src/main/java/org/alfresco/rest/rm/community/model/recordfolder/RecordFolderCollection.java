@@ -35,7 +35,5 @@ import org.alfresco.rest.core.RestModels;
  * @author Tuna Aksoy
  * @since 2.6
  */
-public class RecordFolderCollection extends RestModels<RecordFolderEntry, RecordFolderCollection>
-{
-
-}
+public class RecordFolderCollection
+    extends RestModels<RecordFolderEntry, RecordFolderCollection> {}

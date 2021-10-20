@@ -38,40 +38,43 @@ import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
  * @author Ramona Popa
  * @since 3.3
  */
-public class RMv33HoldAuditEntryValuesPatch extends AbstractModulePatch
-{
+public class RMv33HoldAuditEntryValuesPatch extends AbstractModulePatch {
 
-    /**
-     * Services
-     */
-    private RecordsManagementQueryDAO recordsManagementQueryDAO;
+  /**
+   * Services
+   */
+  private RecordsManagementQueryDAO recordsManagementQueryDAO;
 
-    public void setRecordsManagementQueryDAO(RecordsManagementQueryDAO recordsManagementQueryDAO)
-    {
-        this.recordsManagementQueryDAO = recordsManagementQueryDAO;
+  public void setRecordsManagementQueryDAO(
+    RecordsManagementQueryDAO recordsManagementQueryDAO
+  ) {
+    this.recordsManagementQueryDAO = recordsManagementQueryDAO;
+  }
+
+  /**
+   * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
+   *
+   * Updates the property string value entities for addToHold, removeFromHold and deleteHold audit event types
+   */
+  @Override
+  public void applyInternal() {
+    updatePropertyStringValueEntity("addToHold", "Add To Hold");
+    updatePropertyStringValueEntity("removeFromHold", "Remove From Hold");
+    updatePropertyStringValueEntity("deleteHold", "Delete Hold");
+  }
+
+  private void updatePropertyStringValueEntity(
+    String fromStringValue,
+    String toStringValue
+  ) {
+    PropertyStringValueEntity propertyStringValueEntity = recordsManagementQueryDAO.getPropertyStringValueEntity(
+      fromStringValue
+    );
+    if (propertyStringValueEntity != null) {
+      propertyStringValueEntity.setValue(toStringValue);
+      recordsManagementQueryDAO.updatePropertyStringValueEntity(
+        propertyStringValueEntity
+      );
     }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
-     *
-     * Updates the property string value entities for addToHold, removeFromHold and deleteHold audit event types
-     */
-    @Override
-    public void applyInternal()
-    {
-        updatePropertyStringValueEntity("addToHold", "Add To Hold");
-        updatePropertyStringValueEntity("removeFromHold", "Remove From Hold");
-        updatePropertyStringValueEntity("deleteHold", "Delete Hold");
-    }
-
-    private void updatePropertyStringValueEntity(String fromStringValue, String toStringValue)
-    {
-        PropertyStringValueEntity propertyStringValueEntity = recordsManagementQueryDAO.getPropertyStringValueEntity(fromStringValue);
-        if (propertyStringValueEntity != null)
-        {
-            propertyStringValueEntity.setValue(toStringValue);
-            recordsManagementQueryDAO.updatePropertyStringValueEntity(propertyStringValueEntity);
-        }
-    }
-
+  }
 }

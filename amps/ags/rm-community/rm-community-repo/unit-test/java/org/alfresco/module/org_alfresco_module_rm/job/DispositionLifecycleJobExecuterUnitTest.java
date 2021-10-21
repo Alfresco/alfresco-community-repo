@@ -30,16 +30,16 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyMap;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
@@ -57,6 +57,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
 
@@ -97,7 +98,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
             return callback.execute();
         };
         doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).doInTransaction(any(RetryingTransactionCallback.class),
-            anyBoolean(), anyBoolean());
+            Matchers.anyBoolean(), Matchers.anyBoolean());
 
         // setup data
         List<String> dispositionActions = buildList(CUTOFF, RETAIN);
@@ -140,7 +141,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         verifyQueryTimes(1);
 
         // ensure nothing else happens becuase we have no results
-        verifyNoMoreInteractions(mockedNodeService, mockedRecordFolderService, mockedRetryingTransactionHelper);
+        verifyZeroInteractions(mockedNodeService, mockedRecordFolderService, mockedRetryingTransactionHelper);
     }
 
     /**
@@ -177,7 +178,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
         verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class),
-            anyBoolean(), anyBoolean());
+            Matchers.anyBoolean(), Matchers.anyBoolean());
 
         // ensure each node is process correctly
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
@@ -185,7 +186,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // ensure no more interactions
         verifyNoMoreInteractions(mockedNodeService);
-        verifyNoMoreInteractions(mockedRecordsManagementActionService);
+        verifyZeroInteractions(mockedRecordsManagementActionService);
 
     }
 
@@ -215,7 +216,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // ensure no more interactions
         verifyNoMoreInteractions(mockedNodeService);
-        verifyNoMoreInteractions(mockedRecordsManagementActionService);
+        verifyZeroInteractions(mockedRecordsManagementActionService);
     }
 
     /**
@@ -257,7 +258,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
         verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class),
-            anyBoolean(), anyBoolean());
+            Matchers.anyBoolean(), Matchers.anyBoolean());
 
         // ensure each node is process correctly
         // node1
@@ -306,7 +307,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // mock the search service to return the right page
         when(mockedSearchService.query(any(SearchParameters.class))).thenAnswer((Answer<ResultSet>) invocation -> {
-            SearchParameters params = invocation.getArgument(0, SearchParameters.class);
+            SearchParameters params = invocation.getArgumentAt(0, SearchParameters.class);
             if (params.getSkipCount() == 0)
             {
                 // mock first page

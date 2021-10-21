@@ -37,12 +37,9 @@ import java.util.List;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONObject;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 
 /**
@@ -51,7 +48,6 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
  * @author Roy Wetherall
  * @since 2.2
  */
-@RunWith(MockitoJUnitRunner.class)
 public class HoldPutUnitTest extends BaseHoldWebScriptWithContentUnitTest
 {
     /** classpath location of ftl template for web script */
@@ -81,12 +77,6 @@ public class HoldPutUnitTest extends BaseHoldWebScriptWithContentUnitTest
     /**
      * Test that a record can be removed from holds.
      */
-
-    @Before
-    public void setUp(){
-        webScript.setHoldService(mockedHoldService);
-    }
-
     @SuppressWarnings("unchecked")
     @Test
     public void removeRecordFromHolds() throws Exception

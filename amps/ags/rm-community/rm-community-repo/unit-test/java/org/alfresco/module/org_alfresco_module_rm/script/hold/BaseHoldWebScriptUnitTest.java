@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -71,8 +72,8 @@ public abstract class BaseHoldWebScriptUnitTest extends BaseWebScriptUnitTest
 
         // generate active content
         dmNodeRef = generateNodeRef(TYPE_CONTENT);
-        when(mockedExtendedPermissionService.hasPermission(dmNodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(dmNodeRef), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        lenient().when(mockedExtendedPermissionService.hasPermission(dmNodeRef, PermissionService.WRITE)).thenReturn(AccessStatus.ALLOWED);
+        lenient().when(mockedDictionaryService.isSubClass(mockedNodeService.getType(dmNodeRef), ContentModel.TYPE_CONTENT)).thenReturn(true);
 
         // list of active contents
         activeContents = Collections.singletonList(dmNodeRef);

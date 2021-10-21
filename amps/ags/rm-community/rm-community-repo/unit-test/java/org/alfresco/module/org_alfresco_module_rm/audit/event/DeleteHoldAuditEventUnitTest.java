@@ -34,18 +34,15 @@ import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 
 import java.util.Map;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  * Unit tests for {@link DeleteHoldAuditEvent}.
@@ -67,8 +64,6 @@ public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
     @Before
     public void setUp()
     {
-        initMocks(this);
-
         holdNodeRef = generateNodeRef();
         String holdName = "Hold " + GUID.generate();
 
@@ -84,6 +79,6 @@ public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
     {
         deleteHoldAuditEvent.beforeDeleteNode(holdNodeRef);
         verify(mockedRecordsManagementAuditService, times(1))
-            .auditEvent(eq(holdNodeRef), any(String.class), any(Map.class), isNull(Map.class), Matchers.eq(true), Matchers.eq(false));
+            .auditEvent(eq(holdNodeRef), eq(null), any(Map.class), eq(null), eq(true), eq(false));
     }
 }

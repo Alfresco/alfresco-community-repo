@@ -39,13 +39,11 @@ import org.mockito.Mock;
 
 import java.util.Map;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  * Unit tests for {@link CreateHoldAuditEvent}.
@@ -68,8 +66,6 @@ public class CreateHoldAuditEventUnitTest extends BaseUnitTest
     @Before
     public void setUp()
     {
-        initMocks(this);
-
         holdNodeRef = generateNodeRef();
         String holdName = "Hold " + GUID.generate();
         String holdReason = "Reason " + GUID.generate();
@@ -88,6 +84,6 @@ public class CreateHoldAuditEventUnitTest extends BaseUnitTest
     public void testCreateHoldCausesAuditEvent()
     {
         createHoldAuditEvent.onCreateNode(childAssociationRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(holdNodeRef), any(String.class), isNull(Map.class), any(Map.class));
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(holdNodeRef), eq(null), eq(null), any(Map.class));
     }
 }

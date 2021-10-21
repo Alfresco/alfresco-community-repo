@@ -38,18 +38,18 @@ import org.alfresco.service.Experimental;
 @Experimental
 public enum ObjectStorageProps {
     /**
-     * Object's content is archived
+     * Object's content is offline and not immediately accessible.
      */
-    X_ALF_ARCHIVED("x-alf-archived"),
+    X_ALF_OFFLINE("x-alf-offline"),
     /**
-     * Object's content retrieval from archive is in progress
+     * Object's content retrieval from offline status is in progress
      */
-    X_ALF_RESTORE_IN_PROGRESS("x-alf-restore-in-progress"),
+    X_ALF_OFFLINE_REGAIN_IN_PROGRESS("x-alf-offline-regain-in-progress"),
     /**
-     * Expiry date and time of object's content restored from archive.
+     * Expiry date and time of object's content retrieved from offline status.
      * Use YYYYMMDDThhmmssZ (ISO-8601) datetime format when using this value as key in Storage Properties map.
      */
-    X_ALF_RESTORE_EXPIRY("x-alf-restore-expiry");
+    X_ALF_OFFLINE_REGAIN_EXPIRY("x-alf-offline-regain-expiry");
 
     ObjectStorageProps(String value) {
         this.value = value;

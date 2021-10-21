@@ -321,7 +321,7 @@ public class AggregatingContentStore extends AbstractContentStore
         return isContentDirectUrlEnabled;
     }
 
-    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype, Long validFor)
     {
         if (primaryStore == null)
         {

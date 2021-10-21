@@ -434,8 +434,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
 
         if (logger.isDebugEnabled()) {
             logger.debug("Getting storage properties from store: \n" +
-                    CONTENT_URL + contentUrl + "\n" +
-                    STORE + contentStore);
+                    "   Content URL: " + contentUrl + "\n" +
+                    "   Store:       " + contentStore);
         }
         return contentStore.getObjectStorageProperties(contentUrl);
     }

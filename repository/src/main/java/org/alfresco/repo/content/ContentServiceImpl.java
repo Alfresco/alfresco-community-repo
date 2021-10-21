@@ -605,7 +605,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
             }
 
-            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(getContentUrl(nodeRef)));
+            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(contentData.getContentUrl()));
         }
 
         return contentDirectUrlEnabled;
@@ -621,8 +621,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new DirectAccessUrlDisabledException("Direct access url isn't available.");
         }
 
-        String contentUrl = getContentUrl(nodeRef);
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+        // check that the content & URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        String contentUrl = contentData.getContentUrl();
+        String contentMimetype = contentData.getMimetype();
         String fileName = getFileName(nodeRef);
+
         validFor = adjustValidFor(validFor);
 
         DirectAccessUrl directAccessUrl = null;
@@ -630,7 +639,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             try
             {
-                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, contentMimetype, validFor);
             }
             catch (UnsupportedOperationException ex)
             {
@@ -638,19 +647,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             }
         }
         return directAccessUrl;
-    }
-
-    protected String getContentUrl(NodeRef nodeRef)
-    {
-        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
-
-        // check that the URL is available
-        if (contentData == null || contentData.getContentUrl() == null)
-        {
-            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
-        }
-
-        return contentData.getContentUrl();
     }
 
     protected String getFileName(NodeRef nodeRef)

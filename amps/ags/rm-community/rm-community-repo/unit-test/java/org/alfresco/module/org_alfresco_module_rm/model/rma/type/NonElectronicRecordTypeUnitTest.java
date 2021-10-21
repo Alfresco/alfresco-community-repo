@@ -45,13 +45,15 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * @author silviudinuta
  */
+@RunWith(MockitoJUnitRunner.class)
 public class NonElectronicRecordTypeUnitTest implements RecordsManagementModel, ContentModel
 {
     private final static NodeRef CHILD_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
@@ -74,17 +76,15 @@ public class NonElectronicRecordTypeUnitTest implements RecordsManagementModel, 
     @Before
     public void setUp()
     {
-        MockitoAnnotations.initMocks(this);
         MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
         when(mockedNodeService.exists(CHILD_NODE_REF)).thenReturn(true);
-        when(mockedNodeService.exists(PARENT_NODE_REF)).thenReturn(true);
 
         ChildAssociationRef generateChildAssociationRef = mock(ChildAssociationRef.class);
         when(generateChildAssociationRef.getParentRef()).thenReturn(PARENT_NODE_REF);
-        when(generateChildAssociationRef.getChildRef()).thenReturn(CHILD_NODE_REF);
 
         when(mockedNodeService.getPrimaryParent(CHILD_NODE_REF)).thenReturn(generateChildAssociationRef);
         when(mockedNodeService.getType(PARENT_NODE_REF)).thenReturn(TYPE_UNFILED_RECORD_FOLDER);
+        nonElectronicRecordType.setNodeService(mockedNodeService);
     }
 
     @Test

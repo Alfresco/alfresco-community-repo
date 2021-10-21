@@ -87,6 +87,7 @@ public class ContentBinDuplicationUtilityUnitTest
     public void setUp()
     {
         MockitoAnnotations.initMocks(this);
+        contentBinDuplicationUtility.setNodeService(mockNodeService);
     }
 
     /**

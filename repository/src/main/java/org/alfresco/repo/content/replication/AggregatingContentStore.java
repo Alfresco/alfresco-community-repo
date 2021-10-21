@@ -411,7 +411,8 @@ public class AggregatingContentStore extends AbstractContentStore
 
     @Override
     @Experimental
-    public Map<String, String> getObjectStorageProperties(String contentUrl) {
+    public Map<String, String> getObjectStorageProperties(String contentUrl)
+    {
         if (primaryStore == null) {
             throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
@@ -424,8 +425,8 @@ public class AggregatingContentStore extends AbstractContentStore
             try {
                 objectStoragePropertiesMap = Optional.of(primaryStore.getObjectStorageProperties(contentUrl));
             } catch (UnsupportedContentUrlException e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Primary store could not handle content URL: " + contentUrl);
+                if (logger.isTraceEnabled()) {
+                    logger.trace("Primary store could not handle content URL: " + contentUrl);
                 }
             }
 
@@ -434,7 +435,9 @@ public class AggregatingContentStore extends AbstractContentStore
                     try {
                         objectStoragePropertiesMap = Optional.of(store.getObjectStorageProperties(contentUrl));
                     } catch (UnsupportedContentUrlException e) {
-                        logger.debug("Secondary store " + store + " could not handle content URL: " + contentUrl);
+                        if (logger.isTraceEnabled()) {
+                            logger.trace("Secondary store " + store + " could not handle content URL: " + contentUrl);
+                        }
                     }
 
                     if (objectStoragePropertiesMap.isPresent()) {

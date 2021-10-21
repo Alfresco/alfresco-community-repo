@@ -340,7 +340,8 @@ public interface ContentStore
      * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values.
      */
     @Experimental
-    default Map<String, String> getObjectStorageProperties(String contentUrl) {
+    default Map<String, String> getObjectStorageProperties(String contentUrl)
+    {
         return Collections.emptyMap();
     }
 }

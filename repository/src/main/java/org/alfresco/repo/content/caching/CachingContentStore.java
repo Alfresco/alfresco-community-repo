@@ -65,10 +65,10 @@ import org.springframework.context.ApplicationEventPublisherAware;
  */
 public class CachingContentStore implements ContentStore, ApplicationEventPublisherAware, BeanNameAware
 {
-    private final static Log log = LogFactory.getLog(CachingContentStore.class);
+    private static final Log log = LogFactory.getLog(CachingContentStore.class);
     // NUM_LOCKS absolutely must be a power of 2 for the use of locks to be evenly balanced
-    private final static int numLocks = 256;
-    private final static ReentrantReadWriteLock[] locks; 
+    private static final int NUM_LOCKS = 256;
+    private static final ReentrantReadWriteLock[] locks;
     private ContentStore backingStore;
     private ContentCache cache;
     private QuotaManagerStrategy quota = new UnlimitedQuotaStrategy();
@@ -79,8 +79,8 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     
     static
     {
-        locks = new ReentrantReadWriteLock[numLocks];
-        for (int i = 0; i < numLocks; i++)
+        locks = new ReentrantReadWriteLock[NUM_LOCKS];
+        for (int i = 0; i < NUM_LOCKS; i++)
         {
             locks[i] = new ReentrantReadWriteLock();
         }
@@ -403,7 +403,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     
     private int lockIndex(String url)
     {
-        return url.hashCode() & (numLocks - 1);
+        return url.hashCode() & (NUM_LOCKS - 1);
     }
     
     @Required
@@ -489,6 +489,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isContentDirectUrlEnabled()
     {
         return backingStore.isContentDirectUrlEnabled();
@@ -497,6 +498,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean isContentDirectUrlEnabled(String contentUrl)
     {
         return backingStore.isContentDirectUrlEnabled(contentUrl);
@@ -505,6 +507,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
+    @Override
     public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName)
     {
         return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName);
@@ -513,6 +516,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      */
+    @Override
     public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
     {
         return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);

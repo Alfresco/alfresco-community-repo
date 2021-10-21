@@ -33,7 +33,6 @@ import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagement
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
@@ -43,14 +42,17 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit tests for the {@link RecordAspect}.
  *
  * @author Claudia Agache
  */
+@RunWith(MockitoJUnitRunner.class)
 public class RecordAspectUnitTest
 {
     private static final NodeRef NODE_REF = new NodeRef("node://Ref/");
@@ -72,7 +74,7 @@ public class RecordAspectUnitTest
     @Before
     public void setUp()
     {
-        initMocks(this);
+        recordAspect.setNodeService(mockNodeService);
     }
 
     /** Check that the bin is duplicated before adding the aspect if the file has a copy. */

@@ -117,7 +117,7 @@ mvn clean install -Pbuild-docker-images -DskipTests=true -Dversion.edition=Commu
 cd ..
 
 cd acs-community-packaging
-mvn clean install -Pbuild-docker-images -Dmaven.javadoc.skip=true
+mvn clean install -Pbuild-docker-images -Dmaven.javadoc.skip=true -Drepo.image.tag=latest
 cd ..
 ~~~
 In Intellij IDEA, create a new project using the `work` directory as the source.

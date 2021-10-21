@@ -25,7 +25,6 @@
  */
 package org.alfresco.service;
 
-import com.google.common.annotations.Beta;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -46,7 +45,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)
 @Documented
-@Beta
 public @interface Experimental {
     /**
      * Further description that can optionally be added to clarify possible future changes of annotated object.

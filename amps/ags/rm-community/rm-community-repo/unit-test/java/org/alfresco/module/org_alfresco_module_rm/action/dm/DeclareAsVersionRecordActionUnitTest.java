@@ -27,8 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -352,7 +352,7 @@ public class DeclareAsVersionRecordActionUnitTest extends BaseActionUnitTest
     private void setupMockedAspects()
     {
         doReturn(true).when(mockedNodeService).exists(actionedUponNodeRef);
-        doReturn(true).when(mockedDictionaryService).isSubClass(eq(null), eq(ContentModel.TYPE_CONTENT));
+        doReturn(true).when(mockedDictionaryService).isSubClass(any(QName.class), eq(ContentModel.TYPE_CONTENT));
         doReturn(true).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
         doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ASPECT_RECORD);
         doReturn(false).when(mockedNodeService).hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY);

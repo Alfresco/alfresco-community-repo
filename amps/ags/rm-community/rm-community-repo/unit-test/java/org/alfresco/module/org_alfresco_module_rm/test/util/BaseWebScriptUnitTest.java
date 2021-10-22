@@ -29,12 +29,10 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import static java.util.Collections.emptyMap;
 
-import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -193,7 +191,7 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
         
         String [] paramNames = (String[])parameters.keySet().toArray(new String[parameters.size()]);
         doReturn(paramNames).when(mockedRequest).getParameterNames();
-        lenient().doAnswer(new Answer()
+        doAnswer(new Answer()
         {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable
@@ -232,10 +230,10 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
     protected Container getMockedContainer(String template) throws Exception
     {
         FormatRegistry mockedFormatRegistry = mock(FormatRegistry.class);
-        doReturn("application/json").when(mockedFormatRegistry).getMimeType(nullable(String.class), nullable(String.class));
+        doReturn("application/json").when(mockedFormatRegistry).getMimeType(anyString(), anyString());
         
         ScriptProcessorRegistry mockedScriptProcessorRegistry = mock(ScriptProcessorRegistry.class);
-        lenient().doReturn(null).when(mockedScriptProcessorRegistry).findValidScriptPath(anyString());
+        doReturn(null).when(mockedScriptProcessorRegistry).findValidScriptPath(anyString());
         
         TemplateProcessorRegistry mockedTemplateProcessorRegistry = mock(TemplateProcessorRegistry.class);
         doReturn(template).when(mockedTemplateProcessorRegistry).findValidTemplatePath(anyString());
@@ -268,7 +266,7 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
         
         // setup description
         Description mockDescription = mock(Description.class);
-        lenient().doReturn(mock(RequiredCache.class)).when(mockDescription).getRequiredCache();
+        doReturn(mock(RequiredCache.class)).when(mockDescription).getRequiredCache();
         
         return mockedContainer;
     }

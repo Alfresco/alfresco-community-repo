@@ -27,9 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.util.UUID;
@@ -120,7 +119,7 @@ public class AlfMock
     public static NodeRef generateNodeRef(NodeService mockedNodeService, QName type, boolean exists)
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-        lenient().when(mockedNodeService.exists(eq(nodeRef))).thenReturn(exists);
+        when(mockedNodeService.exists(eq(nodeRef))).thenReturn(exists);
         if (type != null)
         {
             when(mockedNodeService.getType(eq(nodeRef))).thenReturn(type);

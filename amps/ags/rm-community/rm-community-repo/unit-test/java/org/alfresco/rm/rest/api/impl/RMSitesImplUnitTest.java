@@ -28,8 +28,8 @@
 package org.alfresco.rm.rest.api.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -41,6 +41,7 @@ import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.impl.SiteImportPackageHandler;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.model.SiteUpdate;
@@ -58,11 +59,10 @@ import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Unit Test class for RMSitesImpl.
@@ -71,7 +71,6 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @since 2.6
  *
  */
-@RunWith(MockitoJUnitRunner.class)
 public class RMSitesImplUnitTest  extends BaseUnitTest
 {
     private static final String RM_SITE_TITLE_AFTER_UPDATE = "Updated Title";
@@ -87,6 +86,8 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
     @Mock
     private SiteService mockedSiteService;
     @Mock
+    AuthenticationUtil mockAuthenticationUtil;
+    @Mock
     private ImporterService mockedImporterService;
     @Mock
     private FavouritesService mockedFavouritesService;
@@ -94,6 +95,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
     @Before
     public void before()
     {
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
@@ -136,7 +138,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
 
         verify(mockedImporterService, times(1)).importView(any(SiteImportPackageHandler.class), any(Location.class), any(ImporterBinding.class), eq(null));
         verify(mockedSiteService, times(1)).createContainer(RM_SITE_ID, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
-        verify(mockedFavouritesService, times(1)).addFavourite(eq(null), any(NodeRef.class));
+        verify(mockedFavouritesService, times(1)).addFavourite(any(String.class), any(NodeRef.class));
 
         //verify returned values for RM site are the right ones
         assertEquals(RMSiteCompliance.STANDARD, createdRMSite.getCompliance());
@@ -189,7 +191,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
 
         verify(mockedImporterService, times(1)).importView(any(SiteImportPackageHandler.class), any(Location.class), any(ImporterBinding.class), eq(null));
         verify(mockedSiteService, times(1)).createContainer(RM_SITE_ID, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
-        verify(mockedFavouritesService, times(1)).addFavourite(eq(null), any(NodeRef.class));
+        verify(mockedFavouritesService, times(1)).addFavourite(any(String.class), any(NodeRef.class));
 
         //verify returned values for RM site are the right ones
         assertEquals(RMSiteCompliance.DOD5015, createdRMSite.getCompliance());
@@ -251,12 +253,13 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         when(mockedNodeService.getType(siteNodeRef)).thenReturn(RecordsManagementModel.TYPE_RM_SITE);
 
         when(mockedSiteService.getSite(siteId)).thenReturn(mockedSiteInfo);
-        when(mockedSiteService.getMembersRole(eq(siteId), eq(null))).thenReturn(RM_SITE_MANAGER_ROLE);
+        when(mockedSiteService.getMembersRole(eq(siteId), any(String.class))).thenReturn(RM_SITE_MANAGER_ROLE);
 
         //mock UpdateSite
         SiteUpdate mockedSiteUpdate= mock(SiteUpdate.class);
         when(mockedSiteUpdate.getDescription()).thenReturn(RM_SITE_DESCRIPTION_AFTER_UPDATE);
         when(mockedSiteUpdate.getTitle()).thenReturn(RM_SITE_TITLE_AFTER_UPDATE);
+        when(mockedSiteUpdate.getVisibility()).thenReturn(null);
         when(mockedSiteUpdate.wasSet(Site.TITLE)).thenReturn(true);
         when(mockedSiteUpdate.wasSet(Site.DESCRIPTION)).thenReturn(true);
 
@@ -306,7 +309,7 @@ public class RMSitesImplUnitTest  extends BaseUnitTest
         when(mockedNodeService.getType(siteNodeRef)).thenReturn(RecordsManagementModel.TYPE_RM_SITE);
 
         when(mockedSiteService.getSite(siteId)).thenReturn(mockedSiteInfo);
-        when(mockedSiteService.getMembersRole(eq(siteId), eq(null))).thenReturn(RM_SITE_MANAGER_ROLE);
+        when(mockedSiteService.getMembersRole(eq(siteId), any(String.class))).thenReturn(RM_SITE_MANAGER_ROLE);
 
         //STANDARD compliance
         RMSite rmSite = rmSitesImpl.getRMSite(siteId);

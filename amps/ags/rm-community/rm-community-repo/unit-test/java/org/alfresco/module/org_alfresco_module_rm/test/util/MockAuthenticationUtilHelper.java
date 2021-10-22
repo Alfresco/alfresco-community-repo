@@ -27,10 +27,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -73,7 +74,7 @@ public class MockAuthenticationUtilHelper
         reset(mockAuthenticationUtil);
 
         // just do the work
-        lenient().doAnswer(new Answer<Object>()
+        doAnswer(new Answer<Object>()
         {
             @SuppressWarnings("rawtypes")
             @Override
@@ -86,7 +87,7 @@ public class MockAuthenticationUtilHelper
         }).when(mockAuthenticationUtil).<Object> runAsSystem(any(RunAsWork.class));
 
         // just do the work
-        lenient().doAnswer(new Answer<Object>()
+        doAnswer(new Answer<Object>()
         {
             @SuppressWarnings("rawtypes")
             @Override
@@ -98,10 +99,10 @@ public class MockAuthenticationUtilHelper
 
         }).when(mockAuthenticationUtil).<Object> runAs(any(RunAsWork.class), anyString());
 
-        lenient().when(mockAuthenticationUtil.getAdminUserName()).thenReturn(ADMIN_USER);
-        lenient().when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(fullyAuthenticatedUser);
-        lenient().when(mockAuthenticationUtil.getRunAsUser()).thenReturn(fullyAuthenticatedUser);
-        lenient().when(mockAuthenticationUtil.getSystemUserName()).thenReturn(SYSTEM_USER);
-        lenient().when(mockAuthenticationUtil.getGuestUserName()).thenReturn(GUEST_USER);
+        when(mockAuthenticationUtil.getAdminUserName()).thenReturn(ADMIN_USER);
+        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(fullyAuthenticatedUser);
+        when(mockAuthenticationUtil.getRunAsUser()).thenReturn(fullyAuthenticatedUser);
+        when(mockAuthenticationUtil.getSystemUserName()).thenReturn(SYSTEM_USER);
+        when(mockAuthenticationUtil.getGuestUserName()).thenReturn(GUEST_USER);
     }
 }

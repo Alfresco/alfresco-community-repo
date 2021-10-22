@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,6 +44,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
@@ -80,6 +82,8 @@ public class BeanExtenderUnitTest
     @Before
     public void before() throws Exception
     {
+        MockitoAnnotations.initMocks(this);
+
         // setup common interactions
         doReturn(mockedPropertyValuesBean).when(mockedBeanDefinition).getPropertyValues();
         doReturn(mockedPropertyValuesExtendingBean).when(mockedExtendingBeanDefinition).getPropertyValues();
@@ -135,6 +139,7 @@ public class BeanExtenderUnitTest
         beanExtender.setBeanName(BEAN_NAME);
         beanExtender.setExtendingBeanName(EXTENDING_BEAN_NAME);
         doReturn(false).when(mockedBeanFactory).containsBean(BEAN_NAME);
+        doReturn(true).when(mockedBeanFactory).containsBean(EXTENDING_BEAN_NAME);
 
         // expecting exception
         exception.expect(NoSuchBeanDefinitionException.class);
@@ -225,6 +230,7 @@ public class BeanExtenderUnitTest
         doReturn(mockedExtendingBeanDefinition).when(mockedBeanFactory).getBeanDefinition(EXTENDING_BEAN_NAME);
 
         // bean class names
+        doReturn("a").when(mockedBeanDefinition).getBeanClassName();
         doReturn(null).when(mockedExtendingBeanDefinition).getBeanClassName();
 
         PropertyValue mockedPropertyValueOne = generateMockedPropertyValue("one", "1");

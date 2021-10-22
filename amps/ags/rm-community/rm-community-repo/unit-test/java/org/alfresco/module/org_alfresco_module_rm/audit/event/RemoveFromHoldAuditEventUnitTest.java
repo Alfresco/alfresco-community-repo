@@ -27,25 +27,25 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Unit tests for {@link RemoveFromHoldAuditEvent}.
@@ -53,7 +53,6 @@ import org.mockito.junit.MockitoJUnitRunner;
  * @author Chris Shields
  * @since 3.3
  */
-@RunWith(MockitoJUnitRunner.class)
 public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
 {
     @InjectMocks
@@ -71,14 +70,16 @@ public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
     @Before
     public void setUp()
     {
+        initMocks(this);
+
         holdNodeRef = generateNodeRef();
         String holdName = "Hold " + GUID.generate();
 
         contentNodeRef = generateNodeRef();
         String contentName = "Content " + GUID.generate();
 
-        lenient().when(mockedNodeService.getProperty(holdNodeRef, PROP_NAME)).thenReturn(holdName);
-        lenient().when(mockedNodeService.getProperty(contentNodeRef, PROP_NAME)).thenReturn(contentName);
+        when(mockedNodeService.getProperty(holdNodeRef, PROP_NAME)).thenReturn(holdName);
+        when(mockedNodeService.getProperty(contentNodeRef, PROP_NAME)).thenReturn(contentName);
     }
 
     /**
@@ -88,7 +89,7 @@ public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
     public void testRemoveFromHoldCausesAuditEvent()
     {
         removeFromHoldAuditEvent.onRemoveFromHold(holdNodeRef, contentNodeRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), eq(null), any(Map.class), eq(null), eq(true));
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), any(String.class), any(Map.class), isNull(Map.class), eq(true));
     }
 
 }

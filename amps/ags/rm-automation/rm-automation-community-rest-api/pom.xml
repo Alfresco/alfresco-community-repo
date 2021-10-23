@@ -84,10 +84,5 @@
          <artifactId>docker-java</artifactId>
          <version>3.2.12</version>
       </dependency>
-      <dependency>
-         <groupId>org.apache.httpcomponents</groupId>
-         <artifactId>httpclient</artifactId>
-         <version>${dependency.httpclient.version}</version>
-      </dependency>
    </dependencies>
 </project>

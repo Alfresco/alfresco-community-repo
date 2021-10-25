@@ -28,8 +28,12 @@ package org.alfresco.service.cmr.repository;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.Auditable;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Provides methods for accessing and transforming content.
@@ -194,4 +198,21 @@ public interface ContentService
      */
     @Auditable(parameters = {"nodeRef", "validFor"})
     DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
+
+    /**
+     * Gets a key-value (String-String) collection of storage headers/properties with their respective values.
+     * A particular Cloud Connector will fill in that data with Cloud Storage Provider generic data.
+     * Map may be also filled in with entries consisting of pre-defined Alfresco keys of {@code ObjectStorageProps} and their values.
+     * If empty Map is returned - no connector is present or connector is not supporting retrieval of the properties
+     * or cannot determine the properties.
+     *
+     * @param contentUrl the URL of the content for which the storage properties are to be retrieved.
+     * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values for a given {@link NodeRef}.
+     */
+    @Auditable
+    @Experimental
+    default Map<String, String> getObjectStorageProperties(NodeRef nodeRef)
+    {
+        return Collections.emptyMap();
+    }
 }

@@ -875,8 +875,8 @@ public class SearchMapperTests
         searchMapper.fromPivot(searchParameters, null, ff, null, Arrays.asList(new Pivot("site", pivots)), searchRequestContext);
 
         assertEquals(2, searchParameters.getFieldFacets().size());
-        assertEquals(Optional.of(1000), searchParameters.getFieldFacets().get(0).getLimitOrNull());
-        assertEquals(Optional.of(50), searchParameters.getFieldFacets().get(1).getLimitOrNull());
+        assertEquals(1000, searchParameters.getFieldFacets().get(0).getLimitOrNull().intValue());
+        assertEquals(50, searchParameters.getFieldFacets().get(1).getLimitOrNull().intValue());
         assertEquals(1,searchParameters.getFieldFacets().get(1).getMinCount());
 
         assertEquals(1, searchParameters.getPivots().size());

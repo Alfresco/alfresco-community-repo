@@ -126,9 +126,9 @@ public class SearchMapper
         fromDefault(sp, searchQuery.getDefaults());
         fromFilterQuery(sp, searchQuery.getFilterQueries());
         fromFacetQuery(sp, searchQuery.getFacetQueries());
-        fromFacetFields(sp, searchQuery.getFacetFields());
         fromPivot(sp, searchQuery.getStats(), searchQuery.getFacetFields(), searchQuery.getFacetRanges(), searchQuery.getPivots(), searchRequestContext);
         fromStats(sp, searchQuery.getStats());
+        fromFacetFields(sp, searchQuery.getFacetFields());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
         fromHighlight(sp, searchQuery.getHighlight());
         fromFacetIntervals(sp, searchQuery.getFacetIntervals());

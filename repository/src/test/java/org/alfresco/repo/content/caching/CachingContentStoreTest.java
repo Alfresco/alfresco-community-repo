@@ -528,8 +528,8 @@ public class CachingContentStoreTest
     {
         final Map<String, String> propertiesMap = Map.of("x-amz-header1", "value1", "x-amz-header2", "value2");
         final String contentUrl = "url";
-        when(backingStore.getObjectStorageProperties(contentUrl)).thenReturn(propertiesMap);
-        final Map<String, String> storageProperties = cachingStore.getObjectStorageProperties(contentUrl);
+        when(backingStore.getStorageProperties(contentUrl)).thenReturn(propertiesMap);
+        final Map<String, String> storageProperties = cachingStore.getStorageProperties(contentUrl);
         assertFalse(storageProperties.isEmpty());
         assertEquals(propertiesMap, storageProperties);
     }
@@ -537,7 +537,7 @@ public class CachingContentStoreTest
     @Test
     public void shouldReturnEmptyStorageProperties()
     {
-        Map<String, String> storageProperties = cachingStore.getObjectStorageProperties("url");
+        Map<String, String> storageProperties = cachingStore.getStorageProperties("url");
         assertTrue(storageProperties.isEmpty());
     }
 }

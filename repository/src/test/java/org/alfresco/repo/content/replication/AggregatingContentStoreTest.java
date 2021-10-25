@@ -321,13 +321,13 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
     {
         final String contentUrl = "url";
         final Map<String, String> primaryStorePropertiesMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);;
-        when(primaryStoreMock.getObjectStorageProperties(contentUrl)).thenReturn(primaryStorePropertiesMap);
+        when(primaryStoreMock.getStorageProperties(contentUrl)).thenReturn(primaryStorePropertiesMap);
 
-        final Map<String, String> storageProperties = aggregatingStore.getObjectStorageProperties(contentUrl);
+        final Map<String, String> storageProperties = aggregatingStore.getStorageProperties(contentUrl);
 
         assertFalse(storageProperties.isEmpty());
         assertEquals(primaryStorePropertiesMap, storageProperties);
-        verify(secondaryStoreMock, times(0)).getObjectStorageProperties(contentUrl);
+        verify(secondaryStoreMock, times(0)).getStorageProperties(contentUrl);
     }
 
     @Test
@@ -335,29 +335,29 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
     {
         final String contentUrl = "url";
         final Map<String, String> secondaryStorePropertiesMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);;
-        when(primaryStoreMock.getObjectStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
-        when(secondaryStoreMock.getObjectStorageProperties(contentUrl)).thenReturn(secondaryStorePropertiesMap);
+        when(primaryStoreMock.getStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
+        when(secondaryStoreMock.getStorageProperties(contentUrl)).thenReturn(secondaryStorePropertiesMap);
 
-        final Map<String, String> storageProperties = aggregatingStore.getObjectStorageProperties(contentUrl);
+        final Map<String, String> storageProperties = aggregatingStore.getStorageProperties(contentUrl);
 
         assertFalse(storageProperties.isEmpty());
         assertEquals(secondaryStorePropertiesMap, storageProperties);
-        verify(secondaryStoreMock, times(1)).getObjectStorageProperties(contentUrl);
-        verify(primaryStoreMock, times(1)).getObjectStorageProperties(contentUrl);
+        verify(secondaryStoreMock, times(1)).getStorageProperties(contentUrl);
+        verify(primaryStoreMock, times(1)).getStorageProperties(contentUrl);
     }
 
     @Test
     public void shouldReturnEmptyStorageProperties()
     {
         final String contentUrl = "url";
-        when(primaryStoreMock.getObjectStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
-        when(secondaryStoreMock.getObjectStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
+        when(primaryStoreMock.getStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
+        when(secondaryStoreMock.getStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
 
-        final Map<String, String> storageProperties = aggregatingStore.getObjectStorageProperties(contentUrl);
+        final Map<String, String> storageProperties = aggregatingStore.getStorageProperties(contentUrl);
 
         assertTrue(storageProperties.isEmpty());
-        verify(secondaryStoreMock, times(1)).getObjectStorageProperties(contentUrl);
-        verify(primaryStoreMock, times(1)).getObjectStorageProperties(contentUrl);
+        verify(secondaryStoreMock, times(1)).getStorageProperties(contentUrl);
+        verify(primaryStoreMock, times(1)).getStorageProperties(contentUrl);
     }
 
 }

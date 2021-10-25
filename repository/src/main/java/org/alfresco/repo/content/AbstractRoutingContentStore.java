@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,13 +25,16 @@
  */
 package org.alfresco.repo.content;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -415,5 +418,25 @@ public abstract class AbstractRoutingContentStore implements ContentStore
                     "   Deleted: " + deleted);
         }
         return deleted;
+    }
+
+    @Override
+    @Experimental
+    public Map<String, String> getObjectStorageProperties(String contentUrl) {
+        ContentStore contentStore = selectReadStore(contentUrl);
+
+        if (contentStore == null) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("Storage properties not found for content URL: " + contentUrl);
+            }
+            return Collections.emptyMap();
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Getting storage properties from store: \n" +
+                    "   Content URL: " + contentUrl + "\n" +
+                    "   Store:       " + contentStore);
+        }
+        return contentStore.getObjectStorageProperties(contentUrl);
     }
 }

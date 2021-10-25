@@ -46,6 +46,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Map;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -520,5 +521,23 @@ public class CachingContentStoreTest
     {
         when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong())).thenReturn(new DirectAccessUrl());
         cachingStore.requestContentDirectUrl("url", true,"someFile", "someMimeType", 30L);
+    }
+
+    @Test
+    public void shouldReturnSomeStorageProperties()
+    {
+        final Map<String, String> propertiesMap = Map.of("x-amz-header1", "value1", "x-amz-header2", "value2");
+        final String contentUrl = "url";
+        when(backingStore.getObjectStorageProperties(contentUrl)).thenReturn(propertiesMap);
+        final Map<String, String> storageProperties = cachingStore.getObjectStorageProperties(contentUrl);
+        assertFalse(storageProperties.isEmpty());
+        assertEquals(propertiesMap, storageProperties);
+    }
+
+    @Test
+    public void shouldReturnEmptyStorageProperties()
+    {
+        Map<String, String> storageProperties = cachingStore.getObjectStorageProperties("url");
+        assertTrue(storageProperties.isEmpty());
     }
 }

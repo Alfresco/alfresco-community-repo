@@ -274,15 +274,15 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
 
         try
         {
-            NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
+            Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
+            String networkTenantDomain = pair.getFirst();
 
-            String sharedByUserId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
-            if (!quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
+            TenantUtil.runAsSystemTenant(() ->
             {
-                throw new PermissionDeniedException("Can't perform unshare action: " + sharedId);
-            }
-
-            quickShareService.unshareContent(sharedId);
+                checkIfCanDeleteSharedLink(sharedId);
+                quickShareService.unshareContent(sharedId);
+                return null;
+            }, networkTenantDomain);
         }
         catch (InvalidSharedIdException ex)
         {
@@ -696,6 +696,16 @@ public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExt
         if (emailRequest.getRecipientEmails() == null || emailRequest.getRecipientEmails().isEmpty())
         {
             throw new InvalidArgumentException("A valid recipientEmail must be specified.");
+        }
+    }
+
+    private void checkIfCanDeleteSharedLink(String sharedId) {
+        NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
+
+        String sharedByUserId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
+        if (!quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
+        {
+            throw new PermissionDeniedException("Can't perform unshare action: " + sharedId);
         }
     }
 }

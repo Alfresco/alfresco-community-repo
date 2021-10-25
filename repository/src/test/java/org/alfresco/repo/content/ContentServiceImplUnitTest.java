@@ -53,7 +53,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
@@ -166,41 +165,45 @@ public class ContentServiceImplUnitTest
     }
 
     @Test
-    public void shouldReturnStoragePropertiesWhenTheyExist() {
+    public void shouldReturnStoragePropertiesWhenTheyExist()
+    {
         final Map<String, String> storageObjectPropsMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);
         when(mockContentStore.getObjectStorageProperties(SOME_CONTENT_URL)).thenReturn(storageObjectPropsMap);
 
-        final Map<String, String> objectStorageProperties = contentService.getObjectStorageProperties(NODE_REF);
+        final Map<String, String> objectStorageProperties = contentService.getObjectStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
         assertFalse(objectStorageProperties.isEmpty());
         assertEquals(storageObjectPropsMap, objectStorageProperties);
     }
 
     @Test
-    public void shouldReturnEmptyStoragePropertiesWhenTheyDontExist() {
+    public void shouldReturnEmptyStoragePropertiesWhenTheyDontExist()
+    {
         when(mockContentStore.getObjectStorageProperties(SOME_CONTENT_URL)).thenReturn(Collections.emptyMap());
 
-        final Map<String, String> objectStorageProperties = contentService.getObjectStorageProperties(NODE_REF);
+        final Map<String, String> objectStorageProperties = contentService.getObjectStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
         assertTrue(objectStorageProperties.isEmpty());
     }
 
     @Test
-    public void getStoragePropertiesThrowsExceptionWhenNoContentFound() {
+    public void getStoragePropertiesThrowsExceptionWhenNoContentFound()
+    {
         final String dummyContentProperty = "dummy";
         when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(dummyContentProperty);
         when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            contentService.getObjectStorageProperties(NODE_REF_2);
+            contentService.getObjectStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
         });
     }
 
     @Test
-    public void getStoragePropertiesThrowsExceptionWhenNoContentUrlFound() {
+    public void getStoragePropertiesThrowsExceptionWhenNoContentUrlFound()
+    {
         final ContentData contentWithoutUrl = new ContentData(null, null, 0, null);
         when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(contentWithoutUrl);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            contentService.getObjectStorageProperties(NODE_REF_2);
+            contentService.getObjectStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
         });
     }
 

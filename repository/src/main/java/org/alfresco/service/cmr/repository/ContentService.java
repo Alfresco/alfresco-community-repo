@@ -200,18 +200,19 @@ public interface ContentService
     DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
 
     /**
-     * Gets a key-value (String-String) collection of storage headers/properties with their respective values.
+     * Gets a key-value (String-String) collection of storage headers/properties with their respective values for a specific node reference.
      * A particular Cloud Connector will fill in that data with Cloud Storage Provider generic data.
      * Map may be also filled in with entries consisting of pre-defined Alfresco keys of {@code ObjectStorageProps} and their values.
      * If empty Map is returned - no connector is present or connector is not supporting retrieval of the properties
      * or cannot determine the properties.
      *
-     * @param contentUrl the URL of the content for which the storage properties are to be retrieved.
+     * @param contentUrl a reference to a node having a content property
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
      * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values for a given {@link NodeRef}.
      */
     @Auditable
     @Experimental
-    default Map<String, String> getObjectStorageProperties(NodeRef nodeRef)
+    default Map<String, String> getObjectStorageProperties(NodeRef nodeRef, QName propertyQName)
     {
         return Collections.emptyMap();
     }

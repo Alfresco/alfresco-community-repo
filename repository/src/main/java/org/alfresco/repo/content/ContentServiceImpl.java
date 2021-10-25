@@ -652,13 +652,13 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     @Override
     @Experimental
-    public Map<String, String> getObjectStorageProperties(NodeRef nodeRef) {
-        // TODO: make sure that below call with hardcoded Qname ContentModel.PROP_CONTENT can stay here
-        final ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+    public Map<String, String> getObjectStorageProperties(NodeRef nodeRef, QName propertyQName)
+    {
+        final ContentData contentData = getContentData(nodeRef, propertyQName);
 
         if (contentData == null || contentData.getContentUrl() == null)
         {
-            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
         }
 
         return store.getObjectStorageProperties(contentData.getContentUrl());

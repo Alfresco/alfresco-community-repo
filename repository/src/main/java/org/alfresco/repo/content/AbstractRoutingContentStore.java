@@ -426,17 +426,14 @@ public abstract class AbstractRoutingContentStore implements ContentStore
         ContentStore contentStore = selectReadStore(contentUrl);
 
         if (contentStore == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Storage properties not found for content URL: " + contentUrl);
-            }
+            logger.trace("Storage properties not found for content URL: " + contentUrl);
             return Collections.emptyMap();
         }
 
-        if (logger.isDebugEnabled()) {
-            logger.debug("Getting storage properties from store: \n" +
+        logger.trace("Getting storage properties from store: \n" +
                     "   Content URL: " + contentUrl + "\n" +
                     "   Store:       " + contentStore);
-        }
+
         return contentStore.getObjectStorageProperties(contentUrl);
     }
 }

@@ -42,6 +42,7 @@ import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -270,6 +271,12 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
             return -1;
         }
     }
-    
+
+    @Experimental
+    @Override
+    public Map<String, String> getObjectStorageProperties(String contentUrl) {
+        return getTenantContentStore().getObjectStorageProperties(contentUrl);
+    }
+
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);
 }

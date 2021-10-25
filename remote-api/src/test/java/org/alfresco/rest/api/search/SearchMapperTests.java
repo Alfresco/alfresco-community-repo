@@ -83,6 +83,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Collections;
+import java.util.Optional;
 
 /**
  * Tests the SearchMapper class
@@ -853,6 +855,59 @@ public class SearchMapperTests
         //cardinality is ignored if not true
         assertEquals(1 ,searchParameters.getStats().size());
 
+    }
+    @Test
+    public void fromPivotWithFacetFieldsBefore() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
+
+        List<FacetField> facets = new ArrayList<>(2);
+        facets.add(new FacetField("SITE","site",null,null,null,true,1000,0,1, Collections.EMPTY_LIST,0));
+        facets.add(new FacetField("cm:name","docname",null,null,null,true,50,null,1,Collections.EMPTY_LIST,0));
+        FacetFields ff = new FacetFields(facets);
+
+        List<Pivot> pivots = new ArrayList<>(1);
+        pivots.add(new Pivot("docname", Collections.EMPTY_LIST));
+
+
+        searchMapper.fromFacetFields(searchParameters, ff);
+        searchMapper.fromPivot(searchParameters, null, ff, null, Arrays.asList(new Pivot("site", pivots)), searchRequestContext);
+
+        assertEquals(2, searchParameters.getFieldFacets().size());
+        assertEquals(Optional.of(1000), searchParameters.getFieldFacets().get(0).getLimitOrNull());
+        assertEquals(Optional.of(50), searchParameters.getFieldFacets().get(1).getLimitOrNull());
+        assertEquals(1,searchParameters.getFieldFacets().get(1).getMinCount());
+
+        assertEquals(1, searchParameters.getPivots().size());
+        assertEquals(2, searchParameters.getPivots().get(0).size());
+        assertEquals("SITE", searchParameters.getPivots().get(0).get(0));
+        assertEquals("cm:name", searchParameters.getPivots().get(0).get(1));
+    }
+
+    @Test
+    public void fromPivotWithFacetFieldsAfter() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        SearchRequestContext searchRequestContext = SearchRequestContext.from(minimalQuery());
+
+        List<FacetField> facets = new ArrayList<>(2);
+        facets.add(new FacetField("SITE","site",null,null,null,true,1000,0,1, Collections.EMPTY_LIST,0));
+        facets.add(new FacetField("cm:name","docname",null,null,null,true,50,null,1,Collections.EMPTY_LIST,0));
+        FacetFields ff = new FacetFields(facets);
+
+        List<Pivot> pivots = new ArrayList<>(1);
+        pivots.add(new Pivot("docname", Collections.EMPTY_LIST));
+
+
+        searchMapper.fromPivot(searchParameters, null, ff, null, Arrays.asList(new Pivot("site", pivots)), searchRequestContext);
+        searchMapper.fromFacetFields(searchParameters, ff);
+
+        assertEquals(0, searchParameters.getFieldFacets().size());
+        assertEquals(1, searchParameters.getPivots().size());
+        assertEquals(2, searchParameters.getPivots().get(0).size());
+        assertEquals("SITE", searchParameters.getPivots().get(0).get(0));
+        assertEquals("cm:name", searchParameters.getPivots().get(0).get(1));
     }
 
     @Test

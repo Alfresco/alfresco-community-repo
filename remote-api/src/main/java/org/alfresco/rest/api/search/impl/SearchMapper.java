@@ -581,9 +581,11 @@ public class SearchMapper
     {
         if (multiplePivots != null && !multiplePivots.isEmpty())
         {
+            List<FacetField> facets = new ArrayList<>();
+            facets.addAll(facetFields.getFacets());
             multiplePivots.forEach(aPivot -> {
                 List<String> pivotKeys = new ArrayList<>();
-                buildPivotKeys(pivotKeys, aPivot, stats, facetFields, ranges, searchRequestContext);
+                buildPivotKeys(pivotKeys, aPivot, stats, new FacetFields(facets), ranges, searchRequestContext);
                 sp.addPivots(pivotKeys);
             });
 

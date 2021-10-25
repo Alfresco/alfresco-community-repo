@@ -274,7 +274,8 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
 
     @Experimental
     @Override
-    public Map<String, String> getObjectStorageProperties(String contentUrl) {
+    public Map<String, String> getObjectStorageProperties(String contentUrl)
+    {
         return getTenantContentStore().getObjectStorageProperties(contentUrl);
     }
 

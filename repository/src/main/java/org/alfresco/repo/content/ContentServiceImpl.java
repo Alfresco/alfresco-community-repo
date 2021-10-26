@@ -650,6 +650,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return directAccessUrl;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Experimental
     public Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)

@@ -206,7 +206,7 @@ public interface ContentService
      * If empty Map is returned - no connector is present or connector is not supporting retrieval of the properties
      * or cannot determine the properties.
      *
-     * @param contentUrl a reference to a node having a content property
+     * @param nodeRef a reference to a node having a content property
      * @param propertyQName the name of the property, which must be of type <b>content</b>
      * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values for a given {@link NodeRef}.
      */

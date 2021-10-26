@@ -1070,11 +1070,12 @@
         <property name="enabled" value="${system.api.discovery.enabled}" />
         <property name="thumbnailService" ref="ThumbnailService" />
         <property name="restApiDirectUrlConfig" ref="restApiDirectUrlConfig" />
-        <property name="contentService" ref="ContentService" />
+        <property name="contentService" ref="contentService" />
     </bean>
 
     <bean id="org.alfresco.rest.api.probes.ProbeEntityResource.get" class="org.alfresco.rest.api.probes.ProbeEntityResource">
         <property name="discovery" ref="webscript.org.alfresco.api.DiscoveryApiWebscript.get" />
+        <property name="repoHealthChecker" ref="repoHealthChecker" />
     </bean>
 
     <!-- REST API direct access URL configuration settings -->
@@ -1138,6 +1139,7 @@
         <property name="cmisVersion"        value="1.1"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="allowUnsecureCallbackJSONP" value="${allow.unsecure.callback.jsonp}"/>
     </bean>
 
     <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get" 

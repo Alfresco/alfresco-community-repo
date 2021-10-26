@@ -110,10 +110,10 @@ public class BatchProcessor<T> implements BatchMonitor
     private String lastErrorEntryId;
 
     /** The total number of errors. */
-    private int totalErrors;
+    private long totalErrors;
 
     /** The number of successfully processed entries. */
-    private int successfullyProcessedEntries;
+    private long successfullyProcessedEntries;
 
     /** The start time. */
     private Date startTime;
@@ -280,7 +280,15 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * {@inheritDoc}
      */
-    public synchronized int getSuccessfullyProcessedEntries()
+    @Deprecated public synchronized int getSuccessfullyProcessedEntries()
+    {
+        return Math.toIntExact(this.successfullyProcessedEntries);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized long getSuccessfullyProcessedEntriesLong()
     {
         return this.successfullyProcessedEntries;
     }
@@ -290,8 +298,8 @@ public class BatchProcessor<T> implements BatchMonitor
      */
     public synchronized String getPercentComplete()
     {
-        int totalResults = this.workProvider.getTotalEstimatedWorkSize();
-        int processed = this.successfullyProcessedEntries + this.totalErrors;
+        long totalResults = this.workProvider.getTotalEstimatedWorkSizeLong();
+        long processed = this.successfullyProcessedEntries + this.totalErrors;
         return processed <= totalResults ? NumberFormat.getPercentInstance().format(
                 totalResults == 0 ? 1.0F : (float) processed / totalResults) : "Unknown";
     }
@@ -299,7 +307,23 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * {@inheritDoc}
      */
-    public synchronized int getTotalErrors()
+    @Deprecated public synchronized int getTotalErrors()
+    {
+        return Math.toIntExact(this.totalErrors);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Deprecated public int getTotalResults()
+    {
+        return this.workProvider.getTotalEstimatedWorkSize();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public synchronized long getTotalErrorsLong()
     {
         return this.totalErrors;
     }
@@ -307,9 +331,9 @@ public class BatchProcessor<T> implements BatchMonitor
     /**
      * {@inheritDoc}
      */
-    public int getTotalResults()
+    public long getTotalResultsLong()
     {
-        return this.workProvider.getTotalEstimatedWorkSize();
+        return this.workProvider.getTotalEstimatedWorkSizeLong();
     }
 
     /**
@@ -340,12 +364,42 @@ public class BatchProcessor<T> implements BatchMonitor
      *            increased performance. If <code>false</code>, all invocations are performed in the current
      *            transaction. This is required if calling synchronously (e.g. in response to an authentication event in
      *            the same transaction).
+     * @deprecated use {@link #processLong(BatchProcessWorker, boolean)} instead
      * @return the number of invocations
      */
     @SuppressWarnings("serial")
-    public int process(final BatchProcessWorker<T> worker, final boolean splitTxns)
+    @Deprecated public int process(final BatchProcessWorker<T> worker, final boolean splitTxns)
     {
         int count = workProvider.getTotalEstimatedWorkSize();
+        return (int)process(worker, splitTxns, count);
+
+    }
+
+    /**
+     * Invokes the worker for each entry in the collection, managing transactions and collating success / failure
+     * information.
+     *
+     * @param worker
+     *            the worker
+     * @param splitTxns
+     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
+     *            <code>true</code>, worker invocations are isolated in separate transactions in batches for
+     *            increased performance. If <code>false</code>, all invocations are performed in the current
+     *            transaction. This is required if calling synchronously (e.g. in response to an authentication event in
+     *            the same transaction).
+     * @return the number of invocations
+     */
+    @SuppressWarnings("serial")
+    public long processLong(final BatchProcessWorker<T> worker, final boolean splitTxns)
+    {
+        long count = workProvider.getTotalEstimatedWorkSizeLong();
+        return process(worker, splitTxns, count);
+
+    }
+
+
+    private long process(final BatchProcessWorker<T> worker, final boolean splitTxns, long count)
+    {
         synchronized (this)
         {
             this.startTime = new Date();
@@ -365,27 +419,27 @@ public class BatchProcessor<T> implements BatchMonitor
 
         // Create a thread pool executor with the specified number of threads and a finite blocking queue of jobs
         ExecutorService executorService = splitTxns && this.workerThreads > 1 ?
-                new ThreadPoolExecutor(
-                        this.workerThreads, this.workerThreads, 0L, TimeUnit.MILLISECONDS,
-                        new ArrayBlockingQueue<Runnable>(this.workerThreads * this.batchSize * 10)
-                {
-                    // Add blocking behaviour to work queue
-                    @Override
-                    public boolean offer(Runnable o)
-                    {
-                        try
-                        {
-                            put(o);
-                        }
-                        catch (InterruptedException e)
-                        {
-                            return false;
-                        }
-                        return true;
-                    }
+                    new ThreadPoolExecutor(
+                                this.workerThreads, this.workerThreads, 0L, TimeUnit.MILLISECONDS,
+                                new ArrayBlockingQueue<Runnable>(this.workerThreads * this.batchSize * 10)
+                                {
+                                    // Add blocking behaviour to work queue
+                                    @Override
+                                    public boolean offer(Runnable o)
+                                    {
+                                        try
+                                        {
+                                            put(o);
+                                        }
+                                        catch (InterruptedException e)
+                                        {
+                                            return false;
+                                        }
+                                        return true;
+                                    }
 
-                },
-                threadFactory) : null;
+                                },
+                                threadFactory) : null;
         try
         {
             Iterator<T> iterator = new WorkProviderIterator<T>(this.workProvider);
@@ -402,7 +456,7 @@ public class BatchProcessor<T> implements BatchMonitor
                     {
                         batch = new ArrayList<T>(this.batchSize);
                     }
-                    
+
                     if (executorService == null)
                     {
                         callback.run();
@@ -447,13 +501,12 @@ public class BatchProcessor<T> implements BatchMonitor
                 if (this.totalErrors > 0 && this.logger.isErrorEnabled())
                 {
                     this.logger.error(getProcessName() + ": " + this.totalErrors
-                            + " error(s) detected. Last error from entry \"" + this.lastErrorEntryId + "\"",
-                            this.lastError);
+                                            + " error(s) detected. Last error from entry \"" + this.lastErrorEntryId + "\"",
+                                this.lastError);
                 }
             }
         }
     }
-
     /**
      * Reports the current progress.
      * 
@@ -464,12 +517,20 @@ public class BatchProcessor<T> implements BatchMonitor
      */
     private synchronized void reportProgress(boolean last)
     {
-        int processed = this.successfullyProcessedEntries + this.totalErrors;
+        long processed = this.successfullyProcessedEntries + this.totalErrors;
         if (processed % this.loggingInterval == 0 ^ last)
         {
             StringBuilder message = new StringBuilder(100).append(getProcessName()).append(": Processed ").append(
                     processed).append(" entries");
-            int totalResults = this.workProvider.getTotalEstimatedWorkSize();
+            long totalResults = 0;
+            try
+            {
+                 totalResults = this.workProvider.getTotalEstimatedWorkSizeLong();
+            }
+            catch (UnsupportedOperationException uoe)
+            {
+                totalResults = this.workProvider.getTotalEstimatedWorkSize();
+            }
             if (totalResults >= processed)
             {
                 message.append(" out of ").append(totalResults).append(". ").append(
@@ -830,11 +891,11 @@ public class BatchProcessor<T> implements BatchMonitor
             {
                 if (this.txnErrors > 0)
                 {
-                    int processed = BatchProcessor.this.successfullyProcessedEntries + BatchProcessor.this.totalErrors;
-                    int currentIncrement = processed % BatchProcessor.this.loggingInterval;
-                    int newErrors = BatchProcessor.this.totalErrors + this.txnErrors;
+                    long processed = BatchProcessor.this.successfullyProcessedEntries + BatchProcessor.this.totalErrors;
+                    long currentIncrement = processed % BatchProcessor.this.loggingInterval;
+                    long newErrors = BatchProcessor.this.totalErrors + this.txnErrors;
                     // Work out the number of logging intervals we will cross and report them
-                    int intervals = (this.txnErrors + currentIncrement) / BatchProcessor.this.loggingInterval;
+                    long intervals = (this.txnErrors + currentIncrement) / BatchProcessor.this.loggingInterval;
                     if (intervals > 0)
                     {
                         BatchProcessor.this.totalErrors += BatchProcessor.this.loggingInterval - currentIncrement;
@@ -850,11 +911,11 @@ public class BatchProcessor<T> implements BatchMonitor
 
                 if (this.txnSuccesses > 0)
                 {
-                    int processed = BatchProcessor.this.successfullyProcessedEntries + BatchProcessor.this.totalErrors;
-                    int currentIncrement = processed % BatchProcessor.this.loggingInterval;
-                    int newSuccess = BatchProcessor.this.successfullyProcessedEntries + this.txnSuccesses;
+                    long processed = BatchProcessor.this.successfullyProcessedEntries + BatchProcessor.this.totalErrors;
+                    long currentIncrement = processed % BatchProcessor.this.loggingInterval;
+                    long newSuccess = BatchProcessor.this.successfullyProcessedEntries + this.txnSuccesses;
                     // Work out the number of logging intervals we will cross and report them
-                    int intervals = (this.txnSuccesses + currentIncrement) / BatchProcessor.this.loggingInterval;
+                    long intervals = (this.txnSuccesses + currentIncrement) / BatchProcessor.this.loggingInterval;
                     if (intervals > 0)
                     {
                         BatchProcessor.this.successfullyProcessedEntries += BatchProcessor.this.loggingInterval

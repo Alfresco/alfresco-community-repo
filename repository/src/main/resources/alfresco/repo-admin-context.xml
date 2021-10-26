@@ -58,5 +58,8 @@
             <value>path</value>
         </property>
    </bean>
+    <bean id ="repoHealthChecker" class="org.alfresco.repo.admin.RepoHealthChecker">
+        <constructor-arg index="0" ref="dataSourceCheck"/>
+    </bean>
    
 </beans>

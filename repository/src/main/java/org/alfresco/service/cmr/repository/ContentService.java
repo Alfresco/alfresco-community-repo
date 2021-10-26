@@ -212,7 +212,7 @@ public interface ContentService
      */
     @Auditable
     @Experimental
-    default Map<String, String> getObjectStorageProperties(NodeRef nodeRef, QName propertyQName)
+    default Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
     {
         return Collections.emptyMap();
     }

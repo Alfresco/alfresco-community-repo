@@ -170,7 +170,7 @@ public class ContentServiceImplUnitTest
         final Map<String, String> storageObjectPropsMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);
         when(mockContentStore.getObjectStorageProperties(SOME_CONTENT_URL)).thenReturn(storageObjectPropsMap);
 
-        final Map<String, String> objectStorageProperties = contentService.getObjectStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
+        final Map<String, String> objectStorageProperties = contentService.getStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
         assertFalse(objectStorageProperties.isEmpty());
         assertEquals(storageObjectPropsMap, objectStorageProperties);
     }
@@ -180,7 +180,7 @@ public class ContentServiceImplUnitTest
     {
         when(mockContentStore.getObjectStorageProperties(SOME_CONTENT_URL)).thenReturn(Collections.emptyMap());
 
-        final Map<String, String> objectStorageProperties = contentService.getObjectStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
+        final Map<String, String> objectStorageProperties = contentService.getStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
         assertTrue(objectStorageProperties.isEmpty());
     }
 
@@ -192,7 +192,7 @@ public class ContentServiceImplUnitTest
         when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            contentService.getObjectStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
+            contentService.getStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
         });
     }
 
@@ -203,7 +203,7 @@ public class ContentServiceImplUnitTest
         when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(contentWithoutUrl);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            contentService.getObjectStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
+            contentService.getStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
         });
     }
 

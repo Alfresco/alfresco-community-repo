@@ -652,7 +652,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     @Override
     @Experimental
-    public Map<String, String> getObjectStorageProperties(NodeRef nodeRef, QName propertyQName)
+    public Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
     {
         final ContentData contentData = getContentData(nodeRef, propertyQName);
 

@@ -45,6 +45,7 @@ import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -647,6 +648,23 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             }
         }
         return directAccessUrl;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Experimental
+    public Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
+    {
+        final ContentData contentData = getContentData(nodeRef, propertyQName);
+
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
+        }
+
+        return store.getObjectStorageProperties(contentData.getContentUrl());
     }
 
     protected String getFileName(NodeRef nodeRef)

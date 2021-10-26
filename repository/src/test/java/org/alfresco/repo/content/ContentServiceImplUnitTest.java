@@ -25,8 +25,10 @@
  */
 package org.alfresco.repo.content;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -41,6 +43,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
 import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -49,6 +52,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Unit tests for content service implementation.
@@ -64,6 +70,13 @@ public class ContentServiceImplUnitTest
     private static final Long SYS_MAX_EXPIRY_TIME_IN_SECS = 300L;
 
     private static final NodeRef NODE_REF = new NodeRef("content://Node/Ref");
+    public static final String SOME_CONTENT_URL = "someContentUrl";
+    private static final NodeRef NODE_REF_2 = new NodeRef("content://Node/Ref2");;
+
+    private static final String X_AMZ_HEADER_1 = "x-amz-header1";
+    private static final String VALUE_1 = "value1";
+    private static final String X_AMZ_HEADER_2 = "x-amz-header-2";
+    private static final String VALUE_2 = "value2";
 
     @InjectMocks
     private ContentServiceImpl contentService;
@@ -77,12 +90,15 @@ public class ContentServiceImplUnitTest
     @Mock
     private ContentData mockContentData;
 
+    @Mock
+    private DictionaryService mockDictionaryService;
+
     @Before
     public void setup()
     {
         openMocks(this);
         when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_CONTENT)).thenReturn(mockContentData);
-        when(mockContentData.getContentUrl()).thenReturn("someContentUrl");
+        when(mockContentData.getContentUrl()).thenReturn(SOME_CONTENT_URL);
         when(mockContentData.getMimetype()).thenReturn("someMimetype");
         when(mockNodeService.getProperty(NODE_REF, ContentModel.PROP_NAME)).thenReturn("someFilename");
     }
@@ -146,6 +162,49 @@ public class ContentServiceImplUnitTest
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
         assertNull(directAccessUrl);
         verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
+    }
+
+    @Test
+    public void shouldReturnStoragePropertiesWhenTheyExist()
+    {
+        final Map<String, String> storageObjectPropsMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);
+        when(mockContentStore.getObjectStorageProperties(SOME_CONTENT_URL)).thenReturn(storageObjectPropsMap);
+
+        final Map<String, String> objectStorageProperties = contentService.getStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
+        assertFalse(objectStorageProperties.isEmpty());
+        assertEquals(storageObjectPropsMap, objectStorageProperties);
+    }
+
+    @Test
+    public void shouldReturnEmptyStoragePropertiesWhenTheyDontExist()
+    {
+        when(mockContentStore.getObjectStorageProperties(SOME_CONTENT_URL)).thenReturn(Collections.emptyMap());
+
+        final Map<String, String> objectStorageProperties = contentService.getStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
+        assertTrue(objectStorageProperties.isEmpty());
+    }
+
+    @Test
+    public void getStoragePropertiesThrowsExceptionWhenNoContentFound()
+    {
+        final String dummyContentProperty = "dummy";
+        when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(dummyContentProperty);
+        when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            contentService.getStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
+        });
+    }
+
+    @Test
+    public void getStoragePropertiesThrowsExceptionWhenNoContentUrlFound()
+    {
+        final ContentData contentWithoutUrl = new ContentData(null, null, 0, null);
+        when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(contentWithoutUrl);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            contentService.getStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
+        });
     }
 
     /* Helper method to set system-wide direct access url configuration settings */

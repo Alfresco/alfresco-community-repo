@@ -36,10 +36,10 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -79,6 +79,6 @@ public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
     {
         deleteHoldAuditEvent.beforeDeleteNode(holdNodeRef);
         verify(mockedRecordsManagementAuditService, times(1))
-            .auditEvent(eq(holdNodeRef), eq(null), any(Map.class), eq(null), eq(true), eq(false));
+            .auditEvent(eq(holdNodeRef), nullable(String.class), anyMap(), isNull(), eq(true), eq(false));
     }
 }

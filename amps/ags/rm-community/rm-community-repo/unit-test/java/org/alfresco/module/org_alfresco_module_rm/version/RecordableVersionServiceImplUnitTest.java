@@ -482,11 +482,11 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         
         // verify that the version is converted to a recorded version
         verify(mockedRecordService, times(1)).createRecordFromContent(
-                eq(filePlan), 
-                eq(null),
-                eq(null),
-                any(Map.class), 
-                eq(null));
+                eq(filePlan),
+                nullable(String.class),
+                nullable(QName.class),
+                any(Map.class),
+                nullable(ContentReader.class));
         verify(mockedDbNodeService, times(1)).deleteNode(any(NodeRef.class));
         verify(mockedDbNodeService, times(1)).createNode(
                 eq(versionHistoryNodeRef),

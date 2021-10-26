@@ -36,10 +36,10 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
-import java.util.Map;
-
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -83,6 +83,6 @@ public class AddToHoldAuditEventUnitTest extends BaseUnitTest
     public void testAddToHoldCausesAuditEvent()
     {
         addToHoldAuditEvent.onAddToHold(holdNodeRef, contentNodeRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), eq(null), eq(null), any(Map.class), eq(true), eq(false));
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), nullable(String.class), isNull(), anyMap(), eq(true), eq(false));
     }
 }

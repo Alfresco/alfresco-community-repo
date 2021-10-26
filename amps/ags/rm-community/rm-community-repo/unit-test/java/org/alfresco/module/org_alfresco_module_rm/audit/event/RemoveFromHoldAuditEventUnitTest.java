@@ -27,14 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -88,7 +87,7 @@ public class RemoveFromHoldAuditEventUnitTest extends BaseUnitTest
     public void testRemoveFromHoldCausesAuditEvent()
     {
         removeFromHoldAuditEvent.onRemoveFromHold(holdNodeRef, contentNodeRef);
-        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), eq(null), any(Map.class), eq(null), eq(true));
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(contentNodeRef), nullable(String.class), anyMap(), isNull(), eq(true));
     }
 
 }

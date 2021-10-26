@@ -30,8 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.forms;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -51,6 +50,7 @@ import org.alfresco.repo.forms.Form;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -129,8 +129,8 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
         
         typeFormFilter.afterGenerate(mockTypeDefinition, null, null, mockForm, null);
         
-        verify(mockedIdentifierService).generateIdentifier(eq(null), eq(null));
-        verify(idDef).setDefaultValue(eq(null));
+        verify(mockedIdentifierService).generateIdentifier(nullable(QName.class), nullable(NodeRef.class));
+        verify(idDef).setDefaultValue(nullable(String.class));
         verify(vrDef).setDefaultValue(Boolean.FALSE.toString());
         verify(rpDef).setDefaultValue("none|0");
     }

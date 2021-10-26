@@ -43,6 +43,10 @@ install: travis_retry travis_wait 40 bash scripts/travis/build.sh
 
 jobs:
   include:
+    - name: "Source Clear Scan (SCA)"
+      # Run Veracode
+      install: skip
+      script: travis_wait 30 bash scripts/travis/source_clear.sh
 
     - name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
       if: commit_message !~ /\[skip repo\]/

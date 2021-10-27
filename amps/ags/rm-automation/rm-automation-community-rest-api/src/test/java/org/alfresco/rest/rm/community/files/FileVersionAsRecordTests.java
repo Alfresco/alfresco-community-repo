@@ -52,10 +52,7 @@ import org.alfresco.rest.v0.HoldsAPI;
 import org.alfresco.rest.v0.service.RoleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -224,7 +221,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * Then I receive an error indicating that the access is denied
      * And the document is not declared as a record
      */
-    @Test
+    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
     public void declareAndFileByUserWithReadOnlyPermission() throws Exception
     {
         STEP("Declare document as record with a record folder as location parameter");

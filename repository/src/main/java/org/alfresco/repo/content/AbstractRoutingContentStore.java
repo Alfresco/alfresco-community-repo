@@ -422,21 +422,21 @@ public abstract class AbstractRoutingContentStore implements ContentStore
 
     @Override
     @Experimental
-    public Map<String, String> getObjectStorageProperties(String contentUrl) {
+    public Map<String, String> getStorageProperties(String contentUrl) {
         ContentStore contentStore = selectReadStore(contentUrl);
 
         if (contentStore == null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Storage properties not found for content URL: " + contentUrl);
+            if (logger.isTraceEnabled()) {
+                logger.trace("Storage properties not found for content URL: " + contentUrl);
             }
             return Collections.emptyMap();
         }
-
-        if (logger.isDebugEnabled()) {
-            logger.debug("Getting storage properties from store: \n" +
+        if (logger.isTraceEnabled()) {
+            logger.trace("Getting storage properties from store: \n" +
                     "   Content URL: " + contentUrl + "\n" +
                     "   Store:       " + contentStore);
         }
-        return contentStore.getObjectStorageProperties(contentUrl);
+
+        return contentStore.getStorageProperties(contentUrl);
     }
 }

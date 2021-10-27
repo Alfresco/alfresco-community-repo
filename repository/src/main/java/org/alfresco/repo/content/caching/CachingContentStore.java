@@ -384,9 +384,9 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
 
     @Override
     @Experimental
-    public Map<String, String> getObjectStorageProperties(final String contentUrl)
+    public Map<String, String> getStorageProperties(final String contentUrl)
     {
-        return backingStore.getObjectStorageProperties(contentUrl);
+        return backingStore.getStorageProperties(contentUrl);
     }
 
     /**

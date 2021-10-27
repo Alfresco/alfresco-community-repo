@@ -664,7 +664,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
         }
 
-        return store.getObjectStorageProperties(contentData.getContentUrl());
+        return store.getStorageProperties(contentData.getContentUrl());
     }
 
     protected String getFileName(NodeRef nodeRef)

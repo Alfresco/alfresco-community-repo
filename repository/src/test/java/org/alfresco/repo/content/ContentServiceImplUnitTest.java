@@ -168,7 +168,7 @@ public class ContentServiceImplUnitTest
     public void shouldReturnStoragePropertiesWhenTheyExist()
     {
         final Map<String, String> storageObjectPropsMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);
-        when(mockContentStore.getObjectStorageProperties(SOME_CONTENT_URL)).thenReturn(storageObjectPropsMap);
+        when(mockContentStore.getStorageProperties(SOME_CONTENT_URL)).thenReturn(storageObjectPropsMap);
 
         final Map<String, String> objectStorageProperties = contentService.getStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
         assertFalse(objectStorageProperties.isEmpty());
@@ -178,7 +178,7 @@ public class ContentServiceImplUnitTest
     @Test
     public void shouldReturnEmptyStoragePropertiesWhenTheyDontExist()
     {
-        when(mockContentStore.getObjectStorageProperties(SOME_CONTENT_URL)).thenReturn(Collections.emptyMap());
+        when(mockContentStore.getStorageProperties(SOME_CONTENT_URL)).thenReturn(Collections.emptyMap());
 
         final Map<String, String> objectStorageProperties = contentService.getStorageProperties(NODE_REF, ContentModel.PROP_CONTENT);
         assertTrue(objectStorageProperties.isEmpty());

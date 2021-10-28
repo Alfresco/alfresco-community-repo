@@ -204,7 +204,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * record folder
      * And the document is not declared as a version record
      */
-    @Test (dataProvider = "invalidDestinationPaths")
+    @Test (dataProvider = "invalidDestinationPaths", groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
     public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Declare document as record version with an invalid location parameter value");
@@ -221,7 +221,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * Then I receive an error indicating that the access is denied
      * And the document is not declared as a record
      */
-    @Test(groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
+    @Test()
     public void declareAndFileByUserWithReadOnlyPermission() throws Exception
     {
         STEP("Declare document as record with a record folder as location parameter");

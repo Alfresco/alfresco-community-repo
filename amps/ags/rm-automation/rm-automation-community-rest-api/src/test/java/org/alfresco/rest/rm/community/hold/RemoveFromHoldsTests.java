@@ -63,6 +63,7 @@ import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
@@ -77,6 +78,7 @@ import org.testng.annotations.Test;
  * @since 3.2
  */
 @AlfrescoTest (jira = "RM-6874, RM-6873")
+@Test(groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
 public class RemoveFromHoldsTests extends BaseRMRestTest
 {
     private static final String HOLD_ONE = "HOLD_ONE" + generateTestPrefix(RemoveFromHoldsTests.class);

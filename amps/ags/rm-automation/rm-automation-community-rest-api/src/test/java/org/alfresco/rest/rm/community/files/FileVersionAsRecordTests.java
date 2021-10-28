@@ -67,6 +67,7 @@ import org.testng.annotations.Test;
  * @since 3.4
  */
 @AlfrescoTest (jira = "APPS-35")
+@Test(groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
 public class FileVersionAsRecordTests extends BaseRMRestTest
 {
     private final static String DESTINATION_PATH_NOT_FOUND_EXC = "Unable to execute declare-version-record action, " +
@@ -204,7 +205,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * record folder
      * And the document is not declared as a version record
      */
-    @Test (dataProvider = "invalidDestinationPaths", groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
+    @Test (dataProvider = "invalidDestinationPaths")
     public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Declare document as record version with an invalid location parameter value");

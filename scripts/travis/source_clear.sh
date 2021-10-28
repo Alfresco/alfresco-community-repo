@@ -17,7 +17,7 @@ if [ -z "$VERACODE_FAILS_BUILD" ] || [ "$VERACODE_FAILS_BUILD" = false ] ; then
     SUCCESS=0
 fi
 
-cat scan.log > result.txt
+cat scan.log | grep -e 'Full Report Details' -e 'Failed'
 
 popd
 set +vex

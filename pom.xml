@@ -17,6 +17,7 @@
         <module>data-model</module>
         <module>repository</module>
         <module>remote-api</module>
+        <module>mmt</module>
         <module>packaging</module>
         <module>amps</module>
     </modules>
@@ -43,7 +44,6 @@
         <dir.root>${project.build.directory}/alf_data</dir.root>
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
-        <dependency.alfresco-mmt.version>6.0</dependency.alfresco-mmt.version>
         <dependency.alfresco-trashcan-cleaner.version>2.4.1</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.1</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
@@ -90,6 +90,7 @@
         <dependency.swagger-ui.version>3.38.0</dependency.swagger-ui.version>
         <dependency.swagger-parser.version>1.0.52</dependency.swagger-parser.version>
         <dependency.maven-filtering.version>3.1.1</dependency.maven-filtering.version>
+        <dependency.maven-artifact.version>3.8.3</dependency.maven-artifact.version>
 
         <dependency.jakarta-jaxb-api.version>2.3.3</dependency.jakarta-jaxb-api.version>
         <dependency.jakarta-ws-api.version>2.3.3</dependency.jakarta-ws-api.version>
@@ -288,11 +289,6 @@
                         <artifactId>activemq-broker</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.alfresco</groupId>
-                <artifactId>alfresco-mmt</artifactId>
-                <version>${dependency.alfresco-mmt.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.alfresco</groupId>

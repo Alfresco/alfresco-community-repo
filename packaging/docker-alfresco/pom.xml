@@ -71,6 +71,7 @@
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-mmt</artifactId>
                                     <type>jar</type>
+                                    <version>${project.version}</version>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/alfresco-mmt</outputDirectory>
                                 </artifactItem>

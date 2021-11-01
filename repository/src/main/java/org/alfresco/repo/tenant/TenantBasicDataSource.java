@@ -62,7 +62,7 @@ public class TenantBasicDataSource extends BasicDataSource
         this.setTestOnBorrow(bds.getTestOnBorrow());
         this.setTestOnReturn(bds.getTestOnReturn());
         this.setTestWhileIdle(bds.getTestWhileIdle());
-      //  this.setRemoveAbandoned(bds.getRemoveAbandoned());
+        this.setRemoveAbandonedOnBorrow(bds.getRemoveAbandonedOnBorrow());
         this.setRemoveAbandonedTimeout(bds.getRemoveAbandonedTimeout());
         this.setPoolPreparedStatements(bds.isPoolPreparedStatements());
         this.setMaxOpenPreparedStatements(bds.getMaxOpenPreparedStatements());

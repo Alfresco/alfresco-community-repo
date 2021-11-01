@@ -211,9 +211,9 @@
         <property name="testWhileIdle" >
             <value>${db.pool.evict.validate}</value>
         </property>
-<!--        <property name="removeAbandoned" >-->
-<!--            <value>${db.pool.abandoned.detect}</value>-->
-<!--        </property>-->
+        <property name="RemoveAbandonedOnBorrow" >
+            <value>${db.pool.abandoned.detect}</value>
+        </property>
         <property name="removeAbandonedTimeout" >
             <value>${db.pool.abandoned.time}</value>
         </property>

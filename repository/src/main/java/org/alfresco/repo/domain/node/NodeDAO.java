@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -943,5 +944,50 @@ public interface NodeDAO extends NodeBulkLoader
      * @return next commit time
      */
     public Long getNextTxCommitTime(Long fromCommitTime);
+
+    /**
+     *
+     * @param maxCommitTime
+     * @return Iterator over node ids
+     */
+     default public Iterator<Long> selectDeletedNodesByCommitTime(long maxCommitTime)
+     {
+         throw new UnsupportedOperationException("Not Implemented");
+     }
+
+    /**
+     * Purge the nodes marked as deleted
+     * @param minAge
+     * @param deleteBatchSize
+     * @return the count of nodes deleted in each batch
+     */
+     default public List<String> purgeDeletedNodes(long minAge, int deleteBatchSize)
+     {
+         throw new UnsupportedOperationException("This operation is not supported");
+     }
+
+    /**
+     *
+     * @param maxCommitTime
+     * @return Iterator over transaction ids
+     */
+    default public Iterator<Long> selectUnusedTransactionsByCommitTime(long maxCommitTime)
+    {
+        throw new UnsupportedOperationException("Not Implemented");
+    }
+
+
+    /**
+     * Purge the transactions of purged nodes
+     * @param minAge
+     * @param deleteBatchSize
+     * @return the count of transactions deleted in each batch
+     */
+    default public List<String> purgeEmptyTransactions(long minAge, int deleteBatchSize)
+    {
+        throw new UnsupportedOperationException("This operation is not supported");
+    }
+
+
 
 }

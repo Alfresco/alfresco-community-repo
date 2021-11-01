@@ -27,6 +27,7 @@ package org.alfresco.repo.node.db;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +55,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
     //to determine if we need a time based window deletion of nodes or in fixed size batches.
     private  String algorithm;
 
-    DeletedNodeBatchCleanup deletedNodeBatchCleanup;
+    private int deleteBatchSize;
 
     private static final String NODE_TABLE_CLEANER_ALG_V2 = "V2";
 
@@ -79,14 +80,15 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
 
         if(NODE_TABLE_CLEANER_ALG_V2.equals(algorithm))
         {
-            deletedNodeBatchCleanup.setMinPurgeAgeMs(minPurgeAgeMs);
+           // deletedNodeBatchCleanup.setMinPurgeAgeMs(minPurgeAgeMs);
             refreshLock();
             if(logger.isDebugEnabled())
             {
                 logger.debug("DeletedNodeCleanupWorker using batch deletion: About to execute the clean up nodes ");
 
             }
-            purgedNodes = deletedNodeBatchCleanup.purgeOldDeletedNodes();
+            //purgedNodes = deletedNodeBatchCleanup.purgeOldDeletedNodes();
+            purgedNodes = purgeOldDeletedNodesV2(minPurgeAgeMs);
             if(logger.isDebugEnabled())
             {
                 logger.debug(purgedNodes);
@@ -97,7 +99,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
                 logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
             }
 
-            purgedTxns =  deletedNodeBatchCleanup.purgeOldEmptyTransactions();
+            //purgedTxns =  deletedNodeBatchCleanup.purgeOldEmptyTransactions();
+             purgedTxns =  purgeOldEmptyTransactionsV2(minPurgeAgeMs);
             if(logger.isDebugEnabled())
             {
                 logger.debug(purgedTxns);
@@ -171,10 +174,15 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         this.algorithm = algorithm;
     }
 
-    public void setDeletedNodeBatchCleanup(DeletedNodeBatchCleanup deletedNodeBatchCleanup)
+    public void setDeleteBatchSize(int deleteBatchSize)
     {
-        this.deletedNodeBatchCleanup = deletedNodeBatchCleanup;
+        this.deleteBatchSize = deleteBatchSize;
     }
+
+//    public void setDeletedNodeBatchCleanup(DeletedNodeBatchCleanup deletedNodeBatchCleanup)
+//    {
+//        this.deletedNodeBatchCleanup = deletedNodeBatchCleanup;
+//    }
 
     /**
      * Cleans up deleted nodes that are older than the given minimum age.
@@ -384,6 +392,41 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         // Done
         return results;
     }
+
+
+    private List<String> purgeOldDeletedNodesV2(long minAge)
+    {
+
+        refreshLock();
+         final List<String> returnList = new ArrayList<>();
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+
+        RetryingTransactionCallback<Void> callback = () -> {
+            returnList.addAll(nodeDAO.purgeDeletedNodes(minAge, deleteBatchSize));
+            return null;
+
+        };
+        txnHelper.doInTransaction(callback,false,true);
+        return returnList;
+
+    }
+
+    private List<String> purgeOldEmptyTransactionsV2(long minAge)
+    {
+        refreshLock();
+        final List<String> returnList = new ArrayList<>();
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+
+        RetryingTransactionCallback<Void> callback = () -> {
+            returnList.addAll(nodeDAO.purgeEmptyTransactions(minAge, deleteBatchSize));
+            return null;
+
+        };
+        txnHelper.doInTransaction(callback,false,true);
+
+        return returnList;
+
+    }
     
     private static abstract class DeleteByTransactionsCallback implements RetryingTransactionCallback<Long>
     {
@@ -435,8 +478,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         }       
     }
 
-     public DeletedNodeBatchCleanup getDeletedNodeBatchCleanup()
-    {
-        return deletedNodeBatchCleanup;
-    }
+//     public DeletedNodeBatchCleanup getDeletedNodeBatchCleanup()
+//    {
+//        return deletedNodeBatchCleanup;
+//    }
 }

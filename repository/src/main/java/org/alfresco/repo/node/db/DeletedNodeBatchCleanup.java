@@ -65,7 +65,7 @@ public class DeletedNodeBatchCleanup
                 "select node.id as id from alf_node node join alf_transaction txn on (node.transaction_id = txn.id) "
                             + "where txn.commit_time_ms < ?  and node.type_qname_id = ?";
     private final static String SELECT_TXN_STATEMENT =
-                "select id from alf_transaction  where not exists (  select 1 from alf_node node where"
+                    "select id from alf_transaction  where not exists (  select 1 from alf_node node where"
                             + " node.transaction_id = alf_transaction.id)  and commit_time_ms <= ? ";
     private final static String DELETE_NODE_PROP_STATEMENT = "DELETE FROM ALF_NODE_PROPERTIES WHERE NODE_ID IN (";
     private final static String DELETE_NODE_STATEMENT = "DELETE FROM ALF_NODE WHERE ID IN (";

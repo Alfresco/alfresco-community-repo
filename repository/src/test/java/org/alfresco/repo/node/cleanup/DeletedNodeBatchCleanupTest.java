@@ -31,7 +31,6 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.domain.node.ibatis.NodeDAOImpl;
-import org.alfresco.repo.node.db.DeletedNodeBatchCleanup;
 import org.alfresco.repo.node.db.DeletedNodeCleanupWorker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -48,7 +47,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -77,7 +75,6 @@ import java.util.Map;
     private NodeDAO nodeDAO;
     private SimpleCache<Serializable, Serializable> nodesCache;
     private DeletedNodeCleanupWorker worker;
-    private DeletedNodeBatchCleanup deletedNodeBatchCleanup;
 
     @Before public void before()
     {
@@ -94,16 +91,15 @@ import java.util.Map;
 
         this.worker.setMinPurgeAgeDays(0);
         this.worker.setAlgorithm("V2");
-        this.deletedNodeBatchCleanup = this.worker.getDeletedNodeBatchCleanup();
-        this.deletedNodeBatchCleanup.setBatchSize(10);
-        this.deletedNodeBatchCleanup.setDeleteBatchSize(2);
+        this.worker.setDeleteBatchSize(20);
+
         this.helper = transactionService.getRetryingTransactionHelper();
         authenticationService.authenticate("admin", "admin".toCharArray());
 
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         NodeRef storeRoot = nodeService.getRootNode(storeRef);
-        List<NodeRef> nodeRefs = searchService
-                    .selectNodes(storeRoot, "/app:company_home", null, namespaceService, false);
+        List<NodeRef> nodeRefs = searchService.selectNodes(storeRoot, "/app:company_home", null, namespaceService,
+                    false);
         final NodeRef companyHome = nodeRefs.get(0);
 
         RetryingTransactionHelper.RetryingTransactionCallback<NodeRef> createNode = new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
@@ -235,9 +231,8 @@ import java.util.Map;
         }
 
         // Get transactions committed after the test started
-        RetryingTransactionHelper.RetryingTransactionCallback<List<Transaction>> getTxnsCallback = () -> ((NodeDAOImpl) nodeDAO)
-                    .selectTxns(Long.valueOf(start), Long.valueOf(Long.MAX_VALUE), Integer.MAX_VALUE, null,
-                                null, true);
+        RetryingTransactionHelper.RetryingTransactionCallback<List<Transaction>> getTxnsCallback = () -> ((NodeDAOImpl) nodeDAO).selectTxns(
+                    Long.valueOf(start), Long.valueOf(Long.MAX_VALUE), Integer.MAX_VALUE, null, null, true);
         List<Transaction> txns = transactionService.getRetryingTransactionHelper()
                     .doInTransaction(getTxnsCallback, true, false);
 
@@ -296,17 +291,6 @@ import java.util.Map;
         assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef5));
     }
 
-    @Test
-    public void testBatchSizeGreaterThanDeletedBatchSize()
-    {
-        this.deletedNodeBatchCleanup.setDeleteBatchSize(10);
-        this.deletedNodeBatchCleanup.setBatchSize(2);
-
-        List<String> messageList = worker.doClean();
-
-        Assert.assertFalse(messageList.isEmpty());
-        Assert.assertEquals(messageList.get(0), "The batchSize should be equal or greater than deleteBatchSize");
-    }
     private boolean containsTransaction(List<Transaction> txns, String txnId)
     {
         boolean found = false;

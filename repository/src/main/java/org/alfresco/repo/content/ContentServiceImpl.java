@@ -45,6 +45,7 @@ import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -605,7 +606,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
             }
 
-            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(getContentUrl(nodeRef)));
+            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(contentData.getContentUrl()));
         }
 
         return contentDirectUrlEnabled;
@@ -621,8 +622,17 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             throw new DirectAccessUrlDisabledException("Direct access url isn't available.");
         }
 
-        String contentUrl = getContentUrl(nodeRef);
+        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+        // check that the content & URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        String contentUrl = contentData.getContentUrl();
+        String contentMimetype = contentData.getMimetype();
         String fileName = getFileName(nodeRef);
+
         validFor = adjustValidFor(validFor);
 
         DirectAccessUrl directAccessUrl = null;
@@ -630,7 +640,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             try
             {
-                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, contentMimetype, validFor);
             }
             catch (UnsupportedOperationException ex)
             {
@@ -640,17 +650,21 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return directAccessUrl;
     }
 
-    protected String getContentUrl(NodeRef nodeRef)
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Experimental
+    public Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
     {
-        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+        final ContentData contentData = getContentData(nodeRef, propertyQName);
 
-        // check that the URL is available
         if (contentData == null || contentData.getContentUrl() == null)
         {
-            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
         }
 
-        return contentData.getContentUrl();
+        return store.getStorageProperties(contentData.getContentUrl());
     }
 
     protected String getFileName(NodeRef nodeRef)

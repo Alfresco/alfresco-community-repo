@@ -28,10 +28,10 @@
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -168,7 +168,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         MockitoAnnotations.initMocks(this);
 
         // setup application context
-        doReturn(mockedNodeService).when(mockedApplicationContext).getBean("dbNodeService");
+        lenient().doReturn(mockedNodeService).when(mockedApplicationContext).getBean("dbNodeService");
 
         // setup retrying transaction helper
         Answer<Object> doInTransactionAnswer = new Answer<Object>()
@@ -181,7 +181,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
                 return callback.execute();
             }
         };
-        doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).<Object>doInTransaction(any(RetryingTransactionCallback.class));
+        lenient().doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).<Object>doInTransaction(any(RetryingTransactionCallback.class));
 
         // setup mocked authentication util
         MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil);
@@ -189,15 +189,15 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         // setup file plan
         filePlan = generateNodeRef(TYPE_FILE_PLAN);
         setupAsFilePlanComponent(filePlan);
-        doReturn(true).when(mockedFilePlanService).isFilePlan(filePlan);
+        lenient().doReturn(true).when(mockedFilePlanService).isFilePlan(filePlan);
 
         // setup basic file plan component
         filePlanComponent = generateNodeRef();
         setupAsFilePlanComponent(filePlanComponent);
 
         // setup namespace service
-        doReturn(RM_URI).when(mockedNamespaceService).getNamespaceURI(RM_PREFIX);
-        doReturn(CollectionUtils.unmodifiableSet(RM_PREFIX)).when(mockedNamespaceService).getPrefixes(RM_URI);
+        lenient().doReturn(RM_URI).when(mockedNamespaceService).getNamespaceURI(RM_PREFIX);
+        lenient().doReturn(CollectionUtils.unmodifiableSet(RM_PREFIX)).when(mockedNamespaceService).getPrefixes(RM_URI);
 
         // setup record folder and record
         recordFolder = generateRecordFolder();
@@ -206,10 +206,10 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         // set record as child of record folder
         List<ChildAssociationRef> result = new ArrayList<>(1);
         result.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, recordFolder, generateQName(RM_URI), record, true, 1));
-        doReturn(result).when(mockedNodeService).getChildAssocs(eq(recordFolder), eq(ContentModel.ASSOC_CONTAINS), any(QNamePattern.class));
-        doReturn(result).when(mockedNodeService).getParentAssocs(record);
-        doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
-        doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);
+        lenient().doReturn(result).when(mockedNodeService).getChildAssocs(eq(recordFolder), eq(ContentModel.ASSOC_CONTAINS), any(QNamePattern.class));
+        lenient().doReturn(result).when(mockedNodeService).getParentAssocs(record);
+        lenient().doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
+        lenient().doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);
     }
 
     /**
@@ -221,7 +221,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     protected NodeRef generateHoldNodeRef(String name)
     {
         NodeRef hold = generateNodeRef(TYPE_HOLD);
-        doReturn(name).when(mockedNodeService).getProperty(hold, ContentModel.PROP_NAME);
+        lenient().doReturn(name).when(mockedNodeService).getProperty(hold, ContentModel.PROP_NAME);
         doReturn(true).when(mockedHoldService).isHold(hold);
         return hold;
     }
@@ -235,7 +235,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     {
         NodeRef recordFolder = generateNodeRef(TYPE_RECORD_FOLDER);
         setupAsFilePlanComponent(recordFolder);
-        doReturn(true).when(mockedRecordFolderService).isRecordFolder(recordFolder);
+        lenient().doReturn(true).when(mockedRecordFolderService).isRecordFolder(recordFolder);
         return recordFolder;
     }
 
@@ -248,8 +248,8 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     {
         NodeRef record = generateNodeRef(ContentModel.TYPE_CONTENT);
         setupAsFilePlanComponent(record);
-        doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_RECORD);
-        doReturn(true).when(mockedRecordService).isRecord(record);
+        lenient().doReturn(true).when(mockedNodeService).hasAspect(record, ASPECT_RECORD);
+        lenient().doReturn(true).when(mockedRecordService).isRecord(record);
         return record;
     }
 
@@ -260,10 +260,10 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
      */
     protected void setupAsFilePlanComponent(NodeRef nodeRef)
     {
-        doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT);
-        doReturn(true).when(mockedFilePlanService).isFilePlanComponent(nodeRef);
-        doReturn(filePlan).when(mockedFilePlanService).getFilePlan(nodeRef);
-        doReturn(filePlan).when(mockedNodeService).getProperty(nodeRef, PROP_ROOT_NODEREF);
+        lenient().doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT);
+        lenient().doReturn(true).when(mockedFilePlanService).isFilePlanComponent(nodeRef);
+        lenient().doReturn(filePlan).when(mockedFilePlanService).getFilePlan(nodeRef);
+        lenient().doReturn(filePlan).when(mockedNodeService).getProperty(nodeRef, PROP_ROOT_NODEREF);
     }
 
     /**
@@ -297,7 +297,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     protected NodeRef generateCmContent(String name)
     {
         NodeRef nodeRef = generateNodeRef(ContentModel.TYPE_CONTENT, true);
-        doReturn(name).when(mockedNodeService).getProperty(nodeRef, ContentModel.PROP_NAME);
+        lenient().doReturn(name).when(mockedNodeService).getProperty(nodeRef, ContentModel.PROP_NAME);
         return nodeRef;
     }
 
@@ -312,11 +312,11 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     protected NodeRef generateNodeRef(QName type, boolean exists)
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-        when(mockedNodeService.exists(eq(nodeRef))).thenReturn(exists);
+        lenient().when(mockedNodeService.exists(eq(nodeRef))).thenReturn(exists);
         if (type != null)
         {
-            when(mockedNodeService.getType(eq(nodeRef))).thenReturn(type);
-            when(mockedNodeTypeUtility.instanceOf(type, type)).thenReturn(true);
+            lenient().when(mockedNodeService.getType(eq(nodeRef))).thenReturn(type);
+            lenient().when(mockedNodeTypeUtility.instanceOf(type, type)).thenReturn(true);
         }
         return nodeRef;
     }
@@ -334,7 +334,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
 
         if (parent != null)
         {
-            doReturn(parent).when(mockedChildAssociationRef).getParentRef();
+            lenient().doReturn(parent).when(mockedChildAssociationRef).getParentRef();
         }
 
         if (child != null)

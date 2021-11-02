@@ -46,6 +46,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Locale;
+import java.util.Map;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
@@ -505,8 +506,8 @@ public class CachingContentStoreTest
     {
         try
         {
-            when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong())).thenThrow(new UnsupportedOperationException());
-            cachingStore.requestContentDirectUrl("url", true,"someFile", 30L);
+            when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong())).thenThrow(new UnsupportedOperationException());
+            cachingStore.requestContentDirectUrl("url", true,"someFile", "someMimetype", 30L);
             fail();
         }
         catch (UnsupportedOperationException e)
@@ -518,7 +519,25 @@ public class CachingContentStoreTest
     @Test
     public void getRequestContentDirectUrl()
     {
-        when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyLong())).thenReturn(new DirectAccessUrl());
-        cachingStore.requestContentDirectUrl("url", true,"someFile", 30L);
+        when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong())).thenReturn(new DirectAccessUrl());
+        cachingStore.requestContentDirectUrl("url", true,"someFile", "someMimeType", 30L);
+    }
+
+    @Test
+    public void shouldReturnSomeStorageProperties()
+    {
+        final Map<String, String> propertiesMap = Map.of("x-amz-header1", "value1", "x-amz-header2", "value2");
+        final String contentUrl = "url";
+        when(backingStore.getStorageProperties(contentUrl)).thenReturn(propertiesMap);
+        final Map<String, String> storageProperties = cachingStore.getStorageProperties(contentUrl);
+        assertFalse(storageProperties.isEmpty());
+        assertEquals(propertiesMap, storageProperties);
+    }
+
+    @Test
+    public void shouldReturnEmptyStorageProperties()
+    {
+        Map<String, String> storageProperties = cachingStore.getStorageProperties("url");
+        assertTrue(storageProperties.isEmpty());
     }
 }

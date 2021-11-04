@@ -172,9 +172,9 @@
         <property name="initialSize" >
             <value>${db.pool.initial}</value>
         </property>
-<!--        <property name="maxTotal" >-->
-<!--            <value>${db.pool.max}</value>-->
-<!--        </property>-->
+        <property name="maxTotal" >
+            <value>${db.pool.max}</value>
+        </property>
         <property name="minIdle" >
             <value>${db.pool.min}</value>
         </property>
@@ -187,9 +187,9 @@
         <property name="defaultTransactionIsolation" >
             <value>${db.txn.isolation}</value>
         </property>
-<!--        <property name="maxWaitMillis" >-->
-<!--            <value>${db.pool.wait.max}</value>-->
-<!--        </property>-->
+        <property name="maxWaitMillis" >
+            <value>${db.pool.wait.max}</value>
+        </property>
         <property name="validationQuery" >
             <value>${db.pool.validate.query}</value>
         </property>
@@ -211,9 +211,9 @@
         <property name="testWhileIdle" >
             <value>${db.pool.evict.validate}</value>
         </property>
-<!--        <property name="RemoveAbandonedOnBorrow" >-->
-<!--            <value>${db.pool.abandoned.detect}</value>-->
-<!--        </property>-->
+        <property name="RemoveAbandonedOnBorrow" >
+            <value>${db.pool.abandoned.detect}</value>
+        </property>
         <property name="removeAbandonedTimeout" >
             <value>${db.pool.abandoned.time}</value>
         </property>

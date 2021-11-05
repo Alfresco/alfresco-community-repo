@@ -91,6 +91,13 @@ function escapeRegExp(string) {
    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+
+function escapeHTML(str){
+  return String(str).replace(/[<>]/gi, function(c){
+     return '&#'+c.charCodeAt(0)+';';
+  });
+}
+
 function main()
 {
    try
@@ -122,7 +129,7 @@ function main()
       // Note: DON'T use a "!==" comparison for "null" here.
       var fnFieldValue = function(p_field)
       {
-         return p_field.value.length() > 0 && p_field.value != "null" ? p_field.value : null;
+         return p_field.value.length() > 0 && p_field.value != "null" ? escapeHTML(p_field.value) : null;
       };
 
       // allow the locale to be set via an argument
@@ -148,6 +155,7 @@ function main()
                if (field.isFile)
                {
                   filename = filename ? filename : field.filename;
+                  filename = escapeHTML(filename);
                   content = field.content;
                   mimetype = field.mimetype;
                }

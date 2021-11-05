@@ -20,6 +20,8 @@ public abstract class RenditionIntegrationTests extends RestTest
     protected UserModel user;
     protected SiteModel site;
 
+    private static final int RENDITION_ADDITIONAL_RETRIES_FOR_TEST = 2;
+
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception
     {
@@ -46,7 +48,7 @@ public abstract class RenditionIntegrationTests extends RestTest
                 "Failed to submit a request for rendition. [" + fileName+ ", " + renditionId+"] [source file, rendition ID]. ");
 
         // 2. Verify that a rendition of the file is created and has content using RESTAPI
-        RestResponse restResponse = restClient.withCoreAPI().usingNode(file).getNodeRenditionContentUntilIsCreated(renditionId);
+        RestResponse restResponse = getNodeRenditionContent(renditionId, file);
         Assert.assertEquals(Integer.valueOf(restClient.getStatusCode()).intValue(), HttpStatus.OK.value(),
                 "Failed to produce rendition. [" + fileName+ ", " + renditionId+"] [source file, rendition ID] ");
 
@@ -57,6 +59,15 @@ public abstract class RenditionIntegrationTests extends RestTest
 
         Assert.assertTrue((restResponse.getResponse().body().asInputStream().available() > 0),
                 "Rendition was created but its content is empty. [" + fileName+ ", " + renditionId+"] [source file, rendition ID] ");
+    }
+
+    private RestResponse getNodeRenditionContent(String renditionId, FileModel file) throws Exception {
+        RestResponse restResponse = restClient.withCoreAPI().usingNode(file).getNodeRenditionContentUntilIsCreated(renditionId);
+        for(int i = 0; Integer.valueOf(restResponse.getStatusCode()).equals(HttpStatus.NOT_FOUND.value()) && i < RENDITION_ADDITIONAL_RETRIES_FOR_TEST; i++)
+        {
+            restResponse = restClient.withCoreAPI().usingNode(file).getNodeRenditionContentUntilIsCreated(renditionId);
+        }
+        return restResponse;
     }
 
     /**

@@ -133,7 +133,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     @Override
     public boolean readConfig() throws IOException
     {
-        CombinedConfig combinedConfig = new CombinedConfig(getLog());
+        CombinedConfig combinedConfig = new CombinedConfig(getLog(), this);
         List<String> urls = getTEngineUrls();
         boolean successReadingConfig = combinedConfig.addRemoteConfig(urls, "T-Engine");
         successReadingConfig &= combinedConfig.addLocalConfig("alfresco/transforms");
@@ -141,7 +141,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         {
             successReadingConfig &= combinedConfig.addLocalConfig(pipelineConfigDir);
         }
-        combinedConfig.addPassThroughTransformer(mimetypeService);
+        combinedConfig.addPassThroughTransformer(mimetypeService, this);
         combinedConfig.register(this);
         return successReadingConfig;
     }
@@ -159,8 +159,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     }
 
     @Override
-    public void register(Transformer transformer, Map<String, Set<TransformOption>> transformOptions,
-        String baseUrl, String readFrom)
+    protected void register(Transformer transformer, Map<String, Set<TransformOption>> transformOptions,
+                            String baseUrl, String readFrom)
     {
         try
         {

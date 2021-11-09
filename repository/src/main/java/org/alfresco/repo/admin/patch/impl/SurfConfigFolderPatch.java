@@ -26,12 +26,6 @@
 
 package org.alfresco.repo.admin.patch.impl;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AsynchronousPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
@@ -54,6 +48,12 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Patch to add <i>cm:indexControl</i> aspect to sites' surf-config folders and
@@ -382,8 +382,12 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
             this.siteTypeQNameId = qnameDAO.getQName(SiteModel.TYPE_SITE);
         }
 
-        @Override
-        public synchronized int getTotalEstimatedWorkSize()
+        @Override public synchronized int getTotalEstimatedWorkSize()
+        {
+            return (int) getTotalEstimatedWorkSizeLong();
+        }
+
+        @Override public synchronized long getTotalEstimatedWorkSizeLong()
         {
             if (maxId == Long.MAX_VALUE)
             {
@@ -405,7 +409,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
                     logger.debug("\tQ: Work count: " + workCount);
                 }
             }
-            return (int) workCount;
+            return workCount;
         }
 
         @Override

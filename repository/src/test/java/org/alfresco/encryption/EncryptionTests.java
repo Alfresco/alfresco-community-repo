@@ -338,7 +338,7 @@ public class EncryptionTests extends TestCase
 		testChangeKeysImpl(true);
 	}
 
-	@Category(FrequentlyFailingTests.class) // ACS-959
+	@Category(FrequentlyFailingTests.class) // ACS-2242
 	public void testFailedEncryptionWithCachedCiphers() throws Throwable
 	{
 		Pair<byte[], AlgorithmParameters> pair = null;

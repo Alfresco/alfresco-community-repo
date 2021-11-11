@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -61,7 +61,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
 
@@ -951,6 +953,7 @@ public class FixedAclUpdaterTest extends TestCase
     /*
      * Lock node that has the aspect applied before job runs
      */
+    @Category(FrequentlyFailingTests.class) // ACS-2245
     @Test
     public void testAsyncWithNodeLock()
     {

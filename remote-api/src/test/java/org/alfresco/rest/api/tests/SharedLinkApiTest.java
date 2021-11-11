@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.action.ActionServiceImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.quickshare.QuickShareLinkExpiryActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -65,7 +64,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.joda.time.DateTime;

@@ -37,7 +37,6 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.IntermittentlyFailingTests;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;

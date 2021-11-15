@@ -871,7 +871,7 @@ public class RepoAdminServiceImplTest extends TestCase
             }
         }
     }
-    
+
     // Test deploy bundle from classpath
     public void testDeployMessageBundleFromClasspath() throws Exception
     {
@@ -902,11 +902,11 @@ public class RepoAdminServiceImplTest extends TestCase
         assertTrue("The custom bundle should be deployed", repoAdminService.getMessageBundles().contains(bundleBaseName));
 
         // Verify we have the messages for each locale
-        assertEquals("Cannot retrieve default message value", message_value_default, messageService.getMessage(message_key));
-        assertEquals("Cannot retrieve french message value", message_value_fr,
-                messageService.getMessage(message_key, Locale.FRANCE));
-        assertEquals("Cannot retrieve german message value", message_value_de,
-                messageService.getMessage(message_key, Locale.GERMANY));
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        assertMessageValue("Cannot retrieve default message value", message_value_default, message_key, Locale.getDefault());
+        assertMessageValue("Cannot retrieve french message value", message_value_fr, message_key, Locale.FRANCE);
+        assertMessageValue("Cannot retrieve german message value", message_value_de, message_key, Locale.GERMANY);
 
         // Test deploy a non existent bundle
         try
@@ -954,23 +954,23 @@ public class RepoAdminServiceImplTest extends TestCase
         repoAdminService.reloadMessageBundle(bundleBaseName);
 
         // Verify we have the messages for each locale
-        assertEquals("Cannot retrieve default message value", message_value, messageService.getMessage(message_key));
-        assertEquals("Cannot retrieve french message value", message_value_fr,
-                messageService.getMessage(message_key, Locale.FRANCE));
-        assertEquals("Cannot retrieve german message value", message_value_de,
-                messageService.getMessage(message_key, Locale.GERMANY));
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        assertMessageValue("Cannot retrieve default message value", message_value, message_key, Locale.getDefault());
+        assertMessageValue("Cannot retrieve french message value", message_value_fr, message_key, Locale.FRANCE);
+        assertMessageValue("Cannot retrieve german message value", message_value_de, message_key, Locale.GERMANY);
 
         // Change the values
         putContentInMessageNode(messageNode_default, message_key, message_value_new);
 
         // Verify we still have the old value
-        assertEquals("Unexpected change of message value", message_value, messageService.getMessage(message_key));
+        assertMessageValue("Unexpected change of message value", message_value, message_key, Locale.getDefault());
 
         // Reload the messages
         repoAdminService.reloadMessageBundle(bundleBaseName);
 
         // Verify new values
-        assertEquals("Change of message value not reflected", message_value_new, messageService.getMessage(message_key));
+        assertMessageValue("Change of message value not reflected", message_value_new, message_key, Locale.getDefault());
     }
 
     /**
@@ -1031,6 +1031,22 @@ public class RepoAdminServiceImplTest extends TestCase
             NodeRef messageNode = messageChildRef.getChildRef();
             nodeService.deleteNode(messageNode);
         }
+    }
+
+    /**
+     * Clear Repo Bundle
+     */
+    private void assertMessageValue(String errorMessage, String expectedValue, String key, Locale locale)
+    {
+        transactionService.getRetryingTransactionHelper()
+                .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        assertEquals(errorMessage, expectedValue, messageService.getMessage(key, locale));
+                        return null;
+                    }
+                });
     }
 
 }

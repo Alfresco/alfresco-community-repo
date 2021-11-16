@@ -174,7 +174,7 @@
                 <entry key="org.springframework.http.InvalidMediaTypeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_UNSUPPORTED_MEDIA_TYPE}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.ServiceUnavailableException" value="503" />
                 <entry key="org.alfresco.service.cmr.dictionary.InvalidTypeException" value="409" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.ArchivedIOException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_PRECONDITION_FAILED}" />
+                <entry key="org.alfresco.service.cmr.repository.ArchivedIOException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_PRECONDITION_FAILED}" />
             </map>
         </property>
     </bean>

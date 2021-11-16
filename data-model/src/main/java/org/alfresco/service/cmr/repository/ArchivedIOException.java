@@ -23,8 +23,9 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.framework.core.exceptions;
+package org.alfresco.service.cmr.repository;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.Experimental;
 
 /**
@@ -34,24 +35,19 @@ import org.alfresco.service.Experimental;
  * @author David Edwards
  */
 @Experimental
-public class ArchivedIOException extends ApiException
+@AlfrescoPublicApi
+public class ArchivedIOException extends ContentIOException
 {
+    private static final long serialVersionUID = 3258135874596276087L;
 
-    public static String DEFAULT_MESSAGE_ID = "framework.exception.AchivedIOException";
-
-    public ArchivedIOException() 
+    public ArchivedIOException(String msg) 
     {
-        super(DEFAULT_MESSAGE_ID);
+        super(msg);
     }
 
-    public ArchivedIOException(String msgId) 
+    public ArchivedIOException(String msg, Throwable cause) 
     {
-        super(msgId);
-    }
-
-    public ArchivedIOException(String msgId, Object[] msgParams) 
-    {
-        super(msgId, msgParams);
+        super(msg, cause);
     }
 
 }

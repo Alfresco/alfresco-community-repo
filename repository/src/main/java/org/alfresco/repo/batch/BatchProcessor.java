@@ -25,6 +25,18 @@
  */
 package org.alfresco.repo.batch;
 
+import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.node.integrity.IntegrityException;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.util.TraceableThreadFactory;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEventPublisher;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -42,18 +54,6 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.node.integrity.IntegrityException;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.util.TraceableThreadFactory;
-import org.alfresco.util.transaction.TransactionListenerAdapter;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEventPublisher;
 
 /**
  * A <code>BatchProcessor</code> manages the running and monitoring of a potentially long-running transactional batch
@@ -158,10 +158,17 @@ public class BatchProcessor<T> implements BatchMonitor
                     new BatchProcessWorkProvider<T>()
                     {
                         boolean hasMore = true;
-                        public int getTotalEstimatedWorkSize()
+
+                        @Override public int getTotalEstimatedWorkSize()
+                        {
+                            return (int) getTotalEstimatedWorkSizeLong();
+                        }
+
+                        @Override public long getTotalEstimatedWorkSizeLong()
                         {
                             return collection.size();
                         }
+
                         public Collection<T> getNextWork()
                         {
                             // Only return the collection once

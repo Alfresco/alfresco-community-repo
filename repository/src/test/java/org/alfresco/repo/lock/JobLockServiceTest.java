@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,6 +37,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
+import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -507,6 +508,7 @@ public class JobLockServiceTest extends TestCase
     public void testGetLockWithCallbackNullCallback()   { runGetLockWithCallback(1); }
     public void testGetLockWithCallbackShortTTL()       { runGetLockWithCallback(2); }
     public void testGetLockWithCallbackLocked()         { runGetLockWithCallback(3); }
+    @Category(FrequentlyFailingTests.class) // ACS-2243
     public void testGetLockWithCallbackNormal()         { runGetLockWithCallback(4); }
     
     public void runGetLockWithCallback(int t)

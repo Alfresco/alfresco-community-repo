@@ -25,12 +25,15 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
+import org.alfresco.service.Experimental;
+
 /**
  * Unable to access as content is in an Archived state.
  * Default status is <i>Precondition Failed<i> Client Error = 412
  * 
  * @author David Edwards
  */
+@Experimental
 public class ArchivedIOException extends ApiException
 {
 

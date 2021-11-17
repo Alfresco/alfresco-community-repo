@@ -327,6 +327,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
      */
     List<String> getTEngineUrlsSortedByName()
     {
+        // T-Engines are sorted by name so they are in the same order as in the all-in-one transformer and the
+        // T-Router. See AIOCustomConfig#getTEnginesSortedByName and TransformersConfigRegistry#retrieveRemoteConfig.
         return getKeySet().stream()
                 .filter(key -> key instanceof String)
                 .filter(key -> key.startsWith(LOCAL_TRANSFORMER) && key.endsWith(URL))

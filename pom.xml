@@ -12,6 +12,7 @@
       <version>12</version>
     </parent>
 
+    
     <modules>
         <module>core</module>
         <module>data-model</module>

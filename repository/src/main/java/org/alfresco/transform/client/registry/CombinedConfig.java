@@ -44,6 +44,7 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,8 +52,8 @@ import java.util.List;
  * in one file. Transform options are shared between all sources.<p>
  *
  * The caller should make calls to {@link #addRemoteConfig(List, String)}, {@link #addLocalConfig(String)} or
- * {@link #addTransformConfig(TransformConfig, String, String)} followed by a call to
- * {@link #register(TransformServiceRegistryImpl)}.
+ * {@link CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)}
+ * followed by a call to {@link #register(TransformServiceRegistryImpl)}.
  *
  * @author adavis
  */
@@ -64,7 +65,7 @@ public class CombinedConfig extends CombinedTransformConfig
     private ConfigFileFinder configFileFinder;
     private int tEngineCount;
 
-    public CombinedConfig(Log log)
+    public CombinedConfig(Log log, AbstractTransformRegistry registry)
     {
         this.log = log;
 
@@ -74,7 +75,7 @@ public class CombinedConfig extends CombinedTransformConfig
             protected void readJson(JsonNode jsonNode, String readFrom, String baseUrl)
             {
                 TransformConfig transformConfig = jsonObjectMapper.convertValue(jsonNode, TransformConfig.class);
-                addTransformConfig(transformConfig, readFrom, baseUrl);
+                addTransformConfig(transformConfig, readFrom, baseUrl, registry);
             }
         };
     }
@@ -129,9 +130,9 @@ public class CombinedConfig extends CombinedTransformConfig
                                 String content = getContent(resEntity);
                                 try (StringReader reader = new StringReader(content))
                                 {
-                                    int transformCount = combinedTransformers.size();
+                                    int transformCount = transformerCount();
                                     configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
-                                    if (transformCount == combinedTransformers.size())
+                                    if (transformCount == transformerCount())
                                     {
                                         successReadingConfig = false;
                                     }
@@ -225,11 +226,14 @@ public class CombinedConfig extends CombinedTransformConfig
      * from selected text based types.
      * @param mimetypeService to find all the mimetypes
      */
-    public void addPassThroughTransformer(MimetypeService mimetypeService)
+    public void addPassThroughTransformer(MimetypeService mimetypeService, AbstractTransformRegistry registry)
     {
         List<String> mimetypes = mimetypeService.getMimetypes();
         Transformer transformer = LocalPassThroughTransform.getConfig(mimetypes);
-        combinedTransformers.add(new TransformAndItsOrigin(transformer, null, "based on mimetype list"));
+        TransformConfig transformConfig = TransformConfig.builder()
+                .withTransformers(Collections.singletonList(transformer))
+                .build();
+        addTransformConfig(transformConfig, "based on mimetype list", null, registry);
     }
 
     public void register(TransformServiceRegistryImpl registry)

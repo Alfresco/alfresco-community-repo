@@ -106,7 +106,7 @@
 
         <alfresco.googledrive.version>3.2.1.3</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.4.0.1</alfresco.aos-module.version>
-        <alfresco.api-explorer.version>7.1.0.1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
+        <alfresco.api-explorer.version>7.2.0-SNAPSHOT</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
 
         <dependency.postgresql.version>42.2.24</dependency.postgresql.version>

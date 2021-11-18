@@ -1001,7 +1001,7 @@
     <bean class="org.alfresco.rest.api.nodes.NodeStorageInfoRelation">
         <constructor-arg name="storageInformation" ref="ContentStorageInformation" />
     </bean>
-    
+
     <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation" parent="baseNodeRelation"/>
 
     <bean class="org.alfresco.rest.api.nodes.NodeParentsRelation" parent="baseNodeRelation"/>

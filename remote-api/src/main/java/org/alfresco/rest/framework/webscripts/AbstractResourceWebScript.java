@@ -230,7 +230,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         res.setHeader(HEADER_CONTENT_LENGTH, String.valueOf(-1));
         if (exception instanceof ArchivedIOException)
         {
-            renderException(new ArchivedContentException(exception.getLocalizedMessage(), exception), res, assistant);
+            renderException(new ArchivedContentException(exception.getMsgId(), exception), res, assistant);
         }
         else
         {

@@ -43,19 +43,30 @@ public class ArchivedContentException  extends  ApiException
     {
         super(DEFAULT_MESSAGE_ID);
     }
-    public ArchivedContentException(String msgId) 
+
+    public ArchivedContentException(String message) 
     {
-        super(msgId);
+        this(DEFAULT_MESSAGE_ID, message);
+    }
+
+    public ArchivedContentException(String msgId, String message) 
+    {
+        super(msgId, message);
     }
 
     public ArchivedContentException(Throwable cause) 
     {
-        super(DEFAULT_MESSAGE_ID, cause);
+        this(DEFAULT_MESSAGE_ID, cause.getLocalizedMessage(), cause);
     }
     
-    public ArchivedContentException(String msgId, Throwable cause) 
+    public ArchivedContentException(String message, Throwable cause) 
     {
-        super(msgId, cause);
+        this(DEFAULT_MESSAGE_ID, message, cause);
+    }
+    
+    public ArchivedContentException(String msgId, String message, Throwable cause) 
+    {
+        super(msgId, message, cause);
     }
     
 }

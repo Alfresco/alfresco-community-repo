@@ -42,6 +42,7 @@ import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
+import org.alfresco.rest.framework.core.exceptions.ArchivedContentException;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
@@ -52,6 +53,7 @@ import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ResponseWriter;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
@@ -178,9 +180,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         }
         catch (ContentIOException cioe)
         {
-            // If the Content-Length is not set back to -1 any client will expect to receive binary and will hang until it times out
-            res.setHeader(HEADER_CONTENT_LENGTH, String.valueOf(-1));
-            renderException(cioe, res, assistant);
+            handleContentIOException(res, cioe); 
         }
         catch (AlfrescoRuntimeException | ApiException | WebScriptException xception )
         {
@@ -222,6 +222,20 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 }, isReadOnly, false);
         setResponse(res,callBack);
         return toReturn;
+    }
+
+    private void handleContentIOException(final WebScriptResponse res, ContentIOException exception) throws IOException
+    {
+        // If the Content-Length is not set back to -1 any client will expect to receive binary and will hang until it times out
+        res.setHeader(HEADER_CONTENT_LENGTH, String.valueOf(-1));
+        if (exception instanceof ArchivedIOException)
+        {
+            renderException(new ArchivedContentException(exception.getLocalizedMessage(), exception), res, assistant);
+        }
+        else
+        {
+            renderException(exception, res, assistant);
+        }
     }
 
     protected RetryingTransactionHelper getTransactionHelper(String api)

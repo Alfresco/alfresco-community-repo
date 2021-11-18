@@ -52,6 +52,7 @@ import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ResponseWriter;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,6 +84,8 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     private ParamsExtractor paramsExtractor;
     private ContentStreamer streamer;
     protected ResourceWebScriptHelper helper;
+
+    private static final String HEADER_CONTENT_LENGTH = "Content-Length";
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -172,6 +175,12 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 }
             }
 
+        }
+        catch (ContentIOException cioe)
+        {
+            // If the Content-Length is not set back to -1 any client will expect to receive binary and will hang until it times out
+            res.setHeader(HEADER_CONTENT_LENGTH, String.valueOf(-1));
+            renderException(cioe, res, assistant);
         }
         catch (AlfrescoRuntimeException | ApiException | WebScriptException xception )
         {

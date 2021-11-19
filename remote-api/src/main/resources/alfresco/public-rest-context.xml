@@ -608,7 +608,8 @@
     </bean>
 
     <bean id="contentStorageInformation" class="org.alfresco.rest.api.impl.ContentStorageInformationImpl">
-        <constructor-arg name="contentService" ref="contentService"/>
+        <constructor-arg name="contentService" ref="ContentService"/>
+        <constructor-arg name="namespaceService" ref="NamespaceService"/>
     </bean>
 
     <bean id="ContentStorageInformation" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -28,12 +28,12 @@ package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.ContentStorageInformation;
 import org.alfresco.rest.api.model.ContentStorageInfo;
-import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -41,9 +41,11 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Node storage information.
+ * Note: Currently marked as experimental and subject to change.
  *
  * @author mpichura
  */
+@Experimental
 @RelationshipResource(name = "storage-info", entityResource = NodesEntityResource.class, title = "Node's content storage information")
 public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadById<ContentStorageInfo>, InitializingBean
 {

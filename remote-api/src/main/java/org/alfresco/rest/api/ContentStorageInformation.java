@@ -28,20 +28,24 @@ package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.ContentStorageInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
 
 /**
- * Storage information for content API
+ * Storage information for content API.
+ * Note: Currently marked as experimental and subject to change.
  *
  * @author mpichura
  */
-
+@Experimental
 public interface ContentStorageInformation
 {
     /**
+     * Note: Currently marked as experimental and subject to change.
      * @param nodeId          Identifier of the node
      * @param contentPropName Qualified name of content property (e.g. 'cm_content')
      * @param parameters      {@link Parameters} object to get the parameters passed into the request
      * @return {@link ContentStorageInfo} object consisting of qualified name of content property and a map of storage properties
      */
+    @Experimental
     ContentStorageInfo getStorageInfo(String nodeId, String contentPropName, Parameters parameters);
 }

@@ -29,54 +29,56 @@ package org.alfresco.rest.api.impl;
 import org.alfresco.rest.api.ContentStorageInformation;
 import org.alfresco.rest.api.model.ContentStorageInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.DynamicNamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 import java.util.Map;
-
+/**
+ * Default implementation for {@link ContentStorageInformation}
+ * Note: Currently marked as experimental and subject to change.
+ *
+ * @author mpichura
+ */
+@Experimental
 public class ContentStorageInformationImpl implements ContentStorageInformation
 {
 
-    public static final char PREFIX_SPLITTER = '_';
+    public static final char PREFIX_SEPARATOR = '_';
 
     private final ContentService contentService;
+    private final NamespaceService namespaceService;
 
-    public ContentStorageInformationImpl(ContentService contentService)
+    public ContentStorageInformationImpl(ContentService contentService, NamespaceService namespaceService)
     {
         this.contentService = contentService;
+        this.namespaceService = namespaceService;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @Experimental
     public ContentStorageInfo getStorageInfo(String nodeId, String contentPropName, Parameters parameters)
     {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
-        //FIXME: figure out how to properly and neatly convert contentPropName param into QName
         final QName propQName = getQName(contentPropName);
         final Map<String, String> storageProperties = contentService.getStorageProperties(nodeRef, propQName);
         final ContentStorageInfo storageInfo = new ContentStorageInfo();
-        storageInfo.setId(propQName.toString());
+        storageInfo.setId(propQName.toPrefixString(namespaceService));
         storageInfo.setStorageProperties(storageProperties);
         return storageInfo;
     }
 
     private QName getQName(final String contentPropName)
     {
-        final DynamicNamespacePrefixResolver namespacePrefixResolver = new DynamicNamespacePrefixResolver();
-        //for now there is only single content namespace being registered - this may be extended to more
-        namespacePrefixResolver.registerNamespace(NamespaceService.CONTENT_MODEL_PREFIX,
-                NamespaceService.CONTENT_MODEL_1_0_URI);
-
-        //following may be removed if it is aligned that endpoint will take contentPropName in a format of prefix:localName
-        //instead of prefix_localName which is assumed at the moment
-        final String properContentPropName = contentPropName.replace(PREFIX_SPLITTER, QName.NAMESPACE_PREFIX);
-        return QName.resolveToQName(namespacePrefixResolver, properContentPropName);
+        //this splitting may be gone when we decide to use colon as prefix separatot
+        final String properContentPropName = contentPropName.replace(PREFIX_SEPARATOR, QName.NAMESPACE_PREFIX);
+        return QName.resolveToQName(namespaceService, properContentPropName);
     }
 
 }

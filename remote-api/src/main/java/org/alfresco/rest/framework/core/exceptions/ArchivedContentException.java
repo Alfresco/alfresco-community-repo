@@ -49,7 +49,7 @@ public class ArchivedContentException  extends  ApiException
         this(DEFAULT_MESSAGE_ID, message);
     }
 
-    public ArchivedContentException(String msgId, String message) 
+    private ArchivedContentException(String msgId, String message) 
     {
         super(msgId, message);
     }
@@ -64,7 +64,7 @@ public class ArchivedContentException  extends  ApiException
         this(DEFAULT_MESSAGE_ID, message, cause);
     }
     
-    public ArchivedContentException(String msgId, String message, Throwable cause) 
+    private ArchivedContentException(String msgId, String message, Throwable cause) 
     {
         super(msgId, message, cause);
     }

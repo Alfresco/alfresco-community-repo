@@ -75,6 +75,7 @@ import java.util.concurrent.ExecutorService;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
 import static org.alfresco.transform.client.registry.TransformerDebugBase.MIMETYPE_METADATA_EMBED;
 import static org.alfresco.transform.client.registry.TransformerDebugBase.MIMETYPE_METADATA_EXTRACT;
+import static org.alfresco.transform.client.registry.TransformerDebugBase.replaceWithMetadataExtensionIfEmbedOrExtract;
 
 /**
  * Requests an extract of metadata via a remote async transform using
@@ -183,12 +184,12 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
 
     public static boolean isMetadataExtractMimetype(String targetMimetype)
     {
-        return MIMETYPE_METADATA_EXTRACT.equals(targetMimetype);
+        return TransformerDebugBase.isMetadataExtractMimetype(targetMimetype);
     }
 
     public static boolean isMetadataEmbedMimetype(String targetMimetype)
     {
-        return MIMETYPE_METADATA_EMBED.equals(targetMimetype);
+        return TransformerDebugBase.isMetadataEmbedMimetype(targetMimetype);
     }
 
     public static String getTargetMimetypeFromTransformName(String transformName)
@@ -218,11 +219,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
      */
     public static String getExtension(String targetMimetype, String sourceExtension, String targetExtension)
     {
-        return isMetadataExtractMimetype(targetMimetype)
-                ? "json"
-                : isMetadataEmbedMimetype(targetMimetype)
-                ? sourceExtension
-                : targetExtension;
+        return replaceWithMetadataExtensionIfEmbedOrExtract(targetExtension, sourceExtension, targetExtension);
     }
 
     /**
@@ -235,7 +232,7 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
      */
     public static String getRenditionName(String renditionName)
     {
-        return TransformerDebugBase.replaceWithMetadataRenditionNameIfApplicable(renditionName);
+        return TransformerDebugBase.replaceWithMetadataRenditionNameIfEmbedOrExtract(renditionName);
     }
 
     @Override

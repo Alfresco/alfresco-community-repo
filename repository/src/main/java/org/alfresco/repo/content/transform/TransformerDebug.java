@@ -228,6 +228,14 @@ public class TransformerDebug extends TransformerDebugBase
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
+        setExtensionLookup(new ExtensionLookup()
+        {
+            @Override
+            public String getExtension(String mimetype)
+            {
+                return mimetypeService.getExtension(mimetype);
+            }
+        });
     }
 
     public void setPreviousTransformId(int id)
@@ -748,31 +756,6 @@ public class TransformerDebug extends TransformerDebugBase
             }
         }
         return result;
-    }
-
-    protected String getSourceAndTargetExt(String sourceMimetype, String targetMimetype)
-    {
-        String sourceExt = getMimetypeExt(sourceMimetype);
-        String targetExt = getMimetypeExt(targetMimetype);
-        targetExt = AsynchronousExtractor.getExtension(targetMimetype, sourceExt, targetExt);
-        return sourceExt + targetExt + spaces(1+4-targetExt.length());
-    }
-
-    protected String getMimetypeExt(String mimetype)
-    {
-        StringBuilder sb = new StringBuilder("");
-        if (mimetypeService == null)
-        {
-            sb.append(mimetype);
-        }
-        else
-        {
-            String mimetypeExt = mimetypeService.getExtension(mimetype);
-            sb.append(mimetypeExt);
-            sb.append(spaces(4-mimetypeExt.length()));   // Pad to normal max ext (4)
-        }
-        sb.append(' ');
-        return sb.toString();
     }
 
     /**

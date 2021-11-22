@@ -26,7 +26,6 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.transform.client.model.config.TransformOptionGroup;
@@ -134,7 +134,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
     public boolean readConfig() throws IOException
     {
         CombinedConfig combinedConfig = new CombinedConfig(getLog(), this);
-        List<String> urls = getTEngineUrls();
+        List<String> urls = getTEngineUrlsSortedByName();
         boolean successReadingConfig = combinedConfig.addRemoteConfig(urls, "T-Engine");
         successReadingConfig &= combinedConfig.addLocalConfig("alfresco/transforms");
         if (pipelineConfigDir != null && !pipelineConfigDir.isBlank())
@@ -321,30 +321,23 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
         return log;
     }
 
-    private List<String> getTEngineUrls()
+    /**
+     * @return urls from System or Alfresco global properties that match of localTransform.<name>.url=<url> sorted
+     *         in <name> order.
+     */
+    List<String> getTEngineUrlsSortedByName()
     {
-        List<String> urls = new ArrayList<>();
-        for (Object o : getKeySet())
-        {
-            if (o instanceof String)
-            {
-                String key = (String)o;
-                if (key.startsWith(LOCAL_TRANSFORMER) && key.endsWith(URL))
-                {
-                    Object url = getProperty(key, null);
-                    if (url instanceof String)
-                    {
-                        String urlStr = ((String)url).trim();
-                        if (!urlStr.isEmpty())
-                        {
-                            urls.add((String) url);
-                        }
-                    }
-                }
-            }
-        }
-
-        return urls;
+        // T-Engines are sorted by name so they are in the same order as in the all-in-one transformer and the
+        // T-Router. See AIOCustomConfig#getTEnginesSortedByName and TransformersConfigRegistry#retrieveRemoteConfig.
+        return getKeySet().stream()
+                .filter(key -> key instanceof String)
+                .filter(key -> key.startsWith(LOCAL_TRANSFORMER) && key.endsWith(URL))
+                .sorted()
+                .map(key -> getProperty(key, null))
+                .filter(url -> url instanceof String)
+                .map(url -> url.trim())
+                .filter(url -> !url.isEmpty())
+                .collect(Collectors.toList());
     }
 
     private int getStartupRetryPeriodSeconds(String name)

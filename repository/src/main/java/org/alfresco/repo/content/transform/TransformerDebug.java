@@ -856,13 +856,6 @@ public class TransformerDebug extends TransformerDebugBase
         return pop(Call.AVAILABLE, true, false);
     }
 
-    private String getRenditionName(String renditionName)
-    {
-        return renditionName != null
-            ? "-- "+ AsynchronousExtractor.getRenditionName(renditionName)+" -- "
-            : "";
-    }
-
     /**
      * Debugs a response to the Transform Service
      */
@@ -880,17 +873,5 @@ public class TransformerDebug extends TransformerDebugBase
         debug(msg);
         debug(sourceNodeRef.toString() + ' ' +contentHashcode);
         pop(Call.AVAILABLE, suppressFinish, true);
-    }
-
-    /**
-     * Obtains a String for log messages.
-     * @param options to be turned into a string.
-     * @return a string of options that may be included in debug messages.
-     */
-    public static String toString(Map<String, String> options)
-    {
-        StringJoiner sj = new StringJoiner(", ");
-        options.entrySet().forEach(option->sj.add(option.getKey()+"=\""+option.getValue().replaceAll("\"", "\\\"")+"\""));
-        return sj.toString();
     }
 }

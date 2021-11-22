@@ -25,7 +25,6 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.repo.rendition2.RenditionDefinition2;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -40,6 +39,7 @@ import java.util.Set;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
 import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
+import static org.alfresco.transform.client.registry.TransformerDebugBase.replaceWithMetadataExtensionIfEmbedOrExtract;
 
 /**
  * A local transformer using flat transform options.
@@ -189,7 +189,7 @@ public class LocalTransformImpl extends AbstractLocalTransform
         args[i++] = "targetMimetype";
         args[i++] = targetMimetype;
 
-        targetExtension = AsynchronousExtractor.getExtension(targetMimetype, sourceExtension, targetExtension);
+        targetExtension = replaceWithMetadataExtensionIfEmbedOrExtract(targetMimetype, sourceExtension, targetExtension);
         remoteTransformerClient.request(reader, writer, sourceMimetype, sourceExtension, targetExtension,
                 timeoutMs, log, args);
     }

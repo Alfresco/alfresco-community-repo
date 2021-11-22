@@ -775,63 +775,6 @@ public class TransformerDebug extends TransformerDebugBase
         return sb.toString();
     }
 
-    protected String spaces(int i)
-    {
-        StringBuilder sb = new StringBuilder("");
-        while (--i >= 0)
-        {
-            sb.append(' ');
-        }
-        return sb.toString();
-    }
-
-    public String ms(long time)
-    {
-        return String.format("%,d ms", time);
-    }
-
-    public String fileSize(long size)
-    {
-        if (size < 0)
-        {
-            return "unlimited";
-        }
-        if (size == 1)
-        {
-            return "1 byte";
-        }
-        final String[] units = new String[] { "bytes", "KB", "MB", "GB", "TB" };
-        long divider = 1;
-        for(int i = 0; i < units.length-1; i++)
-        {
-            long nextDivider = divider * 1024;
-            if(size < nextDivider)
-            {
-                return fileSizeFormat(size, divider, units[i]);
-            }
-            divider = nextDivider;
-        }
-        return fileSizeFormat(size, divider, units[units.length-1]);
-    }
-
-    private String fileSizeFormat(long size, long divider, String unit)
-    {
-        size = size * 10 / divider;
-        int decimalPoint = (int) size % 10;
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(size/10);
-        if (decimalPoint != 0)
-        {
-            sb.append(".");
-            sb.append(decimalPoint);
-        }
-        sb.append(' ');
-        sb.append(unit);
-
-        return sb.toString();
-    }
-
     /**
      * Debugs a request to the Transform Service
      */

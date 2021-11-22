@@ -25,9 +25,14 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+
+import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -53,8 +58,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import javax.transaction.UserTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 @Category(BaseSpringTestsCategory.class)
@@ -94,6 +97,14 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         
         "</model>";
     
+    public static final String MESSAGES_KEY = "my_bootstrap_test";
+    public static final String MESSAGES_VALUE = "My Message";
+    public static final String MESSAGES_VALUE_FR = "Mon message";
+    public static final String FOLDERNAME_MODELS = "models";
+    public static final String FOLDERNAME_MESSAGES = "messages";
+    public static final String BUNDLENAME_MESSAGES = "testBootstap";
+    public static final String FILENAME_MESSAGES_EXT = ".properties";
+
     /** Behaviour filter */
     private BehaviourFilter behaviourFilter;
 
@@ -123,7 +134,8 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
 
     private UserTransaction txn;
     private StoreRef storeRef;
-    private NodeRef rootNodeRef;
+    private NodeRef rootModelsNodeRef;
+    private NodeRef rootMessagesNodeRef;
 
     @Before
     public void before() throws Exception
@@ -151,7 +163,17 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
 
         // Create the store and get the root node
         this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
-        this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
+
+        NodeRef rootNodeRef = this.nodeService.getRootNode(this.storeRef);
+        this.rootModelsNodeRef = this.nodeService
+                .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, FOLDERNAME_MODELS), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+
+        this.rootMessagesNodeRef = this.nodeService
+                .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, FOLDERNAME_MESSAGES), ContentModel.TYPE_FOLDER)
+                .getChildRef();
 
         txn.commit();
 
@@ -167,18 +189,20 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         this.bootstrap.setNamespaceService(this.namespaceService);
         this.bootstrap.setMessageService(this.messageService);
         this.bootstrap.setPolicyComponent(this.policyComponent);
-        
-        RepositoryLocation location = new RepositoryLocation();
-        location.setStoreProtocol(this.storeRef.getProtocol());
-        location.setStoreId(this.storeRef.getIdentifier());
-        location.setQueryLanguage(RepositoryLocation.LANGUAGE_PATH);
-        // NOTE: we are not setting the path for now .. in doing so we are searching the root node only
-        
-        List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();
-        locations.add(location);
-        
-        this.bootstrap.setRepositoryModelsLocations(locations);
-        
+
+        RepositoryLocation modelsLocation = new RepositoryLocation(this.storeRef,
+                this.nodeService.getPath(rootModelsNodeRef).toPrefixString(namespaceService), RepositoryLocation.LANGUAGE_PATH);
+        RepositoryLocation messagesLocation = new RepositoryLocation(this.storeRef,
+                this.nodeService.getPath(rootMessagesNodeRef).toPrefixString(namespaceService), RepositoryLocation.LANGUAGE_PATH);
+
+        List<RepositoryLocation> modelsLocations = new ArrayList<RepositoryLocation>();
+        modelsLocations.add(modelsLocation);
+        List<RepositoryLocation> messagesLocations = new ArrayList<RepositoryLocation>();
+        messagesLocations.add(messagesLocation);
+
+        this.bootstrap.setRepositoryModelsLocations(modelsLocations);
+        this.bootstrap.setRepositoryMessagesLocations(messagesLocations);
+
         // register with dictionary service
         this.bootstrap.register();
         txn.commit();
@@ -224,7 +248,15 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
                 "Test model one",
                 "base1",
                 "prop1");
-               
+
+        // Create a message file for the default locale
+        NodeRef messageNodeDefaultLoc = createMessagesNode(null, null);
+        // Create a message file for the french locale
+        createMessagesNode(Locale.FRANCE.toString(), MESSAGES_VALUE_FR);
+        // Construct baseBundleName for validation
+        String baseBundleName = storeRef.toString()
+                + messageService.getBaseBundleName(nodeService.getPath(messageNodeDefaultLoc).toPrefixString(namespaceService));
+
         // Check that the model is not in the dictionary yet
         try
         {
@@ -250,6 +282,12 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         ModelDefinition modelDefinition3 = this.dictionaryDAO.getModel(
                 QName.createQName("http://www.alfresco.org/model/test3DictionaryBootstrapFromRepo/1.0", "testModel3"));
         assertNotNull(modelDefinition3);
+
+        // Check if the messages were registered correctly
+        assertTrue("The message bundle should be registered", messageService.getRegisteredBundles().contains(baseBundleName));
+        assertEquals("The default message value is not as expected", MESSAGES_VALUE, messageService.getMessage(MESSAGES_KEY));
+        assertEquals("The message value in french is not as expected", MESSAGES_VALUE_FR,
+                messageService.getMessage(MESSAGES_KEY, Locale.FRANCE));
 
         txn.commit();
     }
@@ -277,7 +315,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
     {
         // Create a model node
         NodeRef model = this.nodeService.createNode(
-                this.rootNodeRef,
+                this.rootModelsNodeRef,
                 ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}models"),
                 ContentModel.TYPE_DICTIONARY_MODEL).getChildRef();
@@ -298,6 +336,39 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
         nodeService.setProperty(model, ContentModel.PROP_MODEL_ACTIVE, new Boolean(true));
         
         return model;
+    }
+    
+    /**
+     * Create messages node
+     * 
+     * @return NodeRef
+     */
+    private NodeRef createMessagesNode(String locale, String localeValue)
+    {
+        String filename = BUNDLENAME_MESSAGES + FILENAME_MESSAGES_EXT;
+        String messageValue = MESSAGES_VALUE;
+
+        if (locale != null)
+        {
+            filename = BUNDLENAME_MESSAGES + "_" + locale + FILENAME_MESSAGES_EXT;
+            messageValue = localeValue;
+        }
+        // Create a model node
+        NodeRef messageNode = this.nodeService.createNode(
+                this.rootMessagesNodeRef, 
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, filename), 
+                ContentModel.TYPE_CONTENT,
+                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, filename)
+                ).getChildRef();
+
+        ContentWriter contentWriter = this.contentService.getWriter(messageNode, ContentModel.PROP_CONTENT, true);
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        String messagesString = MESSAGES_KEY + "=" + messageValue;
+        contentWriter.putContent(messagesString);
+
+        return messageNode;
     }
     
     /**

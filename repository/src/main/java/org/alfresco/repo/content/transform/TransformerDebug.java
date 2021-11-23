@@ -26,12 +26,10 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.transform.client.registry.TransformerDebugBase;
-import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.LogTee;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -41,8 +39,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
@@ -136,7 +132,8 @@ public class TransformerDebug extends TransformerDebugBase
         private final String fromUrl;
         protected final String sourceMimetype;
         protected final String targetMimetype;
-        protected final NodeRef sourceNodeRef;
+        protected final String sourceNodeRefStr;
+        private final String filename;
         protected final String renditionName;
         private final boolean origDebugOutput;
         private long start;
@@ -149,7 +146,8 @@ public class TransformerDebug extends TransformerDebugBase
         private String transformerName;
 
         private Frame(Frame parent, String transformerName, String fromUrl, String sourceMimetype, String targetMimetype,
-                      long sourceSize, String renditionName, NodeRef sourceNodeRef, Call pushCall, boolean origDebugOutput)
+                      long sourceSize, String renditionName, String sourceNodeRefStr, String filename,
+                      Call pushCall, boolean origDebugOutput)
         {
             this.id = -1;
             this.parent = parent;
@@ -159,7 +157,8 @@ public class TransformerDebug extends TransformerDebugBase
             this.targetMimetype = targetMimetype;
             this.sourceSize = sourceSize;
             this.renditionName = renditionName;
-            this.sourceNodeRef = sourceNodeRef;
+            this.sourceNodeRefStr = sourceNodeRefStr;
+            this.filename = filename;
             this.callType = pushCall;
             this.origDebugOutput = origDebugOutput;
             start = System.currentTimeMillis();
@@ -207,6 +206,16 @@ public class TransformerDebug extends TransformerDebugBase
         public String getRenditionName()
         {
             return renditionName;
+        }
+
+        public String getSourceNodeRefStr()
+        {
+            return sourceNodeRefStr == null ? "" : sourceNodeRefStr+" ";
+        }
+
+        public String getFilename()
+        {
+            return filename;
         }
     }
 
@@ -262,8 +271,12 @@ public class TransformerDebug extends TransformerDebugBase
     {
         if (isEnabled())
         {
+            String sourceNodeRefStr = sourceNodeRef.toString();
+            Deque<Frame> ourStack = ThreadInfo.getStack();
+            boolean firstLevel = ourStack.size() == 0;
+            String filename = getFileName(sourceNodeRef, firstLevel, sourceSize);
             push(transformerName, fromUrl, sourceMimetype, targetMimetype, sourceSize,
-                    options, renditionName, sourceNodeRef, Call.TRANSFORM);
+                    options, renditionName, sourceNodeRefStr, filename, Call.TRANSFORM);
         }
     }
 
@@ -277,13 +290,13 @@ public class TransformerDebug extends TransformerDebugBase
         if (isEnabled())
         {
             push(null, null, null, null, -1, null,
-                    null, null, Call.AVAILABLE);
+                    null, null, null, Call.AVAILABLE);
         }
     }
 
     void push(String transformerName, String fromUrl, String sourceMimetype, String targetMimetype,
               long sourceSize, Map<String, String> options,
-              String renditionName, NodeRef sourceNodeRef, Call callType)
+              String renditionName, String sourceNodeRefStr, String filename, Call callType)
     {
         Deque<Frame> ourStack = ThreadInfo.getStack();
         Frame frame = ourStack.peek();
@@ -298,7 +311,7 @@ public class TransformerDebug extends TransformerDebugBase
         // Create a new frame. Logging level is set to trace if the file size is 0
         boolean origDebugOutput = ThreadInfo.setDebugOutput(ThreadInfo.getDebugOutput() && sourceSize != 0);
         frame = new Frame(frame, transformerName, fromUrl, sourceMimetype, targetMimetype, sourceSize, renditionName,
-                sourceNodeRef, callType, origDebugOutput);
+                sourceNodeRefStr, filename, callType, origDebugOutput);
         ourStack.push(frame);
 
         if (callType == Call.TRANSFORM)
@@ -318,15 +331,15 @@ public class TransformerDebug extends TransformerDebugBase
         }
         log(frame.sourceMimetype+' '+frame.targetMimetype, false);
 
-        String fileName = getFileName(frame.sourceNodeRef, firstLevel, sourceSize);
+        String filename = frame.getFilename();
         log(getSourceAndTargetExt(frame.sourceMimetype, frame.targetMimetype) +
-                ((fileName != null) ? fileName+' ' : "")+
+                ((filename != null) ? filename+' ' : "")+
                 ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
                 (firstLevel ? getRenditionName(renditionName) : "") + message);
         if (firstLevel)
         {
             log(options);
-            String nodeRef = getNodeRef(frame.sourceNodeRef, firstLevel, sourceSize);
+            String nodeRef = frame.getSourceNodeRefStr();
             if (!nodeRef.isEmpty())
             {
                 log(nodeRef);
@@ -334,12 +347,16 @@ public class TransformerDebug extends TransformerDebugBase
         }
     }
 
+    /**
+     * @deprecated Not used in TransformerDebug any more now Legacy transforms have been removed.
+     */
+    @Deprecated
     public void debug(String sourceMimetype, String targetMimetype, NodeRef sourceNodeRef, long sourceSize,
                       Map<String, String> options, String renditionName, String message)
     {
-        String fileName = getFileName(sourceNodeRef, true, -1);
+        String filename = getFileName(sourceNodeRef, true, -1);
         log("              "+ getSourceAndTargetExt(sourceMimetype, targetMimetype) +
-                ((fileName != null) ? fileName+' ' : "")+
+                ((filename != null) ? filename+' ' : "")+
                 ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
                 (getRenditionName(renditionName)) + message);
         log(options);
@@ -432,7 +449,7 @@ public class TransformerDebug extends TransformerDebugBase
             String failureReason = frame.getFailureReason();
             boolean firstLevel = size == 1;
             String sourceAndTargetExt = getSourceAndTargetExt(frame.sourceMimetype, frame.targetMimetype);
-            String fileName = getFileName(frame.sourceNodeRef, firstLevel, frame.sourceSize);
+            String filename = frame.getFilename();
             long sourceSize = frame.getSourceSize();
             String transformerName = frame.getTransformerName();
             String renditionName = frame.getRenditionName();
@@ -454,20 +471,20 @@ public class TransformerDebug extends TransformerDebugBase
 
             if (level != null)
             {
-                infoLog(getReference(debug, false, false), sourceAndTargetExt, level, fileName, sourceSize,
+                infoLog(getReference(debug, false, false), sourceAndTargetExt, level, filename, sourceSize,
                         transformerName, renditionName, failureReason, ms, debug);
             }
         }
     }
 
-    private void infoLog(String reference, String sourceAndTargetExt, String level, String fileName,
+    private void infoLog(String reference, String sourceAndTargetExt, String level, String filename,
             long sourceSize, String transformerName, String renditionName, String failureReason, String ms, boolean debug)
     {
         String message =
                 reference +
                 sourceAndTargetExt +
                 (level == null ? "" : level+' ') +
-                (fileName == null ? "" : fileName) +
+                (filename == null ? "" : filename) +
                 (sourceSize >= 0 ? ' '+fileSize(sourceSize) : "") +
                 (ms == null || ms.isEmpty() ? "" : ' '+ms)+
                 (transformerName == null ? "" : ' '+transformerName) +
@@ -720,40 +737,21 @@ public class TransformerDebug extends TransformerDebugBase
 
     public String getFileName(NodeRef sourceNodeRef, boolean firstLevel, long sourceSize)
     {
-        return getFileNameOrNodeRef(sourceNodeRef, firstLevel, sourceSize, true);
-    }
-
-    private String getNodeRef(NodeRef sourceNodeRef, boolean firstLevel, long sourceSize)
-    {
-        return getFileNameOrNodeRef(sourceNodeRef, firstLevel, sourceSize, false);
-    }
-
-    private String getFileNameOrNodeRef(NodeRef sourceNodeRef, boolean firstLevel, long sourceSize, boolean getName)
-    {
-        String result = getName ? null : "";
+        String result = null;
         if (sourceNodeRef != null)
         {
             try
             {
-                result = getName
-                        ? (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME)
-                        : sourceNodeRef.toString()+" ";
+                result = (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
             }
             catch (RuntimeException e)
             {
-                // ignore (normally InvalidNodeRefException) but we should ignore other RuntimeExceptions too
+                // ignore (InvalidNodeRefException/MalformedNodeRefException) but we should ignore other RuntimeExceptions too
             }
         }
-        if (result == null)
+        if (result == null && !firstLevel)
         {
-            if (!firstLevel)
-            {
-                result = getName ? "<<TemporaryFile>>" : "";
-            }
-            else if (sourceSize < 0)
-            {
-                // fileName = "<<AnyFile>>"; commented out as it does not add to debug readability
-            }
+            result = "<<TemporaryFile>>";
         }
         return result;
     }
@@ -762,7 +760,7 @@ public class TransformerDebug extends TransformerDebugBase
      * Debugs a request to the Transform Service
      */
     public int debugTransformServiceRequest(String sourceMimetype, long sourceSize, NodeRef sourceNodeRef,
-                                            int contentHashcode, String fileName, String targetMimetype,
+                                            int contentHashcode, String filename, String targetMimetype,
                                             Map<String, String> options, String renditionName)
     {
         if (isEnabled())
@@ -770,13 +768,13 @@ public class TransformerDebug extends TransformerDebugBase
             pushMisc();
             String sourceAndTargetExt = getSourceAndTargetExt(sourceMimetype, targetMimetype);
             debug(sourceAndTargetExt +
-                    ((fileName != null) ? fileName + ' ' : "") +
+                    ((filename != null) ? filename + ' ' : "") +
                     ((sourceSize >= 0) ? fileSize(sourceSize) + ' ' : "") +
                     getRenditionName(renditionName) + " "+ TRANSFORM_SERVICE_NAME);
             log(options);
             log(sourceNodeRef.toString() + ' ' + contentHashcode);
             String reference = getReference(true, false, false);
-            infoLog(reference, sourceAndTargetExt, null, fileName, sourceSize, TRANSFORM_SERVICE_NAME,
+            infoLog(reference, sourceAndTargetExt, null, filename, sourceSize, TRANSFORM_SERVICE_NAME,
                     renditionName, null, "", true);
         }
         return pop(Call.AVAILABLE, true, false);

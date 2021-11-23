@@ -592,7 +592,8 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      */
     @Override
     @Deprecated
-    public boolean isContentDirectUrlEnabled(NodeRef nodeRef) {
+    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
         return isContentDirectUrlEnabled(nodeRef, ContentModel.PROP_CONTENT);
     }
 

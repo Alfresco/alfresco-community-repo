@@ -331,10 +331,6 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
         int contentHashCode = getRenditionContentHashCode(renditionNodeRef);
         assertTrue("Rendition content hash code was not generated", isValidRenditionContentHashCode(contentHashCode));
 
-        // Update node with new content
-        updateContent(ADMIN, sourceNodeRef, "quick.png");
-        waitForRendition(ADMIN, sourceNodeRef, DOC_LIB, false);
-
         // Disable renditionService2
         renditionService2.setEnabled(false);
 

@@ -538,7 +538,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                             }
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("Set rendition hashcode " + transformContentHashCode + " and ThumbnailLastModified for " + renditionName);
+                                logger.debug("Set ThumbnailLastModified for " + renditionName);
                             }
                             setThumbnailLastModified(sourceNodeRef, renditionName);
 
@@ -553,6 +553,10 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                     contentWriter.setEncoding(DEFAULT_ENCODING);
                                     ContentWriter renditionWriter = contentWriter;
                                     renditionWriter.putContent(transformInputStream);
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Set rendition hashcode for " + renditionName);
+                                    }
                                     nodeService.setProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE, transformContentHashCode);
                                 }
                                 catch (Exception e)

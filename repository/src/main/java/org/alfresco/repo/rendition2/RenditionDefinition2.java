@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,6 +26,7 @@
 package org.alfresco.repo.rendition2;
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.transform.client.registry.TransformerDebugBase;
 
 import java.util.Map;
 
@@ -38,7 +39,7 @@ import java.util.Map;
 @AlfrescoPublicApi
 public interface RenditionDefinition2
 {
-    public static final String TIMEOUT = "timeout";
+    public static final String TIMEOUT = TransformerDebugBase.TIMEOUT;
     public static final String MAX_SOURCE_SIZE_K_BYTES = "maxSourceSizeKBytes";
 
     // ImageMagick options
@@ -103,18 +104,18 @@ public interface RenditionDefinition2
     /**
      * The encoding of a Source Node is automatically added to the Transform Options if not specified.
      */
-    public static final String SOURCE_ENCODING = "sourceEncoding";
+    public static final String SOURCE_ENCODING = TransformerDebugBase.SOURCE_ENCODING;
 
     /**
      * The Source Node Ref is automatically added to the Transform Options if specified but without a value.
      */
-    public static final String SOURCE_NODE_REF = "sourceNodeRef";
+    public static final String SOURCE_NODE_REF = TransformerDebugBase.SOURCE_NODE_REF;
 
     /**
      * The encoding of a Target Node is automatically added to the Transform Options if not specified and the
      * transformer knows about it.
      */
-    public static final String TARGET_ENCODING = "targetEncoding";
+    public static final String TARGET_ENCODING = TransformerDebugBase.TARGET_ENCODING;
 
     String getRenditionName();
 

@@ -206,8 +206,8 @@ public interface ContentService
      * implementation if it can fulfil this request with an expiry time or not.
      *
      * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
-     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
      * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
      * @return A direct access {@code URL} object for the content.
      * @throws UnsupportedOperationException if the store is unable to provide the information.
      */
@@ -232,7 +232,6 @@ public interface ContentService
     {
         return requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
     }
-
 
     /**
      * Gets a presigned URL to directly access the content. It is up to the actual store

@@ -171,7 +171,10 @@ public interface ContentService
      * @return {@code true} if direct access URLs retrieving is supported for the node, {@code false} otherwise
      */
     @Deprecated
-    boolean isContentDirectUrlEnabled(NodeRef nodeRef);
+    default boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
+        return isContentDirectUrlEnabled(nodeRef, ContentModel.PROP_CONTENT);
+    }
 
     /**
      * Checks if the system and store supports the retrieving of a direct access {@code URL} for the given node.

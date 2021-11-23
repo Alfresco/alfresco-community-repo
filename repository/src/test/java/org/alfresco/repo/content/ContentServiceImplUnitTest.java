@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -77,6 +78,8 @@ public class ContentServiceImplUnitTest
     private static final String VALUE_1 = "value1";
     private static final String X_AMZ_HEADER_2 = "x-amz-header-2";
     private static final String VALUE_2 = "value2";
+
+    private static final QName  QNAME = QName.createQName("{test}MyNoContentNode");
 
     @InjectMocks
     private ContentServiceImpl contentService;
@@ -134,6 +137,21 @@ public class ContentServiceImplUnitTest
         try
         {
             contentService.requestContentDirectUrl(NODE_REF, true, 20L);
+            fail("Expected DirectAccessUrlDisabledException");
+        }
+        catch (DirectAccessUrlDisabledException ex)
+        {
+            verify(mockContentStore, never()).isContentDirectUrlEnabled();
+        }
+    }
+
+    @Test
+    public void testRequestContentDirectUrl_SystemWideIsDisabledwithQname()
+    {
+        setupSystemWideDirectAccessConfig(DISABLED);
+        try
+        {
+            contentService.requestContentDirectUrl(NODE_REF, QNAME, true);
             fail("Expected DirectAccessUrlDisabledException");
         }
         catch (DirectAccessUrlDisabledException ex)

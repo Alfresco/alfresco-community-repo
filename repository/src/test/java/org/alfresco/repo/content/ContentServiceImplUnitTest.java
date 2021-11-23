@@ -79,7 +79,7 @@ public class ContentServiceImplUnitTest
     private static final String X_AMZ_HEADER_2 = "x-amz-header-2";
     private static final String VALUE_2 = "value2";
 
-    private static final QName  QNAME = QName.createQName("{test}MyNoContentNode");
+    private static final QName QNAME = ContentModel.PROP_CONTENT;
 
     @InjectMocks
     private ContentServiceImpl contentService;
@@ -177,7 +177,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, QNAME, true, 20L);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, QNAME,true, 20L);
         assertNull(directAccessUrl);
         verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }

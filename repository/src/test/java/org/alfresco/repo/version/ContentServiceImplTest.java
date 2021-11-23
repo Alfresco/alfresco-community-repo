@@ -63,6 +63,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
      * Test content data
      */
     private final static String UPDATED_CONTENT = "This content has been updated with a new value.";
+    private static final QName  QNAME = QName.createQName("{test}MyNoContentNode");
     
     /**
      * The version content store
@@ -186,5 +187,49 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
 
         assertNull(contentService.requestContentDirectUrl(nodeRef, true, null));
         assertNull(contentService.requestContentDirectUrl(nodeRef, true, validFor));
+    }
+
+    @Test
+    public void testwithQnameWhenRequestContentDirectUrlIsNotSupported()
+    {
+        openMocks(this);
+        when(mockSystemWideDirectUrlConfig.isEnabled()).thenReturn(ENABLED);
+        when(mockSystemWideDirectUrlConfig.getDefaultExpiryTimeInSec()).thenReturn(30L);
+        when(mockSystemWideDirectUrlConfig.getMaxExpiryTimeInSec()).thenReturn(300L);
+
+        assertFalse(contentStore.isContentDirectUrlEnabled());
+
+        // Set the presigned URL to expire after one minute.
+        Long validFor = 60L;
+
+        try
+        {
+            // Create a node without content
+            NodeRef nodeRef = this.dbNodeService
+                    .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
+
+            assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
+            fail("nodeRef has no content");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected exception
+        }
+
+        try
+        {
+            assertNull(contentService.requestContentDirectUrl(null, QNAME, true, null));
+            fail("nodeRef is null");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected exception
+        }
+
+        // Create a node with content
+        NodeRef nodeRef = createNewVersionableNode();
+
+        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, null));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
     }
 }

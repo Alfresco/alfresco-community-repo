@@ -61,18 +61,73 @@ public class TransformerDebug extends TransformerDebugBase
     protected static final String NO_TRANSFORMERS = "No transformers";
     protected static final String TRANSFORM_SERVICE_NAME = "TransformService";
 
-    private Log info;
-    protected Log logger;
+    private SimpleLog info;
+    private SimpleLog logger;
     protected NodeService nodeService;
     protected MimetypeService mimetypeService;
     private final ThreadLocal<Integer> previousTransformId = ThreadLocal.withInitial(()->-1);
 
-    protected enum Call
+    protected interface SimpleLog
+    {
+        boolean isDebugEnabled();
+
+        boolean isTraceEnabled();
+
+        default void debug(Object message)
+        {
+            debug(message, null);
+        }
+
+        default void trace(Object message)
+        {
+            debug(message, null);
+        }
+
+        void debug(Object message, Throwable throwable);
+
+        void trace(Object message, Throwable throwable);
+    }
+
+    protected static class SimpleLogAdaptor implements SimpleLog
+    {
+        private Log log;
+
+        public SimpleLogAdaptor(Log log)
+        {
+            this.log = log;
+        }
+
+        @Override
+        public boolean isDebugEnabled()
+        {
+            return log.isDebugEnabled();
+        }
+
+        @Override
+        public boolean isTraceEnabled()
+        {
+            return log.isTraceEnabled();
+        }
+
+        @Override
+        public void debug(Object message, Throwable throwable)
+        {
+            log.debug(message, throwable);
+        }
+
+        @Override
+        public void trace(Object message, Throwable throwable)
+        {
+            log.trace(message, throwable);
+        }
+    }
+
+    protected static enum Call
     {
         AVAILABLE,
         TRANSFORM,
         AVAILABLE_AND_TRANSFORM
-    };
+    }
 
     protected static class ThreadInfo
     {
@@ -221,12 +276,12 @@ public class TransformerDebug extends TransformerDebugBase
 
     public void setTransformerLog(Log transformerLog)
     {
-        info = new LogTee(LogFactory.getLog(TransformerLog.class), transformerLog);
+        info = new SimpleLogAdaptor(new LogTee(LogFactory.getLog(TransformerLog.class), transformerLog));
     }
 
     public void setTransformerDebugLog(Log transformerDebugLog)
     {
-        logger = new LogTee(LogFactory.getLog(TransformerDebug.class), transformerDebugLog);
+        logger = new SimpleLogAdaptor(new LogTee(LogFactory.getLog(TransformerDebug.class), transformerDebugLog));
     }
 
     public void setNodeService(NodeService nodeService)

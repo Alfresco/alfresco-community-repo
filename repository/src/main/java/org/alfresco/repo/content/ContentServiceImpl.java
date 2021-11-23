@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
- *
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -79,14 +79,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * Note: This class was formerly the {@link RoutingContentService} but the
  * 'routing' functionality has been pushed into the {@link AbstractRoutingContentStore store}
  * implementations.
- *
+ * 
  * @author Derek Hulley
  * @since 3.2
  */
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
     private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
-
+    
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private MimetypeService mimetypeService;
@@ -108,29 +108,29 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * The policy component
      */
     private PolicyComponent policyComponent;
-
+    
     /*
      * Policies delegates
      */
     ClassPolicyDelegate<ContentServicePolicies.OnContentUpdatePolicy> onContentUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentPropertyUpdatePolicy> onContentPropertyUpdateDelegate;
     ClassPolicyDelegate<ContentServicePolicies.OnContentReadPolicy> onContentReadDelegate;
-
+    
     public void setRetryingTransactionHelper(RetryingTransactionHelper helper)
     {
         this.transactionHelper = helper;
     }
-
+    
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
     }
-
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
-
+    
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
@@ -185,16 +185,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
                 this,
                 new JavaBehaviour(this, "onUpdateProperties"));
-
+        
         // Register on content update policy
         this.onContentUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentUpdatePolicy.class);
         this.onContentPropertyUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentPropertyUpdatePolicy.class);
         this.onContentReadDelegate = this.policyComponent.registerClassPolicy(OnContentReadPolicy.class);
     }
-
+    
     /**
      * Update properties policy behaviour
-     *
+     * 
      * @param nodeRef    the node reference
      * @param before    the before values of the properties
      * @param after        the after values of the properties
@@ -209,7 +209,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             return;
         }
-
+    	
         // Don't duplicate work when firing multiple policies
         Set<QName> types = null;
         OnContentPropertyUpdatePolicy propertyPolicy = null;            // Doesn't change for the node instance
@@ -236,7 +236,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 // We don't fire notifications for multi-valued content properties
                 continue;
             }
-
+            
             try
             {
                 ContentData beforeValue = (ContentData) before.get(propertyQName);
@@ -245,7 +245,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                         && (!ignoreEmptyContent || beforeValue.getSize() > 0);
                 boolean hasContentAfter = ContentData.hasContent(afterValue)
                         && (!ignoreEmptyContent || afterValue.getSize() > 0);
-
+                
                 // There are some shortcuts here
                 if (!hasContentBefore && !hasContentAfter)
                 {
@@ -257,10 +257,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                     // Still, nothing happening
                     continue;
                 }
-
+                
                 // Check for new content
                 isNewContent = isNewContent || !hasContentBefore && hasContentAfter;
-
+                
                 // Make it clear when there's no content before or after
                 if (!hasContentBefore)
                 {
@@ -277,13 +277,13 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                     String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                     logger.debug(
                             "Content property updated: \n" +
-                                    "   Node Name:   " + name + "\n" +
-                                    "   Property:    " + propertyQName + "\n" +
-                                    "   Is new:      " + isNewContent + "\n" +
-                                    "   Before:      " + beforeValue + "\n" +
-                                    "   After:       " + afterValue);
+                            "   Node Name:   " + name + "\n" +
+                            "   Property:    " + propertyQName + "\n" +
+                            "   Is new:      " + isNewContent + "\n" +
+                            "   Before:      " + beforeValue + "\n" +
+                            "   After:       " + afterValue);
                 }
-
+                
                 // Fire specific policy
                 types = getTypes(nodeRef, types);
                 if (propertyPolicy == null)
@@ -291,7 +291,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                     propertyPolicy = onContentPropertyUpdateDelegate.get(nodeRef, types);
                 }
                 propertyPolicy.onContentPropertyUpdate(nodeRef, propertyQName, beforeValue, afterValue);
-
+                
                 // We also fire an event if *any* content property is changed
                 fire = true;
             }
@@ -310,11 +310,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             policy.onContentUpdate(nodeRef, isNewContent);
         }
     }
-
-
+    
+        
     /**
      * Helper method to lazily populate the types associated with a node
-     *
+     * 
      * @param nodeRef           the node
      * @param types             any existing types
      * @return                  the types - either newly populated or just what was passed in
@@ -363,14 +363,14 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         reader.setMimetype(MimetypeMap.MIMETYPE_BINARY);
         reader.setEncoding("UTF-8");
         reader.setLocale(I18NUtil.getLocale());
-
+        
         // Done
         if (logger.isDebugEnabled())
         {
             logger.debug(
                     "Direct request for reader: \n" +
-                            "   Content URL: " + contentUrl + "\n" +
-                            "   Reader:      " + reader);
+                    "   Content URL: " + contentUrl + "\n" +
+                    "   Reader:      " + reader);
         }
         return reader;
     }
@@ -379,7 +379,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         return getReader(nodeRef, propertyQName, true);
     }
-
+        
     @SuppressWarnings("unchecked")
     private ContentReader getReader(NodeRef nodeRef, QName propertyQName, boolean fireContentReadPolicy)
     {
@@ -389,22 +389,22 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         if (contentData == null || contentData.getContentUrl() == null)
         {
             // there is no URL - the interface specifies that this is not an error condition
-            return null;
+            return null;                                
         }
         String contentUrl = contentData.getContentUrl();
-
+        
         // The context of the read is entirely described by the URL
         ContentReader reader = store.getReader(contentUrl);
         if (reader == null)
         {
             throw new AlfrescoRuntimeException("ContentStore implementations may not return null ContentReaders");
         }
-
+        
         // set extra data on the reader
         reader.setMimetype(contentData.getMimetype());
         reader.setEncoding(contentData.getEncoding());
         reader.setLocale(contentData.getLocale());
-
+        
         // Fire the content read policy
         if (reader != null && fireContentReadPolicy == true)
         {
@@ -414,7 +414,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             OnContentReadPolicy policy = this.onContentReadDelegate.get(nodeRef, types);
             policy.onContentRead(nodeRef);
         }
-
+        
         // we don't listen for anything
         // result may be null - but interface contract says we may return null
         return reader;
@@ -441,11 +441,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         if (contentData == null)
         {
             PropertyDefinition contentPropDef = dictionaryService.getProperty(propertyQName);
-
+            
             // if no value or a value other content, and a property definition has been provided, ensure that it's CONTENT or ANY            
-            if (contentPropDef != null &&
-                    (!(contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT) ||
-                            contentPropDef.getDataType().getName().equals(DataTypeDefinition.ANY))))
+            if (contentPropDef != null && 
+                (!(contentPropDef.getDataType().getName().equals(DataTypeDefinition.CONTENT) ||
+                   contentPropDef.getDataType().getName().equals(DataTypeDefinition.ANY))))
             {
                 throw new InvalidTypeException("The node property must be of type content: \n" +
                         "   node: " + nodeRef + "\n" +
@@ -469,10 +469,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             // done
             return writer;
         }
-
+        
         // check for an existing URL - the get of the reader will perform type checking
         ContentReader existingContentReader = getReader(nodeRef, propertyQName, false);
-
+        
         // get the content using the (potentially) existing content - the new content
         // can be wherever the store decides.
         ContentContext ctx = new NodeContentContext(existingContentReader, null, nodeRef, propertyQName);
@@ -490,7 +490,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             writer.setEncoding(contentData.getEncoding());
             writer.setLocale(contentData.getLocale());
         }
-
+        
         // attach a listener if required
         if (update)
         {
@@ -498,15 +498,15 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             WriteStreamListener listener = new WriteStreamListener(nodeService, nodeRef, propertyQName, writer);
             listener.setRetryingTransactionHelper(transactionHelper);
             writer.addListener(listener);
-
+            
         }
-
+        
         // supply the writer with a copy of the mimetype service if needed
         if (writer instanceof MimetypeServiceAware)
         {
             ((MimetypeServiceAware)writer).setMimetypeService(mimetypeService);
         }
-
+        
         // give back to the client
         return writer;
     }
@@ -524,7 +524,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * Ensures that, upon closure of the output stream, the node is updated with
      * the latest URL of the content to which it refers.
      * <p>
-     *
+     * 
      * @author Derek Hulley
      */
     private static class WriteStreamListener extends AbstractContentStreamListener
@@ -533,7 +533,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         private NodeRef nodeRef;
         private QName propertyQName;
         private ContentWriter writer;
-
+        
         public WriteStreamListener(
                 NodeService nodeService,
                 NodeRef nodeRef,
@@ -545,7 +545,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             this.propertyQName = propertyQName;
             this.writer = writer;
         }
-
+        
         public void contentStreamClosedImpl() throws ContentIOException
         {
             try
@@ -571,7 +571,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 throw new ContentIOException("Failed to set content property on stream closure: \n" +
                         "   node: " + nodeRef + "\n" +
                         "   property: " + propertyQName + "\n" +
-                        "   writer: " + writer + "\n" +
+                        "   writer: " + writer + "\n" + 
                         e.toString(),
                         e);
             }
@@ -708,6 +708,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         {
             validFor = systemWideDirectUrlConfig.getDefaultExpiryTimeInSec();
         }
-        return validFor;
+         return validFor;
     }
 }

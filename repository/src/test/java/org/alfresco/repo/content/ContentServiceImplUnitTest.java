@@ -136,21 +136,6 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(DISABLED);
         try
         {
-            contentService.requestContentDirectUrl(NODE_REF, true, 20L);
-            fail("Expected DirectAccessUrlDisabledException");
-        }
-        catch (DirectAccessUrlDisabledException ex)
-        {
-            verify(mockContentStore, never()).isContentDirectUrlEnabled();
-        }
-    }
-
-    @Test
-    public void testRequestContentDirectUrlwithQname_SystemWideIsDisabled()
-    {
-        setupSystemWideDirectAccessConfig(DISABLED);
-        try
-        {
             contentService.requestContentDirectUrl(NODE_REF, QNAME, true, 20L);
             fail("Expected DirectAccessUrlDisabledException");
         }
@@ -166,17 +151,6 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
-        assertNull(directAccessUrl);
-        verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
-    }
-
-    @Test
-    public void testRequestContentDirectUrlwithQname_SystemWideIsEnabledButStoreIsDisabled()
-    {
-        setupSystemWideDirectAccessConfig(ENABLED);
-        when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
-
         DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, QNAME,true, 20L);
         assertNull(directAccessUrl);
         verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
@@ -184,17 +158,6 @@ public class ContentServiceImplUnitTest
 
     @Test
     public void testRequestContentDirectUrl_StoreIsEnabledButNotImplemented()
-    {
-        setupSystemWideDirectAccessConfig(ENABLED);
-        when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
-
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, true, 20L);
-        assertNull(directAccessUrl);
-        verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
-    }
-
-    @Test
-    public void testRequestContentDirectUrlwithQname_StoreIsEnabledButNotImplemented()
     {
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);

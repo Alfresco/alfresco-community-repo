@@ -27,6 +27,7 @@ package org.alfresco.service.cmr.repository;
 
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -227,7 +228,10 @@ public interface ContentService
      */
     @Auditable(parameters = {"nodeRef", "validFor"})
     @Deprecated
-    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
+    default public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
+    }
 
 
     /**

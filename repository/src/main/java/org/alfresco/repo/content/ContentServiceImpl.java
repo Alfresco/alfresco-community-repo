@@ -591,16 +591,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * {@inheritDoc}
      */
     @Override
-    @Deprecated
-    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
-    {
-        return isContentDirectUrlEnabled(nodeRef, ContentModel.PROP_CONTENT);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public boolean isContentDirectUrlEnabled(NodeRef nodeRef, QName propertyQName)
     {
         boolean contentDirectUrlEnabled = false;
@@ -620,16 +610,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         }
 
         return contentDirectUrlEnabled;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Deprecated
-    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
-    {
-        return requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
     }
 
     /**

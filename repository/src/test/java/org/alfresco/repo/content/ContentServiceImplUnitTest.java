@@ -79,7 +79,7 @@ public class ContentServiceImplUnitTest
     private static final String X_AMZ_HEADER_2 = "x-amz-header-2";
     private static final String VALUE_2 = "value2";
 
-    private static final QName QNAME = ContentModel.PROP_CONTENT;
+    private static final QName PROP_CONTENT_QNAME = ContentModel.PROP_CONTENT;
 
     @InjectMocks
     private ContentServiceImpl contentService;
@@ -136,7 +136,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(DISABLED);
         try
         {
-            contentService.requestContentDirectUrl(NODE_REF, QNAME, true, 20L);
+            contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
             fail("Expected DirectAccessUrlDisabledException");
         }
         catch (DirectAccessUrlDisabledException ex)
@@ -151,7 +151,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(DISABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, QNAME,true, 20L);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME,true, 20L);
         assertNull(directAccessUrl);
         verify(mockContentStore, never()).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }
@@ -162,7 +162,7 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(ENABLED);
         when(mockContentStore.isContentDirectUrlEnabled()).thenReturn(ENABLED);
 
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, QNAME, true, 20L);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
         assertNull(directAccessUrl);
         verify(mockContentStore, times(1)).requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong());
     }

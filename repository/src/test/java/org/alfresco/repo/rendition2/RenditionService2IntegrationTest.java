@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -39,13 +39,10 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.google.gdata.model.gd.When;
 
 /**
  * Integration tests for {@link RenditionService2}
@@ -342,10 +339,10 @@ public class RenditionService2IntegrationTest extends AbstractRenditionIntegrati
                 return null;
             }), ADMIN);
 
-        // The rendition should have not content by now
+        // The rendition should not have content by now
         assertNull("Rendition has content", nodeService.getProperty(renditionNodeRef, ContentModel.PROP_CONTENT));
 
-        // The rendition should have not a content hash code by now
+        // The rendition should not have a content hash code by now
         contentHashCode = getRenditionContentHashCode(renditionNodeRef);
         assertFalse("Rendition has content hash code", isValidRenditionContentHashCode(contentHashCode));
 

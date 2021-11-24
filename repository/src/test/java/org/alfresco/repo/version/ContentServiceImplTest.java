@@ -181,6 +181,19 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         {
             // Expected exception
         }
+        try
+        {
+            // Create a node without content
+            NodeRef nodeRef = this.dbNodeService
+                    .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
+
+            assertNull(contentService.requestContentDirectUrl(nodeRef, null, true, validFor));
+            fail("propertyQName has no content");
+        }
+        catch (IllegalArgumentException e)
+        {
+            // Expected exception
+        }
 
         // Create a node with content
         NodeRef nodeRef = createNewVersionableNode();

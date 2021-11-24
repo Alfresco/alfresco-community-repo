@@ -78,7 +78,7 @@ public class Action extends org.alfresco.rest.api.model.Action implements Serial
         String id = (String) jsonObject.get("id");
         String actionDefinitionId = (String) jsonObject.get("actionDefinitionId");
         String targetId = (String) jsonObject.get("targetId");
-        Map<String, String> params = (Map<String, String>) jsonObject.get("params");
+        Map<String, Object> params = (Map<String, Object>) jsonObject.get("params");
 
         Action action = new Action();
         action.setId(id);

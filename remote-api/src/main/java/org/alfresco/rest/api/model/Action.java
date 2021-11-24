@@ -32,7 +32,7 @@ public class Action
     private String id;
     private String actionDefinitionId;
     private String targetId;
-    Map<String, String> params;
+    private Map<String, ?> params;
 
     public String getId()
     {
@@ -64,12 +64,12 @@ public class Action
         this.targetId = targetId;
     }
 
-    public Map<String, String> getParams()
+    public Map<String, ?> getParams()
     {
         return params;
     }
 
-    public void setParams(Map<String, String> params)
+    public void setParams(Map<String, ? extends Object> params)
     {
         this.params = params;
     }

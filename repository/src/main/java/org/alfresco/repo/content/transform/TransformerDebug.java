@@ -90,12 +90,12 @@ public class TransformerDebug extends TransformerDebugBase
 
     public void setTransformerLog(Log transformerLog)
     {
-        super.setInfoLog(new SimpleLogAdaptor(new LogTee(LogFactory.getLog(TransformerLog.class), transformerLog)));
+        super.setSingleLineLog(new SimpleLogAdaptor(new LogTee(LogFactory.getLog(TransformerLog.class), transformerLog)));
     }
 
     public void setTransformerDebugLog(Log transformerDebugLog)
     {
-        super.setDebugLog(new SimpleLogAdaptor(new LogTee(LogFactory.getLog(TransformerDebug.class), transformerDebugLog)));
+        super.setMultiLineLog(new SimpleLogAdaptor(new LogTee(LogFactory.getLog(TransformerDebug.class), transformerDebugLog)));
     }
 
     public void setNodeService(NodeService nodeService)
@@ -113,8 +113,8 @@ public class TransformerDebug extends TransformerDebugBase
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
-        PropertyCheck.mandatory(this, "transformerLog", getInfoLog());
-        PropertyCheck.mandatory(this, "transformerDebugLog", getDebugLog());
+        PropertyCheck.mandatory(this, "transformerLog", getSingleLineLog());
+        PropertyCheck.mandatory(this, "transformerDebugLog", getMultiLineLog());
     }
 
     public void pushTransform(String transformerName, String fromUrl, String sourceMimetype,
@@ -128,7 +128,7 @@ public class TransformerDebug extends TransformerDebugBase
             boolean firstLevel = ourStack.size() == 0;
             String filename = getFileName(sourceNodeRef, firstLevel, sourceSize);
             pushTransform(transformerName, fromUrl, sourceMimetype, targetMimetype, sourceSize,
-                          options, renditionName, sourceNodeRefStr, filename, Call.TRANSFORM);
+                          options, renditionName, sourceNodeRefStr, filename);
         }
     }
 

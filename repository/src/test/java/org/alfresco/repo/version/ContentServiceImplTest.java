@@ -190,7 +190,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
             assertNull(contentService.requestContentDirectUrl(nodeRef, null, true, validFor));
             fail("propertyQName has no content");
         }
-        catch (IllegalArgumentException e)
+        catch (NullPointerException e)
         {
             // Expected exception
         }

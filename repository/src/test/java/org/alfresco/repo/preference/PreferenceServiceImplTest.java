@@ -93,7 +93,12 @@ public class PreferenceServiceImplTest
     @Rule public RuleChain ruleChain = RuleChain.outerRule(testUser1)
                                                 .around(testUser2)
                                                 .around(runAsRule);
-    
+
+    // Concurrency test
+    private static final int NUM_THREADS = 10;
+    private static Integer NUM_ERRORS = 0;
+    private static final String MSG_ERROR_1  = "Error selecting key or setting result to parameter";
+    private static final String MSG_ERROR_2 = "Failed to update node";
 
     // Various services
     private static ContentService               CONTENT_SERVICE;
@@ -240,7 +245,75 @@ public class PreferenceServiceImplTest
             }
         });
     }
-    
+
+    @Test
+    public void testConcurrentPreferencesUpdate() throws InterruptedException
+    {
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                Thread[] threads = new Thread[NUM_THREADS];
+
+                for (int i = 0; i < NUM_THREADS; i++)
+                {
+                    UpdatePreferencesThread t = new UpdatePreferencesThread(i);
+                    threads[i] = t;
+                    t.start();
+                }
+
+                for (int i = 0; i < threads.length; i++)
+                {
+                    threads[i].join();
+                }
+
+                if (NUM_ERRORS > 0)
+                {
+                    fail("An error has occurred when updating preferences in concurrency context");
+                }
+
+                return null;
+            }
+        });
+    }
+
+    private class UpdatePreferencesThread extends Thread
+    {
+        UpdatePreferencesThread(int threadNum)
+        {
+            super(UpdatePreferencesThread.class.getSimpleName() + "-" + threadNum);
+        }
+
+        @Override
+        public void run()
+        {
+            try
+            {
+                String username = testUser1.getUsername();
+                AuthenticationUtil.setFullyAuthenticatedUser(username);
+
+                Map<String, Object> model = new HashMap<String, Object>();
+                model.put("username", username);
+
+                ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/preference/script/test_preferenceService2.js");
+                SCRIPT_SERVICE.executeScript(location, model);
+            }
+            catch (Exception e)
+            {
+                String errorMsg = (null != e && null != e.getMessage()) ? e.getMessage().toLowerCase() : "";
+
+                if (errorMsg.contains(MSG_ERROR_1.toLowerCase()) || errorMsg.contains(MSG_ERROR_2.toLowerCase()))
+                {
+                    synchronized (NUM_ERRORS)
+                    {
+                        NUM_ERRORS++;
+                    }
+                }
+            }
+        }
+    }
+
     private String prettyJson(String jsonString)
     {
         String result = jsonString;

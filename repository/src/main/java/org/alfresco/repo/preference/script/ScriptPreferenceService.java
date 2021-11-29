@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -142,10 +143,17 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
     
     public void setPreferences(String userName, NativeObject preferences)
     {
-        Map<String, Serializable> values = new HashMap<String, Serializable>(10);
-        getPrefValues(preferences, null, values);
-        
-        this.preferenceService.setPreferences(userName, values);
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                Map<String, Serializable> values = new HashMap<String, Serializable>(10);
+                getPrefValues(preferences, null, values);
+                preferenceService.setPreferences(userName, values);
+                return null;
+            }
+        }, false, true);
     }
     
     private void getPrefValues(NativeObject currentObject, String currentKey, Map<String, Serializable> values)

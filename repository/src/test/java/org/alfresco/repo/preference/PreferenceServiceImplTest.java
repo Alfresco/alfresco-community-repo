@@ -81,10 +81,12 @@ public class PreferenceServiceImplTest
     @ClassRule public static ApplicationContextInit APP_CONTEXT_INIT = new ApplicationContextInit();
     
     private static final String USERNAME2 = "username2";
+    private static final String USERNAME3 = "username3";
     
     // Rules to create test users. Note that this class is unusual in that we do *NOT* want to reuse users across test methods.
     public AlfrescoPerson testUser1 = new AlfrescoPerson(APP_CONTEXT_INIT);
     public AlfrescoPerson testUser2 = new AlfrescoPerson(APP_CONTEXT_INIT, USERNAME2);
+    public AlfrescoPerson testUser3 = new AlfrescoPerson(APP_CONTEXT_INIT, USERNAME3);
     
     // A rule to have all test methods be run as "UserOne".
     public RunAsFullyAuthenticatedRule runAsRule = new RunAsFullyAuthenticatedRule(testUser1);
@@ -290,7 +292,7 @@ public class PreferenceServiceImplTest
         {
             try
             {
-                String username = testUser1.getUsername();
+                String username = testUser3.getUsername();
                 AuthenticationUtil.setFullyAuthenticatedUser(username);
 
                 Map<String, Object> model = new HashMap<String, Object>();

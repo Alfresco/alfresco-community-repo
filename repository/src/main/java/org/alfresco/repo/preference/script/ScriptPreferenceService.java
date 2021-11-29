@@ -78,7 +78,15 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
     {
         // It's a tad unusual to return a NativeObject like this - at least within Alfresco.
         // But we can't change it to e.g. a ScriptableHashMap as the API is published.
-        Map<String, Serializable> prefs = this.preferenceService.getPreferences(userName, preferenceFilter);        
+        Map<String, Serializable> prefs = this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Map<String, Serializable>>()
+        {
+            @Override
+            public Map<String, Serializable> execute() throws Throwable
+            {
+                return preferenceService.getPreferences(userName, preferenceFilter);
+            }
+        }, true, true);
+
         NativeObject result = new NativeObjectDV();
         
         for (Map.Entry<String, Serializable> entry : prefs.entrySet())
@@ -173,12 +181,19 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
             }
         }
     }
-    
+
     public void clearPreferences(String userName)
     {
-        this.preferenceService.clearPreferences(userName, null);
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                preferenceService.clearPreferences(userName, null);
+                return null;
+            }
+        }, false, true);
     }
-    
     
     /**
      * Clear the preference values
@@ -188,9 +203,17 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
      */
     public void clearPreferences(String userName, String preferenceFilter)
     {
-        this.preferenceService.clearPreferences(userName, preferenceFilter);
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                preferenceService.clearPreferences(userName, preferenceFilter);
+                return null;
+            }
+        }, false, true);
     }
-    
+
     private String getAppendedKey(String currentKey, String key)
     {
         StringBuffer buffer = new StringBuffer(64);

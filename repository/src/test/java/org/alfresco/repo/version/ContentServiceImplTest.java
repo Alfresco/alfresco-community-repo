@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.version;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -158,42 +159,28 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         // Set the presigned URL to expire after one minute.
         Long validFor = 60L;
 
-        try
-        {
+        assertThrows(IllegalArgumentException.class, () -> {
             // Create a node without content
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
             assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
             fail("nodeRef has no content");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected exception
-        }
+        });
 
-        try
-        {
+        assertThrows(IllegalArgumentException.class, () -> {
             assertNull(contentService.requestContentDirectUrl(null, null, true, null));
             fail("nodeRef is null");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected exception
-        }
-        try
-        {
+        });
+
+        assertThrows(NullPointerException.class, () -> {
             // Create a node without content
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
-            assertNull(contentService.requestContentDirectUrl(nodeRef, null, true, validFor));
+            contentService.requestContentDirectUrl(nodeRef, null, true, validFor);
             fail("propertyQName has no content");
-        }
-        catch (NullPointerException e)
-        {
-            // Expected exception
-        }
+        });
 
         // Create a node with content
         NodeRef nodeRef = createNewVersionableNode();

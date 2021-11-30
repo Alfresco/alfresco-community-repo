@@ -244,7 +244,7 @@ public interface ContentService
      * @return A direct access {@code URL} object for the content.
      * @throws UnsupportedOperationException if the store is unable to provide the information.
      */
-    @Auditable(parameters = {"nodeRef", "validFor"})
+    @Auditable(parameters = {"nodeRef", "propertyQName", "validFor"})
     DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor);
 
     /**

@@ -76,7 +76,6 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
 
     private QName getQName(final String contentPropName)
     {
-        //this splitting may be gone when we decide to use colon as prefix separatot
         final String properContentPropName = contentPropName.replace(PREFIX_SEPARATOR, QName.NAMESPACE_PREFIX);
         return QName.resolveToQName(namespaceService, properContentPropName);
     }

@@ -25,22 +25,31 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ObjectStorageProps;
 import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.rest.api.Downloads;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Download;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.download.DownloadService;
 import org.alfresco.service.cmr.download.DownloadStatus;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -51,6 +60,7 @@ public class DownloadsImpl implements Downloads
 {
     private DownloadService downloadService;
     private NodeService nodeService;
+    private ContentService contentService;
     private Nodes nodes;
     private PermissionService permissionService;
     public static final String DEFAULT_ARCHIVE_NAME = "archive.zip";
@@ -64,6 +74,11 @@ public class DownloadsImpl implements Downloads
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     public void setNodes(Nodes nodes)
@@ -87,6 +102,8 @@ public class DownloadsImpl implements Downloads
         
         checkNodeIdsReadPermission(zipContentNodeRefs);
         
+        checkArchiveStatus(zipContentNodeRefs);
+
         NodeRef zipNodeRef = downloadService.createDownload(zipContentNodeRefs, true);
         
         String archiveName = zipContentNodeRefs.length > 1 ?
@@ -172,4 +189,66 @@ public class DownloadsImpl implements Downloads
         return downloadInfo;
     }
 
+    /**
+     * Checks the supplied nodes for any content that is archived.
+     * Any folders will be expanded and their children checked.
+     * @param nodeRefs
+     * @see #checkArchiveStatus(NodeRef[], List)
+     */
+    @Experimental
+    protected void checkArchiveStatus(NodeRef[] nodes) 
+    {
+        checkArchiveStatus(nodes, null);
+    }
+
+    /**
+     * Checks the supplied nodes for any content that is archived.
+     * Any folders will be expanded and their children checked.
+     * @param nodeRefs
+     * @param cache Tracks nodes that we have already checked, if null an empty cache will be created
+     */
+    @Experimental
+    private void checkArchiveStatus(NodeRef[] nodeRefs, List<NodeRef> cache)
+    {
+        if (cache == null) // Create the cache for recursive calls
+        {
+            cache = new ArrayList<NodeRef>();
+        }
+
+        var folders = new ArrayList<NodeRef>();
+        for (NodeRef nodeRef : nodeRefs) 
+        {
+            // Already checked this node, we can skip.
+            if (cache.contains(nodeRef)) 
+            {
+                continue;
+            }
+
+            QName qName = nodeService.getType(nodeRef);
+            if (qName.equals(ContentModel.TYPE_FOLDER))
+            {
+                // We'll check the child nodes at the end, if we have archived content in the current array we want to hit that first
+                folders.add(nodeRef); 
+            }
+            else if (qName.equals(ContentModel.TYPE_CONTENT))
+            {
+                Map<String, String> props = contentService.getStorageProperties(nodeRef, qName);
+                boolean archived = Boolean.valueOf(props.get(ObjectStorageProps.X_ALF_ARCHIVED.getValue()));
+                if (!props.isEmpty() && archived)
+                {
+                    throw new ArchivedIOException("One or more nodes' content is archived and not accessible.");
+                }
+            }
+            cache.add(nodeRef); // No need to check this node again.
+        }
+
+        // We re-run the folder contents at the end in case we hit content that is archived and can stop early.
+        for (NodeRef nodeRef : folders) 
+        {
+            NodeRef[] childRefs = nodeService.getChildAssocs(nodeRef).stream()
+                                                                     .map(childAssoc -> childAssoc.getChildRef())
+                                                                     .toArray(NodeRef[]::new);
+            checkArchiveStatus(childRefs, cache); // We'll keep going until we have no more folders in children
+        }
+    }
 }

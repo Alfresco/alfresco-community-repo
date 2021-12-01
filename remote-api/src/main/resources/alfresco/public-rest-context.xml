@@ -565,6 +565,7 @@
     <bean id="downloads" class="org.alfresco.rest.api.impl.DownloadsImpl">
         <property name="downloadService" ref="DownloadService"/>
         <property name="nodeService" ref="NodeService"/>
+        <property name="contentService" ref="ContentService"/>
         <property name="nodes" ref="Nodes" />
         <property name="permissionService" ref="permissionService"/>
     </bean>

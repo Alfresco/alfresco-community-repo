@@ -566,6 +566,7 @@
         <property name="downloadService" ref="DownloadService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="contentService" ref="ContentService"/>
+        <property name="moduleService" ref="ModuleService"/>
         <property name="nodes" ref="Nodes" />
         <property name="permissionService" ref="permissionService"/>
     </bean>

@@ -606,6 +606,26 @@
             </list>
         </property>
     </bean>
+
+    <bean id="contentStorageInformation" class="org.alfresco.rest.api.impl.ContentStorageInformationImpl">
+        <constructor-arg name="contentService" ref="ContentService"/>
+        <constructor-arg name="namespaceService" ref="NamespaceService"/>
+    </bean>
+
+    <bean id="ContentStorageInformation" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.ContentStorageInformation</value>
+        </property>
+        <property name="target">
+            <ref bean="contentStorageInformation" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
     <bean id="deletedNodes" class="org.alfresco.rest.api.impl.DeletedNodesImpl">
         <property name="nodes" ref="Nodes" />
         <property name="nodeService" ref="NodeService" />
@@ -977,7 +997,11 @@
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
         <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
-    
+
+    <bean class="org.alfresco.rest.api.nodes.NodeStorageInfoRelation">
+        <constructor-arg name="storageInformation" ref="ContentStorageInformation" />
+    </bean>
+
     <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation" parent="baseNodeRelation"/>
 
     <bean class="org.alfresco.rest.api.nodes.NodeParentsRelation" parent="baseNodeRelation"/>

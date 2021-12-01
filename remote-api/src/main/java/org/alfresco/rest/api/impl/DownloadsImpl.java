@@ -48,8 +48,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * 

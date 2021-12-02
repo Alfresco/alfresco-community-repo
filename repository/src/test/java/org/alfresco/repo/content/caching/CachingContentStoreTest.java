@@ -29,6 +29,7 @@ package org.alfresco.repo.content.caching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import static org.junit.Assert.fail;
@@ -45,10 +46,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 
 import org.alfresco.repo.content.ContentContext;
+import org.alfresco.repo.content.ContentRestoreParams;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
@@ -539,5 +542,53 @@ public class CachingContentStoreTest
     {
         Map<String, String> storageProperties = cachingStore.getStorageProperties("url");
         assertTrue(storageProperties.isEmpty());
+    }
+
+    @Test
+    public void shouldCompleteArchiveContentRequest()
+    {
+        final boolean expectedResult = true;
+        final String contentUrl = "url";
+        when(backingStore.requestSendContentToArchive(contentUrl)).thenReturn(expectedResult);
+
+        final boolean sendContentToArchive = cachingStore.requestSendContentToArchive(contentUrl);
+
+        assertEquals(expectedResult, sendContentToArchive);
+    }
+
+    @Test
+    public void shouldThrowExceptionOnArchiveContentRequest()
+    {
+        final String contentUrl = "url";
+        when(backingStore.requestSendContentToArchive(contentUrl)).thenCallRealMethod();
+
+        assertThrows(UnsupportedOperationException.class, () -> {
+            cachingStore.requestSendContentToArchive(contentUrl);
+        });
+    }
+
+    @Test
+    public void shouldCompleteRestoreContentFromArchiveRequest()
+    {
+        final String contentUrl = "url";
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+        final boolean expectedResult = true;
+        when(backingStore.requestRestoreContentFromArchive(contentUrl, restoreParams)).thenReturn(expectedResult);
+
+        final boolean sendContentToArchive = cachingStore.requestRestoreContentFromArchive(contentUrl, restoreParams);
+
+        assertEquals(expectedResult, sendContentToArchive);
+    }
+
+    @Test
+    public void shouldThrowExceptionOnRestoreContentFromArchiveRequest()
+    {
+        final String contentUrl = "url";
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+        when(backingStore.requestRestoreContentFromArchive(contentUrl, restoreParams)).thenCallRealMethod();
+
+        assertThrows(UnsupportedOperationException.class, () -> {
+            cachingStore.requestRestoreContentFromArchive(contentUrl, restoreParams);
+        });
     }
 }

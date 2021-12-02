@@ -216,6 +216,8 @@ public class DownloadsImpl implements Downloads
      * Checks the supplied nodes for any content that is archived.
      * Any folders will be expanded and their children checked.
      * A limit can be applied to prevent large sized requests preventing the asynchronous call to start.
+     * The cache is used to prevent duplication of checks, as it is possible to provide a folder and its contents as 
+     * separate nodes in the download request.
      * 
      * @param nodeRefs
      * @param checkLimit The maximum number of nodes to check, set to -1 for no limit
@@ -224,7 +226,8 @@ public class DownloadsImpl implements Downloads
     @Experimental
     private void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit, List<NodeRef> cache)
     {
-        if (cache == null) // Create the cache for recursive calls
+        // Create the cache for recursive calls.
+        if (cache == null) 
         {
             cache = new ArrayList<NodeRef>();
         }
@@ -232,8 +235,11 @@ public class DownloadsImpl implements Downloads
         var folders = new ArrayList<NodeRef>();
         for (NodeRef nodeRef : nodeRefs) 
         {
-            // We hit the number of nodes we want to check
-            if (cache.size() == checkLimit) return;
+            // We hit the number of nodes we want to check.
+            if (cache.size() == checkLimit) 
+            {
+                return;
+            }
             // Already checked this node, we can skip.
             if (cache.contains(nodeRef)) 
             {
@@ -243,7 +249,7 @@ public class DownloadsImpl implements Downloads
             QName qName = nodeService.getType(nodeRef);
             if (qName.equals(ContentModel.TYPE_FOLDER))
             {
-                // We'll check the child nodes at the end, if we have archived content in the current array we want to hit that first
+                // We'll check the child nodes at the end in case there are other nodes in this loop that is archived.
                 folders.add(nodeRef); 
             }
             else if (qName.equals(ContentModel.TYPE_CONTENT))
@@ -257,13 +263,13 @@ public class DownloadsImpl implements Downloads
             cache.add(nodeRef); // No need to check this node again.
         }
 
-        // We re-run the folder contents at the end in case we hit content that is archived and can stop early.
+        // We re-run the folder contents at the end in case we hit content that is archived in the first loop and can stop early.
         for (NodeRef nodeRef : folders) 
         {
             NodeRef[] childRefs = nodeService.getChildAssocs(nodeRef).stream()
                                                                      .map(childAssoc -> childAssoc.getChildRef())
                                                                      .toArray(NodeRef[]::new);
-            checkArchiveStatus(childRefs, checkLimit, cache); // We'll keep going until we have no more folders in children
+            checkArchiveStatus(childRefs, checkLimit, cache); // We'll keep going until we have no more folders in children.
         }
     }
 

@@ -281,12 +281,14 @@ public class DownloadsImpl implements Downloads
         }
     }
 
+    @Experimental
     protected boolean canCheckArchived()
     {
         return moduleServiceContains("org_alfresco_integrations_AzureConnector") || 
                 moduleServiceContains("org_alfresco_integrations_S3Connector");
     }
 
+    @Experimental
     private boolean moduleServiceContains(String moduleId)
     {
         return moduleService.getModule(moduleId) != null;

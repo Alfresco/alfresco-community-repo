@@ -49,6 +49,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -57,6 +59,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class DownloadsImpl implements Downloads
 {
+    private static Logger logger = LoggerFactory.getLogger(Downloads.class);
+
     private DownloadService downloadService;
     private ModuleService moduleService;
     private NodeService nodeService;
@@ -238,6 +242,10 @@ public class DownloadsImpl implements Downloads
             // We hit the number of nodes we want to check.
             if (cache.size() == checkLimit) 
             {
+                logger.info(
+                        String.format(
+                                "Maximum check of %d reached for archived content. No more checks will be performed and download will still be created.",
+                                checkLimit));
                 return;
             }
             // Already checked this node, we can skip.

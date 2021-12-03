@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -69,6 +70,7 @@ public class DownloadsImpl implements Downloads
     private int archiveCheckLimit;
     public static final String DEFAULT_ARCHIVE_NAME = "archive.zip";
     public static final String DEFAULT_ARCHIVE_EXTENSION = ".zip";
+    public static final String [] CLOUD_CONNECTOR_MODULES = {"org_alfresco_integrations_AzureConnector", "org_alfresco_integrations_S3Connector"};
 
     public void setDownloadService(DownloadService downloadService)
     {
@@ -215,8 +217,7 @@ public class DownloadsImpl implements Downloads
     @Experimental
     protected void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit) 
     {
-        if ( moduleServiceContains("org_alfresco_integrations_AzureConnector") ||
-                moduleServiceContains("org_alfresco_integrations_S3Connector")) 
+        if (canCheckArchived()) 
         {
             checkArchiveStatus(nodeRefs, checkLimit, null);
         }
@@ -291,8 +292,8 @@ public class DownloadsImpl implements Downloads
     }
 
     @Experimental
-    private boolean moduleServiceContains(String moduleId)
+    protected boolean canCheckArchived() 
     {
-        return moduleService.getModule(moduleId) != null;
+        return Arrays.stream(CLOUD_CONNECTOR_MODULES).anyMatch(m-> moduleService.getModule(m) != null);
     }
 }

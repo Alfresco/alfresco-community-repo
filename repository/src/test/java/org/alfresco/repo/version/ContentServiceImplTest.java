@@ -159,27 +159,24 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         // Set the presigned URL to expire after one minute.
         Long validFor = 60L;
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows("nodeRef has no content", IllegalArgumentException.class, () -> {
             // Create a node without content
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
             assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
-            fail("nodeRef has no content");
         });
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows("nodeRef is null", IllegalArgumentException.class, () -> {
             assertNull(contentService.requestContentDirectUrl(null, null, true, null));
-            fail("nodeRef is null");
         });
 
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows("propertyQName has no content", NullPointerException.class, () -> {
             // Create a node without content
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
             contentService.requestContentDirectUrl(nodeRef, null, true, validFor);
-            fail("propertyQName has no content");
         });
 
         // Create a node with content

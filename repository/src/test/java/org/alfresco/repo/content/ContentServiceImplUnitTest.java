@@ -134,15 +134,11 @@ public class ContentServiceImplUnitTest
     public void testRequestContentDirectUrl_SystemWideIsDisabled()
     {
         setupSystemWideDirectAccessConfig(DISABLED);
-        try
-        {
+        assertThrows(DirectAccessUrlDisabledException.class, () -> {
             contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
             fail("Expected DirectAccessUrlDisabledException");
-        }
-        catch (DirectAccessUrlDisabledException ex)
-        {
-            verify(mockContentStore, never()).isContentDirectUrlEnabled();
-        }
+        });
+        verify(mockContentStore, never()).isContentDirectUrlEnabled();
     }
 
     @Test

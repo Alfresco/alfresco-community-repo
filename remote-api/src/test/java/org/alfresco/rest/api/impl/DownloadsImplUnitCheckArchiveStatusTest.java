@@ -176,7 +176,7 @@ public class DownloadsImplUnitCheckArchiveStatusTest
     }
 
     @Test
-    public void testContent3Archived()
+    public void testContentNode3Archived()
     {
         // fail node3 (within another folder)
         when(contentService.getStorageProperties(any(NodeRef.class), any(QName.class))).thenReturn(nonArchivedProps);

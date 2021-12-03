@@ -162,6 +162,7 @@ public class DownloadsImplUnitCheckArchiveStatusTest
         verify(contentService, times(1)).getStorageProperties(contentNode4, TYPE_CONTENT);
         verify(contentService, times(1)).getStorageProperties(contentNode5, TYPE_CONTENT);
         verify(contentService, times(1)).getStorageProperties(contentNode6, TYPE_CONTENT);
+        verifyNoMoreInteractions(contentService);
     }
 
     @Test

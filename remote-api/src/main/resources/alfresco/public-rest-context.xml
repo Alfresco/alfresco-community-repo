@@ -569,6 +569,7 @@
         <property name="moduleService" ref="ModuleService"/>
         <property name="nodes" ref="Nodes" />
         <property name="permissionService" ref="permissionService"/>
+        <property name="archiveCheckLimit" value="${download.archiveCheckLimit}"/>
     </bean>
 
     <bean id="actions" class="org.alfresco.rest.api.impl.ActionsImpl">

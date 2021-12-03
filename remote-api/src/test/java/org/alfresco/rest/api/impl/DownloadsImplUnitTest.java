@@ -78,7 +78,6 @@ public class DownloadsImplUnitTest
     @Mock
     private PermissionService permissionService;
 
-
     @Test
     public void testCheckArchiveStatus()
     {

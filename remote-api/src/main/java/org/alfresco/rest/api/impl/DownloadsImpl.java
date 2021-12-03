@@ -25,10 +25,9 @@
  */
 package org.alfresco.rest.api.impl;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ObjectStorageProps;
@@ -67,6 +66,7 @@ public class DownloadsImpl implements Downloads
     private ContentService contentService;
     private Nodes nodes;
     private PermissionService permissionService;
+    private int archiveCheckLimit;
     public static final String DEFAULT_ARCHIVE_NAME = "archive.zip";
     public static final String DEFAULT_ARCHIVE_EXTENSION = ".zip";
 
@@ -100,6 +100,11 @@ public class DownloadsImpl implements Downloads
         this.permissionService = permissionService;
     }
 
+    public void setArchiveCheckLimit(int checkLimit)
+    {
+        this.archiveCheckLimit = checkLimit;
+    }
+
     @Override
     public Download createDownloadNode(Download download)
     {
@@ -111,7 +116,7 @@ public class DownloadsImpl implements Downloads
         
         checkNodeIdsReadPermission(zipContentNodeRefs);
         
-        checkArchiveStatus(zipContentNodeRefs, 500);
+        checkArchiveStatus(zipContentNodeRefs, archiveCheckLimit);
 
         NodeRef zipNodeRef = downloadService.createDownload(zipContentNodeRefs, true);
         
@@ -205,12 +210,13 @@ public class DownloadsImpl implements Downloads
      * 
      * @param nodeRefs
      * @param checkLimit The maximum number of nodes to check, set to -1 for no limit
-     * @see #checkArchiveStatus(NodeRef[], List)
+     * @see #checkArchiveStatus(NodeRef[], int, Set)
      */
     @Experimental
     protected void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit) 
     {
-        if (canCheckArchived())
+        if ( moduleServiceContains("org_alfresco_integrations_AzureConnector") ||
+                moduleServiceContains("org_alfresco_integrations_S3Connector")) 
         {
             checkArchiveStatus(nodeRefs, checkLimit, null);
         }
@@ -228,24 +234,27 @@ public class DownloadsImpl implements Downloads
      * @param cache Tracks nodes that we have already checked, if null an empty cache will be created
      */
     @Experimental
-    private void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit, List<NodeRef> cache)
+    private void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit, Set<NodeRef> cache)
     {
         // Create the cache for recursive calls.
         if (cache == null) 
         {
-            cache = new ArrayList<NodeRef>();
+            cache = new HashSet<NodeRef>();
         }
 
-        var folders = new ArrayList<NodeRef>();
+        Set<NodeRef> folders = new HashSet<NodeRef>();
         for (NodeRef nodeRef : nodeRefs) 
         {
             // We hit the number of nodes we want to check.
             if (cache.size() == checkLimit) 
             {
-                logger.info(
+                if (logger.isInfoEnabled())
+                {
+                    logger.info(
                         String.format(
                                 "Maximum check of %d reached for archived content. No more checks will be performed and download will still be created.",
                                 checkLimit));
+                }
                 return;
             }
             // Already checked this node, we can skip.
@@ -279,13 +288,6 @@ public class DownloadsImpl implements Downloads
                                                                      .toArray(NodeRef[]::new);
             checkArchiveStatus(childRefs, checkLimit, cache); // We'll keep going until we have no more folders in children.
         }
-    }
-
-    @Experimental
-    protected boolean canCheckArchived()
-    {
-        return moduleServiceContains("org_alfresco_integrations_AzureConnector") || 
-                moduleServiceContains("org_alfresco_integrations_S3Connector");
     }
 
     @Experimental

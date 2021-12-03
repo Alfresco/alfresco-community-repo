@@ -136,7 +136,6 @@ public class ContentServiceImplUnitTest
         setupSystemWideDirectAccessConfig(DISABLED);
         assertThrows(DirectAccessUrlDisabledException.class, () -> {
             contentService.requestContentDirectUrl(NODE_REF, PROP_CONTENT_QNAME, true, 20L);
-            fail("Expected DirectAccessUrlDisabledException");
         });
         verify(mockContentStore, never()).isContentDirectUrlEnabled();
     }

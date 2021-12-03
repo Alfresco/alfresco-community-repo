@@ -59,7 +59,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DownloadsImplUnitCheckArchiveStatusTest 
+public class DownloadsImplCheckArchiveStatusUnitTest 
 {
     @InjectMocks
     private final DownloadsImpl downloads = new DownloadsImpl();

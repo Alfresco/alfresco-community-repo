@@ -42,6 +42,7 @@ import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.quartz.CronExpression;
 import org.springframework.extensions.config.Config;
@@ -938,7 +939,8 @@ public class MimetypeMap implements MimetypeService
         Metadata metadata = new Metadata();
         if (filename != null)
         {
-            metadata.add(Metadata.RESOURCE_NAME_KEY, filename);
+            //"resourceName"
+            metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, filename);
         }
 
         InputStream inp = null;

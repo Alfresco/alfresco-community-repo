@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.remoteconnector.RemoteConnectorRequest;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorResponse;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorService;
 import org.apache.commons.httpclient.Header;
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 
 /**

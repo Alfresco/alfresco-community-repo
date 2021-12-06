@@ -187,6 +187,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.content.filestore.FileIOTest.class,
     org.alfresco.repo.content.filestore.SpoofedTextContentReaderTest.class,
     org.alfresco.repo.content.ContentDataTest.class,
+    org.alfresco.repo.content.replication.AggregatingContentStoreUnitTest.class,
     org.alfresco.service.cmr.repository.TransformationOptionLimitsTest.class,
     org.alfresco.service.cmr.repository.TransformationOptionPairTest.class,
     org.alfresco.repo.content.transform.TransformerConfigTestSuite.class,

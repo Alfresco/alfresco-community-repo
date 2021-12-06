@@ -243,8 +243,20 @@
                 </exclusion>
                 <!-- No longer needed -->
                 <exclusion>
-                    <groupId>org.apache.tika</groupId>
-                    <artifactId>tika-parser-pdf-module</artifactId>
+                    <groupId>org.apache.pdfbox</groupId>
+                    <artifactId>pdfbox</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.pdfbox</groupId>
+                    <artifactId>pdfbox-tools</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.pdfbox</groupId>
+                    <artifactId>jempbox</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.pdfbox</groupId>
+                    <artifactId>jbig2-imageio</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

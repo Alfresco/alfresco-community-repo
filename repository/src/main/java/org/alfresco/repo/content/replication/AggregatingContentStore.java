@@ -410,28 +410,36 @@ public class AggregatingContentStore extends AbstractContentStore
 
         // get a read lock so that we are sure that no replication is underway
         readLock.lock();
-        try {
+        try
+        {
             Optional<Map<String, String>> objectStoragePropertiesMap = Optional.empty();
             // Check the primary store
-            try {
+            try
+            {
                 objectStoragePropertiesMap = Optional.of(primaryStore.getStorageProperties(contentUrl));
-            } catch (UnsupportedContentUrlException e) {
+            }
+            catch (UnsupportedContentUrlException e)
+            {
                 final String message = String.format(PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, contentUrl);
                 logger.trace(message);
             }
 
-            if (objectStoragePropertiesMap.isEmpty() || objectStoragePropertiesMap.get().isEmpty())
-            {// the content is not in the primary store so we have to go looking for it
-                for (ContentStore store : secondaryStores) {
-                    try {
+            if (objectStoragePropertiesMap.isEmpty() ||
+                    objectStoragePropertiesMap.get().isEmpty()) {// the content is not in the primary store so we have to go looking for it
+                for (ContentStore store : secondaryStores)
+                {
+                    try
+                    {
                         objectStoragePropertiesMap = Optional.of(store.getStorageProperties(contentUrl));
-                    } catch (UnsupportedContentUrlException e) {
+                    }
+                    catch (UnsupportedContentUrlException e)
+                    {
                         final String message = String.format(SECONDARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, store, contentUrl);
-                        logger.trace(message);
                         logger.trace(message);
                     }
 
-                    if (objectStoragePropertiesMap.isPresent()) {
+                    if (objectStoragePropertiesMap.isPresent())
+                    {
                         return objectStoragePropertiesMap.get();
                     }
                 }
@@ -439,7 +447,9 @@ public class AggregatingContentStore extends AbstractContentStore
             }
             return objectStoragePropertiesMap.orElse(Collections.emptyMap());
 
-        } finally {
+        }
+        finally
+        {
             readLock.unlock();
         }
     }
@@ -472,45 +482,63 @@ public class AggregatingContentStore extends AbstractContentStore
         boolean archiveRequestSucceeded = false;
         boolean primaryContentUrlUnsupported = false;
         boolean secondaryContentUrlUnsupported = false;
-        try {
+        try
+        {
             // Check the primary store
-            try {
+            try
+            {
                 archiveRequestSucceeded = hasArchiveRequestSucceeded(contentUrl, restoreParams, restore, primaryStore);
-            } catch (UnsupportedOperationException e) {
+            }
+            catch (UnsupportedOperationException e)
+            {
                 final String message = String.format("Primary store does not handle this operation for content URL: %s", contentUrl);
                 logger.trace(message);
-            } catch (UnsupportedContentUrlException e) {
+            }
+            catch (UnsupportedContentUrlException e) {
                 final String message = String.format(PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, contentUrl);
                 logger.trace(message);
                 primaryContentUrlUnsupported = true;
             }
 
-            if (archiveRequestSucceeded) {
+            if (archiveRequestSucceeded)
+            {
                 return true;
-            } else { // the content is not in the primary store so we have to go looking for it
-                for (ContentStore store : secondaryStores) {
-                    try {
+            }
+            else
+            { // the content is not in the primary store so we have to go looking for it
+                for (ContentStore store : secondaryStores)
+                {
+                    try
+                    {
                         archiveRequestSucceeded = hasArchiveRequestSucceeded(contentUrl, restoreParams, restore, store);
-                    } catch (UnsupportedOperationException e) {
+                    } catch (UnsupportedOperationException e)
+                    {
                         final String message =
                                 String.format("Secondary store %s does not handle this operation for content URL: %s", store,
                                         contentUrl);
                         logger.trace(message);
-                    } catch (UnsupportedContentUrlException e) {
+                    }
+                    catch (UnsupportedContentUrlException e)
+                    {
                         secondaryContentUrlUnsupported = true;
                         final String message = String.format(SECONDARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, store, contentUrl);
                         logger.trace(message);
                     }
                 }
             }
-            if (archiveRequestSucceeded) {
+            if (archiveRequestSucceeded)
+            {
                 return true;
-            } else if (primaryContentUrlUnsupported || secondaryContentUrlUnsupported) {
+            }
+            else if (primaryContentUrlUnsupported || secondaryContentUrlUnsupported)
+            {
                 return super.requestSendContentToArchive(contentUrl);
             }
 
             return super.requestSendContentToArchive(contentUrl);
-        } finally {
+        }
+        finally
+        {
             readLock.unlock();
         }
     }
@@ -525,7 +553,8 @@ public class AggregatingContentStore extends AbstractContentStore
 
     private void checkPrimaryStore()
     {
-        if (primaryStore == null) {
+        if (primaryStore == null)
+        {
             throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
     }

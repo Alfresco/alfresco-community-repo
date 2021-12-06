@@ -426,10 +426,12 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      */
     @Override
     @Experimental
-    public Map<String, String> getStorageProperties(String contentUrl) {
+    public Map<String, String> getStorageProperties(String contentUrl)
+    {
         ContentStore contentStore = selectReadStore(contentUrl);
 
-        if (contentStore == null) {
+        if (contentStore == null)
+        {
             logNoContentStore(contentUrl);
             return Collections.emptyMap();
         }
@@ -447,7 +449,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     public boolean requestSendContentToArchive(String contentUrl)
     {
         final ContentStore contentStore = selectReadStore(contentUrl);
-        if (contentStore == null) {
+        if (contentStore == null)
+        {
             logNoContentStore(contentUrl);
             return ContentStore.super.requestSendContentToArchive(contentUrl);
         }
@@ -464,7 +467,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     public boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
     {
         final ContentStore contentStore = selectReadStore(contentUrl);
-        if (contentStore == null) {
+        if (contentStore == null)
+        {
             logNoContentStore(contentUrl);
             return ContentStore.super.requestRestoreContentFromArchive(contentUrl, restoreParams);
         }
@@ -475,7 +479,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
 
     private void logExecution(final String contentUrl, final ContentStore contentStore, final String message)
     {
-        if (logger.isTraceEnabled()) {
+        if (logger.isTraceEnabled())
+        {
             logger.trace(message + "\n" +
                     "   Content URL: " + contentUrl + "\n" +
                     "   Store:       " + contentStore);
@@ -484,7 +489,8 @@ public abstract class AbstractRoutingContentStore implements ContentStore
 
     private void logNoContentStore(String contentUrl)
     {
-        if (logger.isTraceEnabled()) {
+        if (logger.isTraceEnabled())
+        {
             logger.trace("Content Store not found for content URL: " + contentUrl);
         }
     }

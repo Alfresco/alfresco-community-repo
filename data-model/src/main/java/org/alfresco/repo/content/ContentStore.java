@@ -348,12 +348,13 @@ public interface ContentStore
 
     /**
      * Submit a request to send content to archive (offline) state.
-     * If no connector is present or connector is not supporting sending to archive, then {@code false} will be returned.
+     * If no connector is present or connector is not supporting sending to archive, then {@link UnsupportedOperationException} will be returned.
      * Specific connector will decide which storage class/tier will be set for content.
      * This method is experimental and subject to changes.
      *
      * @param contentUrl the URL of the content which is to be archived.
      * @return true when request successful, false when unsuccessful.
+     * @throws UnsupportedOperationException when store is unable to handle request.
      */
     @Experimental
     default boolean requestSendContentToArchive(String contentUrl)
@@ -363,7 +364,7 @@ public interface ContentStore
 
     /**
      * Submit a request to restore content from archive (offline) state.
-     * If no connector is present or connector is not supporting restoring fom archive, then {@code false} will be returned.
+     * If no connector is present or connector is not supporting restoring fom archive, then {@link UnsupportedOperationException} will be returned.
      * One of input parameters of this method is a map (String-Serializable) of Storage Provider specific input needed to perform proper restore.
      * Keys of this map should be restricted to {@code ContentRestoreParams} enumeration.
      * For AWS S3 map can indicating expiry days, Glacier restore tier.
@@ -373,6 +374,7 @@ public interface ContentStore
      * @param contentUrl    the URL of the content which is to be archived.
      * @param restoreParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
      * @return true when request successful, false when unsuccessful.
+     * @throws UnsupportedOperationException when store is unable to handle request.
      */
     @Experimental
     default boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)

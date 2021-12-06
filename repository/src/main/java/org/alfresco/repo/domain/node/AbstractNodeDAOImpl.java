@@ -3147,15 +3147,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         assoc.setQNameAll(qnameDAO, assocQName, true);
         // Primary
         assoc.setPrimary(isPrimary);
-        // Index - if child association in primary, set the assoc_index by counting pre-existing children for that node.
-        if (isPrimary)
-        {
-            assoc.setAssocIndex(countChildAssocsByParent(parentNodeId, isPrimary));
-        }
-        else
-        {
-            assoc.setAssocIndex(-1);
-        }
+        // Index
+        assoc.setAssocIndex(-1);
         
         Long assocId = newChildAssocInsert(assoc, assocTypeQName, childNodeName);
         

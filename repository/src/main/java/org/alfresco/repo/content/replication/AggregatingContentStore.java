@@ -417,7 +417,7 @@ public class AggregatingContentStore extends AbstractContentStore
                 objectStoragePropertiesMap = Optional.of(primaryStore.getStorageProperties(contentUrl));
             } catch (UnsupportedContentUrlException e) {
                 final String message = String.format(PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, contentUrl);
-                logTrace(message);
+                logger.trace(message);
             }
 
             if (objectStoragePropertiesMap.isEmpty() || objectStoragePropertiesMap.get().isEmpty())
@@ -427,7 +427,8 @@ public class AggregatingContentStore extends AbstractContentStore
                         objectStoragePropertiesMap = Optional.of(store.getStorageProperties(contentUrl));
                     } catch (UnsupportedContentUrlException e) {
                         final String message = String.format(SECONDARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, store, contentUrl);
-                        logTrace(message);
+                        logger.trace(message);
+                        logger.trace(message);
                     }
 
                     if (objectStoragePropertiesMap.isPresent()) {
@@ -477,10 +478,10 @@ public class AggregatingContentStore extends AbstractContentStore
                 archiveRequestSucceeded = hasArchiveRequestSucceeded(contentUrl, restoreParams, restore, primaryStore);
             } catch (UnsupportedOperationException e) {
                 final String message = String.format("Primary store does not handle this operation for content URL: %s", contentUrl);
-                logTrace(message);
+                logger.trace(message);
             } catch (UnsupportedContentUrlException e) {
                 final String message = String.format(PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, contentUrl);
-                logTrace(message);
+                logger.trace(message);
                 primaryContentUrlUnsupported = true;
             }
 
@@ -494,11 +495,11 @@ public class AggregatingContentStore extends AbstractContentStore
                         final String message =
                                 String.format("Secondary store %s does not handle this operation for content URL: %s", store,
                                         contentUrl);
-                        logTrace(message);
+                        logger.trace(message);
                     } catch (UnsupportedContentUrlException e) {
                         secondaryContentUrlUnsupported = true;
                         final String message = String.format(SECONDARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, store, contentUrl);
-                        logTrace(message);
+                        logger.trace(message);
                     }
                 }
             }
@@ -520,13 +521,6 @@ public class AggregatingContentStore extends AbstractContentStore
         return restore ?
                 primaryStore.requestRestoreContentFromArchive(contentUrl, restoreParams) :
                 primaryStore.requestSendContentToArchive(contentUrl);
-    }
-
-    private void logTrace(final String message)
-    {
-        if (logger.isTraceEnabled()) {
-            logger.trace(message);
-        }
     }
 
     private void checkPrimaryStore()

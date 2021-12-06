@@ -421,7 +421,7 @@ public class AggregatingContentStore extends AbstractContentStore
             catch (UnsupportedContentUrlException e)
             {
                 final String message = String.format(PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, contentUrl);
-                logger.trace(message);
+                logTrace(message);
             }
 
             if (objectStoragePropertiesMap.isEmpty() ||

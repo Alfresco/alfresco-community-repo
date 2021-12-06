@@ -27,6 +27,7 @@ package org.alfresco.service.cmr.repository;
 
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -170,7 +171,20 @@ public interface ContentService
      *
      * @return {@code true} if direct access URLs retrieving is supported for the node, {@code false} otherwise
      */
-    boolean isContentDirectUrlEnabled(NodeRef nodeRef);
+    @Deprecated
+    default boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
+        return isContentDirectUrlEnabled(nodeRef, ContentModel.PROP_CONTENT);
+    }
+
+    /**
+     * Checks if the system and store supports the retrieving of a direct access {@code URL} for the given node.
+     *
+     * @param nodeRef a reference to a node having a content property
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @return {@code true} if direct access URLs retrieving is supported for the node, {@code false} otherwise
+     */
+    boolean isContentDirectUrlEnabled(NodeRef nodeRef, QName propertyQName);
 
     /**
      * Gets a presigned URL to directly access the content. It is up to the actual store
@@ -181,9 +195,25 @@ public interface ContentService
      * @return A direct access {@code URL} object for the content.
      * @throws UnsupportedOperationException if the store is unable to provide the information.
      */
+    @Deprecated
     default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment)
     {
         return requestContentDirectUrl(nodeRef, attachment, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment)
+    {
+        return requestContentDirectUrl(nodeRef, propertyQName, attachment, null);
     }
 
     /**
@@ -197,7 +227,25 @@ public interface ContentService
      * @throws UnsupportedOperationException if the store is unable to provide the information.
      */
     @Auditable(parameters = {"nodeRef", "validFor"})
-    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor);
+    @Deprecated
+    default public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName", "validFor"})
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor);
 
     /**
      * Gets a key-value (String-String) collection of storage headers/properties with their respective values for a specific node reference.

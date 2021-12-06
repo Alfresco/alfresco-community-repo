@@ -591,14 +591,14 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * {@inheritDoc}
      */
     @Override
-    public boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    public boolean isContentDirectUrlEnabled(NodeRef nodeRef, QName propertyQName)
     {
         boolean contentDirectUrlEnabled = false;
 
         // TODO: update this
         if (systemWideDirectUrlConfig.isEnabled())
         {
-            ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+            ContentData contentData = getContentData(nodeRef, propertyQName);
 
             // check that the URL is available
             if (contentData == null || contentData.getContentUrl() == null)
@@ -615,14 +615,15 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     /**
      * {@inheritDoc}
      */
-    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    @Override
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor)
     {
         if (!systemWideDirectUrlConfig.isEnabled())
         {
             throw new DirectAccessUrlDisabledException("Direct access url isn't available.");
         }
 
-        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
+        ContentData contentData = getContentData(nodeRef, propertyQName);
         // check that the content & URL is available
         if (contentData == null || contentData.getContentUrl() == null)
         {

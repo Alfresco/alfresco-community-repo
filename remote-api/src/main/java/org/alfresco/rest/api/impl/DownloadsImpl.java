@@ -25,22 +25,32 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.ObjectStorageProps;
 import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.rest.api.Downloads;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Download;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.download.DownloadService;
 import org.alfresco.service.cmr.download.DownloadStatus;
+import org.alfresco.service.cmr.module.ModuleService;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -49,21 +59,37 @@ import org.alfresco.service.namespace.QName;
  */
 public class DownloadsImpl implements Downloads
 {
+    private static Logger logger = LoggerFactory.getLogger(Downloads.class);
+
     private DownloadService downloadService;
+    private ModuleService moduleService;
     private NodeService nodeService;
+    private ContentService contentService;
     private Nodes nodes;
     private PermissionService permissionService;
+    private int archiveCheckLimit;
     public static final String DEFAULT_ARCHIVE_NAME = "archive.zip";
     public static final String DEFAULT_ARCHIVE_EXTENSION = ".zip";
+    public static final String [] CLOUD_CONNECTOR_MODULES = {"org_alfresco_integrations_AzureConnector", "org_alfresco_integrations_S3Connector"};
 
     public void setDownloadService(DownloadService downloadService)
     {
         this.downloadService = downloadService;
     }
 
+    public void setModuleService(ModuleService moduleService)
+    {
+        this.moduleService = moduleService;
+    }
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     public void setNodes(Nodes nodes)
@@ -74,6 +100,11 @@ public class DownloadsImpl implements Downloads
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    public void setArchiveCheckLimit(int checkLimit)
+    {
+        this.archiveCheckLimit = checkLimit;
     }
 
     @Override
@@ -87,6 +118,8 @@ public class DownloadsImpl implements Downloads
         
         checkNodeIdsReadPermission(zipContentNodeRefs);
         
+        checkArchiveStatus(zipContentNodeRefs, archiveCheckLimit);
+
         NodeRef zipNodeRef = downloadService.createDownload(zipContentNodeRefs, true);
         
         String archiveName = zipContentNodeRefs.length > 1 ?
@@ -172,4 +205,95 @@ public class DownloadsImpl implements Downloads
         return downloadInfo;
     }
 
+    /**
+     * Checks the supplied nodes for any content that is archived.
+     * Any folders will be expanded and their children checked.
+     * A limit can be applied to prevent large sized requests preventing the asynchronous call to start.
+     * 
+     * @param nodeRefs
+     * @param checkLimit The maximum number of nodes to check, set to -1 for no limit
+     * @see #checkArchiveStatus(NodeRef[], int, Set)
+     */
+    @Experimental
+    protected void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit) 
+    {
+        if (canCheckArchived()) 
+        {
+            checkArchiveStatus(nodeRefs, checkLimit, null);
+        }
+    }
+
+    /**
+     * Checks the supplied nodes for any content that is archived.
+     * Any folders will be expanded and their children checked.
+     * A limit can be applied to prevent large sized requests preventing the asynchronous call to start.
+     * The cache is used to prevent duplication of checks, as it is possible to provide a folder and its contents as 
+     * separate nodes in the download request.
+     * 
+     * @param nodeRefs
+     * @param checkLimit The maximum number of nodes to check, set to -1 for no limit
+     * @param cache Tracks nodes that we have already checked, if null an empty cache will be created
+     */
+    @Experimental
+    private void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit, Set<NodeRef> cache)
+    {
+        // Create the cache for recursive calls.
+        if (cache == null) 
+        {
+            cache = new HashSet<NodeRef>();
+        }
+
+        Set<NodeRef> folders = new HashSet<NodeRef>();
+        for (NodeRef nodeRef : nodeRefs) 
+        {
+            // We hit the number of nodes we want to check.
+            if (cache.size() == checkLimit) 
+            {
+                if (logger.isInfoEnabled())
+                {
+                    logger.info(
+                        String.format(
+                                "Maximum check of %d reached for archived content. No more checks will be performed and download will still be created.",
+                                checkLimit));
+                }
+                return;
+            }
+            // Already checked this node, we can skip.
+            if (cache.contains(nodeRef)) 
+            {
+                continue;
+            }
+
+            QName qName = nodeService.getType(nodeRef);
+            if (qName.equals(ContentModel.TYPE_FOLDER))
+            {
+                // We'll check the child nodes at the end in case there are other nodes in this loop that is archived.
+                folders.add(nodeRef); 
+            }
+            else if (qName.equals(ContentModel.TYPE_CONTENT))
+            {
+                Map<String, String> props = contentService.getStorageProperties(nodeRef, qName);
+                if (!props.isEmpty() && Boolean.valueOf(props.get(ObjectStorageProps.X_ALF_ARCHIVED.getValue())))
+                {
+                    throw new ArchivedIOException("One or more nodes' content is archived and not accessible.");
+                }
+            }
+            cache.add(nodeRef); // No need to check this node again.
+        }
+
+        // We re-run the folder contents at the end in case we hit content that is archived in the first loop and can stop early.
+        for (NodeRef nodeRef : folders) 
+        {
+            NodeRef[] childRefs = nodeService.getChildAssocs(nodeRef).stream()
+                                                                     .map(childAssoc -> childAssoc.getChildRef())
+                                                                     .toArray(NodeRef[]::new);
+            checkArchiveStatus(childRefs, checkLimit, cache); // We'll keep going until we have no more folders in children.
+        }
+    }
+
+    @Experimental
+    protected boolean canCheckArchived() 
+    {
+        return Arrays.stream(CLOUD_CONNECTOR_MODULES).anyMatch(m-> moduleService.getModule(m) != null);
+    }
 }

@@ -508,19 +508,6 @@
         </property>
     </bean>
 
-    <bean id="nodes.nonAttachContentTypes" class="org.springframework.beans.factory.config.SetFactoryBean">
-        <property name="sourceSet">
-            <set>
-                <value>application/pdf</value>
-                <value>image/jpeg</value>
-                <value>image/gif</value>
-                <value>image/png</value>
-                <value>image/tiff</value>
-                <value>image/bmp</value>
-            </set>
-        </property>
-    </bean>
-
     <bean id="nodes.personLookupProperties" class="org.springframework.beans.factory.config.SetFactoryBean">
         <property name="sourceSet">
             <set>
@@ -541,7 +528,7 @@
         <property name="quickShareLinks" ref="QuickShareLinks"/>
         <property name="behaviourFilter" ref="policyBehaviourFilter"/>
         <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
-        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="nonAttachContentTypes" value="${content.nonAttach.mimetypes}"/>
         <property name="personLookupProperties" ref="nodes.personLookupProperties"/>
         <property name="poster" ref="activitiesPoster" />
         <property name="smartStore" ref="smartStore"/>
@@ -1113,7 +1100,7 @@
         <property name="version"            value="1.0"/>
         <property name="cmisVersion"        value="1.0"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
-        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="nonAttachContentTypes" value="${content.nonAttach.mimetypes}"/>
     </bean>
 
     <bean   id="cmisAtomPubDispatcher1.1" class="org.alfresco.opencmis.PublicApiAtomPubCMISDispatcher" init-method="init">
@@ -1125,7 +1112,7 @@
         <property name="version"            value="1.1"/>
         <property name="cmisVersion"        value="1.1"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
-        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="nonAttachContentTypes" value="${content.nonAttach.mimetypes}"/>
     </bean>
 
     <bean   id="cmisBrowserDispatcher1.1" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">
@@ -1137,7 +1124,7 @@
         <property name="version"            value="1.1"/>
         <property name="cmisVersion"        value="1.1"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
-        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
+        <property name="nonAttachContentTypes" value="${content.nonAttach.mimetypes}"/>
     </bean>
 
     <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get" 

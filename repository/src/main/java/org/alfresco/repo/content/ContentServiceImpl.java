@@ -31,8 +31,6 @@ import java.util.HashSet;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -159,9 +157,9 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     public void setNonAttachContentTypes(String nonAttachAllowListStr) 
     {
-        if (nonAttachAllowListStr != null)
+        if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
         {
-            nonAttachContentTypes = Stream.of(nonAttachAllowListStr.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
         }
     }
 

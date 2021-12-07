@@ -46,8 +46,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -241,13 +239,14 @@ public class NodesImpl implements Nodes
 
     private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
 
-    private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
+    // pre-configured allow list of media/mime types, eg. specific types of images & also pdf
+    private Set<String> nonAttachContentTypes = Collections.emptySet(); 
 
     public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
-        if (nonAttachAllowListStr != null)
+        if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
         {
-            nonAttachContentTypes = Stream.of(nonAttachAllowListStr.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+            nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
         }
     }
 

@@ -37,8 +37,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -88,7 +86,8 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 
 	private boolean allowUnsecureCallbackJSONP;
 
-    private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
+	// pre-configured allow list of media/mime types, eg. specific types of images & also pdf
+    private Set<String> nonAttachContentTypes = Collections.emptySet();
 
 	public void setTenantAdminService(TenantAdminService tenantAdminService)
 	{
@@ -137,9 +136,9 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 
     public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
-		if (nonAttachAllowListStr != null) 
+		if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
 		{
-			nonAttachContentTypes = Stream.of(nonAttachAllowListStr.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+			nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
 		}
     }
 

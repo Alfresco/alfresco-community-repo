@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -37,6 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
@@ -133,9 +135,12 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
         this.cmisVersion = CmisVersion.fromValue(cmisVersion);
     }
 
-    public void setNonAttachContentTypes(Set<String> nonAttachWhiteList)
+    public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
-        this.nonAttachContentTypes = nonAttachWhiteList;
+		if (nonAttachAllowListStr != null) 
+		{
+			nonAttachContentTypes = Stream.of(nonAttachAllowListStr.trim().split("\\s*,\\s*")).collect(Collectors.toSet());
+		}
     }
 
     protected synchronized Descriptor getCurrentDescriptor()

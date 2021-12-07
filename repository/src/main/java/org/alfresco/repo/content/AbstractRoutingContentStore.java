@@ -446,17 +446,17 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      */
     @Override
     @Experimental
-    public boolean requestSendContentToArchive(String contentUrl)
+    public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
     {
         final ContentStore contentStore = selectReadStore(contentUrl);
         if (contentStore == null)
         {
             logNoContentStore(contentUrl);
-            return ContentStore.super.requestSendContentToArchive(contentUrl);
+            return ContentStore.super.requestSendContentToArchive(contentUrl, archiveParams);
         }
         final String message = "Sending content to archive: ";
         logExecution(contentUrl, contentStore, message);
-        return contentStore.requestSendContentToArchive(contentUrl);
+        return contentStore.requestSendContentToArchive(contentUrl, archiveParams);
     }
 
     /**

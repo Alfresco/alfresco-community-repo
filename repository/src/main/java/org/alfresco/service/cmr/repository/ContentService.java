@@ -274,12 +274,14 @@ public interface ContentService
      *
      * @param nodeRef a reference to a node having a content property
      * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param archiveParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
      * @return true when request successful, false when unsuccessful.
      * @throws UnsupportedOperationException when method not implemented
      */
     @Auditable(parameters = {"nodeRef", "propertyQName"})
     @Experimental
-    default boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName)
+    default boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName,
+                                                Map<String, Serializable> archiveParams)
     {
         throw new UnsupportedOperationException("Request to archive content is not supported by content service.");
     }

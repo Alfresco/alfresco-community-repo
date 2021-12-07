@@ -459,9 +459,9 @@ public class AggregatingContentStore extends AbstractContentStore
      */
     @Experimental
     @Override
-    public boolean requestSendContentToArchive(final String contentUrl)
+    public boolean requestSendContentToArchive(final String contentUrl, Map<String, Serializable> archiveParams)
     {
-        return callContentArchiveRequest(contentUrl, Collections.emptyMap(), false);
+        return callContentArchiveRequest(contentUrl, archiveParams, false);
     }
 
     /**
@@ -474,7 +474,7 @@ public class AggregatingContentStore extends AbstractContentStore
         return callContentArchiveRequest(contentUrl, restoreParams, true);
     }
 
-    private boolean callContentArchiveRequest(final String contentUrl, final Map<String, Serializable> restoreParams, final boolean restore)
+    private boolean callContentArchiveRequest(final String contentUrl, final Map<String, Serializable> requestParams, final boolean restore)
     {
         checkPrimaryStore();
         // get a read lock so that we are sure that no replication is underway
@@ -487,7 +487,7 @@ public class AggregatingContentStore extends AbstractContentStore
             // Check the primary store
             try
             {
-                archiveRequestSucceeded = hasArchiveRequestSucceeded(contentUrl, restoreParams, restore, primaryStore);
+                archiveRequestSucceeded = archiveRequestResult(contentUrl, requestParams, restore, primaryStore);
             }
             catch (UnsupportedOperationException e)
             {
@@ -510,7 +510,7 @@ public class AggregatingContentStore extends AbstractContentStore
                 {
                     try
                     {
-                        archiveRequestSucceeded = hasArchiveRequestSucceeded(contentUrl, restoreParams, restore, store);
+                        archiveRequestSucceeded = archiveRequestResult(contentUrl, requestParams, restore, store);
                     } catch (UnsupportedOperationException e)
                     {
                         final String message =
@@ -532,10 +532,10 @@ public class AggregatingContentStore extends AbstractContentStore
             }
             else if (primaryContentUrlUnsupported || secondaryContentUrlUnsupported)
             {
-                return super.requestSendContentToArchive(contentUrl);
+                return callSuperMethod(contentUrl, requestParams, restore);
             }
 
-            return super.requestSendContentToArchive(contentUrl);
+            return callSuperMethod(contentUrl, requestParams, restore);
         }
         finally
         {
@@ -543,12 +543,19 @@ public class AggregatingContentStore extends AbstractContentStore
         }
     }
 
-    private boolean hasArchiveRequestSucceeded(String contentUrl, Map<String, Serializable> restoreParams, boolean restore,
-                                               ContentStore primaryStore)
+    private boolean callSuperMethod(String contentUrl, Map<String, Serializable> requestParams, boolean restore)
     {
         return restore ?
-                primaryStore.requestRestoreContentFromArchive(contentUrl, restoreParams) :
-                primaryStore.requestSendContentToArchive(contentUrl);
+                super.requestRestoreContentFromArchive(contentUrl, requestParams) :
+                super.requestSendContentToArchive(contentUrl, requestParams);
+    }
+
+    private boolean archiveRequestResult(String contentUrl, Map<String, Serializable> requestParams, boolean restore,
+                                         ContentStore store)
+    {
+        return restore ?
+                store.requestRestoreContentFromArchive(contentUrl, requestParams) :
+                store.requestSendContentToArchive(contentUrl, requestParams);
     }
 
     private void checkPrimaryStore()

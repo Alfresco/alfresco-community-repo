@@ -679,10 +679,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * {@inheritDoc}
      */
     @Override
-    public boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName)
+    public boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName,
+                                               Map<String, Serializable> archiveParams)
     {
         final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
-        return store.requestSendContentToArchive(contentData.getContentUrl());
+        return store.requestSendContentToArchive(contentData.getContentUrl(), archiveParams);
     }
 
     /**

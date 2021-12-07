@@ -353,11 +353,12 @@ public interface ContentStore
      * This method is experimental and subject to changes.
      *
      * @param contentUrl the URL of the content which is to be archived.
+     * @param archiveParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
      * @return true when request successful, false when unsuccessful.
      * @throws UnsupportedOperationException when store is unable to handle request.
      */
     @Experimental
-    default boolean requestSendContentToArchive(String contentUrl)
+    default boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
     {
         throw new UnsupportedOperationException("Request to archive content is not supported by this content store.");
     }

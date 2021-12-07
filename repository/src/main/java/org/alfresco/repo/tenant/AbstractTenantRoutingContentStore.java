@@ -288,9 +288,9 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
      */
     @Override
     @Experimental
-    public boolean requestSendContentToArchive(String contentUrl)
+    public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
     {
-        return getTenantContentStore().requestSendContentToArchive(contentUrl);
+        return getTenantContentStore().requestSendContentToArchive(contentUrl, archiveParams);
     }
 
     /**

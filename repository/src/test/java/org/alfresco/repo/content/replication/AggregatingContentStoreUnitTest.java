@@ -128,13 +128,14 @@ public class AggregatingContentStoreUnitTest
     {
         final String contentUrl = "url";
         final boolean expectedResult = true;
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
 
-        when(primaryStore.requestSendContentToArchive(contentUrl)).thenReturn(expectedResult);
+        when(primaryStore.requestSendContentToArchive(contentUrl, archiveParams)).thenReturn(expectedResult);
 
-        boolean sendContentToArchive = objectUnderTest.requestSendContentToArchive(contentUrl);
+        boolean sendContentToArchive = objectUnderTest.requestSendContentToArchive(contentUrl, archiveParams);
 
         assertEquals(expectedResult, sendContentToArchive);
-        verify(secondaryStore, never()).requestSendContentToArchive(contentUrl);
+        verify(secondaryStore, never()).requestSendContentToArchive(contentUrl,archiveParams);
     }
 
     @Test
@@ -142,15 +143,16 @@ public class AggregatingContentStoreUnitTest
     {
         final String contentUrl = "url";
         final boolean expectedResult = true;
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
 
-        when(primaryStore.requestSendContentToArchive(contentUrl)).thenThrow(UnsupportedOperationException.class);
-        when(secondaryStore.requestSendContentToArchive(contentUrl)).thenReturn(expectedResult);
+        when(primaryStore.requestSendContentToArchive(contentUrl, archiveParams)).thenThrow(UnsupportedOperationException.class);
+        when(secondaryStore.requestSendContentToArchive(contentUrl, archiveParams)).thenReturn(expectedResult);
 
-        boolean sendContentToArchive = objectUnderTest.requestSendContentToArchive(contentUrl);
+        boolean sendContentToArchive = objectUnderTest.requestSendContentToArchive(contentUrl, archiveParams);
 
         assertEquals(expectedResult, sendContentToArchive);
-        verify(primaryStore, times(1)).requestSendContentToArchive(contentUrl);
-        verify(secondaryStore, times(1)).requestSendContentToArchive(contentUrl);
+        verify(primaryStore, times(1)).requestSendContentToArchive(contentUrl, archiveParams);
+        verify(secondaryStore, times(1)).requestSendContentToArchive(contentUrl, archiveParams);
     }
 
     @Test

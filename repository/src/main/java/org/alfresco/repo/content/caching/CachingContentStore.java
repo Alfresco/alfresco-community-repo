@@ -398,9 +398,9 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
      */
     @Override
     @Experimental
-    public boolean requestSendContentToArchive(String contentUrl)
+    public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
     {
-        return backingStore.requestSendContentToArchive(contentUrl);
+        return backingStore.requestSendContentToArchive(contentUrl, archiveParams);
     }
 
     /**

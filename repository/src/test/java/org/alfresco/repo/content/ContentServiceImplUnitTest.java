@@ -30,7 +30,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -210,17 +209,19 @@ public class ContentServiceImplUnitTest
     public void shouldRequestSendContentToArchiveSucceed()
     {
         final boolean expectedResult = true;
-        when(mockContentStore.requestSendContentToArchive(SOME_CONTENT_URL)).thenReturn(expectedResult);
-        boolean sendContentToArchive = contentService.requestSendContentToArchive(NODE_REF, ContentModel.PROP_CONTENT);
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(mockContentStore.requestSendContentToArchive(SOME_CONTENT_URL, archiveParams)).thenReturn(expectedResult);
+        boolean sendContentToArchive = contentService.requestSendContentToArchive(NODE_REF, ContentModel.PROP_CONTENT, archiveParams);
         assertEquals(expectedResult, sendContentToArchive);
     }
 
     @Test
     public void requestSendContentToArchiveThrowsExceptionWhenNotImplemented()
     {
-        when(mockContentStore.requestSendContentToArchive(SOME_CONTENT_URL)).thenCallRealMethod();
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(mockContentStore.requestSendContentToArchive(SOME_CONTENT_URL, archiveParams)).thenCallRealMethod();
         assertThrows(UnsupportedOperationException.class, () -> {
-            contentService.requestSendContentToArchive(NODE_REF, ContentModel.PROP_CONTENT);
+            contentService.requestSendContentToArchive(NODE_REF, ContentModel.PROP_CONTENT, archiveParams);
         });
     }
 
@@ -228,11 +229,12 @@ public class ContentServiceImplUnitTest
     public void requestSendContentToArchiveThrowsExceptionWhenContentNotFound()
     {
         final String dummyContentProperty = "dummy";
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
         when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(dummyContentProperty);
         when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> {
-            contentService.requestSendContentToArchive(NODE_REF_2, ContentModel.PROP_CONTENT);
+            contentService.requestSendContentToArchive(NODE_REF_2, ContentModel.PROP_CONTENT, archiveParams);
         });
     }
 
@@ -259,6 +261,7 @@ public class ContentServiceImplUnitTest
         boolean restoreContentFromArchive =
                 contentService.requestRestoreContentFromArchive(NODE_REF, ContentModel.PROP_CONTENT, restoreParams);
 
+        assertEquals(expectedResult, restoreContentFromArchive);
     }
 
     @Test

@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
@@ -549,9 +550,10 @@ public class CachingContentStoreTest
     {
         final boolean expectedResult = true;
         final String contentUrl = "url";
-        when(backingStore.requestSendContentToArchive(contentUrl)).thenReturn(expectedResult);
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(backingStore.requestSendContentToArchive(contentUrl, archiveParams)).thenReturn(expectedResult);
 
-        final boolean sendContentToArchive = cachingStore.requestSendContentToArchive(contentUrl);
+        final boolean sendContentToArchive = cachingStore.requestSendContentToArchive(contentUrl, archiveParams);
 
         assertEquals(expectedResult, sendContentToArchive);
     }
@@ -560,10 +562,11 @@ public class CachingContentStoreTest
     public void shouldThrowExceptionOnArchiveContentRequest()
     {
         final String contentUrl = "url";
-        when(backingStore.requestSendContentToArchive(contentUrl)).thenCallRealMethod();
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(backingStore.requestSendContentToArchive(contentUrl, archiveParams)).thenCallRealMethod();
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            cachingStore.requestSendContentToArchive(contentUrl);
+            cachingStore.requestSendContentToArchive(contentUrl, archiveParams);
         });
     }
 

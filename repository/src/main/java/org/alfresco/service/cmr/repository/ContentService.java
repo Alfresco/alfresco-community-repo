@@ -33,6 +33,7 @@ import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
@@ -258,10 +259,52 @@ public interface ContentService
      * @param propertyQName the name of the property, which must be of type <b>content</b>
      * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values for a given {@link NodeRef}.
      */
-    @Auditable
+    @Auditable(parameters = {"nodeRef", "propertyQName"})
     @Experimental
     default Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
     {
         return Collections.emptyMap();
+    }
+
+    /**
+     * Submit a request to send content to archive (offline) state.
+     * If no connector is present or connector is not supporting sending to archive, then {@link UnsupportedOperationException} will be returned.
+     * Specific connector will decide which storage class/tier will be set for content.
+     * This method is experimental and subject to changes.
+     *
+     * @param nodeRef a reference to a node having a content property
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param archiveParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
+     * @return true when request successful, false when unsuccessful.
+     * @throws UnsupportedOperationException when method not implemented
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName"})
+    @Experimental
+    default boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName,
+                                                Map<String, Serializable> archiveParams)
+    {
+        throw new UnsupportedOperationException("Request to archive content is not supported by content service.");
+    }
+
+    /**
+     * Submit a request to restore content from archive (offline) state.
+     * If no connector is present or connector is not supporting restoring fom archive, then {@link UnsupportedOperationException} will be returned.
+     * One of input parameters of this method is a map (String-Serializable) of Storage Provider specific input needed to perform proper restore.
+     * Keys of this map should be restricted to {@code ContentRestoreParams} enumeration.
+     * For AWS S3 map can indicating expiry days, Glacier restore tier.
+     * For Azure Blob map can indicate rehydrate priority.
+     * This method is experimental and subject to changes.
+     *
+     * @param nodeRef a reference to a node having a content property
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param restoreParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
+     * @return true when request successful, false when unsuccessful.
+     * @throws UnsupportedOperationException when method not implemented
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName", "restoreParams"})
+    @Experimental
+    default boolean requestRestoreContentFromArchive(NodeRef nodeRef, QName propertyQName, Map<String, Serializable> restoreParams)
+    {
+        throw new UnsupportedOperationException("Request to restore content from archive is not supported by content service.");
     }
 }

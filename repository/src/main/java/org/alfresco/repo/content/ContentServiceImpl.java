@@ -104,7 +104,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private boolean ignoreEmptyContent;
 
     private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
-    
+
     /** pre-configured allow list of media/mime types, eg. specific types of images & also pdf */
     private Set<String> nonAttachContentTypes = Collections.emptySet();
 
@@ -155,7 +155,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         this.systemWideDirectUrlConfig = systemWideDirectUrlConfig;
     }
 
-    public void setNonAttachContentTypes(String nonAttachAllowListStr) 
+    public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
         if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
         {
@@ -671,14 +671,29 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     @Experimental
     public Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
     {
-        final ContentData contentData = getContentData(nodeRef, propertyQName);
-
-        if (contentData == null || contentData.getContentUrl() == null)
-        {
-            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
-        }
-
+        final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
         return store.getStorageProperties(contentData.getContentUrl());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName,
+                                               Map<String, Serializable> archiveParams)
+    {
+        final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
+        return store.requestSendContentToArchive(contentData.getContentUrl(), archiveParams);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestRestoreContentFromArchive(NodeRef nodeRef, QName propertyQName, Map<String, Serializable> restoreParams)
+    {
+        final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
+        return store.requestRestoreContentFromArchive(contentData.getContentUrl(), restoreParams);
     }
 
     protected String getFileName(NodeRef nodeRef)
@@ -720,5 +735,16 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             }
         }
         return attachment;
+    }
+
+    private ContentData getContentDataOrThrowError(NodeRef nodeRef, QName propertyQName)
+    {
+        final ContentData contentData = getContentData(nodeRef, propertyQName);
+
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
+        }
+        return contentData;
     }
 }

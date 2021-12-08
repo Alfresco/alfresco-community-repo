@@ -30,7 +30,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -54,6 +53,7 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
@@ -202,6 +202,75 @@ public class ContentServiceImplUnitTest
 
         assertThrows(IllegalArgumentException.class, () -> {
             contentService.getStorageProperties(NODE_REF_2, ContentModel.PROP_CONTENT);
+        });
+    }
+
+    @Test
+    public void shouldRequestSendContentToArchiveSucceed()
+    {
+        final boolean expectedResult = true;
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(mockContentStore.requestSendContentToArchive(SOME_CONTENT_URL, archiveParams)).thenReturn(expectedResult);
+        boolean sendContentToArchive = contentService.requestSendContentToArchive(NODE_REF, ContentModel.PROP_CONTENT, archiveParams);
+        assertEquals(expectedResult, sendContentToArchive);
+    }
+
+    @Test
+    public void requestSendContentToArchiveThrowsExceptionWhenNotImplemented()
+    {
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(mockContentStore.requestSendContentToArchive(SOME_CONTENT_URL, archiveParams)).thenCallRealMethod();
+        assertThrows(UnsupportedOperationException.class, () -> {
+            contentService.requestSendContentToArchive(NODE_REF, ContentModel.PROP_CONTENT, archiveParams);
+        });
+    }
+
+    @Test
+    public void requestSendContentToArchiveThrowsExceptionWhenContentNotFound()
+    {
+        final String dummyContentProperty = "dummy";
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(dummyContentProperty);
+        when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            contentService.requestSendContentToArchive(NODE_REF_2, ContentModel.PROP_CONTENT, archiveParams);
+        });
+    }
+
+    @Test
+    public void requestRestoreContentFromArchiveThrowsExceptionWhenContentNotFound()
+    {
+        final String dummyContentProperty = "dummy";
+        when(mockNodeService.getProperty(NODE_REF_2, ContentModel.PROP_CONTENT)).thenReturn(dummyContentProperty);
+        when(mockDictionaryService.getProperty(ContentModel.PROP_CONTENT)).thenReturn(null);
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            contentService.requestRestoreContentFromArchive(NODE_REF_2, ContentModel.PROP_CONTENT, restoreParams);
+        });
+    }
+
+    @Test
+    public void shouldRequestRestoreContentFromArchiveSucceed()
+    {
+        final boolean expectedResult = true;
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+        when(mockContentStore.requestRestoreContentFromArchive(SOME_CONTENT_URL, restoreParams)).thenReturn(expectedResult);
+
+        boolean restoreContentFromArchive =
+                contentService.requestRestoreContentFromArchive(NODE_REF, ContentModel.PROP_CONTENT, restoreParams);
+
+        assertEquals(expectedResult, restoreContentFromArchive);
+    }
+
+    @Test
+    public void requestRestoreContentFromArchiveThrowsExceptionWhenNotImplemented()
+    {
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+        when(mockContentStore.requestRestoreContentFromArchive(SOME_CONTENT_URL, restoreParams)).thenCallRealMethod();
+        assertThrows(UnsupportedOperationException.class, () -> {
+            contentService.requestRestoreContentFromArchive(NODE_REF, ContentModel.PROP_CONTENT, restoreParams);
         });
     }
 

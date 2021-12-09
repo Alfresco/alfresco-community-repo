@@ -508,6 +508,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                     nodeDetails.getProperties());
 
             versionNodeRef = childAssocRef.getChildRef();
+            nodeService.setChildAssociationIndex(childAssocRef, getAllVersions(versionHistoryRef).size());
             
             // NOTE: special ML case - see also MultilingualContentServiceImpl.makeMLContainer
             if (sourceTypeRef.equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))

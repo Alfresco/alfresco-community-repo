@@ -583,6 +583,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     @Test
     public void testVersionIndex()
     {
+        setUseVersionAssocIndex(true);
         NodeRef versionableNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                 QName.createQName("{test}MyVersionableNodeTestIndex"), ContentModel.TYPE_CONTENT, null).getChildRef();
         nodeService.addAspect(versionableNode, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
@@ -606,6 +607,45 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             assertFalse("Index is not set", vhChildAssoc.getNthSibling() < 0);
             assertTrue("Index is not increasing as expected", vhChildAssoc.getNthSibling() > index);
             index = vhChildAssoc.getNthSibling();
+        }
+
+        assertEquals("1st version is not 1st assoc", version1.getFrozenStateNodeRef().getId(),
+                vhChildAssocs.get(0).getChildRef().getId());
+        assertEquals("2nd version is not 2nd assoc", version2.getFrozenStateNodeRef().getId(),
+                vhChildAssocs.get(1).getChildRef().getId());
+        assertEquals("3rd version is not 3rd assoc", version3.getFrozenStateNodeRef().getId(),
+                vhChildAssocs.get(2).getChildRef().getId());
+    }
+
+    /**
+     * Test version assoc index use disabled
+     */
+    @Test
+    public void testVersionIndexDisabled()
+    {
+        setUseVersionAssocIndex(false);
+        NodeRef versionableNode = nodeService
+                .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("{test}MyVersionableNodeTestWithoutIndex"), ContentModel.TYPE_CONTENT, null)
+                .getChildRef();
+        nodeService.addAspect(versionableNode, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        Version version1 = createVersion(versionableNode);
+        Version version2 = createVersion(versionableNode);
+        Version version3 = createVersion(versionableNode);
+
+        VersionHistory vh = versionService.getVersionHistory(versionableNode);
+        assertEquals("Version History does not contain 3 versions", 3, vh.getAllVersions().size());
+
+        NodeRef root = nodeService.getPrimaryParent(vh.getRootVersion().getFrozenStateNodeRef()).getParentRef();
+        NodeRef versionHistoryNode = dbNodeService.getChildByName(root, Version2Model.CHILD_QNAME_VERSION_HISTORIES,
+                versionableNode.getId());
+
+        // getChildAssocs orders by assoc_index first and then by ID. Version History relies on this.
+        List<ChildAssociationRef> vhChildAssocs = nodeService.getChildAssocs(versionHistoryNode);
+        for (ChildAssociationRef vhChildAssoc : vhChildAssocs)
+        {
+            // Unset indexes are -1
+            assertTrue("Index is not set", vhChildAssoc.getNthSibling() < 0);
         }
 
         assertEquals("1st version is not 1st assoc", version1.getFrozenStateNodeRef().getId(),
@@ -649,6 +689,25 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         versionService.setPolicyBehaviourFilter(policyBehaviourFilter);
         versionService.setPermissionService(permissionService);
         versionService.setVersionComparatorClass(versionComparatorClass);
+        versionService.initialise();
+        setVersionService(versionService);
+    }
+
+    /**
+     * Sets the versionService to use the version assoc Index
+     * @param useVersionAssocIndex 
+     */
+    private void setUseVersionAssocIndex(boolean useVersionAssocIndex)
+    {
+        Version2ServiceImpl versionService = new Version2ServiceImpl();
+        versionService.setNodeService(nodeService);
+        versionService.setDbNodeService(dbNodeService); // mtAwareNodeService
+        versionService.setSearcher(versionSearchService);
+        versionService.setDictionaryService(dictionaryService);
+        versionService.setPolicyComponent(policyComponent);
+        versionService.setPolicyBehaviourFilter(policyBehaviourFilter);
+        versionService.setPermissionService(permissionService);
+        versionService.setUseVersionAssocIndex(useVersionAssocIndex);
         versionService.initialise();
         setVersionService(versionService);
     }

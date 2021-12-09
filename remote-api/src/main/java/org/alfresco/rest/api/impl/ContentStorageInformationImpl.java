@@ -26,8 +26,11 @@
 
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.repo.content.ContentRestoreParams;
 import org.alfresco.rest.api.ContentStorageInformation;
+import org.alfresco.rest.api.model.ArchiveContentRequest;
 import org.alfresco.rest.api.model.ContentStorageInfo;
+import org.alfresco.rest.api.model.RestoreArchivedContentRequest;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -36,7 +39,10 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
+
 /**
  * Default implementation for {@link ContentStorageInformation}
  * Note: Currently marked as experimental and subject to change.
@@ -72,6 +78,33 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
         storageInfo.setId(propQName.toPrefixString(namespaceService));
         storageInfo.setStorageProperties(storageProperties);
         return storageInfo;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestArchiveContent(String nodeId, String contentPropName,
+                                         ArchiveContentRequest archiveContentRequest)
+    {
+        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        final QName propQName = getQName(contentPropName);
+        return contentService.requestSendContentToArchive(nodeRef, propQName, archiveContentRequest.getArchiveParams());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestRestoreContentFromArchive(String nodeId, String contentPropName,
+                                                    RestoreArchivedContentRequest restoreArchivedContentRequest)
+    {
+        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        final QName propQName = getQName(contentPropName);
+        final Map<String, Serializable> restoreParams = restoreArchivedContentRequest.getRestorePriority() == null ?
+                Collections.emptyMap() :
+                Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), restoreArchivedContentRequest.getRestorePriority());
+        return contentService.requestRestoreContentFromArchive(nodeRef, propQName, restoreParams);
     }
 
     private QName getQName(final String contentPropName)

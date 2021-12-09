@@ -26,7 +26,9 @@
 
 package org.alfresco.rest.api;
 
+import org.alfresco.rest.api.model.ArchiveContentRequest;
 import org.alfresco.rest.api.model.ContentStorageInfo;
+import org.alfresco.rest.api.model.RestoreArchivedContentRequest;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 
@@ -41,6 +43,7 @@ public interface ContentStorageInformation
 {
     /**
      * Note: Currently marked as experimental and subject to change.
+     *
      * @param nodeId          Identifier of the node
      * @param contentPropName Qualified name of content property (e.g. 'cm_content')
      * @param parameters      {@link Parameters} object to get the parameters passed into the request
@@ -48,4 +51,27 @@ public interface ContentStorageInformation
      */
     @Experimental
     ContentStorageInfo getStorageInfo(String nodeId, String contentPropName, Parameters parameters);
+
+    /**
+     * Note: Currently marked as experimental and subject to change.
+     *
+     * @param nodeId                Identifier of the node
+     * @param contentPropName       Qualified name of content property (e.g. 'cm_content')
+     * @param archiveContentRequest {@link ArchiveContentRequest} object holding parameters for archive content request
+     * @return true when request successful, false when unsuccessful
+     */
+    @Experimental
+    boolean requestArchiveContent(String nodeId, String contentPropName, ArchiveContentRequest archiveContentRequest);
+
+    /**
+     * Note: Currently marked as experimental and subject to change.
+     *
+     * @param nodeId                        Identifier of the node
+     * @param contentPropName               Qualified name of content property (e.g. 'cm_content')
+     * @param restoreArchivedContentRequest {@link RestoreArchivedContentRequest} object holding parameters for restore from archive request
+     * @return true when request successful, false when unsuccessful
+     */
+    @Experimental
+    boolean requestRestoreContentFromArchive(String nodeId, String contentPropName,
+                                             RestoreArchivedContentRequest restoreArchivedContentRequest);
 }

@@ -47,6 +47,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.RenameShuffleDetectionTest.class,
     org.alfresco.repo.webdav.WebDAVHelperTest.class,
     org.alfresco.repo.webdav.WebDAVLockServiceImplTest.class,
+    org.alfresco.rest.api.impl.ContentStorageInformationImplTest.class,
+    org.alfresco.rest.api.nodes.NodeStorageInfoRelationTest.class,
     org.alfresco.rest.api.search.ResultMapperTests.class,
     org.alfresco.rest.api.search.SearchApiWebscriptTests.class,
     org.alfresco.rest.api.search.SearchMapperTests.class,

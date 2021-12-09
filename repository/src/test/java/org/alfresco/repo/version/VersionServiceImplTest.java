@@ -39,7 +39,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.transaction.UserTransaction;
-import junit.framework.AssertionFailedError;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -93,6 +92,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.Commit;
 import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
+
+import junit.framework.AssertionFailedError;
 
 /**
  * versionService test class.
@@ -573,6 +574,46 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                 System.out.print("A test failed as EXPECTED: "+e.getMessage());
             }
         }
+    }
+
+    /**
+     * When IDs are out of order the comparator only fixes the order we retrieve versions. Any operation fails due to
+     * the head version not being the latest. (MNT-22715)
+     */
+    @Test
+    public void testVersionIndex()
+    {
+        NodeRef versionableNode = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}MyVersionableNodeTestIndex"), ContentModel.TYPE_CONTENT, null).getChildRef();
+        nodeService.addAspect(versionableNode, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        Version version1 = createVersion(versionableNode);
+        Version version2 = createVersion(versionableNode);
+        Version version3 = createVersion(versionableNode);
+
+        VersionHistory vh = versionService.getVersionHistory(versionableNode);
+        assertEquals("Version History does not contain 3 versions", 3, vh.getAllVersions().size());
+
+        NodeRef root = nodeService.getPrimaryParent(vh.getRootVersion().getFrozenStateNodeRef()).getParentRef();
+        NodeRef versionHistoryNode = dbNodeService.getChildByName(root, Version2Model.CHILD_QNAME_VERSION_HISTORIES,
+                versionableNode.getId());
+
+        // getChildAssocs orders by assoc_index first and then by ID. Version History relies on this.
+        List<ChildAssociationRef> vhChildAssocs = nodeService.getChildAssocs(versionHistoryNode);
+        int index = 0;
+        for (ChildAssociationRef vhChildAssoc : vhChildAssocs)
+        {
+            // Unset indexes are -1
+            assertFalse("Index is not set", vhChildAssoc.getNthSibling() < 0);
+            assertTrue("Index is not increasing as expected", vhChildAssoc.getNthSibling() > index);
+            index = vhChildAssoc.getNthSibling();
+        }
+
+        assertEquals("1st version is not 1st assoc", version1.getFrozenStateNodeRef().getId(),
+                vhChildAssocs.get(0).getChildRef().getId());
+        assertEquals("2nd version is not 2nd assoc", version2.getFrozenStateNodeRef().getId(),
+                vhChildAssocs.get(1).getChildRef().getId());
+        assertEquals("3rd version is not 3rd assoc", version3.getFrozenStateNodeRef().getId(),
+                vhChildAssocs.get(2).getChildRef().getId());
     }
 
     /**

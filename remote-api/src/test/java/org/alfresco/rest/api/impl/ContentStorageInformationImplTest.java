@@ -55,9 +55,9 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ContentStorageInformationImplTest
 {
-    static final String DUMMY_NODE_ID = "dummy-node-id";
-    static final String CONTENT_PROP_NAME = "cm:content";
-    static final String NORMAL_PRIORITY = "Normal";
+    private static final String DUMMY_NODE_ID = "dummy-node-id";
+    private static final String CONTENT_PROP_NAME = "cm:content";
+    private static final String STANDARD_PRIORITY = "Standard";
 
     @Mock
     private ContentService contentService;
@@ -145,18 +145,17 @@ public class ContentStorageInformationImplTest
         when(contentService.requestSendContentToArchive(eq(nodeRef), any(QName.class), eq(archiveProps))).thenCallRealMethod();
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        assertThrows(UnsupportedOperationException.class, ()-> {
-            objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveParamsRequest);
-        });
+        assertThrows(UnsupportedOperationException.class,
+                () -> objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveParamsRequest));
     }
 
     @Test
     public void shouldSucceedOnRestoreContentFromArchive()
     {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
-        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), NORMAL_PRIORITY);
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), STANDARD_PRIORITY);
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
-        restoreArchivedContentRequest.setRestorePriority(NORMAL_PRIORITY);
+        restoreArchivedContentRequest.setRestorePriority(STANDARD_PRIORITY);
         final boolean expectedResult = true;
 
         when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(restoreParams))).thenReturn(expectedResult);
@@ -171,9 +170,9 @@ public class ContentStorageInformationImplTest
     public void shouldNotSucceedOnRestoreContentFromArchive()
     {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
-        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), NORMAL_PRIORITY);
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), STANDARD_PRIORITY);
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
-        restoreArchivedContentRequest.setRestorePriority(NORMAL_PRIORITY);
+        restoreArchivedContentRequest.setRestorePriority(STANDARD_PRIORITY);
         final boolean expectedResult = false;
 
         when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(restoreParams))).thenReturn(expectedResult);
@@ -188,16 +187,15 @@ public class ContentStorageInformationImplTest
     public void shouldThrowExceptionRestoreContentFromArchive()
     {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
-        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), NORMAL_PRIORITY);
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), STANDARD_PRIORITY);
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
-        restoreArchivedContentRequest.setRestorePriority(NORMAL_PRIORITY);
+        restoreArchivedContentRequest.setRestorePriority(STANDARD_PRIORITY);
         final boolean expectedResult = false;
 
         when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(restoreParams))).thenCallRealMethod();
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        assertThrows(UnsupportedOperationException.class, ()-> {
-            objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest);
-        });
+        assertThrows(UnsupportedOperationException.class,
+                () -> objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest));
     }
 }

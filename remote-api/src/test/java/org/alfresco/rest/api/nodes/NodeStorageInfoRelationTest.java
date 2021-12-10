@@ -52,8 +52,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class NodeStorageInfoRelationTest extends TestCase
 {
-    static final String DUMMY_NODE_ID = "dummy-node-id";
-    static final String CONTENT_PROP_NAME = "cm:content";
+    private static final String DUMMY_NODE_ID = "dummy-node-id";
+    private static final String CONTENT_PROP_NAME = "cm:content";
 
     @Mock
     private ContentStorageInformation storageInformation;
@@ -111,9 +111,8 @@ public class NodeStorageInfoRelationTest extends TestCase
         when(storageInformation.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveContentRequest))
                 .thenThrow(UnsupportedOperationException.class);
 
-        assertThrows(UnsupportedOperationException.class, () -> {
-            objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveContentRequest, params, withResponse);
-        });
+        assertThrows(UnsupportedOperationException.class,
+                () -> objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveContentRequest, params, withResponse));
         verify(withResponse, never()).setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
         verify(withResponse, never()).setStatus(HttpServletResponse.SC_OK);
     }
@@ -151,10 +150,8 @@ public class NodeStorageInfoRelationTest extends TestCase
         when(storageInformation.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest))
                 .thenThrow(UnsupportedOperationException.class);
 
-        assertThrows(UnsupportedOperationException.class, () -> {
-            objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest, params,
-                    withResponse);
-        });
+        assertThrows(UnsupportedOperationException.class, () -> objectUnderTest
+                .requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest, params, withResponse));
         verify(withResponse, never()).setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
         verify(withResponse, never()).setStatus(HttpServletResponse.SC_ACCEPTED);
     }

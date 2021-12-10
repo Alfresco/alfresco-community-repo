@@ -30,6 +30,7 @@ import org.alfresco.repo.content.ContentRestoreParams;
 import org.alfresco.rest.api.model.ArchiveContentRequest;
 import org.alfresco.rest.api.model.ContentStorageInfo;
 import org.alfresco.rest.api.model.RestoreArchivedContentRequest;
+import org.alfresco.rest.framework.core.exceptions.RestoreInProgressException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -196,6 +197,21 @@ public class ContentStorageInformationImplTest
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
         assertThrows(UnsupportedOperationException.class,
+                () -> objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest));
+    }
+
+    @Test
+    public void shouldThrowRestoreInProgressExceptionRestoreContentFromArchive()
+    {
+        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), STANDARD_PRIORITY);
+        final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
+        restoreArchivedContentRequest.setRestorePriority(STANDARD_PRIORITY);
+
+        when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(restoreParams))).thenThrow(new org.alfresco.service.cmr.repository.RestoreInProgressException("Error"));
+        when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
+
+        assertThrows(RestoreInProgressException.class, 
                 () -> objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest));
     }
 }

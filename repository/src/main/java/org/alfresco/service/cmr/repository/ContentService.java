@@ -278,7 +278,7 @@ public interface ContentService
      * @return true when request successful, false when unsuccessful.
      * @throws UnsupportedOperationException when method not implemented
      */
-    @Auditable(parameters = {"nodeRef", "propertyQName"})
+    @Auditable(parameters = {"nodeRef", "propertyQName", "archiveParams"})
     @Experimental
     default boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName,
                                                 Map<String, Serializable> archiveParams)

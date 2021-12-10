@@ -31,6 +31,7 @@ import org.alfresco.rest.api.ContentStorageInformation;
 import org.alfresco.rest.api.model.ArchiveContentRequest;
 import org.alfresco.rest.api.model.ContentStorageInfo;
 import org.alfresco.rest.api.model.RestoreArchivedContentRequest;
+import org.alfresco.rest.framework.core.exceptions.RestoreInProgressException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -104,7 +105,15 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
         final Map<String, Serializable> restoreParams = restoreArchivedContentRequest.getRestorePriority() == null ?
                 Collections.emptyMap() :
                 Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), restoreArchivedContentRequest.getRestorePriority());
-        return contentService.requestRestoreContentFromArchive(nodeRef, propQName, restoreParams);
+        try 
+        {
+            return contentService.requestRestoreContentFromArchive(nodeRef, propQName, restoreParams);
+        } 
+        catch (org.alfresco.service.cmr.repository.RestoreInProgressException e) 
+        {
+            throw new RestoreInProgressException(e.getMsgId(), e);
+        }
+        
     }
 
     private QName getQName(final String contentPropName)

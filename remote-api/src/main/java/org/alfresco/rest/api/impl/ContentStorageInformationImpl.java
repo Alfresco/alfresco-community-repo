@@ -90,7 +90,9 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
     {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final QName propQName = getQName(contentPropName);
-        return contentService.requestSendContentToArchive(nodeRef, propQName, archiveContentRequest.getArchiveParams());
+        final Map<String, Serializable> archiveParams =
+                archiveContentRequest == null ? Collections.emptyMap() : archiveContentRequest.getArchiveParams();
+        return contentService.requestSendContentToArchive(nodeRef, propQName, archiveParams);
     }
 
     /**
@@ -102,18 +104,19 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
     {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final QName propQName = getQName(contentPropName);
-        final Map<String, Serializable> restoreParams = restoreArchivedContentRequest.getRestorePriority() == null ?
-                Collections.emptyMap() :
-                Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), restoreArchivedContentRequest.getRestorePriority());
-        try 
+        final Map<String, Serializable> restoreParams =
+                (restoreArchivedContentRequest == null || restoreArchivedContentRequest.getRestorePriority() == null) ?
+                        Collections.emptyMap() :
+                        Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), restoreArchivedContentRequest.getRestorePriority());
+        try
         {
             return contentService.requestRestoreContentFromArchive(nodeRef, propQName, restoreParams);
-        } 
-        catch (org.alfresco.service.cmr.repository.RestoreInProgressException e) 
+        }
+        catch (org.alfresco.service.cmr.repository.RestoreInProgressException e)
         {
             throw new RestoreInProgressException(e.getMsgId(), e);
         }
-        
+
     }
 
     private QName getQName(final String contentPropName)

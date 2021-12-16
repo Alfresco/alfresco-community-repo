@@ -17,6 +17,7 @@ import org.testng.annotations.Test;
 
 public class GetPeopleFullTests extends RestTest
 {
+    breaking it so that i cna find the test in the travis build
     UserModel userModel;
     SiteModel siteModel;
     UserModel searchedUser, managerUser;

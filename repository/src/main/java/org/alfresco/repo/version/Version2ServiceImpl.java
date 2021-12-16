@@ -84,6 +84,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     private static Log logger = LogFactory.getLog(Version2ServiceImpl.class);
     
     private PermissionService permissionService;
+    private boolean useVersionAssocIndex = false;
 
     private ExtendedTrait<VersionServiceTrait> versionServiceTrait;
     
@@ -96,7 +97,23 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     {
         this.permissionService = permissionService;
     }
-    
+
+    /**
+     * Set to use child association index on versions. This helps ordering versions when sequential IDs are not
+     * guaranteed by the DBMS.
+     *
+     * @param useVersionAssocIndex
+     */
+    public void setUseVersionAssocIndex(boolean useVersionAssocIndex)
+    {
+        this.useVersionAssocIndex = useVersionAssocIndex;
+    }
+
+    public boolean isUseVersionAssocIndex()
+    {
+        return useVersionAssocIndex;
+    }
+
     /**
      * Initialise method
      */
@@ -506,9 +523,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                     QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS+"-"+versionNumber), // TODO - testing - note: all children (of a versioned node) will have the same version number, maybe replace with a version sequence of some sort 001-...00n
                     sourceTypeRef, 
                     nodeDetails.getProperties());
-
+            if (isUseVersionAssocIndex())
+            {
+                nodeService.setChildAssociationIndex(childAssocRef, getAllVersions(versionHistoryRef).size());
+            }
             versionNodeRef = childAssocRef.getChildRef();
-            
+
             // NOTE: special ML case - see also MultilingualContentServiceImpl.makeMLContainer
             if (sourceTypeRef.equals(ContentModel.TYPE_MULTILINGUAL_CONTAINER))
             {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,7 +25,16 @@
  */
 package org.alfresco.repo.rendition2;
 
-import junit.framework.AssertionFailedError;
+import static java.lang.Thread.sleep;
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.model.RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE;
+import static org.alfresco.repo.content.MimetypeMap.EXTENSION_BINARY;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.Serializable;
+import java.util.Collections;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.metadata.AsynchronousExtractor;
@@ -60,15 +69,7 @@ import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
-
-import static java.lang.Thread.sleep;
-import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.repo.content.MimetypeMap.EXTENSION_BINARY;
+import junit.framework.AssertionFailedError;
 
 /**
  * Class unites common utility methods for {@link org.alfresco.repo.rendition2} package tests.
@@ -530,5 +531,42 @@ public abstract class AbstractRenditionIntegrationTest extends BaseSpringTest
 
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
         txnHelper.doInTransaction(createUserCallback);
+    }
+
+    /**
+     * Helper method to check if the supplied content hash code is valid or not
+     *
+     * @param contentHashCode
+     *            the hash code to verify
+     *
+     * @return true in case it is an actual hash code, false otherwise
+     */
+    protected boolean isValidRenditionContentHashCode(int contentHashCode)
+    {
+        return contentHashCode != RenditionService2Impl.RENDITION2_DOES_NOT_EXIST
+                && contentHashCode != RenditionService2Impl.SOURCE_HAS_NO_CONTENT;
+    }
+
+    /**
+     * Helper method which gets the content hash code from the supplied rendition node without specific validations (the
+     * equivalent method from {@link RenditionService2Impl} is not exposed)
+     *
+     * @param renditionNodeRef
+     *            the rendition node
+     *
+     * @return -1 in case of there is no content, -2 in case rendition doesn't exist, the actual content hash code
+     *         otherwise
+     */
+    protected int getRenditionContentHashCode(NodeRef renditionNodeRef)
+    {
+        int renditionContentHashCode = RenditionService2Impl.RENDITION2_DOES_NOT_EXIST;
+
+        if (renditionNodeRef != null)
+        {
+            Serializable hashCode = nodeService.getProperty(renditionNodeRef, PROP_RENDITION_CONTENT_HASH_CODE);
+            renditionContentHashCode = hashCode == null ? RenditionService2Impl.SOURCE_HAS_NO_CONTENT : (int) hashCode;
+        }
+
+        return renditionContentHashCode;
     }
 }

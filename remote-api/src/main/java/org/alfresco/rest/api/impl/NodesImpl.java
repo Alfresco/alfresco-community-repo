@@ -239,11 +239,15 @@ public class NodesImpl implements Nodes
 
     private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
 
-    private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
+    // pre-configured allow list of media/mime types, eg. specific types of images & also pdf
+    private Set<String> nonAttachContentTypes = Collections.emptySet(); 
 
-    public void setNonAttachContentTypes(Set<String> nonAttachWhiteList)
+    public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
-        this.nonAttachContentTypes = nonAttachWhiteList;
+        if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
+        {
+            nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
+        }
     }
 
     public void init()
@@ -3420,7 +3424,7 @@ public class NodesImpl implements Nodes
     @Override
     public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
     {
-        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(nodeRef, attachment, validFor);
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
         if (directAccessUrl == null)
         {
             throw new DisabledServiceException("Direct access url isn't available.");

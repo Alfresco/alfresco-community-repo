@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content.replication;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,8 @@ public class AggregatingContentStore extends AbstractContentStore
 {
     private static final Log logger = LogFactory.getLog(AggregatingContentStore.class);
     public static final String REPLICATING_CONTENT_STORE_NOT_INITIALISED = "ReplicatingContentStore not initialised";
+    public static final String SECONDARY_STORE_COULD_NOT_HANDLE_CONTENT_URL = "Secondary store %s could not handle content URL: %s";
+    public static final String PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL = "Primary store could not handle content URL: %s";
 
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
@@ -136,11 +139,8 @@ public class AggregatingContentStore extends AbstractContentStore
      */
     public ContentReader getReader(String contentUrl) throws ContentIOException
     {
-        if (primaryStore == null)
-        {
-            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
-        }
-        
+        checkPrimaryStore();
+
         // get a read lock so that we are sure that no replication is underway
         readLock.lock();
         try
@@ -175,10 +175,7 @@ public class AggregatingContentStore extends AbstractContentStore
 
     public boolean exists(String contentUrl)
     {
-        if (primaryStore == null)
-        {
-            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
-        }
+        checkPrimaryStore();
 
         // get a read lock so that we are sure that no replication is underway
         readLock.lock();
@@ -323,10 +320,7 @@ public class AggregatingContentStore extends AbstractContentStore
 
     public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype, Long validFor)
     {
-        if (primaryStore == null)
-        {
-            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
-        }
+        checkPrimaryStore();
 
         // get a read lock so that we are sure that no replication is underway
         readLock.lock();
@@ -405,38 +399,47 @@ public class AggregatingContentStore extends AbstractContentStore
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @Experimental
     public Map<String, String> getStorageProperties(String contentUrl)
     {
-        if (primaryStore == null) {
-            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
-        }
+        checkPrimaryStore();
 
         // get a read lock so that we are sure that no replication is underway
         readLock.lock();
-        try {
+        try
+        {
             Optional<Map<String, String>> objectStoragePropertiesMap = Optional.empty();
             // Check the primary store
-            try {
+            try
+            {
                 objectStoragePropertiesMap = Optional.of(primaryStore.getStorageProperties(contentUrl));
-            } catch (UnsupportedContentUrlException e) {
-                if (logger.isTraceEnabled()) {
-                    logger.trace("Primary store could not handle content URL: " + contentUrl);
-                }
+            }
+            catch (UnsupportedContentUrlException e)
+            {
+                final String message = String.format(PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, contentUrl);
+                logger.trace(message);
             }
 
-            if (objectStoragePropertiesMap.isEmpty()) {// the content is not in the primary store so we have to go looking for it
-                for (ContentStore store : secondaryStores) {
-                    try {
+            if (objectStoragePropertiesMap.isEmpty() ||
+                    objectStoragePropertiesMap.get().isEmpty()) {// the content is not in the primary store so we have to go looking for it
+                for (ContentStore store : secondaryStores)
+                {
+                    try
+                    {
                         objectStoragePropertiesMap = Optional.of(store.getStorageProperties(contentUrl));
-                    } catch (UnsupportedContentUrlException e) {
-                        if (logger.isTraceEnabled()) {
-                            logger.trace("Secondary store " + store + " could not handle content URL: " + contentUrl);
-                        }
+                    }
+                    catch (UnsupportedContentUrlException e)
+                    {
+                        final String message = String.format(SECONDARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, store, contentUrl);
+                        logger.trace(message);
                     }
 
-                    if (objectStoragePropertiesMap.isPresent()) {
+                    if (objectStoragePropertiesMap.isPresent())
+                    {
                         return objectStoragePropertiesMap.get();
                     }
                 }
@@ -444,8 +447,122 @@ public class AggregatingContentStore extends AbstractContentStore
             }
             return objectStoragePropertiesMap.orElse(Collections.emptyMap());
 
-        } finally {
+        }
+        finally
+        {
             readLock.unlock();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Experimental
+    @Override
+    public boolean requestSendContentToArchive(final String contentUrl, Map<String, Serializable> archiveParams)
+    {
+        return callContentArchiveRequest(contentUrl, archiveParams, false);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Experimental
+    @Override
+    public boolean requestRestoreContentFromArchive(final String contentUrl, final Map<String, Serializable> restoreParams)
+    {
+        return callContentArchiveRequest(contentUrl, restoreParams, true);
+    }
+
+    private boolean callContentArchiveRequest(final String contentUrl, final Map<String, Serializable> requestParams, final boolean restore)
+    {
+        checkPrimaryStore();
+        // get a read lock so that we are sure that no replication is underway
+        readLock.lock();
+        boolean archiveRequestSucceeded = false;
+        boolean primaryContentUrlUnsupported = false;
+        boolean secondaryContentUrlUnsupported = false;
+        try
+        {
+            // Check the primary store
+            try
+            {
+                archiveRequestSucceeded = archiveRequestResult(contentUrl, requestParams, restore, primaryStore);
+            }
+            catch (UnsupportedOperationException e)
+            {
+                final String message = String.format("Primary store does not handle this operation for content URL: %s", contentUrl);
+                logger.trace(message);
+            }
+            catch (UnsupportedContentUrlException e) {
+                final String message = String.format(PRIMARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, contentUrl);
+                logger.trace(message);
+                primaryContentUrlUnsupported = true;
+            }
+
+            if (archiveRequestSucceeded)
+            {
+                return true;
+            }
+            else
+            { // the content is not in the primary store so we have to go looking for it
+                for (ContentStore store : secondaryStores)
+                {
+                    try
+                    {
+                        archiveRequestSucceeded = archiveRequestResult(contentUrl, requestParams, restore, store);
+                    } catch (UnsupportedOperationException e)
+                    {
+                        final String message =
+                                String.format("Secondary store %s does not handle this operation for content URL: %s", store,
+                                        contentUrl);
+                        logger.trace(message);
+                    }
+                    catch (UnsupportedContentUrlException e)
+                    {
+                        secondaryContentUrlUnsupported = true;
+                        final String message = String.format(SECONDARY_STORE_COULD_NOT_HANDLE_CONTENT_URL, store, contentUrl);
+                        logger.trace(message);
+                    }
+                }
+            }
+            if (archiveRequestSucceeded)
+            {
+                return true;
+            }
+            else if (primaryContentUrlUnsupported || secondaryContentUrlUnsupported)
+            {
+                return callSuperMethod(contentUrl, requestParams, restore);
+            }
+
+            return callSuperMethod(contentUrl, requestParams, restore);
+        }
+        finally
+        {
+            readLock.unlock();
+        }
+    }
+
+    private boolean callSuperMethod(String contentUrl, Map<String, Serializable> requestParams, boolean restore)
+    {
+        return restore ?
+                super.requestRestoreContentFromArchive(contentUrl, requestParams) :
+                super.requestSendContentToArchive(contentUrl, requestParams);
+    }
+
+    private boolean archiveRequestResult(String contentUrl, Map<String, Serializable> requestParams, boolean restore,
+                                         ContentStore store)
+    {
+        return restore ?
+                store.requestRestoreContentFromArchive(contentUrl, requestParams) :
+                store.requestSendContentToArchive(contentUrl, requestParams);
+    }
+
+    private void checkPrimaryStore()
+    {
+        if (primaryStore == null)
+        {
+            throw new AlfrescoRuntimeException(REPLICATING_CONTENT_STORE_NOT_INITIALISED);
         }
     }
 }

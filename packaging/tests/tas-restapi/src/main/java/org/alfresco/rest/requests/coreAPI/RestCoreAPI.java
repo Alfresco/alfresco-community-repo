@@ -7,6 +7,7 @@ import org.alfresco.rest.model.RestTagModel;
 import org.alfresco.rest.model.RestTagModelsCollection;
 import org.alfresco.rest.requests.Actions;
 import org.alfresco.rest.requests.Audit;
+import org.alfresco.rest.requests.ContentStorageInformation;
 import org.alfresco.rest.requests.Downloads;
 import org.alfresco.rest.requests.Groups;
 import org.alfresco.rest.requests.ModelRequest;
@@ -96,6 +97,11 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
     public Node usingNode() throws Exception
     {
         return new Node(restWrapper);
+    }
+
+    public ContentStorageInformation usingStorageInfo()
+    {
+        return new ContentStorageInformation(restWrapper);
     }
 
     /**

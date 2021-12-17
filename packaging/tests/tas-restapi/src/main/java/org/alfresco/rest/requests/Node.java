@@ -952,4 +952,11 @@ public class Node extends ModelRequest<Node>
         return this.restWrapper.process(request);
     }
 
+
+    public ContentStorageInformation usingStorageInfo(String contentPropName)
+    {
+        return new ContentStorageInformation(restWrapper)
+            .withNodeId(repoModel.getNodeRef())
+            .withContentPropName(contentPropName);
+    }
 }

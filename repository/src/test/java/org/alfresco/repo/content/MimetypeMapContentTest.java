@@ -72,6 +72,14 @@ public class MimetypeMapContentTest extends TestCase
         );
     }
 
+    public void testGuessAppleIconsMimetype() throws Exception
+    {
+        assertEquals(
+                "image/icns",
+                mimetypeService.guessMimetype("something.icns", openQuickTestFile("quick.icns"))
+        );
+    }
+
     public void testGuessMimetypeForFile() throws Exception
     {
         // Correct ones

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,7 +26,6 @@
 package org.alfresco.repo.dictionary;
 
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.averagingDouble;
 import static java.util.stream.Collectors.toMap;
 
 import static org.alfresco.repo.dictionary.M2ModelDiff.DIFF_CREATED;
@@ -40,30 +39,13 @@ import static org.alfresco.repo.dictionary.M2ModelDiff.TYPE_PROPERTY;
 import static org.alfresco.repo.dictionary.M2ModelDiff.TYPE_TYPE;
 
 import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import com.google.common.collect.Maps;
-
-import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.tenant.SingleTServiceImpl;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.DynamicallySizedThreadPoolExecutor;
 import org.alfresco.util.Pair;
-import org.alfresco.util.TraceableThreadFactory;
-import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
-import org.apache.commons.collections4.map.UnmodifiableMap;
 
 public class DiffModelTest extends AbstractModelTest
 {

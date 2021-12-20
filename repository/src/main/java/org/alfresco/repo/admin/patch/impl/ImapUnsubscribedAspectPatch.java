@@ -76,6 +76,11 @@ public class ImapUnsubscribedAspectPatch extends AbstractPatch
                 return result.size();
             }
 
+            public long getTotalEstimatedWorkSizeLong()
+            {
+                return result.size();
+            }
+
             public Collection<NodeRef> getNextWork()
             {
                 result.clear();

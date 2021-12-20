@@ -2,7 +2,7 @@
   #%L
   Alfresco Repository WAR Community
   %%
-  Copyright (C) 2005 - 2016 Alfresco Software Limited
+  Copyright (C) 2005 - 2021 Alfresco Software Limited
   %%
   This file is part of the Alfresco software.
   If the software was purchased under a paid Alfresco license, the terms of
@@ -34,15 +34,6 @@
 <%@ page import="org.alfresco.service.cmr.module.ModuleDetails" %>
 <%@ page import="org.alfresco.service.cmr.module.ModuleInstallState" %>
 <%@ page import="java.util.Calendar" %>
-
-<!-- Enterprise index-jsp placeholder -->
-<%
-// route WebDAV requests
-if (request.getMethod().equalsIgnoreCase("PROPFIND") || request.getMethod().equalsIgnoreCase("OPTIONS"))
-{
-   response.sendRedirect(request.getContextPath() + "/webdav/");
-}
-%>
 
 <%
 WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(session.getServletContext());

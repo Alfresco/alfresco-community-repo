@@ -26,12 +26,17 @@
 package org.alfresco.repo.content;
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
 
 
 /**
@@ -269,9 +274,25 @@ public interface ContentStore
      * @return A direct access {@code URL} object for the content
      * @throws UnsupportedOperationException if the store is unable to provide the information
      */
+    @Deprecated
     default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName)
     {
-        return requestContentDirectUrl(contentUrl, attachment, fileName, null);
+        return requestContentDirectUrl(contentUrl, attachment, fileName, null, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param contentUrl A content store {@code URL}
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param fileName File name of the content
+     * @return A direct access {@code URL} object for the content
+     * @throws UnsupportedOperationException if the store is unable to provide the information
+     */
+    default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype)
+    {
+        return requestContentDirectUrl(contentUrl, attachment, fileName, mimetype, null);
     }
 
     /**
@@ -285,9 +306,80 @@ public interface ContentStore
      * @return A direct access {@code URL} object for the content.
      * @throws UnsupportedOperationException if the store is unable to provide the information
      */
+    @Deprecated
     default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
+    {
+        return requestContentDirectUrl(contentUrl, attachment, fileName, null, validFor);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param contentUrl A content store {@code URL}
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param fileName File name of the content
+     * @param mimetype Mimetype of the content
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information
+     */
+    default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype, Long validFor)
     {
         throw new UnsupportedOperationException(
                 "Retrieving direct access URLs is not supported by this content store.");
+    }
+
+    /**
+     * Gets a key-value (String-String) collection of storage headers/properties with their respective values.
+     * A particular Cloud Connector will fill in that data with Cloud Storage Provider generic data.
+     * Map may be also filled in with entries consisting of pre-defined Alfresco keys of {@code ObjectStorageProps} and their values.
+     * If empty Map is returned - no connector is present or connector is not supporting retrieval of the properties
+     * or cannot determine the properties.
+     *
+     * @param contentUrl the URL of the content for which the storage properties are to be retrieved.
+     * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values.
+     */
+    @Experimental
+    default Map<String, String> getStorageProperties(String contentUrl)
+    {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Submit a request to send content to archive (offline) state.
+     * If no connector is present or connector is not supporting sending to archive, then {@link UnsupportedOperationException} will be returned.
+     * Specific connector will decide which storage class/tier will be set for content.
+     * This method is experimental and subject to changes.
+     *
+     * @param contentUrl the URL of the content which is to be archived.
+     * @param archiveParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
+     * @return true when request successful, false when unsuccessful.
+     * @throws UnsupportedOperationException when store is unable to handle request.
+     */
+    @Experimental
+    default boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
+    {
+        throw new UnsupportedOperationException("Request to archive content is not supported by this content store.");
+    }
+
+    /**
+     * Submit a request to restore content from archive (offline) state.
+     * If no connector is present or connector is not supporting restoring fom archive, then {@link UnsupportedOperationException} will be returned.
+     * One of input parameters of this method is a map (String-Serializable) of Storage Provider specific input needed to perform proper restore.
+     * Keys of this map should be restricted to {@code ContentRestoreParams} enumeration.
+     * For AWS S3 map can indicating expiry days, Glacier restore tier.
+     * For Azure Blob map can indicate rehydrate priority.
+     * This method is experimental and subject to changes.
+     *
+     * @param contentUrl    the URL of the content which is to be archived.
+     * @param restoreParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
+     * @return true when request successful, false when unsuccessful.
+     * @throws UnsupportedOperationException when store is unable to handle request.
+     */
+    @Experimental
+    default boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
+    {
+        throw new UnsupportedOperationException("Request to restore content from archive is not supported by this content store.");
     }
 }

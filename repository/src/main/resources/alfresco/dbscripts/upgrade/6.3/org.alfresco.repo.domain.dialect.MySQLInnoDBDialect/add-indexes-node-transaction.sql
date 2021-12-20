@@ -7,19 +7,19 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-DROP INDEX idx_alf_node_ver;  --(optional)
+DROP INDEX idx_alf_node_ver ON alf_node;  --(optional)
 CREATE INDEX idx_alf_node_ver ON alf_node (version);
 
-DROP INDEX idx_alf_node_txn;  --(optional)
+DROP INDEX idx_alf_node_txn ON alf_node;  --(optional)
 CREATE INDEX idx_alf_node_txn ON alf_node (transaction_id);
 
-DROP INDEX idx_alf_txn_ctms;  --(optional)
+DROP INDEX idx_alf_txn_ctms ON alf_transaction;  --(optional)
 CREATE INDEX idx_alf_txn_ctms ON alf_transaction (commit_time_ms, id);
 
-DROP INDEX idx_alf_txn_ctms_sc;  --(optional)
+DROP INDEX idx_alf_txn_ctms_sc ON alf_transaction;  --(optional)
 CREATE INDEX idx_alf_txn_ctms_sc ON alf_transaction (commit_time_ms);
 
-DROP INDEX idx_alf_txn_id_ctms;  --(optional)
+DROP INDEX idx_alf_txn_id_ctms ON alf_transaction;  --(optional)
 CREATE INDEX idx_alf_txn_id_ctms ON alf_transaction (id, commit_time_ms);
 
 --

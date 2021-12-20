@@ -27,17 +27,15 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_HELD_CHILDREN;
-import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_RECORD;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.PROP_HELD_CHILDREN_COUNT;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
@@ -51,23 +49,21 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.context.ApplicationContext;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Test class for frozen aspect
  * @author Ross Gale
  * @since 3.2
  */
+@RunWith(MockitoJUnitRunner.class)
 public class FrozenAspectUnitTest
 {
     @Mock
     private NodeService mockNodeService;
-
-    @Mock
-    private ApplicationContext mockApplicationContext;
 
     @Mock
     private ChildAssociationRef mockChildAssociationRef;
@@ -91,9 +87,6 @@ public class FrozenAspectUnitTest
     private ChildAssociationRef mockOldRef;
 
     @Mock
-    private Set mockSet;
-
-    @Mock
     private PropertyModificationAllowedCheck mockPropertyModificationAllowedCheck;
 
     @InjectMocks
@@ -110,18 +103,17 @@ public class FrozenAspectUnitTest
     @Before
     public void setUp()
     {
-        MockitoAnnotations.initMocks(this);
         when(mockNodeService.exists(record)).thenReturn(true);
         when(mockNodeService.getType(record)).thenReturn(ContentModel.TYPE_CONTENT);
         when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(record), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.exists(content)).thenReturn(true);
         when(mockNodeService.hasAspect(folder, ASPECT_HELD_CHILDREN)).thenReturn(true);
         when(mockNodeService.getProperty(folder, PROP_HELD_CHILDREN_COUNT)).thenReturn(1);
-        when(mockApplicationContext.getBean("dbNodeService")).thenReturn(mockNodeService);
         when(mockFreezeService.isFrozen(content)).thenReturn(false);
         children.add(mockChildRef);
         when(mockNodeService.getChildAssocs(content)).thenReturn(children);
         when(mockChildRef.isPrimary()).thenReturn(true);
+        frozenAspect.setNodeService(mockNodeService);
     }
 
     /**
@@ -142,7 +134,6 @@ public class FrozenAspectUnitTest
     @Test
     public void testRemoveAspectForContent()
     {
-        when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
         when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
         when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.getPrimaryParent(content)).thenReturn(mockChildAssociationRef);
@@ -157,7 +148,6 @@ public class FrozenAspectUnitTest
     @Test
     public void testRemoveAspectForContentDoesntUpdateForOtherTypes()
     {
-        when(mockNodeService.hasAspect(content, ASPECT_RECORD)).thenReturn(false);
         when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_FOLDER);
         when(mockedNodeTypeUtility.instanceOf(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(false);
         frozenAspect.onRemoveAspect(content, null);
@@ -233,7 +223,6 @@ public class FrozenAspectUnitTest
     @Test(expected = PermissionDeniedException.class)
     public void testBeforeMoveThrowsExceptionForFrozenNode()
     {
-        when(mockOldRef.getParentRef()).thenReturn(parent);
         when(mockOldRef.getChildRef()).thenReturn(child);
         when(mockNodeService.exists(child)).thenReturn(true);
         when(mockFreezeService.isFrozen(child)).thenReturn(true);
@@ -247,8 +236,6 @@ public class FrozenAspectUnitTest
     public void testUpdatePropertiesThrowsExceptionForFrozenNode()
     {
         when(mockFreezeService.isFrozen(content)).thenReturn(true);
-        when(mockResourceHelper.getSet(content)).thenReturn(mockSet);
-        when(mockSet.contains("frozen")).thenReturn(false);
         when(mockPropertyModificationAllowedCheck.check(null, null)).thenReturn(false);
         frozenAspect.onUpdateProperties(content, null, null);
     }

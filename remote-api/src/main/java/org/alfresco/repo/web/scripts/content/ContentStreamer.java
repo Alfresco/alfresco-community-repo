@@ -44,6 +44,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -449,7 +450,11 @@ public class ContentStreamer implements ResourceLoaderAware
             if (logger.isInfoEnabled())
                 logger.info("Client aborted stream read:\n\tcontent: " + reader);
         }
-        catch (ContentIOException e2)
+        catch (ArchivedIOException e2)
+        {
+            throw e2;
+        }
+        catch (ContentIOException e3)
         {
             if (logger.isInfoEnabled())
                 logger.info("Client aborted stream read:\n\tcontent: " + reader);

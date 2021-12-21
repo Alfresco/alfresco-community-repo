@@ -59,7 +59,7 @@
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.13.0</dependency.jackson.version>
         <dependency.jackson-databind.version>2.13.0</dependency.jackson-databind.version>
-        <dependency.cxf.version>3.4.5</dependency.cxf.version>
+        <dependency.cxf.version>3.5.0</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.27</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>

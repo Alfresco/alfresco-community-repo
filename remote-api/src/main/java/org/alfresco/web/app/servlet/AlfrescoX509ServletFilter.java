@@ -60,7 +60,7 @@ public class AlfrescoX509ServletFilter extends X509ServletFilterBase
     private static final String BEAN_GLOBAL_PROPERTIES = "global-properties";
     private static final String PROP_SECURE_COMMS = "solr.secureComms";
     private static final String PROP_SHARED_SECRET = "solr.sharedSecret";
-    private static final String PROP_SHARED_SECRET_HEADER = "{solr.sharedSecret.header";
+    private static final String PROP_SHARED_SECRET_HEADER = "solr.sharedSecret.header";
     private static Log logger = LogFactory.getLog(AlfrescoX509ServletFilter.class);
 
     public void init(FilterConfig config) throws ServletException
@@ -71,8 +71,8 @@ public class AlfrescoX509ServletFilter extends X509ServletFilterBase
         if(secureCommsProp != null && !secureCommsProp.isEmpty()) {
             secureComms = SecureCommsType.getType(secureCommsProp);
         }
-        String sharedSecret = globalProperties.getProperty(PROP_SECURE_COMMS);
-        String sharedSecretHeader = globalProperties.getProperty(PROP_SECURE_COMMS);
+        sharedSecret = globalProperties.getProperty(PROP_SHARED_SECRET);
+        sharedSecretHeader = globalProperties.getProperty(PROP_SHARED_SECRET_HEADER);
         if(secureComms == SecureCommsType.SECRET)
         {
             if(sharedSecret == null || sharedSecret.length()==0)

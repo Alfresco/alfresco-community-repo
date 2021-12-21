@@ -47,6 +47,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TooBusyException;
 import org.alfresco.repo.web.scripts.bean.LoginPost;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -324,7 +325,20 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                     alf = new AlfrescoRuntimeException("WebScript execution failed", e);
                 }
                 String num = alf.getNumericalId();
-                logger.error("Server error (" + num + ")", e);
+                if (alf instanceof ArchivedIOException) //only ArchivedIOException will be logged without stacktrace
+                {
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("ArchivedIOException error(" + num + ")", e);
+                    }
+                    else if (logger.isInfoEnabled())
+                    {
+                        logger.error("ArchivedIOException error. Message: " + alf.getMessage());
+                    }
+                }
+                else //all other exceptions are logged with stacktrace - we may want to think about logging only message here.
+                {
+                    logger.error("Server error (" + num + ")", e);
+                }
                 throw new RuntimeException("Server error (" + num + ").  Details can be found in the server logs.");
             }
             else

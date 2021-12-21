@@ -325,12 +325,12 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                     alf = new AlfrescoRuntimeException("WebScript execution failed", e);
                 }
                 String num = alf.getNumericalId();
-                if (alf instanceof ArchivedIOException) //only ArchivedIOException will be logged without stacktrace
+                if (alf instanceof ArchivedIOException) // only ArchivedIOException will be logged differently
                 {
-                    if (logger.isDebugEnabled()) {
+                    if (logger.isDebugEnabled()) { // log with stack trace at debug level
                         logger.debug("ArchivedIOException error(" + num + ")", e);
                     }
-                    else if (logger.isInfoEnabled())
+                    else if (logger.isInfoEnabled()) // log without stack trace at info level
                     {
                         logger.error("ArchivedIOException error. Message: " + alf.getMessage());
                     }

@@ -40,6 +40,8 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -63,6 +65,12 @@ public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadB
         this.storageInformation = storageInformation;
     }
 
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "storageInformation", storageInformation);
+    }
+
     @WebApiDescription(title = "Get storage properties",
             description = "Retrieves storage properties for given node's content",
             successStatus = HttpServletResponse.SC_OK)
@@ -70,13 +78,8 @@ public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadB
     public ContentStorageInfo readById(String nodeId, String contentPropName, Parameters parameters)
             throws RelationshipResourceNotFoundException
     {
-        return storageInformation.getStorageInfo(nodeId, contentPropName, parameters);
-    }
-
-    @Override
-    public void afterPropertiesSet() throws Exception
-    {
-        PropertyCheck.mandatory(this, "storageInformation", storageInformation);
+        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        return storageInformation.getStorageInfo(nodeRef, contentPropName, parameters);
     }
 
     @Experimental
@@ -89,7 +92,8 @@ public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadB
     public void requestArchiveContent(String nodeId, String contentPropName, ArchiveContentRequest archiveContentRequest, Parameters parameters,
                                       WithResponse withResponse)
     {
-        final boolean result = storageInformation.requestArchiveContent(nodeId, contentPropName, archiveContentRequest);
+        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        final boolean result = storageInformation.requestArchiveContent(nodeRef, contentPropName, archiveContentRequest);
         if (result)
         {
             withResponse.setStatus(HttpServletResponse.SC_OK);
@@ -109,11 +113,13 @@ public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadB
     public void requestRestoreContentFromArchive(String nodeId, String contentPropName, RestoreArchivedContentRequest restoreArchivedContentRequest,
                                                  Parameters parameters, WithResponse withResponse)
     {
-        final boolean result = storageInformation.requestRestoreContentFromArchive(nodeId, contentPropName, restoreArchivedContentRequest);
+        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        final boolean result = storageInformation.requestRestoreContentFromArchive(nodeRef, contentPropName, restoreArchivedContentRequest);
         if (result)
         {
             withResponse.setStatus(HttpServletResponse.SC_ACCEPTED);
-        } else
+        } 
+        else
         {
             withResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
         }

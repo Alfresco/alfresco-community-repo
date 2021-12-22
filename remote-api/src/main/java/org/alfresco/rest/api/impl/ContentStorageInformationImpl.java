@@ -70,9 +70,8 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      */
     @Override
     @Experimental
-    public ContentStorageInfo getStorageInfo(String nodeId, String contentPropName, Parameters parameters)
+    public ContentStorageInfo getStorageInfo(NodeRef nodeRef, String contentPropName, Parameters parameters)
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final QName propQName = getQName(contentPropName);
         final Map<String, String> storageProperties = contentService.getStorageProperties(nodeRef, propQName);
         final ContentStorageInfo storageInfo = new ContentStorageInfo();
@@ -85,10 +84,9 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      * {@inheritDoc}
      */
     @Override
-    public boolean requestArchiveContent(String nodeId, String contentPropName,
+    public boolean requestArchiveContent(NodeRef nodeRef, String contentPropName,
                                          ArchiveContentRequest archiveContentRequest)
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final QName propQName = getQName(contentPropName);
         final Map<String, Serializable> archiveParams =
                 archiveContentRequest == null ? Collections.emptyMap() : archiveContentRequest.getArchiveParams();
@@ -99,10 +97,9 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      * {@inheritDoc}
      */
     @Override
-    public boolean requestRestoreContentFromArchive(String nodeId, String contentPropName,
+    public boolean requestRestoreContentFromArchive(NodeRef nodeRef, String contentPropName,
                                                     RestoreArchivedContentRequest restoreArchivedContentRequest)
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final QName propQName = getQName(contentPropName);
         final Map<String, Serializable> restoreParams =
                 (restoreArchivedContentRequest == null || restoreArchivedContentRequest.getRestorePriority() == null) ?

@@ -33,6 +33,8 @@ import org.alfresco.rest.api.model.ContentStorageInfo;
 import org.alfresco.rest.api.model.RestoreArchivedContentRequest;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,6 +56,7 @@ public class NodeStorageInfoRelationTest extends TestCase
 {
     private static final String DUMMY_NODE_ID = "dummy-node-id";
     private static final String CONTENT_PROP_NAME = "cm:content";
+    private static final NodeRef DUMMY_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
 
     @Mock
     private ContentStorageInformation storageInformation;
@@ -74,7 +77,7 @@ public class NodeStorageInfoRelationTest extends TestCase
         expectedStorageInfo.setStorageProperties(storageProps);
         expectedStorageInfo.setId(CONTENT_PROP_NAME);
 
-        when(storageInformation.getStorageInfo(DUMMY_NODE_ID, CONTENT_PROP_NAME, params)).thenReturn(expectedStorageInfo);
+        when(storageInformation.getStorageInfo(DUMMY_NODE_REF, CONTENT_PROP_NAME, params)).thenReturn(expectedStorageInfo);
 
         final ContentStorageInfo storageInfo = objectUnderTest.readById(DUMMY_NODE_ID, CONTENT_PROP_NAME, params);
 
@@ -86,7 +89,7 @@ public class NodeStorageInfoRelationTest extends TestCase
     public void shouldProperlyRequestArchiveContent()
     {
         final ArchiveContentRequest archiveContentRequest = new ArchiveContentRequest();
-        when(storageInformation.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveContentRequest)).thenReturn(true);
+        when(storageInformation.requestArchiveContent(DUMMY_NODE_REF, CONTENT_PROP_NAME, archiveContentRequest)).thenReturn(true);
 
         objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveContentRequest, params, withResponse);
 
@@ -97,7 +100,7 @@ public class NodeStorageInfoRelationTest extends TestCase
     public void shouldFailsOnRequestArchiveContent()
     {
         final ArchiveContentRequest archiveContentRequest = new ArchiveContentRequest();
-        when(storageInformation.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveContentRequest)).thenReturn(false);
+        when(storageInformation.requestArchiveContent(DUMMY_NODE_REF, CONTENT_PROP_NAME, archiveContentRequest)).thenReturn(false);
 
         objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveContentRequest, params, withResponse);
 
@@ -108,7 +111,7 @@ public class NodeStorageInfoRelationTest extends TestCase
     public void shouldThrowExceptionOnRequestArchiveContent()
     {
         final ArchiveContentRequest archiveContentRequest = new ArchiveContentRequest();
-        when(storageInformation.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveContentRequest))
+        when(storageInformation.requestArchiveContent(DUMMY_NODE_REF, CONTENT_PROP_NAME, archiveContentRequest))
                 .thenThrow(UnsupportedOperationException.class);
 
         assertThrows(UnsupportedOperationException.class,
@@ -121,11 +124,11 @@ public class NodeStorageInfoRelationTest extends TestCase
     public void shouldProperlyRequestRestoreContentFromArchive()
     {
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
-        when(storageInformation.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest))
+        when(storageInformation.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, restoreArchivedContentRequest))
                 .thenReturn(true);
 
         objectUnderTest
-                .requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest, params, withResponse);
+                .requestRestoreContentFromArchive(DUMMY_NODE_REF.getId(), CONTENT_PROP_NAME, restoreArchivedContentRequest, params, withResponse);
 
         verify(withResponse, times(1)).setStatus(HttpServletResponse.SC_ACCEPTED);
     }
@@ -134,11 +137,11 @@ public class NodeStorageInfoRelationTest extends TestCase
     public void shouldFailsOnRequestRestoreContentFromArchive()
     {
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
-        when(storageInformation.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest))
+        when(storageInformation.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, restoreArchivedContentRequest))
                 .thenReturn(false);
 
         objectUnderTest
-                .requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest, params, withResponse);
+                .requestRestoreContentFromArchive(DUMMY_NODE_REF.getId(), CONTENT_PROP_NAME, restoreArchivedContentRequest, params, withResponse);
 
         verify(withResponse, times(1)).setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
     }
@@ -147,7 +150,7 @@ public class NodeStorageInfoRelationTest extends TestCase
     public void shouldThrowExceptionOnRequestRestoreContentFromArchive()
     {
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
-        when(storageInformation.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest))
+        when(storageInformation.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, restoreArchivedContentRequest))
                 .thenThrow(UnsupportedOperationException.class);
 
         assertThrows(UnsupportedOperationException.class, () -> objectUnderTest

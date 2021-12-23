@@ -120,7 +120,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
 
                     if (StringUtils.isNotBlank(propertyName))
                     {
-                        return Params.valueOf(false, entityId, relationshipId, relationship2Id, null, null, propertyName, params, null, req);
+                        return Params.valueOf(false, entityId, relationshipId, relationship2Id, postedObj, null, propertyName, params, null, req);
                     }
                     else
                     {

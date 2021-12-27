@@ -51,7 +51,6 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
-import org.alfresco.transform.client.registry.TransformerDebugBase;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -73,9 +72,7 @@ import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 
 import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
-import static org.alfresco.transform.client.registry.TransformerDebugBase.MIMETYPE_METADATA_EMBED;
-import static org.alfresco.transform.client.registry.TransformerDebugBase.MIMETYPE_METADATA_EXTRACT;
-import static org.alfresco.transform.client.registry.TransformerDebugBase.replaceWithMetadataExtensionIfEmbedOrExtract;
+import static org.alfresco.repo.rendition2.TransformDefinition.getTransformName;
 
 /**
  * Requests an extract of metadata via a remote async transform using
@@ -94,6 +91,8 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
 {
     private static final String EXTRACT = "extract";
     private static final String EMBED = "embed";
+    private static final String MIMETYPE_METADATA_EXTRACT = "alfresco-metadata-extract";
+    private static final String MIMETYPE_METADATA_EMBED = "alfresco-metadata-embed";
     private static final String EXTRACT_MAPPING = "extractMapping";
     private static final String METADATA = "metadata";
     private static final Map<String, Serializable> EMPTY_METADATA = Collections.emptyMap();
@@ -184,12 +183,12 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
 
     public static boolean isMetadataExtractMimetype(String targetMimetype)
     {
-        return TransformerDebugBase.isMetadataExtractMimetype(targetMimetype);
+        return MIMETYPE_METADATA_EXTRACT.equals(targetMimetype);
     }
 
     public static boolean isMetadataEmbedMimetype(String targetMimetype)
     {
-        return TransformerDebugBase.isMetadataEmbedMimetype(targetMimetype);
+        return MIMETYPE_METADATA_EMBED.equals(targetMimetype);
     }
 
     public static String getTargetMimetypeFromTransformName(String transformName)
@@ -219,7 +218,11 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
      */
     public static String getExtension(String targetMimetype, String sourceExtension, String targetExtension)
     {
-        return replaceWithMetadataExtensionIfEmbedOrExtract(targetExtension, sourceExtension, targetExtension);
+        return isMetadataExtractMimetype(targetMimetype)
+                ? "json"
+                : isMetadataEmbedMimetype(targetMimetype)
+                ? sourceExtension
+                : targetExtension;
     }
 
     /**
@@ -232,7 +235,12 @@ public class AsynchronousExtractor extends AbstractMappingMetadataExtracter
      */
     public static String getRenditionName(String renditionName)
     {
-        return TransformerDebugBase.replaceWithMetadataRenditionNameIfEmbedOrExtract(renditionName);
+        String transformName = getTransformName(renditionName);
+        return    transformName != null && transformName.startsWith(MIMETYPE_METADATA_EXTRACT)
+                ? "metadataExtract"
+                : transformName != null && transformName.startsWith(MIMETYPE_METADATA_EMBED)
+                ? "metadataEmbed"
+                : renditionName;
     }
 
     @Override

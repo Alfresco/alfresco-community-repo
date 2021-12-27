@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2020 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,8 +25,6 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.transform.client.registry.TransformerDebugBase;
-
 import java.util.Map;
 
 /**
@@ -44,7 +42,7 @@ import java.util.Map;
  */
 public class TransformDefinition extends RenditionDefinition2Impl
 {
-    public static final String TRANSFORM_NAMESPACE = TransformerDebugBase.TRANSFORM_NAMESPACE;
+    public static final String TRANSFORM_NAMESPACE = "transform:";
 
     private final String clientData;
     private final String replyQueue;
@@ -88,7 +86,9 @@ public class TransformDefinition extends RenditionDefinition2Impl
 
     public static String getTransformName(String renditionName)
     {
-        return TransformerDebugBase.getTransformName(renditionName);
+        return renditionName == null || !renditionName.startsWith(TRANSFORM_NAMESPACE)
+                ? null
+                : renditionName.substring(TRANSFORM_NAMESPACE.length());
     }
 
     public String getClientData()

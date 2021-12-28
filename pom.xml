@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>14.64-SNAPSHOT</version>
+    <version>14.66-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -69,7 +69,7 @@
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.5</dependency.gson.version>
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
-        <dependency.httpcore.version>4.4.14</dependency.httpcore.version>
+        <dependency.httpcore.version>4.4.15</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.1</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.32</dependency.slf4j.version>

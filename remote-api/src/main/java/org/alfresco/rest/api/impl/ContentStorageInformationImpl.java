@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,7 +36,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -70,9 +69,8 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      */
     @Override
     @Experimental
-    public ContentStorageInfo getStorageInfo(String nodeId, String contentPropName, Parameters parameters)
+    public ContentStorageInfo getStorageInfo(NodeRef nodeRef, String contentPropName, Parameters parameters)
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final QName propQName = getQName(contentPropName);
         final Map<String, String> storageProperties = contentService.getStorageProperties(nodeRef, propQName);
         final ContentStorageInfo storageInfo = new ContentStorageInfo();
@@ -85,10 +83,9 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      * {@inheritDoc}
      */
     @Override
-    public boolean requestArchiveContent(String nodeId, String contentPropName,
+    public boolean requestArchiveContent(NodeRef nodeRef, String contentPropName,
                                          ArchiveContentRequest archiveContentRequest)
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final QName propQName = getQName(contentPropName);
         final Map<String, Serializable> archiveParams =
                 archiveContentRequest == null ? Collections.emptyMap() : archiveContentRequest.getArchiveParams();
@@ -99,10 +96,9 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      * {@inheritDoc}
      */
     @Override
-    public boolean requestRestoreContentFromArchive(String nodeId, String contentPropName,
+    public boolean requestRestoreContentFromArchive(NodeRef nodeRef, String contentPropName,
                                                     RestoreArchivedContentRequest restoreArchivedContentRequest)
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         final QName propQName = getQName(contentPropName);
         final Map<String, Serializable> restoreParams =
                 (restoreArchivedContentRequest == null || restoreArchivedContentRequest.getRestorePriority() == null) ?

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -57,7 +57,7 @@ import org.springframework.http.HttpMethod;
 /**
  * Handles the HTTP POST for a Resource, equivalent to CRUD Create
  * 
- * @author Gethin James
+ * @author Gethin James, janv
  */
 public class ResourceWebScriptPost extends AbstractResourceWebScript implements ParamsExtractor,
                                                                                 RecognizedParamsExtractor, RequestReader

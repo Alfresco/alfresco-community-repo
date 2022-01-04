@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -73,6 +73,6 @@ public interface ContentStorageInformation
      * @return true when request successful, false when unsuccessful
      */
     @Experimental
-    boolean requestRestoreContentFromArchive(NodeRef nodeRefd, String contentPropName,
+    boolean requestRestoreContentFromArchive(NodeRef nodeRef, String contentPropName,
                                              RestoreArchivedContentRequest restoreArchivedContentRequest);
 }

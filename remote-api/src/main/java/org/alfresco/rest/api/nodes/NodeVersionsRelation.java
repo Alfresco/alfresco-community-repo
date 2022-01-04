@@ -166,12 +166,12 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     @WebApiDescription(title="Get version node info", description = "Return metadata for a specific version node")
     public Node readById(String nodeId, String versionId, Parameters parameters)
     {
-        Version v = findVersion(nodeId, versionId);
+        Version version = findVersion(nodeId, versionId);
 
-        if (v != null)
+        if (version != null)
         {
-            Node node = nodes.getFolderOrDocumentFullInfo(v.getFrozenStateNodeRef(), null, null, parameters, null);
-            mapVersionInfo(v, node);
+            Node node = nodes.getFolderOrDocumentFullInfo(version.getFrozenStateNodeRef(), null, null, parameters, null);
+            mapVersionInfo(version, node);
             return node;
         }
 
@@ -183,11 +183,11 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     @Override
     public BinaryResource readProperty(String nodeId, String versionId, Parameters parameters)
     {
-        Version v = findVersion(nodeId, versionId);
+        Version version = findVersion(nodeId, versionId);
 
-        if (v != null)
+        if (version != null)
         {
-            NodeRef versionNodeRef = v.getFrozenStateNodeRef();
+            NodeRef versionNodeRef = version.getFrozenStateNodeRef();
             return nodes.getContent(versionNodeRef, parameters, true); // TODO should we record version downloads ?
         }
 
@@ -200,13 +200,13 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             successStatus = HttpServletResponse.SC_OK)
     public Node revertById(String nodeId, String versionId, VersionOptions versionOptions, Parameters parameters, WithResponse withResponse)
     {
-        Version v = findVersion(nodeId, versionId);
+        Version version = findVersion(nodeId, versionId);
 
-        if (v != null)
+        if (version != null)
         {
             CheckOutCheckInService cociService = sr.getCheckOutCheckInService();
 
-            NodeRef nodeRef = v.getVersionedNodeRef();
+            NodeRef nodeRef = version.getVersionedNodeRef();
 
             String versionComment = versionOptions.getComment();
 
@@ -231,17 +231,17 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
             }
 
             // TODO review default for deep and/or whether we should make it an option
-            versionService.revert(nodeRef, v, false);
+            versionService.revert(nodeRef, version, false);
 
             // Checkout/Checkin the node - to store the new version in version history
             NodeRef wcNodeRef = cociService.checkout(nodeRef);
             cociService.checkin(wcNodeRef, versionProperties);
 
             // get latest version
-            v = versionService.getVersionHistory(nodeRef).getHeadVersion();
+            version = versionService.getVersionHistory(nodeRef).getHeadVersion();
 
-            Node node = nodes.getFolderOrDocumentFullInfo(v.getFrozenStateNodeRef(), null, null, parameters, null);
-            mapVersionInfo(v, node);
+            Node node = nodes.getFolderOrDocumentFullInfo(version.getFrozenStateNodeRef(), null, null, parameters, null);
+            mapVersionInfo(version, node);
             return node;
         }
 
@@ -252,17 +252,17 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     @WebApiDescription(title = "Delete version")
     public void delete(String nodeId, String versionId, Parameters parameters)
     {
-        Version v = findVersion(nodeId, versionId);
+        Version version = findVersion(nodeId, versionId);
 
         // live (aka versioned) nodeRef
-        NodeRef nodeRef = v.getVersionedNodeRef();
+        NodeRef nodeRef = version.getVersionedNodeRef();
 
         if (sr.getPermissionService().hasPermission(nodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
         {
             throw new PermissionDeniedException("Cannot delete version");
         }
 
-        versionService.deleteVersion(nodeRef, v);
+        versionService.deleteVersion(nodeRef, version);
 
         Map<QName, Serializable> props = sr.getNodeService().getProperties(nodeRef);
         if (props.get(ContentModel.PROP_VERSION_LABEL) == null)

@@ -86,11 +86,11 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
     {
         String contentPropQNameId = parameters.getRelationship2Id();
 
-        Version v = nodeVersions.findVersion(nodeId, versionId);
+        Version version = nodeVersions.findVersion(nodeId, versionId);
 
-        if (v != null)
+        if (version != null)
         {
-            NodeRef versionNodeRef = v.getFrozenStateNodeRef();
+            NodeRef versionNodeRef = version.getFrozenStateNodeRef();
             return storageInformation.getStorageInfo(versionNodeRef, contentPropQNameId, parameters);
         }
 
@@ -109,11 +109,11 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
     {
         String contentPropQNameId = parameters.getRelationship2Id();
 
-        Version v = nodeVersions.findVersion(nodeId, versionId);
+        Version version = nodeVersions.findVersion(nodeId, versionId);
 
-        if (v != null)
+        if (version != null)
         {
-            NodeRef versionNodeRef = v.getFrozenStateNodeRef();
+            NodeRef versionNodeRef = version.getFrozenStateNodeRef();
             final boolean result = storageInformation.requestArchiveContent(versionNodeRef, contentPropQNameId, archiveContentRequest);
             if (result)
             {
@@ -140,11 +140,11 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
     {
         String contentPropQNameId = parameters.getRelationship2Id();
 
-        Version v = nodeVersions.findVersion(nodeId, versionId);
+        Version version = nodeVersions.findVersion(nodeId, versionId);
 
-        if (v != null)
+        if (version != null)
         {
-            NodeRef versionNodeRef = v.getFrozenStateNodeRef();
+            NodeRef versionNodeRef = version.getFrozenStateNodeRef();
             final boolean result = storageInformation.requestRestoreContentFromArchive(versionNodeRef, contentPropQNameId, restoreArchivedContentRequest);
             if (result)
             {

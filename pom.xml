@@ -921,7 +921,7 @@
                                 <failOnMissing>true</failOnMissing>
                                 <excludedScopes>provided,test</excludedScopes>
                                 <excludedGroups>org.alfresco</excludedGroups>
-                                <failIfWarning>true</failIfWarning>
+                                <failIfWarning>false</failIfWarning>
                                 <includedLicenses>
                                     https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicenses.txt
                                 </includedLicenses>

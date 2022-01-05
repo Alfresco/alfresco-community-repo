@@ -56,6 +56,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.commons.math3.geometry.spherical.oned.Arc;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -325,20 +326,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                     alf = new AlfrescoRuntimeException("WebScript execution failed", e);
                 }
                 String num = alf.getNumericalId();
-                if (alf instanceof ArchivedIOException) // only ArchivedIOException will be logged differently
-                {
-                    if (logger.isDebugEnabled()) { // log with stack trace at debug level
-                        logger.debug("ArchivedIOException error(" + num + ")", e);
-                    }
-                    else if (logger.isInfoEnabled()) // log without stack trace at info level
-                    {
-                        logger.error("ArchivedIOException error. Message: " + alf.getMessage());
-                    }
-                }
-                else //all other exceptions are logged with stacktrace - we may want to think about logging only message here.
-                {
-                    logger.error("Server error (" + num + ")", e);
-                }
+                logger.error("Server error (" + num + ")", e);
                 throw new RuntimeException("Server error (" + num + ").  Details can be found in the server logs.");
             }
             else
@@ -520,6 +508,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 return;
             }
         }
+        catch (ArchivedIOException e) // handle ArchivedIOException to lower log pollution
+        {
+            handleArchivedIOException(e);
+        }
         catch (IOException e)
         {
             handleIOException(e);
@@ -620,6 +612,10 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 // Map TooBusyException to a 503 status code
                 throw new WebScriptException(HttpServletResponse.SC_SERVICE_UNAVAILABLE, e.getMessage(), e);
             }
+            catch (ArchivedIOException e) // handle ArchivedIOException to lower log pollution
+            {
+                handleArchivedIOException(e);
+            }
 
             // Ensure a response is always flushed after successful execution
             if (bufferedRes != null)
@@ -627,6 +623,18 @@ public class RepositoryContainer extends AbstractRuntimeContainer
                 bufferedRes.writeResponse();
             }
         }
+    }
+
+    private void handleArchivedIOException(ArchivedIOException e)
+    {
+        if (logger.isDebugEnabled()) { // log with stack trace at debug level
+            logger.debug("ArchivedIOException error ", e);
+        }
+        else if (logger.isInfoEnabled()) // log without stack trace at info level
+        {
+            logger.error("ArchivedIOException error. Message: " + e.getMessage());
+        }
+        throw new WebScriptException(HttpServletResponse.SC_PRECONDITION_FAILED, "Content is archived and not accessible.");
     }
 
     private static void handleIOException(final IOException ioe) throws IOException

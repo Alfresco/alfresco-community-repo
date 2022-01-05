@@ -1,5 +1,6 @@
 const THUMBNAIL_NAME = "doclib",
    TYPE_SITES = "st:sites",
+   SITES_PATH = "Sites/",
    PREF_DOCUMENT_FAVOURITES = "org.alfresco.share.documents.favourites",
    PREF_FOLDER_FAVOURITES = "org.alfresco.share.folders.favourites",
    LIKES_SCHEME = "likesRatingScheme";
@@ -278,8 +279,39 @@ var ParseArgs =
       pathNode = path.length > 0 ? rootNode.childByNamePath(path) : (pathNode || rootNode);
       if (pathNode === null)
       {
-         status.setCode(status.STATUS_NOT_FOUND, "Path not found: '" + path + "'");
-         return null;
+         // Path was not found in rootNode so a search attempt will be performed in companyHome 
+         pathNode = path.length > 0 ? companyhome.childByNamePath(path) : null;
+
+         // At this point, if path hasn't been found yet, a site search will be executed (if path first element is a site)
+         if (pathNode === null)
+         {
+            if (path && path.length > 0)
+            {
+               var siteId;
+               var idx = path.startsWith("/") ? 1 : 0;
+
+               if (idx >= 0)
+               {
+                  siteId = path.split("/")[idx];
+                  if (siteId)
+                  {
+                     var siteNode = siteService.getSiteInfo(siteId);
+                     if (siteNode !== null)
+                     {
+                        path = SITES_PATH + path;
+                        pathNode = companyhome.childByNamePath(path);
+                     }
+                  }
+               }
+            }
+
+            // If path node is still null, it wasn't possible to find it and STATUS_NOT_FOUND will be returned
+            if (pathNode === null)
+            {
+               status.setCode(status.STATUS_NOT_FOUND, "Path not found: '" + path + "'");
+               return null;
+            }
+         }
       }
 
       // Parent location parameter adjustment

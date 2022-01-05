@@ -676,8 +676,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             {
                 try
                 {
-                    Version v = vh.getVersion(versionLabelId);
-                    nodeRef = VersionUtil.convertNodeRef(v.getFrozenStateNodeRef());
+                    Version version = vh.getVersion(versionLabelId);
+                    nodeRef = VersionUtil.convertNodeRef(version.getFrozenStateNodeRef());
                 }
                 catch (VersionDoesNotExistException vdne)
                 {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -57,7 +57,7 @@ import org.springframework.http.HttpMethod;
 /**
  * Handles the HTTP POST for a Resource, equivalent to CRUD Create
  * 
- * @author Gethin James
+ * @author Gethin James, janv
  */
 public class ResourceWebScriptPost extends AbstractResourceWebScript implements ParamsExtractor,
                                                                                 RecognizedParamsExtractor, RequestReader
@@ -79,6 +79,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
 
         final String operationName = resourceVars.get(ResourceLocator.RELATIONSHIP_RESOURCE);
         final String propertyName = resourceVars.get(ResourceLocator.PROPERTY);
+        final String relationship2Id = resourceVars.get(ResourceLocator.RELATIONSHIP2_ID);
 
         final RecognizedParams params = getRecognizedParams(req);
         final ResourceOperation operation = resourceMeta.getOperation(HttpMethod.POST);
@@ -116,10 +117,10 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(operationName))
                 {
                     Object postedObj = processRequest(resourceMeta, operation, req);
-                    
+
                     if (StringUtils.isNotBlank(propertyName))
                     {
-                        return Params.valueOf(entityId, relationshipId, params, postedObj, req);
+                        return Params.valueOf(false, entityId, relationshipId, relationship2Id, postedObj, null, propertyName, params, null, req);
                     }
                     else
                     {

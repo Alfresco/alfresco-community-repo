@@ -863,7 +863,7 @@ public class TransformerDebug
         return pop(Call.AVAILABLE, true, false);
     }
 
-    String getRenditionName(String renditionName)
+    public String getRenditionName(String renditionName)
     {
         return renditionName != null
                 ? "-- "+ replaceWithMetadataRenditionNameIfEmbedOrExtract(renditionName)+" -- "

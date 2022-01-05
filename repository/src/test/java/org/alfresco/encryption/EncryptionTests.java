@@ -101,6 +101,18 @@ public class EncryptionTests extends TestCase
 
 	private UserTransaction tx;
 
+	static SecureRandom random;
+	static {
+		try
+		{
+			random = SecureRandom.getInstance("SHA1PRNG");
+			random.setSeed(System.nanoTime());
+		} catch (NoSuchAlgorithmException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	public void setUp() throws Exception
 	{
         dictionaryService = (DictionaryService)ctx.getBean("dictionaryService");
@@ -195,11 +207,9 @@ public class EncryptionTests extends TestCase
 		}
 	}
 
-	public byte[] generateKeyData() throws NoSuchAlgorithmException
+	public byte[] generateKeyData()
 	{
-		SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-		random.setSeed(System.currentTimeMillis());
-		byte bytes[] = new byte[DESedeKeySpec.DES_EDE_KEY_LEN];
+		byte[] bytes = new byte[DESedeKeySpec.DES_EDE_KEY_LEN];
 		random.nextBytes(bytes);
 		return bytes;
 	}
@@ -208,8 +218,7 @@ public class EncryptionTests extends TestCase
 	{
 		DESedeKeySpec keySpec = new DESedeKeySpec(generateKeyData());
 		SecretKeyFactory kf = SecretKeyFactory.getInstance(keyAlgorithm);
-    	SecretKey secretKey = kf.generateSecret(keySpec);
-    	return secretKey;		
+		return kf.generateSecret(keySpec);
 	}
 
 	public void testReEncrypt()
@@ -285,18 +294,11 @@ public class EncryptionTests extends TestCase
 		String test = "hello world";
 		final KeyMap keys = new KeyMap();
 		byte[] decrypted = null;
-		String test1 = null;
+		String testDecrypted = null;
 		
 		secretKey1 = generateSecretKey("DESede");
 		keys.setKey("test", secretKey1);
-		KeyProvider keyProvider = new KeyProvider()
-		{
-			@Override
-			public Key getKey(String keyAlias)
-			{
-				return keys.getCachedKey(keyAlias).getKey();
-			}
-		};
+		KeyProvider keyProvider = keyAlias -> keys.getCachedKey(keyAlias).getKey();
 
 		encryptor = new DefaultEncryptor();
 		encryptor.setCipherAlgorithm("DESede/CBC/PKCS5Padding");
@@ -306,9 +308,9 @@ public class EncryptionTests extends TestCase
 		pair = encryptor.encrypt("test", null, test.getBytes("UTF-8"));
 
 		decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
-		test1 = new String(decrypted, "UTF-8");
+		testDecrypted = new String(decrypted, "UTF-8");
 		
-		assertEquals("Expected encrypt,decrypt to end up with the original value", test, test1);
+		assertEquals("Expected encrypt,decrypt to end up with the original value", test, testDecrypted);
 		System.out.println("1:" + new String(decrypted, "UTF-8"));
 		
 		secretKey2 = generateSecretKey("DESede");
@@ -320,7 +322,7 @@ public class EncryptionTests extends TestCase
 		try
 		{
 			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
-			test1 = new String(decrypted, "UTF-8");
+			fail("Decryption should have failed");
 		}
 		catch(AlfrescoRuntimeException e)
 		{
@@ -338,7 +340,6 @@ public class EncryptionTests extends TestCase
 		testChangeKeysImpl(true);
 	}
 
-	@Category(FrequentlyFailingTests.class) // ACS-2242
 	public void testFailedEncryptionWithCachedCiphers() throws Throwable
 	{
 		Pair<byte[], AlgorithmParameters> pair = null;
@@ -348,18 +349,11 @@ public class EncryptionTests extends TestCase
 		String test = "hello world";
 		final KeyMap keys = new KeyMap();
 		byte[] decrypted = null;
-		String test1 = null;
+		String testDecrypted = null;
 		
 		secretKey1 = generateSecretKey("DESede");
 		keys.setKey("test", secretKey1);
-		KeyProvider keyProvider = new KeyProvider()
-		{
-			@Override
-			public Key getKey(String keyAlias)
-			{
-				return keys.getCachedKey(keyAlias).getKey();
-			}
-		};
+		KeyProvider keyProvider = keyAlias -> keys.getCachedKey(keyAlias).getKey();
 
 		encryptor = new DefaultEncryptor();
 		encryptor.setCipherAlgorithm("DESede/CBC/PKCS5Padding");
@@ -377,7 +371,6 @@ public class EncryptionTests extends TestCase
 		try
 		{
 			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
-			test1 = new String(decrypted, "UTF-8");
 			fail("Decryption should have failed");
 		}
 		catch(AlfrescoRuntimeException e)
@@ -389,7 +382,8 @@ public class EncryptionTests extends TestCase
 		try
 		{
 			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
-			test1 = new String(decrypted, "UTF-8");
+			testDecrypted = new String(decrypted, "UTF-8");
+			assertEquals(test, testDecrypted);
 		}
 		catch(AlfrescoRuntimeException e)
 		{

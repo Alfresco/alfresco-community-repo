@@ -26,7 +26,6 @@
 package org.alfresco.repo.content.transform;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.metadata.AsynchronousExtractor;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -43,11 +42,6 @@ import java.util.Map;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_ENCODING;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.SOURCE_NODE_REF;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.TARGET_ENCODING;
-import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
-
 /**
  * Debugs transformers selection and activity.<p>
  *
@@ -59,17 +53,31 @@ import static org.alfresco.repo.rendition2.RenditionDefinition2.TIMEOUT;
  */
 public class TransformerDebug
 {
+    public static final String TIMEOUT =  "timeout";
+    public static final String SOURCE_ENCODING = "sourceEncoding";
+    public static final String SOURCE_NODE_REF = "sourceNodeRef";
+    public static final String TARGET_ENCODING = "targetEncoding";
+    public static final String TRANSFORM_NAMESPACE = "transform:";
+    public static final String MIMETYPE_METADATA_EXTRACT = "alfresco-metadata-extract";
+    public static final String MIMETYPE_METADATA_EMBED = "alfresco-metadata-embed";
+
     protected static final String FINISHED_IN = "Finished in ";
     protected static final String NO_TRANSFORMERS = "No transformers";
     protected static final String TRANSFORM_SERVICE_NAME = "TransformService";
 
     private static final int REFERENCE_SIZE = 15;
 
-    private Log info;
-    protected Log logger;
+    protected ExtensionLookup extensionLookup;
+    private Log singleLineLog;
+    protected Log multiLineLog;
     protected NodeService nodeService;
     protected MimetypeService mimetypeService;
     private final ThreadLocal<Integer> previousTransformId = ThreadLocal.withInitial(()->-1);
+
+    public interface ExtensionLookup
+    {
+        String getExtension(String mimetype);
+    }
 
     protected enum Call
     {
@@ -165,6 +173,11 @@ public class TransformerDebug
             start = System.currentTimeMillis();
         }
 
+        static void reset()
+        {
+            uniqueId.set(0);
+        }
+
         private int getId()
         {
             if (id == -1)
@@ -210,14 +223,19 @@ public class TransformerDebug
         }
     }
 
+    public void setExtensionLookup(ExtensionLookup extensionLookup)
+    {
+        this.extensionLookup = extensionLookup;
+    }
+
     public void setTransformerLog(Log transformerLog)
     {
-        info = new LogTee(LogFactory.getLog(TransformerLog.class), transformerLog);
+        singleLineLog = new LogTee(LogFactory.getLog(TransformerLog.class), transformerLog);
     }
 
     public void setTransformerDebugLog(Log transformerDebugLog)
     {
-        logger = new LogTee(LogFactory.getLog(TransformerDebug.class), transformerDebugLog);
+        multiLineLog = new LogTee(LogFactory.getLog(TransformerDebug.class), transformerDebugLog);
     }
 
     public void setNodeService(NodeService nodeService)
@@ -228,6 +246,7 @@ public class TransformerDebug
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService;
+        setExtensionLookup(mimetype -> mimetypeService.getExtension(mimetype));
     }
 
     public void setPreviousTransformId(int id)
@@ -244,8 +263,8 @@ public class TransformerDebug
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "mimetypeService", mimetypeService);
-        PropertyCheck.mandatory(this, "transformerLog", info);
-        PropertyCheck.mandatory(this, "transformerDebugLog", logger);
+        PropertyCheck.mandatory(this, "transformerLog", singleLineLog);
+        PropertyCheck.mandatory(this, "transformerDebugLog", multiLineLog);
     }
 
     public void pushTransform(String transformerName, String fromUrl, String sourceMimetype,
@@ -310,31 +329,20 @@ public class TransformerDebug
         }
         log(frame.sourceMimetype+' '+frame.targetMimetype, false);
 
-        String fileName = getFileName(frame.sourceNodeRef, firstLevel, sourceSize);
+        String filename = getFilename(frame.sourceNodeRef, firstLevel);
         log(getSourceAndTargetExt(frame.sourceMimetype, frame.targetMimetype) +
-                ((fileName != null) ? fileName+' ' : "")+
+                ((filename != null) ? filename+' ' : "")+
                 ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
                 (firstLevel ? getRenditionName(renditionName) : "") + message);
         if (firstLevel)
         {
             log(options);
-            String nodeRef = getNodeRef(frame.sourceNodeRef, firstLevel, sourceSize);
+            String nodeRef = getNodeRef(frame.sourceNodeRef);
             if (!nodeRef.isEmpty())
             {
                 log(nodeRef);
             }
         }
-    }
-
-    public void debug(String sourceMimetype, String targetMimetype, NodeRef sourceNodeRef, long sourceSize,
-                      Map<String, String> options, String renditionName, String message)
-    {
-        String fileName = getFileName(sourceNodeRef, true, -1);
-        log("              "+ getSourceAndTargetExt(sourceMimetype, targetMimetype) +
-                ((fileName != null) ? fileName+' ' : "")+
-                ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
-                (getRenditionName(renditionName)) + message);
-        log(options);
     }
 
     private void log(Map<String, String> options)
@@ -401,7 +409,7 @@ public class TransformerDebug
                 logInfo(frame, size, ms);
 
                 boolean firstLevel = size == 1;
-                if (!suppressFinish && (firstLevel || logger.isTraceEnabled()))
+                if (!suppressFinish && (firstLevel || multiLineLog.isTraceEnabled()))
                 {
                     log(FINISHED_IN + ms +
                         (frame.callType == Call.AVAILABLE && !suppressChecking? " Just checking if a transformer is available" : "") +
@@ -419,12 +427,12 @@ public class TransformerDebug
 
     private void logInfo(Frame frame, int size, String ms)
     {
-        if (info.isDebugEnabled())
+        if (singleLineLog.isDebugEnabled())
         {
             String failureReason = frame.getFailureReason();
             boolean firstLevel = size == 1;
             String sourceAndTargetExt = getSourceAndTargetExt(frame.sourceMimetype, frame.targetMimetype);
-            String fileName = getFileName(frame.sourceNodeRef, firstLevel, frame.sourceSize);
+            String filename = getFilename(frame.sourceNodeRef, firstLevel);
             long sourceSize = frame.getSourceSize();
             String transformerName = frame.getTransformerName();
             String renditionName = frame.getRenditionName();
@@ -446,20 +454,20 @@ public class TransformerDebug
 
             if (level != null)
             {
-                infoLog(getReference(debug, false, false), sourceAndTargetExt, level, fileName, sourceSize,
+                infoLog(getReference(firstLevel, false, false), sourceAndTargetExt, level, filename, sourceSize,
                         transformerName, renditionName, failureReason, ms, debug);
             }
         }
     }
 
-    private void infoLog(String reference, String sourceAndTargetExt, String level, String fileName,
+    private void infoLog(String reference, String sourceAndTargetExt, String level, String filename,
             long sourceSize, String transformerName, String renditionName, String failureReason, String ms, boolean debug)
     {
         String message =
                 reference +
                 sourceAndTargetExt +
                 (level == null ? "" : level+' ') +
-                (fileName == null ? "" : fileName) +
+                (filename == null ? "" : filename) +
                 (sourceSize >= 0 ? ' '+fileSize(sourceSize) : "") +
                 (ms == null || ms.isEmpty() ? "" : ' '+ms)+
                 (transformerName == null ? "" : ' '+transformerName) +
@@ -467,11 +475,11 @@ public class TransformerDebug
                 (failureReason == null ? "" : ' '+failureReason.trim());
         if (debug)
         {
-            info.debug(message);
+            singleLineLog.debug(message);
         }
         else
         {
-            info.trace(message);
+            singleLineLog.trace(message);
         }
     }
 
@@ -481,7 +489,7 @@ public class TransformerDebug
     public boolean isEnabled()
     {
         // Don't check ThreadInfo.getDebugOutput() as availableTransformers() may upgrade from trace to debug.
-        return logger.isDebugEnabled() || info.isDebugEnabled() || ThreadInfo.getStringBuilder() != null;
+        return multiLineLog.isDebugEnabled() || singleLineLog.isDebugEnabled() || ThreadInfo.getStringBuilder() != null;
     }
 
     /**
@@ -589,13 +597,13 @@ public class TransformerDebug
 
     private void log(String message, Throwable t, boolean debug, boolean usePreviousRef)
     {
-        if (debug && ThreadInfo.getDebugOutput() && logger.isDebugEnabled())
+        if (debug && ThreadInfo.getDebugOutput() && multiLineLog.isDebugEnabled())
         {
-            logger.debug(getReference(false, false, usePreviousRef)+message, t);
+            multiLineLog.debug(getReference(false, false, usePreviousRef)+message, t);
         }
-        else if (logger.isTraceEnabled())
+        else if (multiLineLog.isTraceEnabled())
         {
-            logger.trace(getReference(false, false, usePreviousRef)+message, t);
+            multiLineLog.trace(getReference(false, false, usePreviousRef)+message, t);
         }
 
         if (debug)
@@ -709,66 +717,68 @@ public class TransformerDebug
         return sb.toString();
     }
 
-    public String getFileName(NodeRef sourceNodeRef, boolean firstLevel, long sourceSize)
+    public String getFilename(NodeRef sourceNodeRef, boolean firstLevel)
     {
-        return getFileNameOrNodeRef(sourceNodeRef, firstLevel, sourceSize, true);
-    }
-
-    private String getNodeRef(NodeRef sourceNodeRef, boolean firstLevel, long sourceSize)
-    {
-        return getFileNameOrNodeRef(sourceNodeRef, firstLevel, sourceSize, false);
-    }
-
-    private String getFileNameOrNodeRef(NodeRef sourceNodeRef, boolean firstLevel, long sourceSize, boolean getName)
-    {
-        String result = getName ? null : "";
+        String result = null;
         if (sourceNodeRef != null)
         {
             try
             {
-                result = getName
-                        ? (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME)
-                        : sourceNodeRef.toString()+" ";
+                result = (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
             }
             catch (RuntimeException e)
             {
                 // ignore (InvalidNodeRefException/MalformedNodeRefException) but we should ignore other RuntimeExceptions too
             }
         }
-        if (result == null)
+        if (result == null && !firstLevel)
         {
-            if (!firstLevel)
-            {
-                result = getName ? "<<TemporaryFile>>" : "";
-            }
-            else if (sourceSize < 0)
-            {
-                // fileName = "<<AnyFile>>"; commented out as it does not add to debug readability
-            }
+            result = "<<TemporaryFile>>";
         }
         return result;
+    }
+
+    private String getNodeRef(NodeRef sourceNodeRef)
+    {
+        return sourceNodeRef == null ? "" : sourceNodeRef.toString();
     }
 
     protected String getSourceAndTargetExt(String sourceMimetype, String targetMimetype)
     {
         String sourceExt = getMimetypeExt(sourceMimetype);
         String targetExt = getMimetypeExt(targetMimetype);
-        targetExt = AsynchronousExtractor.getExtension(targetMimetype, sourceExt, targetExt);
+        targetExt = replaceWithMetadataExtensionIfEmbedOrExtract(targetMimetype, sourceExt, targetExt);
         return sourceExt + targetExt + spaces(1+4-targetExt.length());
+    }
+
+    public static String replaceWithMetadataExtensionIfEmbedOrExtract(String targetMimetype, String sourceExtension, String targetExtension)
+    {
+        return isMetadataExtractMimetype(targetMimetype)
+                ? "json"
+                : isMetadataEmbedMimetype(targetMimetype)
+                ? sourceExtension
+                : targetExtension;
     }
 
     protected String getMimetypeExt(String mimetype)
     {
         StringBuilder sb = new StringBuilder("");
-        if (mimetypeService == null)
+        if (extensionLookup == null)
         {
             sb.append(mimetype);
         }
         else
         {
-            String mimetypeExt = mimetypeService.getExtension(mimetype);
-            sb.append(mimetypeExt);
-            sb.append(spaces(4-mimetypeExt.length()));   // Pad to normal max ext (4)
+            String mimetypeExt = extensionLookup.getExtension(mimetype);
+            if (mimetypeExt == null)
+            {
+                sb.append(mimetype);
+            }
+            else
+            {
+                sb.append(mimetypeExt);
+                sb.append(spaces(4 - mimetypeExt.length()));   // Pad to normal max ext (4)
+            }
         }
         sb.append(' ');
         return sb.toString();
@@ -835,7 +845,7 @@ public class TransformerDebug
      * Debugs a request to the Transform Service
      */
     public int debugTransformServiceRequest(String sourceMimetype, long sourceSize, NodeRef sourceNodeRef,
-                                            int contentHashcode, String fileName, String targetMimetype,
+                                            int contentHashcode, String filename, String targetMimetype,
                                             Map<String, String> options, String renditionName)
     {
         if (isEnabled())
@@ -843,21 +853,48 @@ public class TransformerDebug
             pushMisc();
             String sourceAndTargetExt = getSourceAndTargetExt(sourceMimetype, targetMimetype);
             debug(sourceAndTargetExt +
-                    ((fileName != null) ? fileName + ' ' : "") +
+                    ((filename != null) ? filename + ' ' : "") +
                     ((sourceSize >= 0) ? fileSize(sourceSize) + ' ' : "") +
                     getRenditionName(renditionName) + " "+ TRANSFORM_SERVICE_NAME);
             String reference = getReference(true, false, false);
-            infoLog(reference, sourceAndTargetExt, null, fileName, sourceSize, TRANSFORM_SERVICE_NAME,
+            infoLog(reference, sourceAndTargetExt, null, filename, sourceSize, TRANSFORM_SERVICE_NAME,
                     renditionName, null, "", true);
         }
         return pop(Call.AVAILABLE, true, false);
     }
 
-    public String getRenditionName(String renditionName)
+    String getRenditionName(String renditionName)
     {
         return renditionName != null
-            ? "-- "+ AsynchronousExtractor.getRenditionName(renditionName)+" -- "
-            : "";
+                ? "-- "+ replaceWithMetadataRenditionNameIfEmbedOrExtract(renditionName)+" -- "
+                : "";
+    }
+
+    static String replaceWithMetadataRenditionNameIfEmbedOrExtract(String renditionName)
+    {
+        String transformName = getTransformName(renditionName);
+        return    transformName != null && transformName.startsWith(MIMETYPE_METADATA_EXTRACT)
+                ? "metadataExtract"
+                : transformName != null && transformName.startsWith(MIMETYPE_METADATA_EMBED)
+                ? "metadataEmbed"
+                : renditionName;
+    }
+
+    static String getTransformName(String renditionName)
+    {
+        return renditionName == null || !renditionName.startsWith(TRANSFORM_NAMESPACE)
+                ? null
+                : renditionName.substring(TRANSFORM_NAMESPACE.length());
+    }
+
+    public static boolean isMetadataExtractMimetype(String targetMimetype)
+    {
+        return MIMETYPE_METADATA_EXTRACT.equals(targetMimetype);
+    }
+
+    public static boolean isMetadataEmbedMimetype(String targetMimetype)
+    {
+        return MIMETYPE_METADATA_EMBED.equals(targetMimetype);
     }
 
     /**
@@ -884,11 +921,8 @@ public class TransformerDebug
             {
                 frame.start = requested;
             }
-            if (msg != null)
-            {
-                debug(msg);
-            }
-            debugLines.forEach(line -> logger.debug(line));
+            debug(msg);
+            debugLines.forEach(line -> multiLineLog.debug(line));
         }
         return suppressFinish;
     }

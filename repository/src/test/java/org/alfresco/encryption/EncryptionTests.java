@@ -66,6 +66,7 @@ import org.springframework.context.ApplicationContext;
 public class EncryptionTests extends TestCase
 {
 	private static final String TEST_MODEL = "org/alfresco/encryption/reencryption_model.xml";
+	private static final SecureRandom SECURE_RANDOM = getSecureRandomInstance();
 
 	private static int NUM_PROPERTIES = 500;
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -100,18 +101,6 @@ public class EncryptionTests extends TestCase
 	private List<NodeRef> after = new ArrayList<NodeRef>();
 
 	private UserTransaction tx;
-
-	static SecureRandom random;
-	static {
-		try
-		{
-			random = SecureRandom.getInstance("SHA1PRNG");
-			random.setSeed(System.nanoTime());
-		} catch (NoSuchAlgorithmException e)
-		{
-			e.printStackTrace();
-		}
-	}
 
 	public void setUp() throws Exception
 	{
@@ -159,6 +148,18 @@ public class EncryptionTests extends TestCase
         bootstrap.setDictionaryDAO(dictionaryDAO);
         bootstrap.setTenantService(tenantService);
         bootstrap.bootstrap();
+	}
+
+	private static SecureRandom getSecureRandomInstance(){
+		try
+		{
+			SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+			random.setSeed(System.nanoTime());
+			return random;
+		} catch (NoSuchAlgorithmException e)
+		{
+			throw new AlfrescoRuntimeException(e.getMessage());
+		}
 	}
 	
 	protected KeyProvider getKeyProvider(KeyStoreParameters keyStoreParameters)
@@ -210,7 +211,7 @@ public class EncryptionTests extends TestCase
 	public byte[] generateKeyData()
 	{
 		byte[] bytes = new byte[DESedeKeySpec.DES_EDE_KEY_LEN];
-		random.nextBytes(bytes);
+		SECURE_RANDOM.nextBytes(bytes);
 		return bytes;
 	}
 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -60,6 +60,8 @@ public class ContentStorageInformationImplTest
     private static final String CONTENT_PROP_NAME = "cm:content";
     private static final String STANDARD_PRIORITY = "Standard";
 
+    private static final NodeRef DUMMY_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
+
     @Mock
     private ContentService contentService;
     @Mock
@@ -71,15 +73,13 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldReturnStorageInfoResponseWithNonEmptyStorageProps()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
-
         final Map<String, String> storageProps = Map.of("x-amz-storage-class", "INTELLIGENT_TIERING", "x-alf-archived", "false");
-        when(contentService.getStorageProperties(eq(nodeRef), any())).thenReturn(storageProps);
+        when(contentService.getStorageProperties(eq(DUMMY_NODE_REF), any())).thenReturn(storageProps);
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
         when(namespaceService.getPrefixes(NamespaceService.CONTENT_MODEL_1_0_URI))
                 .thenReturn(List.of(NamespaceService.CONTENT_MODEL_PREFIX));
 
-        final ContentStorageInfo storageInfo = objectUnderTest.getStorageInfo(DUMMY_NODE_ID, CONTENT_PROP_NAME, null);
+        final ContentStorageInfo storageInfo = objectUnderTest.getStorageInfo(DUMMY_NODE_REF, CONTENT_PROP_NAME, null);
 
         assertEquals(storageProps, storageInfo.getStorageProperties());
         assertEquals(CONTENT_PROP_NAME, storageInfo.getId());
@@ -88,14 +88,12 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldReturnStorageInfoResponseWithEmptyStorageProps()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
-
-        when(contentService.getStorageProperties(eq(nodeRef), any())).thenCallRealMethod();
+        when(contentService.getStorageProperties(eq(DUMMY_NODE_REF), any())).thenCallRealMethod();
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
         when(namespaceService.getPrefixes(NamespaceService.CONTENT_MODEL_1_0_URI))
                 .thenReturn(List.of(NamespaceService.CONTENT_MODEL_PREFIX));
 
-        final ContentStorageInfo storageInfo = objectUnderTest.getStorageInfo(DUMMY_NODE_ID, CONTENT_PROP_NAME, null);
+        final ContentStorageInfo storageInfo = objectUnderTest.getStorageInfo(DUMMY_NODE_REF, CONTENT_PROP_NAME, null);
 
         assertEquals(Collections.emptyMap(), storageInfo.getStorageProperties());
         assertEquals(CONTENT_PROP_NAME, storageInfo.getId());
@@ -104,16 +102,15 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldSucceedOnArchiveContent()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final Map<String, Serializable> archiveProps = Collections.emptyMap();
         final ArchiveContentRequest archiveParamsRequest = new ArchiveContentRequest();
         archiveParamsRequest.setArchiveParams(archiveProps);
         final boolean expectedResult = true;
 
-        when(contentService.requestSendContentToArchive(eq(nodeRef), any(QName.class), eq(archiveProps))).thenReturn(expectedResult);
+        when(contentService.requestSendContentToArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(archiveProps))).thenReturn(expectedResult);
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        final boolean requestArchiveContent = objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveParamsRequest);
+        final boolean requestArchiveContent = objectUnderTest.requestArchiveContent(DUMMY_NODE_REF, CONTENT_PROP_NAME, archiveParamsRequest);
 
         assertEquals(expectedResult, requestArchiveContent);
     }
@@ -121,14 +118,13 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldSucceedOnArchiveContentWhenNoRequestBody()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final Map<String, Serializable> archiveProps = Collections.emptyMap();
         final boolean expectedResult = true;
 
-        when(contentService.requestSendContentToArchive(eq(nodeRef), any(QName.class), eq(archiveProps))).thenReturn(expectedResult);
+        when(contentService.requestSendContentToArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(archiveProps))).thenReturn(expectedResult);
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        final boolean requestArchiveContent = objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, null);
+        final boolean requestArchiveContent = objectUnderTest.requestArchiveContent(DUMMY_NODE_REF, CONTENT_PROP_NAME, null);
 
         assertEquals(expectedResult, requestArchiveContent);
     }
@@ -136,16 +132,15 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldNotSucceedOnArchiveContent()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final Map<String, Serializable> archiveProps = Collections.emptyMap();
         final ArchiveContentRequest archiveParamsRequest = new ArchiveContentRequest();
         archiveParamsRequest.setArchiveParams(archiveProps);
         final boolean expectedResult = false;
 
-        when(contentService.requestSendContentToArchive(eq(nodeRef), any(QName.class), eq(archiveProps))).thenReturn(expectedResult);
+        when(contentService.requestSendContentToArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(archiveProps))).thenReturn(expectedResult);
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        final boolean requestArchiveContent = objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveParamsRequest);
+        final boolean requestArchiveContent = objectUnderTest.requestArchiveContent(DUMMY_NODE_REF, CONTENT_PROP_NAME, archiveParamsRequest);
 
         assertEquals(expectedResult, requestArchiveContent);
     }
@@ -153,31 +148,29 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldThrowExceptionOnArchiveContent()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final Map<String, Serializable> archiveProps = Collections.emptyMap();
         final ArchiveContentRequest archiveParamsRequest = new ArchiveContentRequest();
         archiveParamsRequest.setArchiveParams(archiveProps);
 
-        when(contentService.requestSendContentToArchive(eq(nodeRef), any(QName.class), eq(archiveProps))).thenCallRealMethod();
+        when(contentService.requestSendContentToArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(archiveProps))).thenCallRealMethod();
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
         assertThrows(UnsupportedOperationException.class,
-                () -> objectUnderTest.requestArchiveContent(DUMMY_NODE_ID, CONTENT_PROP_NAME, archiveParamsRequest));
+                () -> objectUnderTest.requestArchiveContent(DUMMY_NODE_REF, CONTENT_PROP_NAME, archiveParamsRequest));
     }
 
     @Test
     public void shouldSucceedOnRestoreContentFromArchive()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), STANDARD_PRIORITY);
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
         restoreArchivedContentRequest.setRestorePriority(STANDARD_PRIORITY);
         final boolean expectedResult = true;
 
-        when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(restoreParams))).thenReturn(expectedResult);
+        when(contentService.requestRestoreContentFromArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(restoreParams))).thenReturn(expectedResult);
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        final boolean requestArchiveContent = objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest);
+        final boolean requestArchiveContent = objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, restoreArchivedContentRequest);
 
         assertEquals(expectedResult, requestArchiveContent);
     }
@@ -185,14 +178,13 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldSucceedOnRestoreContentFromArchiveWhenNoRequestBody()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final boolean expectedResult = true;
 
-        when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(Collections.emptyMap())))
+        when(contentService.requestRestoreContentFromArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(Collections.emptyMap())))
                 .thenReturn(expectedResult);
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        final boolean requestArchiveContent = objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, null);
+        final boolean requestArchiveContent = objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, null);
 
         assertEquals(expectedResult, requestArchiveContent);
     }
@@ -200,16 +192,15 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldNotSucceedOnRestoreContentFromArchive()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), STANDARD_PRIORITY);
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
         restoreArchivedContentRequest.setRestorePriority(STANDARD_PRIORITY);
         final boolean expectedResult = false;
 
-        when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(restoreParams))).thenReturn(expectedResult);
+        when(contentService.requestRestoreContentFromArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(restoreParams))).thenReturn(expectedResult);
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        final boolean requestArchiveContent = objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest);
+        final boolean requestArchiveContent = objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, restoreArchivedContentRequest);
 
         assertEquals(expectedResult, requestArchiveContent);
     }
@@ -217,30 +208,28 @@ public class ContentStorageInformationImplTest
     @Test
     public void shouldThrowExceptionRestoreContentFromArchive()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), STANDARD_PRIORITY);
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
         restoreArchivedContentRequest.setRestorePriority(STANDARD_PRIORITY);
 
-        when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(restoreParams))).thenCallRealMethod();
+        when(contentService.requestRestoreContentFromArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(restoreParams))).thenCallRealMethod();
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
         assertThrows(UnsupportedOperationException.class,
-                () -> objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest));
+                () -> objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, restoreArchivedContentRequest));
     }
 
     @Test
     public void shouldThrowRestoreInProgressExceptionRestoreContentFromArchive()
     {
-        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID);
         final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), STANDARD_PRIORITY);
         final RestoreArchivedContentRequest restoreArchivedContentRequest = new RestoreArchivedContentRequest();
         restoreArchivedContentRequest.setRestorePriority(STANDARD_PRIORITY);
 
-        when(contentService.requestRestoreContentFromArchive(eq(nodeRef), any(QName.class), eq(restoreParams))).thenThrow(new org.alfresco.service.cmr.repository.RestoreInProgressException("Error"));
+        when(contentService.requestRestoreContentFromArchive(eq(DUMMY_NODE_REF), any(QName.class), eq(restoreParams))).thenThrow(new org.alfresco.service.cmr.repository.RestoreInProgressException("Error"));
         when(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
         assertThrows(RestoreInProgressException.class, 
-                () -> objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_ID, CONTENT_PROP_NAME, restoreArchivedContentRequest));
+                () -> objectUnderTest.requestRestoreContentFromArchive(DUMMY_NODE_REF, CONTENT_PROP_NAME, restoreArchivedContentRequest));
     }
 }

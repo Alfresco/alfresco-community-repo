@@ -227,13 +227,13 @@ public class ResultMapper
                     Map<QName, Serializable> properties = serviceRegistry.getNodeService().getProperties(aRow.getNodeRef());
                     NodeRef frozenNodeRef = ((NodeRef) properties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF));
                     String versionLabelId = (String) properties.get(Version2Model.PROP_QNAME_VERSION_LABEL);
-                    Version v = null;
+                    Version version = null;
                     try
                     {
                         if (frozenNodeRef != null && versionLabelId != null)
                         {
-                            v = nodeVersions.findVersion(frozenNodeRef.getId(), versionLabelId);
-                            aNode = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, params.getInclude(), mapUserInfo);
+                            version = nodeVersions.findVersion(frozenNodeRef.getId(), versionLabelId);
+                            aNode = nodes.getFolderOrDocument(version.getFrozenStateNodeRef(), null, null, params.getInclude(), mapUserInfo);
                         }
                     }
                     catch (EntityNotFoundException | InvalidNodeRefException e)
@@ -243,9 +243,9 @@ public class ResultMapper
                                 + " this is probably because the original node has been deleted.");
                     }
 
-                    if (v != null && aNode != null)
+                    if (version != null && aNode != null)
                     {
-                        nodeVersions.mapVersionInfo(v, aNode, aRow.getNodeRef());
+                        nodeVersions.mapVersionInfo(version, aNode, aRow.getNodeRef());
                         aNode.setNodeId(frozenNodeRef.getId());
                         aNode.setVersionLabel(versionLabelId);
                     }

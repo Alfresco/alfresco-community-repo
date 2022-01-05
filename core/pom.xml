@@ -137,6 +137,10 @@
    <build>
       <plugins>
          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+         </plugin>
+         <plugin>
             <artifactId>maven-jar-plugin</artifactId>
             <executions>
                <execution>

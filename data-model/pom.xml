@@ -22,6 +22,10 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.jibx</groupId>
                 <artifactId>maven-jibx-plugin</artifactId>
                 <configuration>

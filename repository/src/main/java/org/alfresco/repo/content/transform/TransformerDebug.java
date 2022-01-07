@@ -856,6 +856,7 @@ public class TransformerDebug
                     ((filename != null) ? filename + ' ' : "") +
                     ((sourceSize >= 0) ? fileSize(sourceSize) + ' ' : "") +
                     getRenditionName(renditionName) + " "+ TRANSFORM_SERVICE_NAME);
+            log(sourceNodeRef.toString() + ' ' + contentHashcode);
             String reference = getReference(true, false, false);
             infoLog(reference, sourceAndTargetExt, null, filename, sourceSize, TRANSFORM_SERVICE_NAME,
                     renditionName, null, "", true);

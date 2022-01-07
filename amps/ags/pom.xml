@@ -64,7 +64,7 @@
                         <canUpdateCopyright>true</canUpdateCopyright>
                         <canUpdateDescription>true</canUpdateDescription>
 
-                        <!-- licence configuration -->
+                        <!-- license configuration -->
                         <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
 
                         <!-- dry run options -->
@@ -77,7 +77,7 @@
                             <root>src</root>
                         </roots>
 
-                        <!-- exculsions -->
+                        <!-- exclusions -->
                         <excludes>
                            <exclude>**/package-info.java</exclude>
                            <exclude>**/*.properties</exclude>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -107,7 +107,6 @@ public class CombinedConfig extends CombinedTransformConfig
         String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform/config";
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
-        boolean logAsDebug = false;
         try
         {
             try (CloseableHttpClient httpclient = HttpClients.createDefault())
@@ -160,7 +159,6 @@ public class CombinedConfig extends CombinedTransformConfig
                 }
                 catch (IOException e)
                 {
-                    logAsDebug = true;
                     throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
                             " on " + url, e);
                 }
@@ -172,15 +170,7 @@ public class CombinedConfig extends CombinedTransformConfig
         }
         catch (AlfrescoRuntimeException e)
         {
-            String message = e.getMessage();
-            if (logAsDebug)
-            {
-                log.debug(message);
-            }
-            else
-            {
-                log.error(message);
-            }
+            log.error(e.getMessage());
             successReadingConfig = false;
         }
         return successReadingConfig;

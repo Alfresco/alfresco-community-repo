@@ -988,21 +988,6 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <configuration>
-                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-                    <organizationName>Alfresco Software Limited</organizationName>
-                    <failOnMissingHeader>true</failOnMissingHeader>
-                    <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-                    <licenseResolver>classpath://alfresco</licenseResolver>
-                    <licenseName>${licenseName}</licenseName>
-                    <roots>
-                        <root>src</root>
-                    </roots>
-                    <includes>
-                        <include>**/*.java</include>
-                        <include>**/*.jsp</include>
-                    </includes>
-                </configuration>
                 <executions>
                     <execution>
                         <id>check-licenses</id>
@@ -1010,6 +995,21 @@
                         <goals>
                             <goal>check-file-header</goal>
                         </goals>
+                        <configuration>
+                            <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                            <organizationName>Alfresco Software Limited</organizationName>
+                            <failOnMissingHeader>true</failOnMissingHeader>
+                            <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                            <licenseResolver>classpath://alfresco</licenseResolver>
+                            <licenseName>${licenseName}</licenseName>
+                            <roots>
+                                <root>src</root>
+                            </roots>
+                            <includes>
+                                <include>**/*.java</include>
+                                <include>**/*.jsp</include>
+                            </includes>
+                        </configuration>
                     </execution>
                 </executions>
                 <dependencies>

@@ -138,7 +138,7 @@ public class TransformerDebug
 
     protected static class Frame
     {
-        private static final AtomicInteger uniqueId = new AtomicInteger(0);
+        private static final AtomicInteger uniqueId = new AtomicInteger(1);
 
         private int id;
         private final String fromUrl;

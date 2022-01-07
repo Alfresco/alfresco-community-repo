@@ -170,8 +170,7 @@ public class CombinedConfig extends CombinedTransformConfig
         }
         catch (AlfrescoRuntimeException e)
         {
-            String message = e.getMessage();
-            log.error(message);
+            log.error(e.getMessage());
             successReadingConfig = false;
         }
         return successReadingConfig;

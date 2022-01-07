@@ -925,7 +925,7 @@
                             <configuration>
                                 <failOnMissing>true</failOnMissing>
                                 <excludedScopes>provided,test</excludedScopes>
-                                <excludedGroups>org.alfresco</excludedGroups>
+                                <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti).*</excludedGroups>
                                 <failIfWarning>false</failIfWarning>
                                 <includedLicenses>
                                     https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicenses.txt
@@ -949,5 +949,11 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
     </build>
 </project>

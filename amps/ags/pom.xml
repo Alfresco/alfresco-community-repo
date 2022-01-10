@@ -21,6 +21,7 @@
 
       <license.update.dryrun>true</license.update.dryrun>
       <license.verbose>false</license.verbose>
+      <license.failOnNotUptodateHeader>true</license.failOnNotUptodateHeader>
    </properties>
 
    <build>
@@ -64,7 +65,7 @@
                   <!-- dry run options -->
                   <dryRun>${license.update.dryrun}</dryRun>
                   <failOnMissingHeader>true</failOnMissingHeader>
-                  <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                  <failOnNotUptodateHeader>${license.failOnNotUptodateHeader}</failOnNotUptodateHeader>
 
                   <!-- default root -->
                   <roots>

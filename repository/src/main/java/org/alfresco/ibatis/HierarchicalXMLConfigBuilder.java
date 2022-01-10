@@ -255,7 +255,7 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
             configuration.setDefaultScriptingLanguage(resolveClass(props.getProperty("defaultScriptingLanguage")));
             configuration.setCallSettersOnNulls(booleanValueOf(props.getProperty("callSettersOnNulls"), false));
             configuration.setLogPrefix(props.getProperty("logPrefix"));
-            configuration.setLogImpl(resolveClass(props.getProperty("logImpl")));
+            configuration.setLogImpl((Class<org.apache.ibatis.logging.Log>)resolveClass(props.getProperty("logImpl")));
         }
     }
 

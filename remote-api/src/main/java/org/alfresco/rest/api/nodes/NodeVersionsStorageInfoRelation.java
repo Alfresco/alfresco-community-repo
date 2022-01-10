@@ -86,15 +86,9 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
     {
         String contentPropQNameId = parameters.getRelationship2Id();
 
-        Version version = nodeVersions.findVersion(nodeId, versionId);
+        NodeRef versionNodeRef = findVersionNodeRef(nodeId, versionId);
 
-        if (version != null)
-        {
-            NodeRef versionNodeRef = version.getFrozenStateNodeRef();
-            return storageInformation.getStorageInfo(versionNodeRef, contentPropQNameId, parameters);
-        }
-
-        throw new EntityNotFoundException(nodeId+"-"+versionId);
+        return storageInformation.getStorageInfo(versionNodeRef, contentPropQNameId, parameters);
     }
 
     @Experimental
@@ -105,27 +99,21 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
             description = "Submits a request to send version content to archive",
             successStatus = HttpServletResponse.SC_OK)
     public void requestArchiveContent(String nodeId, String versionId, ArchiveContentRequest archiveContentRequest, Parameters parameters,
-                                      WithResponse withResponse)
+                                      WithResponse withResponse) 
     {
         String contentPropQNameId = parameters.getRelationship2Id();
 
-        Version version = nodeVersions.findVersion(nodeId, versionId);
+        NodeRef versionNodeRef = findVersionNodeRef(nodeId, versionId);
 
-        if (version != null)
+        final boolean result = storageInformation.requestArchiveContent(versionNodeRef, contentPropQNameId, archiveContentRequest);
+        if (result)
         {
-            NodeRef versionNodeRef = version.getFrozenStateNodeRef();
-            final boolean result = storageInformation.requestArchiveContent(versionNodeRef, contentPropQNameId, archiveContentRequest);
-            if (result)
-            {
-                withResponse.setStatus(HttpServletResponse.SC_OK);
-            } 
-            else
-            {
-                withResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-            }
+            withResponse.setStatus(HttpServletResponse.SC_OK);
+        } 
+        else
+        {
+            withResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
         }
-
-        throw new EntityNotFoundException(nodeId+"-"+versionId);
     }
 
     @Experimental
@@ -140,22 +128,26 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
     {
         String contentPropQNameId = parameters.getRelationship2Id();
 
-        Version version = nodeVersions.findVersion(nodeId, versionId);
+        NodeRef versionNodeRef = findVersionNodeRef(nodeId, versionId);
 
-        if (version != null)
+        final boolean result = storageInformation.requestRestoreContentFromArchive(versionNodeRef, contentPropQNameId, restoreArchivedContentRequest);
+        if (result)
         {
-            NodeRef versionNodeRef = version.getFrozenStateNodeRef();
-            final boolean result = storageInformation.requestRestoreContentFromArchive(versionNodeRef, contentPropQNameId, restoreArchivedContentRequest);
-            if (result)
-            {
-                withResponse.setStatus(HttpServletResponse.SC_ACCEPTED);
-            }
-            else
-            {
-                withResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-            }
+            withResponse.setStatus(HttpServletResponse.SC_ACCEPTED);
         }
+        else
+        {
+            withResponse.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        }
+    }
 
-        throw new EntityNotFoundException(nodeId+"-"+versionId);
+    private NodeRef findVersionNodeRef(String nodeId, String versionId)
+    {
+        Version version = nodeVersions.findVersion(nodeId, versionId);
+        if (version == null)
+        {
+            throw new EntityNotFoundException(nodeId+"-"+versionId);
+        }
+        return version.getFrozenStateNodeRef();
     }
 }

@@ -56,7 +56,6 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.commons.math3.geometry.spherical.oned.Arc;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -627,12 +626,13 @@ public class RepositoryContainer extends AbstractRuntimeContainer
 
     private void handleArchivedIOException(ArchivedIOException e)
     {
-        if (logger.isDebugEnabled()) { // log with stack trace at debug level
+        if (logger.isDebugEnabled()) // log with stack trace at debug level
+        {
             logger.debug("ArchivedIOException error ", e);
         }
         else if (logger.isInfoEnabled()) // log without stack trace at info level
         {
-            logger.error("ArchivedIOException error. Message: " + e.getMessage());
+            logger.info("ArchivedIOException error. Message: " + e.getMessage());
         }
         throw new WebScriptException(HttpServletResponse.SC_PRECONDITION_FAILED, "Content is archived and not accessible.");
     }

@@ -122,7 +122,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>68.2</version>
+            <version>70.1</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>

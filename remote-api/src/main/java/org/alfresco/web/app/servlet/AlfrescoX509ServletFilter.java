@@ -29,8 +29,12 @@ package org.alfresco.web.app.servlet;
 import java.io.IOException;
 import java.util.Properties;
 
-import javax.servlet.ServletContext;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.httpclient.HttpClientFactory.SecureCommsType;
 import org.alfresco.web.scripts.servlet.X509ServletFilterBase;
 import org.apache.commons.logging.Log;
@@ -46,40 +50,86 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 public class AlfrescoX509ServletFilter extends X509ServletFilterBase
 {
-    private static final String BEAN_GLOBAL_PROPERTIES = "global-properties";
-    private static final String SECURE_COMMS = "solr.secureComms";
 
+    private SecureCommsType secureComms = SecureCommsType.HTTPS;
+
+    private String sharedSecret;
+
+    private String sharedSecretHeader = HttpClientFactory.DEFAULT_SHAREDSECRET_HEADER;
+
+    private static final String BEAN_GLOBAL_PROPERTIES = "global-properties";
+    private static final String PROP_SECURE_COMMS = "solr.secureComms";
+    private static final String PROP_SHARED_SECRET = "solr.sharedSecret";
+    private static final String PROP_SHARED_SECRET_HEADER = "solr.sharedSecret.header";
     private static Log logger = LogFactory.getLog(AlfrescoX509ServletFilter.class);
+
+    public void init(FilterConfig config) throws ServletException
+    {
+        WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(config.getServletContext());
+        Properties globalProperties = (Properties) wc.getBean(BEAN_GLOBAL_PROPERTIES);
+        String secureCommsProp = globalProperties.getProperty(PROP_SECURE_COMMS);
+        if(secureCommsProp != null && !secureCommsProp.isEmpty()) {
+            secureComms = SecureCommsType.getType(secureCommsProp);
+        }
+        sharedSecret = globalProperties.getProperty(PROP_SHARED_SECRET);
+        sharedSecretHeader = globalProperties.getProperty(PROP_SHARED_SECRET_HEADER);
+        if(secureComms == SecureCommsType.SECRET)
+        {
+            if(sharedSecret == null || sharedSecret.length()==0)
+            {
+                logger.fatal("Missing value for solr.sharedSecret configuration property. If solr.secureComms is set to \"secret\", a value for solr.sharedSecret is required. See https://docs.alfresco.com/search-services/latest/install/options/");
+                throw new AlfrescoRuntimeException("Missing value for solr.sharedSecret configuration property");
+            }
+            if(sharedSecretHeader == null || sharedSecretHeader.length()==0)
+            {
+                throw new AlfrescoRuntimeException("Missing value for sharedSecretHeader");
+            }
+        }
+        /*
+        // TODO: Activate this part after OPSEXP-1163 got implemented
+        if(secureComms == SecureCommsType.NONE)
+        {
+            if(!"true".equalsIgnoreCase(config.getInitParameter("allow-unauthenticated-solr-endpoint")))
+            {
+                throw new AlfrescoRuntimeException("solr.secureComms=none is no longer supported. Please use https or secret");
+            }
+        }
+        */
+        super.init(config);
+    }
+
+    public void doFilter(ServletRequest request,
+                         ServletResponse response,
+                         FilterChain chain) throws IOException, ServletException
+    {
+        HttpServletRequest httpRequest = (HttpServletRequest)request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+        switch(secureComms) {
+            case HTTPS:
+                super.doFilter(request,response,chain);
+                return;
+            case SECRET:
+                if(sharedSecret.equals(httpRequest.getHeader(sharedSecretHeader)))
+                {
+                    chain.doFilter(request, response);
+                }
+                else
+                {
+                    httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Authentication failure");
+                }
+                return;
+            case NONE:
+                chain.doFilter(request,response);
+                return;
+            default:
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Authentication failure");
+        }
+    }
 
     @Override
     protected boolean checkEnforce(ServletContext servletContext) throws IOException
     {
-        /*
-        * Get the secureComms setting from the global properties bean.
-        */
-
-        WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        Properties globalProperties = (Properties) wc.getBean(BEAN_GLOBAL_PROPERTIES);
-        String prop = globalProperties.getProperty(SECURE_COMMS);
-
-        if(logger.isDebugEnabled())
-        {
-            logger.debug("secureComms:"+prop);
-        }
-
-        /*
-         * Return true or false based on the property. This will switch on/off X509 enforcement in the X509ServletFilterBase.
-         */
-
-        if (prop == null || 
-            SecureCommsType.getType(prop) == SecureCommsType.NONE || 
-            SecureCommsType.getType(prop) == SecureCommsType.SECRET)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return secureComms == SecureCommsType.HTTPS;
     }
+
 }

@@ -45,7 +45,7 @@ public class ExceptionStackUtil
             {
                 String possibleCauseClassName = possibleCauseClass.getName();
 
-                if (possibleCauseClass.isAssignableFrom(throwableClass) || throwableMsg.contains(possibleCauseClassName))
+                if (possibleCauseClass.isAssignableFrom(throwableClass) || isJavaScriptExceptionWithPossibleCause(throwableMsg, possibleCauseClassName))
                 {
                     // We have a match
                     return throwable;
@@ -57,5 +57,10 @@ public class ExceptionStackUtil
         }
         // Nothing found
         return null;
+    }
+    
+    private static boolean isJavaScriptExceptionWithPossibleCause(String throwableMsg, String possibleCauseClassName)
+    {
+        return throwableMsg != null && throwableMsg.contains("JavaScriptException") && throwableMsg.contains(possibleCauseClassName);
     }
 }

@@ -86,6 +86,7 @@ public class AlfrescoX509ServletFilter extends X509ServletFilterBase
             }
         }
         /*
+        // TODO: Activate this part after OPSEXP-1163 got implemented
         if(secureComms == SecureCommsType.NONE)
         {
             if(!"true".equalsIgnoreCase(config.getInitParameter("allow-unauthenticated-solr-endpoint")))
@@ -105,7 +106,7 @@ public class AlfrescoX509ServletFilter extends X509ServletFilterBase
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         switch(secureComms) {
             case HTTPS:
-                chain.doFilter(request,response);
+                super.doFilter(request,response,chain);
                 return;
             case SECRET:
                 if(sharedSecret.equals(httpRequest.getHeader(sharedSecretHeader)))

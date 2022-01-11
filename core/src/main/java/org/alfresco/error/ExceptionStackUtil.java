@@ -38,10 +38,14 @@ public class ExceptionStackUtil
     {
         while (throwable != null)
         {
+            Class<?> throwableClass = throwable.getClass();
+            String throwableMsg = throwable.getMessage() != null ? throwable.getMessage() : "";
+
             for (Class<?> possibleCauseClass : possibleCauses)
             {
-                Class<?> throwableClass = throwable.getClass();
-                if (possibleCauseClass.isAssignableFrom(throwableClass))
+                String possibleCauseClassName = possibleCauseClass.getName();
+
+                if (possibleCauseClass.isAssignableFrom(throwableClass) || throwableMsg.contains(possibleCauseClassName))
                 {
                     // We have a match
                     return throwable;

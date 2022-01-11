@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.transaction.TransactionService;
@@ -78,15 +77,7 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
     {
         // It's a tad unusual to return a NativeObject like this - at least within Alfresco.
         // But we can't change it to e.g. a ScriptableHashMap as the API is published.
-        Map<String, Serializable> prefs = this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Map<String, Serializable>>()
-        {
-            @Override
-            public Map<String, Serializable> execute() throws Throwable
-            {
-                return preferenceService.getPreferences(userName, preferenceFilter);
-            }
-        }, true, true);
-
+        Map<String, Serializable> prefs = this.preferenceService.getPreferences(userName, preferenceFilter);        
         NativeObject result = new NativeObjectDV();
         
         for (Map.Entry<String, Serializable> entry : prefs.entrySet())
@@ -151,17 +142,10 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
     
     public void setPreferences(String userName, NativeObject preferences)
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                Map<String, Serializable> values = new HashMap<String, Serializable>(10);
-                getPrefValues(preferences, null, values);
-                preferenceService.setPreferences(userName, values);
-                return null;
-            }
-        }, false, true);
+        Map<String, Serializable> values = new HashMap<String, Serializable>(10);
+        getPrefValues(preferences, null, values);
+        
+        this.preferenceService.setPreferences(userName, values);
     }
     
     private void getPrefValues(NativeObject currentObject, String currentKey, Map<String, Serializable> values)
@@ -181,19 +165,12 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
             }
         }
     }
-
+    
     public void clearPreferences(String userName)
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                preferenceService.clearPreferences(userName, null);
-                return null;
-            }
-        }, false, true);
+        this.preferenceService.clearPreferences(userName, null);
     }
+    
     
     /**
      * Clear the preference values
@@ -203,17 +180,9 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
      */
     public void clearPreferences(String userName, String preferenceFilter)
     {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                preferenceService.clearPreferences(userName, preferenceFilter);
-                return null;
-            }
-        }, false, true);
+        this.preferenceService.clearPreferences(userName, preferenceFilter);
     }
-
+    
     private String getAppendedKey(String currentKey, String key)
     {
         StringBuffer buffer = new StringBuffer(64);

@@ -993,6 +993,11 @@
         <constructor-arg name="storageInformation" ref="ContentStorageInformation" />
     </bean>
 
+    <bean class="org.alfresco.rest.api.nodes.NodeVersionsStorageInfoRelation">
+        <constructor-arg name="storageInformation" ref="ContentStorageInformation" />
+        <constructor-arg name="nodeVersions" ref="nodeVersionsRelation" />
+    </bean>
+
     <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation" parent="baseNodeRelation"/>
 
     <bean class="org.alfresco.rest.api.nodes.NodeParentsRelation" parent="baseNodeRelation"/>

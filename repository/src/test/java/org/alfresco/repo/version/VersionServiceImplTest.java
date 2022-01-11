@@ -2231,9 +2231,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
                VersionHistory versionHistory = versionService.getVersionHistory(versionableNode);
                Version[] versions = versionHistory.getAllVersions().toArray(new Version[3]);
                
-               Version v = versions[1];
-               assertEquals("1.1", v.getVersionLabel());
-               versionService.deleteVersion(versionableNode, v);
+               Version version = versions[1];
+               assertEquals("1.1", version.getVersionLabel());
+               versionService.deleteVersion(versionableNode, version);
                return null;
             }
         });
@@ -2258,9 +2258,9 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         {
             public Object execute() throws Exception
             {
-               Version v = versionService.getCurrentVersion(versionableNode);
-               assertEquals("1.2", v.getVersionLabel());
-               versionService.deleteVersion(versionableNode, v);
+               Version version = versionService.getCurrentVersion(versionableNode);
+               assertEquals("1.2", version.getVersionLabel());
+               versionService.deleteVersion(versionableNode, version);
                return null;
             }
         });

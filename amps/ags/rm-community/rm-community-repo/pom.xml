@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>14.66-SNAPSHOT</version>
+      <version>14.77-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -320,17 +320,23 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <configuration>
-               <licenseName>alfresco_community</licenseName>
-               <roots>
-                  <root>source/java</root>
-                  <root>unit-test/java</root>
-                  <root>source/compatibility</root>
-                  <root>config</root>
-                  <root>test/java</root>
-                  <root>test/resources</root>
-               </roots>
-            </configuration>
+            <executions>
+               <execution>
+                  <id>first</id>
+                  <phase>process-sources</phase>
+                  <configuration>
+                     <licenseName>alfresco_community</licenseName>
+                     <roots>
+                        <root>source/java</root>
+                        <root>unit-test/java</root>
+                        <root>source/compatibility</root>
+                        <root>config</root>
+                        <root>test/java</root>
+                        <root>test/resources</root>
+                     </roots>
+                  </configuration>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>

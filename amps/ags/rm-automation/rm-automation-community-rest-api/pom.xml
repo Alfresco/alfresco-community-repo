@@ -7,20 +7,25 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>14.66-SNAPSHOT</version>
+      <version>14.77-SNAPSHOT</version>
    </parent>
-
 
    <build>
       <plugins>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <configuration>
-               <licenseName>alfresco_community</licenseName>
-               <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
-               <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
-            </configuration>
+            <executions>
+                <execution>
+                    <id>first</id>
+                    <phase>process-sources</phase>
+                    <configuration>
+                       <licenseName>alfresco_community</licenseName>
+                       <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+                       <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                    </configuration>
+                </execution>
+            </executions>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>

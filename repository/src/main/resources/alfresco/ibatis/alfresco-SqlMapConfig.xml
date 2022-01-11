@@ -15,6 +15,7 @@ Inbound settings from iBatis
  -->
     <settings>
         <setting name="safeResultHandlerEnabled" value="false"/>
+        <setting name="autoMappingBehavior" value="NONE" />
     </settings>
 
     <typeAliases>

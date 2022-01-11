@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -434,6 +434,11 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS + "-" + versionNumber),
                         sourceTypeRef,
                         null);
+
+                if (isUseVersionAssocIndex())
+                {
+                    nodeService.setChildAssociationIndex(childAssocRef, getAllVersions(versionHistoryRef).size());
+                }
                 versionNodeRef = childAssocRef.getChildRef();
 
                 // add aspect with the standard version properties to the 'version' node
@@ -808,6 +813,11 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS + "-" + versionNumber),
                         sourceTypeRef,
                         null);
+
+                if (isUseVersionAssocIndex())
+                {
+                    nodeService.setChildAssociationIndex(childAssocRef, getAllVersions(versionHistoryRef).size());
+                }
                 NodeRef versionNodeRef = childAssocRef.getChildRef();
 
                 // add aspect with the standard version properties to the 'version' node

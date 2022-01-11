@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.tenant;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -272,11 +273,34 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Experimental
     @Override
     public Map<String, String> getStorageProperties(String contentUrl)
     {
         return getTenantContentStore().getStorageProperties(contentUrl);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Experimental
+    public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
+    {
+        return getTenantContentStore().requestSendContentToArchive(contentUrl, archiveParams);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Experimental
+    public boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
+    {
+        return getTenantContentStore().requestRestoreContentFromArchive(contentUrl, restoreParams);
     }
 
     protected abstract ContentStore initContentStore(ApplicationContext ctx, String contentRoot);

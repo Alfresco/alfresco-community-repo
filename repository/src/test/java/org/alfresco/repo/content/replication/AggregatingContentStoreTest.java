@@ -27,9 +27,7 @@ package org.alfresco.repo.content.replication;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
@@ -60,8 +58,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 /**
  * Tests read and write functionality for the aggregating store.
@@ -314,50 +310,6 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
         assertNotNull(directAccessUrl);
         directAccessUrl = aggStore.requestContentDirectUrl("urlSecSupported", true, "anyfilename", "anyMimetype", 30L);
         assertNotNull(directAccessUrl);
-    }
-
-    @Test
-    public void shouldReturnStoragePropertiesFromPrimaryStore()
-    {
-        final String contentUrl = "url";
-        final Map<String, String> primaryStorePropertiesMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);;
-        when(primaryStoreMock.getStorageProperties(contentUrl)).thenReturn(primaryStorePropertiesMap);
-
-        final Map<String, String> storageProperties = aggregatingStore.getStorageProperties(contentUrl);
-
-        assertFalse(storageProperties.isEmpty());
-        assertEquals(primaryStorePropertiesMap, storageProperties);
-        verify(secondaryStoreMock, times(0)).getStorageProperties(contentUrl);
-    }
-
-    @Test
-    public void shouldReturnStoragePropertiesFromSecondaryStore()
-    {
-        final String contentUrl = "url";
-        final Map<String, String> secondaryStorePropertiesMap = Map.of(X_AMZ_HEADER_1, VALUE_1, X_AMZ_HEADER_2, VALUE_2);;
-        when(primaryStoreMock.getStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
-        when(secondaryStoreMock.getStorageProperties(contentUrl)).thenReturn(secondaryStorePropertiesMap);
-
-        final Map<String, String> storageProperties = aggregatingStore.getStorageProperties(contentUrl);
-
-        assertFalse(storageProperties.isEmpty());
-        assertEquals(secondaryStorePropertiesMap, storageProperties);
-        verify(secondaryStoreMock, times(1)).getStorageProperties(contentUrl);
-        verify(primaryStoreMock, times(1)).getStorageProperties(contentUrl);
-    }
-
-    @Test
-    public void shouldReturnEmptyStorageProperties()
-    {
-        final String contentUrl = "url";
-        when(primaryStoreMock.getStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
-        when(secondaryStoreMock.getStorageProperties(contentUrl)).thenReturn(Collections.emptyMap());
-
-        final Map<String, String> storageProperties = aggregatingStore.getStorageProperties(contentUrl);
-
-        assertTrue(storageProperties.isEmpty());
-        verify(secondaryStoreMock, times(1)).getStorageProperties(contentUrl);
-        verify(primaryStoreMock, times(1)).getStorageProperties(contentUrl);
     }
 
 }

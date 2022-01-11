@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo</artifactId>
-      <version>14.40-SNAPSHOT</version>
+      <version>14.77-SNAPSHOT</version>
    </parent>
 
    <dependencies>
@@ -136,6 +136,10 @@
 
    <build>
       <plugins>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+         </plugin>
          <plugin>
             <artifactId>maven-jar-plugin</artifactId>
             <executions>

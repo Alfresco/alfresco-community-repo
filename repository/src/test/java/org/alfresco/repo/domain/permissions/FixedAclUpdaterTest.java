@@ -61,9 +61,9 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
-import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.ConcurrencyFailureException;
 
@@ -79,6 +79,8 @@ import junit.framework.TestCase;
  */
 public class FixedAclUpdaterTest extends TestCase
 {
+    private static final Logger LOG = LoggerFactory.getLogger(FixedAclUpdaterTest.class);
+
     private ApplicationContext ctx;
     private RetryingTransactionHelper txnHelper;
     private FileFolderService fileFolderService;
@@ -953,7 +955,6 @@ public class FixedAclUpdaterTest extends TestCase
     /*
      * Lock node that has the aspect applied before job runs
      */
-    @Category(FrequentlyFailingTests.class) // ACS-2245
     @Test
     public void testAsyncWithNodeLock()
     {
@@ -1561,24 +1562,25 @@ public class FixedAclUpdaterTest extends TestCase
 
     private void triggerFixedACLJob(boolean forceSharedACL)
     {
-        // run the fixedAclUpdater until there is nothing more to fix (running the updater may create more to fix up) or
-        // the count doesn't change for 3 cycles, meaning we have a problem.
-        txnHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
-            int count = 0;
-            int previousCount = 0;
-            int rounds = 0;
-            fixedAclUpdater.setForceSharedACL(forceSharedACL);
-            do
+        LOG.debug("Fixing ACL");
+        final int rounds = 30;
+        final int enoughZeros = 3;
+
+        int numberOfConsecutiveZeros = 0;
+        for (int round = 0; round < rounds; round++)
+        {
+            int count = txnHelper.doInTransaction(() -> {
+                fixedAclUpdater.setForceSharedACL(forceSharedACL);
+                return fixedAclUpdater.execute();
+            }, false, true);
+            numberOfConsecutiveZeros = count == 0 ? numberOfConsecutiveZeros + 1 : 0;
+            if (numberOfConsecutiveZeros == enoughZeros)
             {
-                previousCount = count;
-                count = fixedAclUpdater.execute();
-                if (count == previousCount)
-                {
-                    rounds++;
-                }
-            } while (count > 0 && rounds <= 3);
-            return null;
-        }, false, true);
+                LOG.info("ACL has been fixed in {} rounds", round);
+                return;
+            }
+        }
+        LOG.warn("Haven't fixed ACL in {} rounds.", rounds);
     }
 
     private NodeRef getFirstNodeWithAclPending(QName nodeType, NodeRef parentRef)

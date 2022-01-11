@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -187,9 +187,11 @@ import org.junit.runners.Suite;
     org.alfresco.repo.content.filestore.FileIOTest.class,
     org.alfresco.repo.content.filestore.SpoofedTextContentReaderTest.class,
     org.alfresco.repo.content.ContentDataTest.class,
+    org.alfresco.repo.content.replication.AggregatingContentStoreUnitTest.class,
     org.alfresco.service.cmr.repository.TransformationOptionLimitsTest.class,
     org.alfresco.service.cmr.repository.TransformationOptionPairTest.class,
     org.alfresco.repo.content.transform.TransformerConfigTestSuite.class,
+    org.alfresco.repo.content.transform.TransformerDebugTest.class,
     org.alfresco.service.cmr.repository.TemporalSourceOptionsTest.class,
     org.alfresco.repo.content.metadata.MetadataExtracterLimitsTest.class,
     org.alfresco.repo.content.caching.quota.StandardQuotaStrategyMockTest.class,

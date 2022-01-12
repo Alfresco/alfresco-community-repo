@@ -39,13 +39,15 @@ public class ExceptionStackUtil
         while (throwable != null)
         {
             Class<?> throwableClass = throwable.getClass();
+
+            boolean isJavaScriptException = throwableClass.getName().contains("JavaScriptException");
             String throwableMsg = throwable.getMessage() != null ? throwable.getMessage() : "";
 
             for (Class<?> possibleCauseClass : possibleCauses)
             {
                 String possibleCauseClassName = possibleCauseClass.getName();
 
-                if (possibleCauseClass.isAssignableFrom(throwableClass) || isJavaScriptExceptionWithPossibleCause(throwableMsg, possibleCauseClassName))
+                if (possibleCauseClass.isAssignableFrom(throwableClass) || (isJavaScriptException && throwableMsg.contains(possibleCauseClassName)))
                 {
                     // We have a match
                     return throwable;
@@ -57,10 +59,5 @@ public class ExceptionStackUtil
         }
         // Nothing found
         return null;
-    }
-    
-    private static boolean isJavaScriptExceptionWithPossibleCause(String throwableMsg, String possibleCauseClassName)
-    {
-        return throwableMsg != null && throwableMsg.contains("JavaScriptException") && throwableMsg.contains(possibleCauseClassName);
     }
 }

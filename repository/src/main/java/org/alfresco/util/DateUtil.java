@@ -71,4 +71,34 @@ public class DateUtil
         }
         return days;
     }
+    
+    /**
+     * Calculate the number of milliseconds between start and end dates based on the <b>default</b> timezone.
+     * If the end date is before the start date, the returned value is negative.
+     *
+     * @param startMs start date in milliseconds
+     * @param endMs   end date in milliseconds
+     * @return number milliseconds between
+     */
+    public static int calculateMs(long startMs, long endMs)
+    {
+        DateTime startDateTime = new DateTime(startMs);
+        DateTime endDateTime = new DateTime(endMs);
+
+        int milliseconds;
+        if (endDateTime.isBefore(startDateTime))
+        {
+            Interval interval = new Interval(endDateTime, startDateTime);
+            Period period = interval.toPeriod(PeriodType.millis());
+            milliseconds = 0 - period.getMillis();
+        }
+        else
+        {
+            Interval interval = new Interval(startDateTime, endDateTime);
+            Period period = interval.toPeriod(PeriodType.millis());
+            milliseconds = period.getMillis();
+        }
+        return milliseconds;
+    }
+    
 }

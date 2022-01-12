@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -59,13 +59,14 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
-import org.alfresco.util.testing.category.IntermittentlyFailingTests;
+import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 public class EncryptionTests extends TestCase
 {
 	private static final String TEST_MODEL = "org/alfresco/encryption/reencryption_model.xml";
+	private static final SecureRandom SECURE_RANDOM = getSecureRandomInstance();
 
 	private static int NUM_PROPERTIES = 500;
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -148,6 +149,18 @@ public class EncryptionTests extends TestCase
         bootstrap.setTenantService(tenantService);
         bootstrap.bootstrap();
 	}
+
+	private static SecureRandom getSecureRandomInstance(){
+		try
+		{
+			SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
+			random.setSeed(System.nanoTime());
+			return random;
+		} catch (NoSuchAlgorithmException e)
+		{
+			throw new AlfrescoRuntimeException(e.getMessage());
+		}
+	}
 	
 	protected KeyProvider getKeyProvider(KeyStoreParameters keyStoreParameters)
 	{
@@ -195,12 +208,10 @@ public class EncryptionTests extends TestCase
 		}
 	}
 
-	public byte[] generateKeyData() throws NoSuchAlgorithmException
+	public byte[] generateKeyData()
 	{
-		SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-		random.setSeed(System.currentTimeMillis());
-		byte bytes[] = new byte[DESedeKeySpec.DES_EDE_KEY_LEN];
-		random.nextBytes(bytes);
+		byte[] bytes = new byte[DESedeKeySpec.DES_EDE_KEY_LEN];
+		SECURE_RANDOM.nextBytes(bytes);
 		return bytes;
 	}
 
@@ -208,8 +219,7 @@ public class EncryptionTests extends TestCase
 	{
 		DESedeKeySpec keySpec = new DESedeKeySpec(generateKeyData());
 		SecretKeyFactory kf = SecretKeyFactory.getInstance(keyAlgorithm);
-    	SecretKey secretKey = kf.generateSecret(keySpec);
-    	return secretKey;		
+		return kf.generateSecret(keySpec);
 	}
 
 	public void testReEncrypt()
@@ -285,18 +295,11 @@ public class EncryptionTests extends TestCase
 		String test = "hello world";
 		final KeyMap keys = new KeyMap();
 		byte[] decrypted = null;
-		String test1 = null;
+		String testDecrypted = null;
 		
 		secretKey1 = generateSecretKey("DESede");
 		keys.setKey("test", secretKey1);
-		KeyProvider keyProvider = new KeyProvider()
-		{
-			@Override
-			public Key getKey(String keyAlias)
-			{
-				return keys.getCachedKey(keyAlias).getKey();
-			}
-		};
+		KeyProvider keyProvider = keyAlias -> keys.getCachedKey(keyAlias).getKey();
 
 		encryptor = new DefaultEncryptor();
 		encryptor.setCipherAlgorithm("DESede/CBC/PKCS5Padding");
@@ -306,9 +309,9 @@ public class EncryptionTests extends TestCase
 		pair = encryptor.encrypt("test", null, test.getBytes("UTF-8"));
 
 		decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
-		test1 = new String(decrypted, "UTF-8");
+		testDecrypted = new String(decrypted, "UTF-8");
 		
-		assertEquals("Expected encrypt,decrypt to end up with the original value", test, test1);
+		assertEquals("Expected encrypt,decrypt to end up with the original value", test, testDecrypted);
 		System.out.println("1:" + new String(decrypted, "UTF-8"));
 		
 		secretKey2 = generateSecretKey("DESede");
@@ -320,7 +323,7 @@ public class EncryptionTests extends TestCase
 		try
 		{
 			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
-			test1 = new String(decrypted, "UTF-8");
+			fail("Decryption should have failed");
 		}
 		catch(AlfrescoRuntimeException e)
 		{
@@ -338,7 +341,6 @@ public class EncryptionTests extends TestCase
 		testChangeKeysImpl(true);
 	}
 
-	@Category(IntermittentlyFailingTests.class) // ACS-959
 	public void testFailedEncryptionWithCachedCiphers() throws Throwable
 	{
 		Pair<byte[], AlgorithmParameters> pair = null;
@@ -348,18 +350,11 @@ public class EncryptionTests extends TestCase
 		String test = "hello world";
 		final KeyMap keys = new KeyMap();
 		byte[] decrypted = null;
-		String test1 = null;
+		String testDecrypted = null;
 		
 		secretKey1 = generateSecretKey("DESede");
 		keys.setKey("test", secretKey1);
-		KeyProvider keyProvider = new KeyProvider()
-		{
-			@Override
-			public Key getKey(String keyAlias)
-			{
-				return keys.getCachedKey(keyAlias).getKey();
-			}
-		};
+		KeyProvider keyProvider = keyAlias -> keys.getCachedKey(keyAlias).getKey();
 
 		encryptor = new DefaultEncryptor();
 		encryptor.setCipherAlgorithm("DESede/CBC/PKCS5Padding");
@@ -377,7 +372,6 @@ public class EncryptionTests extends TestCase
 		try
 		{
 			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
-			test1 = new String(decrypted, "UTF-8");
 			fail("Decryption should have failed");
 		}
 		catch(AlfrescoRuntimeException e)
@@ -389,7 +383,8 @@ public class EncryptionTests extends TestCase
 		try
 		{
 			decrypted = encryptor.decrypt("test", pair.getSecond(), pair.getFirst());
-			test1 = new String(decrypted, "UTF-8");
+			testDecrypted = new String(decrypted, "UTF-8");
+			assertEquals(test, testDecrypted);
 		}
 		catch(AlfrescoRuntimeException e)
 		{

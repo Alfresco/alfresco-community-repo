@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,18 +25,28 @@
  */
 package org.alfresco.repo.content;
 
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
+import org.alfresco.repo.content.directurl.DirectAccessUrlDisabledException;
+import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -47,6 +57,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.MimetypeServiceAware;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -62,13 +73,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 /**
  * Service implementation acting as a level of indirection between the client
  * and the underlying content store.
@@ -82,7 +86,7 @@ import java.util.Set;
  */
 public class ContentServiceImpl implements ContentService, ApplicationContextAware
 {
-    private static Log logger = LogFactory.getLog(ContentServiceImpl.class);
+    private static final Log logger = LogFactory.getLog(ContentServiceImpl.class);
     
     private DictionaryService dictionaryService;
     private NodeService nodeService;
@@ -98,6 +102,11 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     private ContentStore tempStore;
     /** Should we consider zero byte content to be the same as no content? */
     private boolean ignoreEmptyContent;
+
+    private SystemWideDirectUrlConfig systemWideDirectUrlConfig;
+
+    /** pre-configured allow list of media/mime types, eg. specific types of images & also pdf */
+    private Set<String> nonAttachContentTypes = Collections.emptySet();
 
     /**
      * The policy component
@@ -140,7 +149,20 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     {
         this.store = store;
     }
-    
+
+    public void setSystemWideDirectUrlConfig(SystemWideDirectUrlConfig systemWideDirectUrlConfig)
+    {
+        this.systemWideDirectUrlConfig = systemWideDirectUrlConfig;
+    }
+
+    public void setNonAttachContentTypes(String nonAttachAllowListStr)
+    {
+        if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
+        {
+            nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
+        }
+    }
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
@@ -510,25 +532,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         return tempStore.getWriter(ContentContext.NULL_CONTEXT);
     }
 
-    @Override
-    public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt)
-    {
-        ContentData contentData = getContentData(nodeRef, ContentModel.PROP_CONTENT);
-
-        // check that the URL is available
-        if (contentData == null || contentData.getContentUrl() == null)
-        {
-            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
-        }
-
-        if (store.isDirectAccessSupported())
-        {
-            return store.getDirectAccessUrl(contentData.getContentUrl(), expiresAt);
-        }
-
-        return null;
-    }
-
     /**
      * Ensures that, upon closure of the output stream, the node is updated with
      * the latest URL of the content to which it refers.
@@ -585,5 +588,163 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                         e);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isContentDirectUrlEnabled()
+    {
+        return systemWideDirectUrlConfig.isEnabled() && store.isContentDirectUrlEnabled();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean isContentDirectUrlEnabled(NodeRef nodeRef, QName propertyQName)
+    {
+        boolean contentDirectUrlEnabled = false;
+
+        // TODO: update this
+        if (systemWideDirectUrlConfig.isEnabled())
+        {
+            ContentData contentData = getContentData(nodeRef, propertyQName);
+
+            // check that the URL is available
+            if (contentData == null || contentData.getContentUrl() == null)
+            {
+                throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+            }
+
+            contentDirectUrlEnabled = (store.isContentDirectUrlEnabled(contentData.getContentUrl()));
+        }
+
+        return contentDirectUrlEnabled;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor)
+    {
+        if (!systemWideDirectUrlConfig.isEnabled())
+        {
+            throw new DirectAccessUrlDisabledException("Direct access url isn't available.");
+        }
+
+        ContentData contentData = getContentData(nodeRef, propertyQName);
+        // check that the content & URL is available
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " has no content.");
+        }
+
+        String contentUrl = contentData.getContentUrl();
+        String contentMimetype = contentData.getMimetype();
+        String fileName = getFileName(nodeRef);
+
+        validFor = adjustValidFor(validFor);
+        attachment = adjustAttachment(nodeRef, contentMimetype, attachment);
+
+        DirectAccessUrl directAccessUrl = null;
+        if (store.isContentDirectUrlEnabled())
+        {
+            try
+            {
+                directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, contentMimetype, validFor);
+            }
+            catch (UnsupportedOperationException ex)
+            {
+                // expected exception
+            }
+        }
+        return directAccessUrl;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Experimental
+    public Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
+    {
+        final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
+        return store.getStorageProperties(contentData.getContentUrl());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName,
+                                               Map<String, Serializable> archiveParams)
+    {
+        final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
+        return store.requestSendContentToArchive(contentData.getContentUrl(), archiveParams);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public boolean requestRestoreContentFromArchive(NodeRef nodeRef, QName propertyQName, Map<String, Serializable> restoreParams)
+    {
+        final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);
+        return store.requestRestoreContentFromArchive(contentData.getContentUrl(), restoreParams);
+    }
+
+    protected String getFileName(NodeRef nodeRef)
+    {
+        String fileName = null;
+
+        try
+        {
+            fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        }
+        catch (InvalidNodeRefException ex)
+        {
+        }
+
+        return fileName;
+    }
+
+    private Long adjustValidFor(Long validFor)
+    {
+        if (validFor == null || validFor > systemWideDirectUrlConfig.getDefaultExpiryTimeInSec())
+        {
+            validFor = systemWideDirectUrlConfig.getDefaultExpiryTimeInSec();
+        }
+         return validFor;
+    }
+
+    private boolean adjustAttachment(NodeRef nodeRef, String mimeType, boolean attachmentIn)
+    {
+        boolean attachment = true;
+        if (! attachmentIn)
+        {
+            if ((nonAttachContentTypes != null) && (nonAttachContentTypes.contains(mimeType)))
+            {
+                attachment = false;
+            }
+            else
+            {
+                logger.warn("Ignored attachment=false for " + nodeRef.getId() + " since " + mimeType + " is not in the whitelist for non-attach content types");
+            }
+        }
+        return attachment;
+    }
+
+    private ContentData getContentDataOrThrowError(NodeRef nodeRef, QName propertyQName)
+    {
+        final ContentData contentData = getContentData(nodeRef, propertyQName);
+
+        if (contentData == null || contentData.getContentUrl() == null)
+        {
+            throw new IllegalArgumentException("The supplied nodeRef " + nodeRef + " and property name: " + propertyQName + " has no content.");
+        }
+        return contentData;
     }
 }

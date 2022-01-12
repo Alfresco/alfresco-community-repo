@@ -41,9 +41,13 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class NodePermissionAssessor
 {
+    protected static final Log logger = LogFactory.getLog(NodePermissionAssessor.class);
+
     private final boolean isSystemReading;
     private final boolean isAdminReading;
     private final boolean isNullReading;
@@ -138,24 +142,31 @@ public class NodePermissionAssessor
 
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
-        this.maxPermissionChecks = maxPermissionChecks;
+        if (maxPermissionChecks == Integer.MAX_VALUE)
+        {
+            this.maxPermissionChecks = maxPermissionChecks;
+        }
+        else
+        {
+            this.maxPermissionChecks = maxPermissionChecks + 1;
+        }
     }
     
     public boolean shouldQuitChecks()
     {
-        boolean result = false;
-        
         if (checksPerformed >= maxPermissionChecks)
         {
-            result = true;
+            logger.warn("Maximum permission checks exceeded (" + maxPermissionChecks + ")");
+            return true;
         }
-        
+
         if ((System.currentTimeMillis() - startTime) >= maxPermissionCheckTimeMillis)
         {
-            result = true;
+            logger.warn("Maximum permission checks time exceeded (" + maxPermissionCheckTimeMillis + ")");
+            return true;
         }
-        
-        return result;
+
+        return false;
     }
 
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)

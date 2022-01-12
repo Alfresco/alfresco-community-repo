@@ -415,12 +415,13 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
                         
                         for (NodeRef messageResource : nodeRefs)
                         {
-                            String resourceName = (String) nodeService.getProperty(messageResource, ContentModel.PROP_NAME);
-                            
-                            String bundleBaseName = messageService.getBaseBundleName(resourceName);
+                            String messageResourcePath = nodeService.getPath(messageResource).toPrefixString(namespaceService);
+                            String bundleBasePrefixedName = messageResourcePath.substring(messageResourcePath.lastIndexOf("/"));
+                            String bundleBaseName = messageService.getBaseBundleName(bundleBasePrefixedName); 
                             
                             if (!resourceBundleBaseNames.contains(bundleBaseName))
                             {
+                                messageService.registerResourceBundle(storeRef.toString() + repositoryLocation.getPath() + bundleBaseName);
                                 resourceBundleBaseNames.add(bundleBaseName);
                             }
                         }

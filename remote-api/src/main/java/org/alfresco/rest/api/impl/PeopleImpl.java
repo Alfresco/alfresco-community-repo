@@ -866,6 +866,7 @@ public class PeopleImpl implements People
         return authorityService.isAdminAuthority(authorityName);
     }
 
+    @Deprecated
     @Override
     public void requestPasswordReset(String userId, String client)
     {
@@ -895,6 +896,7 @@ public class PeopleImpl implements People
         });
     }
 
+    @Deprecated
     @Override
     public void resetPassword(String personId, final PasswordReset passwordReset)
     {

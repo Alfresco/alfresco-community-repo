@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -96,6 +96,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     private static final String RESOURCE_PREFIX = "publicapi/upload/";
 
     protected static final String URL_NODES = "nodes";
+    protected static final String URL_DELETED_NODES = "deleted-nodes";
 
     protected static final String URL_RENDITIONS = "renditions";
     protected static final String URL_VERSIONS = "versions";
@@ -136,6 +137,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected static PersonService personService;
 
     protected final String RUNID = System.currentTimeMillis()+"";
+
+    private static final String REQUEST_DIRECT_ACCESS_URL = "request-direct-access-url";
     
     @Override
     @Before
@@ -209,6 +212,21 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         users.clear();
         AuthenticationUtil.clearCurrentSecurityContext();
         setRequestContext(null);
+    }
+
+    protected String getRequestContentDirectUrl(String nodeId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
+    protected String getRequestArchivedContentDirectUrl(String nodeId)
+    {
+        return URL_DELETED_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
+    protected String getRequestArchivedRenditonContentDirectUrl(String nodeId, String renditionID)
+    {
+        return URL_DELETED_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
     /**

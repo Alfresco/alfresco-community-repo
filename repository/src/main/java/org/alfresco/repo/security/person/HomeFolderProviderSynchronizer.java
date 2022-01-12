@@ -320,8 +320,8 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
                     threadCount, peoplePerTransaction,
                     null,
                     batchLogger, 100);
-            processor.process(worker, true);
-            if (processor.getTotalErrors() > 0)
+            processor.processLong(worker, true);
+            if (processor.getTotalErrorsLong() > 0)
             {
                 logger.info("  -- Give up after error --");
                 break;
@@ -870,6 +870,12 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
 
         @Override
         public synchronized int getTotalEstimatedWorkSize()
+        {
+            return size;
+        }
+
+        @Override
+        public synchronized long getTotalEstimatedWorkSizeLong()
         {
             return size;
         }

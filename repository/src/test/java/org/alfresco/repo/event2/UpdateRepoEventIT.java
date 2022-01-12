@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.M2Model;
@@ -59,6 +58,7 @@ import org.junit.Test;
  */
 public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
 {
+
     @Test
     public void testUpdateNodeResourceContent()
     {
@@ -138,6 +138,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -198,6 +199,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -274,6 +276,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -539,6 +542,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -574,6 +578,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         NodeResource nodeResource = getNodeResource(resultRepoEvent);
         assertEquals("Incorrect node type was found", "cm:dictionaryModel", nodeResource.getNodeType());
 
+        initTestNamespacePrefixMapping();
         final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT);
         // old node's type
         assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(nodeRef));
@@ -613,7 +618,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
-
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test
@@ -660,6 +665,7 @@ public class UpdateRepoEventIT extends AbstractContextAwareRepoEvent
         assertNull(resourceBefore.getProperties());
         assertNull(resourceBefore.getAspectNames());
         assertNull(resourceBefore.getPrimaryHierarchy());
+        assertNull(resourceBefore.getPrimaryAssocQName());
     }
 
     @Test

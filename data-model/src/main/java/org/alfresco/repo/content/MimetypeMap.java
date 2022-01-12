@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Data model classes
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -42,6 +42,7 @@ import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
+import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.mime.MediaType;
 import org.quartz.CronExpression;
 import org.springframework.extensions.config.Config;
@@ -191,6 +192,8 @@ public class MimetypeMap implements MimetypeService
     public static final String MIMETYPE_IMAGE_RAW_R3D = "image/x-raw-red";
 
     public static final String MIMETYPE_IMAGE_DWT = "image/x-dwt";
+
+    public static final String MIMETYPE_IMAGE_ICNS = "image/icns";
 
     public static final String MIMETYPE_APPLICATION_EPS = "application/eps";
 
@@ -936,7 +939,8 @@ public class MimetypeMap implements MimetypeService
         Metadata metadata = new Metadata();
         if (filename != null)
         {
-            metadata.add(Metadata.RESOURCE_NAME_KEY, filename);
+            //"resourceName"
+            metadata.add(TikaCoreProperties.RESOURCE_NAME_KEY, filename);
         }
 
         InputStream inp = null;

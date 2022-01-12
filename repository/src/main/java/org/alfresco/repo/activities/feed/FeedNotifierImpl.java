@@ -428,6 +428,12 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                 }
 
                 @Override
+                public long getTotalEstimatedWorkSizeLong()
+                {
+                    return personService.countPeople();
+                }
+
+                @Override
                 public Collection<PersonInfo> getNextWork()
                 {
                     if (!hasMore)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -69,15 +69,9 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
         // jobs not allowed to execute unless bootstrap is complete
         if (!repositoryState.isBootstrapping())
         {
-            retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute()
-                {
-                    executeImpl();
-
-                    return null;
-                }
+            retryingTransactionHelper.doInTransaction((RetryingTransactionCallback<Void>) () -> {
+                executeImpl();
+                return null;
             }, false, true);
         }
     }

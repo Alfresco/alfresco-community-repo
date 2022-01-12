@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,6 +34,7 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 
 /**
  * Handles trashcan / deleted nodes
@@ -99,4 +100,29 @@ public interface DeletedNodes
      * @return
      */
     CollectionWithPagingInfo<Rendition> getRenditions(String archivedId, Parameters parameters);
+
+    /**
+    * Gets a presigned URL to directly access content.
+     *
+    * @param archivedId The node id for which to obtain the direct access {@code URL}
+    * @param renditionId The rendition id for which to obtain the direct access {@code URL}
+    * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
+    * @return A direct access {@code URL} object for the content.
+    */
+    default DirectAccessUrl requestContentDirectUrl(String archivedId, String renditionId, boolean attachment)
+    {
+        return requestContentDirectUrl(archivedId, renditionId, attachment, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     *
+     * @param archivedId The node id for which to obtain the direct access {@code URL}
+     * @param renditionId The rendition id for which to obtain the direct access {@code URL}
+     * @param attachment {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}, {@code true} by default.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     */
+    DirectAccessUrl requestContentDirectUrl(String archivedId, String renditionId, boolean attachment, Long validFor);
+
 }

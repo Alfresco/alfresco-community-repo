@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -150,4 +150,12 @@ public interface FreezeService
     */
    @Deprecated
    Set<NodeRef> getHolds(NodeRef filePlan);
+
+    /**
+     * Check given node or its children are frozen
+     * The node should be record or record folder for retention schedule
+     *
+     * @param nodeRef
+     */
+    boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef);
 }

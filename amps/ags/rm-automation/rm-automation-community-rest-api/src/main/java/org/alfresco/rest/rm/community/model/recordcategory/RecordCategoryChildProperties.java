@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -47,6 +47,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentFields.PROPERTIES_VITAL_RECORD_INDICATOR;
 
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -134,7 +135,7 @@ public class RecordCategoryChildProperties extends TestModel
     private String recordSearchDispositionInstructions;
 
     @JsonProperty (PROPERTIES_RECORD_SEARCH_DISPOSITION_EVENTS)
-    private Boolean recordSearchDispositionEvents;
+    private List<String> recordSearchDispositionEvents;
     
     @JsonProperty (PROPERTIES_OWNER)
     private Owner owner;

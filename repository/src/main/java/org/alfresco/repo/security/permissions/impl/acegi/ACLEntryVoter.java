@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.security.permissions.impl.acegi;
 
+import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.getNodeRef;
+import static org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterUtils.shouldAbstainOrDeny;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -46,8 +49,6 @@ import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
@@ -58,6 +59,7 @@ import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+
 
 /**
  * @author andyh
@@ -395,61 +397,53 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                 {
                     throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
                 }
-                else if (StoreRef.class.isAssignableFrom(params[cad.parameter[0]]))
+
+                if (List.class.isAssignableFrom(params[cad.parameter[0]]))
                 {
-                    StoreRef storeRef = getArgument(invocation, cad.parameter[0]);
-                    if (storeRef != null)
+                    List<?> listArgument = getArgument(invocation, cad.parameter[0]);
+                    if (listArgument != null)
                     {
-                        if (log.isDebugEnabled())
+                        NodeRef listNodeRef;
+                        Integer accessAbstainOrDeny = null;
+                        for (Object listElement : listArgument)
                         {
-                            log.debug("\tPermission test against the store - using permissions on the root node");
-                        }
-                        if (nodeService.exists(storeRef))
-                        {
-                            testNodeRef = nodeService.getRootNode(storeRef);
-                        }
-                    }
-                }
-                else if (NodeRef.class.isAssignableFrom(params[cad.parameter[0]]))
-                {
-                    testNodeRef = getArgument(invocation, cad.parameter[0]);
-                    if (log.isDebugEnabled())
-                    {
-                        if (testNodeRef != null)
-                        {
-                            if (nodeService.exists(testNodeRef))
+                            listNodeRef = getNodeRef(listElement, nodeService);
+                            Integer currentValue = shouldAbstainOrDeny(cad.required, listNodeRef, abstainForClassQNames, nodeService, permissionService);
+
+                            if (currentValue != null)
                             {
-                                log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                                if (currentValue == AccessDecisionVoter.ACCESS_DENIED)
+                                {
+                                    return AccessDecisionVoter.ACCESS_DENIED;
+                                }
+                                else
+                                {
+                                    accessAbstainOrDeny = currentValue;
+                                }
                             }
-                            else
-                            {
-                                log.debug("\tPermission test on non-existing node " +testNodeRef);
-                            } 
+
                         }
-                    }
-                }
-                else if (ChildAssociationRef.class.isAssignableFrom(params[cad.parameter[0]]))
-                {
-                    ChildAssociationRef testChildRef = getArgument(invocation, cad.parameter[0]);
-                    if (testChildRef != null)
-                    {
-                        testNodeRef = testChildRef.getChildRef();
-                        if (log.isDebugEnabled())
+
+                        if (accessAbstainOrDeny != null)
                         {
-                            if (nodeService.exists(testNodeRef))
-                            {
-                                log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                            }
-                            else
-                            {
-                                log.debug("\tPermission test on non-existing node " + testNodeRef);
-                            }
+                            return accessAbstainOrDeny;
                         }
+                        if((hasMethodEntry == null) || (hasMethodEntry.booleanValue()))
+                        {
+                            return AccessDecisionVoter.ACCESS_GRANTED;
+                        }
+                        else
+                        {
+                            return AccessDecisionVoter.ACCESS_DENIED;
+                        }
+
                     }
                 }
                 else
                 {
-                    throw new ACLEntryVoterException("The specified parameter is not a NodeRef or ChildAssociationRef");
+                    Object testObject = getArgument(invocation, cad.parameter[0]);
+                    //If the execution reaches here, then testNodeRef is always null
+                    testNodeRef = getNodeRef(testObject, nodeService);
                 }
             }
             else if (cad.typeString.equals(ACL_ITEM))
@@ -584,44 +578,10 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                 }
             }
 
-            if (testNodeRef != null)
+            Integer accessAbstainOrDeny = shouldAbstainOrDeny(cad.required, testNodeRef, abstainForClassQNames, nodeService, permissionService);
+            if (accessAbstainOrDeny != null)
             {
-                // now we know the node - we can abstain for certain types and aspects (eg. RM)
-                if(abstainForClassQNames.size() > 0)
-                {
-                    // check node exists
-                    if (nodeService.exists(testNodeRef))
-                    {
-                        QName typeQName = nodeService.getType(testNodeRef);
-                        if(abstainForClassQNames.contains(typeQName))
-                        {
-                            return AccessDecisionVoter.ACCESS_ABSTAIN;
-                        }
-                       
-                        Set<QName> aspectQNames = nodeService.getAspects(testNodeRef);
-                        for(QName abstain : abstainForClassQNames)
-                        {
-                            if(aspectQNames.contains(abstain))
-                            {
-                                return AccessDecisionVoter.ACCESS_ABSTAIN;
-                            }
-                        }
-                    }
-                }
-                
-                if (log.isDebugEnabled())
-                {
-                    log.debug("\t\tNode ref is not null");
-                }
-                if (permissionService.hasPermission(testNodeRef, cad.required.toString()) == AccessStatus.DENIED)
-                {
-                    if (log.isDebugEnabled())
-                    {
-                        log.debug("\t\tPermission is denied");
-                        Thread.dumpStack();
-                    }
-                    return AccessDecisionVoter.ACCESS_DENIED;
-                }
+                return accessAbstainOrDeny;
             }
         }
 

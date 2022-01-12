@@ -143,6 +143,12 @@ public class RenameSiteAuthorityDisplayName  extends AbstractPatch
             {
                 return siteInfos.size();
             }
+
+            @Override
+            public long getTotalEstimatedWorkSizeLong()
+            {
+                return siteInfos.size();
+            }
             
             @Override
             public Collection<SiteInfo> getNextWork()

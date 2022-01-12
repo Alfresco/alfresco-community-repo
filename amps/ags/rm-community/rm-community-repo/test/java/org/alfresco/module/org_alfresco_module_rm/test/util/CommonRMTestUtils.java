@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -82,8 +82,12 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String DEFAULT_DISPOSITION_INSTRUCTIONS = "disposition instructions";
     public static final String DEFAULT_DISPOSITION_DESCRIPTION = "disposition action description";
     public static final String DEFAULT_EVENT_NAME = "case_closed";
+    public static final String SEPARATION_EVENT_NAME = "separation";
     public static final String PERIOD_NONE = "none|0";
     public static final String PERIOD_IMMEDIATELY = "immediately|0";
+    public static final String PERIOD_ONE_DAY = "day|1";
+    public static final String PERIOD_FIVE_DAYS = "day|5";
+    public static final String PERIOD_TEN_DAYS = "day|10";
     public static final String PERIOD_ONE_WEEK = "week|1";
     public static final String PERIOD_ONE_YEAR = "year|1";
     public static final String PERIOD_THREE_YEARS = "year|3";

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,8 @@
  */
 package org.alfresco.util.schemacomp;
 
+import java.util.Locale;
+
 /**
  * Base class for the result of a differencing or validation operation.
  *  
@@ -43,4 +45,13 @@ public abstract class Result
     {
         return toString();
     }
+
+    /**
+     * An overload of the {@link #describe()} that allows you to specify what locale
+     * to use for the loggable message that describes the comparison result.
+     *
+     * @param locale The locale to use for comparison description.
+     * @return String
+     */
+    public abstract String describe(Locale locale);
 }

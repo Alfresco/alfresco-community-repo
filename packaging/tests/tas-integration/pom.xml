@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-tests</artifactId>
-        <version>11.50-SNAPSHOT</version>
+        <version>14.79-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
             <artifactId>json-path</artifactId>
-            <version>2.5.0</version>
+            <version>${dependency.jakarta-json-path.version}</version>
         </dependency>
     </dependencies>
 

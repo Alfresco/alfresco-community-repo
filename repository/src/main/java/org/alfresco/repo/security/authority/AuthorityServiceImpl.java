@@ -64,6 +64,8 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  */
 public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 {
+    public static final String GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX + "ALFRESCO_SYSTEM_ADMINISTRATORS";
+
     private static Set<String> DEFAULT_ZONES = new HashSet<String>();
     
     static
@@ -770,6 +772,16 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         return authorityDAO.getShortName(name);
     }
 
+    @Override
+    public boolean hasSysAdminAuthority()
+    {
+        final String currentUserName = AuthenticationUtil.getRunAsUser();
+        if (currentUserName == null)
+        {
+            return false;
+        }
+        return getAuthoritiesForUser(currentUserName).contains(GROUP_ALFRESCO_SYSTEM_ADMINISTRATORS_AUTHORITY);
+    }
 
     /**
      * Lazy load set of authorities. Try not to iterate or ask for the size. Needed for the case where there

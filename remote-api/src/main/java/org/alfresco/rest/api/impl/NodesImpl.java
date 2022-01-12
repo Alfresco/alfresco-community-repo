@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -139,6 +139,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -238,11 +239,15 @@ public class NodesImpl implements Nodes
 
     private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
 
-    private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
+    // pre-configured allow list of media/mime types, eg. specific types of images & also pdf
+    private Set<String> nonAttachContentTypes = Collections.emptySet(); 
 
-    public void setNonAttachContentTypes(Set<String> nonAttachWhiteList)
+    public void setNonAttachContentTypes(String nonAttachAllowListStr)
     {
-        this.nonAttachContentTypes = nonAttachWhiteList;
+        if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
+        {
+            nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
+        }
     }
 
     public void init()
@@ -3411,6 +3416,20 @@ public class NodesImpl implements Nodes
 
         lockService.unlock(nodeRef);
         return getFolderOrDocument(nodeId, parameters);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    {
+        DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
+        if (directAccessUrl == null)
+        {
+            throw new DisabledServiceException("Direct access url isn't available.");
+        }
+        return directAccessUrl;
     }
 
     /**

@@ -108,8 +108,8 @@ public class SchemaBootstrapTest
         int numProblems = schemaBootstrap.validateSchema(null, out);
         out.flush();
 
-        assertEquals(1, numProblems);
         String problems = buff.toString();
+        assertEquals("Expected 1 problem; but these problems were found instead: \n" + problems + "\n", 1, numProblems);
         assertTrue("Missing optional patch-specific problems report: \n" + problems,
                 problems.contains("The following problems will be resolved once the long running patch "
                         + optionalPatch.getId() + " has been run"));

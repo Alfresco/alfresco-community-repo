@@ -488,6 +488,9 @@
         <property name="versionComparatorClass">
             <value>${version.store.versionComparatorClass}</value>
         </property>
+        <property name="useVersionAssocIndex">
+            <value>${version.store.useVersionAssocIndex}</value>
+        </property>
     </bean>
 
     <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">

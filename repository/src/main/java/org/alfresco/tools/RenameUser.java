@@ -550,6 +550,12 @@ public class RenameUser extends Tool
         }
 
         @Override
+        public synchronized long getTotalEstimatedWorkSizeLong()
+        {
+            return size;
+        }
+
+        @Override
         public synchronized Collection<User> getNextWork()
         {
             if (vmShutdownLister.isVmShuttingDown())

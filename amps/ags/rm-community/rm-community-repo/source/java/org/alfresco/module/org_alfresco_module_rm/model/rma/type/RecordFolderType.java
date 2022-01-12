@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,8 +34,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -68,11 +66,6 @@ public class RecordFolderType extends    AbstractDisposableItem
                               implements NodeServicePolicies.OnMoveNodePolicy,
                                          NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-    /** record service */
-    private RecordService recordService;
-
-    /** record folder service */
-    private RecordFolderService recordFolderService;
 
     /** vital record service */
     protected VitalRecordService vitalRecordService;
@@ -84,22 +77,6 @@ public class RecordFolderType extends    AbstractDisposableItem
     private static final String MSG_CANNOT_CREATE_RECORD_FOLDER_CHILD = "rm.action.create.record.folder.child-error-message";
 
     private static final String MSG_CANNOT_CREATE_CHILDREN_IN_CLOSED_RECORD_FOLDER = "rm.service.add-children-to-closed-record-folder";
-
-    /**
-     * @param recordService record service
-     */
-    public void setRecordService(RecordService recordService)
-    {
-        this.recordService = recordService;
-    }
-
-    /**
-     * @param recordFolderService   record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
-    }
 
     /**
      * @param vitalRecordService    vital record service
@@ -131,31 +108,7 @@ public class RecordFolderType extends    AbstractDisposableItem
         {
             if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
             {
-                final NodeRef newNodeRef = newChildAssocRef.getChildRef();
-
-                AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
-                {
-                    public Object doWork()
-                    {
-                        // clean record folder
-                        cleanDisposableItem(nodeService, newNodeRef);
-
-                        // re-initialise the record folder
-                        recordFolderService.setupRecordFolder(newNodeRef);
-
-                        // sort out the child records
-                        for (NodeRef record : recordService.getRecords(newNodeRef))
-                        {
-                            // clean record
-                            cleanDisposableItem(nodeService, record);
-
-                            // Re-initiate the records in the new folder.
-                            recordService.file(record);
-                        }
-
-                        return null;
-                    }
-                }, AuthenticationUtil.getSystemUserName());
+                reinitializeRecordFolder(newChildAssocRef);
             }
         }
         else

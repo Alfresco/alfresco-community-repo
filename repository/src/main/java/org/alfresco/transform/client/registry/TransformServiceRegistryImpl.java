@@ -176,6 +176,12 @@ public abstract class TransformServiceRegistryImpl extends AbstractTransformRegi
     }
 
     @Override
+    protected void logWarn(String msg)
+    {
+        getLog().warn(msg);
+    }
+
+    @Override
     public String findTransformerName(final String sourceMimetype, final long sourceSizeInBytes,
                                       final String targetMimetype, final Map<String, String> actualOptions,
                                       final String renditionName)

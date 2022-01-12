@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,18 +25,17 @@
  */
 package org.alfresco.repo.version;
 
-import org.alfresco.error.AlfrescoRuntimeException;
+import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.EmptyContentReader;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.MimetypeMapTest;
+import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -44,10 +43,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 
 /**
  * Tests for getting content readers and writers.
@@ -57,17 +57,25 @@ import java.util.Date;
 @Category(OwnJVMTestsCategory.class)
 @Transactional
 public class ContentServiceImplTest extends BaseVersionStoreTest
-{   
+{
+    private static final Boolean ENABLED = Boolean.TRUE;
+
     /**
      * Test content data
      */
     private final static String UPDATED_CONTENT = "This content has been updated with a new value.";
+    private static final QName QNAME = ContentModel.PROP_CONTENT;
     
     /**
      * The version content store
      */
+    @InjectMocks
     private ContentService contentService;
+
     private ContentStore contentStore;
+
+    @Mock
+    private SystemWideDirectUrlConfig mockSystemWideDirectUrlConfig;
 
     @Before
     public void before() throws Exception
@@ -139,44 +147,42 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
     }
 
     @Test
-    public void testWhenGetDirectAccessUrlIsNotSupported()
+    public void testWhenRequestContentDirectUrlIsNotSupported()
     {
-        assertFalse(contentStore.isDirectAccessSupported());
+        openMocks(this);
+        when(mockSystemWideDirectUrlConfig.isEnabled()).thenReturn(ENABLED);
+        when(mockSystemWideDirectUrlConfig.getDefaultExpiryTimeInSec()).thenReturn(30L);
+        when(mockSystemWideDirectUrlConfig.getMaxExpiryTimeInSec()).thenReturn(300L);
+
+        assertFalse(contentStore.isContentDirectUrlEnabled());
 
         // Set the presigned URL to expire after one minute.
-        Date expiresAt = new Date();
-        long expTimeMillis = expiresAt.getTime();
-        expTimeMillis += 1000 * 60;
-        expiresAt.setTime(expTimeMillis);
+        Long validFor = 60L;
 
-        try
-        {
+        assertThrows("nodeRef has no content", IllegalArgumentException.class, () -> {
             // Create a node without content
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
-            assertEquals(null, contentService.getDirectAccessUrl(nodeRef, expiresAt));
-            fail("nodeRef has no content");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected exception
-        }
+            assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
+        });
 
-        try
-        {
-            assertEquals(null, contentService.getDirectAccessUrl(null, null));
-            fail("nodeRef is null");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected exception
-        }
+        assertThrows("nodeRef is null", IllegalArgumentException.class, () -> {
+            assertNull(contentService.requestContentDirectUrl(null, null, true, null));
+        });
+
+        assertThrows("propertyQName has no content", NullPointerException.class, () -> {
+            // Create a node without content
+            NodeRef nodeRef = this.dbNodeService
+                    .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
+
+            contentService.requestContentDirectUrl(nodeRef, null, true, validFor);
+        });
 
         // Create a node with content
         NodeRef nodeRef = createNewVersionableNode();
 
-        assertEquals(null, contentService.getDirectAccessUrl(nodeRef, null));
-        assertEquals(null, contentService.getDirectAccessUrl(nodeRef, expiresAt));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, null));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
     }
 }

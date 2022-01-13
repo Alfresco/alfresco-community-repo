@@ -1040,6 +1040,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID;
     }
 
+    protected String getNodeVersionRenditionIdUrl(String nodeId, String versionId, String renditionID)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + URL_RENDITIONS + "/" + renditionID;
+    }
+
     protected String getNodeVersionsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS;

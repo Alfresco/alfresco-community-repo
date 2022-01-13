@@ -287,7 +287,6 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 @Override
                 public Void execute() throws Throwable
                 {
-                    System.out.println("webScriptDelete | " + params);
                     executeAction(resource, params, callBack); //ignore return result
                     return null;
                 }

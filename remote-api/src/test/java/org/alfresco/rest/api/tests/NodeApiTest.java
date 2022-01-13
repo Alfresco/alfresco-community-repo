@@ -6366,5 +6366,44 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
     }
+
+    @Test
+    public void testRequestDeleteRendition() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        // Create multipart request - txt file
+        String renditionName = "pdf";
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                                                   .setFileData(new FileData(fileName, file))
+                                                   .setRenditions(Collections.singletonList(renditionName))
+                                                   .build();
+
+        //Upload file to user home node
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // wait and check that rendition is created ...
+        Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        //clean rendition
+        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 204);
+        //retry to double-check deletion
+        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
+
+        //check if rendition was cleaned
+        HttpResponse getResponse = getSingle(getNodeRenditionIdUrl(contentNodeId, renditionName), null,  200);
+        Rendition renditionDeleted = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), Rendition.class);
+        assertNotNull(renditionDeleted);
+        assertEquals(Rendition.RenditionStatus.NOT_CREATED, renditionDeleted.getStatus());
+    }
+
 }
 

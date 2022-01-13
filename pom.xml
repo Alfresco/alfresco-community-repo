@@ -655,6 +655,12 @@
                 <artifactId>commons-csv</artifactId>
                 <version>1.9.0</version>
             </dependency>
+            <!-- upgrade dependency from TIKA -->
+            <dependency>
+                <groupId>org.jdom</groupId>
+                <artifactId>jdom2</artifactId>
+                <version>${dependency.jdom2.version}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.postgresql</groupId>
@@ -851,11 +857,6 @@
                 <artifactId>lombok</artifactId>
                 <version>1.18.22</version>
                 <scope>provided</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.jdom</groupId>
-                <artifactId>jdom2</artifactId>
-                <version>${dependency.jdom2.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

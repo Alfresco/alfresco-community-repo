@@ -904,6 +904,17 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     @Override
+    public void clearRenditionContentDataInTransaction(NodeRef renditionNode)
+    {
+        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    clearRenditionContentData(renditionNode);
+                    return null;
+                }, false, true));
+    }
+
+    @Override
     public boolean isEnabled()
     {
         return enabled && thumbnailsEnabled;

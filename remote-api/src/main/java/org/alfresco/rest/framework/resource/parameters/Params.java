@@ -188,6 +188,8 @@ public class Params implements Parameters
         builder.append(this.entityId);
         builder.append(", relationshipId=");
         builder.append(this.relationshipId);
+        builder.append(", relationship2Id=");
+        builder.append(this.relationship2Id);
         builder.append(", passedIn=");
         builder.append(this.passedIn);
         builder.append(", paging=");

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1033,6 +1033,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String getNodeRenditionsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS;
+    }
+
+    protected String getNodeRenditionIdUrl(String nodeId, String renditionID)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID;
+    }
+
+    protected String getNodeVersionRenditionIdUrl(String nodeId, String versionId, String renditionID)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + URL_RENDITIONS + "/" + renditionID;
     }
 
     protected String getNodeVersionsUrl(String nodeId)

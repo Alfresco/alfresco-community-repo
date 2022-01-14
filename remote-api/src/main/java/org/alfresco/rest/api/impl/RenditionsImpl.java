@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software LimitedP
+ * Copyright (C) 2005 - 2022 Alfresco Software LimitedP
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -442,6 +442,31 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             }
         }
 
+    }
+
+    @Override
+    public void deleteRendition(NodeRef nodeRef, String renditionId, Parameters parameters)
+    {
+        deleteRendition(nodeRef, null, renditionId, parameters);
+    }
+
+    @Override
+    public void deleteRendition(NodeRef nodeRef, String versionId, String renditionId, Parameters parameters)
+    {
+        if (!renditionService2.isEnabled())
+        {
+            throw new DisabledServiceException("Rendition generation has been disabled.");
+        }
+
+        final NodeRef validatedNodeRef = validateNode(nodeRef.getStoreRef(), nodeRef.getId(), versionId, parameters);
+        NodeRef renditionNodeRef = getRenditionByName(validatedNodeRef, renditionId, parameters);
+
+        if (renditionNodeRef == null)
+        {
+            throw new NotFoundException(renditionId + " is not registered.");
+        }
+
+        renditionService2.clearRenditionContentDataInTransaction(renditionNodeRef);
     }
 
     private String getName(Rendition rendition)

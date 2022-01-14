@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -6370,7 +6370,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testRequestDeleteRendition() throws Exception
     {
-        setRequestContext(user1);
+        setRequestContext(networkOne.getId(), user1, null);
 
         String myNodeId = getMyNodeId();
 
@@ -6408,7 +6408,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testRequestVersionDeleteRendition() throws Exception
     {
-        setRequestContext(user1);
+        setRequestContext(networkOne.getId(), user1, null);
 
         String myNodeId = getMyNodeId();
 

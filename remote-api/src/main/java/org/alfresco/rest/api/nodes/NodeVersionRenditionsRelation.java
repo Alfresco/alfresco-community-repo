@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -48,10 +48,11 @@ import org.springframework.extensions.webscripts.Status;
  *
  * Node version renditions
  *
- * - GET  /nodes/{nodeId}/versions/{versionId}/renditions
- * - POST /nodes/{nodeId}/versions/{versionId}/renditions
- * - GET  /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
- * - GET  /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
+ * - GET    /nodes/{nodeId}/versions/{versionId}/renditions
+ * - POST   /nodes/{nodeId}/versions/{versionId}/renditions
+ * - GET    /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
+ * - DELETE /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
+ * - GET    /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
  *
  * @author janv
  */
@@ -59,6 +60,7 @@ import org.springframework.extensions.webscripts.Status;
 public class NodeVersionRenditionsRelation implements RelationshipResourceAction.Read<Rendition>,
         RelationshipResourceAction.ReadById<Rendition>,
         RelationshipResourceAction.Create<Rendition>,
+        RelationshipResourceAction.Delete,
         RelationshipResourceBinaryAction.Read,
         InitializingBean
 {
@@ -115,4 +117,13 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
         return renditions.getContent(nodeRef, versionId, renditionId, parameters);
     }
 
+    @WebApiDescription(title = "Delete rendition")
+    @Override
+    public void delete(String nodeId, String versionId, Parameters parameters)
+    {
+        String renditionId = parameters.getRelationship2Id();
+
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        renditions.deleteRendition(nodeRef, versionId, renditionId, parameters);
+    }
 }

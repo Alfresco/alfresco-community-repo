@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -188,6 +188,8 @@ public class Params implements Parameters
         builder.append(this.entityId);
         builder.append(", relationshipId=");
         builder.append(this.relationshipId);
+        builder.append(", relationship2Id=");
+        builder.append(this.relationship2Id);
         builder.append(", passedIn=");
         builder.append(this.passedIn);
         builder.append(", paging=");

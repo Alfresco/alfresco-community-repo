@@ -514,7 +514,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
     public void testExtractHtml() throws Exception
     {
         expectedProperties.put(QName.createQName("cm:author", namespacePrefixResolver), "Nevin Nollop");
-        expectedProperties.put(QName.createQName("cm:description", namespacePrefixResolver), "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(QName.createQName("cm:description", namespacePrefixResolver), "Gym class featuring a brown fox and lazy dog");
         expectedProperties.put(QName.createQName("cm:title", namespacePrefixResolver), "The quick brown fox jumps over the lazy dog");
 
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.html_metadata.json",
@@ -728,7 +728,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
         expectedProperties.put(author, "Original author");
         expectedProperties.put(title, "The quick brown fox jumps over the lazy dog");
-        expectedProperties.put(description, "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(description, "Gym class featuring a brown fox and lazy dog");
         expectedProperties.put(audio, "Default audio");
 
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.prudent_policy_metadata.json",
@@ -759,7 +759,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
         expectedProperties.put(author, "Original author");
         expectedProperties.put(title, "The quick brown fox jumps over the lazy dog");
-        expectedProperties.put(description, "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(description, "Gym class featuring a brown fox and lazy dog");
         expectedProperties.put(audio, "New audio");
 
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.pragmatic_policy_metadata.json",
@@ -783,7 +783,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
         origProperties.put(title, "Default title");
 
         expectedProperties.put(author, "Nevin Nollop");
-        expectedProperties.put(description, "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(description, "Gym class featuring a brown fox and lazy dog");
 
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.carryAspectFalse_metadata.json",
                 UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);
@@ -814,7 +814,7 @@ public class AsynchronousExtractorTest extends BaseSpringTest
 
         expectedProperties.put(author, "Nevin Nollop");
         expectedProperties.put(title, "Default title");
-        expectedProperties.put(description, "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog");
+        expectedProperties.put(description, "Gym class featuring a brown fox and lazy dog");
 
         assertAsyncMetadataExecute(contentMetadataExtracter, "quick/quick.carryAspectTrue_metadata.json",
                 UNCHANGED_HASHCODE, origSize, expectedProperties, OverwritePolicy.PRAGMATIC);

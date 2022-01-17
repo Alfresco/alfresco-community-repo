@@ -100,7 +100,7 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
     
     public HierarchicalXMLConfigBuilder(HierarchicalResourceLoader resourceLoader, InputStream inputStream, String environment, Properties props)
     {
-        super(new HackableConfiguration());
+        super(new Configuration());
         
         // EXTENDED
         this.resourceLoader = resourceLoader;
@@ -255,7 +255,7 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
             configuration.setDefaultScriptingLanguage(resolveClass(props.getProperty("defaultScriptingLanguage")));
             configuration.setCallSettersOnNulls(booleanValueOf(props.getProperty("callSettersOnNulls"), false));
             configuration.setLogPrefix(props.getProperty("logPrefix"));
-            configuration.setLogImpl((Class<org.apache.ibatis.logging.Log>)resolveClass(props.getProperty("logImpl")));
+            configuration.setLogImpl(resolveClass(props.getProperty("logImpl")));
         }
     }
 

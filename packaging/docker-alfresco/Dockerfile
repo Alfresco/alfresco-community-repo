@@ -1,6 +1,6 @@
 # Fetch image based on Tomcat 9.0, Java 11 and Centos 8
 # More infos about this image: https://github.com/Alfresco/alfresco-docker-base-tomcat
-FROM alfresco/alfresco-base-tomcat:9.0.52-java-11-centos-7
+FROM alfresco/alfresco-base-tomcat:9.0.54-java-11-centos-7
 
 # Set default docker_context.
 ARG resource_path=target

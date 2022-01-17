@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -6366,5 +6366,92 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
     }
+
+    @Test
+    public void testRequestDeleteRendition() throws Exception
+    {
+        setRequestContext(networkOne.getId(), user1, null);
+
+        String myNodeId = getMyNodeId();
+
+        // Create multipart request - txt file
+        String renditionName = "pdf";
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                                                   .setFileData(new FileData(fileName, file))
+                                                   .setRenditions(Collections.singletonList(renditionName))
+                                                   .build();
+
+        //Upload file to user home node
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // wait and check that rendition is created ...
+        Rendition rendition = waitAndGetRendition(contentNodeId, null, renditionName);
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        //clean rendition
+        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 204);
+        //retry to double-check deletion
+        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
+
+        //check if rendition was cleaned
+        HttpResponse getResponse = getSingle(getNodeRenditionIdUrl(contentNodeId, renditionName), null,  200);
+        Rendition renditionDeleted = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), Rendition.class);
+        assertNotNull(renditionDeleted);
+        assertEquals(Rendition.RenditionStatus.NOT_CREATED, renditionDeleted.getStatus());
+    }
+
+    @Test
+    public void testRequestVersionDeleteRendition() throws Exception
+    {
+        setRequestContext(networkOne.getId(), user1, null);
+
+        String myNodeId = getMyNodeId();
+
+        // Create multipart request - txt file
+        String renditionName = "pdf";
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                                                   .setFileData(new FileData(fileName, file))
+                                                   .setRenditions(Collections.singletonList(renditionName))
+                                                   .build();
+
+        //Upload file to user home node
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        //Update file to newer version
+        String content = "The quick brown fox jumps over the lazy dog\n the lazy dog jumps over the quick brown fox";
+        Map<String, String> params = new HashMap<>();
+        params.put("comment", "my version ");
+
+        document = updateTextFile(contentNodeId, content, params);
+        assertTrue(document.getAspectNames().contains("cm:versionable"));
+        assertNotNull(document.getProperties());
+        assertEquals("1.1", document.getProperties().get("cm:versionLabel"));
+
+        // create rendition for old version and check that rendition is created ...
+        Rendition renditionUpdated = createAndGetRendition(contentNodeId, "1.0", renditionName);
+        assertNotNull(renditionUpdated);
+        assertEquals(Rendition.RenditionStatus.CREATED, renditionUpdated.getStatus());
+
+        //clean rendition
+        delete(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null, null, null, null, 204);
+        //retry to double-check deletion
+        delete(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null, null, null, null, 404);
+
+        //check if rendition was cleaned
+        HttpResponse getResponse = getSingle(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null,  200);
+        Rendition renditionDeleted = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), Rendition.class);
+        assertNotNull(renditionDeleted);
+        assertEquals(Rendition.RenditionStatus.NOT_CREATED, renditionDeleted.getStatus());
+    }
+
 }
 

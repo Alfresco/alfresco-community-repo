@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -65,6 +65,7 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
         RelationshipResourceAction.ReadById<Rendition>,
         RelationshipResourceAction.Create<Rendition>,
         RelationshipResourceBinaryAction.Read,
+        RelationshipResourceAction.Delete,
         InitializingBean
 {
 
@@ -108,6 +109,14 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
         renditions.createRenditions(nodeRef, entity, parameters);
         return null;
+    }
+
+    @WebApiDescription(title = "Delete rendition")
+    @Override
+    public void delete(String nodeId, String renditionId, Parameters parameters)
+    {
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        renditions.deleteRendition(nodeRef, renditionId, parameters);
     }
 
     @WebApiDescription(title = "Download rendition", description = "Download rendition")

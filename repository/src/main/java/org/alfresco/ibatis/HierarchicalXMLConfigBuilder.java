@@ -100,7 +100,7 @@ public class HierarchicalXMLConfigBuilder extends BaseBuilder
     
     public HierarchicalXMLConfigBuilder(HierarchicalResourceLoader resourceLoader, InputStream inputStream, String environment, Properties props)
     {
-        super(new Configuration());
+        super(new HackableConfiguration());
         
         // EXTENDED
         this.resourceLoader = resourceLoader;

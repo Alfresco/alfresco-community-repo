@@ -959,4 +959,12 @@ public class Node extends ModelRequest<Node>
             .withNodeId(repoModel.getNodeRef())
             .withContentPropName(contentPropName);
     }
+
+    public ContentStorageInformation usingVersionStorageInfo(String contentPropName, String versionId)
+    {
+        return new ContentStorageInformation(restWrapper)
+                .withNodeId(repoModel.getNodeRef())
+                .withContentPropName(contentPropName)
+                .withVersionId(versionId);
+    }
 }

@@ -17,11 +17,14 @@ import org.springframework.http.HttpMethod;
 
 public class ContentStorageInformation extends ModelRequest<ContentStorageInformation> 
 {
-    private static final String basePath = "nodes/{nodeId}/storage-info/{contentPropName}";
-    RestContentStorageInfoModel storageInfoModel;
+    private static final String BASE_PATH = "nodes/{nodeId}/storage-info/{contentPropName}";
+    private static final String VERSIONS_BASE_PATH = "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}";
+    private static final String ARCHIVE_PATH_SUFFIX = "/archive";
+    private static final String ARCHIVE_RESTORE_PATH_SUFFIX = "/archive-restore";
 
     private String nodeId;
     private String contentPropName;
+    private String versionId;
 
     public ContentStorageInformation(RestWrapper restWrapper) 
     {
@@ -41,6 +44,12 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
         return this;
     }
 
+    public ContentStorageInformation withVersionId(String versionId)
+    {
+        this.versionId = versionId;
+        return this;
+    }
+
     /**
      * Get Content Storage Properties using GET call on "nodes/{nodeId}/storage-info/{contentPropName}"
      * @return
@@ -51,6 +60,15 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     }
 
     /**
+     * Get Content Version Storage Properties using GET call on "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}"
+     * @return
+     */
+    public RestContentStorageInfoModel getVersionStorageInfo()
+    {
+        return getVersionStorageInfo(nodeId, versionId, contentPropName);
+    }
+
+    /**
      * Get Content Storage Properties using GET call on "nodes/{nodeId}/storage-info/{contentPropName}"
      * @param nodeId The nodeId
      * @param contentPropName The content property QNAME ie. "cm:content"
@@ -58,7 +76,20 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
      */
     public RestContentStorageInfoModel getStorageInfo(String nodeId, String contentPropName)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, basePath, nodeId, contentPropName);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, BASE_PATH, nodeId, contentPropName);
+        return restWrapper.processModel(RestContentStorageInfoModel.class, request);
+    }
+
+    /**
+     * Get Content Version Storage Properties using GET call on "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}"
+     * @param nodeId The nodeId
+     * @param versionId The versionId
+     * @param contentPropName The content property QNAME ie. "cm:content"
+     * @return object of {@link RestContentStorageInfoModel}
+     */
+    public RestContentStorageInfoModel getVersionStorageInfo(String nodeId, String versionId, String contentPropName)
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, VERSIONS_BASE_PATH, nodeId, versionId, contentPropName);
         return restWrapper.processModel(RestContentStorageInfoModel.class, request);
     }
 
@@ -74,6 +105,17 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     }
 
     /**
+     * Send version content to archive using POST call on "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}/archive"
+     *
+     * @param archiveContentRequest The request body
+     * @return
+     */
+    public RestResponse requestArchiveVersionContent(RestArchiveContentRequestModel archiveContentRequest)
+    {
+        return requestArchiveVersionContent(nodeId, contentPropName, versionId, archiveContentRequest);
+    }
+
+    /**
      * Send content to archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive"
      * 
      * @param nodeId The nodeId
@@ -83,12 +125,27 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
      */
     public RestResponse requestArchiveContent(String nodeId, String contentPropName, RestArchiveContentRequestModel archiveContentRequest)
     {
-        RestRequest request = createRestRequestWithBody(HttpMethod.POST, archiveContentRequest, basePath + "/archive", nodeId, contentPropName);
+        RestRequest request = createRestRequestWithBody(HttpMethod.POST, archiveContentRequest, BASE_PATH + ARCHIVE_PATH_SUFFIX, nodeId, contentPropName);
         return restWrapper.process(request);
     }
 
     /**
-     * Send content to archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive-restore"
+     * Send version content to archive using POST call on "nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropName}/archive"
+     *
+     * @param nodeId The nodeId
+     * @param contentPropName The content property QNAME ie. "cm:content"
+     * @param versionId  The versionId
+     * @param archiveContentRequest The request body
+     * @return
+     */
+    public RestResponse requestArchiveVersionContent(String nodeId, String contentPropName, String versionId, RestArchiveContentRequestModel archiveContentRequest)
+    {
+        RestRequest request = createRestRequestWithBody(HttpMethod.POST, archiveContentRequest, VERSIONS_BASE_PATH + ARCHIVE_PATH_SUFFIX, nodeId, versionId, contentPropName);
+        return restWrapper.process(request);
+    }
+
+    /**
+     * Restore content from archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive-restore"
      * 
      * @param restoreArchivedContentRequest The request body
      * @return
@@ -99,7 +156,18 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
     }
 
     /**
-     * Send content to archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive-restore"
+     * Restore version content from archive using POST call on "nodes/{nodeId}/storage-info/versions/{versionId}/{contentPropName}/archive-restore"
+     *
+     * @param restoreArchivedContentRequest The request body
+     * @return
+     */
+    public RestResponse requestRestoreVersionContentFromArchive(RestRestoreArchivedContentRequestModel restoreArchivedContentRequest)
+    {
+        return requestRestoreVersionContentFromArchive(nodeId, contentPropName, versionId, restoreArchivedContentRequest);
+    }
+
+    /**
+     * Restore content from archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive-restore"
      * 
      * @param nodeId The nodeId
      * @param contentPropName The content property QNAME ie. "cm:content"
@@ -108,7 +176,25 @@ public class ContentStorageInformation extends ModelRequest<ContentStorageInform
      */
     public RestResponse requestRestoreContentFromArchive(String nodeId, String contentPropName, RestRestoreArchivedContentRequestModel restoreArchivedContentRequest)
     {
-        RestRequest request = createRestRequestWithBody(HttpMethod.POST, restoreArchivedContentRequest, basePath + "/archive-restore", nodeId, contentPropName);
+        RestRequest request = createRestRequestWithBody(HttpMethod.POST, restoreArchivedContentRequest, BASE_PATH +
+                ARCHIVE_RESTORE_PATH_SUFFIX, nodeId, contentPropName);
+        return restWrapper.process(request);
+    }
+
+    /**
+     * Restore version content from archive using POST call on "nodes/{nodeId}/storage-info/{contentPropName}/archive-restore"
+     *
+     * @param nodeId The nodeId
+     * @param contentPropName The content property QNAME ie. "cm:content"
+     * @param versionId  The versionId
+     * @param restoreArchivedContentRequest The request body
+     * @return
+     */
+    public RestResponse requestRestoreVersionContentFromArchive(String nodeId, String contentPropName, String versionId,
+                                                                RestRestoreArchivedContentRequestModel restoreArchivedContentRequest)
+    {
+        RestRequest request = createRestRequestWithBody(HttpMethod.POST, restoreArchivedContentRequest, VERSIONS_BASE_PATH +
+                ARCHIVE_RESTORE_PATH_SUFFIX, nodeId, versionId, contentPropName);
         return restWrapper.process(request);
     }
     

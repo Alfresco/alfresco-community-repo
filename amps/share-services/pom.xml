@@ -168,6 +168,10 @@
                 <targetPath>../${project.build.finalName}</targetPath>
                 <filtering>true</filtering>
             </resource>
+            <resource>
+                <directory>${project.build.directory}/generated-sources/license</directory>
+                <targetPath>../${project.build.finalName}/licenses/${artifactId}</targetPath>
+            </resource>
         </resources>
         <testResources>
             <testResource>

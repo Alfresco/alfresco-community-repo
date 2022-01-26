@@ -94,4 +94,4 @@ The enterprise projects which extend the `alfresco-community-repo` use the same 
 artifact version number.
 
 ### Contributing guide
-Please use [this guide](CONTRIBUTING.md) to make a contribution to the project.
+Please use [this guide](CONTRIBUTING.md) to make a contribution to the project. 

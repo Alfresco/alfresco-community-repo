@@ -66,8 +66,8 @@ public class RepeatAtMostRuleTest
     @Test
     public void testSucceedOnFirstAttempt() throws Throwable
     {
-        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(), testNameRule.getMethodName(),
-            getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
+        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(),
+            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
 
         Statement statement = repeatAtMostRule.apply(statementMock, description);
         statement.evaluate();
@@ -79,8 +79,8 @@ public class RepeatAtMostRuleTest
     {
         doThrow(new AssertionError("First execution should fail")).doNothing().when(statementMock).evaluate();
 
-        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(), testNameRule.getMethodName(),
-            getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
+        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(),
+            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
 
         Statement statement = repeatAtMostRule.apply(statementMock, description);
         statement.evaluate();
@@ -100,8 +100,8 @@ public class RepeatAtMostRuleTest
     {
         doThrow(new AssertionError("All executions should fail")).when(statementMock).evaluate();
 
-        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(), testNameRule.getMethodName(),
-            getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
+        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(),
+            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
 
         Statement statement = repeatAtMostRule.apply(statementMock, description);
         statement.evaluate();
@@ -110,8 +110,8 @@ public class RepeatAtMostRuleTest
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidRepeatAtMostTimes() throws Throwable
     {
-        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(), testNameRule.getMethodName(),
-            getAnnotationByMethodName(ANNOTATION_WITH_NEGATIVE_VALUE));
+        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(),
+            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_WITH_NEGATIVE_VALUE));
 
         Statement statement = repeatAtMostRule.apply(statementMock, description);
         statement.evaluate();

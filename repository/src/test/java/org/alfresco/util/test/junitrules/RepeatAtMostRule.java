@@ -83,7 +83,9 @@ public class RepeatAtMostRule implements TestRule
             {
                 try
                 {
-                    LOG.debug("Repeatable testing configured for method: " + description.getMethodName() + " // Attempt #" + (i + 1));
+                    LOG.debug(
+                        "Repeatable testing configured for method: " + description.getMethodName()
+                            + " // Attempt #" + (i + 1));
                     statement.evaluate();
                     break; // stop at the first successful execution
                 }
@@ -103,7 +105,8 @@ public class RepeatAtMostRule implements TestRule
             if (times < 1)
             {
                 String methodName = description.getMethodName();
-                throw new IllegalArgumentException("Invalid value for @RepeatAtMost on method " + methodName + ": " + times + " is less than 1.");
+                throw new IllegalArgumentException(
+                    "Invalid value for @RepeatAtMost on method " + methodName + ": " + times + " is less than 1.");
             }
         }
 

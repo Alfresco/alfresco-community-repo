@@ -7,20 +7,25 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>11.88-SNAPSHOT</version>
+      <version>14.92-SNAPSHOT</version>
    </parent>
-
 
    <build>
       <plugins>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <configuration>
-               <licenseName>alfresco_community</licenseName>
-               <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
-               <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
-            </configuration>
+            <executions>
+                <execution>
+                    <id>first</id>
+                    <phase>process-sources</phase>
+                    <configuration>
+                       <licenseName>alfresco_community</licenseName>
+                       <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+                       <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                    </configuration>
+                </execution>
+            </executions>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -40,7 +45,7 @@
       <dependency>
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
-         <version>1.7.26</version>
+         <version>1.7.33</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -82,7 +87,7 @@
       <dependency>
          <groupId>com.github.docker-java</groupId>
          <artifactId>docker-java</artifactId>
-         <version>3.2.11</version>
+         <version>3.2.12</version>
       </dependency>
    </dependencies>
 </project>

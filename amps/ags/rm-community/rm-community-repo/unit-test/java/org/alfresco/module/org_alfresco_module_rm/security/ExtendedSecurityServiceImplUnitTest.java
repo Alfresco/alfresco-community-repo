@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,11 +34,12 @@ import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anySet;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -75,10 +76,11 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -89,6 +91,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * @author Roy Wetherall
  * @since 2.5
  */
+@RunWith(MockitoJUnitRunner.class)
 public class ExtendedSecurityServiceImplUnitTest
 {
     /** service mocks*/
@@ -145,9 +148,6 @@ public class ExtendedSecurityServiceImplUnitTest
     @SuppressWarnings("unchecked")
     @Before public void before()
     {
-        // initialise mocks 
-        MockitoAnnotations.initMocks(this);
-        
         // setup node
         nodeRef = AlfMock.generateNodeRef(mockedNodeService);
         
@@ -157,7 +157,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .thenReturn(filePlan);
         
         // set-up application context
-        when(mockedApplicationContext.getBean("dbNodeService"))
+        lenient().when(mockedApplicationContext.getBean("dbNodeService"))
             .thenReturn(mockedNodeService);
 
         // setup retrying transaction helper
@@ -199,6 +199,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .forEach((a) -> 
                when(mockedAuthorityService.authorityExists(a))
                    .thenReturn(true));
+        extendedSecurityService.setNodeService(mockedNodeService);
     }
     
     /**
@@ -481,7 +482,7 @@ public class ExtendedSecurityServiceImplUnitTest
         .thenReturn(mockedWritePagingResults);
         
         // setup exact match
-        when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
+        lenient().when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
             .thenReturn(true);
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + readGroup, true))
             .thenReturn(Stream
@@ -560,7 +561,7 @@ public class ExtendedSecurityServiceImplUnitTest
         .thenReturn(mockedWritePagingResults);
         
         // setup exact match
-        when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
+        lenient().when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
             .thenReturn(true);
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + readGroup, true))
             .thenReturn(Stream
@@ -651,7 +652,7 @@ public class ExtendedSecurityServiceImplUnitTest
         .thenReturn(mockedWritePagingResults);
 
         // setup exact match
-        when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
+        lenient().when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
             .thenReturn(true);
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + readGroup, true))
             .thenReturn(Stream

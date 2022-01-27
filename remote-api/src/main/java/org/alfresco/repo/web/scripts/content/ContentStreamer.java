@@ -31,6 +31,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -44,6 +46,7 @@ import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -57,7 +60,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -449,7 +451,11 @@ public class ContentStreamer implements ResourceLoaderAware
             if (logger.isInfoEnabled())
                 logger.info("Client aborted stream read:\n\tcontent: " + reader);
         }
-        catch (ContentIOException e2)
+        catch (ArchivedIOException e2)
+        {
+            throw e2;
+        }
+        catch (ContentIOException e3)
         {
             if (logger.isInfoEnabled())
                 logger.info("Client aborted stream read:\n\tcontent: " + reader);
@@ -476,7 +482,7 @@ public class ContentStreamer implements ResourceLoaderAware
 
                 if (req == null)
                 {
-                    headerValue += "; filename*=UTF-8''" + URLEncoder.encode(attachFileName)
+                    headerValue += "; filename*=UTF-8''" + URLEncoder.encode(attachFileName, StandardCharsets.UTF_8)
                             + "; filename=\"" + filterNameForQuotedString(attachFileName) + "\"";
                 }
                 else
@@ -485,12 +491,12 @@ public class ContentStreamer implements ResourceLoaderAware
                     boolean isLegacy = (null != userAgent) && (userAgent.contains("MSIE 8") || userAgent.contains("MSIE 7"));
                     if (isLegacy)
                     {
-                        headerValue += "; filename=\"" + URLEncoder.encode(attachFileName);
+                        headerValue += "; filename=\"" + URLEncoder.encode(attachFileName, StandardCharsets.UTF_8);
                     }
                     else
                     {
                         headerValue += "; filename=\"" + filterNameForQuotedString(attachFileName) + "\"; filename*=UTF-8''"
-                                + URLEncoder.encode(attachFileName);
+                                + URLEncoder.encode(attachFileName, StandardCharsets.UTF_8);
                     }
                 }
             }

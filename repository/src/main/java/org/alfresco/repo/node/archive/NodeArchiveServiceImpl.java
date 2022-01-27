@@ -244,6 +244,15 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
             {
                 return 0;
             }
+
+            /**
+             * @return              Returns 0, always
+             */
+            public synchronized long getTotalEstimatedWorkSizeLong()
+            {
+                return 0;
+            }
+
             public synchronized Collection<NodeRef> getNextWork()
             {
                 if (vmShutdownLister.isVmShuttingDown())

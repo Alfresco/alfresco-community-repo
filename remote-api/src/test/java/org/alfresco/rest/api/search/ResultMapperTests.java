@@ -25,24 +25,27 @@
  */
 package org.alfresco.rest.api.search;
 
+import static java.util.Arrays.asList;
+
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertNull;
 import static junit.framework.TestCase.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.notNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -85,6 +88,7 @@ import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SearchSQLQuery;
 import org.alfresco.rest.api.search.model.TupleList;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.Params;
@@ -96,6 +100,7 @@ import org.alfresco.service.cmr.search.FieldHighlightParameters;
 import org.alfresco.service.cmr.search.GeneralHighlightParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
@@ -103,14 +108,11 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Tests the ResultMapper class
@@ -138,21 +140,22 @@ public class ResultMapperTests
                 + "},"
                 + "\"stats\":{\"stats_fields\":{\"numericLabel\":{\"sumOfSquares\":0,\"min\":null,\"max\":null,\"mean\":\"NaN\",\"percentiles\":[\"0.0\",12,\"0.99\",20.0685], \"count\":0,\"missing\":0,\"sum\":0,\"distinctValues\":[12,13,14,15,16,17,1],\"stddev\":0}, \"creator\":{\"min\":\"System\",\"max\":\"mjackson\",\"count\":\"990\",\"missing\":\"290\"}, \"created\":{\"sumOfSquares\":2.1513045770343806E27,\"min\":\"2011-02-15T20:16:27.080Z\",\"max\":\"2017-04-10T15:06:30.143Z\",\"mean\":\"2016-09-05T04:20:12.898Z\",\"count\":990,\"missing\":290,\"sum\":1.458318720769983E15,\"stddev\":5.6250677994522545E10}}},"
                 + "\"processedDenies\":true, \"lastIndexedTx\":34}";
-    public static final Params EMPTY_PARAMS = Params.valueOf((String)null,(String)null,(WebScriptRequest) null);
+    public static final Params EMPTY_PARAMS = Params.valueOf((String) null, null, null);
     public static final String FROZEN_ID = "frozen";
     public static final String FROZEN_VER = "1.1";
     private static final long VERSIONED_ID = 521l;
 
     private static SerializerTestHelper helper;
+    private static NodesImpl nodes;
 
     @BeforeClass
-    public static void setupTests() throws Exception
+    public static void setupTests()
     {
         Map<String, UserInfo> mapUserInfo = new HashMap<>();
         mapUserInfo.put(AuthenticationUtil.getSystemUserName(), new UserInfo(AuthenticationUtil.getSystemUserName(), "sys", "sys"));
         Map<QName, Serializable> nodeProps = new HashMap<>();
 
-        NodesImpl nodes = mock(NodesImpl.class);
+        nodes = mock(NodesImpl.class);
         ServiceRegistry sr = mock(ServiceRegistry.class);
         DeletedNodes deletedNodes = mock(DeletedNodes.class);
         nodes.setServiceRegistry(sr);
@@ -163,17 +166,10 @@ public class ResultMapperTests
         versionProperties.put(Version.PROP_DESCRIPTION, "ver desc");
         versionProperties.put(Version2Model.PROP_VERSION_TYPE, "v type");
         when(versionHistory.getVersion(anyString())).thenAnswer(invocation ->
-        {
-            return new VersionImpl(versionProperties,new NodeRef(StoreMapper.STORE_REF_VERSION2_SPACESSTORE, GUID.generate()));
-        });
+                new VersionImpl(versionProperties, new NodeRef(StoreMapper.STORE_REF_VERSION2_SPACESSTORE, GUID.generate())));
         NodeService nodeService = mock(NodeService.class);
 
-        when(versionService.getVersionHistory(any(NodeRef.class))).thenAnswer(invocation ->
-        {
-            Object[] args = invocation.getArguments();
-            NodeRef aNode = (NodeRef)args[0];
-            return versionHistory;
-        });
+        when(versionService.getVersionHistory(any(NodeRef.class))).thenReturn(versionHistory);
 
         when(nodeService.getProperties(any(NodeRef.class))).thenAnswer(invocation ->
         {
@@ -204,31 +200,26 @@ public class ResultMapperTests
             }
         });
 
-        //        // NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
-        when(nodes.getFolderOrDocument(any(NodeRef.class), nullable(NodeRef.class), nullable(QName.class), nullable(List.class), nullable(Map.class))).thenAnswer(new Answer<Node>() {
-            @Override
-            public Node answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                NodeRef aNode = (NodeRef)args[0];
-                if (StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.equals(aNode.getStoreRef()))
-                {
-                    //Return NULL if its from the archive store.
-                    return null;
-                }
-                return new Node(aNode, (NodeRef)args[1], nodeProps, mapUserInfo, sr);
+        when(nodes.getFolderOrDocument(any(NodeRef.class), nullable(NodeRef.class), nullable(QName.class), nullable(List.class), nullable(Map.class))).thenAnswer((Answer<Node>) invocation ->
+        {
+            Object[] args = invocation.getArguments();
+            NodeRef aNode = (NodeRef)args[0];
+            if (StoreRef.STORE_REF_ARCHIVE_SPACESSTORE.equals(aNode.getStoreRef()))
+            {
+                //Return NULL if its from the archive store.
+                return null;
             }
+            return new Node(aNode, (NodeRef)args[1], nodeProps, mapUserInfo, sr);
         });
 
         when(deletedNodes.getDeletedNode(nullable(String.class), nullable(
-                    Parameters.class), anyBoolean(), nullable(Map.class))).thenAnswer(new Answer<Node>() {
-            @Override
-            public Node answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                String nodeId = (String)args[0];
-                if (FROZEN_ID.equals(nodeId)) throw new EntityNotFoundException(nodeId);
-                NodeRef aNode = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeId);
-                return new Node(aNode, new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,"unknown"), nodeProps, mapUserInfo, sr);
-            }
+                    Parameters.class), anyBoolean(), nullable(Map.class))).thenAnswer((Answer<Node>) invocation ->
+        {
+            Object[] args = invocation.getArguments();
+            String nodeId = (String)args[0];
+            if (FROZEN_ID.equals(nodeId)) throw new EntityNotFoundException(nodeId);
+            NodeRef aNode = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeId);
+            return new Node(aNode, new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE,"unknown"), nodeProps, mapUserInfo, sr);
         });
 
         PersonPropertyLookup propertyLookups = mock(PersonPropertyLookup.class);
@@ -236,11 +227,10 @@ public class ResultMapperTests
         when(propertyLookups.lookup(notNull(String.class))).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             String value = (String)args[0];
-            if ("mjackson".equals(value)) return "Michael Jackson";
-            return null;
+            return "mjackson".equals(value) ? "Michael Jackson" : null;
         });
         PropertyLookupRegistry propertyLookupRegistry = new PropertyLookupRegistry();
-        propertyLookupRegistry.setLookups(Arrays.asList(propertyLookups));
+        propertyLookupRegistry.setLookups(asList(propertyLookups));
         mapper = new ResultMapper();
         mapper.setNodes(nodes);
         mapper.setStoreMapper(new StoreMapper());
@@ -258,7 +248,7 @@ public class ResultMapperTests
     }
 
     @Test
-    public void testNoResults() throws Exception
+    public void testNoResults()
     {
         SearchRequestContext searchRequest = SearchRequestContext.from(SearchQuery.EMPTY);
         CollectionWithPagingInfo<Node> collection =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, searchRequest, null, new EmptyResultSet());
@@ -269,9 +259,9 @@ public class ResultMapperTests
     }
 
     @Test
-    public void testToCollectionWithPagingInfo() throws Exception
+    public void testToCollectionWithPagingInfo()
     {
-        ResultSet results = mockResultset(Arrays.asList(514l), Arrays.asList(566l, VERSIONED_ID));
+        ResultSet results = mockResultSet(asList(514l), asList(566l, VERSIONED_ID));
         SearchRequestContext searchRequest = SearchRequestContext.from(SearchQuery.EMPTY);
         CollectionWithPagingInfo<Node> collectionWithPage =  mapper.toCollectionWithPagingInfo(EMPTY_PARAMS, searchRequest, SearchQuery.EMPTY, results);
         assertNotNull(collectionWithPage);
@@ -298,12 +288,12 @@ public class ResultMapperTests
     }
 
     @Test
-    public void testToSearchContext() throws Exception
+    public void testToSearchContext()
     {
-        ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
+        ResultSet results = mockResultSet(Collections.emptyList(),Collections.emptyList());
         SearchQuery searchQuery = helper.searchQueryFromJson();
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
+        searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
         assertEquals(6, searchContext.getFacetQueries().size());
@@ -384,9 +374,9 @@ public class ResultMapperTests
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.missing, 0)));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.sum, 0)));
         assertTrue(statsMetrics.contains(new SimpleMetric(METRIC_TYPE.stddev, 0)));
-        JSONArray dVals = new JSONArray(Arrays.asList(12, 13, 14, 15, 16, 17, 1));
+        JSONArray dVals = new JSONArray(asList(12, 13, 14, 15, 16, 17, 1));
         assertTrue(statsMetrics.contains(new ListMetric(METRIC_TYPE.distinctValues, dVals)));
-        JSONArray pers = new JSONArray(Arrays.asList("0.99",20.0685, "0.0", 12.0));
+        JSONArray pers = new JSONArray(asList("0.99",20.0685, "0.0", 12.0));
         assertTrue(statsMetrics.contains(new PercentileMetric(METRIC_TYPE.percentiles, pers)));
 
         assertEquals("min must be excluded because its null",0,statsMetrics.stream().filter(metric -> METRIC_TYPE.min.equals(metric.getType())).count());
@@ -395,18 +385,18 @@ public class ResultMapperTests
     }
 
     @Test
-    public void testIsNullContext() throws Exception
+    public void testIsNullContext()
     {
         assertTrue(mapper.isNullContext(new SearchContext(0l,null,null,null,null, null)));
         assertFalse(mapper.isNullContext(new SearchContext(1l,null,null,null,null, null)));
         assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,null,new SpellCheckContext(null, null), null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,null, Arrays.asList(new FacetQueryContext(null, null, 0)),null,null, null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,null,null,Arrays.asList(new FacetFieldContext(null, null)),null, null)));
-        assertFalse(mapper.isNullContext(new SearchContext(0l,Arrays.asList(new GenericFacetResponse(null,null, null)),null,null, null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,null, asList(new FacetQueryContext(null, null, 0)),null,null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l,null,null, asList(new FacetFieldContext(null, null)),null, null)));
+        assertFalse(mapper.isNullContext(new SearchContext(0l, asList(new GenericFacetResponse(null,null, null)),null,null, null, null)));
     }
 
     @Test
-    public void testHighlight() throws Exception
+    public void testHighlight()
     {
         SearchParameters sp = new SearchParameters();
         sp.setBulkFetchEnabled(false);
@@ -432,12 +422,11 @@ public class ResultMapperTests
 
 
     @Test
-    public void testInterval() throws Exception
+    public void testInterval()
     {
-        ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
+        ResultSet results = mockResultSet(Collections.emptyList(),Collections.emptyList());
         SearchQuery searchQuery = helper.searchQueryFromJson();
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
 
         //Facet intervals
@@ -471,13 +460,13 @@ public class ResultMapperTests
         assertEquals(METRIC_TYPE.count,((SimpleMetric) metrics[0]).getType());
         assertEquals("854",((SimpleMetric) metrics[0]).getValue().get("count"));
     }
+
     @Test
-    public void testRange() throws Exception
+    public void testRange()
     {
-        ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
+        ResultSet results = mockResultSet(Collections.emptyList(),Collections.emptyList());
         SearchQuery searchQuery = helper.searchQueryFromJson();
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         
         //Numeric facet range 
@@ -524,14 +513,14 @@ public class ResultMapperTests
         assertEquals("300",facetInfo.get("end"));
         assertEquals("content.size:[\"200\" TO \"300\">", rangeFacets.get(1).getBuckets().get(2).getFilterQuery());
     }
+
     @Test
-    public void testRangeExclusiec() throws Exception
+    public void testRangeExclusiec()
     {
-        ResultSet results = mockResultset(Collections.emptyList(),Collections.emptyList());
+        ResultSet results = mockResultSet(Collections.emptyList(),Collections.emptyList());
         String updatedJSON = helper.JSON.replace("lower", "upper");
         SearchQuery searchQuery = helper.extractFromJson(updatedJSON);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
-        SearchParameters searchParams = searchMapper.toSearchParameters(EMPTY_PARAMS, searchQuery, searchRequest);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         
         //Numeric facet range 
@@ -554,26 +543,25 @@ public class ResultMapperTests
         
     }
 
-    @Test
     /**
      * Test facet group with out facet fields
-     * @throws Exception
      */
-    public void testFacetingGroupResponse() throws Exception
+    @Test
+    public void testFacetingGroupResponse()
     {
         String jsonQuery = "{\"query\": {\"query\": \"alfresco\"},"
-                    + "\"facetQueries\": [" 
-                    + "{\"query\": \"content.size:[o TO 102400]\", \"label\": \"small\",\"group\":\"foo\"},"
-                    + "{\"query\": \"content.size:[102400 TO 1048576]\", \"label\": \"medium\",\"group\":\"foo\"}," 
-                    + "{\"query\": \"content.size:[1048576 TO 16777216]\", \"label\": \"large\",\"group\":\"foo\"}]"
-                    + "}";
-        
-        String expectedResponse = "{\"responseHeader\":{\"status\":0,\"QTime\":9},\"_original_parameters_\":\"org.apache.solr.common.params.DefaultSolrParams:{params(df=TEXT&alternativeDic=DEFAULT_DICTIONARY&fl=DBID,score&start=0&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=1000&locale=en_US&wt=json),defaults(carrot.url=id&spellcheck.collateExtendedResults=true&carrot.produceSummary=true&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.alternativeTermCount=2&spellcheck.extendedResults=false&defType=afts&spellcheck.maxResultsForSuggest=5&spellcheck=false&carrot.outputSubClusters=false&spellcheck.count=5&carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&spellcheck.collate=true)}\",\"_field_mappings_\":{},\"_date_mappings_\":{},\"_range_mappings_\":{},\"_pivot_mappings_\":{},\"_interval_mappings_\":{},\"_stats_field_mappings_\":{},\"_stats_facet_mappings_\":{},\"_facet_function_mappings_\":{},\"response\":{\"numFound\":6,\"start\":0,\"maxScore\":0.7849362,\"docs\":[{\"DBID\":565,\"score\":0.7849362},{\"DBID\":566,\"score\":0.7849362},{\"DBID\":521,\"score\":0.3540957},{\"DBID\":514,\"score\":0.33025497},{\"DBID\":420,\"score\":0.32440513},{\"DBID\":415,\"score\":0.2780319}]},"
-                        + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
-                        + "\"facet_counts\":{\"facet_queries\": {\"small\": 52,\"large\": 0,\"medium\": 0}},"
-                        + "\"processedDenies\":true, \"lastIndexedTx\":34}";
+                + "\"facetQueries\": ["
+                + "{\"query\": \"content.size:[o TO 102400]\", \"label\": \"small\",\"group\":\"foo\"},"
+                + "{\"query\": \"content.size:[102400 TO 1048576]\", \"label\": \"medium\",\"group\":\"foo\"},"
+                + "{\"query\": \"content.size:[1048576 TO 16777216]\", \"label\": \"large\",\"group\":\"foo\"}]"
+                + "}";
 
-        ResultSet results = mockResultset(expectedResponse);
+        String expectedResponse = "{\"responseHeader\":{\"status\":0,\"QTime\":9},\"_original_parameters_\":\"org.apache.solr.common.params.DefaultSolrParams:{params(df=TEXT&alternativeDic=DEFAULT_DICTIONARY&fl=DBID,score&start=0&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=1000&locale=en_US&wt=json),defaults(carrot.url=id&spellcheck.collateExtendedResults=true&carrot.produceSummary=true&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.alternativeTermCount=2&spellcheck.extendedResults=false&defType=afts&spellcheck.maxResultsForSuggest=5&spellcheck=false&carrot.outputSubClusters=false&spellcheck.count=5&carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&spellcheck.collate=true)}\",\"_field_mappings_\":{},\"_date_mappings_\":{},\"_range_mappings_\":{},\"_pivot_mappings_\":{},\"_interval_mappings_\":{},\"_stats_field_mappings_\":{},\"_stats_facet_mappings_\":{},\"_facet_function_mappings_\":{},\"response\":{\"numFound\":6,\"start\":0,\"maxScore\":0.7849362,\"docs\":[{\"DBID\":565,\"score\":0.7849362},{\"DBID\":566,\"score\":0.7849362},{\"DBID\":521,\"score\":0.3540957},{\"DBID\":514,\"score\":0.33025497},{\"DBID\":420,\"score\":0.32440513},{\"DBID\":415,\"score\":0.2780319}]},"
+                + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
+                + "\"facet_counts\":{\"facet_queries\": {\"small\": 52,\"large\": 0,\"medium\": 0}},"
+                + "\"processedDenies\":true, \"lastIndexedTx\":34}";
+
+        ResultSet results = mockResultSet(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
@@ -587,28 +575,28 @@ public class ResultMapperTests
         Metric[] metrics = searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().toArray(new Metric[searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().size()]);
         assertEquals(METRIC_TYPE.count, metrics[0].getType());
         assertEquals("{count=52}", metrics[0].getValue().toString());
-        
+
     }
-    @Test
+
     /**
      * Test facet group with out facet fields
-     * @throws Exception
      */
-    public void testFacetingGroupResponseV1() throws Exception
+    @Test
+    public void testFacetingGroupResponseV1()
     {
         String jsonQuery = "{\"query\": {\"query\": \"alfresco\"}, \"facetFormat\":\"V1\","
-                    + "\"facetQueries\": [" 
+                    + "\"facetQueries\": ["
                     + "{\"query\": \"content.size:[o TO 102400]\", \"label\": \"small\"},"
-                    + "{\"query\": \"content.size:[102400 TO 1048576]\", \"label\": \"medium\",\"group\":\"foo\"}," 
+                    + "{\"query\": \"content.size:[102400 TO 1048576]\", \"label\": \"medium\",\"group\":\"foo\"},"
                     + "{\"query\": \"content.size:[1048576 TO 16777216]\", \"label\": \"large\"}]"
                     + "}";
-        
+
         String expectedResponse = "{\"responseHeader\":{\"status\":0,\"QTime\":9},\"_original_parameters_\":\"org.apache.solr.common.params.DefaultSolrParams:{params(df=TEXT&alternativeDic=DEFAULT_DICTIONARY&fl=DBID,score&start=0&fq={!afts}AUTHORITY_FILTER_FROM_JSON&fq={!afts}TENANT_FILTER_FROM_JSON&rows=1000&locale=en_US&wt=json),defaults(carrot.url=id&spellcheck.collateExtendedResults=true&carrot.produceSummary=true&spellcheck.maxCollations=3&spellcheck.maxCollationTries=5&spellcheck.alternativeTermCount=2&spellcheck.extendedResults=false&defType=afts&spellcheck.maxResultsForSuggest=5&spellcheck=false&carrot.outputSubClusters=false&spellcheck.count=5&carrot.title=mltext@m___t@{http://www.alfresco.org/model/content/1.0}title&carrot.snippet=content@s___t@{http://www.alfresco.org/model/content/1.0}content&spellcheck.collate=true)}\",\"_field_mappings_\":{},\"_date_mappings_\":{},\"_range_mappings_\":{},\"_pivot_mappings_\":{},\"_interval_mappings_\":{},\"_stats_field_mappings_\":{},\"_stats_facet_mappings_\":{},\"_facet_function_mappings_\":{},\"response\":{\"numFound\":6,\"start\":0,\"maxScore\":0.7849362,\"docs\":[{\"DBID\":565,\"score\":0.7849362},{\"DBID\":566,\"score\":0.7849362},{\"DBID\":521,\"score\":0.3540957},{\"DBID\":514,\"score\":0.33025497},{\"DBID\":420,\"score\":0.32440513},{\"DBID\":415,\"score\":0.2780319}]},"
                         + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
                         + "\"facet_counts\":{\"facet_queries\": {\"small\": 52,\"large\": 0,\"medium\": 0}},"
                         + "\"processedDenies\":true, \"lastIndexedTx\":34}";
 
-        ResultSet results = mockResultset(expectedResponse);
+        ResultSet results = mockResultSet(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
@@ -622,17 +610,15 @@ public class ResultMapperTests
         Metric[] metrics = searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().toArray(new Metric[searchContext.getFacets().get(0).getBuckets().get(0).getMetrics().size()]);
         assertEquals(METRIC_TYPE.count, metrics[0].getType());
         assertEquals("{count=52}", metrics[0].getValue().toString());
-        
+
     }
-    @Test
+
     /**
      * Test facet fields with out group label in the query.
      * This is to support original api methods query for facet query.
-     *
-     * 
-     * @throws Exception
      */
-    public void testFacetQueryWithoutGroupResponse() throws Exception
+    @Test
+    public void testFacetQueryWithoutGroupResponse()
     {
         String jsonQuery = "{\"query\": {\"query\": \"alfresco\"},"
                     + "\"facetQueries\": [" 
@@ -646,7 +632,7 @@ public class ResultMapperTests
                         + "\"facet_counts\":{\"facet_queries\": {\"small\": 52,\"large\": 0,\"medium\": 0}},"
                         + "\"processedDenies\":true, \"lastIndexedTx\":34}";
 
-        ResultSet results = mockResultset(expectedResponse);
+        ResultSet results = mockResultSet(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
@@ -663,7 +649,8 @@ public class ResultMapperTests
         assertEquals("content.size:[102400 TO 1048576]",searchContext.getFacetQueries().get(2).getFilterQuery());
         assertEquals(0, searchContext.getFacetQueries().get(2).getCount());
     }
-    private ResultSet mockResultset(String json) throws Exception
+
+    private ResultSet mockResultSet(String json)
     {
         NodeService nodeService = mock(NodeService.class);
         JSONObject jsonObj = new JSONObject(new JSONTokener(json));
@@ -678,19 +665,17 @@ public class ResultMapperTests
         return results;
     }
 
-    private ResultSet mockResultset(List<Long> archivedNodes, List<Long> versionNodes) throws JSONException
+    private ResultSet mockResultSet(List<Long> archivedNodes, List<Long> versionNodes)
     {
 
         NodeService nodeService = mock(NodeService.class);
-        when(nodeService.getNodeRef(any())).thenAnswer(new Answer<NodeRef>() {
-            @Override
-            public NodeRef answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                //If the DBID is in the list archivedNodes, instead of returning a noderef return achivestore noderef
-                if (archivedNodes.contains(args[0])) return new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, GUID.generate());
-                if (versionNodes.contains(args[0])) return new NodeRef(StoreMapper.STORE_REF_VERSION2_SPACESSTORE, GUID.generate()+args[0]);
-                return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
-            }
+        when(nodeService.getNodeRef(any())).thenAnswer((Answer<NodeRef>) invocation ->
+        {
+            Object[] args = invocation.getArguments();
+            //If the DBID is in the list archivedNodes, instead of returning a noderef return achivestore noderef
+            if (archivedNodes.contains(args[0])) return new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, GUID.generate());
+            if (versionNodes.contains(args[0])) return new NodeRef(StoreMapper.STORE_REF_VERSION2_SPACESSTORE, GUID.generate()+args[0]);
+            return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
         });
 
         SearchParameters sp = new SearchParameters();
@@ -700,12 +685,12 @@ public class ResultMapperTests
         return results;
     }
     
-    @Test
     /**
      * Validates that when facetFormat is specified then all facets are returned
      * in the generic facet response format AKA V2.
      */
-    public void facetFormatTest() throws Exception
+    @Test
+    public void facetFormatTest()
     {
         String jsonQuery = "{\"query\": {\"query\": \"alfresco\"},"
                 + "\"facetQueries\": [" 
@@ -720,7 +705,7 @@ public class ResultMapperTests
                     + "\"facet_counts\":{\"facet_queries\": {\"small\": 52,\"large\": 0,\"medium\": 0}},"
                     + "\"processedDenies\":true, \"lastIndexedTx\":34}";
 
-        ResultSet results = mockResultset(expectedResponse);
+        ResultSet results = mockResultSet(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
@@ -737,7 +722,7 @@ public class ResultMapperTests
         
         jsonQuery = jsonQuery.replace("V2", "V1");
         searchQuery = helper.extractFromJson(jsonQuery);
-        results = mockResultset(expectedResponse);
+        results = mockResultSet(expectedResponse);
         searchRequest = SearchRequestContext.from(searchQuery);
         searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertEquals(34l, searchContext.getConsistency().getlastTxId());
@@ -758,7 +743,7 @@ public class ResultMapperTests
                 + "\"spellcheck\":{\"searchInsteadFor\":\"alfresco\"},"
                 + "\"facet_counts\":{\"facet_fields\":{\"creator\":[\"System\",124,\"mjackson\",11,\"abeecher\",4],\"modifier\":[\"System\",124,\"mjackson\",8,\"admin\",7]}},"
                 + "\"processedDenies\":true, \"lastIndexedTx\":34}";
-        results = mockResultset(expectedResponse);
+        results = mockResultSet(expectedResponse);
         searchQuery = helper.extractFromJson(jsonQuery);
         searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
         assertFalse(searchContext.getFacetsFields().isEmpty());
@@ -784,7 +769,7 @@ public class ResultMapperTests
     }
     
     @Test
-    public void hasGroupTest() throws IOException
+    public void hasGroupTest()
     {
         String jsonQuery = "{\"query\": {\"query\": \"alfresco\"},"
                 + "\"facetQueries\": [" 
@@ -809,7 +794,7 @@ public class ResultMapperTests
         SearchQuery searchQuery3 = helper.extractFromJson(noFacetQueries);
         assertFalse(ResultMapper.hasGroup(searchQuery3));
     }
-    @Test
+
     /**
      *  When the following is passed
      * "facetQueries": [
@@ -817,9 +802,9 @@ public class ResultMapperTests
      *       {"query": "content.size:[102400 TO 1048576]", "label": "medium", "group": "two"},
      *       {"query": "content.size:[1048576 TO 16777216]", "label": "large"}
      *  We expect to see 3 groups of 1,2,null.
-     * @throws Exception
      */
-    public void testFacetingWithPartialGroup() throws Exception
+    @Test
+    public void testFacetingWithPartialGroup()
     {
         String jsonQuery = "{\"query\": {\"query\": \"alfresco\"},"
                     + "\"facetQueries\": [" 
@@ -833,7 +818,7 @@ public class ResultMapperTests
                         + "\"facet_counts\":{\"facet_queries\": {\"small\": 52,\"large\": 0,\"medium\": 0}},"
                         + "\"processedDenies\":true, \"lastIndexedTx\":34}";
 
-        ResultSet results = mockResultset(expectedResponse);
+        ResultSet results = mockResultSet(expectedResponse);
         SearchQuery searchQuery = helper.extractFromJson(jsonQuery);
         SearchRequestContext searchRequest = SearchRequestContext.from(searchQuery);
         SearchContext searchContext = mapper.toSearchContext((SearchEngineResultSet) results, searchRequest, searchQuery);
@@ -853,8 +838,9 @@ public class ResultMapperTests
         assertEquals("{count=52}", metrics[0].getValue().toString());
         
     }
+
     @Test
-    public void testSqlResponse() throws IOException, JSONException
+    public void testSqlResponse()
     {
         JSONObject response = new JSONObject("{\"docs\":[{\"SITE\":\"_REPOSITORY_\"},{\"SITE\":\"surf-config\"},{\"SITE\":\"swsdp\"},{\"EOF\":true,\"RESPONSE_TIME\":96}]}");
         JSONArray docs = response.getJSONArray("docs");
@@ -887,5 +873,19 @@ public class ResultMapperTests
             assertNotNull(e);
             assertEquals("SearchSQLQuery is required", e.getMessage());
         }
+    }
+
+    /** Check that when a node is returned from the index the permissions are still checked in the DB. */
+    @Test
+    public void testGetNode()
+    {
+        ResultSetRow mockRow = mock(ResultSetRow.class);
+        NodeRef nodeRef = new NodeRef("workspace://SpacesStore/testNode");
+        when(mockRow.getNodeRef()).thenReturn(nodeRef);
+        when(nodes.getFolderOrDocument(eq(nodeRef), any(), any(), any(), any())).thenThrow(new PermissionDeniedException());
+
+        Node node = mapper.getNode(mockRow, EMPTY_PARAMS, null, false);
+
+        assertNull("Expected node to be filtered due to permission exception.", node);
     }
 }

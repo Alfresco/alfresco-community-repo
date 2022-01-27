@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -34,18 +34,15 @@ import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 
-import java.util.Map;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isNull;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
 /**
  * Unit tests for {@link DeleteHoldAuditEvent}.
@@ -67,8 +64,6 @@ public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
     @Before
     public void setUp()
     {
-        initMocks(this);
-
         holdNodeRef = generateNodeRef();
         String holdName = "Hold " + GUID.generate();
 
@@ -84,6 +79,6 @@ public class DeleteHoldAuditEventUnitTest extends BaseUnitTest
     {
         deleteHoldAuditEvent.beforeDeleteNode(holdNodeRef);
         verify(mockedRecordsManagementAuditService, times(1))
-            .auditEvent(eq(holdNodeRef), any(String.class), any(Map.class), isNull(Map.class), Matchers.eq(true), Matchers.eq(false));
+            .auditEvent(eq(holdNodeRef), nullable(String.class), anyMap(), isNull(), eq(true), eq(false));
     }
 }

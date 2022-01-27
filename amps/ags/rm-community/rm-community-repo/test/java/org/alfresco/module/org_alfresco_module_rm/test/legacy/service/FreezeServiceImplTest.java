@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -53,7 +53,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
 
    /**
     * Test freeze service methods.
-    * 
+    *
     * @deprecated as of 2.2
     */
    public void testFreezeService() throws Exception
@@ -219,7 +219,7 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             // hold is not automatically removed
             holdAssocs = holdService.getHolds(filePlan);
             assertEquals(1, holdAssocs.size());
-            
+
             // delete hold
             holdService.deleteHold(holdNodeRef);
 
@@ -265,8 +265,38 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertFalse(freezeService.isFrozen(recordFour));
            // assertFalse(freezeService.hasFrozenChildren(rmFolder));
 
-            return null;
-         }
-      });
-   }
+                return null;
+            }
+        });
+
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                NodeRef hold101 = holdService.createHold(filePlan, "freezename 103", "FreezeReason", null);
+                // Freeze a record folder
+                assertNotNull(hold101);
+                holdService.addToHold(hold101, rmFolder);
+                assertTrue(recordFolderService.isRecordFolder(rmFolder));
+                assertTrue(freezeService.isFrozenOrHasFrozenChildren(rmFolder));
+                return null;
+            }
+        });
+
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                NodeRef hold101 = holdService.createHold(filePlan, "freezename 104", "FreezeReason", null);
+                // Freeze a record inside a record folder
+                assertNotNull(hold101);
+                holdService.addToHold(hold101, recordThree);
+                assertTrue(recordService.isRecord(recordThree));
+                assertTrue(freezeService.isFrozenOrHasFrozenChildren(rmFolder));
+                return null;
+            }
+        });
+    }
 }

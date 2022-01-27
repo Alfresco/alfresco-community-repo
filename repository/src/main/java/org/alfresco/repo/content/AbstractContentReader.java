@@ -47,6 +47,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.service.cmr.repository.ArchivedIOException;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -429,6 +430,7 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
         }
         catch (Throwable e)
         {
+            if (e instanceof ArchivedIOException) throw e;
             throw new ContentIOException("Failed to open stream onto channel: \n" +
                     "   accessor: " + this,
                     e);
@@ -540,6 +542,10 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
             String content = (encoding == null) ? new String(bytes) : new String(bytes, encoding);
             // done
             return content;
+        }
+        catch (ArchivedIOException e)
+        {
+            throw e;
         }
         catch (Exception e)
         {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -78,8 +78,6 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
     protected static final String URL_DELETED_NODES = "deleted-nodes";
     private static final String URL_RENDITIONS = "renditions";
-
-    private final static long DELAY_IN_MS = 500;
     
     @Override
     public void setup() throws Exception
@@ -702,6 +700,73 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals(user1, aNode.getArchivedByUser().getId());
         assertTrue(aNode.getArchivedAt().after(now));
         assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
+    }
+
+    @Test
+    public void testRequestArchivedContentDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        String fileName = "TestDocumentToArchive.txt";
+        Document testDocumentToArchive = new Document();
+        testDocumentToArchive.setName(fileName);
+        testDocumentToArchive.setNodeType(TYPE_CM_CONTENT);
+
+        // create *empty* text file
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(testDocumentToArchive), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        final String contentNodeId = document.getId();
+        deleteNode(contentNodeId);
+
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        HttpResponse dauResponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 501);
+    }
+
+    @Test
+    public void testRequestArchivedRenditionDirectUrl() throws Exception
+    {
+        setRequestContext(user1);
+
+        // Create a folder within the site document's library
+        Date now = new Date();
+        String folder1 = "folder" + now.getTime() + "_1";
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
+        assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
+
+        // Create multipart request using an existing file
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new MultiPartBuilder.FileData(fileName, file));
+        MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload quick.pdf file into 'folder'
+        HttpResponse response = post(getNodeChildrenUrl(f1Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        Rendition rendition = createAndGetRendition(contentNodeId, "doclib");
+        assertNotNull(rendition);
+        String renditionID = rendition.getId();
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        deleteNode(contentNodeId);
+
+        HttpResponse dauResponse = post(getRequestArchivedRenditonContentDirectUrl(contentNodeId, renditionID), null, null, null, null, 501);
+    }
+
+    private String addToDocumentLibrary(String name, String nodeType, String userId) throws Exception
+    {
+        String parentId = getSiteContainerNodeId(Nodes.PATH_MY, "documentLibrary");
+        return createNode(parentId, name, nodeType, null).getId();
     }
 
     private String getDeletedNodeRenditionsUrl(String nodeId)

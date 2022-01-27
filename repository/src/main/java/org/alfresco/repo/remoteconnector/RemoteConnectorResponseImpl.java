@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.remoteconnector.RemoteConnectorRequest;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorResponse;
 import org.alfresco.service.cmr.remoteconnector.RemoteConnectorService;
 import org.apache.commons.httpclient.Header;
-import org.apache.tika.io.IOUtils;
+import org.apache.commons.io.IOUtils;
 
 
 /**

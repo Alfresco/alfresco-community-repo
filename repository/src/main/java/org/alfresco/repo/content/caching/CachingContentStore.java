@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,7 +25,8 @@
  */
 package org.alfresco.repo.content.caching;
 
-import java.util.Date;
+import java.io.Serializable;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -36,6 +37,7 @@ import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.SpoofedTextContentReader;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -67,7 +69,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     private final static Log log = LogFactory.getLog(CachingContentStore.class);
     // NUM_LOCKS absolutely must be a power of 2 for the use of locks to be evenly balanced
     private final static int numLocks = 256;
-    private final static ReentrantReadWriteLock[] locks; 
+    private final static ReentrantReadWriteLock[] locks;
     private ContentStore backingStore;
     private ContentCache cache;
     private QuotaManagerStrategy quota = new UnlimitedQuotaStrategy();
@@ -103,7 +105,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     {
         eventPublisher.publishEvent(new CachingContentStoreCreatedEvent(this));
     }
-    
+
     @Override
     public boolean isContentUrlSupported(String contentUrl)
     {
@@ -137,7 +139,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * {@inheritDoc}
      * <p>
-     * For {@link #SPOOF_PROTOCOL spoofed} URLs, the URL always exists.
+     * For {@link FileContentStore#SPOOF_PROTOCOL spoofed} URLs, the URL always exists.
      */
     @Override
     public boolean exists(String contentUrl)
@@ -382,6 +384,36 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Experimental
+    public Map<String, String> getStorageProperties(final String contentUrl)
+    {
+        return backingStore.getStorageProperties(contentUrl);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Experimental
+    public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
+    {
+        return backingStore.requestSendContentToArchive(contentUrl, archiveParams);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Experimental
+    public boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
+    {
+        return backingStore.requestRestoreContentFromArchive(contentUrl, restoreParams);
+    }
+
+    /**
      * Get a ReentrantReadWriteLock for a given URL. The lock is from a pool rather than
      * per URL, so some contention is expected.
      *  
@@ -478,13 +510,43 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         return this.beanName;
     }
 
-    public boolean isDirectAccessSupported()
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isContentDirectUrlEnabled()
     {
-        return backingStore.isDirectAccessSupported();
+        return backingStore.isContentDirectUrlEnabled();
     }
 
-    public DirectAccessUrl getDirectAccessUrl(String contentUrl, Date expiresAt)
+    /**
+     * {@inheritDoc}
+     */
+    public boolean isContentDirectUrlEnabled(String contentUrl)
     {
-        return backingStore.getDirectAccessUrl(contentUrl, expiresAt);
+        return backingStore.isContentDirectUrlEnabled(contentUrl);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName)
+    {
+        return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
+    {
+        return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimeType, Long validFor)
+    {
+        return backingStore.requestContentDirectUrl(contentUrl, attachment, fileName, mimeType, validFor);
     }
 }

@@ -26,21 +26,26 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.admin.RepoHealthChecker;
 import org.alfresco.rest.api.discovery.DiscoveryApiWebscript;
 import org.alfresco.rest.api.probes.ProbeEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.alfresco.rest.api.probes.ProbeEntityResource.*;
+import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.LIVE;
+import static org.alfresco.rest.api.probes.ProbeEntityResource.ProbeType.READY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 /**
  * V1 REST API tests for Probes (Live and Ready)
@@ -53,7 +58,6 @@ import static org.mockito.Mockito.when;
 public class ProbeApiTest extends AbstractBaseApiTest
 {
     private static final boolean OK = true;
-    private static final boolean ERROR = false;
 
     private ProbeEntityResource probe;
     private DiscoveryApiWebscript origDiscovery;
@@ -64,6 +68,9 @@ public class ProbeApiTest extends AbstractBaseApiTest
     @Mock
     private DiscoveryApiWebscript badDiscovery;
 
+    @Mock
+    private RepoHealthChecker repoHealthChecker;
+
     @Before
     @Override
     public void setup() throws Exception
@@ -73,7 +80,9 @@ public class ProbeApiTest extends AbstractBaseApiTest
 
         String beanName = ProbeEntityResource.class.getCanonicalName()+".get";
         probe = applicationContext.getBean(beanName, ProbeEntityResource.class);
-        when(badDiscovery.getRepositoryInfo()).thenThrow(AlfrescoRuntimeException.class);
+        lenient().when(badDiscovery.getRepositoryInfo()).thenThrow(AlfrescoRuntimeException.class);
+        Mockito.doNothing().when(repoHealthChecker).checkDatabase();
+        probe.setRepoHealthChecker(repoHealthChecker);
         origDiscovery = probe.setDiscovery(badDiscovery);
     }
 
@@ -91,7 +100,7 @@ public class ProbeApiTest extends AbstractBaseApiTest
         return "public";
     }
 
-    private void assertResponse(String probeName, Boolean ready, String expected, int expectedStatus) throws Exception
+    private void assertResponse(ProbeType probeType, Boolean ready, String expected, int expectedStatus) throws Exception
     {
         String[] keys = expectedStatus == 200
                 ? new String[]{"entry", "message"}
@@ -103,7 +112,7 @@ public class ProbeApiTest extends AbstractBaseApiTest
                 ? goodDiscovery
                 : badDiscovery);
 
-        HttpResponse response = getSingle(ProbeEntityResource.class, probeName, null, expectedStatus);
+        HttpResponse response = getSingle(ProbeEntityResource.class, probeType.getValue(), null, expectedStatus);
         Object object = response.getJsonResponse();
         for (String key: keys)
         {
@@ -128,32 +137,29 @@ public class ProbeApiTest extends AbstractBaseApiTest
     public void testProbes() throws Exception
     {
         // Live first
-        assertResponse(LIVE, ERROR, "liveProbe: Failure - Tested", 503);
-        assertResponse(LIVE, null, "liveProbe: Failure - No test", 503); // Need to wait 10 seconds.
-        assertResponse(LIVE, null, "liveProbe: Failure - No test", 503);
-        assertResponse(READY, null, "readyProbe: Failure - No test", 503);
+        assertResponse(LIVE, OK, "liveProbe: Success - Tested", 200);
+        assertResponse(READY, null, "readyProbe: Failure - Tested", 503);
+
+        Thread.currentThread().sleep(CHECK_PERIOD);
+        assertResponse(READY, OK, "readyProbe: Success - Tested", 200);
+        assertResponse(READY, null, "readyProbe: Success - No test", 200);
 
         Thread.currentThread().sleep(CHECK_PERIOD);
         assertResponse(LIVE, OK, "liveProbe: Success - Tested", 200);
-        assertResponse(LIVE, null, "liveProbe: Success - No test", 200);
-        assertResponse(READY, null, "readyProbe: Success - No test", 200);
-        assertResponse(LIVE, null, "liveProbe: Success - No test", 200);
-
-        Thread.currentThread().sleep(CHECK_PERIOD);
-        assertResponse(LIVE, ERROR, "liveProbe: Failure - Tested", 503);
-        assertResponse(LIVE, null, "liveProbe: Failure - No test", 503);
-        assertResponse(READY, null, "readyProbe: Failure - No test", 503);
-
-
+        assertResponse(READY, null, "readyProbe: Failure - Tested", 503);
 
         // Ready first
         Thread.currentThread().sleep(CHECK_PERIOD);
         assertResponse(READY, OK, "readyProbe: Success - Tested", 200);
-        assertResponse(LIVE, null, "liveProbe: Success - No test", 200);
+        assertResponse(LIVE, OK, "liveProbe: Success - Tested", 200);
         assertResponse(READY, null, "readyProbe: Success - No test", 200);
 
+        // check db failure
         Thread.currentThread().sleep(CHECK_PERIOD);
-        assertResponse(READY, ERROR, "readyProbe: Failure - Tested", 503);
-        assertResponse(LIVE, null, "liveProbe: Failure - No test", 503);
+        Mockito.doThrow(AlfrescoRuntimeException.class).when(repoHealthChecker).checkDatabase();
+        assertResponse(READY, OK, "readyProbe: Failure - Tested", 503);
+        assertResponse(READY, OK, "readyProbe: Failure - No test", 503);
+        
     }
+
 }

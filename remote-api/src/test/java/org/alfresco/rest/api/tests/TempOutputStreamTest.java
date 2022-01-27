@@ -33,11 +33,11 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.web.scripts.TempOutputStream;
-import org.alfresco.repo.web.scripts.TempOutputStreamFactory;
 import org.alfresco.util.TempFileProvider;
 import org.junit.Assert;
 import org.junit.Test;
@@ -57,11 +57,12 @@ public class TempOutputStreamTest
     @Test
     public void testInMemoryStream() throws IOException
     {
-        TempOutputStreamFactory streamFactory = new TempOutputStreamFactory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false, false);
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory,
+            MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
 
         File file = createTextFileWithRandomContent(MEMORY_THRESHOLD - 1024L);
         {
-            TempOutputStream outputStream = streamFactory.createOutputStream();
+            TempOutputStream outputStream = streamFactory.get();
 
             long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
@@ -83,8 +84,8 @@ public class TempOutputStreamTest
 
         {
             // Create stream factory that doesn't delete temp file on stream close
-            TempOutputStreamFactory streamFactory = new TempOutputStreamFactory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false, false);
-            TempOutputStream outputStream = streamFactory.createOutputStream();
+            Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false);
+            TempOutputStream outputStream = streamFactory.get();
 
             long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
@@ -107,26 +108,6 @@ public class TempOutputStreamTest
             Assert.assertEquals(countBefore, countAfter);
         }
 
-        {
-            // Create stream factory that deletes temp file on stream close
-            TempOutputStreamFactory streamFactory = new TempOutputStreamFactory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, false, true);
-            TempOutputStream outputStream = streamFactory.createOutputStream();
-
-            long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-
-            StreamUtils.copy(new BufferedInputStream(new FileInputStream(file)), outputStream);
-
-            // Check that temp file was created
-            long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-            Assert.assertEquals(countBefore + 1, countAfter);
-
-            outputStream.close();
-
-            // Check that file was deleted on close
-            countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
-            Assert.assertEquals(countBefore, countAfter);
-        }
-
         file.delete();
     }
 
@@ -140,9 +121,9 @@ public class TempOutputStreamTest
 
             File file = createTextFileWithRandomContent(contentSize);
 
-            // Create stream factory that deletes temp file on stream close
-            TempOutputStreamFactory streamFactory = new TempOutputStreamFactory(bufferTempDirectory, MEMORY_THRESHOLD, maxContentSize, false, true);
-            TempOutputStream outputStream = streamFactory.createOutputStream();
+            // Create stream factory that deletes the temp file when the max Size is reached
+            Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, maxContentSize, false);
+            TempOutputStream outputStream = streamFactory.get();
 
             long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
@@ -156,7 +137,7 @@ public class TempOutputStreamTest
                 // Expected
             }
 
-            // Check that file was already deleted on close
+            // Check that file was already deleted on error
             long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
             Assert.assertEquals(countBefore, countAfter);
 
@@ -170,9 +151,9 @@ public class TempOutputStreamTest
 
             File file = createTextFileWithRandomContent(contentSize);
 
-            // Create stream factory that deletes temp file on stream close
-            TempOutputStreamFactory streamFactory = new TempOutputStreamFactory(bufferTempDirectory, MEMORY_THRESHOLD, maxContentSize, false, true);
-            TempOutputStream outputStream = streamFactory.createOutputStream();
+            // Create stream factory that deletes the temp file when the max Size is reached
+            Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, maxContentSize, false);
+            TempOutputStream outputStream = streamFactory.get();
 
             long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
@@ -186,7 +167,7 @@ public class TempOutputStreamTest
                 // Expected
             }
 
-            // Check that file was already deleted on close
+            // Check that file was already deleted on error
             long countAfter = countFilesInDirectoryWithPrefix(bufferTempDirectory);
             Assert.assertEquals(countBefore, countAfter);
 
@@ -200,9 +181,9 @@ public class TempOutputStreamTest
         File file = createTextFileWithRandomContent(MEMORY_THRESHOLD + 1024L);
 
         // Create stream factory that doesn't delete temp file on stream close
-        TempOutputStreamFactory streamFactory = new TempOutputStreamFactory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, true, false);
+        Supplier<TempOutputStream> streamFactory = TempOutputStream.factory(bufferTempDirectory, MEMORY_THRESHOLD, MAX_CONTENT_SIZE, true);
 
-        TempOutputStream outputStream = streamFactory.createOutputStream();
+        TempOutputStream outputStream = streamFactory.get();
 
         long countBefore = countFilesInDirectoryWithPrefix(bufferTempDirectory);
 
@@ -220,7 +201,7 @@ public class TempOutputStreamTest
 
         // Compare content
         String contentWriten = StreamUtils.copyToString(new BufferedInputStream(new FileInputStream(file)), Charset.defaultCharset());
-        String contentRead = StreamUtils.copyToString(outputStream.getInputStream(), Charset.defaultCharset());
+        String contentRead = StreamUtils.copyToString(outputStream.toNewInputStream(), Charset.defaultCharset());
         Assert.assertEquals(contentWriten, contentRead);
 
         outputStream.destroy();

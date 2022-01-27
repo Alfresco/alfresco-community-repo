@@ -20,7 +20,7 @@
         <property name="cronExpression" value="${solr.backup.alfresco.cronExpression}"/>
         <property name="startDelay" value="${system.cronJob.startDelayMilliseconds}"/>
         <property name="jobDetail">
-            <bean class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+            <bean id="search.alfrescoCoreBackupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
                 <property name="jobClass" value="org.alfresco.repo.search.impl.solr.SolrBackupJob"/>
                 <property name="jobDataAsMap">
                     <map>

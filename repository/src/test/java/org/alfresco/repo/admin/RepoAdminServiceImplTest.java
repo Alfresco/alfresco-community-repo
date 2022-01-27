@@ -31,17 +31,18 @@ import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-
-import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.NamespaceDAO;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -50,6 +51,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -66,6 +68,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.TestCase;
 
 /**
  * @see RepoAdminServiceImpl
@@ -88,6 +92,7 @@ public class RepoAdminServiceImplTest extends TestCase
     private NamespaceService namespaceService;
     private BehaviourFilter behaviourFilter;
     private DictionaryDAO dictionaryDAO;
+    private MessageService messageService;
     
     final String modelPrefix = "model-";
     final static String MKR = "{MKR}";
@@ -140,6 +145,7 @@ public class RepoAdminServiceImplTest extends TestCase
         namespaceService = (NamespaceService) ctx.getBean("NamespaceService");
         behaviourFilter = (BehaviourFilter)ctx.getBean("policyBehaviourFilter");
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        messageService = (MessageService) ctx.getBean("MessageService");
         
         DbNodeServiceImpl dbNodeService = (DbNodeServiceImpl)ctx.getBean("dbNodeService");
         dbNodeService.setEnableTimestampPropagation(false);
@@ -865,8 +871,182 @@ public class RepoAdminServiceImplTest extends TestCase
             }
         }
     }
-    
-    //
-    // TODO - Test custom message management
-    //
+
+    // Test deploy bundle from classpath
+    public void testDeployMessageBundleFromClasspath() throws Exception
+    {
+        String bundleBaseName = "mycustommessages";
+        String resourceClasspath = "alfresco/extension/messages/" + bundleBaseName;
+
+        final String message_key = "mycustommessages.key1";
+        final String message_value_default = "This is a custom message";
+        final String message_value_fr = "Ceci est un message personnalis\\u00e9";
+        final String message_value_de = "Dies ist eine benutzerdefinierte Nachricht";
+
+        // Undeploy the bundle
+        if (repoAdminService.getMessageBundles().contains(bundleBaseName))
+        {
+            repoAdminService.undeployMessageBundle(bundleBaseName);
+        }
+
+        // Verify the custom bundle is registered
+        assertFalse("The custom bundle should not be deployed", repoAdminService.getMessageBundles().contains(bundleBaseName));
+
+        // Depoly the message bundle
+        repoAdminService.deployMessageBundle(resourceClasspath);
+
+        // Reload the messages
+        repoAdminService.reloadMessageBundle(bundleBaseName);
+
+        // Verify the custom bundle is registered
+        assertTrue("The custom bundle should be deployed", repoAdminService.getMessageBundles().contains(bundleBaseName));
+
+        // Verify we have the messages for each locale
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        assertMessageValue("Cannot retrieve default message value", message_value_default, message_key, Locale.getDefault());
+        assertMessageValue("Cannot retrieve french message value", message_value_fr, message_key, Locale.FRANCE);
+        assertMessageValue("Cannot retrieve german message value", message_value_de, message_key, Locale.GERMANY);
+
+        // Test deploy a non existent bundle
+        try
+        {
+            repoAdminService.deployMessageBundle("alfresco/extension/messages/inexistentbundle");
+            fail("Bundle was not supposed to be deployed");
+        }
+        catch (Exception e)
+        {
+            // Expected to fail
+        }
+
+    }
+
+    // Test deploy bundle from repo and reload bundles
+    public void testDeployMessageBundleFromRepo() throws Exception
+    {
+        final String bundleBaseName = "repoBundle";
+        final String message_key = "repoBundle.key1";
+        final String message_value = "Value 1";
+        final String message_value_fr = "Value FR";
+        final String message_value_de = "Value DE";
+        final String message_value_new = "New Value 1";
+
+        // Set location
+        NodeRef rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, "/app:company_home/app:dictionary/app:messages", null,
+                namespaceService, false);
+        assertEquals(1, nodeRefs.size());
+        NodeRef messagesNodeRef = nodeRefs.get(0);
+
+        // Clear messages of this bundle if they exist and are registered
+        clearRepoBundles(messagesNodeRef);
+
+        assertEquals(0, repoAdminService.getMessageBundles().size());
+
+        // Create and upload the message files
+        NodeRef messageNode_default = createMessagesNodeWithSingleKey(messagesNodeRef, bundleBaseName, message_key, null,
+                message_value);
+        createMessagesNodeWithSingleKey(messagesNodeRef, bundleBaseName, message_key, Locale.FRANCE.toString(), message_value_fr);
+        createMessagesNodeWithSingleKey(messagesNodeRef, bundleBaseName, message_key, Locale.GERMANY.toString(),
+                message_value_de);
+
+        // Reload the messages
+        repoAdminService.reloadMessageBundle(bundleBaseName);
+
+        // Verify we have the messages for each locale
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        assertMessageValue("Cannot retrieve default message value", message_value, message_key, Locale.getDefault());
+        assertMessageValue("Cannot retrieve french message value", message_value_fr, message_key, Locale.FRANCE);
+        assertMessageValue("Cannot retrieve german message value", message_value_de, message_key, Locale.GERMANY);
+
+        // Change the values
+        putContentInMessageNode(messageNode_default, message_key, message_value_new);
+
+        // Verify we still have the old value
+        assertMessageValue("Unexpected change of message value", message_value, message_key, Locale.getDefault());
+
+        // Reload the messages
+        repoAdminService.reloadMessageBundle(bundleBaseName);
+
+        // Verify new values
+        assertMessageValue("Change of message value not reflected", message_value_new, message_key, Locale.getDefault());
+    }
+
+    /**
+     * Create messages node
+     */
+    private NodeRef createMessagesNodeWithSingleKey(NodeRef parentNode, String bundleName, String key, String locale,
+            String localeValue)
+    {
+        String msg_extension = ".properties";
+        String filename = bundleName + msg_extension;
+        String messageValue = localeValue;
+
+        if (locale != null)
+        {
+            filename = bundleName + "_" + locale + msg_extension;
+        }
+        // Create a model node
+        NodeRef messageNode = this.nodeService.createNode(
+                parentNode, 
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, filename), 
+                ContentModel.TYPE_CONTENT,
+                Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, filename)
+                ).getChildRef();
+
+        putContentInMessageNode(messageNode, key, messageValue);
+
+        return messageNode;
+
+    }
+
+    /**
+     * Write content of message node
+     */
+    private void putContentInMessageNode(NodeRef nodeRef, String key, String value)
+    {
+        ContentWriter contentWriter = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        String messagesString = key + "=" + value;
+        contentWriter.putContent(messagesString);
+    }
+
+    /**
+     * Clear Repo Bundle
+     */
+    private void clearRepoBundles(NodeRef parentNode)
+    {
+        List<String> repoBundles = repoAdminService.getMessageBundles();
+        for (String repoBundle : repoBundles)
+        {
+            repoAdminService.undeployMessageBundle(repoBundle);
+        }
+
+        List<ChildAssociationRef> messageNodes = nodeService.getChildAssocs(parentNode);
+        for (ChildAssociationRef messageChildRef : messageNodes)
+        {
+            NodeRef messageNode = messageChildRef.getChildRef();
+            nodeService.deleteNode(messageNode);
+        }
+    }
+
+    /**
+     * Clear Repo Bundle
+     */
+    private void assertMessageValue(String errorMessage, String expectedValue, String key, Locale locale)
+    {
+        transactionService.getRetryingTransactionHelper()
+                .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        assertEquals(errorMessage, expectedValue, messageService.getMessage(key, locale));
+                        return null;
+                    }
+                });
+    }
+
 }

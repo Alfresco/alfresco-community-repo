@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,10 +29,12 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import static java.util.Collections.emptyMap;
 
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -179,19 +181,19 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
         org.springframework.extensions.webscripts.Runtime mockedRuntime = mock(org.springframework.extensions.webscripts.Runtime.class);        
         
         WebScriptRequest mockedRequest = mock(WebScriptRequest.class);
-        doReturn(match).when(mockedRequest).getServiceMatch();
-        doReturn(mockedRuntime).when(mockedRequest).getRuntime();
+        lenient().doReturn(match).when(mockedRequest).getServiceMatch();
+        lenient().doReturn(mockedRuntime).when(mockedRequest).getRuntime();
         
         if (content != null && !content.isEmpty())
         {
             Content mockedContent = mock(Content.class);
-            doReturn(content).when(mockedContent).getContent();
-            doReturn(mockedContent).when(mockedRequest).getContent();
+            lenient().doReturn(content).when(mockedContent).getContent();
+            lenient().doReturn(mockedContent).when(mockedRequest).getContent();
         }
         
         String [] paramNames = (String[])parameters.keySet().toArray(new String[parameters.size()]);
-        doReturn(paramNames).when(mockedRequest).getParameterNames();
-        doAnswer(new Answer()
+        lenient().doReturn(paramNames).when(mockedRequest).getParameterNames();
+        lenient().doAnswer(new Answer()
         {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable
@@ -201,9 +203,9 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
             }
             
         }).when(mockedRequest).getParameter(anyString());
-        
-        doReturn(new String[0]).when(mockedRequest).getHeaderNames();
-        doReturn("json").when(mockedRequest).getFormat();
+
+        lenient().doReturn(new String[0]).when(mockedRequest).getHeaderNames();
+        lenient().doReturn("json").when(mockedRequest).getFormat();
         
         return mockedRequest;        
     }
@@ -217,7 +219,7 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
     {
         WebScriptResponse mockedResponse = mock(WebScriptResponse.class);
         StringWriter writer = new StringWriter();
-        doReturn(writer).when(mockedResponse).getWriter();
+        lenient().doReturn(writer).when(mockedResponse).getWriter();
         return mockedResponse;
     }
     
@@ -230,13 +232,13 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
     protected Container getMockedContainer(String template) throws Exception
     {
         FormatRegistry mockedFormatRegistry = mock(FormatRegistry.class);
-        doReturn("application/json").when(mockedFormatRegistry).getMimeType(anyString(), anyString());
+        lenient().doReturn("application/json").when(mockedFormatRegistry).getMimeType(nullable(String.class), nullable(String.class));
         
         ScriptProcessorRegistry mockedScriptProcessorRegistry = mock(ScriptProcessorRegistry.class);
-        doReturn(null).when(mockedScriptProcessorRegistry).findValidScriptPath(anyString());
+        lenient().doReturn(null).when(mockedScriptProcessorRegistry).findValidScriptPath(anyString());
         
         TemplateProcessorRegistry mockedTemplateProcessorRegistry = mock(TemplateProcessorRegistry.class);
-        doReturn(template).when(mockedTemplateProcessorRegistry).findValidTemplatePath(anyString());
+        lenient().doReturn(template).when(mockedTemplateProcessorRegistry).findValidTemplatePath(anyString());
         
         FTLTemplateProcessor ftlTemplateProcessor = new FTLTemplateProcessor()
         {
@@ -248,25 +250,25 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
         };
         ftlTemplateProcessor.init();        
         
-        doReturn(ftlTemplateProcessor).when(mockedTemplateProcessorRegistry).getTemplateProcessor(anyString());
+        lenient().doReturn(ftlTemplateProcessor).when(mockedTemplateProcessorRegistry).getTemplateProcessor(anyString());
         
         Container mockedContainer = mock(Container.class);
-        doReturn(mockedFormatRegistry).when(mockedContainer).getFormatRegistry();
-        doReturn(mockedScriptProcessorRegistry).when(mockedContainer).getScriptProcessorRegistry();
-        doReturn(mockedTemplateProcessorRegistry).when(mockedContainer).getTemplateProcessorRegistry();
+        lenient().doReturn(mockedFormatRegistry).when(mockedContainer).getFormatRegistry();
+        lenient().doReturn(mockedScriptProcessorRegistry).when(mockedContainer).getScriptProcessorRegistry();
+        lenient().doReturn(mockedTemplateProcessorRegistry).when(mockedContainer).getTemplateProcessorRegistry();
         
         Map<String, Object> containerTemplateParameters = new HashMap<>(5);
         containerTemplateParameters.put("jsonUtils", new JSONUtils());
         containerTemplateParameters.put("people", getMockedPeopleObject());
-        doReturn(containerTemplateParameters).when(mockedContainer).getTemplateParameters();
+        lenient().doReturn(containerTemplateParameters).when(mockedContainer).getTemplateParameters();
 
         SearchPath mockedSearchPath = mock(SearchPath.class);
-        doReturn(false).when(mockedSearchPath).hasDocument(anyString());
-        doReturn(mockedSearchPath).when(mockedContainer).getSearchPath();
+        lenient().doReturn(false).when(mockedSearchPath).hasDocument(anyString());
+        lenient().doReturn(mockedSearchPath).when(mockedContainer).getSearchPath();
         
         // setup description
         Description mockDescription = mock(Description.class);
-        doReturn(mock(RequiredCache.class)).when(mockDescription).getRequiredCache();
+        lenient().doReturn(mock(RequiredCache.class)).when(mockDescription).getRequiredCache();
         
         return mockedContainer;
     }

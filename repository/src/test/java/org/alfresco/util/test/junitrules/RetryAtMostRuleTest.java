@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import java.lang.annotation.Annotation;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.alfresco.util.test.junitrules.RepeatAtMostRule.RepeatAtMost;
+import org.alfresco.util.test.junitrules.RetryAtMostRule.RetryAtMost;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -45,19 +45,19 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Test class for {@link RepeatAtMostRule}.
+ * Test class for {@link RetryAtMostRule}.
  *
  * @author Domenico Sibilio
  */
 @RunWith(MockitoJUnitRunner.class)
-public class RepeatAtMostRuleTest
+public class RetryAtMostRuleTest
 {
 
-    private static final String ANNOTATION_WITH_NEGATIVE_VALUE = "annotationRepeatAtMostNegativeTimes";
-    private static final String ANNOTATION_REPEAT_AT_MOST_THRICE = "annotationRepeatAtMostThrice";
+    private static final String ANNOTATION_WITH_NEGATIVE_VALUE = "annotationRetryAtMostNegativeTimes";
+    private static final String ANNOTATION_RETRY_AT_MOST_THRICE = "annotationRetryAtMostThrice";
     private static final AtomicInteger EXECUTION_COUNT = new AtomicInteger(0);
     @Rule
-    public RepeatAtMostRule repeatAtMostRule = new RepeatAtMostRule();
+    public RetryAtMostRule retryAtMostRule = new RetryAtMostRule();
     @Rule
     public TestName testNameRule = new TestName();
     @Mock
@@ -66,10 +66,10 @@ public class RepeatAtMostRuleTest
     @Test
     public void testSucceedOnFirstAttempt() throws Throwable
     {
-        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(),
-            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
+        Description description = Description.createTestDescription(RetryAtMostRuleTest.class.getSimpleName(),
+            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
 
-        Statement statement = repeatAtMostRule.apply(statementMock, description);
+        Statement statement = retryAtMostRule.apply(statementMock, description);
         statement.evaluate();
         verify(statementMock, times(1)).evaluate();
     }
@@ -79,16 +79,16 @@ public class RepeatAtMostRuleTest
     {
         doThrow(new AssertionError("First execution should fail")).doNothing().when(statementMock).evaluate();
 
-        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(),
-            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
+        Description description = Description.createTestDescription(RetryAtMostRuleTest.class.getSimpleName(),
+            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
 
-        Statement statement = repeatAtMostRule.apply(statementMock, description);
+        Statement statement = retryAtMostRule.apply(statementMock, description);
         statement.evaluate();
         verify(statementMock, times(2)).evaluate();
     }
 
     @Test
-    @RepeatAtMost(3)
+    @RetryAtMost(3)
     public void testSucceedOnThirdAttempt()
     {
         int currentExecution = EXECUTION_COUNT.incrementAndGet();
@@ -100,37 +100,37 @@ public class RepeatAtMostRuleTest
     {
         doThrow(new AssertionError("All executions should fail")).when(statementMock).evaluate();
 
-        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(),
-            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_REPEAT_AT_MOST_THRICE));
+        Description description = Description.createTestDescription(RetryAtMostRuleTest.class.getSimpleName(),
+            testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_RETRY_AT_MOST_THRICE));
 
-        Statement statement = repeatAtMostRule.apply(statementMock, description);
+        Statement statement = retryAtMostRule.apply(statementMock, description);
         statement.evaluate();
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testInvalidRepeatAtMostTimes() throws Throwable
+    public void testInvalidRetryAtMostTimes() throws Throwable
     {
-        Description description = Description.createTestDescription(RepeatAtMostRuleTest.class.getSimpleName(),
+        Description description = Description.createTestDescription(RetryAtMostRuleTest.class.getSimpleName(),
             testNameRule.getMethodName(), getAnnotationByMethodName(ANNOTATION_WITH_NEGATIVE_VALUE));
 
-        Statement statement = repeatAtMostRule.apply(statementMock, description);
+        Statement statement = retryAtMostRule.apply(statementMock, description);
         statement.evaluate();
         verifyNoInteractions(statementMock);
     }
 
     private Annotation getAnnotationByMethodName(String methodName) throws NoSuchMethodException
     {
-        return this.getClass().getMethod(methodName).getAnnotation(RepeatAtMost.class);
+        return this.getClass().getMethod(methodName).getAnnotation(RetryAtMost.class);
     }
 
-    @RepeatAtMost(-1)
-    public void annotationRepeatAtMostNegativeTimes()
+    @RetryAtMost(-1)
+    public void annotationRetryAtMostNegativeTimes()
     {
         // intentionally empty
     }
 
-    @RepeatAtMost(3)
-    public void annotationRepeatAtMostThrice()
+    @RetryAtMost(3)
+    public void annotationRetryAtMostThrice()
     {
         // intentionally empty
     }

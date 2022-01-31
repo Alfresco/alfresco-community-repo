@@ -39,52 +39,52 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 /**
- * This JUnit rule can be used to turn existing test code into repeatable tests.
- * The test methods marked with the {@link RepeatAtMost} annotation will be repeated at most the specified
+ * This JUnit rule can be used to turn existing test code into retryable tests.
+ * The test methods marked with the {@link RetryAtMost} annotation will be attempted at most the specified
  * amount of times, stopping at the first successful execution.
  *
  * @author Domenico Sibilio
  */
-public class RepeatAtMostRule implements TestRule
+public class RetryAtMostRule implements TestRule
 {
-    private static final Log LOG = LogFactory.getLog(RepeatAtMostRule.class);
+    private static final Log LOG = LogFactory.getLog(RetryAtMostRule.class);
 
     @Override
     public Statement apply(final Statement statement, final Description description)
     {
-        RepeatAtMost repeatAtMost = description.getAnnotation(RepeatAtMost.class);
+        RetryAtMost retryAtMost = description.getAnnotation(RetryAtMost.class);
 
-        if (repeatAtMost != null)
+        if (retryAtMost != null)
         {
-            return new RepeatAtMostTestStatement(statement, description, repeatAtMost.value());
+            return new RetryAtMostTestStatement(statement, description, retryAtMost.value());
         }
 
         return statement;
     }
 
-    private static class RepeatAtMostTestStatement extends Statement
+    private static class RetryAtMostTestStatement extends Statement
     {
         private final Statement statement;
         private final Description description;
-        private final int times;
+        private final int retryCount;
 
-        private RepeatAtMostTestStatement(Statement statement, Description description, int times)
+        private RetryAtMostTestStatement(Statement statement, Description description, int retryCount)
         {
             this.statement = statement;
             this.description = description;
-            this.times = times;
+            this.retryCount = retryCount;
         }
 
         @Override
         public void evaluate() throws Throwable
         {
             validate();
-            for (int i = 0; i < times; i++)
+            for (int i = 0; i < retryCount; i++)
             {
                 try
                 {
                     LOG.debug(
-                        "Repeatable testing configured for method: " + description.getMethodName()
+                        "Retryable testing configured for method: " + description.getMethodName()
                             + " // Attempt #" + (i + 1));
                     statement.evaluate();
                     break; // stop at the first successful execution
@@ -102,30 +102,30 @@ public class RepeatAtMostRule implements TestRule
 
         private void validate()
         {
-            if (times < 1)
+            if (retryCount < 1)
             {
                 String methodName = description.getMethodName();
                 throw new IllegalArgumentException(
-                    "Invalid value for @RepeatAtMost on method " + methodName + ": " + times + " is less than 1.");
+                    "Invalid value for @RetryAtMost on method " + methodName + ": " + retryCount + " is less than 1.");
             }
         }
 
         private boolean isLastExecution(int i)
         {
-            return i == times - 1;
+            return i == retryCount - 1;
         }
     }
 
     /**
-     * This annotation is a marker used to identify a JUnit &#64;{@link Test} method as a repeatable test.
+     * This annotation is a marker used to identify a JUnit &#64;{@link Test} method as a retryable test.
      */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     @Documented
-    public @interface RepeatAtMost
+    public @interface RetryAtMost
     {
         /**
-         * @return The amount of times a test will be repeated, at most.
+         * @return The amount of times a test will be attempted, at most.
          */
         int value() default 1;
     }

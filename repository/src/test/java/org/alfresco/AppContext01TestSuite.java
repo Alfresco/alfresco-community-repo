@@ -68,6 +68,10 @@ import org.junit.runners.Suite;
     org.alfresco.filesys.repo.ContentDiskDriverTest.class,
     org.alfresco.filesys.repo.LockKeeperImplTest.class,
     org.alfresco.repo.activities.ActivityServiceImplTest.class,
+    org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseInsensitivity.class,
+    org.alfresco.repo.activities.SiteActivityTestCaseSensitivity.class,
+    org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseSensitivity.class,
+    org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity.class,
     org.alfresco.repo.admin.registry.RegistryServiceImplTest.class
 })
 public class AppContext01TestSuite

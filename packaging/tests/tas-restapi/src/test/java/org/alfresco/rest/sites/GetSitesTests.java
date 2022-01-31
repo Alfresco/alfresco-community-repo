@@ -349,12 +349,18 @@ public class GetSitesTests extends RestTest
         sites = restClient.authenticateUser(regularUser).withParams("skipCount=10&maxItems=110").withCoreAPI().getSites();
 
         int expectedCount;
-        if( sites.getPagination().isHasMoreItems() ) {
+        if (sites.getPagination().isHasMoreItems())
+        {
             expectedCount = sites.getPagination().getMaxItems();
-        } else {
-            if( sites.getPagination().getTotalItems() < sites.getPagination().getSkipCount() ) {
+        }
+        else
+        {
+            if (sites.getPagination().getTotalItems() < sites.getPagination().getSkipCount())
+            {
                 expectedCount = 0;
-            } else {
+            }
+            else
+            {
                 expectedCount = sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount();
             }
         }

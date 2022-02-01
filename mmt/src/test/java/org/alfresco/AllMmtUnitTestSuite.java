@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 /**
- * All MNT Tool project UNIT test classes (no application context) should be added to this test suite.
+ * All MMT Tool project UNIT test classes (no application context) should be added to this test suite.
  */
 @RunWith(Categories.class)
 @Suite.SuiteClasses({
@@ -38,6 +38,6 @@ import org.junit.runners.Suite;
         org.alfresco.repo.module.tool.WarHelperImplTest.class,
         org.alfresco.repo.module.tool.ModuleServiceImplTest.class
 })
-public class AllMntUnitTestSuite
+public class AllMmtUnitTestSuite
 {
 }

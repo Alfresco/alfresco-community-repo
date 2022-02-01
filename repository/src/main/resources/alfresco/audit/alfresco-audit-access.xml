@@ -54,7 +54,7 @@
             <RecordValue key="action" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/action" dataTrigger="/alfresco-access/transaction/action" />  
             <RecordValue key="sub-actions" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/sub-actions" dataTrigger="/alfresco-access/transaction/sub-actions" />  
             <RecordValue key="user" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/user" dataTrigger="/alfresco-access/transaction/user" />  
-
+            <RecordValue key="node" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/node" dataTrigger="/alfresco-access/transaction/node" />
             <RecordValue key="path" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/path" dataTrigger="/alfresco-access/transaction/path" />
             <RecordValue key="type" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/type" dataTrigger="/alfresco-access/transaction/type" />  
             <RecordValue key="version" dataExtractor="simpleValue" dataSource="/alfresco-access/transaction/cm:versionLabel" dataTrigger="/alfresco-access/transaction/cm:versionLabel" />  

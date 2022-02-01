@@ -99,7 +99,7 @@ public class SecurityTestSuite extends TestSuite
 
         suite.addTest(new JUnit4TestAdapter(HomeFolderProviderSynchronizerTest.class));
         suite.addTest(new JUnit4TestAdapter(AlfrescoSSLSocketFactoryTest.class));
-		suite.addTestSuite(FixedAclUpdaterTest.class);
+		suite.addTest(new JUnit4TestAdapter(FixedAclUpdaterTest.class));
 
 		suite.addTestSuite(DefaultRemoteUserMapperTest.class);
 		suite.addTestSuite(IdentityServiceRemoteUserMapperTest.class);

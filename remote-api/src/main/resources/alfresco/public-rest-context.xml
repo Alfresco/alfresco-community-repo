@@ -1452,6 +1452,7 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeVersionRenditionsRelation">
         <property name="renditions" ref="Renditions" />
+        <property name="directAccessUrlHelper" ref="directAccessUrlHelper" />
     </bean>
 
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkRenditionsRelation">

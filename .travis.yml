@@ -21,6 +21,8 @@ branches:
   only:
     - master
     - /release\/.*/
+    - /feature\/.*/
+    - /fix\/.*/
 
 env:
   global:

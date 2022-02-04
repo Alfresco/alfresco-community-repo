@@ -61,7 +61,7 @@
         <dependency.jackson-databind.version>2.10.1</dependency.jackson-databind.version>
         <dependency.cxf.version>3.3.5</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.pdfbox.version>2.0.19</dependency.pdfbox.version>
+        <dependency.pdfbox.version>2.0.23</dependency.pdfbox.version>
         <dependency.webscripts.version>7.22</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.64</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.4.6</dependency.mockito-core.version>

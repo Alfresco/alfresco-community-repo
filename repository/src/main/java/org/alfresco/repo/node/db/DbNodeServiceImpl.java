@@ -859,11 +859,13 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         boolean updated = false;
         if (aspectDef != null)
         {
-            // Remove default properties
-            Map<QName,PropertyDefinition> propertyDefs = aspectDef.getProperties();
-            Set<QName> propertyToRemoveQNames = propertyDefs.keySet();
-            nodeDAO.removeNodeProperties(nodeId, propertyToRemoveQNames);
-            
+            if(hadAspect){
+                // Remove default properties
+                Map<QName,PropertyDefinition> propertyDefs = aspectDef.getProperties();
+                Set<QName> propertyToRemoveQNames = propertyDefs.keySet();
+                nodeDAO.removeNodeProperties(nodeId, propertyToRemoveQNames);
+            }
+
             // Remove child associations
             // We have to iterate over the associations and remove all those between the parent and child
             final List<Pair<Long, ChildAssociationRef>> assocsToDelete = new ArrayList<Pair<Long, ChildAssociationRef>>(5);

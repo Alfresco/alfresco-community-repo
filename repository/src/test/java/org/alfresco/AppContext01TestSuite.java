@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -68,6 +68,10 @@ import org.junit.runners.Suite;
     org.alfresco.filesys.repo.ContentDiskDriverTest.class,
     org.alfresco.filesys.repo.LockKeeperImplTest.class,
     org.alfresco.repo.activities.ActivityServiceImplTest.class,
+    org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseInsensitivity.class,
+    org.alfresco.repo.activities.SiteActivityTestCaseSensitivity.class,
+    org.alfresco.repo.activities.feed.cleanup.FeedCleanerTestCaseSensitivity.class,
+    org.alfresco.repo.activities.SiteActivityTestCaseInsensitivity.class,
     org.alfresco.repo.admin.registry.RegistryServiceImplTest.class
 })
 public class AppContext01TestSuite

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,10 +29,16 @@ import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
 import static junit.framework.TestCase.assertEquals;
+import static org.reflections.scanners.Scanners.MethodsAnnotated;
+import static org.reflections.scanners.Scanners.SubTypes;
+import static org.reflections.scanners.Scanners.TypesAnnotated;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -49,6 +55,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runners.Suite.SuiteClasses;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.scanners.Scanners;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 
@@ -69,7 +76,7 @@ public class OmittedTestClassFinderUnitTest
     public void checkTestClassesReferencedInTestSuites()
     {
         // We assume that all of our tests are in org.alfresco.
-        Reflections reflections = new Reflections("org.alfresco", new MethodAnnotationsScanner(), new TypeAnnotationsScanner(), new SubTypesScanner());
+        Reflections reflections = new Reflections("org.alfresco", MethodsAnnotated, TypesAnnotated, SubTypes);
 
         // Find the test classes which are not in test suites.
         Set<String> testClasses =  getTestClassesOnPath(reflections);
@@ -162,13 +169,14 @@ public class OmittedTestClassFinderUnitTest
      * @param annotation The class of the annotation to look for.
      * @return The set of canonical names of classes containing methods annotated with the annotation.
      */
-    private Set<String> findClassesWithMethodAnnotation(Reflections reflections, Class annotation)
+    private Set<String> findClassesWithMethodAnnotation(Reflections reflections, Class<? extends Annotation> annotation)
     {
-        return reflections.getStore()
-                          .get(MethodAnnotationsScanner.class, annotation.getName())
+        return reflections.getMethodsAnnotatedWith(annotation)
                           .stream()
-                          // Get the class name from the method name.
-                          .map(methodName -> methodName.split("\\.[^\\.]+\\(")[0])
+                          .map(Method::getDeclaringClass)
+                          .flatMap(c -> Stream.concat(Stream.of(c), reflections.getSubTypesOf(c).stream()))
+                          .map(Class::getCanonicalName)
+                          .filter(Objects::nonNull)
                           .collect(toSet());
     }
 

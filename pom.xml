@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>14.96-SNAPSHOT</version>
+    <version>14.102-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -57,7 +57,7 @@
 
         <dependency.spring.version>5.3.15</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
-        <dependency.jackson.version>2.13.0</dependency.jackson.version>
+        <dependency.jackson.version>2.13.1</dependency.jackson.version>
         <dependency.jackson-databind.version>2.13.1</dependency.jackson-databind.version>
         <dependency.cxf.version>3.5.0</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
@@ -71,8 +71,8 @@
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
         <dependency.httpcore.version>4.4.15</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
-        <dependency.xercesImpl.version>2.12.1</dependency.xercesImpl.version>
-        <dependency.slf4j.version>1.7.33</dependency.slf4j.version>
+        <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
+        <dependency.slf4j.version>1.7.35</dependency.slf4j.version>
         <dependency.gytheio.version>0.12</dependency.gytheio.version>
         <dependency.groovy.version>3.0.9</dependency.groovy.version>
         <dependency.tika.version>2.2.1</dependency.tika.version> 
@@ -102,17 +102,17 @@
         <dependency.jakarta-jws-api.version>2.1.0</dependency.jakarta-jws-api.version>
         <dependency.jakarta-mail-api.version>1.6.5</dependency.jakarta-mail-api.version>
         <dependency.jakarta-json-api.version>1.1.6</dependency.jakarta-json-api.version>
-        <dependency.jakarta-json-path.version>2.5.0</dependency.jakarta-json-path.version>
+        <dependency.jakarta-json-path.version>2.7.0</dependency.jakarta-json-path.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
         <alfresco.googledrive.version>3.2.1.3</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.4.0.1</alfresco.aos-module.version>
-        <alfresco.api-explorer.version>7.2.0-M2</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
+        <alfresco.api-explorer.version>7.2.0-A3</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.0.1.alfresco-1</license-maven-plugin.version>
 
-        <dependency.postgresql.version>42.3.1</dependency.postgresql.version>
+        <dependency.postgresql.version>42.3.2</dependency.postgresql.version>
         <dependency.mysql.version>8.0.27</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
@@ -631,7 +631,7 @@
             <dependency>
                 <groupId>com.github.junrar</groupId>
                 <artifactId>junrar</artifactId>
-                <version>7.4.0</version>
+                <version>7.4.1</version>
             </dependency>
             <dependency>
                 <groupId>com.github.fge</groupId>
@@ -850,7 +850,7 @@
             <dependency>
                 <groupId>org.reflections</groupId>
                 <artifactId>reflections</artifactId>
-                <version>0.9.12</version>
+                <version>0.10.2</version>
             </dependency>
             <!-- swagger parser -->
             <dependency>

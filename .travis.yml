@@ -53,7 +53,7 @@ jobs:
       if: commit_message !~ /\[skip repo\]/
       script:
         - travis_retry mvn -B test -pl core,data-model
-        - travis_retry mvn -B test -pl repository -Dtest=AllUnitTestsSuite
+        - travis_retry mvn -B test -pl "repository,mmt" "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite"
 
     - name: "Repository - AppContext01TestSuite"
       if: commit_message !~ /\[skip repo\]/

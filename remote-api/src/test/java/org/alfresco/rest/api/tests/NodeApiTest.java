@@ -6279,6 +6279,82 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
+    public void testRequestContentDirectUrlClientErrorResponseForNodes() throws Exception
+    {
+        //Node does not exist
+        setRequestContext(user1);
+
+        HttpResponse nodeDoesNotExistResponse = post(getRequestContentDirectUrl("non-existing-node-id"), null, 404);
+
+        //Node is not a file
+        String folderId = createFolder(tDocLibNodeId, "some-folder-name").getId();
+        HttpResponse nodeIsNotAFileReponse = post(getRequestContentDirectUrl(folderId), null, 400);
+    }
+
+    @Test
+    public void testRequestContentDirectUrlClientErrorResponseForVersions() throws Exception
+    {
+        // Create a document
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        String docId = documentResp.getId();
+
+        // Verify versions
+        HttpResponse versionIdDoesNotExistReponse = post(getNodeVersionRequestDirectAccessUrl(docId, "1.2"), null, null, null, null, 404);
+        HttpResponse versionIdInvalidReponse = post(getNodeVersionRequestDirectAccessUrl(docId, "invalid-version"), null, null, null, null, 404);
+    }
+
+    @Test
+    public void testRequestContentDirectUrlClientErrorResponseForRenditions() throws Exception
+    {
+        // Create a document
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String docId = documentResp.getId();
+
+        // Verify renditions
+        HttpResponse renditionIdDoesNotExistReponse = post(getNodeRenditionRequestDirectAccessUrl(docId, "pdf"), null, null, null, null, 404);
+        HttpResponse renditionIdInvalidReponse = post(getNodeRenditionRequestDirectAccessUrl(docId, "invalid-rendition"), null, null, null, null, 404);
+    }
+
+    @Test
+    public void testRequestContentDirectUrlClientErrorResponseForDeletion() throws Exception
+    {
+        // Create a document
+        setRequestContext(user1);
+
+        String myNodeId = getMyNodeId();
+
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String docId = documentResp.getId();
+
+        // Verify deletion
+        HttpResponse nodeNotDeletedReponse = post(getDeletedNodeRequestDirectAccessUrl(docId), null, null, null, null, 404);
+    }
+
+    @Test
     public void testRequestVersionsContentDirectUrl() throws Exception
     {
         setRequestContext(user1);

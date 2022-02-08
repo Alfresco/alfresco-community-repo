@@ -106,7 +106,7 @@ public class CombinedConfig extends CombinedTransformConfig
 
     private boolean addRemoteConfig(String baseUrl, String remoteType)
     {
-        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform/config?" + INCLUDE_CORE_VERSION;
+        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform/config?" + INCLUDE_CORE_VERSION + "=" + true;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
         try

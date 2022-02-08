@@ -41,6 +41,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -52,6 +53,8 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.cache.TransactionalCache.ValueHolder;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeEntity;
@@ -95,6 +98,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -145,12 +151,15 @@ public class NodeServiceTest
     private static ContentService contentService;
     private static PermissionService permissionService;
     private static NodeDAO nodeDAO;
+    private static VersionService versionService;
     private static TransactionService txnService;
     private static PolicyComponent policyComponent;
     private static CannedQueryDAO cannedQueryDAOForTesting;
     private static SimpleCache<Serializable, ValueHolder<Serializable>> nodesCache;
     private static SimpleCache<Serializable, ValueHolder<Serializable>> propsCache;
     private static SimpleCache<Serializable, ValueHolder<Serializable>> aspectsCache;
+    private static SimpleCache<Long, ContentUrlEntity> contentDataCache;
+    private static SimpleCache<Long, ContentUrlEntity> contentUrlCache;
     
     private static Long deletedTypeQNameId;
     
@@ -168,6 +177,7 @@ public class NodeServiceTest
         contentService = serviceRegistry.getContentService();
         permissionService = serviceRegistry.getPermissionService();
         nodeDAO = (NodeDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("nodeDAO");
+        versionService = serviceRegistry.getVersionService();
         txnService = serviceRegistry.getTransactionService();
         policyComponent = (PolicyComponent) APP_CONTEXT_INIT.getApplicationContext().getBean("policyComponent");
         cannedQueryDAOForTesting = (CannedQueryDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("cannedQueryDAOForTesting");
@@ -176,11 +186,15 @@ public class NodeServiceTest
         nodesCache = (SimpleCache<Serializable, ValueHolder<Serializable>>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.nodesSharedCache");
         propsCache = (SimpleCache<Serializable, ValueHolder<Serializable>>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.propertiesSharedCache");
         aspectsCache = (SimpleCache<Serializable, ValueHolder<Serializable>>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.aspectsSharedCache");
+        contentDataCache = (SimpleCache<Long, ContentUrlEntity>) APP_CONTEXT_INIT.getApplicationContext().getBean("contentDataCache");
+        contentUrlCache = (SimpleCache<Long, ContentUrlEntity>) APP_CONTEXT_INIT.getApplicationContext().getBean("contentUrlCache");
         
         // Clear the caches to remove fluff
         nodesCache.clear();
         propsCache.clear();
         aspectsCache.clear();
+        contentDataCache.clear();
+        contentUrlCache.clear();
         
         AuthenticationUtil.setRunAsUserSystem();
         
@@ -2432,6 +2446,125 @@ public class NodeServiceTest
 
             return null;
         }, userName1);
+    }
+    
+    /**
+     * See MNT-22710
+     */
+    @Test
+    public void testChangeContentURLSameCRC()
+    {
+        ContentPropertyRestrictionInterceptor contentPropertyRestrictionInterceptor =
+                (ContentPropertyRestrictionInterceptor) APP_CONTEXT_INIT.getApplicationContext().getBean("contentPropertyRestrictionInterceptor");
+
+        contentPropertyRestrictionInterceptor.setGlobalContentPropertyRestrictionWhiteList(this.getClass().getName());
+        
+        try
+        {
+            NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+            Map<QName, Serializable> props = new HashMap<>(3);
+            props.put(ContentModel.PROP_NAME, GUID.generate());
+            NodeRef testFolder = nodeService.createNode(
+                    workspaceRootNodeRef,
+                    ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(NAMESPACE, GUID.generate()),
+                    ContentModel.TYPE_FOLDER,
+                    props).getChildRef();
+             
+            NodeRef nodeRef1 = nodeService.createNode(
+                    testFolder,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("180225704974-DSA Correspondence 1"),
+                    ContentModel.TYPE_CONTENT).getChildRef();
+            
+            NodeRef nodeRef2 = nodeService.createNode(
+                    testFolder,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName("090502800600-General Correspondence 1"),
+                    ContentModel.TYPE_CONTENT).getChildRef();
+            
+            // CRC: 2997538036
+            String contentURL1 = "s3v2://contentstore/1597325412593_1610985343942_3708/SLC/IC/DSA/2018/02/16/20/180225704974-DSA Correspondence 1";
+            // CRC: 2921900407
+            String contentURL2 = "s3v2://contentstore/1639588316822_1642775862393_49/SLC/IC/GENERAL/2009/05/27/16/090502800600-General Correspondence 1";
+            // CRC: 2997538036 (same CRC as contentURL1)
+            String contentURL3 = "s3v2://contentstore/1639588316821_1642775862393_49/SLC/IC/GENERAL/2009/05/27/16/090502800600-General Correspondence 1";
+            
+            ContentData contentData1 = new ContentData(
+                    contentURL1, 
+                    "application/pdf",
+                    100L, 
+                    "UTF-8"
+                    );
+            
+            ContentData contentData2 = new ContentData(
+                    contentURL2, 
+                    "application/pdf",
+                    100L, 
+                    "UTF-8"
+                    );
+            
+            ContentData contentData3 = new ContentData(
+                    contentURL3, 
+                    "application/pdf",
+                    100L, 
+                    "UTF-8"
+                    );
+            
+            // Setting same contentURLs
+            nodeService.setProperty(nodeRef1, ContentModel.PROP_CONTENT, contentData1);
+            nodeService.setProperty(nodeRef2, ContentModel.PROP_CONTENT, contentData1);
+            
+            //Validate the data
+            ContentData cdNode1Val0= (ContentData) nodeService.getProperty(nodeRef1, ContentModel.PROP_CONTENT);
+            ContentData cdNode2Val0= (ContentData) nodeService.getProperty(nodeRef2, ContentModel.PROP_CONTENT);
+            assertEquals("ContentURL for node1 should be contentURL1",contentURL1,cdNode1Val0.getContentUrl());
+            assertEquals("ContentURL for node2 should also be the same as node1",contentURL1,cdNode2Val0.getContentUrl());
+            
+            // Setting non colliding URLS
+            nodeService.setProperty(nodeRef2, ContentModel.PROP_CONTENT, contentData2);
+            
+            //Validate the data
+            ContentData cdNode1Val1= (ContentData) nodeService.getProperty(nodeRef1, ContentModel.PROP_CONTENT);
+            ContentData cdNode2Val1= (ContentData) nodeService.getProperty(nodeRef2, ContentModel.PROP_CONTENT);
+            assertEquals("ContentURL for node1 should be contentURL1",contentURL1,cdNode1Val1.getContentUrl());
+            assertEquals("ContentURL for node2 should be contentURL2",contentURL2,cdNode2Val1.getContentUrl());
+            
+            //Set a colliding URL
+            try
+            {
+                nodeService.setProperty(nodeRef2, ContentModel.PROP_CONTENT, contentData3);
+                fail("Should not be possible to set a contentUrl with the same CRC and different value");
+            }
+            catch (IllegalArgumentException e)
+            {
+                //Expected
+            }
+            
+            //Validate the contentURL values
+            ContentData cdNode1Val2= (ContentData) nodeService.getProperty(nodeRef1, ContentModel.PROP_CONTENT);
+            ContentData cdNode2Val2= (ContentData) nodeService.getProperty(nodeRef2, ContentModel.PROP_CONTENT);
+            assertFalse("Collision detected on node 1",contentURL3.equals(cdNode1Val2.getContentUrl()));
+            assertFalse("Collision detected on node 2",contentURL1.equals(cdNode2Val2.getContentUrl()));
+            
+            //Clear caches and validate again
+            propsCache.clear();
+            contentDataCache.clear();
+            contentUrlCache.clear();
+            
+            ContentData cdNode1Val3= (ContentData) nodeService.getProperty(nodeRef1, ContentModel.PROP_CONTENT);
+            ContentData cdNode2Val3= (ContentData) nodeService.getProperty(nodeRef2, ContentModel.PROP_CONTENT);
+            assertFalse("Collision detected on node 1 after clear caches",contentURL3.equals(cdNode1Val3.getContentUrl()));
+            assertFalse("Collision detected on node 2 after clear caches",contentURL1.equals(cdNode2Val3.getContentUrl()));
+            
+            assertEquals("ContentURL for node1 should be contentURL1",contentURL1,cdNode1Val3.getContentUrl());
+            assertEquals("ContentURL for node2 should be contentURL2",contentURL2,cdNode2Val3.getContentUrl());
+        }
+        finally
+        {
+            contentPropertyRestrictionInterceptor.setGlobalContentPropertyRestrictionWhiteList("");
+        }
+        
     }
 
     private void addContentToNode(NodeRef nodeRef)

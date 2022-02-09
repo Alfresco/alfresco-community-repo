@@ -172,7 +172,7 @@ public class RemoveFeaturesActionExecuterTest extends BaseSpringTest
         QName QNAME_TITLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "title");
 
         // Execute the action
-        PropertyMap titledProperties = new PropertyMap(2);
+        PropertyMap titledProperties = new PropertyMap(1);
         titledProperties.put(QNAME_TITLE, "title");
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, titledProperties);
 

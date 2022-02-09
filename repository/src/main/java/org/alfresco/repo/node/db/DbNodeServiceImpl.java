@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,20 +25,6 @@
  */
 package org.alfresco.repo.node.db;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
@@ -60,25 +46,9 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
-import org.alfresco.service.cmr.dictionary.AspectDefinition;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
-import org.alfresco.service.cmr.dictionary.InvalidAspectException;
-import org.alfresco.service.cmr.dictionary.InvalidTypeException;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
-import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.AssociationExistsException;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.InvalidChildAssociationRefException;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.InvalidStoreRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.dictionary.*;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -88,20 +58,15 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.traitextender.AJProxyTrait;
-import org.alfresco.traitextender.Extend;
-import org.alfresco.traitextender.ExtendedTrait;
-import org.alfresco.traitextender.Extensible;
-import org.alfresco.traitextender.Trait;
-import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.GUID;
-import org.alfresco.util.Pair;
-import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyMap;
+import org.alfresco.traitextender.*;
+import org.alfresco.util.*;
 import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Node service using database persistence layer to fulfill functionality
@@ -859,7 +824,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         boolean updated = false;
         if (aspectDef != null)
         {
-            if(hadAspect){
+            if(hadAspect)
+            {
                 // Remove default properties
                 Map<QName,PropertyDefinition> propertyDefs = aspectDef.getProperties();
                 Set<QName> propertyToRemoveQNames = propertyDefs.keySet();

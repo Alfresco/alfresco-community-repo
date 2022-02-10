@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>Records Management DOD 5015 Custom Types</shortname>
+   <description><![CDATA[
+   Gets the list of DOD 5015-defined custom types (e.g. scannedRecord).<br/>
+   ]]>
+   </description>
+   <url>/api/rma/admin/dodcustomtypes</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

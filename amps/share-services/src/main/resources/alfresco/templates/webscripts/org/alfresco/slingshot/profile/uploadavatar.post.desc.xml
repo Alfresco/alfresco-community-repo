@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Avatar Upload</shortname>
+  <description>Upload avatar file content and apply to person preferences</description>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <url>/slingshot/profile/uploadavatar</url>
+  <lifecycle>internal</lifecycle>
+</webscript>

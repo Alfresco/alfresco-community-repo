@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+ <page>
+    <title>Records Management Site Dashboard</title>
+    <title-id>page.rmSiteDashboard.title</title-id>
+    <description>Records Management site's dashboard page</description>
+    <description-id>page.rmSiteDashboard.description</description-id>
+    <template-instance>dashboard-2-columns-wide-right</template-instance>
+    <authentication>user</authentication>
+    <properties>
+       <sitePages>[{"pageId":"documentlibrary"}, {"pageId":"rm-search"}]</sitePages>
+       <pageMetadata>{"documentlibrary":{"titleId":"page.rmDocumentLibrary.title", "descriptionId":"page.rmDocumentLibrary.description", "type":"dod5015"}}</pageMetadata>
+    </properties>
+ </page>

@@ -92,6 +92,8 @@ public interface People
     CollectionWithPagingInfo<Person> getPeople(Parameters parameters);
 
     /**
+     * @deprecated from 7.1.0
+     * 
      * Request password reset (an email will be sent to the registered email of the given {@code userId}).
      * The API returns a 202 response for a valid, as well as the invalid (does not exist or disabled) userId
      *
@@ -101,6 +103,8 @@ public interface People
     void requestPasswordReset(String userId, String client);
 
     /**
+     * @deprecated from 7.1.0
+     * 
      * Performs password reset
      *
      * @param passwordReset the password reset details

@@ -48,7 +48,9 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -56,6 +58,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * @author Nick Smith
  * @since 3.4.e
  */
+@Category(NeverRunsTests.class)
 public class ActivitiSpringTest extends TestCase
 {
     private static final QName PROP_CHECK_VALUE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "check_value");

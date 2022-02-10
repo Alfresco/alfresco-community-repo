@@ -1,0 +1,15 @@
+<webscript>
+   <shortname>Applies fixes to the content model for DoD certification.</shortname>
+   <description><![CDATA[
+   This webscript applies necessary changes to the RM custom model in the repository. These changes
+   are to 'patch' a deployed RM custom model during the DoD certification process. With that in mind
+   they are safe to apply to a live database i.e. without side-effect to existing data and safe
+   to call multiple times. They are not needed for a clean deployment.<BR/>
+   Please note that this script will be removed after the certification process is complete.
+  ]]></description>
+   <url>/api/rma/applydodcertmodelfixes</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

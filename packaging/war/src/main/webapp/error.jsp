@@ -2,7 +2,7 @@
   #%L
   Alfresco Repository WAR Community
   %%
-  Copyright (C) 2005 - 2016 Alfresco Software Limited
+  Copyright (C) 2005 - 2021 Alfresco Software Limited
   %%
   This file is part of the Alfresco software.
   If the software was purchased under a paid Alfresco license, the terms of
@@ -35,15 +35,6 @@
 <%@ page import="org.alfresco.service.cmr.module.ModuleInstallState" %>
 <%@ page import="java.util.Calendar" %>
 
-<!-- Enterprise index-jsp placeholder -->
-<%
-// route WebDAV requests
-if (request.getMethod().equalsIgnoreCase("PROPFIND") || request.getMethod().equalsIgnoreCase("OPTIONS"))
-{
-   response.sendRedirect(request.getContextPath() + "/webdav/");
-}
-%>
-
 <%
 WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(session.getServletContext());
 SysAdminParams sysAdminParams = (SysAdminParams)context.getBean("sysAdminParams");
@@ -57,8 +48,8 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
    <title>Alfresco</title>
-   <link rel="stylesheet" type="text/css" href="./css/reset.css" />
-   <link rel="stylesheet" type="text/css" href="./css/alfresco.css" />
+   <link rel="stylesheet" type="text/css" href="/<%=sysAdminParams.getAlfrescoContext()%>/css/reset.css" />
+   <link rel="stylesheet" type="text/css" href="/<%=sysAdminParams.getAlfrescoContext()%>/css/alfresco.css" />
 </head>
 <body>
    <div class="sticky-wrapper">

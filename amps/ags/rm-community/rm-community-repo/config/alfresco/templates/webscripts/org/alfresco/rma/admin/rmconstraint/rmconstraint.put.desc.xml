@@ -1,0 +1,19 @@
+<webscript>
+  <shortname>Update an RM Constraint List</shortname>
+  <description><![CDATA[
+  Update an RM Constraint List
+   <BR />
+   The following properties may be updatedConstraint object
+   <BR />
+   <dl>
+   <dt>constraintTitle</dt> <dd>Optional, the title of the constraint (human readable)</dd>
+   <dt>allowedValues</dt> <dd>Optional, array of allowed values, the complete list must be specified</dd>
+   </dl>
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmconstraints/{listName}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

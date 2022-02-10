@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,7 +32,9 @@ import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 
 import java.util.List;
 
@@ -146,6 +148,25 @@ public interface Renditions
             throws NotFoundException, ConstraintViolatedException;
 
     /**
+     * Delete the rendition node.
+     *
+     * @param nodeRef       the source nodeRef, ie. live node
+     * @param renditionId   the rendition id
+     * @param parameters    the {@link Parameters} object to get the parameters passed into the request
+     */
+    void deleteRendition(NodeRef nodeRef, String renditionId, Parameters parameters);
+
+    /**
+     * Delete the rendition node.
+     *
+     * @param nodeRef       the source nodeRef, ie. live node
+     * @param versionId     the version id (aka version label)
+     * @param renditionId   the rendition id
+     * @param parameters    the {@link Parameters} object to get the parameters passed into the request
+     */
+    void deleteRendition(NodeRef nodeRef, String versionId, String renditionId, Parameters parameters);
+
+    /**
      * Downloads rendition.
      *
      * @param nodeRef     the source nodeRef, ie. live node
@@ -186,5 +207,58 @@ public interface Renditions
      * @return the rendition stream
      */
     BinaryResource getContentNoValidation(NodeRef nodeRef, String versionId, String renditionId, Parameters parameters);
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeId      the node id for which to obtain the direct access {@code URL}
+     * @param versionId   the version id (aka version label)
+     * @param renditionId the rendition id
+     * @param attachment  {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}
+     * @return            a direct access {@code URL} object for the content
+     */
+    default DirectAccessUrl requestContentDirectUrl(String nodeId, String versionId, String renditionId, boolean attachment)
+    {
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeId      the node id for which to obtain the direct access {@code URL}
+     * @param versionId   the version id (aka version label)
+     * @param renditionId the rendition id
+     * @param attachment  {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}
+     * @param validFor    the time at which the direct access {@code URL} will expire
+     * @return            a direct access {@code URL} object for the content
+     */
+    default DirectAccessUrl requestContentDirectUrl(String nodeId, String versionId, String renditionId, boolean attachment, Long validFor)
+    {
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, validFor);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeRef     the node reference for which to obtain the direct access {@code URL}
+     * @param versionId   the version id (aka version label)
+     * @param renditionId the rendition id
+     * @param attachment  {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}
+     * @return            a direct access {@code URL} object for the content.
+     */
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment)
+    {
+        return requestContentDirectUrl(nodeRef, versionId, renditionId, attachment, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access content.
+     * @param nodeRef     the node reference for which to obtain the direct access {@code URL}
+     * @param versionId   the version id (aka version label)
+     * @param renditionId the rendition id
+     * @param attachment  {@code true} if an attachment {@code URL} is requested, {@code false} for an embedded {@code URL}
+     * @param validFor    the time at which the direct access {@code URL} will expire
+     * @return            a direct access {@code URL} object for the content.
+     */
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, String versionId, String renditionId, boolean attachment, Long validFor);
 }
 

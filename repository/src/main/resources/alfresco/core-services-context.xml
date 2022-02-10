@@ -488,6 +488,9 @@
         <property name="versionComparatorClass">
             <value>${version.store.versionComparatorClass}</value>
         </property>
+        <property name="useVersionAssocIndex">
+            <value>${version.store.useVersionAssocIndex}</value>
+        </property>
     </bean>
 
     <bean id="versionNodeService" class="org.alfresco.repo.version.Node2ServiceImpl">
@@ -719,6 +722,9 @@
                 <!-- Smart Folders model -->
                 <value>alfresco/model/smartfolder-model.xml</value>
 
+                <!-- IPTC model -->
+                <value>alfresco/model/iptcModel.xml</value>
+
             </list>
         </property>
         <property name="labels">
@@ -733,6 +739,7 @@
                 <value>alfresco/messages/transfer-model</value>
                 <value>alfresco/messages/site-model</value>
                 <value>alfresco/messages/smartfolder-model</value>
+                <value>alfresco/messages/iptc-model</value>
             </list>
         </property>
     </bean>

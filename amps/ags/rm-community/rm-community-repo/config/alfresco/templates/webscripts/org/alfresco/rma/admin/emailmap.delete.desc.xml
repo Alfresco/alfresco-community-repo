@@ -1,0 +1,15 @@
+<webscript>
+   <shortname>Delete email property map</shortname>
+   <description><![CDATA[
+      Delete the custom email property map
+      <br />
+      DELETE /api/rma/admin/emailmap/{from}/{to} deletes the specified mapping
+      Returns data in the same format as the get method
+   ]]>
+   </description>
+   <url>/api/rma/admin/emailmap/{from}/{to}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

@@ -1,0 +1,27 @@
+{
+   "rmc:prjList": {
+        "dmartinz"          : ["Project A", "Project B", "Project C"],
+        "jrogers"           : ["Project A", "Project B"],
+        "GROUP_Engineering" : ["Project A"],
+        "dfranco"           : ["Project A", "Project C"],
+        "admin"             : ["Project A", "Project B", "Project C"],
+        "GROUP_Finance"     : ["Project C"]
+    },
+   "rmc:smList": {
+        "jrangel"     : ["NOFORN", "NOCONTRACT", "FOUO", "FGI"],
+        "dmartinz"    : ["NOFORN", "NOCONTRACT", "FOUO", "FGI"],
+        "jrogers"     : ["NOFORN", "NOCONTRACT", "FOUO", "FGI"],
+        "hmcneil"     : ["NOFORN", "NOCONTRACT", "FOUO", "FGI"],
+        "dfranco"     : ["NOFORN", "FOUO"],
+        "gsmith"      : ["NOFORN", "FOUO"],
+        "eharris"     : ["NOCONTRACT", "FOUO"],
+        "bbayless"    : ["NOCONTRACT", "FOUO"],
+        "mhouse"      : ["NOCONTRACT", "FOUO"],
+        "aly"         : ["FOUO"],
+        "dsandy"      : ["FGI"],
+        "driggs"      : ["NOFORN"],
+        "admin"       : ["FOUO", "NOFORN"],
+        "test1"       : ["NOCONTRACT"],
+        "GROUP_test1" : ["NOCONTRACT"]
+    }
+}

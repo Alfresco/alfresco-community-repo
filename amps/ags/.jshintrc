@@ -1,0 +1,44 @@
+{
+   "bitwise": true,
+   "curly": true,
+   "eqeqeq": true,
+   "es3": true,
+   "forin": true,
+   "freeze": true,
+   "funcscope": true,
+   "immed": true,
+   "indent": 3,
+   "iterator": true,
+   "latedef": true,
+   "maxcomplexity": 10,
+   "maxdepth": 50,
+   "maxerr": 50,
+   "maxlen": 250,
+   "maxparams": 50,
+   "maxstatements": 30,
+   "newcap": true,
+   "noarg": true,
+   "nonbsp": true,
+   "nonew": true,
+   "notypeof": true,
+   "shadow": "outer",
+   "undef": true,
+   "unused": true,
+
+   "globals": {
+      "module": false,
+      "model": true,
+      "Alfresco": true,
+      "YAHOO": false,
+      "appContext": false,
+      "PDFJS": false,
+      "AlfrescoUtil": true,
+      "msg": false
+   },
+
+   "expr": true,
+   "strict": false,
+
+   "browser": true,
+   "dojo": true
+}

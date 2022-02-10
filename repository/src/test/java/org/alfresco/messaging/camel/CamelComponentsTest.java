@@ -25,10 +25,12 @@
  */
 package org.alfresco.messaging.camel;
 
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,6 +42,7 @@ import static org.junit.Assert.assertEquals;
  * Tests Camel components defined in the application's Spring context
  */
 @RunWith(SpringJUnit4ClassRunner.class)
+@Category(NeverRunsTests.class)
 @ContextConfiguration(locations = "/test-messaging-context.xml")
 public class CamelComponentsTest {
     @Autowired

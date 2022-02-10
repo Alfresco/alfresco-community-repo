@@ -4,6 +4,8 @@
 .classpath
 .settings
 .project
+.gradle
+.history
 
 # Intellij
 .idea/
@@ -22,15 +24,16 @@ target
 *.log.*
 
 # Mobile Tools for Java (J2ME)
-
 .mtj
 .tmp/
 
 # Package Files #
-
 *.jar
 *.war
 *.ear
+
+# maven-shade-plugin for mmt tool
+dependency-reduced-pom.xml
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 
@@ -38,3 +41,16 @@ hs_err_pid*
 
 # Alfresco runtime
 alf_data
+
+# AGS
+build.local.properties
+dist
+explodedDeps
+local.properties
+rebel.xml
+rebel-remote.xml
+test-output
+
+/amps/ags/rm-automation/src/test/resources/webdriver.properties
+/amps/ags/rm-community/rm-server/config/alfresco/extension
+/amps/ags/rm-community/rm-community-rest-api-explorer/overlays

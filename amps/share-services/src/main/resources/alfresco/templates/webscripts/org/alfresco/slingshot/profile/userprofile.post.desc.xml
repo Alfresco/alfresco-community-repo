@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>User Profile</shortname>
+  <description>User Profile POST for update</description>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <url>/slingshot/profile/userprofile</url>
+  <lifecycle>internal</lifecycle>
+</webscript>

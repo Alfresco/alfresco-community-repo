@@ -1,0 +1,12 @@
+<webscript>
+  <shortname>Records Management Audit Log Status</shortname>
+  <description><![CDATA[
+  Returns the status of the records management log.
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmauditlog/status</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

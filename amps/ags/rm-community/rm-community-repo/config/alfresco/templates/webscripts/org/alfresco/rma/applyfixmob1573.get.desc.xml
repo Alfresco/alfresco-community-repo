@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Applies fix for MOB-1573.</shortname>
+   <description>Fixes the RM custom model by changing the multiplicity on custom references to many-to-many.</description>
+   <url>/api/rma/applyfixmob1573</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

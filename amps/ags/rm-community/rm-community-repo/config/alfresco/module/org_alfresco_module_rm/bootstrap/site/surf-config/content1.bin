@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component>
+  <guid>page.navigation.site~${siteId}~dashboard</guid>
+  <scope>page</scope>
+  <region-id>navigation</region-id>
+  <source-id>site/${siteId}/dashboard</source-id>
+  <url>/components/navigation/collaboration-navigation</url>
+</component>

@@ -4,21 +4,21 @@
   %%
   Copyright (C) 2005 - 2016 Alfresco Software Limited
   %%
-  This file is part of the Alfresco software. 
-  If the software was purchased under a paid Alfresco license, the terms of 
-  the paid license agreement will prevail.  Otherwise, the software is 
+  This file is part of the Alfresco software.
+  If the software was purchased under a paid Alfresco license, the terms of
+  the paid license agreement will prevail.  Otherwise, the software is
   provided under the following open source license terms:
-  
+
   Alfresco is free software: you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
-  
+
   Alfresco is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU Lesser General Public License for more details.
-  
+
   You should have received a copy of the GNU Lesser General Public License
   along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
   #L%
@@ -57,19 +57,19 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
    <title>Alfresco</title>
-   <link rel="stylesheet" type="text/css" href="./css/reset.css" />
-   <link rel="stylesheet" type="text/css" href="./css/alfresco.css" />
+   <link rel="stylesheet" type="text/css" href="/<%=sysAdminParams.getAlfrescoContext()%>/css/reset.css" />
+   <link rel="stylesheet" type="text/css" href="/<%=sysAdminParams.getAlfrescoContext()%>/css/alfresco.css" />
 </head>
 <body>
    <div class="sticky-wrapper">
       <div class="index">
-         
+
          <div class="title">
             <span class="logo"><a href="http://www.alfresco.com"><img src="./images/logo/logo.png" width="145" height="48" alt="" border="0" /></a></span>
             <span class="logo-separator">&nbsp;</span>
             <h1>Welcome to Alfresco</h1>
          </div>
-         
+
          <div class="index-list">
             <h4><%=descriptorService.getServerDescriptor().getEdition()%>&nbsp;-&nbsp;<%=descriptorService.getServerDescriptor().getVersion()%></h4>
             <p></p>
@@ -94,7 +94,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
    {
 %>
             <p>WARNING: The system is in Read Only mode, the License may have failed to deploy. Please visit the <a href="./s/enterprise/admin">Alfresco Administration Console</a> (admin only)</p>
-<% 
+<%
    }
    if (descriptorService.getLicenseDescriptor() != null && descriptorService.getLicenseDescriptor().getLicenseMode().toString().equals("ENTERPRISE"))
    {
@@ -120,7 +120,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
             <p><a href="./api/-default-/public/cmis/versions/1.1/atom">CMIS 1.1 AtomPub Service Document</a></p>
             <p><a href="./api/-default-/public/cmis/versions/1.1/browser">CMIS 1.1 Browser Binding URL</a></p>
          </div>
-         
+
       </div>
       <div class="push"></div>
    </div>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<component>
+  <guid>page.component-2-2.site~${siteId}~dashboard</guid>
+  <scope>page</scope>
+  <region-id>component-2-2</region-id>
+  <source-id>site/${siteId}/dashboard</source-id>
+  <url>/components/dashlets/activityfeed</url>
+</component>

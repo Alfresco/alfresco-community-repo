@@ -50,6 +50,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.testing.category.NeverRunsTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -60,6 +62,7 @@ import org.springframework.context.ApplicationContext;
  * @author Derek Hulley
  * @since 3.4
  */
+@Category (NeverRunsTests.class)
 public class NodePropertyHelperTest extends TestCase
 {
     private static final QName QN_BOOLEAN = createQName("boolean");

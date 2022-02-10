@@ -29,6 +29,7 @@ package org.alfresco.repo.content.filestore;
 import java.io.File;
 
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,7 +44,7 @@ import static org.junit.Assert.assertTrue;
  * @author Andreea Dragoi
  *
  */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
 public class BucketAwareFileContentStoreTest extends FileContentStoreTest
 {
     private static final int BUCKETS_PER_MINUTE = 20;

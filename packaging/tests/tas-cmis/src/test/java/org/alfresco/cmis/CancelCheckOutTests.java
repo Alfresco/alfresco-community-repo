@@ -32,7 +32,7 @@ public class CancelCheckOutTests extends CmisTest
         usersWithRoles = dataUser.addUsersWithRolesToSite(testSite, UserRole.SiteContributor, UserRole.SiteCollaborator);
     }
 
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify cancel check out on a pwc")
     public void cancelCheckOutOnPWC() throws Exception
@@ -74,7 +74,7 @@ public class CancelCheckOutTests extends CmisTest
                 .then().cancelCheckOut();
     }
 
-    @Test(groups = { "bug-atom-REPO-5383", "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisRuntimeException.class)
+    @Test(groups = { "bug-atom-REPO-5383", TestGroup.REGRESSION, TestGroup.CMIS }, expectedExceptions=CmisRuntimeException.class)
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify cancel check out on a pwc twice")
     public void cancelCheckOutTwice() throws Exception
@@ -90,7 +90,7 @@ public class CancelCheckOutTests extends CmisTest
                       .cancelCheckOut();
     }
 
-    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = {  TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE, TestGroup.REGRESSION, TestGroup.CMIS})
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify that cancel check out on document created with Versioning State CHECKED OUT deletes the document")
     public void cancelCheckOutOnDocWithVersioningStateCheckedOut() throws Exception

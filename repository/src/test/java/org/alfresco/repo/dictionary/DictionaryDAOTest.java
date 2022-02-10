@@ -45,8 +45,10 @@ import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ThreadPoolExecutorFactoryBean;
 import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -54,6 +56,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author sglover
  *
  */
+@Category(NeverRunsTests.class)
 public class DictionaryDAOTest
 {
     public static final String TEST_RESOURCE_MESSAGES = "alfresco/messages/dictionary-messages";

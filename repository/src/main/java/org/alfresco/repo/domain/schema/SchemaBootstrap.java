@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -91,6 +91,7 @@ import org.alfresco.util.schemacomp.MultiFileDumper.DbToXMLFactory;
 import org.alfresco.util.schemacomp.Result;
 import org.alfresco.util.schemacomp.Results;
 import org.alfresco.util.schemacomp.SchemaComparator;
+import org.alfresco.util.schemacomp.SchemaDifferenceHelper;
 import org.alfresco.util.schemacomp.XMLToSchema;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.apache.commons.logging.Log;
@@ -124,6 +125,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private static final String MSG_EXECUTING_COPIED_SCRIPT = "schema.update.msg.executing_copied_script";
     private static final String MSG_EXECUTING_STATEMENT = "schema.update.msg.executing_statement";
     private static final String MSG_OPTIONAL_STATEMENT_FAILED = "schema.update.msg.optional_statement_failed";
+    private static final String MSG_OPTIONAL_PATCH_RUN_SUGGESTION = "system.schema_comp.patch_run_suggestion";
     private static final String ERR_FORCED_STOP = "schema.update.err.forced_stop";
     private static final String ERR_MULTIPLE_SCHEMAS = "schema.update.err.found_multiple";
     private static final String ERR_PREVIOUS_FAILED_BOOTSTRAP = "schema.update.err.previous_failed";
@@ -153,7 +155,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
 
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
     private Dialect dialect;
-        
+    private SchemaDifferenceHelper differenceHelper;
+
     private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
 
     /**
@@ -231,6 +234,11 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public void setDialect(Dialect dialect)
     {
         this.dialect = dialect;
+    }
+
+    public void setDifferenceHelper(SchemaDifferenceHelper differenceHelper)
+    {
+        this.differenceHelper = differenceHelper;
     }
 
     private static Log logger = LogFactory.getLog(SchemaBootstrap.class);
@@ -1815,7 +1823,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         // Return number of problems found across all reference files.
         return totalProblems;
     }
-    
+
     private int validateSchema(Resource referenceResource, String outputFileNameTemplate, PrintWriter out)
     {
         try
@@ -1916,11 +1924,42 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 pw = out;
             }
 
+            Map<String, List<String>> optionalPatchMessages = new HashMap<>();
             // Populate the file with details of the comparison's results.
             for (Result result : results)
             {
-                pw.print(result.describe());
+                String optionalPatchId = findPatchCausingDifference(result, target);
+                String differenceMessage = result.describe();
+                if (optionalPatchId == null)
+                {
+                    pw.print(differenceMessage);
+                    pw.print(SchemaComparator.LINE_SEPARATOR);
+                }
+                else
+                {
+                    if (optionalPatchMessages.containsKey(optionalPatchId))
+                    {
+                        optionalPatchMessages.get(optionalPatchId).add(differenceMessage);
+                    }
+                    else
+                    {
+                        List<String> newResults = new ArrayList<>();
+                        newResults.add(differenceMessage);
+                        optionalPatchMessages.put(optionalPatchId, newResults);
+                    }
+                }
+            }
+
+            for (String optionalPatchId: optionalPatchMessages.keySet())
+            {
                 pw.print(SchemaComparator.LINE_SEPARATOR);
+                pw.print(I18NUtil.getMessage(MSG_OPTIONAL_PATCH_RUN_SUGGESTION, optionalPatchId));
+                pw.print(SchemaComparator.LINE_SEPARATOR);
+                for (String optionalPatchMessage: optionalPatchMessages.get(optionalPatchId))
+                {
+                    pw.print(optionalPatchMessage);
+                    pw.print(SchemaComparator.LINE_SEPARATOR);
+                }
             }
         }
         finally
@@ -1946,7 +1985,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             }
             else
             {
-                LogUtil.warn(logger, WARN_SCHEMA_COMP_PROBLEMS_FOUND, numProblems, outputFile);                
+                LogUtil.warn(logger, WARN_SCHEMA_COMP_PROBLEMS_FOUND, numProblems, outputFile);
             }
         }
         Date endTime = new Date();
@@ -1954,6 +1993,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         LogUtil.debug(logger, DEBUG_SCHEMA_COMP_TIME_TAKEN, durationMillis);
         
         return results.size();
+    }
+
+    private String findPatchCausingDifference(Result result, Schema currentDb)
+    {
+        // In new installations of the system the schema validation is run twice. Since none of the alf_ tables is present there is no need to seek for unapplied patches.
+        if (!currentDb.containsByName("alf_applied_patch"))
+        {
+            return null;
+        }
+
+        return differenceHelper.findPatchCausingDifference(result);
     }
 
     /**

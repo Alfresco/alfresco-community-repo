@@ -115,6 +115,9 @@
       <property name="transactionService" >
          <ref bean="transactionService" />
       </property>
+      <property name="batchSize" >
+         <value>${system.content.cleanerBatchSize}</value>
+      </property>
    </bean>
 
    <bean id="eagerContentStoreCleaner" class="org.alfresco.repo.content.cleanup.EagerContentStoreCleaner" init-method="init">
@@ -157,6 +160,12 @@
       </property>
       <property name="ignoreEmptyContent" >
          <value>${policy.content.update.ignoreEmpty}</value>
+      </property>
+      <property name="systemWideDirectUrlConfig" >
+         <ref bean="systemWideDirectUrlConfig" />
+      </property>
+      <property name="nonAttachContentTypes">
+         <value>${content.nonAttach.mimetypes}</value>
       </property>
    </bean>
    
@@ -349,6 +358,20 @@
          <list>
             <value>org.apache.commons.logging.Log</value>
          </list>
+      </property>
+   </bean>
+
+   <!-- System direct access URL configuration settings -->
+   <bean id="systemWideDirectUrlConfig" class="org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig" init-method="init">
+      <property name="enabled" value="#{T(Boolean).valueOf('${system.directAccessUrl.enabled}')}"/>
+      <property name="defaultExpiryTimeInSec" value="#{T(Integer).parseInt('${system.directAccessUrl.defaultExpiryTimeInSec}')}" />
+      <property name="maxExpiryTimeInSec" value="#{T(Integer).parseInt('${system.directAccessUrl.maxExpiryTimeInSec}')}" />
+   </bean>
+
+   <!-- Abstract Direct Access URL configuration -->
+   <bean id="abstractDirectUrlConfig" class="org.alfresco.repo.content.directurl.AbstractDirectUrlConfig" abstract="true">
+      <property name="systemWideDirectUrlConfig" >
+         <ref bean="systemWideDirectUrlConfig" />
       </property>
    </bean>
 

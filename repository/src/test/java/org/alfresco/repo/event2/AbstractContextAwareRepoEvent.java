@@ -30,11 +30,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jms.ConnectionFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.event.v1.model.ChildAssociationResource;
 import org.alfresco.repo.event.v1.model.DataAttributes;
 import org.alfresco.repo.event.v1.model.EventType;
@@ -77,17 +79,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 {
+    protected static final boolean            DEBUG = false;
+
     protected static final String             TEST_NAMESPACE  = "http://www.alfresco.org/test/ContextAwareRepoEvent";
+    protected static final RepoEventContainer EVENT_CONTAINER = new RepoEventContainer();
 
     private static final   String             BROKER_URL      = "tcp://localhost:61616";
     private static final   String             TOPIC_NAME      = "alfresco.repo.event2";
     private static final   String             CAMEL_ROUTE     = "jms:topic:" + TOPIC_NAME;
-    private static final   RepoEventContainer EVENT_CONTAINER = new RepoEventContainer();
     private static final   CamelContext       CAMEL_CONTEXT   = new DefaultCamelContext();
 
     private static boolean isCamelConfigured;
     private static DataFormat dataFormat;
-
+    
     @Autowired
     protected RetryingTransactionHelper retryingTransactionHelper;
 
@@ -103,6 +107,16 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     @Autowired
     protected ObjectMapper event2ObjectMapper;
+
+    @Autowired @Qualifier("eventGeneratorV2")
+    protected EventGenerator eventGenerator;
+
+    @Autowired
+    @Qualifier("eventGeneratorQueue")
+    protected EventGeneratorQueue eventQueue;
+
+    @Autowired
+    private NamespaceDAO namespaceDAO;
 
     protected NodeRef rootNodeRef;
 
@@ -141,8 +155,45 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
             }
             return nodeService.getRootNode(storeRef);
         });
+
+        initTestNamespacePrefixMapping();
+
+        flushSpuriousEvents();
     }
 
+    protected void initTestNamespacePrefixMapping() {
+        if(namespaceDAO.getNamespaceURI("ce") == null)
+        {
+            namespaceDAO.addURI(TEST_NAMESPACE);
+            namespaceDAO.addPrefix("ce", TEST_NAMESPACE);
+        }
+    }
+
+    /*
+     * When running with an empty database some events related to the creation may
+     * creep up here making the test fails. After attempting several other
+     * strategies, a smart sleep seems to do the work.
+     */
+    protected void flushSpuriousEvents() throws InterruptedException
+    {
+        int maxloops = 5;
+        
+        int count = maxloops;
+        do
+        {
+            Thread.sleep(165l);
+            if (EVENT_CONTAINER.isEmpty())
+            {
+                count--;
+            } else 
+            {
+                EVENT_CONTAINER.reset();
+                count = maxloops;
+            }
+
+        } while (count > 0);
+    }
+    
     @After
     public void tearDown()
     {
@@ -171,12 +222,27 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     protected NodeRef createNode(QName contentType, PropertyMap propertyMap)
     {
+        return createNode(contentType, GUID.generate(), propertyMap);
+    }
+
+    protected NodeRef createNode(QName contentType, String localName, PropertyMap propertyMap)
+    {
         return retryingTransactionHelper.doInTransaction(() -> nodeService.createNode(
             rootNodeRef,
             ContentModel.ASSOC_CHILDREN,
-            QName.createQName(TEST_NAMESPACE, GUID.generate()),
+            QName.createQName(TEST_NAMESPACE, localName),
             contentType,
             propertyMap).getChildRef());
+    }
+
+    protected NodeRef updateNodeName(NodeRef nodeRef, String newName)
+    {
+        PropertyMap propertyMap = new PropertyMap();
+        propertyMap.put(ContentModel.PROP_NAME, newName);
+        return retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.addProperties(nodeRef, propertyMap);
+            return null;
+        });
     }
 
     protected void deleteNode(NodeRef nodeRef)
@@ -376,13 +442,18 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
 
     public static class RepoEventContainer implements Processor
     {
-        private final List<RepoEvent<?>> events = new ArrayList<>();
+        private final List<RepoEvent<?>> events = Collections.synchronizedList(new ArrayList<>());
 
         @Override
         public void process(Exchange exchange)
         {
             Object object = exchange.getIn().getBody();
             events.add((RepoEvent<?>) object);
+
+            if (DEBUG)
+            {
+                System.err.println("XX: "+object);
+            }
         }
 
         public List<RepoEvent<?>> getEvents()
@@ -404,6 +475,12 @@ public abstract class AbstractContextAwareRepoEvent extends BaseSpringTest
         {
             events.clear();
         }
+
+        public boolean isEmpty()
+        {
+            return events.isEmpty();
+        }
+
     }
 
     @SuppressWarnings("unchecked")

@@ -1,0 +1,11 @@
+<webscript>
+   <shortname>DownloadContent</shortname>
+   <description>Slingshot download content webscript - posts an activity for Site content download then delegates to standard ContentGet implementation</description>
+   <url>/slingshot/node/content{property}/{store_type}/{store_id}/{id}?a={attach?}</url>
+   <url>/slingshot/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
+   <url>/slingshot/node/{store_type}/{store_id}/{id}/content{property}/{filename}?a={attach?}</url>
+   <format default="">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

@@ -28,6 +28,7 @@ package org.alfresco.repo.content.transform;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Pair;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.commons.logging.Log;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -37,6 +38,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
@@ -61,6 +63,7 @@ import static org.springframework.test.util.AssertionErrors.assertTrue;
  * @deprecated The transformations code is being moved out of the codebase and replaced by the new async RenditionService2 or other external libraries.
  */
 @Deprecated
+@Category(NeverRunsTests.class)
 public class RemoteTransformerClientTest
 {
     public static final int STARTUP_RETRY_PERIOD_SECONDS = 2;

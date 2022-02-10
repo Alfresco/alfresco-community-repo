@@ -85,7 +85,7 @@ import java.util.Set;
 public class ContentMetadataExtracterTest extends BaseSpringTest
 {
     protected static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
-    protected static final String QUICK_DESCRIPTION = "Gym class featuring a brown fox and lazy dog";
+    protected static final String QUICK_DESCRIPTION = "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog";
     protected static final String QUICK_CREATOR = "Nevin Nollop";
 
     private NodeService nodeService;

@@ -31,22 +31,22 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 
+import java.io.UnsupportedEncodingException;
+
 import org.alfresco.httpclient.HttpClientFactory;
+import org.alfresco.httpclient.RequestHeadersHttpClient;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.Pair;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.protocol.Protocol;
-import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.BeanFactory;
-
-import java.io.UnsupportedEncodingException;
 
 /**
  * @author Andy
@@ -64,34 +64,34 @@ public class SolrStoreMappingWrapperTest
     HttpClientFactory httpClientFactory;
     
     @Mock
-    HttpClient httpClientCommon;
+    RequestHeadersHttpClient httpClientCommon;
     
     @Mock
-    HttpClient httpClient1;
+    RequestHeadersHttpClient httpClient1;
     
     @Mock
-    HttpClient httpClient2;
+    RequestHeadersHttpClient httpClient2;
     
     @Mock
-    HttpClient httpClient3;
+    RequestHeadersHttpClient httpClient3;
     
     @Mock
-    HttpClient httpClient4;
+    RequestHeadersHttpClient httpClient4;
     
     @Mock
-    HttpClient httpClient5;
+    RequestHeadersHttpClient httpClient5;
     
     @Mock
-    HttpClient httpClient6;
+    RequestHeadersHttpClient httpClient6;
     
     @Mock
-    HttpClient httpClient7;
+    RequestHeadersHttpClient httpClient7;
     
     @Mock
-    HttpClient httpClient8;
+    RequestHeadersHttpClient httpClient8;
     
     @Mock
-    HttpClient httpClient9;
+    RequestHeadersHttpClient httpClient9;
     
     @Mock
     HostConfiguration hostConfigurationCommon;

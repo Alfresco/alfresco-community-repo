@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+ <!-- Extend Imap Service -->
+   <bean id="rm.imapService" abstract="true" class="org.alfresco.repo.imap.ExtendedImapServiceImpl">
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+   </bean>
+   <bean class="org.alfresco.util.BeanExtender">
+      <property name="beanName" value="imapService" />
+      <property name="extendingBeanName" value="rm.imapService" />
+   </bean>
+   
+</beans>

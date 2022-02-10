@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -564,5 +564,19 @@ public class TransformationOptionsConverterTest
                         "startPage=0 " +
                         "timeout=-1 "
         );
+    }
+
+    @Test
+    public void testCommandOptionsFromOldOptions()
+    {
+        ImageTransformationOptions oldOptions = new ImageTransformationOptions();
+        oldOptions.setCommandOptions("-resize 350x50> -background none -gravity center");
+
+        assertConverterToMapAndBack(oldOptions, MIMETYPE_IMAGE_JPEG, MIMETYPE_IMAGE_PNG,
+                "ImageTransformationOptions [commandOptions=-resize 350x50> -background none -gravity center, " +
+                        "resizeOptions=null, autoOrient=true]]",
+                "autoOrient=true " + // this is a default - so is also set when uploading a logo
+                        "commandOptions=-resize 350x50> -background none -gravity center " +
+                        "timeout=-1 ");
     }
 }

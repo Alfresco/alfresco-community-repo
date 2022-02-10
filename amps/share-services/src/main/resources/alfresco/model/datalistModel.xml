@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Share Data Lists Model -->
+
+<!-- Note: the dl: namespace is defined further on in the document -->
+<model name="dl:datalistmodel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->
+   <description>Alfresco Share Data List Model</description>
+   <author>Mike Hatfield</author>
+   <version>0.1</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </imports>
+
+   <!-- Data List Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/datalist/1.0" prefix="dl"/>
+   </namespaces>
+
+   <constraints>
+      <constraint name="dl:task_status" type="LIST">
+         <parameter name="allowedValues">
+            <list>
+               <value>Not Started</value>
+               <value>In Progress</value>
+               <value>Complete</value>
+               <value>On Hold</value>
+            </list>
+         </parameter>
+      </constraint>
+      <constraint name="dl:priority_value" type="LIST">
+         <parameter name="allowedValues">
+            <list>
+               <value>High</value>
+               <value>Normal</value>
+               <value>Low</value>
+            </list>
+         </parameter>
+      </constraint>
+      <constraint name="dl:percentage" type="MINMAX">
+         <parameter name="minValue">
+            <value>0</value>
+         </parameter>
+         <parameter name="maxValue">
+            <value>100</value>
+         </parameter>
+      </constraint>
+   </constraints>
+
+   <types>
+
+      <!-- Data List - Container. DO NOT MODIFY -->
+      <type name="dl:dataList">
+         <title>Data List container type</title>
+         <parent>cm:folder</parent>
+         <properties>
+            <property name="dl:dataListItemType">
+               <title>List Item Type</title>
+               <description>Determines which Data Dictionary type will be used when create new items within the Data List.</description>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <!-- Data List - Data Item Base Type. DO NOT MODIFY -->
+      <type name="dl:dataListItem">
+         <title>Data List parent type</title>
+         <parent>cm:content</parent>
+      </type>
+
+      <!-- Data List - Simple "To do" list -->
+      <type name="dl:todoList">
+         <title>To Do List</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:todoTitle">
+               <title>Title</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+            </property>
+            <property name="dl:todoDueDate">
+               <title>Due Date</title>
+               <type>d:datetime</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:todoPriority">
+               <title>Priority</title>
+               <type>d:int</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:todoStatus">
+               <title>Status</title>
+               <type>d:text</type>
+               <default>Not Started</default>
+                <constraints>
+                  <constraint ref="dl:task_status" />
+               </constraints>
+            </property>
+            <property name="dl:todoNotes">
+               <title>Notes</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <association name="dl:assignee">
+               <title>Assignee</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:person</class>
+                  <mandatory>false</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
+            <association name="dl:attachments">
+               <title>Attachments</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:cmobject</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+      </type>
+
+      <!-- Data List - Simple Tasks List -->
+      <type name="dl:simpletask">
+         <title>Task List (Simple)</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:simpletaskDueDate">
+               <title>Due Date</title>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:simpletaskPriority">
+               <title>Priority</title>
+               <type>d:text</type>
+               <default>Normal</default>
+               <constraints>
+                  <constraint ref="dl:priority_value" />
+               </constraints>
+            </property>
+            <property name="dl:simpletaskStatus">
+               <title>Status</title>
+               <type>d:text</type>
+               <default>Not Started</default>
+               <constraints>
+                  <constraint ref="dl:task_status" />
+               </constraints>
+            </property>
+            <property name="dl:simpletaskComments">
+               <title>Comments</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cm:titled</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <!-- Data List - Advanced Tasks List -->
+      <type name="dl:task">
+         <title>Task List (Advanced)</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:taskPriority">
+               <title>Priority</title>
+               <type>d:text</type>
+               <default>Normal</default>
+               <constraints>
+                  <constraint ref="dl:priority_value" />
+               </constraints>
+            </property>
+            <property name="dl:taskStatus">
+               <title>Status</title>
+               <type>d:text</type>
+               <default>Not Started</default>
+               <constraints>
+                  <constraint ref="dl:task_status" />
+               </constraints>
+            </property>
+            <property name="dl:taskComments">
+               <title>Comments</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <association name="dl:taskAssignee">
+               <title>Assignee</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:person</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+         <mandatory-aspects>
+            <aspect>cm:titled</aspect>
+            <aspect>cm:attachable</aspect>
+            <aspect>dl:gantt</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <!-- Data List - Contact List -->
+      <type name="dl:contact">
+         <title>Contacts List</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:contactFirstName">
+               <title>First Name</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:contactLastName">
+               <title>Last Name</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:contactEmail">
+               <title>Email Address</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:contactCompany">
+               <title>Company</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:contactJobTitle">
+               <title>Job Title</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:contactPhoneOffice">
+               <title>Phone (Office)</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:contactPhoneMobile">
+               <title>Phone (Mobile)</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:contactNotes">
+               <title>Notes</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+      </type>
+
+      <!-- Data List - Issue List -->
+      <type name="dl:issue">
+         <title>Issues List</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:issueID">
+               <title>Issue ID</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:issueStatus">
+               <title>Status</title>
+               <type>d:text</type>
+               <default>Not Started</default>
+               <constraints>
+                  <constraint ref="dl:task_status" />
+               </constraints>
+            </property>
+            <property name="dl:issuePriority">
+               <title>Priority</title>
+               <type>d:text</type>
+               <default>Normal</default>
+               <constraints>
+                  <constraint ref="dl:priority_value" />
+               </constraints>
+            </property>
+            <property name="dl:issueDueDate">
+               <title>Due Date</title>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:issueComments">
+               <title>Comments</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+         </properties>
+         <associations>
+            <association name="dl:issueAssignedTo">
+               <title>Assigned To</title>
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:person</class>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </target>
+            </association>
+         </associations>
+         <mandatory-aspects>
+            <aspect>cm:titled</aspect>
+            <aspect>cm:attachable</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <!-- Data List - Event List -->
+      <type name="dl:event">
+         <title>Event</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:eventLocation">
+               <title>Location</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:eventNote">
+               <title>Notes</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:eventStartDate">
+               <title>Start Date</title>
+               <type>d:datetime</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:eventEndDate">
+               <title>End Date</title>
+               <type>d:datetime</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="dl:eventRegistrations">
+               <title>Registrations</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+             <aspect>cm:titled</aspect>
+             <aspect>cm:attachable</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <!-- Data List - Location List -->
+      <type name="dl:location">
+         <title>Location</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:locationAddress1">
+               <title>Address 1</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:locationAddress2">
+               <title>Address 2</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:locationAddress3">
+               <title>Address 3</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:locationZip">
+               <title>Zip/Post Code</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:locationState">
+               <title>State/County</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:locationCountry">
+               <title>Country</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cm:titled</aspect>
+            <aspect>cm:attachable</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <!-- Data List - Meeting Agenda List -->
+      <type name="dl:meetingAgenda">
+         <title>Meeting Agenda</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:meetingAgendaRef">
+               <title>Reference</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:meetingAgendaTime">
+               <title>Time (Mins)</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:meetingAgendaOwner">
+               <title>Owner</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+            <aspect>cm:titled</aspect>
+            <aspect>cm:attachable</aspect>
+         </mandatory-aspects>
+      </type>
+
+      <!-- Data List - Event Agenda List -->
+      <type name="dl:eventAgenda">
+         <title>Event Agenda</title>
+         <parent>dl:dataListItem</parent>
+         <properties>
+            <property name="dl:eventAgendaRef">
+               <title>Reference</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:eventAgendaStartTime">
+               <title>Start Time</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:eventAgendaEndTime">
+               <title>End Timie</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:eventAgendaSessionName">
+               <title>Session Name</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:eventAgendaPresenter">
+               <title>Presenter</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:eventAgendaAudience">
+               <title>Audience</title>
+               <type>d:text</type>
+            </property>
+            <property name="dl:eventAgendaNotes">
+               <title>Notes</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+         <mandatory-aspects>
+             <aspect>cm:attachable</aspect>
+         </mandatory-aspects>
+      </type>
+
+   </types>
+
+   <aspects>
+
+      <aspect name="dl:gantt">
+         <title>Gantt</title>
+         <properties>
+            <property name="dl:ganttStartDate">
+               <title>Start Date</title>
+               <type>d:date</type>
+            </property>
+            <property name="dl:ganttEndDate">
+               <title>End Date</title>
+               <type>d:date</type>
+            </property>
+            <property name="dl:ganttPercentComplete">
+               <title>% Complete</title>
+               <type>d:int</type>
+               <mandatory>true</mandatory>
+               <default>0</default>
+               <constraints>
+                  <constraint ref="dl:percentage" />
+               </constraints>
+            </property>
+         </properties>
+      </aspect>
+
+   </aspects>
+
+</model>

@@ -1,0 +1,15 @@
+# EditorConfig file: http://editorconfig.org/
+# Syntax at: https://github.com/editorconfig/editorconfig/wiki/EditorConfig-Properties
+
+# This is the Top level for the RM project
+root = true
+
+# All files should use spaces.
+[*]
+indent_style = space
+end_of_line = crlf
+trim_trailing_whitespace = true
+indent_size = 3
+
+[*.java]
+indent_size = 4

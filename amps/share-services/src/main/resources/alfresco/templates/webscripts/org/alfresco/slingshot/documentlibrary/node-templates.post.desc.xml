@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Create Node Templates</shortname>
+  <description>Document List Component - Create Node Templates POST data webscript</description>
+  <url>/slingshot/doclib/node-templates</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

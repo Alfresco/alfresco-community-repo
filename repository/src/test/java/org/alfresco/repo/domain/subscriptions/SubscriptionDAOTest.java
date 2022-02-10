@@ -41,10 +41,11 @@ import org.alfresco.service.cmr.subscriptions.SubscriptionItemTypeEnum;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
 public class SubscriptionDAOTest extends TestCase
 {
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

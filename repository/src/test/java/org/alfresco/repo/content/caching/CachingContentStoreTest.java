@@ -29,12 +29,14 @@ package org.alfresco.repo.content.caching;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -44,9 +46,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 
 import org.alfresco.repo.content.ContentContext;
+import org.alfresco.repo.content.ContentRestoreParams;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
@@ -491,21 +497,21 @@ public class CachingContentStoreTest
     }
 
     @Test
-    public void isDirectAccessSupported()
+    public void isContentDirectUrlSupported()
     {
-        assertFalse(cachingStore.isDirectAccessSupported());
+        assertFalse(cachingStore.isContentDirectUrlEnabled());
 
-        when(backingStore.isDirectAccessSupported()).thenReturn(true);
-        assertTrue(cachingStore.isDirectAccessSupported());
+        when(backingStore.isContentDirectUrlEnabled()).thenReturn(true);
+        assertTrue(cachingStore.isContentDirectUrlEnabled());
     }
 
     @Test
-    public void getDirectAccessUrlUnsupported()
+    public void getRequestContentDirectUrlUnsupported()
     {
         try
         {
-            when(backingStore.getDirectAccessUrl(anyString(), any())).thenThrow(new UnsupportedOperationException());
-            cachingStore.getDirectAccessUrl("url", null);
+            when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong())).thenThrow(new UnsupportedOperationException());
+            cachingStore.requestContentDirectUrl("url", true,"someFile", "someMimetype", 30L);
             fail();
         }
         catch (UnsupportedOperationException e)
@@ -515,9 +521,77 @@ public class CachingContentStoreTest
     }
 
     @Test
-    public void getDirectAccessUrl()
+    public void getRequestContentDirectUrl()
     {
-        when(backingStore.getDirectAccessUrl(anyString(), any())).thenReturn(new DirectAccessUrl());
-        cachingStore.getDirectAccessUrl("url", null);
+        when(backingStore.requestContentDirectUrl(anyString(), eq(true), anyString(), anyString(), anyLong())).thenReturn(new DirectAccessUrl());
+        cachingStore.requestContentDirectUrl("url", true,"someFile", "someMimeType", 30L);
+    }
+
+    @Test
+    public void shouldReturnSomeStorageProperties()
+    {
+        final Map<String, String> propertiesMap = Map.of("x-amz-header1", "value1", "x-amz-header2", "value2");
+        final String contentUrl = "url";
+        when(backingStore.getStorageProperties(contentUrl)).thenReturn(propertiesMap);
+        final Map<String, String> storageProperties = cachingStore.getStorageProperties(contentUrl);
+        assertFalse(storageProperties.isEmpty());
+        assertEquals(propertiesMap, storageProperties);
+    }
+
+    @Test
+    public void shouldReturnEmptyStorageProperties()
+    {
+        Map<String, String> storageProperties = cachingStore.getStorageProperties("url");
+        assertTrue(storageProperties.isEmpty());
+    }
+
+    @Test
+    public void shouldCompleteArchiveContentRequest()
+    {
+        final boolean expectedResult = true;
+        final String contentUrl = "url";
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(backingStore.requestSendContentToArchive(contentUrl, archiveParams)).thenReturn(expectedResult);
+
+        final boolean sendContentToArchive = cachingStore.requestSendContentToArchive(contentUrl, archiveParams);
+
+        assertEquals(expectedResult, sendContentToArchive);
+    }
+
+    @Test
+    public void shouldThrowExceptionOnArchiveContentRequest()
+    {
+        final String contentUrl = "url";
+        final Map<String, Serializable> archiveParams = Collections.emptyMap();
+        when(backingStore.requestSendContentToArchive(contentUrl, archiveParams)).thenCallRealMethod();
+
+        assertThrows(UnsupportedOperationException.class, () -> {
+            cachingStore.requestSendContentToArchive(contentUrl, archiveParams);
+        });
+    }
+
+    @Test
+    public void shouldCompleteRestoreContentFromArchiveRequest()
+    {
+        final String contentUrl = "url";
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+        final boolean expectedResult = true;
+        when(backingStore.requestRestoreContentFromArchive(contentUrl, restoreParams)).thenReturn(expectedResult);
+
+        final boolean sendContentToArchive = cachingStore.requestRestoreContentFromArchive(contentUrl, restoreParams);
+
+        assertEquals(expectedResult, sendContentToArchive);
+    }
+
+    @Test
+    public void shouldThrowExceptionOnRestoreContentFromArchiveRequest()
+    {
+        final String contentUrl = "url";
+        final Map<String, Serializable> restoreParams = Map.of(ContentRestoreParams.RESTORE_PRIORITY.name(), "High");
+        when(backingStore.requestRestoreContentFromArchive(contentUrl, restoreParams)).thenCallRealMethod();
+
+        assertThrows(UnsupportedOperationException.class, () -> {
+            cachingStore.requestRestoreContentFromArchive(contentUrl, restoreParams);
+        });
     }
 }

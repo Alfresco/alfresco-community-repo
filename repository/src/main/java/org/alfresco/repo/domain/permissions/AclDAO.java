@@ -182,4 +182,11 @@ public interface AclDAO
      * @return Long
      */
     public Long getMaxChangeSetIdByCommitTime(long maxCommitTime);
+
+    /**
+    * @return                 the commit time of the current ACL change set entry or <tt>null</tt> if
+    *                         there have not been any modifications.
+    */
+    public Long getCurrentChangeSetCommitTime();
+
 }

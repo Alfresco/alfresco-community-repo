@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -34,6 +34,7 @@ package org.alfresco.repo.domain.contentdata;
 public class ContentUrlOrphanQuery
 {
     private Long maxOrphanTimeExclusive;
+    private Long maxRecords;
     
     @Override
     public String toString()
@@ -41,6 +42,7 @@ public class ContentUrlOrphanQuery
         StringBuilder sb = new StringBuilder(512);
         sb.append("ContentUrlOrphanQuery")
           .append("[ maxOrphanTimeExclusive=").append(maxOrphanTimeExclusive)
+          .append(", maxRecords=").append(maxRecords)
           .append("]");
         return sb.toString();
     }
@@ -54,4 +56,16 @@ public class ContentUrlOrphanQuery
     {
         this.maxOrphanTimeExclusive = maxOrphanTimeExclusive;
     }
+
+    public Long getMaxRecords()
+    {
+        return maxRecords;
+    }
+
+    public void setMaxRecords(Long maxRecords)
+    {
+        this.maxRecords = maxRecords;
+    }
+    
+    
 }

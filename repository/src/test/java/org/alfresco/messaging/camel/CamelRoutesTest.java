@@ -27,12 +27,14 @@ package org.alfresco.messaging.camel;
 
 import static org.junit.Assert.*;
 
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -44,6 +46,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @author Ray Gauss II
  */
 @RunWith(SpringJUnit4ClassRunner.class)
+@Category(NeverRunsTests.class)
 @ContextConfiguration(locations = "/test-messaging-context.xml")
 public class CamelRoutesTest
 {

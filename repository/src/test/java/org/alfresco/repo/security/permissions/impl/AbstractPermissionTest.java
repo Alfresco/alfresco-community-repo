@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -64,7 +64,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
 
-public class AbstractPermissionTest extends TestCase
+public abstract class AbstractPermissionTest extends TestCase
 {
     protected static final String USER2_LEMUR = "lemur";
 
@@ -95,6 +95,8 @@ public class AbstractPermissionTest extends TestCase
     protected ServiceRegistry serviceRegistry;
 
     protected NodeRef systemNodeRef;
+
+    protected NodeRef abstainedNode;
 
     protected AuthenticationComponent authenticationComponent;
 
@@ -185,6 +187,8 @@ public class AbstractPermissionTest extends TestCase
         nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, props).getChildRef();
         props = createPersonProperties(USER2_LEMUR);
         nodeService.createNode(typesNodeRef, children, ContentModel.TYPE_PERSON, container, props).getChildRef();
+
+        abstainedNode= nodeService.createNode(rootNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL, system, ContentModel.TYPE_FAILED_THUMBNAIL).getChildRef();
 
         // create an authentication object e.g. the user
         if(authenticationDAO.userExists(USER1_ANDY))

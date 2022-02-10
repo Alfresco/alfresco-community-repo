@@ -1,0 +1,40 @@
+@startuml
+
+Title: Content Destruction and Cleansing Flow
+
+participant "Repository" as R
+participant "Behaviour" as B
+participant "ContentDestructionComponent" as CDC
+participant "EagerContentStoreCleaner" as ECSC
+participant ConentCleanser as CC
+participant ContentStore as CS
+
+R->B:beforeNodeDelete
+activate B
+
+note right of B: sensitive content
+B->CDC:registerAllContentForDestruction
+deactivate B
+activate CDC
+note right of CDC: cleansing enabled
+
+CDC->ECSC:registerOrphanedContentUrlForCleansing
+deactivate CDC
+activate ECSC
+
+ECSC->ECSC: registerOrphanedContentUrl
+
+R->ECSC:afterCommit
+
+ECSC->CC:cleanse
+activate CC
+CC->ECSC
+deactivate CC
+
+ECSC->CS:delete
+activate CS
+CS->ECSC
+deactivate CS
+deactivate ECSC
+
+@enduml

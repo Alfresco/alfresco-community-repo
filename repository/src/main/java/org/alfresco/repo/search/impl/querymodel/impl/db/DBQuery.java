@@ -74,6 +74,10 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     
     Set<String> selectorGroup;
 
+    private int limit = 0;
+
+    private int offset = 0;
+
     /**
      * @param source Source
      * @param constraint Constraint
@@ -131,6 +135,22 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     public void setSinceTxId(Long sinceTxId)
     {
         this.sinceTxId = sinceTxId;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
     }
 
     public List<DBQueryBuilderJoinCommand> getJoins()

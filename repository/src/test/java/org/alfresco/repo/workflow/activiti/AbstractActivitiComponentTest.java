@@ -72,8 +72,10 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -93,6 +95,7 @@ import org.springframework.transaction.annotation.Transactional;
             "classpath:activiti/test-activiti-component-context.xml",
             "classpath:alfresco/activiti-context.xml"})
 @Transactional
+@Category(NeverRunsTests.class)
 public class AbstractActivitiComponentTest
 {
     protected static final String TEST_GROUP = "GROUP_testGroup";

@@ -1,0 +1,13 @@
+<webscript>
+  <shortname>Get Fileplan Report</shortname>
+  <description><![CDATA[
+  Get meta data and instructions from the fileplan
+  <BR> Returns STATUS_OK (200)
+  ]]>
+  </description>
+  <url>/api/node/{store_type}/{store_id}/{id}/fileplanreport</url>
+  <format default="json"/>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
+</webscript>

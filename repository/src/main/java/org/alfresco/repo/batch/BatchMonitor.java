@@ -50,10 +50,10 @@ public interface BatchMonitor
 
     /**
      * Gets the total number of results.
-     * 
+     * @deprecated use {@link #getTotalResultsLong()} instead
      * @return the total number of results
      */
-    public int getTotalResults();
+    @Deprecated public int getTotalResults();
 
     /**
      * Gets the ID of the entry being processed
@@ -64,10 +64,10 @@ public interface BatchMonitor
 
     /**
      * Gets the number of successfully processed entries.
-     * 
+     * @deprecated use {@link #getSuccessfullyProcessedEntriesLong()} instead
      * @return the successfully processed entries
      */
-    public int getSuccessfullyProcessedEntries();
+    @Deprecated public int getSuccessfullyProcessedEntries();
 
     /**
      * Gets the progress expressed as a percentage.
@@ -78,10 +78,10 @@ public interface BatchMonitor
 
     /**
      * Gets the total number of errors.
-     * 
+     * @deprecated use {@link #getTotalErrorsLong()} instead
      * @return the total number of errors
      */
-    public int getTotalErrors();
+    @Deprecated public int getTotalErrors();
 
     /**
      * Gets the stack trace of the last error.
@@ -103,4 +103,35 @@ public interface BatchMonitor
      * @return the end time
      */
     public Date getEndTime();
+
+    /**
+     * Gets the total number of results.
+     *
+     * @return the total number of results
+     */
+    public default long getTotalResultsLong()
+    {
+        throw new UnsupportedOperationException("getTotalResultsLong need to be implemented");
+
+    }
+
+    /**
+     * Gets the total number of errors.
+     *
+     * @return the total number of errors
+     */
+    public default long getTotalErrorsLong()
+    {
+        throw new UnsupportedOperationException("getTotalErrorsLong need to be implemented");
+    }
+
+    /**
+     * Gets the number of successfully processed entries.
+     *
+     * @return the successfully processed entries
+     */
+    public default long getSuccessfullyProcessedEntriesLong()
+    {
+        throw new UnsupportedOperationException("getSuccessfullyProcessedEntriesLong need to be implemented");
+    }
 }

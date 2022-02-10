@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Create a Content Application Instance</shortname>
+  <description>Creates a new Content Application Instance</description>
+  <family>Content Applications</family>
+  <url>/remote-share/content-app-instance</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readwrite">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

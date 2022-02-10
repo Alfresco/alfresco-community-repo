@@ -1,0 +1,23 @@
+<webscript>
+  <shortname>Files a Records Management audit log as a record</shortname>
+  <description></description>
+  <description><![CDATA[
+  Files an audit log of Records Management events as a record in a record folder.
+  <br/>A JSON structure is expected as follows:<br/>
+  {<br/>
+  &nbsp;&nbsp;&nbsp;"destination" : NodeRef of record folder to file the audit log in<br/>
+  &nbsp;&nbsp;&nbsp;"size" : Maximum number of log entries to return<br/>
+  &nbsp;&nbsp;&nbsp;"user" : Only return log entries by the specified user<br/>
+  &nbsp;&nbsp;&nbsp;"event" : Only return log entries matching this event<br/>
+  &nbsp;&nbsp;&nbsp;"from" : Only return log entries after the specified date, date should be in yyyy-MM-dd format<br/>
+  &nbsp;&nbsp;&nbsp;"to" : Only return log entries before the specified date, date should be in yyyy-MM-dd format<br/>
+  }<br/>
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmauditlog</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/rmauditlog</url>
+  <format default="html">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

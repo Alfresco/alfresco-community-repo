@@ -6,7 +6,11 @@
 	                "sitePreset" : "${item.siteInfo.sitePreset}",
 	                "shortName" : "${item.siteInfo.shortName}",
 	                "title" : "${item.siteInfo.title}",
-	                "description" : "${item.siteInfo.description}",
+	                <#if item.siteInfo.description??>
+	                    "description" : "${item.siteInfo.description}",
+                    <#else>
+						"description" : "",
+					</#if>
 	                "createdDate" : "${xmldate(item.siteInfo.createdDate)}",
 	                "lastModifiedDate" : "${xmldate(item.siteInfo.lastModifiedDate)}",
 	                "visibility" : "${item.siteInfo.visibility}",

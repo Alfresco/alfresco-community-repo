@@ -40,7 +40,9 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,6 +54,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @ContextConfiguration({"classpath:alfresco/application-context.xml",
         "classpath:org/alfresco/repo/site/site-custom-context.xml"})
+@Category(NeverRunsTests.class)
 public class CustomRoleTest extends BaseAlfrescoSpringTest
 {
     private static final String USER_ONE = "UserOne_CustomRoleTest";

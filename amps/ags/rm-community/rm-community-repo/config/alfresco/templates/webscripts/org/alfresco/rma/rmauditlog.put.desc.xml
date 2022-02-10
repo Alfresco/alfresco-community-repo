@@ -1,0 +1,16 @@
+<webscript>
+  <shortname>Start or Stop Records Management Audit Log</shortname>
+  <description><![CDATA[
+  Starts or stops the auditing of Records Management events.
+  <br/>The body of the put should be in the form<br/>
+  {<br/>
+  &nbsp;&nbsp;&nbsp;"enabled" : true|false<br/>
+  }<br/>
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmauditlog</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

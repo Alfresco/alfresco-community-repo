@@ -26,9 +26,14 @@
 
 package org.alfresco.repo.event2;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.event.v1.model.EventData;
 import org.alfresco.repo.event.v1.model.EventType;
 import org.alfresco.repo.event.v1.model.NodeResource;
@@ -38,6 +43,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author Iulian Aftene
@@ -45,15 +51,19 @@ import org.junit.Test;
 public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
 {
 
+    @Autowired
+    private NodeDAO nodeDAO;
+
     @Test
     public void testCreateEvent()
     {
         // Create a node without content
         final String name = "TestFile-" + System.currentTimeMillis() + ".txt";
+        String localName = GUID.generate();
         PropertyMap propertyMap = new PropertyMap();
         propertyMap.put(ContentModel.PROP_TITLE, "test title");
         propertyMap.put(ContentModel.PROP_NAME, name);
-        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, propertyMap);
+        final NodeRef nodeRef = createNode(ContentModel.TYPE_CONTENT, localName, propertyMap);
 
         final RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
         // Repo event attributes
@@ -94,6 +104,7 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertEquals("Wrong node modifier display name.", "Administrator",
             nodeResource.getModifiedByUser().getDisplayName());
         assertNotNull("Missing modifiedAt property.", nodeResource.getModifiedAt());
+        assertEquals("Wrong primaryAssocQName prefix.", "ce:" + localName, nodeResource.getPrimaryAssocQName());
     }
 
     @Test
@@ -149,9 +160,32 @@ public class CreateRepoEventIT extends AbstractContextAwareRepoEvent
         assertTrue("isFile flag should be TRUE for nodeType=cm:content. ", resource.isFile());
         assertFalse("isFolder flag should be FALSE for nodeType=cm:content. ", resource.isFolder());
     }
+    
+    @Test
+    public void testEventTimestampEqualsToTransactionCommitTime()
+    {
+        String name = "TestFile-" + System.currentTimeMillis() + ".txt";
+        PropertyMap propertyMap = new PropertyMap();
+        propertyMap.put(ContentModel.PROP_NAME, name);
+        
+        //create a node and return the transaction id required later
+        Long transactionId = retryingTransactionHelper.doInTransaction(() -> {
+            nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                    QName.createQName(TEST_NAMESPACE, GUID.generate()), ContentModel.TYPE_CONTENT, propertyMap).getChildRef();
+            return nodeDAO.getCurrentTransactionId(false);
+        });
+
+        RepoEvent<EventData<NodeResource>> resultRepoEvent = getRepoEvent(1);
+
+        Transaction transaction = nodeDAO.getTxnById(transactionId);
+        Instant commitTimeMs = Instant.ofEpochMilli(transaction.getCommitTimeMs());
+        ZonedDateTime timestamp = ZonedDateTime.ofInstant(commitTimeMs, ZoneOffset.UTC);
+        
+        assertEquals(timestamp, resultRepoEvent.getTime());
+    }
 
     @Test
-    public void testCteateMultipleNodesInTheSameTransaction()
+    public void testCreateMultipleNodesInTheSameTransaction()
     {
         retryingTransactionHelper.doInTransaction(() -> {
             for (int i = 0; i < 3; i++)

@@ -43,6 +43,7 @@ import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
 import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -51,7 +52,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.RuleChain;
 
 /** Tests for {@link TakeOwnershipActionExecuter}. */
-@Category(OwnJVMTestsCategory.class)
+@Category({OwnJVMTestsCategory.class, NeverRunsTests.class})
 public class TakeOwnershipActionExecuterTest
 {
     // Rule to initialise the default Alfresco spring configuration

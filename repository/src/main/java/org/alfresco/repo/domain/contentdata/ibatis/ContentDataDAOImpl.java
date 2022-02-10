@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -155,6 +155,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         
         ContentUrlOrphanQuery query = new ContentUrlOrphanQuery();
         query.setMaxOrphanTimeExclusive(maxOrphanTimeExclusive);
+        query.setMaxRecords((long) maxResults);
         List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_ORPHANED, 
                                                                                       query, 
                                                                                       new RowBounds(0, maxResults));

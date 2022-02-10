@@ -31,10 +31,12 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ import static org.alfresco.model.ContentModel.PROP_CONTENT;
 /**
  * Integration tests for {@link LocalSynchronousTransformClient}
  */
+@Category(NeverRunsTests.class)
 public class LocalSynchronousTransformClientIntegrationTest extends AbstractRenditionIntegrationTest
 {
     @Autowired

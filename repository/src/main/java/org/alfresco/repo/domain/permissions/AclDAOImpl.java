@@ -1637,6 +1637,7 @@ public class AclDAOImpl implements AclDAO
     }
 
     private static final String RESOURCE_KEY_ACL_CHANGE_SET_ID = "acl.change.set.id";
+    private static final String RESOURCE_KEY_ACL_CHANGE_SET_COMMIT_TIME_MS = "acl.change.commit.set.time.ms";
 
     private UpdateChangeSetListener updateChangeSetListener = new UpdateChangeSetListener();
     /**
@@ -1662,9 +1663,17 @@ public class AclDAOImpl implements AclDAO
             }
             // Update it
             long commitTimeMs = System.currentTimeMillis();
+            AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_ACL_CHANGE_SET_COMMIT_TIME_MS, commitTimeMs);
             aclCrudDAO.updateAclChangeSet(changeSetId, commitTimeMs);
         }
     }
+
+    @Override
+    public Long getCurrentChangeSetCommitTime()
+    {
+        return AlfrescoTransactionSupport.getResource(RESOURCE_KEY_ACL_CHANGE_SET_COMMIT_TIME_MS);
+    }
+
     /**
      * Support to get the current ACL change set and bind this to the transaction. So we only make one new version of an
      * ACL per change set. If something is in the current change set we can update it.

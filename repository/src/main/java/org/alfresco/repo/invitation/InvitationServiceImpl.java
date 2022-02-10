@@ -1997,17 +1997,21 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     private void sendInviteEmail(InviteSender inviteSender, List<String> invitePropNames, String inviteId, String emailTemplateXpath, String emailSubjectKey, Map<String, Object> executionVariables)
     {
-        if (isSendEmails())
+        // Do nothing if emails disabled.
+        if (isSendEmails() == false)
         {
-            Map<String, String> properties = makePropertiesFromContextVariables(executionVariables, invitePropNames);
-
-            String packageRef = getPackageRef(executionVariables);
-            properties.put(InviteNominatedSender.WF_PACKAGE, packageRef);
-            
-            properties.put(InviteNominatedSender.WF_INSTANCE_ID, inviteId);
-            
-            inviteSender.sendMail(emailTemplateXpath, emailSubjectKey, properties);
+            return;
         }
+
+        // send email to the invitee
+        Map<String, String> properties = makePropertiesFromContextVariables(executionVariables, invitePropNames);
+
+        String packageRef = getPackageRef(executionVariables);
+        properties.put(InviteNominatedSender.WF_PACKAGE, packageRef);
+
+        properties.put(InviteNominatedSender.WF_INSTANCE_ID, inviteId);
+
+        inviteSender.sendMail(emailTemplateXpath, emailSubjectKey, properties);
     }
     
 

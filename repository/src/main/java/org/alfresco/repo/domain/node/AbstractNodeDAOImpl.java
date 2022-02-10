@@ -563,6 +563,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             Long txnId = txn.getId();
             // Update it
             Long now = System.currentTimeMillis();
+            txn.setCommitTimeMs(now);
             updateTransaction(txnId, now);
         }
     }
@@ -602,6 +603,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         AlfrescoTransactionSupport.bindDaoService(updateTransactionListener);
         // Done
         return txn;
+    }
+    
+    public Long getCurrentTransactionCommitTime()
+    {
+        Long commitTime = null;
+        TransactionEntity resource = AlfrescoTransactionSupport.getResource(KEY_TRANSACTION);
+        if(resource != null)
+        {
+            commitTime = resource.getCommitTimeMs();
+        }
+        return commitTime;
     }
     
     public Long getCurrentTransactionId(boolean ensureNew)

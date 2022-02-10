@@ -36,12 +36,15 @@ import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.alfresco.util.testing.category.NeverRunsTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.core.io.ClassPathResource;
 
 /**
  * @author Nick Smith
  * @since 3.4.e
  */
+@Category(NeverRunsTests.class)
 public class ActivitiSmokeTest extends TestCase
 {
     public void testDeploy() throws Exception

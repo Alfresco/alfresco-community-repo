@@ -59,6 +59,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ScriptPagingDetails;
 import org.alfresco.util.testing.category.LuceneTests;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -66,7 +67,7 @@ import org.springframework.context.ApplicationContext;
  * Tests for the Script wrapper for the Authority Service,
  *  ScriptAuthorityService
  */
-@Category(LuceneTests.class)
+@Category({LuceneTests.class, NeverRunsTests.class})
 public class ScriptAuthorityServiceTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();

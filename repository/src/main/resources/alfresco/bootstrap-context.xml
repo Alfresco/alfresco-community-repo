@@ -96,6 +96,14 @@
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-ACT.xml</value>
           </list>
        </property>
+       <property name="differenceHelper">
+          <ref bean="differenceHelper" />
+       </property>
+    </bean>
+
+    <bean id="differenceHelper" class="org.alfresco.util.schemacomp.SchemaDifferenceHelper">
+        <constructor-arg ref="dialect"/>
+        <constructor-arg ref="patchComponent"/>
     </bean>
 
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">

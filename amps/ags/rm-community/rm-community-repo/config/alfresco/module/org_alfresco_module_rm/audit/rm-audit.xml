@@ -1,0 +1,90 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!-- Default Audit Configuration -->
+
+<Audit
+    xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd"
+    >
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+       <DataExtractor name="nullValue" registeredName="auditModel.extractor.nullValue"/>
+       <DataExtractor name="nodeName" registeredName="auditModel.extractor.nodeName"/>
+       <DataExtractor name="nodeType" registeredName="auditModel.extractor.nodeType"/>
+       <DataExtractor name="userRoles" registeredName="org_alfresco_module_rm_userRolesExtractor"/>
+       <DataExtractor name="namePath" registeredName="org_alfresco_module_rm_namePathExtractor"/>
+       <DataExtractor name="nodeRefPath" registeredName="org_alfresco_module_rm_nodeRefPathExtractor"/>
+       <DataExtractor name="nodeIdentifier" registeredName="org_alfresco_module_rm_identifierExtractor"/>
+    </DataExtractors>
+    
+    <DataGenerators>
+       <DataGenerator name="personFullName" registeredName="auditModel.generator.personFullName"/>
+    </DataGenerators>
+
+    <PathMappings>
+        <PathMap source="/RM" target="/RM"/>
+        <!-- Force the fullName generator to trigger -->
+        <PathMap source="/RM/event/node" target="/RM/event/person"/>
+        <PathMap source="/alfresco-api/post/AuthenticationService/authenticate" target="/RM/login"/>
+    </PathMappings>
+
+    <Application name="RM" key="RM">
+        <AuditPath key="event">
+            <!-- Record user details -->
+            <AuditPath key="person">
+                <RecordValue key="roles" dataExtractor="userRoles"/>
+                <GenerateValue key="fullName" dataGenerator="personFullName"/>
+            </AuditPath>
+            <!-- Record a description of the event -->
+            <AuditPath key="name">
+                <RecordValue key="value" dataExtractor="simpleValue"/>
+            </AuditPath>
+            <!-- Record the node's details -->
+            <AuditPath key="node">
+                <RecordValue key="noderef" dataExtractor="simpleValue"/>
+                <RecordValue key="name" dataExtractor="nodeName"/>
+                <RecordValue key="type" dataExtractor="nodeType"/>
+                <RecordValue key="namePath" dataExtractor="namePath"/>
+                <RecordValue key="nodeRefPath" dataExtractor="nodeRefPath"/>
+                <RecordValue key="identifier" dataExtractor="nodeIdentifier"/>
+                <AuditPath key="changes">
+	                <AuditPath key="before">
+	                    <RecordValue key="value" dataExtractor="simpleValue"/>
+	                </AuditPath>
+                    <AuditPath key="after">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
+            </AuditPath>
+            <!--
+                RM action parameters
+                * Keyed by action name to be more selective
+                * Only record the parameters if they are of interest
+            -->
+            <!-- A test action -->
+            <AuditPath key="testAction">
+                <AuditPath key="parameters">
+                    <AuditPath key="testActionParam">
+                        <RecordValue key="value" dataExtractor="simpleValue"/>
+                    </AuditPath>
+                </AuditPath>
+            </AuditPath>
+        </AuditPath>
+        <AuditPath key="login">
+            <AuditPath key="args">
+                <AuditPath key="userName">
+                    <RecordValue key="value" dataExtractor="simpleValue"/>
+                </AuditPath>
+            </AuditPath>
+            <AuditPath key="no-error">
+                <GenerateValue key="fullName" dataGenerator="personFullName"/>
+            </AuditPath>
+            <AuditPath key="error">
+                <RecordValue key="value" dataExtractor="nullValue"/>
+            </AuditPath>
+        </AuditPath>
+    </Application>
+
+</Audit>

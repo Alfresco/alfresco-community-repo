@@ -62,7 +62,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @author Roy Wetherall
  */
 @Transactional
-public class BaseRuleTest extends BaseSpringTest
+public abstract class BaseRuleTest extends BaseSpringTest
 {
     /**
      * Data used in the tests

@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>List Of Values</shortname>
+  <description>Returns lists of items used by the Records Management service</description>
+  <url>/api/rma/admin/listofvalues</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

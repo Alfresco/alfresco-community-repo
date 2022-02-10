@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -32,10 +32,13 @@ import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailRenditionConvertor;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
+import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 import org.alfresco.util.BaseSpringTest;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -126,6 +129,27 @@ public class RenditionDefinitionTest extends BaseSpringTest
             // than checking transformationOptions is equal to transformationOptions2.
             if (!renditionName.equals("pdf") && !renditionName.equals("webpreview"))
             {
+                // MNT-22409: We no longer have system.thumbnail.definition.default.pageLimit=1 as a default.
+                // It is -1 (unlimited), but to compensate for that the new OOTB renditions defined in
+                // 0100-baseRenditions now have startPage and endPage transform options. The following code modifies
+                //  the transformationOptions so that they will be the same if there are no bugs. 
+                Collection<TransformationSourceOptions> sourceOptionsList = transformationOptions2.getSourceOptionsList();
+                if (sourceOptionsList != null && sourceOptionsList.size() == 1)
+                {
+                    TransformationSourceOptions sourceOptions = sourceOptionsList.iterator().next();
+                    if (sourceOptions instanceof PagedSourceOptions)
+                    {
+                        PagedSourceOptions pagedSourceOptions = (PagedSourceOptions)sourceOptions;
+                        if (pagedSourceOptions.getStartPageNumber() == 1 && pagedSourceOptions.getEndPageNumber() == 1)
+                        {
+                            if (transformationOptions.getSourceOptionsList() == null)
+                            {
+                                transformationOptions.setSourceOptionsList(sourceOptionsList);
+                            }
+                        }
+                    }
+                }
+
                 assertEquals("The TransformationOptions used in transforms for " + renditionName + " should be the same",
                         transformationOptions.toStringAll(), transformationOptions2.toStringAll());
                 assertEquals("The transformationOptionsConverter back to the newer format was not the same for " +

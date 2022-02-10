@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>images</shortname>
+  <description>Images List Component - images data webscript</description>
+  <url>/slingshot/doclib/images/site/{site}/{container}/{path}</url>
+  <url>/slingshot/doclib/images/site/{site}/{container}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

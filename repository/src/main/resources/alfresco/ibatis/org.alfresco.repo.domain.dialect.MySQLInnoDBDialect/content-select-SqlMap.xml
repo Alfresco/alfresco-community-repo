@@ -21,6 +21,7 @@
             cu.orphan_time > 0 and
             cu.orphan_time < #{maxOrphanTimeExclusive} and
             cu.orphan_time is not null
+        limit #{maxRecords}
         ]]>
     </select>
 

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,6 +38,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.util.PostTxnCallbackScheduler;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -538,9 +539,8 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                             }
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("Set rendition hashcode " + transformContentHashCode + " and ThumbnailLastModified for " + renditionName);
+                                logger.debug("Set ThumbnailLastModified for " + renditionName);
                             }
-                            nodeService.setProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE, transformContentHashCode);
                             setThumbnailLastModified(sourceNodeRef, renditionName);
 
                             if (transformInputStream != null)
@@ -554,6 +554,21 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                                     contentWriter.setEncoding(DEFAULT_ENCODING);
                                     ContentWriter renditionWriter = contentWriter;
                                     renditionWriter.putContent(transformInputStream);
+
+                                    ContentReader contentReader = renditionWriter.getReader();
+                                    long sizeOfRendition = contentReader.getSize();
+                                    if (sizeOfRendition > 0L)
+                                    {
+                                        if (logger.isDebugEnabled()) {
+                                            logger.debug("Set rendition hashcode for " + renditionName);
+                                        }
+                                        nodeService.setProperty(renditionNode, RenditionModel.PROP_RENDITION_CONTENT_HASH_CODE, transformContentHashCode);
+                                    }
+                                    else
+                                    {
+                                        logger.error("Transform was zero bytes for " + renditionName + " on " + sourceNodeRef);
+                                        clearRenditionContentData(renditionNode);
+                                    }
                                 }
                                 catch (Exception e)
                                 {
@@ -563,16 +578,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                             }
                             else
                             {
-                                Serializable content = nodeService.getProperty(renditionNode, PROP_CONTENT);
-                                if (content != null)
-                                {
-                                    nodeService.removeProperty(renditionNode, PROP_CONTENT);
-                                    nodeService.removeProperty(renditionNode, PROP_RENDITION_CONTENT_HASH_CODE);
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        logger.debug("Cleared rendition content and hashcode");
-                                    }
-                                }
+                                clearRenditionContentData(renditionNode);
                             }
 
                             if (!sourceHasAspectRenditioned)
@@ -737,6 +743,43 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     /**
+     * Clears source nodeRef rendition content and content hash code using supplied rendition name
+     *
+     * @param sourceNodeRef
+     * @param renditionName
+     */
+    public void clearRenditionContentData(NodeRef sourceNodeRef, String renditionName)
+    {
+        clearRenditionContentData(getRenditionNode(sourceNodeRef, renditionName));
+    }
+
+    /**
+     * Clears supplied rendition node content (if exists) and content hash code
+     *
+     * @param renditionNode
+     */
+    private void clearRenditionContentData(NodeRef renditionNode)
+    {
+        if (renditionNode != null)
+        {
+            Serializable content = nodeService.getProperty(renditionNode, PROP_CONTENT);
+            if (content != null)
+            {
+                nodeService.removeProperty(renditionNode, PROP_CONTENT);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Cleared rendition content");
+                }
+            }
+            nodeService.removeProperty(renditionNode, PROP_RENDITION_CONTENT_HASH_CODE);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Cleared rendition hashcode");
+            }
+        }
+    }
+
+    /**
      * This method checks whether the specified source node is of a content class which has been registered for
      * rendition prevention.
      *
@@ -861,6 +904,17 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
     }
 
     @Override
+    public void clearRenditionContentDataInTransaction(NodeRef renditionNode)
+    {
+        AuthenticationUtil.runAsSystem((AuthenticationUtil.RunAsWork<Void>) () ->
+                transactionService.getRetryingTransactionHelper().doInTransaction(() ->
+                {
+                    clearRenditionContentData(renditionNode);
+                    return null;
+                }, false, true));
+    }
+
+    @Override
     public boolean isEnabled()
     {
         return enabled && thumbnailsEnabled;
@@ -886,6 +940,7 @@ public class RenditionService2Impl implements RenditionService2, InitializingBea
                         RenditionDefinition2 renditionDefinition = renditionDefinitionRegistry2.getRenditionDefinition(renditionName);
                         if (renditionDefinition != null)
                         {
+                            clearRenditionContentData(sourceNodeRef, renditionName);
                             render(sourceNodeRef, renditionName);
                         }
                         else

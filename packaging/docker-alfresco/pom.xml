@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo-packaging</artifactId>
-        <version>11.7-SNAPSHOT</version>
+        <version>14.103-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -71,6 +71,7 @@
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-mmt</artifactId>
                                     <type>jar</type>
+                                    <version>${project.version}</version>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/alfresco-mmt</outputDirectory>
                                 </artifactItem>
@@ -128,7 +129,7 @@
 
     <profiles>
         <profile>
-            <id>communityDocker</id>
+            <id>build-docker-images</id>
             <!-- builds "image:latest" locally -->
             <build>
                 <plugins>
@@ -157,7 +158,7 @@
         </profile>
 
         <profile>
-            <id>internal</id>
+            <id>push-docker-images</id>
             <!-- publishes "image:latest" on Quay & DockerHub -->
             <build>
                 <plugins>

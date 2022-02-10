@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,6 +24,8 @@
  * #L%
  */
 package org.alfresco.util.schemacomp;
+
+import java.util.Locale;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -84,10 +86,22 @@ public final class Difference extends Result
     @Override
     public String describe()
     {
+        return doDescribe(I18NUtil.getLocale());
+    }
+
+    @Override
+    public String describe(Locale locale)
+    {
+        return doDescribe(locale);
+    }
+
+    private String doDescribe(Locale locale)
+    {
         if (getLeft() == null)
         {
             return I18NUtil.getMessage(
                         "system.schema_comp.diff.target_only",
+                        locale,
                         getRight().getDbObject().getTypeName(),
                         getRight().getPath(),
                         getRight().getPropertyValue());
@@ -96,6 +110,7 @@ public final class Difference extends Result
         {
             return I18NUtil.getMessage(
                         "system.schema_comp.diff.ref_only",
+                        locale,
                         getLeft().getDbObject().getTypeName(),
                         getLeft().getPath(),
                         getLeft().getPropertyValue());
@@ -103,6 +118,7 @@ public final class Difference extends Result
         
         return I18NUtil.getMessage(
                     "system.schema_comp.diff",
+                    locale,
                     getLeft().getDbObject().getTypeName(),
                     getLeft().getPath(),
                     getLeft().getPropertyValue(),
@@ -115,4 +131,5 @@ public final class Difference extends Result
     {
         return "Difference [where=" + this.where + ", left=" + this.left + ", right=" + this.right + "]";
     }
+
 }

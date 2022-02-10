@@ -1,0 +1,16 @@
+<webscript kind="org.alfresco.repository.content.stream">
+   <shortname>Avatar</shortname>
+   <description>
+   Returns a user avatar image in the format specified by the thumbnailname, or the "avatar" preset if omitted.
+   </description>
+   <url>/slingshot/profile/avatar/avatar</url>
+   <url>/slingshot/profile/avatar/avatar/thumbnail/{thumbnailname}</url>
+   <url>/slingshot/profile/avatar/{store_type}/{store_id}/{id}/thumbnail/{thumbnailname}</url>
+   <url>/slingshot/profile/avatar/{store_type}/{store_id}/{id}</url>
+   <url>/slingshot/profile/avatar/{username}/thumbnail/{thumbnailname}</url>
+   <url>/slingshot/profile/avatar/{username}</url>
+   <format default="">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

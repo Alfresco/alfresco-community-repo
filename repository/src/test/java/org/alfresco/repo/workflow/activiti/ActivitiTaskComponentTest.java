@@ -57,15 +57,18 @@ import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 /**
  * @author Nick Smith
  * @author Frederik Heremans
  * @since 3.4.e
  */
+@Category(NeverRunsTests.class)
 public class ActivitiTaskComponentTest extends AbstractActivitiComponentTest
 {
     private WorkflowDefinition workflowDef;

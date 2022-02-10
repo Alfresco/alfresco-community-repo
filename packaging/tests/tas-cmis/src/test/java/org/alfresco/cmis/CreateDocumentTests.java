@@ -191,7 +191,7 @@ public class CreateDocumentTests extends CmisTest
     
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.REGRESSION,
             description = "Verify site manager is able to create file with CHECKEDOUT versioning state")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.REGRESSION, TestGroup.CMIS})
+    @Test(groups = { TestGroup.REGRESSION, TestGroup.CMIS})
     public void siteManagerShouldCreateDocumentWithCheckedOutVersioningState() throws Exception
     {
         testFile = FileModel.getRandomFileModel(FileType.TEXT_PLAIN);

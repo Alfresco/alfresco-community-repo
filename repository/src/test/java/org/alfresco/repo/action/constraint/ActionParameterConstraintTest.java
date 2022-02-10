@@ -32,13 +32,16 @@ import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.junit.Before;
+import org.junit.experimental.categories.Category;
 
 /**
  * Action parameter constraint unit test
  * 
  * @author Roy Wetherall
  */
+@Category(NeverRunsTests.class)
 public class ActionParameterConstraintTest extends BaseSpringTest
 {
     private static final String COMPARE_OP = "ac-compare-operations";

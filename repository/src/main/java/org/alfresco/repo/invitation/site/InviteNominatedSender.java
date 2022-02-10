@@ -53,6 +53,9 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.util.ModelUtil;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.extensions.surf.util.URLEncoder;
 
@@ -64,6 +67,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
  */
 public class InviteNominatedSender extends InviteSender
 {
+    private static final Log logger = LogFactory.getLog(InviteNominatedSender.class);
     public static final String WF_INSTANCE_ID = "wf_instanceId";
     public static final String WF_PACKAGE = "wf_package";
     public static final String SITE_LEAVE_HASH = "#leavesite";
@@ -109,7 +113,13 @@ public class InviteNominatedSender extends InviteSender
         NodeRef invitee = personService.getPerson(inviteeName);
         Action mail = actionService.createAction(MailActionExecuter.NAME);
         mail.setParameterValue(MailActionExecuter.PARAM_FROM, getEmail(inviter));
-        mail.setParameterValue(MailActionExecuter.PARAM_TO, getEmail(invitee));
+        String recipient = getEmail(invitee);
+        if(StringUtils.isEmpty(recipient))
+        {
+            logger.warn("Cannot send invitation: Invitee user account does not have email");
+            return;
+        }
+        mail.setParameterValue(MailActionExecuter.PARAM_TO, recipient);
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, emailSubjectKey);
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] { ModelUtil.getProductName(repoAdminService), getSiteName(properties) });
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, getEmailTemplateNodeRef(emailTemplateXpath));

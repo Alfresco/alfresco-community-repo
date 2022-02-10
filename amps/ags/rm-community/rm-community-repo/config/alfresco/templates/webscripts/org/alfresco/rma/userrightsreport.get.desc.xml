@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Records Management User Rights Report</shortname>
+  <description>Returns a user rights report showing users, roles and groups to the caller in JSON format</description>
+  <url>/api/rma/admin/userrightsreport</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>wikipage</shortname>
+  <description>Wiki - Page details</description>
+  <url>/slingshot/wiki/page/{siteId}/{pageTitle}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

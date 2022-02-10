@@ -32,6 +32,7 @@ import org.alfresco.repo.rawevents.types.OnContentUpdatePolicyEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.testing.category.NeverRunsTests;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
@@ -39,6 +40,7 @@ import org.apache.camel.support.DefaultExchange;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
@@ -53,6 +55,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * @author Cristian Turlica
  */
+@Category(NeverRunsTests.class)
 public class RenditionEventProcessorTest
 {
     private RenditionEventProcessor renditionEventProcessor;

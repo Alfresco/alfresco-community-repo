@@ -1,0 +1,14 @@
+<webscript>
+  <shortname> Get the allowed values for the authenticated user for an rm list constraint.</shortname>
+  <description><![CDATA[
+  Get the allowed values for the authenticated user for an rm list constraint.  
+  <br />
+  listName is the qualified name of the list with the ":" replaced by "_" eg rmc_smList
+  ]]>
+  </description>
+  <url>/api/rma/rmconstraints/{listName}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

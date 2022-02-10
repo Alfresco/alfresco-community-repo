@@ -58,7 +58,7 @@ public class CheckInTests extends CmisTest
 
     @TestRail(section = {"cmis-api"}, executionType= ExecutionType.SANITY,
             description = "Verify check in document with minor version and with content")
-    @Test(groups = { "bug-ws-REPO-5391", TestGroup.SANITY, TestGroup.CMIS})
+    @Test(groups = { TestGroup.SANITY, TestGroup.CMIS})
     public void checkInDocumentWithMinorVersionAndWithContent() throws Exception
     {
         String newContent = "new minor content";

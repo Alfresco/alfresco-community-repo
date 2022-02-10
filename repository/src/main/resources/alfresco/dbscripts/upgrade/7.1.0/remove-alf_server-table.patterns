@@ -1,0 +1,7 @@
+(?i).*expected column .*alf_transaction\.change_txn_id\.order="3".*
+(?i).*expected column .*alf_transaction\.commit_time_ms\.order="4".*
+(?i).*unexpected column found in database with path: .*alf_transaction\.server_id
+(?i).*unexpected foreign key found in database with path: .*alf_transaction\.fk_alf_txn_svr
+(?i).*unexpected index found in database with path: .*alf_transaction\.fk_alf_txn_svr
+(?i).*unexpected sequence found in database with path: .*alf_server_seq
+(?i).*unexpected table found in database with path: .*alf_server

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,47 +25,47 @@
  */
 package org.alfresco.util.schemacomp;
 
-
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.testing.category.DBTests;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
- * Test intended for use in the continuous integration system that checks whether the
- * schema reference file (for whichever database the tests are being run against)
- * is in sync with the actual schema. If the test fails (and the schema comparator is
- * in working order) then the most likely cause is that a new up-to-date schema reference file
- * needs to be created.
+ * Test intended for use in the continuous integration system that checks
+ * whether the schema reference file (for whichever database the tests are being
+ * run against) is in sync with the actual schema. If the test fails (and the
+ * schema comparator is in working order) then the most likely cause is that a
+ * new up-to-date schema reference file needs to be created.
  * <p>
  * Schema reference files are created using the {@link DbToXML} tool.
  * <p>
- * Note: if no reference file exists then the test will pass, this is to allow piece meal
- * introduction of schmea reference files.
+ * Note: if no reference file exists then the test will pass, this is to allow
+ * piece meal introduction of schmea reference files.
  * 
  * @see DbToXML
  * @author Matt Ward
  */
-@Category({OwnJVMTestsCategory.class, DBTests.class})
+@Category({ OwnJVMTestsCategory.class, DBTests.class })
 public class SchemaReferenceFileTest
 {
     private ClassPathXmlApplicationContext ctx;
     private SchemaBootstrap schemaBootstrap;
-    
+
     @Before
     public void setUp() throws Exception
     {
-        ctx = (ClassPathXmlApplicationContext) ApplicationContextHelper.getApplicationContext();    
+        ctx = (ClassPathXmlApplicationContext) ApplicationContextHelper.getApplicationContext();
         schemaBootstrap = (SchemaBootstrap) ctx.getBean("schemaBootstrap");
     }
 
@@ -74,12 +74,28 @@ public class SchemaReferenceFileTest
     {
         ByteArrayOutputStream buff = new ByteArrayOutputStream();
         PrintWriter out = new PrintWriter(buff);
-        int numProblems = schemaBootstrap.validateSchema(null, out);
+        int maybeProblems = schemaBootstrap.validateSchema(null, out);
         out.flush();
-        
-        if (numProblems > 0)
+
+        if (maybeProblems > 0)
         {
-            fail(buff.toString());
+            List<String> errors = computeRealErrors(buff);
+            assertTrue("\n"+buff, errors.isEmpty());
         }
+    }
+
+    private List<String> computeRealErrors(ByteArrayOutputStream buff)
+    {
+        String[] lines = buff.toString().split("\\n");
+
+        List<String> errors = new ArrayList<>();
+        for (int i = 0; i < lines.length; i++)
+        {
+            String line = lines[i].trim();
+            if (line.isEmpty())
+                break;
+            errors.add(line);
+        }
+        return errors;
     }
 }

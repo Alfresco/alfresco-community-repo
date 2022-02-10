@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 Alfresco Software Limited
+ * Copyright (C) 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -54,4 +54,9 @@ public interface LocalTransform
     void transform(ContentReader reader, ContentWriter writer, Map<String, String> transformOptions,
                    String renditionName, NodeRef sourceNodeRef)
             throws UnsupportedTransformationException, ContentIOException;
+
+    /**
+     * @return the name of the transform.
+     */
+    String getName();
 }

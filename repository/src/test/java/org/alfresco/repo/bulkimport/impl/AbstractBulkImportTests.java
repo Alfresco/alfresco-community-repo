@@ -77,7 +77,7 @@ import static org.junit.Assert.fail;
  * @since 4.0
  */
 @Category(LuceneTests.class)
-public class AbstractBulkImportTests
+public abstract class AbstractBulkImportTests
 {
     protected static ApplicationContext ctx;
 

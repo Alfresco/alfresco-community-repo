@@ -1,0 +1,35 @@
+<webscript>
+   <shortname>Share Auto Suggest</shortname>
+   <description>
+   <![CDATA[
+   Get search term suggestions
+   
+   http://<host>:<port>/alfresco/service/slingshot/auto-suggest?t={term}&limit={limit?}
+   
+   Example response from this web script for the term "tes":
+   
+   {
+      "suggestions" :
+      [
+         {
+              "weight" : 5,
+              "term" : "test"
+         },
+         {
+              "weight" : 1,
+              "term" : "test call"
+         },
+         {
+              "weight" : 1,
+              "term" : "test plan"
+         }
+      ]
+   }
+   ]]>
+   </description>
+   <url>/slingshot/auto-suggest?t={term}&amp;limit={limit?}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

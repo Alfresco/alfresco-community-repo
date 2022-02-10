@@ -33,7 +33,6 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 
 import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ActionExecuter;
@@ -59,6 +58,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
+import org.alfresco.util.testing.category.NeverRunsTests;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -69,6 +70,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * 
  * @author Derek Hulley
  */
+@Category(NeverRunsTests.class)
 public class XmlMetadataExtracterTest extends TestCase
 {
     private static final String FILE_ALFRESCO_MODEL = "xml-metadata/alfresco-model-sample.xml";

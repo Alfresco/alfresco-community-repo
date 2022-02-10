@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,6 +24,8 @@
  * #L%
  */
 package org.alfresco.util.schemacomp;
+
+import java.util.Locale;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -65,8 +67,20 @@ public class ValidationResult extends Result
     @Override
     public String describe()
     {
+        return doDescribe(I18NUtil.getLocale());
+    }
+
+    @Override
+    public String describe(Locale locale)
+    {
+        return doDescribe(locale);
+    }
+
+    private String doDescribe(Locale locale)
+    {
         return I18NUtil.getMessage(
                     "system.schema_comp.validation",
+                    locale,
                     getDbProperty().getDbObject().getTypeName(),
                     getDbProperty().getPath(),
                     getValue(),

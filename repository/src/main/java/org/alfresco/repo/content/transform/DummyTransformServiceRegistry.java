@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 Alfresco Software Limited
+ * Copyright (C) 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import org.alfresco.transform.client.model.config.CoreFunction;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
 
 import java.util.Map;
@@ -48,5 +49,11 @@ public class DummyTransformServiceRegistry implements TransformServiceRegistry
                                       Map<String, String> actualOptions, String renditionName)
     {
         return null;
+    }
+
+    @Override
+    public boolean isSupported(CoreFunction function, String transformerName)
+    {
+        return true;
     }
 }

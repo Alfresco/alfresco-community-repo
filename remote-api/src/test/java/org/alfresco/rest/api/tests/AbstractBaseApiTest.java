@@ -34,6 +34,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
 
+import javax.print.DocFlavor;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -217,6 +219,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String getRequestContentDirectUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
+    protected String getRequestVersionRenditionContentDirectUrl(String nodeId, String versionId, String renditionId)
+    {
+        return getNodeVersionRenditionIdUrl(nodeId, versionId, renditionId) + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
     protected String getRequestArchivedContentDirectUrl(String nodeId)

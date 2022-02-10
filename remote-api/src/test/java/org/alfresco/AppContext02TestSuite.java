@@ -25,6 +25,8 @@
  */
 package org.alfresco;
 
+import static org.junit.Assert.assertTrue;
+
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
@@ -53,6 +55,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.NodeApiTest.class,
     org.alfresco.rest.api.tests.NodeAssociationsApiTest.class,
     org.alfresco.rest.api.tests.NodeVersionsApiTest.class,
+    org.alfresco.rest.api.tests.NodeVersionRenditionsApiTest.class,
     org.alfresco.rest.api.tests.QueriesNodesApiTest.class,
     org.alfresco.rest.api.tests.QueriesPeopleApiTest.class,
     org.alfresco.rest.api.tests.QueriesSitesApiTest.class,

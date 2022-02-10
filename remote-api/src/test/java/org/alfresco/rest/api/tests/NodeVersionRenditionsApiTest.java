@@ -80,7 +80,6 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testUpFileVersionRenditions() throws Exception
     {
-        assertTrue(false);
         setRequestContext(user1);
         
         String myFolderNodeId = getMyNodeId();
@@ -143,7 +142,6 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testUpFileVersionRenditionsWithDoclib() throws Exception
     {
-        assertTrue(false);
         setRequestContext(user1);
 
         String myFolderNodeId = getMyNodeId();
@@ -208,7 +206,6 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testNegative() throws Exception
     {
-        assertTrue(false);
         AuthenticationUtil.clearCurrentSecurityContext();
         setRequestContext(null);
 
@@ -286,7 +283,6 @@ public class NodeVersionRenditionsApiTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testRequestVersionRenditionContentDirectUrl() throws Exception
     {
-        assertTrue(false);
         setRequestContext(user1);
 
         RepoService.TestNetwork networkN1;

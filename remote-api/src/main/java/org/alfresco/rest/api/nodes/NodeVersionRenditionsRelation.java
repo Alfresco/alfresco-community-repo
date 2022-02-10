@@ -63,7 +63,7 @@ import org.springframework.extensions.webscripts.Status;
  * - GET    /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
  * - DELETE /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}
  * - GET    /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content
- * - POST   /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/directAccessUrlRequest
+ * - POST   /nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/request-direct-access-url
  *
  * @author janv
  */

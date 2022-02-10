@@ -207,7 +207,6 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions, NodeRef sourceNodeRef)
     {
         if (isDirectAccessUrlEnabled
-                && contentService.isContentDirectUrlEnabled()
                 && contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT)
                 && localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
         {

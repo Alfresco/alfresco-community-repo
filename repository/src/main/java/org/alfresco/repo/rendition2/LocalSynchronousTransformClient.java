@@ -171,7 +171,6 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
                                              String localTransformName)
     {
         if (isDirectAccessUrlEnabled
-                && contentService.isContentDirectUrlEnabled()
                 && contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT)
                 && localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
         {

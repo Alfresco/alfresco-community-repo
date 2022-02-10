@@ -25,11 +25,17 @@
  */
 package org.alfresco.repo.rendition2;
 
+import static org.alfresco.model.ContentModel.PROP_CONTENT;
+import static org.alfresco.transform.client.model.config.CoreFunction.DIRECT_ACCESS_URL;
+import static org.alfresco.transform.client.util.RequestParamMap.DIRECT_URL;
+
 import org.alfresco.repo.content.transform.LocalTransform;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
@@ -51,10 +57,22 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
     private static Log logger = LogFactory.getLog(LocalTransformClient.class);
 
     private LocalTransformServiceRegistry localTransformServiceRegistry;
+    private ContentService contentService;
+    private Boolean isDirectAccessUrlEnabled;
 
     public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
     {
         this.localTransformServiceRegistry = localTransformServiceRegistry;
+    }
+
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
+    public void setDirectAccessUrlEnabled(Boolean directAccessUrlEnabled)
+    {
+        isDirectAccessUrlEnabled = directAccessUrlEnabled;
     }
 
     @Override
@@ -123,6 +141,8 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
                 logger.debug(TRANSFORM + "requested " + renditionName);
             }
 
+            setDirectAccessUrlIfEnabled(actualOptions, sourceNodeRef, transform.getName());
+
             transform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
 
             if (logger.isDebugEnabled())
@@ -144,5 +164,20 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
     public String getName()
     {
         return "Local";
+    }
+
+    private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions,
+                                             NodeRef sourceNodeRef,
+                                             String localTransformName)
+    {
+        if (isDirectAccessUrlEnabled
+                && contentService.isContentDirectUrlEnabled()
+                && contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT)
+                && localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
+        {
+            DirectAccessUrl directAccessUrl =
+                    contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, false);
+            actualOptions.put(DIRECT_URL, directAccessUrl.getContentUrl());
+        }
     }
 }

@@ -29,6 +29,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.function.Supplier;
 
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Description.FormatStyle;
@@ -38,15 +39,15 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.util.FileCopyUtils;
 
-public class BufferedRequest implements WrappingWebScriptRequest
+public class BufferedRequest implements WrappingWebScriptRequest, AutoCloseable
 {
-    private TempOutputStreamFactory streamFactory;
-    private WebScriptRequest req;
+    private final Supplier<TempOutputStream> streamFactory;
+    private final WebScriptRequest req;
     private TempOutputStream bufferStream;
     private InputStream contentStream;
     private BufferedReader contentReader;
     
-    public BufferedRequest(WebScriptRequest req, TempOutputStreamFactory streamFactory)
+    public BufferedRequest(WebScriptRequest req, Supplier<TempOutputStream> streamFactory)
     {
         this.req = req;
         this.streamFactory = streamFactory;
@@ -56,7 +57,7 @@ public class BufferedRequest implements WrappingWebScriptRequest
     {
         if (bufferStream == null)
         {
-            bufferStream = streamFactory.createOutputStream();
+            bufferStream = streamFactory.get();
 
             try
             {
@@ -81,7 +82,7 @@ public class BufferedRequest implements WrappingWebScriptRequest
         }
         if (contentStream == null)
         {
-            contentStream = getBufferedBodyAsTempStream().getInputStream();
+            contentStream = getBufferedBodyAsTempStream().toNewInputStream();
         }
 
         return contentStream;
@@ -95,7 +96,7 @@ public class BufferedRequest implements WrappingWebScriptRequest
             {
                 contentStream.close();
             }
-            catch (Exception e)
+            catch (Exception ignore)
             {
             }
             contentStream = null;
@@ -106,13 +107,14 @@ public class BufferedRequest implements WrappingWebScriptRequest
             {
                 contentReader.close();
             }
-            catch (Exception e)
+            catch (Exception ignore)
             {
             }
             contentReader = null;
         }
     }
-    
+
+    @Override
     public void close()
     {
         reset();
@@ -122,7 +124,7 @@ public class BufferedRequest implements WrappingWebScriptRequest
             {
                 bufferStream.destroy();
             }
-            catch (Exception e)
+            catch (Exception ignore)
             {
             }
             bufferStream = null;

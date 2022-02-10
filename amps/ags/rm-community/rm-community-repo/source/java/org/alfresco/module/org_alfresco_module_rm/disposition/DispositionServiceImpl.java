@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -45,7 +45,6 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.property.Dispositi
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -115,9 +114,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
     /** Record Service */
     private RecordService recordService;
-
-    /** Freeze Service */
-    private FreezeService freezeService;
 
     /** Transaction service */
     private TransactionService transactionService;
@@ -189,14 +185,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public void setRecordService(RecordService recordService)
     {
         this.recordService =  recordService;
-    }
-
-    /**
-     * @param freezeService     freeze service
-     */
-    public void setFreezeService(FreezeService freezeService)
-    {
-        this.freezeService = freezeService;
     }
 
     /**
@@ -330,18 +318,23 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         final String dispositionActionName = dsNextAction.getNextActionName();
                         final Date dispositionActionDate = dsNextAction.getNextActionDateAsOf();
 
-                        // check if current transaction is a READ ONLY one and if true set the property on the node
+                        RunAsWork<Void> runAsWork = () -> {
+                            nodeService.setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                            return null;
+                        };
+
+                        // if the current transaction is READ ONLY set the property on the node
                         // in a READ WRITE transaction
                         if (AlfrescoTransactionSupport.getTransactionReadState().equals(TxnReadState.TXN_READ_ONLY))
                         {
                             transactionService.getRetryingTransactionHelper().doInTransaction((RetryingTransactionCallback<Void>) () -> {
-                                getInternalNodeService().setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                                AuthenticationUtil.runAsSystem(runAsWork);
                                 return null;
                             }, false, true);
                         }
                         else
                         {
-                            getInternalNodeService().setProperty(action, PROP_DISPOSITION_AS_OF, dispositionActionDate);
+                            AuthenticationUtil.runAsSystem(runAsWork);
                         }
 
                         if (dsNextAction.getWriteMode().equals(WriteMode.DATE_AND_NAME))
@@ -1185,7 +1178,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (FilePlanComponentKind.RECORD_FOLDER.equals(filePlanService.getFilePlanComponentKind(nodeRef)) ||
             FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))
         {
-            if (!isDisposableItemCutoff(nodeRef) && !isFrozenOrHasFrozenChildren(nodeRef))
+            if (!isDisposableItemCutoff(nodeRef))
             {
                 if (recordFolderService.isRecordFolder(nodeRef))
                 {
@@ -1275,32 +1268,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 });
             }
         }
-    }
-
-    /**
-     * Helper method to determine if a node is frozen or has frozen children
-     *
-     * @param nodeRef Node to be checked
-     * @return <code>true</code> if the node is frozen or has frozen children, <code>false</code> otherwise
-     */
-    private boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef)
-    {
-        boolean result = false;
-
-        if (recordFolderService.isRecordFolder(nodeRef))
-        {
-            result = freezeService.isFrozen(nodeRef) || freezeService.hasFrozenChildren(nodeRef);
-        }
-        else if (recordService.isRecord(nodeRef))
-        {
-            result = freezeService.isFrozen(nodeRef);
-        }
-        else
-        {
-            throw new AlfrescoRuntimeException("The nodeRef '" + nodeRef + "' is neither a record nor a record folder.");
-        }
-
-        return result;
     }
 
     /**

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,10 +29,11 @@ package org.alfresco.module.org_alfresco_module_rm.version;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -52,7 +53,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.version.common.VersionImpl;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -61,9 +61,11 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 
 /**
  * Recordable version service implementation unit test.
@@ -71,6 +73,7 @@ import org.mockito.Spy;
  * @author Roy Wetherall
  * @since 2.3
  */
+@RunWith(MockitoJUnitRunner.class)
 public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
 {
     /** versioned content name */
@@ -108,34 +111,23 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         recordableVersionService.initialise();
 
         doReturn(generateChildAssociationRef(null, generateNodeRef(Version2Model.TYPE_QNAME_VERSION_HISTORY)))
-            .when(mockedDbNodeService).createNode(any(NodeRef.class),
-                                                  any(QName.class),
-                                                  any(QName.class),
+            .when(mockedDbNodeService).createNode(nullable(NodeRef.class),
+                                                  nullable(QName.class),
+                                                  nullable(QName.class),
                                                   eq(Version2Model.TYPE_QNAME_VERSION_HISTORY),
-                                                  anyMap());
-        doReturn(generateChildAssociationRef(null, generateNodeRef(TYPE_CONTENT)))
-        .when(mockedDbNodeService).createNode(any(NodeRef.class),
-                                              any(QName.class),
-                                              any(QName.class),
-                                              eq(TYPE_CONTENT),
-                                              anyMap());
+                                                  nullable(Map.class));
 
         doReturn(filePlan).when(mockedFilePlanService).getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        doReturn(unfiledRecordContainer).when(mockedFilePlanService).getUnfiledContainer(any(NodeRef.class));
 
         record = generateCmContent(CONTENT_NAME);
-        FileInfo mockedFileInfo = mock(FileInfo.class);
-        doReturn(record).when(mockedFileInfo).getNodeRef();
-        doReturn(mockedFileInfo).when(mockedFileFolderService).copy(any(NodeRef.class),
-                                                                    any(NodeRef.class),
-                                                                    any(String.class));
         version = generateNodeRef(TYPE_CONTENT);
         doReturn(generateChildAssociationRef(null, version)).when(mockedDbNodeService).createNode(
-                                                                any(NodeRef.class),
+                                                                nullable(NodeRef.class),
                                                                 eq(Version2Model.CHILD_QNAME_VERSIONS),
-                                                                any(QName.class),
+                                                                nullable(QName.class),
                                                                 eq(TYPE_CONTENT),
-                                                                anyMap());
+                                                                nullable(Map.class));
+        recordableVersionService.setDbNodeService(mockedDbNodeService);
     }
 
     /**
@@ -167,7 +159,6 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
      {
          // setup given conditions
          doReturn(false).when(mockedNodeService).hasAspect(nodeRef, RecordableVersionModel.ASPECT_VERSIONABLE);
-         doReturn(null).when(mockedNodeService).getProperty(nodeRef, RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY);
          versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
 
          // when version is created
@@ -357,7 +348,6 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
     public void filePlanSpecifiedNoPolicy() throws Exception
     {
         // setup given conditions
-        doReturn(true).when(mockedNodeService).hasAspect(nodeRef, RecordableVersionModel.ASPECT_VERSIONABLE);
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
 
@@ -376,7 +366,6 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
     public void adHocRecordedVersionNoPolicy() throws Exception
     {
         // setup given conditions
-        doReturn(true).when(mockedNodeService).hasAspect(nodeRef, RecordableVersionModel.ASPECT_VERSIONABLE);
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
         versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
 
@@ -391,8 +380,6 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
     public void adHocRecordedVersionOverridePolicy() throws Exception
     {
         // setup given conditions
-        doReturn(true).when(mockedNodeService).hasAspect(nodeRef, RecordableVersionModel.ASPECT_VERSIONABLE);
-        doReturn(RecordableVersionPolicy.MAJOR_ONLY.toString()).when(mockedNodeService).getProperty(nodeRef, RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY);
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
         versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
 
@@ -461,16 +448,15 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         // latest version is not recorded
         Version mockedVersion = mock(VersionImpl.class);
         NodeRef versionNodeRef = generateNodeRef();
-        doReturn(Collections.emptyMap()).when(mockedVersion).getVersionProperties();        
         doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         
         // version history
         NodeRef versionHistoryNodeRef = generateNodeRef();
-        doReturn(versionHistoryNodeRef).when(mockedDbNodeService).getChildByName(any(NodeRef.class), eq(Version2Model.CHILD_QNAME_VERSION_HISTORIES), any(String.class));
+        doReturn(versionHistoryNodeRef).when(mockedDbNodeService).getChildByName(nullable(NodeRef.class), eq(Version2Model.CHILD_QNAME_VERSION_HISTORIES), nullable(String.class));
         
         // version number
         doReturn(mockedVersion).when(recordableVersionService).getCurrentVersion(nodeRef);
-        doReturn(versionNodeRef).when(recordableVersionService).convertNodeRef(any(NodeRef.class));
+        doReturn(versionNodeRef).when(recordableVersionService).convertNodeRef(nullable(NodeRef.class));
         makePrimaryParentOf(versionNodeRef, versionHistoryNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "something-0"), mockedDbNodeService);
         
         // created version
@@ -478,36 +464,36 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         doReturn(generateChildAssociationRef(versionHistoryNodeRef, newVersionNodeRef)).when(mockedDbNodeService).createNode(
                 eq(versionHistoryNodeRef),
                 eq(Version2Model.CHILD_QNAME_VERSIONS),
-                any(QName.class),
-                any(QName.class),
-                any(Map.class));
+                nullable(QName.class),
+                nullable(QName.class),
+                nullable(Map.class));
         
         // created record
         NodeRef newRecordNodeRef = generateNodeRef();
         doReturn(newRecordNodeRef).when(mockedRecordService).createRecordFromContent(
-                eq(filePlan), 
-                any(String.class), 
-                any(QName.class), 
-                any(Map.class), 
-                any(ContentReader.class));
+                eq(filePlan),
+                nullable(String.class),
+                nullable(QName.class),
+                nullable(Map.class),
+                nullable(ContentReader.class));
                 
         // create record from version
         recordableVersionService.createRecordFromLatestVersion(filePlan, nodeRef);
         
         // verify that the version is converted to a recorded version
         verify(mockedRecordService, times(1)).createRecordFromContent(
-                eq(filePlan), 
-                any(String.class), 
-                any(QName.class), 
-                any(Map.class), 
-                any(ContentReader.class));
+                eq(filePlan),
+                nullable(String.class),
+                nullable(QName.class),
+                any(Map.class),
+                nullable(ContentReader.class));
         verify(mockedDbNodeService, times(1)).deleteNode(any(NodeRef.class));
         verify(mockedDbNodeService, times(1)).createNode(
                 eq(versionHistoryNodeRef),
                 eq(Version2Model.CHILD_QNAME_VERSIONS),
-                any(QName.class),
-                any(QName.class),
-                any(Map.class));
+                nullable(QName.class),
+                nullable(QName.class),
+                nullable(Map.class));
         verify(mockedNodeService, times(1)).addAspect(eq(newVersionNodeRef), eq(Version2Model.ASPECT_VERSION), any(Map.class));
         verify(mockedNodeService, times(1)).addAspect(
                 newVersionNodeRef, 
@@ -605,19 +591,12 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         // set up version
         Version mockedVersion = mock(VersionImpl.class);
         NodeRef versionNodeRef = generateNodeRef();
-        NodeRef versionRecordNodeRef = generateNodeRef();
         when(mockedVersion.getFrozenStateNodeRef())
             .thenReturn(versionNodeRef);
-        when(mockedDbNodeService.exists(versionRecordNodeRef))
-            .thenReturn(true);
-        
+
         // indicate that the version doesn't have the aspect
         when(mockedDbNodeService.hasAspect(versionNodeRef, RecordableVersionModel.ASPECT_RECORDED_VERSION))
             .thenReturn(true);
-        
-        // indicate that the associated version record exists
-        when(mockedDbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF))
-            .thenReturn(versionRecordNodeRef);
         
         // mark as destroyed
         recordableVersionService.destroyRecordedVersion(mockedVersion);
@@ -643,19 +622,12 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         // set up version
         Version mockedVersion = mock(VersionImpl.class);
         NodeRef versionNodeRef = generateNodeRef();
-        NodeRef versionRecordNodeRef = generateNodeRef();
         when(mockedVersion.getFrozenStateNodeRef())
             .thenReturn(versionNodeRef);
-        when(mockedDbNodeService.exists(versionRecordNodeRef))
-            .thenReturn(false);
-        
+
         // indicate that the version doesn't have the aspect
         when(mockedDbNodeService.hasAspect(versionNodeRef, RecordableVersionModel.ASPECT_RECORDED_VERSION))
             .thenReturn(true);
-        
-        // indicate that the associated version record exists
-        when(mockedDbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF))
-            .thenReturn(versionRecordNodeRef);
         
         // mark as destroyed
         recordableVersionService.destroyRecordedVersion(mockedVersion);

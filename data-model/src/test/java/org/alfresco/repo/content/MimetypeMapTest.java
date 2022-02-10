@@ -94,7 +94,8 @@ public class MimetypeMapTest extends TestCase
         // other text forms
         assertEquals("text/csv", mimetypesByExtension.get("csv"));
         assertEquals("text/html", mimetypesByExtension.get("html"));
-        
+        assertEquals("image/icns", mimetypesByExtension.get("icns"));
+
         // JPEG
         assertEquals("jpg", extensionsByMimetype.get("image/jpeg"));
         assertEquals("image/jpeg", mimetypesByExtension.get("jpg"));

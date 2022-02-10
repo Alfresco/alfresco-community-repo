@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,12 +25,17 @@
  */
 package org.alfresco.service.cmr.repository;
 
+
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.model.ContentModel;
 import org.alfresco.service.Auditable;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 
-import java.util.Date;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Provides methods for accessing and transforming content.
@@ -156,18 +161,150 @@ public interface ContentService
     public ContentWriter getTempWriter();
 
     /**
-     * Gets a presigned URL to directly access a binary content. It is up to the
-     * content store if it can fulfil this request with an expiry time (in
-     * milliseconds) or not.
+     * Checks if the system and at least one store supports the retrieving of direct access URLs.
      *
-     * @param nodeRef
-     *            a reference to a node having a content property
-     * @param expiresAt
-     *            an optional expiry date, so the direct access url would become
-     *            invalid when the expiry date is reached
-     * @return A direct access URL object for a binary content or returns null if not supported
-     * @throws IllegalArgumentException if there is no binary content for the node
+     * @return {@code true} if direct access URLs retrieving is supported, {@code false} otherwise
      */
-    @Auditable(parameters = {"nodeRef", "expiresAt"})
-    public DirectAccessUrl getDirectAccessUrl(NodeRef nodeRef, Date expiresAt);
+    boolean isContentDirectUrlEnabled();
+
+    /**
+     * Checks if the system and store supports the retrieving of a direct access {@code URL} for the given node.
+     *
+     * @return {@code true} if direct access URLs retrieving is supported for the node, {@code false} otherwise
+     */
+    @Deprecated
+    default boolean isContentDirectUrlEnabled(NodeRef nodeRef)
+    {
+        return isContentDirectUrlEnabled(nodeRef, ContentModel.PROP_CONTENT);
+    }
+
+    /**
+     * Checks if the system and store supports the retrieving of a direct access {@code URL} for the given node.
+     *
+     * @param nodeRef a reference to a node having a content property
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @return {@code true} if direct access URLs retrieving is supported for the node, {@code false} otherwise
+     */
+    boolean isContentDirectUrlEnabled(NodeRef nodeRef, QName propertyQName);
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    @Deprecated
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment)
+    {
+        return requestContentDirectUrl(nodeRef, attachment, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    default DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment)
+    {
+        return requestContentDirectUrl(nodeRef, propertyQName, attachment, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    @Auditable(parameters = {"nodeRef", "validFor"})
+    @Deprecated
+    default public DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, boolean attachment, Long validFor)
+    {
+        return requestContentDirectUrl(nodeRef, ContentModel.PROP_CONTENT, attachment, validFor);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param nodeRef Node ref for which to obtain the direct access {@code URL}.
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information.
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName", "validFor"})
+    DirectAccessUrl requestContentDirectUrl(NodeRef nodeRef, QName propertyQName, boolean attachment, Long validFor);
+
+    /**
+     * Gets a key-value (String-String) collection of storage headers/properties with their respective values for a specific node reference.
+     * A particular Cloud Connector will fill in that data with Cloud Storage Provider generic data.
+     * Map may be also filled in with entries consisting of pre-defined Alfresco keys of {@code ObjectStorageProps} and their values.
+     * If empty Map is returned - no connector is present or connector is not supporting retrieval of the properties
+     * or cannot determine the properties.
+     *
+     * @param nodeRef a reference to a node having a content property
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values for a given {@link NodeRef}.
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName"})
+    @Experimental
+    default Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
+    {
+        return Collections.emptyMap();
+    }
+
+    /**
+     * Submit a request to send content to archive (offline) state.
+     * If no connector is present or connector is not supporting sending to archive, then {@link UnsupportedOperationException} will be returned.
+     * Specific connector will decide which storage class/tier will be set for content.
+     * This method is experimental and subject to changes.
+     *
+     * @param nodeRef a reference to a node having a content property
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param archiveParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
+     * @return true when request successful, false when unsuccessful.
+     * @throws UnsupportedOperationException when method not implemented
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName", "archiveParams"})
+    @Experimental
+    default boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName,
+                                                Map<String, Serializable> archiveParams)
+    {
+        throw new UnsupportedOperationException("Request to archive content is not supported by content service.");
+    }
+
+    /**
+     * Submit a request to restore content from archive (offline) state.
+     * If no connector is present or connector is not supporting restoring fom archive, then {@link UnsupportedOperationException} will be returned.
+     * One of input parameters of this method is a map (String-Serializable) of Storage Provider specific input needed to perform proper restore.
+     * Keys of this map should be restricted to {@code ContentRestoreParams} enumeration.
+     * For AWS S3 map can indicating expiry days, Glacier restore tier.
+     * For Azure Blob map can indicate rehydrate priority.
+     * This method is experimental and subject to changes.
+     *
+     * @param nodeRef a reference to a node having a content property
+     * @param propertyQName the name of the property, which must be of type <b>content</b>
+     * @param restoreParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
+     * @return true when request successful, false when unsuccessful.
+     * @throws UnsupportedOperationException when method not implemented
+     */
+    @Auditable(parameters = {"nodeRef", "propertyQName", "restoreParams"})
+    @Experimental
+    default boolean requestRestoreContentFromArchive(NodeRef nodeRef, QName propertyQName, Map<String, Serializable> restoreParams)
+    {
+        throw new UnsupportedOperationException("Request to restore content from archive is not supported by content service.");
+    }
 }

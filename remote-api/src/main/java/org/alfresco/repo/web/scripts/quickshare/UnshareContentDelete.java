@@ -31,10 +31,12 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.QuickShareModel;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -82,14 +84,15 @@ public class UnshareContentDelete extends AbstractQuickShareContent
 
         try
         {
-            NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
+            Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
+            String networkTenantDomain = pair.getFirst();
 
-            String sharedBy = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
-            if (!quickShareService.canDeleteSharedLink(nodeRef, sharedBy))
+            TenantUtil.runAsSystemTenant(() ->
             {
-                throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Can't perform unshare action: " + sharedId);
-            }
-            quickShareService.unshareContent(sharedId);
+                checkIfCanDeleteSharedLink(sharedId);
+                quickShareService.unshareContent(sharedId);
+                return null;
+            }, networkTenantDomain);
 
             Map<String, Object> model = new HashMap<>(1);
             model.put("success", Boolean.TRUE);
@@ -104,6 +107,16 @@ public class UnshareContentDelete extends AbstractQuickShareContent
         {
             logger.error("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: " + sharedId);
+        }
+    }
+
+    private void checkIfCanDeleteSharedLink(String sharedId) {
+        NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
+
+        String sharedBy = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
+        if (!quickShareService.canDeleteSharedLink(nodeRef, sharedBy))
+        {
+            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Can't perform unshare action: " + sharedId);
         }
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -620,10 +620,26 @@ public class BaseRMRestTest extends RestTest
      */
     public List<String> searchForContentAsUser(UserModel user, String term)
     {
+        String query = "cm:name:*" + term + "*";
+        return searchForContentAsUser(user,query,"afts");
+    }
+
+    /**
+     * Returns search results for the given search term
+     *
+     * @param user
+     * @param term
+     * @param query language
+     * @return
+     * @throws Exception
+     */
+    public List<String> searchForContentAsUser(UserModel user, String q, String queryLanguage)
+    {
         getRestAPIFactory().getRmRestWrapper().authenticateUser(user);
         RestRequestQueryModel queryReq = new RestRequestQueryModel();
         SearchRequest query = new SearchRequest(queryReq);
-        queryReq.setQuery("cm:name:*" + term + "*");
+        queryReq.setQuery(q);
+        queryReq.setLanguage(queryLanguage);
 
         List<String> names = new ArrayList<>();
         // wait for solr indexing

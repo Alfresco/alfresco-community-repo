@@ -1424,7 +1424,37 @@
         </property>
         <property name="ignored"><value>${system.remove-alf_server-table-from-db.ignored}</value></property>
     </bean>
-<!-- 
- -->
+
+    <bean id="patch.alfrescoSystemAdministrators" class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch" parent="basePatch" >
+        <property name="id"><value>patch.alfrescoSystemAdministrators</value></property>
+        <property name="description"><value>patch.alfrescoSystemAdministrators.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>15001</value></property>
+        <property name="targetSchema"><value>15002</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="groupAuthorityDetails" >
+            <bean class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch$GroupAuthorityDetails">
+                <property name="groupName">
+                    <value>ALFRESCO_SYSTEM_ADMINISTRATORS</value>
+                </property>
+                <property name="groupDisplayName">
+                    <value>ALFRESCO_SYSTEM_ADMINISTRATORS</value>
+                </property>
+                <property name="authorityZones">
+                    <set>
+                        <value>APP.DEFAULT</value>
+                        <value>AUTH.ALF</value>
+                    </set>
+                </property>
+            </bean>
+        </property>
+    </bean>
  
  </beans>

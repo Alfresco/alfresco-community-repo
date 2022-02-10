@@ -1,7 +1,7 @@
 <#assign null><span style="color:red">${msg("nodebrowser.null")?html}</span></#assign>
 <#assign none><span style="color:red">${msg("nodebrowser.none")?html}</span></#assign>
 <#assign collection>${msg("nodebrowser.collection")?html}</#assign>
-
+<#assign maxDepth=1000 />
 <#macro dateFormat date>${date?string("dd MMM yyyy HH:mm:ss 'GMT'Z '('zzz')'")}</#macro>
 <#macro propValue p>
    <#attempt>
@@ -25,50 +25,52 @@
    </#attempt>
 </#macro>
 <#macro convertToJSON v>
-   <#attempt>
-      <#if v??>
-         <#if v?is_date>
-            <@dateFormat v />
-         <#elseif v?is_boolean>
-            ${v?string}
-         <#elseif v?is_number>
-            ${v?c}
-         <#elseif v?is_string>
-            "${v?string}"
-         <#elseif v?is_hash>
-            <@compress single_line=true>
-               {
-               <#assign first = true />
-               <#list v?keys as key>
-               <#if first = false>,</#if>
-               "${key}":
-               <#if v[key]??>
-                  <@convertToJSON v[key] />
-               <#else>
-                  ${null}
-               </#if>
-               <#assign first = false/>
-               </#list>
-               }
-            </@compress>
-         <#elseif v?is_enumerable>
-            <#assign first = true />
-               <@compress single_line=true>
-                  [
-                  <#list v as item>
-                     <#if first = false>,</#if>
-                     <@convertToJSON item />
-                     <#assign first = false/>
-                  </#list>
-                  ]
-               </@compress>
+   <#if v??>
+      <#if v?is_date>
+         <@dateFormat v />
+      <#elseif v?is_boolean>
+         ${v?string}
+      <#elseif v?is_number>
+         ${v?c}
+      <#elseif v?is_string>
+         "${v?html}"
+      <#elseif v?is_hash>
+         <#if v?keys?size gt maxDepth >
+            <#stop "Max depth of object achieved">
          </#if>
-      <#else>
-         ${null}
+         <@compress single_line=true>
+            {
+            <#assign first = true />
+            <#list v?keys as key>
+            <#if first = false>,</#if>
+            "${key}":
+            <#if v[key]??>
+               <@convertToJSON v[key] />
+            <#else>
+               ${null}
+            </#if>
+            <#assign first = false/>
+            </#list>
+            }
+         </@compress>
+      <#elseif v?is_enumerable>
+         <#if v?size gt maxDepth>
+            <#stop "Max depth of object achieved" >
+         </#if>
+         <#assign first = true />
+            <@compress single_line=true>
+               [
+               <#list v as item>
+                  <#if first = false>,</#if>
+                  <@convertToJSON item />
+                  <#assign first = false/>
+               </#list>
+               ]
+            </@compress>
       </#if>
-   <#recover>
-      <span style="color:red">${.error}</span>
-   </#attempt>
+   <#else>
+      ${null}
+   </#if>
 </#macro>
 <#macro contentUrl nodeRef prop>
 ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
@@ -186,7 +188,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
          </tr>
          <#list result.children as n>
          <tr>
-            <td><a href="#" onclick="AdminConsole_childClick('${n.childRef}');return false;">${n.QName}</a></td>
+            <td><a href="#" onclick="AdminConsole_childClick('${n.childRef}');return false;">${n.QName?html}</a></td>
             <td><a href="#" onclick="AdminConsole_childClick('${n.childRef}');return false;">${n.childRef}</a></td>
             <td>${n.primary?string}</td>
             <td>${n.typeQName}</td>
@@ -220,7 +222,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
          </tr>
          <#list result.parents as p>
          <tr>
-            <td>${p.name.prefixedName}</td>
+            <td>${p.name.prefixedName?html}</td>
             <td>${p.parentTypeName.prefixedName}</td>
             <td><a href="#" onclick="AdminConsole_parentClick('${p.parentRef}');return false;">${p.parentRef}</a></td></td>
             <td>${p.primary?string}</td>
@@ -278,7 +280,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
       <@section label=msg("nodebrowser.permissions") />
       <table id="perminfo-table" class="node">
          <tr><td>${msg("nodebrowser.inherits")}: ${result.permissions.inherit?string}</td></tr>
-         <tr><td>${msg("nodebrowser.owner")}: ${result.permissions.owner!""}</td></tr>
+         <tr><td>${msg("nodebrowser.owner")}: <#if result.permissions.owner??>${result.permissions.owner?html}</#if></td></tr>
       </table>
       <table id="permissions-table" class="node grid">
          <tr>
@@ -289,7 +291,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
          <#list result.permissions.entries as p>
          <tr>
             <td>${p.permission}</td>
-            <td>${p.authority}</td>
+            <td>${p.authority?html}</td>
             <td>${p.accessStatus}</td>
          </tr>
          </#list>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -33,10 +33,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -562,7 +563,7 @@ public class DynamicAuthoritiesGetUnitTest extends BaseWebScriptUnitTest impleme
         executeWebScript(parameters);
 
         verify(contentStreamer, times(1)).streamContent(any(WebScriptRequest.class), any(WebScriptResponse.class),
-                    csvFileCaptor.capture(), any(Long.class), any(Boolean.class), any(String.class), any(Map.class));
+                    csvFileCaptor.capture(), nullable(Long.class), any(Boolean.class), any(String.class), any(Map.class));
 
         File fileForDownload = csvFileCaptor.getValue();
         assertNotNull(fileForDownload);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -55,6 +55,7 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
+import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -243,5 +244,24 @@ public class DeletedNodesImpl implements DeletedNodes, RecognizedParamsExtractor
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, archivedId);
         return renditions.getRenditions(nodeRef, parameters);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DirectAccessUrl requestContentDirectUrl(String originalNodeId, String renditionId, boolean attachment, Long validFor)
+    {
+        //First check the node is valid and has been archived.
+        NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, originalNodeId);
+
+        if (renditionId != null)
+        {
+            return renditions.requestContentDirectUrl(validatedNodeRef, null, renditionId, attachment, validFor);
+        }
+        else
+        {
+            return nodes.requestContentDirectUrl(validatedNodeRef, attachment, validFor);
+        }
     }
 }

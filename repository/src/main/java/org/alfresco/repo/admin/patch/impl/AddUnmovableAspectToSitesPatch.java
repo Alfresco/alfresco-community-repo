@@ -91,6 +91,12 @@ public class AddUnmovableAspectToSitesPatch extends AsynchronousPatch
             }
 
             @Override
+            public long getTotalEstimatedWorkSizeLong()
+            {
+                return sites.size();
+            }
+
+            @Override
             public Collection<ChildAssociationRef> getNextWork()
             {
                 List<ChildAssociationRef> sites = new ArrayList<ChildAssociationRef>(BATCH_SIZE);

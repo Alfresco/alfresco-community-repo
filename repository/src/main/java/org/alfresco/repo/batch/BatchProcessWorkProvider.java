@@ -43,10 +43,10 @@ public interface BatchProcessWorkProvider<T>
      * Instances can provide accurate answers on each call, but only if the answer can be
      * provided quickly and efficiently; usually it is enough to to cache the result after
      * providing an initial estimate.
-     * 
+     * @deprecated use {@link #getTotalEstimatedWorkSizeLong()} instead.
      * @return                  a total work size estimate
      */
-    int getTotalEstimatedWorkSize();
+    @Deprecated int getTotalEstimatedWorkSize();
     
     /**
      * Get the next lot of work for the batch processor.  Implementations should return
@@ -58,4 +58,18 @@ public interface BatchProcessWorkProvider<T>
      *                          if there is no more work remaining.
      */
     Collection<T> getNextWork();
+
+    /**
+     * Get an estimate of the total number of objects that will be provided by this instance.
+     * Instances can provide accurate answers on each call, but only if the answer can be
+     * provided quickly and efficiently; usually it is enough to to cache the result after
+     * providing an initial estimate.
+     *
+     * @return                  a total work size estimate
+     */
+    default long getTotalEstimatedWorkSizeLong()
+    {
+        throw new UnsupportedOperationException("getTotalEstimatedWorkSizeLong need to implemented");
+    }
+
 }

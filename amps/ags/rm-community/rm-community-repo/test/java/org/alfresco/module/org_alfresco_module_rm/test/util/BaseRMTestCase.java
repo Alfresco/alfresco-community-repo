@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -59,6 +59,7 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServi
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.util.RMContainerCacheManager;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -150,6 +151,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected OwnableService ownableService;
     protected VersionService versionService;
     protected DocumentLinkService documentLinkService;
+    protected Repository repositoryHelper;
 
     /** RM Services */
     protected DispositionService dispositionService;
@@ -405,6 +407,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         ownableService = (OwnableService)applicationContext.getBean("OwnableService");
         versionService = (VersionService)applicationContext.getBean("VersionService");
         documentLinkService = (DocumentLinkService)applicationContext.getBean("DocumentLinkService");
+        repositoryHelper = (Repository)applicationContext.getBean("repositoryHelper");
 
         // Get RM services
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");

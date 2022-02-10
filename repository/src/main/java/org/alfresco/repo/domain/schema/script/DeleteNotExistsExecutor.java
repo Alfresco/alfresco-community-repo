@@ -426,7 +426,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return batchUpperLimit;
     }
 
-    private boolean isLess(Long primaryId, Long[] secondaryIds)
+    protected boolean isLess(Long primaryId, Long[] secondaryIds)
     {
         for (Long secondaryId : secondaryIds)
         {
@@ -516,7 +516,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         }
     }
 
-    private Long getColumnValueById(ResultSet resultSet, String columnId) throws SQLException
+    protected Long getColumnValueById(ResultSet resultSet, String columnId) throws SQLException
     {
         Long columnValue = null;
         if (resultSet != null && resultSet.next())
@@ -527,7 +527,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return columnValue;
     }
 
-    private ResultSet[] getSecondaryResultSets(PreparedStatement[] preparedStatements) throws SQLException
+    protected ResultSet[] getSecondaryResultSets(PreparedStatement[] preparedStatements) throws SQLException
     {
         ResultSet[] secondaryResultSets = new ResultSet[preparedStatements.length];
         for (int i = 1; i < preparedStatements.length; i++)
@@ -541,7 +541,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
         return secondaryResultSets;
     }
 
-    private Long[] getSecondaryIds(ResultSet[] secondaryResultSets, Pair<String, String>[] tableColumn) throws SQLException
+    protected Long[] getSecondaryIds(ResultSet[] secondaryResultSets, Pair<String, String>[] tableColumn) throws SQLException
     {
         Long[] secondaryIds = new Long[tableColumn.length];
 

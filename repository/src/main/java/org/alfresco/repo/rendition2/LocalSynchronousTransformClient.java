@@ -141,7 +141,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
                 logger.debug(TRANSFORM + "requested " + renditionName);
             }
 
-            setDirectAccessUrlIfEnabled(actualOptions, sourceNodeRef, transform.getName());
+            setDirectAccessUrlIfEnabled(actualOptions, sourceNodeRef, transform);
 
             transform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
 
@@ -168,11 +168,11 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
 
     private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions,
                                              NodeRef sourceNodeRef,
-                                             String localTransformName)
+                                             LocalTransform localTransform)
     {
         if (isDirectAccessUrlEnabled &&
                 contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT) &&
-                localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
+                localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransform))
         {
             DirectAccessUrl directAccessUrl =
                     contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, false);

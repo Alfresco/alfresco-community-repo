@@ -69,7 +69,6 @@ public class LocalTransformClient implements TransformClient, InitializingBean
 
     private ExecutorService executorService;
     private ThreadLocal<LocalTransform> transform = new ThreadLocal<>();
-    private String localTransformName;
 
     public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
     {
@@ -133,8 +132,6 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         {
             throw new UnsupportedOperationException(message);
         }
-
-        localTransformName = localTransform.getName();
     }
 
     @Override
@@ -171,7 +168,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
                         ContentWriter writer = contentService.getTempWriter();
                         writer.setMimetype(targetMimetype);
 
-                        setDirectAccessUrlIfEnabled(actualOptions, sourceNodeRef);
+                        setDirectAccessUrlIfEnabled(actualOptions, sourceNodeRef, localTransform);
 
                         localTransform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
 
@@ -204,11 +201,13 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         });
     }
 
-    private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions, NodeRef sourceNodeRef)
+    private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions,
+                                             NodeRef sourceNodeRef,
+                                             LocalTransform localTransform)
     {
         if (isDirectAccessUrlEnabled &&
                 contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT) &&
-                localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
+                localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransform))
         {
             DirectAccessUrl directAccessUrl =
                     contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, false);

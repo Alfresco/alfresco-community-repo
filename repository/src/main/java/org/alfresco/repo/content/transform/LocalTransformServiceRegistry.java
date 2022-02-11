@@ -483,7 +483,7 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
      * @param transform the local transform.
      * @return {@code true} is supported, {@code false} otherwise.
      */
-    boolean isSupported(CoreFunction function, LocalTransform transform)
+    public boolean isSupported(CoreFunction function, LocalTransform transform)
     {
         return isSupported(function, transform.getName());
     }

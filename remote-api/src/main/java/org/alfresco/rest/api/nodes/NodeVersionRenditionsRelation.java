@@ -135,10 +135,13 @@ public class NodeVersionRenditionsRelation implements RelationshipResourceAction
     }
 
     @Operation ("request-direct-access-url")
-    @WebApiParam (name = "directAccessUrlRequest", title = "Request direct access url", description = "Options for direct access url request", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @WebApiParam (name = "directAccessUrlRequest",
+                  title = "Request direct access url",
+                  description = "Options for direct access url request",
+                  kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Request content url",
-            description="Generates a direct access URL.",
-            successStatus = HttpServletResponse.SC_OK)
+                       description="Generates a direct access URL.",
+                       successStatus = HttpServletResponse.SC_OK)
     public DirectAccessUrl requestContentDirectUrl(String nodeId,
                                                    String versionId,
                                                    DirectAccessUrlRequest directAccessUrlRequest,

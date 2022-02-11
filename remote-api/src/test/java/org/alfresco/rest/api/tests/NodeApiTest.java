@@ -141,8 +141,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     private String groupA = null;
     private String groupB = null;
 
-    private final static long DELAY_IN_MS = 500;
-
     @Before
     public void setup() throws Exception
     {

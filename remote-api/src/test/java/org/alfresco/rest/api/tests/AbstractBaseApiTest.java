@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
@@ -217,6 +218,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String getRequestContentDirectUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
+    protected String getRequestVersionRenditionContentDirectUrl(String nodeId, String versionId, String renditionId)
+    {
+        return getNodeVersionRenditionIdUrl(nodeId, versionId, renditionId) + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
     protected String getRequestArchivedContentDirectUrl(String nodeId)
@@ -735,6 +741,18 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return createNode(parentId, folderName, TYPE_CM_FOLDER, props, Folder.class);
     }
 
+    protected String createUniqueFolder(String parentId) throws Exception
+    {
+        return createFolder(parentId, "folder-" + System.currentTimeMillis()).getId();
+    }
+
+    protected String createUniqueContent(String folderId) throws Exception
+    {
+        Document documentResp = createTextFile(folderId, "file-" + System.currentTimeMillis(),
+        "some text-" + System.currentTimeMillis(), "UTF-8", null);
+        return documentResp.getId();
+    }
+
     protected Node createNode(String parentId, String nodeName, String nodeType, Map<String, Object> props) throws Exception
     {
         return createNode(parentId, nodeName, nodeType, props, Node.class);
@@ -1086,5 +1104,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_NODES + "/" + nodeId;
     }
 
+    protected void enableRestDirectAccessUrls()
+    {
+        RestApiDirectUrlConfig dauConfig = (RestApiDirectUrlConfig) applicationContext.getBean("restApiDirectUrlConfig");
+        dauConfig.setEnabled(true);
+    }
+
+    protected void disableRestDirectAccessUrls()
+    {
+        RestApiDirectUrlConfig dauConfig = (RestApiDirectUrlConfig) applicationContext.getBean("restApiDirectUrlConfig");
+        dauConfig.setEnabled(false);
+    }
 }
 

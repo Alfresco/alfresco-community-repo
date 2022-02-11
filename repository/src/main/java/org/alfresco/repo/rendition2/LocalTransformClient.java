@@ -65,7 +65,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     private TransactionService transactionService;
     private ContentService contentService;
     private RenditionService2Impl renditionService2;
-    private Boolean isDirectAccessUrlEnabled;
+    private boolean isDirectAccessUrlEnabled;
 
     private ExecutorService executorService;
     private ThreadLocal<LocalTransform> transform = new ThreadLocal<>();
@@ -91,7 +91,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         this.renditionService2 = renditionService2;
     }
 
-    public void setDirectAccessUrlEnabled(Boolean directAccessUrlEnabled)
+    public void setDirectAccessUrlEnabled(boolean directAccessUrlEnabled)
     {
         isDirectAccessUrlEnabled = directAccessUrlEnabled;
     }
@@ -206,9 +206,9 @@ public class LocalTransformClient implements TransformClient, InitializingBean
 
     private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions, NodeRef sourceNodeRef)
     {
-        if (isDirectAccessUrlEnabled
-                && contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT)
-                && localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
+        if (isDirectAccessUrlEnabled &&
+                contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT) &&
+                localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
         {
             DirectAccessUrl directAccessUrl =
                     contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, false);

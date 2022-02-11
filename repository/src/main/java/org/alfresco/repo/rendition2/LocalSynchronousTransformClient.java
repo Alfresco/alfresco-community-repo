@@ -58,7 +58,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
 
     private LocalTransformServiceRegistry localTransformServiceRegistry;
     private ContentService contentService;
-    private Boolean isDirectAccessUrlEnabled;
+    private boolean isDirectAccessUrlEnabled;
 
     public void setLocalTransformServiceRegistry(LocalTransformServiceRegistry localTransformServiceRegistry)
     {
@@ -70,7 +70,7 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
         this.contentService = contentService;
     }
 
-    public void setDirectAccessUrlEnabled(Boolean directAccessUrlEnabled)
+    public void setDirectAccessUrlEnabled(boolean directAccessUrlEnabled)
     {
         isDirectAccessUrlEnabled = directAccessUrlEnabled;
     }
@@ -170,9 +170,9 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
                                              NodeRef sourceNodeRef,
                                              String localTransformName)
     {
-        if (isDirectAccessUrlEnabled
-                && contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT)
-                && localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
+        if (isDirectAccessUrlEnabled &&
+                contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT) &&
+                localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransformName))
         {
             DirectAccessUrl directAccessUrl =
                     contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, false);

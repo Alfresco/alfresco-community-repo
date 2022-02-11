@@ -229,6 +229,17 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_DELETED_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
+    protected String getRequestRenditionDirectAccessUrl(String nodeId, String renditionID)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
+    protected String getRequestVersionDirectAccessUrl(String nodeId, String versionId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
+
     /**
      * The api scope. either public or private
      *
@@ -1040,16 +1051,6 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID;
     }
 
-    protected String getNodeRenditionRequestDirectAccessUrl(String nodeId, String renditionID)
-    {
-        return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID + "/" + REQUEST_DIRECT_ACCESS_URL;
-    }
-
-    protected String getDeletedNodeRequestDirectAccessUrl(String nodeId)
-    {
-        return URL_DELETED_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
-    }
-
     protected String getNodeVersionRenditionIdUrl(String nodeId, String versionId, String renditionID)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + URL_RENDITIONS + "/" + renditionID;
@@ -1058,11 +1059,6 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String getNodeVersionsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS;
-    }
-
-    protected String getNodeVersionRequestDirectAccessUrl(String nodeId, String versionId)
-    {
-        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
     protected String getNodeVersionRenditionsUrl(String nodeId, String versionId)

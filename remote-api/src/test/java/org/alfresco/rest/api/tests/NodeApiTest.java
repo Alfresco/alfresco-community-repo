@@ -6281,6 +6281,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testRequestContentDirectUrlClientErrorResponseForNodes() throws Exception
     {
+        enableDAU();
         //Node does not exist
         setRequestContext(user1);
 
@@ -6289,11 +6290,14 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         //Node is not a file
         String folderId = createFolder(tDocLibNodeId, "some-folder-name").getId();
         HttpResponse nodeIsNotAFileReponse = post(getRequestContentDirectUrl(folderId), null, 400);
+
+        disableDAU();
     }
 
     @Test
     public void testRequestContentDirectUrlClientErrorResponseForVersions() throws Exception
     {
+        enableDAU();
         // Create a document
         setRequestContext(user1);
 
@@ -6309,13 +6313,16 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String docId = documentResp.getId();
 
         // Verify versions
-        HttpResponse versionIdDoesNotExistReponse = post(getNodeVersionRequestDirectAccessUrl(docId, "1.2"), null, null, null, null, 404);
-        HttpResponse versionIdInvalidReponse = post(getNodeVersionRequestDirectAccessUrl(docId, "invalid-version"), null, null, null, null, 404);
+        HttpResponse versionIdDoesNotExistReponse = post(getRequestVersionDirectAccessUrl(docId, "1.2"), null, null, null, null, 404);
+        HttpResponse versionIdInvalidReponse = post(getRequestVersionDirectAccessUrl(docId, "invalid-version"), null, null, null, null, 404);
+
+        disableDAU();
     }
 
     @Test
     public void testRequestContentDirectUrlClientErrorResponseForRenditions() throws Exception
     {
+        enableDAU();
         // Create a document
         setRequestContext(user1);
 
@@ -6330,13 +6337,16 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String docId = documentResp.getId();
 
         // Verify renditions
-        HttpResponse renditionIdDoesNotExistReponse = post(getNodeRenditionRequestDirectAccessUrl(docId, "pdf"), null, null, null, null, 404);
-        HttpResponse renditionIdInvalidReponse = post(getNodeRenditionRequestDirectAccessUrl(docId, "invalid-rendition"), null, null, null, null, 404);
+        HttpResponse renditionIdDoesNotExistReponse = post(getRequestRenditionDirectAccessUrl(docId, "pdf"), null, null, null, null, 404);
+        HttpResponse renditionIdInvalidReponse = post(getRequestRenditionDirectAccessUrl(docId, "invalid-rendition"), null, null, null, null, 404);
+
+        disableDAU();
     }
 
     @Test
     public void testRequestContentDirectUrlClientErrorResponseForDeletion() throws Exception
     {
+        enableDAU();
         // Create a document
         setRequestContext(user1);
 
@@ -6351,7 +6361,33 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String docId = documentResp.getId();
 
         // Verify deletion
-        HttpResponse nodeNotDeletedReponse = post(getDeletedNodeRequestDirectAccessUrl(docId), null, null, null, null, 404);
+        HttpResponse nodeNotDeletedReponse = post(getRequestArchivedContentDirectUrl(docId), null, null, null, null, 404);
+
+        disableDAU();
+    }
+
+    /**
+     * Use together with {@link #disableDAU() disableDAU()}
+     * Remember to delete the method if DAU related properties are added to the '.properties' file.
+     */
+    private void enableDAU() {
+        System.setProperty("system.directAccessUrl.enabled", "true");
+        System.setProperty("system.directAccessUrl.defaultExpiryTimeInSec", "30");
+        System.setProperty("system.directAccessUrl.maxExpiryTimeInSec", "300");
+        System.setProperty("restApi.directAccessUrl.enabled", "true");
+        System.setProperty("restApi.directAccessUrl.defaultExpiryTimeInSec", "30");
+    }
+
+    /**
+     * Use together with {@link #enableDAU() enableDAU()}
+     * Remember to delete the method if DAU related properties are added to the '.properties' file.
+     */
+    private void disableDAU() {
+        System.clearProperty("system.directAccessUrl.enabled");
+        System.clearProperty("system.directAccessUrl.defaultExpiryTimeInSec");
+        System.clearProperty("system.directAccessUrl.maxExpiryTimeInSec");
+        System.clearProperty("restApi.directAccessUrl.enabled");
+        System.clearProperty("restApi.directAccessUrl.defaultExpiryTimeInSec");
     }
 
     @Test

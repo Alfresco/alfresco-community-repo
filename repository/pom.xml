@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>14.90-SNAPSHOT</version>
+        <version>14.105-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -45,6 +45,10 @@
                 <exclusion>
                     <groupId>com.sun.mail</groupId>
                     <artifactId>javax.mail</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -199,24 +203,6 @@
             <version>${dependency.maven-artifact.version}</version>
         </dependency>
         <dependency>
-            <groupId>de.schlichtherle.truezip</groupId>
-            <artifactId>truezip-driver-zip</artifactId>
-            <version>${dependency.truezip.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.schlichtherle.truezip</groupId>
-            <artifactId>truezip-file</artifactId>
-            <version>${dependency.truezip.version}</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.code.findbugs</groupId>
-                    <artifactId>annotations</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
             <groupId>com.sun.pdfview</groupId>
             <artifactId>pdfrenderer</artifactId>
             <version>0.9.1-patched</version>
@@ -237,7 +223,7 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
+            <artifactId>slf4j-reload4j</artifactId>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>

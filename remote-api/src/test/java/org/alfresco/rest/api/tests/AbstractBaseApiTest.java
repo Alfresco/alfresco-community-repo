@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
 import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
@@ -1095,14 +1096,18 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected void enableRestDirectAccessUrls()
     {
-        RestApiDirectUrlConfig dauConfig = (RestApiDirectUrlConfig) applicationContext.getBean("restApiDirectUrlConfig");
-        dauConfig.setEnabled(true);
+        SystemWideDirectUrlConfig systemDauConfig = (SystemWideDirectUrlConfig) applicationContext.getBean("systemWideDirectUrlConfig");
+        systemDauConfig.setEnabled(true);
+        RestApiDirectUrlConfig restDauConfig = (RestApiDirectUrlConfig) applicationContext.getBean("restApiDirectUrlConfig");
+        restDauConfig.setEnabled(true);
     }
 
     protected void disableRestDirectAccessUrls()
     {
-        RestApiDirectUrlConfig dauConfig = (RestApiDirectUrlConfig) applicationContext.getBean("restApiDirectUrlConfig");
-        dauConfig.setEnabled(false);
+        SystemWideDirectUrlConfig systemDauConfig = (SystemWideDirectUrlConfig) applicationContext.getBean("systemWideDirectUrlConfig");
+        systemDauConfig.setEnabled(false);
+        RestApiDirectUrlConfig restDauConfig = (RestApiDirectUrlConfig) applicationContext.getBean("restApiDirectUrlConfig");
+        restDauConfig.setEnabled(false);
     }
 }
 

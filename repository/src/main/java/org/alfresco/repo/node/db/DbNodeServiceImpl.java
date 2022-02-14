@@ -845,163 +845,150 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         final Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         final Long nodeId = nodePair.getFirst();
         
-        boolean hadAspect = nodeDAO.hasNodeAspect(nodeId, aspectTypeQName);
-        
-        // Invoke policy behaviours
-        invokeBeforeUpdateNode(nodeRef);
-        if (hadAspect)
+        if(nodeDAO.hasNodeAspect(nodeId, aspectTypeQName))
         {
+
+            // Invoke policy behaviours
+            invokeBeforeUpdateNode(nodeRef);
             invokeBeforeRemoveAspect(nodeRef, aspectTypeQName);
             nodeDAO.removeNodeAspects(nodeId, Collections.singleton(aspectTypeQName));
-        }
-        
-        AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
-        boolean updated = false;
-        if (aspectDef != null)
-        {
-            if(hadAspect)
+
+            AspectDefinition aspectDef = dictionaryService.getAspect(aspectTypeQName);
+            boolean updated = false;
+            if (aspectDef != null)
             {
                 // Remove default properties
-                Map<QName,PropertyDefinition> propertyDefs = aspectDef.getProperties();
+                Map<QName, PropertyDefinition> propertyDefs = aspectDef.getProperties();
                 Set<QName> propertyToRemoveQNames = propertyDefs.keySet();
                 nodeDAO.removeNodeProperties(nodeId, propertyToRemoveQNames);
-            }
 
-            // Remove child associations
-            // We have to iterate over the associations and remove all those between the parent and child
-            final List<Pair<Long, ChildAssociationRef>> assocsToDelete = new ArrayList<Pair<Long, ChildAssociationRef>>(5);
-            final List<Pair<Long, NodeRef>> nodesToDelete = new ArrayList<Pair<Long, NodeRef>>(5);
-            NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
-            {
-                public boolean preLoadNodes()
+                // Remove child associations
+                // We have to iterate over the associations and remove all those between the parent and child
+                final List<Pair<Long, ChildAssociationRef>> assocsToDelete = new ArrayList<Pair<Long, ChildAssociationRef>>(5);
+                final List<Pair<Long, NodeRef>> nodesToDelete = new ArrayList<Pair<Long, NodeRef>>(5);
+                NodeDAO.ChildAssocRefQueryCallback callback = new NodeDAO.ChildAssocRefQueryCallback()
                 {
-                    return true;
-                }
-
-                @Override
-                public boolean orderResults()
-                {
-                    return false;
-                }
-
-                public boolean handle(
-                        Pair<Long, ChildAssociationRef> childAssocPair,
-                        Pair<Long, NodeRef> parentNodePair,
-                        Pair<Long, NodeRef> childNodePair
-                        )
-                {
-                    if (isPendingDelete(parentNodePair.getSecond()) || isPendingDelete(childNodePair.getSecond()))
+                    public boolean preLoadNodes()
                     {
-                        if (logger.isTraceEnabled())
-                        {
-                            logger.trace(
-                                    "Aspect-triggered association removal: " +
-                                    "Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
-                        }
                         return true;
                     }
-                    
-                    // Double check that it's not a primary association.  If so, we can't delete it and
-                    //    have to delete the child node directly and with full archival.
-                    if (childAssocPair.getSecond().isPrimary())
+
+                    @Override public boolean orderResults()
                     {
-                        nodesToDelete.add(childNodePair);
+                        return false;
                     }
-                    else
+
+                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
                     {
-                        assocsToDelete.add(childAssocPair);
+                        if (isPendingDelete(parentNodePair.getSecond()) || isPendingDelete(childNodePair.getSecond()))
+                        {
+                            if (logger.isTraceEnabled())
+                            {
+                                logger.trace("Aspect-triggered association removal: "
+                                            + "Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
+                            }
+                            return true;
+                        }
+
+                        // Double check that it's not a primary association.  If so, we can't delete it and
+                        //    have to delete the child node directly and with full archival.
+                        if (childAssocPair.getSecond().isPrimary())
+                        {
+                            nodesToDelete.add(childNodePair);
+                        }
+                        else
+                        {
+                            assocsToDelete.add(childAssocPair);
+                        }
+                        // More results
+                        return true;
                     }
-                    // More results
-                    return true;
+
+                    public void done()
+                    {
+                    }
+                };
+                // Get all the QNames to remove
+                Set<QName> assocTypeQNamesToRemove = new HashSet<QName>(aspectDef.getChildAssociations().keySet());
+                nodeDAO.getChildAssocs(nodeId, assocTypeQNamesToRemove, callback);
+                // Delete all the collected associations
+                for (Pair<Long, ChildAssociationRef> assocPair : assocsToDelete)
+                {
+                    updated = true;
+                    Long assocId = assocPair.getFirst();
+                    ChildAssociationRef assocRef = assocPair.getSecond();
+                    // delete the association instance - it is not primary
+                    invokeBeforeDeleteChildAssociation(assocRef);
+                    nodeDAO.deleteChildAssoc(assocId);
+                    invokeOnDeleteChildAssociation(assocRef);
                 }
 
-                public void done()
+                // Cascade-delete any nodes that were attached to primary associations
+                for (Pair<Long, NodeRef> childNodePair : nodesToDelete)
                 {
-                }                               
-            };
-            // Get all the QNames to remove
-            Set<QName> assocTypeQNamesToRemove = new HashSet<QName>(aspectDef.getChildAssociations().keySet());
-            nodeDAO.getChildAssocs(nodeId, assocTypeQNamesToRemove, callback);
-            // Delete all the collected associations
-            for (Pair<Long, ChildAssociationRef> assocPair : assocsToDelete)
-            {
-                updated = true;
-                Long assocId = assocPair.getFirst();
-                ChildAssociationRef assocRef = assocPair.getSecond();
-                // delete the association instance - it is not primary
-                invokeBeforeDeleteChildAssociation(assocRef);
-                nodeDAO.deleteChildAssoc(assocId);
-                invokeOnDeleteChildAssociation(assocRef);
-            }
-            
-            // Cascade-delete any nodes that were attached to primary associations
-            for (Pair<Long, NodeRef> childNodePair : nodesToDelete)
-            {
-                NodeRef childNodeRef = childNodePair.getSecond();
-                this.deleteNode(childNodeRef);
-            }
-            
-            // Gather peer associations to delete
-            Map<QName, AssociationDefinition> nodeAssocDefs = aspectDef.getAssociations();
-            List<Long> nodeAssocIdsToRemove = new ArrayList<Long>(13);
-            List<AssociationRef> assocRefsRemoved = new ArrayList<AssociationRef>(13);
-            for (Map.Entry<QName, AssociationDefinition> entry : nodeAssocDefs.entrySet())
-            {
-                if (isPendingDelete(nodeRef))
-                {
-                    if (logger.isTraceEnabled())
-                    {
-                        logger.trace(
-                                "Aspect-triggered association removal: " +
-                                "Ignoring peer associations where one of the nodes is pending delete: " + nodeRef);
-                    }
-                    continue;
+                    NodeRef childNodeRef = childNodePair.getSecond();
+                    this.deleteNode(childNodeRef);
                 }
-                if (entry.getValue().isChild())
+
+                // Gather peer associations to delete
+                Map<QName, AssociationDefinition> nodeAssocDefs = aspectDef.getAssociations();
+                List<Long> nodeAssocIdsToRemove = new ArrayList<Long>(13);
+                List<AssociationRef> assocRefsRemoved = new ArrayList<AssociationRef>(13);
+                for (Map.Entry<QName, AssociationDefinition> entry : nodeAssocDefs.entrySet())
                 {
-                    // Not interested in child assocs
-                    continue;
-                }
-                QName assocTypeQName = entry.getKey();
-                Collection<Pair<Long, AssociationRef>> targetAssocRefs = nodeDAO.getTargetNodeAssocs(nodeId, assocTypeQName);
-                for (Pair<Long, AssociationRef> assocPair : targetAssocRefs)
-                {
-                    if (isPendingDelete(assocPair.getSecond().getTargetRef()))
+                    if (isPendingDelete(nodeRef))
                     {
                         if (logger.isTraceEnabled())
                         {
-                            logger.trace(
-                                    "Aspect-triggered association removal: " +
-                                    "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
+                            logger.trace("Aspect-triggered association removal: "
+                                        + "Ignoring peer associations where one of the nodes is pending delete: " + nodeRef);
                         }
                         continue;
                     }
-                    nodeAssocIdsToRemove.add(assocPair.getFirst());
-                    assocRefsRemoved.add(assocPair.getSecond());
+                    if (entry.getValue().isChild())
+                    {
+                        // Not interested in child assocs
+                        continue;
+                    }
+                    QName assocTypeQName = entry.getKey();
+                    Collection<Pair<Long, AssociationRef>> targetAssocRefs = nodeDAO.getTargetNodeAssocs(nodeId, assocTypeQName);
+                    for (Pair<Long, AssociationRef> assocPair : targetAssocRefs)
+                    {
+                        if (isPendingDelete(assocPair.getSecond().getTargetRef()))
+                        {
+                            if (logger.isTraceEnabled())
+                            {
+                                logger.trace("Aspect-triggered association removal: "
+                                            + "Ignoring peer associations where one of the nodes is pending delete: " + assocPair);
+                            }
+                            continue;
+                        }
+                        nodeAssocIdsToRemove.add(assocPair.getFirst());
+                        assocRefsRemoved.add(assocPair.getSecond());
+                    }
+                    // MNT-9580: Daisy chained cm:original associations are cascade-deleted when the first original is deleted
+                    //           As a side-effect of the investigation of MNT-9446, it was dicovered that inbound associations (ones pointing *to* this aspect)
+                    //           were also being removed.  This is incorrect because the aspect being removed here has no say over who points at it.
+                    //           Therefore, do not remove inbound associations because we only define outbound associations on types and aspects.
+                    //           Integrity checking will ensure that the correct behaviours are in place to maintain model integrity.
                 }
-                // MNT-9580: Daisy chained cm:original associations are cascade-deleted when the first original is deleted
-                //           As a side-effect of the investigation of MNT-9446, it was dicovered that inbound associations (ones pointing *to* this aspect)
-                //           were also being removed.  This is incorrect because the aspect being removed here has no say over who points at it.
-                //           Therefore, do not remove inbound associations because we only define outbound associations on types and aspects.
-                //           Integrity checking will ensure that the correct behaviours are in place to maintain model integrity.
+                // Now delete peer associations
+                int assocsDeleted = nodeDAO.removeNodeAssocs(nodeAssocIdsToRemove);
+                for (AssociationRef assocRefRemoved : assocRefsRemoved)
+                {
+                    invokeOnDeleteAssociation(assocRefRemoved);
+                }
+                updated = updated || assocsDeleted > 0;
             }
-            // Now delete peer associations
-            int assocsDeleted = nodeDAO.removeNodeAssocs(nodeAssocIdsToRemove);
-            for (AssociationRef assocRefRemoved : assocRefsRemoved)
+
+            // Invoke policy behaviours
+            if (updated)
             {
-                invokeOnDeleteAssociation(assocRefRemoved);
+                invokeOnUpdateNode(nodeRef);
             }
-            updated = updated || assocsDeleted > 0;
-        }
-        
-        // Invoke policy behaviours
-        if (updated)
-        {
-            invokeOnUpdateNode(nodeRef);
-        }
-        if (hadAspect)
-        {
+
             invokeOnRemoveAspect(nodeRef, aspectTypeQName);
+
         }
     }
 

@@ -86,6 +86,7 @@ public abstract class AbstractLocalTransform implements LocalTransform
                                           String renditionName, NodeRef sourceNodeRef)
             throws UnsupportedTransformationException, ContentIOException;
 
+    @Override
     public String getName()
     {
         return name;

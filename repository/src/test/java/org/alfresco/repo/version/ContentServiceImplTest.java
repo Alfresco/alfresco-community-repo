@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -146,6 +147,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         }
     }
 
+    @Ignore
     @Test
     public void testWhenRequestContentDirectUrlIsNotSupported()
     {

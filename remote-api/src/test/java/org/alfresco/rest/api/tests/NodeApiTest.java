@@ -61,7 +61,6 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.ClassDefinition;
 import org.alfresco.rest.api.model.ConstraintDefinition;

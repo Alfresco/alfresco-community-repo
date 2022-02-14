@@ -6279,6 +6279,73 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
+    public void testRequestContentDirectUrlClientErrorResponseForNodes() throws Exception
+    {
+        enableRestDirectAccessUrls();
+
+        //Node does not exist
+        setRequestContext(user1);
+
+        HttpResponse nodeDoesNotExistResponse = post(getRequestContentDirectUrl("non-existing-node-id"), null, 404);
+
+        //Node is not a file
+        String folderId = createFolder(tDocLibNodeId, "some-folder-name").getId();
+        HttpResponse nodeIsNotAFileReponse = post(getRequestContentDirectUrl(folderId), null, 400);
+
+        disableRestDirectAccessUrls();
+    }
+
+    @Test
+    public void testRequestContentDirectUrlClientErrorResponseForVersions() throws Exception
+    {
+        enableRestDirectAccessUrls();
+        // Create a document
+        setRequestContext(user1);
+
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
+
+        // Verify versions
+        HttpResponse versionIdDoesNotExistReponse = post(getRequestVersionDirectAccessUrl(contentNodeId, "1.2"), null, null, null, null, 404);
+        HttpResponse versionIdInvalidReponse = post(getRequestVersionDirectAccessUrl(contentNodeId, "invalid-version"), null, null, null, null, 404);
+
+        disableRestDirectAccessUrls();
+    }
+
+    @Test
+    public void testRequestContentDirectUrlClientErrorResponseForRenditions() throws Exception
+    {
+        enableRestDirectAccessUrls();
+        // Create a document
+        setRequestContext(user1);
+
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
+
+        // Verify renditions
+        HttpResponse renditionIdDoesNotExistReponse = post(getRequestRenditionDirectAccessUrl(contentNodeId, "pdf"), null, null, null, null, 404);
+        HttpResponse renditionIdInvalidReponse = post(getRequestRenditionDirectAccessUrl(contentNodeId, "invalid-rendition"), null, null, null, null, 404);
+
+        disableRestDirectAccessUrls();
+    }
+
+    @Test
+    public void testRequestContentDirectUrlClientErrorResponseForDeletion() throws Exception
+    {
+        enableRestDirectAccessUrls();
+        // Create a document
+        setRequestContext(user1);
+
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
+
+        // Verify deletion
+        HttpResponse nodeNotDeletedReponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 404);
+
+        disableRestDirectAccessUrls();
+    }
+
+    @Test
     public void testRequestVersionsContentDirectUrl() throws Exception
     {
         setRequestContext(user1);

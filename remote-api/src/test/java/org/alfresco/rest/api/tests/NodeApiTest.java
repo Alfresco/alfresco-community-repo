@@ -6303,20 +6303,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Create a document
         setRequestContext(user1);
 
-        String myNodeId = getMyNodeId();
-
-        Document d1 = new Document();
-        d1.setName("d1.txt");
-        d1.setNodeType(TYPE_CM_CONTENT);
-
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
-        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-
-        String docId = documentResp.getId();
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
 
         // Verify versions
-        HttpResponse versionIdDoesNotExistReponse = post(getRequestVersionDirectAccessUrl(docId, "1.2"), null, null, null, null, 404);
-        HttpResponse versionIdInvalidReponse = post(getRequestVersionDirectAccessUrl(docId, "invalid-version"), null, null, null, null, 404);
+        HttpResponse versionIdDoesNotExistReponse = post(getRequestVersionDirectAccessUrl(contentNodeId, "1.2"), null, null, null, null, 404);
+        HttpResponse versionIdInvalidReponse = post(getRequestVersionDirectAccessUrl(contentNodeId, "invalid-version"), null, null, null, null, 404);
 
         disableRestDirectAccessUrls();
     }
@@ -6328,19 +6320,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Create a document
         setRequestContext(user1);
 
-        String myNodeId = getMyNodeId();
-
-        Document d1 = new Document();
-        d1.setName("d1.txt");
-        d1.setNodeType(TYPE_CM_CONTENT);
-
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
-        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        String docId = documentResp.getId();
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
 
         // Verify renditions
-        HttpResponse renditionIdDoesNotExistReponse = post(getRequestRenditionDirectAccessUrl(docId, "pdf"), null, null, null, null, 404);
-        HttpResponse renditionIdInvalidReponse = post(getRequestRenditionDirectAccessUrl(docId, "invalid-rendition"), null, null, null, null, 404);
+        HttpResponse renditionIdDoesNotExistReponse = post(getRequestRenditionDirectAccessUrl(contentNodeId, "pdf"), null, null, null, null, 404);
+        HttpResponse renditionIdInvalidReponse = post(getRequestRenditionDirectAccessUrl(contentNodeId, "invalid-rendition"), null, null, null, null, 404);
 
         disableRestDirectAccessUrls();
     }
@@ -6352,18 +6337,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Create a document
         setRequestContext(user1);
 
-        String myNodeId = getMyNodeId();
-
-        Document d1 = new Document();
-        d1.setName("d1.txt");
-        d1.setNodeType(TYPE_CM_CONTENT);
-
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
-        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        String docId = documentResp.getId();
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
 
         // Verify deletion
-        HttpResponse nodeNotDeletedReponse = post(getRequestArchivedContentDirectUrl(docId), null, null, null, null, 404);
+        HttpResponse nodeNotDeletedReponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 404);
 
         disableRestDirectAccessUrls();
     }

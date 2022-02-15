@@ -145,6 +145,8 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
 
             transform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
 
+            removeDirectAccessUrlAfterTransform(actualOptions);
+
             if (logger.isDebugEnabled())
             {
                 logger.debug(TRANSFORM + "created " + renditionName);
@@ -164,6 +166,11 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
     public String getName()
     {
         return "Local";
+    }
+
+    private void removeDirectAccessUrlAfterTransform(Map<String, String> actualOptions)
+    {
+        actualOptions.remove(RequestParamMap.DIRECT_ACCESS_URL);
     }
 
     private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions,

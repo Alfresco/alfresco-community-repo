@@ -26,8 +26,6 @@
 package org.alfresco.repo.rendition2;
 
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.transform.client.model.config.CoreFunction.DIRECT_ACCESS_URL;
-import static org.alfresco.transform.client.util.RequestParamMap.DIRECT_URL;
 
 import org.alfresco.repo.content.transform.LocalTransform;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
@@ -37,6 +35,8 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.transform.client.model.config.CoreFunction;
+import org.alfresco.transform.client.util.RequestParamMap;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -172,11 +172,11 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
     {
         if (isDirectAccessUrlEnabled &&
                 contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT) &&
-                localTransformServiceRegistry.isSupported(DIRECT_ACCESS_URL, localTransform))
+                localTransformServiceRegistry.isSupported(CoreFunction.DIRECT_ACCESS_URL, localTransform))
         {
             DirectAccessUrl directAccessUrl =
                     contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, false);
-            actualOptions.put(DIRECT_URL, directAccessUrl.getContentUrl());
+            actualOptions.put(RequestParamMap.DIRECT_ACCESS_URL, directAccessUrl.getContentUrl());
         }
     }
 }

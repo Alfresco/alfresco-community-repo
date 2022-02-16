@@ -766,7 +766,12 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
-                <artifactId>camel-spring</artifactId>
+                <artifactId>camel-core</artifactId>
+                <version>${dependency.camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-spring-xml</artifactId>
                 <version>${dependency.camel.version}</version>
                 <exclusions>
                     <exclusion>

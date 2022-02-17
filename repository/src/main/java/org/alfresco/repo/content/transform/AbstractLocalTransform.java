@@ -25,6 +25,8 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.alfresco.transform.client.util.RequestParamMap.DIRECT_ACCESS_URL;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -325,5 +327,10 @@ public abstract class AbstractLocalTransform implements LocalTransform
         }
 
         return strippedTransformOptions;
+    }
+
+    protected void removeDirectAccessUrlAfterTransform(Map<String, String> transformOptions)
+    {
+        transformOptions.remove(DIRECT_ACCESS_URL);
     }
 }

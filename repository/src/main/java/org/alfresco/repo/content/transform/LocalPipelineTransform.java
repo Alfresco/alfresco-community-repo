@@ -118,6 +118,8 @@ public class LocalPipelineTransform extends AbstractLocalTransform
 
             transformer.intermediateTransformer.transform(currentReader, currentWriter, transformOptions, renditionName, sourceNodeRef);
 
+            removeDirectAccessUrlAfterTransform(transformOptions);
+
             // Clear the sourceNodeRef after the first transformation to avoid later transformers thinking the
             // intermediate file is the original node.
             if (i == 0)

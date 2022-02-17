@@ -172,8 +172,6 @@ public class LocalTransformClient implements TransformClient, InitializingBean
 
                         localTransform.transform(reader, writer, actualOptions, renditionName, sourceNodeRef);
 
-                        removeDirectAccessUrlAfterTransform(actualOptions);
-
                         InputStream inputStream = writer.getReader().getContentInputStream();
                         if (logger.isDebugEnabled())
                         {
@@ -201,11 +199,6 @@ public class LocalTransformClient implements TransformClient, InitializingBean
                     return null;
                 }), user);
         });
-    }
-
-    private void removeDirectAccessUrlAfterTransform(Map<String, String> actualOptions)
-    {
-        actualOptions.remove(RequestParamMap.DIRECT_ACCESS_URL);
     }
 
     private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions,

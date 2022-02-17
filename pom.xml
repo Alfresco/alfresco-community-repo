@@ -73,7 +73,7 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.35</dependency.slf4j.version>
-        <dependency.gytheio.version>0.14</dependency.gytheio.version>
+        <dependency.gytheio.version>0.15</dependency.gytheio.version>
         <dependency.groovy.version>3.0.9</dependency.groovy.version>
         <dependency.tika.version>2.2.1</dependency.tika.version> 
         <dependency.spring-security.version>5.6.1</dependency.spring-security.version>
@@ -82,7 +82,7 @@
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>15.0.2</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.3.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.11.5</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies (can cause dependency conflicts)-->
+        <dependency.camel.version>3.14.1</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies (can cause dependency conflicts)-->
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
         <dependency.apache-compress.version>1.21</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>

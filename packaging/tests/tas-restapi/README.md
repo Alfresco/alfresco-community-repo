@@ -20,7 +20,7 @@ Back to [TAS Master Documentation](https://git.alfresco.com/tas/alfresco-tas-uti
     * [Configuration](#configuration)
     * [How to enable Test Rail Integration?](#how-to-enable-test-rail-integration)
 * [Reference](#reference)
-* [Change Log](docs/CHANGELOG.md) :glowing_star: 
+* [Change Log](docs/CHANGELOG.md) 🌟
 * [Contributors](#contributors)
 * [Releasing](#releasing)
 * [License](#license)

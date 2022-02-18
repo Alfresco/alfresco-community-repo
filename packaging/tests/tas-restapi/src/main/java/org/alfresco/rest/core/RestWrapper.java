@@ -1129,6 +1129,20 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         this.serverURI = restProperties.envProperty().getSolrServerUrl();
         this.serverPort = restProperties.envProperty().getSolrPort();
         configureServerEndpoint();
+        configureSecretHeader();
+    }
+
+    /**
+     * Adds the secret Solr header if it has been set
+     */
+    private void configureSecretHeader()
+    {
+        String solrSecret = restProperties.envProperty().getSolrSecret();
+        if(!solrSecret.isEmpty())
+        {
+            String solrSecretName = restProperties.envProperty().getSolrSecretName();
+            configureRequestSpec().addHeader(solrSecretName, solrSecret);
+        }
     }
 
     /**

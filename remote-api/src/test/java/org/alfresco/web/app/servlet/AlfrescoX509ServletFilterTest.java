@@ -39,6 +39,9 @@ import org.mockito.Mockito;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
+/**
+ *  Unit tests for {@link AlfrescoX509ServletFilter}.
+ */
 public class AlfrescoX509ServletFilterTest
 {
 

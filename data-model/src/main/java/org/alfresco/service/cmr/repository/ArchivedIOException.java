@@ -26,7 +26,6 @@
 package org.alfresco.service.cmr.repository;
 
 import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.service.Experimental;
 
 /**
  * Unable to access as content is in an Archived state.
@@ -34,7 +33,6 @@ import org.alfresco.service.Experimental;
  * 
  * @author David Edwards
  */
-@Experimental
 @AlfrescoPublicApi
 public class ArchivedIOException extends ContentIOException
 {

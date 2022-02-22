@@ -26,7 +26,6 @@
 package org.alfresco.repo.content;
 
 import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -340,7 +339,6 @@ public interface ContentStore
      * @param contentUrl the URL of the content for which the storage properties are to be retrieved.
      * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values.
      */
-    @Experimental
     default Map<String, String> getStorageProperties(String contentUrl)
     {
         return Collections.emptyMap();
@@ -350,14 +348,12 @@ public interface ContentStore
      * Submit a request to send content to archive (offline) state.
      * If no connector is present or connector is not supporting sending to archive, then {@link UnsupportedOperationException} will be returned.
      * Specific connector will decide which storage class/tier will be set for content.
-     * This method is experimental and subject to changes.
      *
      * @param contentUrl the URL of the content which is to be archived.
      * @param archiveParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
      * @return true when request successful, false when unsuccessful.
      * @throws UnsupportedOperationException when store is unable to handle request.
      */
-    @Experimental
     default boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
     {
         throw new UnsupportedOperationException("Request to archive content is not supported by this content store.");
@@ -370,14 +366,12 @@ public interface ContentStore
      * Keys of this map should be restricted to {@code ContentRestoreParams} enumeration.
      * For AWS S3 map can indicating expiry days, Glacier restore tier.
      * For Azure Blob map can indicate rehydrate priority.
-     * This method is experimental and subject to changes.
      *
      * @param contentUrl    the URL of the content which is to be archived.
      * @param restoreParams a map of String-Serializable parameters defining Storage Provider specific request parameters (can be empty).
      * @return true when request successful, false when unsuccessful.
      * @throws UnsupportedOperationException when store is unable to handle request.
      */
-    @Experimental
     default boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
     {
         throw new UnsupportedOperationException("Request to restore content from archive is not supported by this content store.");

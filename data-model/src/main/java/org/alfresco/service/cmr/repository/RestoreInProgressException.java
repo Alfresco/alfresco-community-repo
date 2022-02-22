@@ -27,7 +27,6 @@ package org.alfresco.service.cmr.repository;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.Experimental;
 
 /**
  * Content Restoration in progress
@@ -35,7 +34,6 @@ import org.alfresco.service.Experimental;
  * @author David Edwards
  */
 @AlfrescoPublicApi
-@Experimental
 public class RestoreInProgressException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = 5483215922384016269L;

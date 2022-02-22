@@ -33,7 +33,6 @@ import org.alfresco.rest.api.model.ContentStorageInfo;
 import org.alfresco.rest.api.model.RestoreArchivedContentRequest;
 import org.alfresco.rest.framework.core.exceptions.RestoreInProgressException;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -45,11 +44,9 @@ import java.util.Map;
 
 /**
  * Default implementation for {@link ContentStorageInformation}
- * Note: Currently marked as experimental and subject to change.
  *
  * @author mpichura
  */
-@Experimental
 public class ContentStorageInformationImpl implements ContentStorageInformation
 {
 
@@ -68,7 +65,6 @@ public class ContentStorageInformationImpl implements ContentStorageInformation
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public ContentStorageInfo getStorageInfo(NodeRef nodeRef, String contentPropName, Parameters parameters)
     {
         final QName propQName = getQName(contentPropName);

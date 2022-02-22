@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 Alfresco Software Limited
+ * Copyright (C) 2005 - 2021 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.transform.client.model.config.SupportedSourceAndTarget;
 import org.alfresco.transform.client.model.config.TransformOption;
 import org.alfresco.transform.client.model.config.Transformer;
+import org.alfresco.transform.client.registry.AbstractTransformRegistry;
 import org.alfresco.transform.client.registry.CombinedConfig;
 
 import java.io.IOException;
@@ -52,7 +53,8 @@ import java.util.Set;
  * any mimetype starting "text/", or "application/x-javascript", or "application/dita+xml". There must be no transform
  * options, but in case of the text transform the source and target encodings may be change.
  *
- * Supported transforms are added by {@link CombinedConfig#addPassThroughTransformer(org.alfresco.service.cmr.repository.MimetypeService)}.
+ * Supported transforms are added by {@link CombinedConfig#addPassThroughTransformer(
+ * org.alfresco.service.cmr.repository.MimetypeService, AbstractTransformRegistry)}.
  *
  * @author adavis
  */
@@ -76,10 +78,18 @@ public class LocalPassThroughTransform extends AbstractLocalTransform
         Set<SupportedSourceAndTarget> supportedSourceAndTargetList = new HashSet();
         for (String mimetype: mimetypes)
         {
-            supportedSourceAndTargetList.add(new SupportedSourceAndTarget(mimetype, mimetype, -1, 20));
+            supportedSourceAndTargetList.add(SupportedSourceAndTarget.builder()
+                    .withSourceMediaType(mimetype)
+                    .withTargetMediaType(mimetype)
+                    .withPriority(20)
+                    .build());
             if (isToText(mimetype, mimetype))
             {
-                supportedSourceAndTargetList.add(new SupportedSourceAndTarget(mimetype, MimetypeMap.MIMETYPE_TEXT_PLAIN, -1, 20));
+                supportedSourceAndTargetList.add(SupportedSourceAndTarget.builder()
+                        .withSourceMediaType(mimetype)
+                        .withTargetMediaType(MimetypeMap.MIMETYPE_TEXT_PLAIN)
+                        .withPriority(20)
+                        .build());
             }
         }
         return Transformer.builder().withTransformerName(LocalPassThroughTransform.NAME).

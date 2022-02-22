@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.repo.content.directurl.SystemWideDirectUrlConfig;
+import org.alfresco.rest.api.impl.directurl.RestApiDirectUrlConfig;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
@@ -219,6 +221,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
 
+    protected String getRequestVersionRenditionContentDirectUrl(String nodeId, String versionId, String renditionId)
+    {
+        return getNodeVersionRenditionIdUrl(nodeId, versionId, renditionId) + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
     protected String getRequestArchivedContentDirectUrl(String nodeId)
     {
         return URL_DELETED_NODES + "/" + nodeId + "/" + REQUEST_DIRECT_ACCESS_URL;
@@ -228,6 +235,17 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     {
         return URL_DELETED_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID + "/" + REQUEST_DIRECT_ACCESS_URL;
     }
+
+    protected String getRequestRenditionDirectAccessUrl(String nodeId, String renditionID)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
+    protected String getRequestVersionDirectAccessUrl(String nodeId, String versionId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + REQUEST_DIRECT_ACCESS_URL;
+    }
+
 
     /**
      * The api scope. either public or private
@@ -724,6 +742,18 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return createNode(parentId, folderName, TYPE_CM_FOLDER, props, Folder.class);
     }
 
+    protected String createUniqueFolder(String parentId) throws Exception
+    {
+        return createFolder(parentId, "folder-" + System.currentTimeMillis()).getId();
+    }
+
+    protected String createUniqueContent(String folderId) throws Exception
+    {
+        Document documentResp = createTextFile(folderId, "file-" + System.currentTimeMillis(),
+        "some text-" + System.currentTimeMillis(), "UTF-8", null);
+        return documentResp.getId();
+    }
+
     protected Node createNode(String parentId, String nodeName, String nodeType, Map<String, Object> props) throws Exception
     {
         return createNode(parentId, nodeName, nodeType, props, Node.class);
@@ -1035,6 +1065,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS;
     }
 
+    protected String getNodeRenditionIdUrl(String nodeId, String renditionID)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS + "/" + renditionID;
+    }
+
+    protected String getNodeVersionRenditionIdUrl(String nodeId, String versionId, String renditionID)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS + "/" + versionId + "/" + URL_RENDITIONS + "/" + renditionID;
+    }
+
     protected String getNodeVersionsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_VERSIONS;
@@ -1065,5 +1105,20 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_NODES + "/" + nodeId;
     }
 
+    protected void enableRestDirectAccessUrls()
+    {
+        SystemWideDirectUrlConfig systemDauConfig = (SystemWideDirectUrlConfig) applicationContext.getBean("systemWideDirectUrlConfig");
+        systemDauConfig.setEnabled(true);
+        RestApiDirectUrlConfig restDauConfig = (RestApiDirectUrlConfig) applicationContext.getBean("restApiDirectUrlConfig");
+        restDauConfig.setEnabled(true);
+    }
+
+    protected void disableRestDirectAccessUrls()
+    {
+        SystemWideDirectUrlConfig systemDauConfig = (SystemWideDirectUrlConfig) applicationContext.getBean("systemWideDirectUrlConfig");
+        systemDauConfig.setEnabled(false);
+        RestApiDirectUrlConfig restDauConfig = (RestApiDirectUrlConfig) applicationContext.getBean("restApiDirectUrlConfig");
+        restDauConfig.setEnabled(false);
+    }
 }
 

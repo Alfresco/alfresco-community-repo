@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -44,15 +44,18 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.List;
+
+import static org.alfresco.transform.client.util.RequestParamMap.INCLUDE_CORE_VERSION;
 
 /**
  * This class reads multiple T-Engine config and local files and registers as if they were all
  * in one file. Transform options are shared between all sources.<p>
  *
  * The caller should make calls to {@link #addRemoteConfig(List, String)}, {@link #addLocalConfig(String)} or
- * {@link #addTransformConfig(TransformConfig, String, String)} followed by a call to
- * {@link #register(TransformServiceRegistryImpl)}.
+ * {@link CombinedTransformConfig#addTransformConfig(TransformConfig, String, String, AbstractTransformRegistry)}
+ * followed by a call to {@link #register(TransformServiceRegistryImpl)}.
  *
  * @author adavis
  */
@@ -64,7 +67,7 @@ public class CombinedConfig extends CombinedTransformConfig
     private ConfigFileFinder configFileFinder;
     private int tEngineCount;
 
-    public CombinedConfig(Log log)
+    public CombinedConfig(Log log, AbstractTransformRegistry registry)
     {
         this.log = log;
 
@@ -74,7 +77,7 @@ public class CombinedConfig extends CombinedTransformConfig
             protected void readJson(JsonNode jsonNode, String readFrom, String baseUrl)
             {
                 TransformConfig transformConfig = jsonObjectMapper.convertValue(jsonNode, TransformConfig.class);
-                addTransformConfig(transformConfig, readFrom, baseUrl);
+                addTransformConfig(transformConfig, readFrom, baseUrl, registry);
             }
         };
     }
@@ -103,10 +106,9 @@ public class CombinedConfig extends CombinedTransformConfig
 
     private boolean addRemoteConfig(String baseUrl, String remoteType)
     {
-        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform/config";
+        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform/config?" + INCLUDE_CORE_VERSION + "=" + true;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
-        boolean logAsDebug = false;
         try
         {
             try (CloseableHttpClient httpclient = HttpClients.createDefault())
@@ -129,9 +131,9 @@ public class CombinedConfig extends CombinedTransformConfig
                                 String content = getContent(resEntity);
                                 try (StringReader reader = new StringReader(content))
                                 {
-                                    int transformCount = combinedTransformers.size();
+                                    int transformCount = transformerCount();
                                     configFileFinder.readFile(reader, remoteType+" on "+baseUrl, "json", baseUrl, log);
-                                    if (transformCount == combinedTransformers.size())
+                                    if (transformCount == transformerCount())
                                     {
                                         successReadingConfig = false;
                                     }
@@ -159,7 +161,6 @@ public class CombinedConfig extends CombinedTransformConfig
                 }
                 catch (IOException e)
                 {
-                    logAsDebug = true;
                     throw new AlfrescoRuntimeException("Failed to connect or to read the response from "+remoteType+
                             " on " + url, e);
                 }
@@ -171,15 +172,7 @@ public class CombinedConfig extends CombinedTransformConfig
         }
         catch (AlfrescoRuntimeException e)
         {
-            String message = e.getMessage();
-            if (logAsDebug)
-            {
-                log.debug(message);
-            }
-            else
-            {
-                log.error(message);
-            }
+            log.error(e.getMessage());
             successReadingConfig = false;
         }
         return successReadingConfig;
@@ -225,11 +218,14 @@ public class CombinedConfig extends CombinedTransformConfig
      * from selected text based types.
      * @param mimetypeService to find all the mimetypes
      */
-    public void addPassThroughTransformer(MimetypeService mimetypeService)
+    public void addPassThroughTransformer(MimetypeService mimetypeService, AbstractTransformRegistry registry)
     {
         List<String> mimetypes = mimetypeService.getMimetypes();
         Transformer transformer = LocalPassThroughTransform.getConfig(mimetypes);
-        combinedTransformers.add(new TransformAndItsOrigin(transformer, null, "based on mimetype list"));
+        TransformConfig transformConfig = TransformConfig.builder()
+                .withTransformers(Collections.singletonList(transformer))
+                .build();
+        addTransformConfig(transformConfig, "based on mimetype list", null, registry);
     }
 
     public void register(TransformServiceRegistryImpl registry)

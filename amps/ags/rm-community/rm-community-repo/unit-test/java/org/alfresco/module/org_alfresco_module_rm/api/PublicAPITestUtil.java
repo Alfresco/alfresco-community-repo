@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Records Management Module
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * -
@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.api;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.reflections.scanners.Scanners.TypesAnnotated;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
@@ -77,7 +78,7 @@ public class PublicAPITestUtil
      */
     public static void testPublicAPIConsistency(String basePackageName, SetMultimap<Class<?>, Class<?>> knownBadReferences)
     {
-        Reflections reflections = new Reflections(basePackageName);
+        Reflections reflections = new Reflections(basePackageName, TypesAnnotated);
         Set<Class<?>> publicAPIClasses = reflections.getTypesAnnotatedWith(AlfrescoPublicApi.class, true);
 
         SetMultimap<Class<?>, Class<?>> referencedFrom = HashMultimap.create();

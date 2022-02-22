@@ -49,12 +49,12 @@
     
     <select id="select_Tenant" resultMap="result_Tenant">
         select
-            tenant_domain as tenantDomain,
+            tenant_domain as tenant_domain,
             version as version,
-            enabled as enabled,
-            tenant_name as tenantName,
-            content_root as contentRoot,
-            db_url as dbUrl
+            enabled enabled,
+            tenant_name tenant_name,
+            content_root content_root,
+            db_url db_url
         from
             alf_tenant
         where
@@ -63,12 +63,12 @@
     
     <select id="select_Tenants" parameterType="TenantQuery" resultMap="result_Tenant">
         select
-            tenant_domain   as tenantDomain,
-            version         as version,
-            enabled         as enabled,
-            tenant_name     as tenantName,
-            content_root    as contentRoot,
-            db_url          as dbUrl
+            tenant_domain as tenant_domain,
+            version as version,
+            enabled as enabled,
+            tenant_name as tenant_name,
+            content_root as content_root,
+            db_url as db_url
         from
             alf_tenant
         <where>

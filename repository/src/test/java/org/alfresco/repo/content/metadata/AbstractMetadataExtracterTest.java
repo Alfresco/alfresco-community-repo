@@ -84,7 +84,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
     protected ApplicationContext ctx;
     
     public static final String QUICK_TITLE = "The quick brown fox jumps over the lazy dog";
-    public static final String QUICK_DESCRIPTION = "Gym class featuring a brown fox and lazy dog";
+    public static final String QUICK_DESCRIPTION = "Pangram, fox, dog, Gym class featuring a brown fox and lazy dog";
     public static final String QUICK_CREATOR = "Nevin Nollop";
     public static final String QUICK_CREATOR_EMAIL = "nevin.nollop@alfresco.com";
     public static final String QUICK_PREVIOUS_AUTHOR = "Derek Hulley";

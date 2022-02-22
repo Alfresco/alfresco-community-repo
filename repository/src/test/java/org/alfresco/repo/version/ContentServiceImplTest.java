@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.version;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -63,6 +64,7 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
      * Test content data
      */
     private final static String UPDATED_CONTENT = "This content has been updated with a new value.";
+    private static final QName QNAME = ContentModel.PROP_CONTENT;
     
     /**
      * The version content store
@@ -157,34 +159,30 @@ public class ContentServiceImplTest extends BaseVersionStoreTest
         // Set the presigned URL to expire after one minute.
         Long validFor = 60L;
 
-        try
-        {
+        assertThrows("nodeRef has no content", IllegalArgumentException.class, () -> {
             // Create a node without content
             NodeRef nodeRef = this.dbNodeService
                     .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
 
-            assertNull(contentService.requestContentDirectUrl(nodeRef, true, validFor));
-            fail("nodeRef has no content");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected exception
-        }
+            assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
+        });
 
-        try
-        {
-            assertNull(contentService.requestContentDirectUrl(null, true, null));
-            fail("nodeRef is null");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Expected exception
-        }
+        assertThrows("nodeRef is null", IllegalArgumentException.class, () -> {
+            assertNull(contentService.requestContentDirectUrl(null, null, true, null));
+        });
+
+        assertThrows("propertyQName has no content", NullPointerException.class, () -> {
+            // Create a node without content
+            NodeRef nodeRef = this.dbNodeService
+                    .createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{test}MyNoContentNode"), TEST_TYPE_QNAME, this.nodeProperties).getChildRef();
+
+            contentService.requestContentDirectUrl(nodeRef, null, true, validFor);
+        });
 
         // Create a node with content
         NodeRef nodeRef = createNewVersionableNode();
 
-        assertNull(contentService.requestContentDirectUrl(nodeRef, true, null));
-        assertNull(contentService.requestContentDirectUrl(nodeRef, true, validFor));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, null));
+        assertNull(contentService.requestContentDirectUrl(nodeRef, QNAME, true, validFor));
     }
 }

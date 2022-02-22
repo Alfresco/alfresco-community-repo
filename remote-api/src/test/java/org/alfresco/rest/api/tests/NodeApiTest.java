@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -6279,83 +6279,90 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
-    public void testRequestVersionsContentDirectUrl() throws Exception
+    public void testRequestContentDirectUrlClientErrorResponseForNodes() throws Exception
     {
+        enableRestDirectAccessUrls();
+
+        //Node does not exist
         setRequestContext(user1);
 
-        String myNodeId = getMyNodeId();
+        HttpResponse nodeDoesNotExistResponse = post(getRequestContentDirectUrl("non-existing-node-id"), null, 404);
 
-        Document d1 = new Document();
-        d1.setName("d1.txt");
-        d1.setNodeType(TYPE_CM_CONTENT);
+        //Node is not a file
+        String folderId = createFolder(tDocLibNodeId, "some-folder-name").getId();
+        HttpResponse nodeIsNotAFileReponse = post(getRequestContentDirectUrl(folderId), null, 400);
 
-        // create *empty* text file - as of now, versioning is not enabled by default
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
-        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-
-        String docId = documentResp.getId();
-        assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
-        assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
-
-        int majorVersion = 1;
-        int minorVersion = 0;
-
-        String content = "The quick brown fox jumps over the lazy dog ";
-
-        Map<String, String> params = new HashMap<>();
-        params.put("comment", "my version ");
-
-        documentResp = updateTextFile(docId, content, params);
-        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
-        assertNotNull(documentResp.getProperties());
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
-
-        final String contentNodeId = documentResp.getId();
-
-        // Check the upload response
-        assertNotNull(documentResp.getProperties());
-        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
-        ContentInfo contentInfo = documentResp.getContent();
-        assertNotNull(contentInfo);
-        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
-
-        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
+        disableRestDirectAccessUrls();
     }
 
     @Test
-    public void testRequestRenditionContentDirectUrl() throws Exception
+    public void testRequestContentDirectUrlClientErrorResponseForVersions() throws Exception
     {
+        enableRestDirectAccessUrls();
+        // Create a document
         setRequestContext(user1);
 
-        RepoService.TestNetwork networkN1;
-        RepoService.TestPerson userOneN1;
-        Site userOneN1Site;
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
 
-        networkN1 = repoService.createNetworkWithAlias("ping", true);
-        networkN1.create();
-        userOneN1 = networkN1.createUser();
+        // Verify versions
+        HttpResponse versionIdDoesNotExistReponse = post(getRequestVersionDirectAccessUrl(contentNodeId, "1.2"), null, null, null, null, 404);
+        HttpResponse versionIdInvalidReponse = post(getRequestVersionDirectAccessUrl(contentNodeId, "invalid-version"), null, null, null, null, 404);
 
-        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
+        disableRestDirectAccessUrls();
+    }
 
-        String siteTitle = "RandomSite" + System.currentTimeMillis();
-        userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
+    @Test
+    public void testRequestContentDirectUrlClientErrorResponseForRenditions() throws Exception
+    {
+        enableRestDirectAccessUrls();
+        // Create a document
+        setRequestContext(user1);
 
-        // Create a folder within the site document's library
-        String folderName = "folder" + System.currentTimeMillis();
-        String parentId = getSiteContainerNodeId(userOneN1Site.getId(), "documentLibrary");
-        String folder_Id = createNode(parentId, folderName, TYPE_CM_FOLDER, null).getId();
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
 
-        // Create multipart request - pdf file
-        String renditionName = "doclib";
-        String fileName = "quick.pdf";
+        // Verify renditions
+        HttpResponse renditionIdDoesNotExistReponse = post(getRequestRenditionDirectAccessUrl(contentNodeId, "pdf"), null, null, null, null, 404);
+        HttpResponse renditionIdInvalidReponse = post(getRequestRenditionDirectAccessUrl(contentNodeId, "invalid-rendition"), null, null, null, null, 404);
+
+        disableRestDirectAccessUrls();
+    }
+
+    @Test
+    public void testRequestContentDirectUrlClientErrorResponseForDeletion() throws Exception
+    {
+        enableRestDirectAccessUrls();
+        // Create a document
+        setRequestContext(user1);
+
+        String folderNodeId = createUniqueFolder(getMyNodeId());
+        String contentNodeId = createUniqueContent(folderNodeId);
+
+        // Verify deletion
+        HttpResponse nodeNotDeletedReponse = post(getRequestArchivedContentDirectUrl(contentNodeId), null, null, null, null, 404);
+
+        disableRestDirectAccessUrls();
+    }
+
+    @Test
+    public void testRequestDeleteRendition() throws Exception
+    {
+        setRequestContext(networkOne.getId(), user1, null);
+
+        String myNodeId = getMyNodeId();
+
+        // Create multipart request - txt file
+        String renditionName = "pdf";
+        String fileName = "quick-1.txt";
         File file = getResourceFile(fileName);
         MultiPartRequest reqBody = MultiPartBuilder.create()
-            .setFileData(new FileData(fileName, file))
-            .setRenditions(Collections.singletonList(renditionName))
-            .build();
+                                                   .setFileData(new FileData(fileName, file))
+                                                   .setRenditions(Collections.singletonList(renditionName))
+                                                   .build();
 
-        // Upload quick.pdf file into 'folder' - including request to create 'doclib' thumbnail
-        HttpResponse response = post(getNodeChildrenUrl(folder_Id), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        //Upload file to user home node
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
@@ -6364,7 +6371,65 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
 
-        HttpResponse dauResponse = post(getRequestContentDirectUrl(contentNodeId), null, null, null, null, 501);
+        //clean rendition
+        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 204);
+        //retry to double-check deletion
+        delete(getNodeRenditionIdUrl(contentNodeId, renditionName), null, null, null, null, 404);
+
+        //check if rendition was cleaned
+        HttpResponse getResponse = getSingle(getNodeRenditionIdUrl(contentNodeId, renditionName), null,  200);
+        Rendition renditionDeleted = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), Rendition.class);
+        assertNotNull(renditionDeleted);
+        assertEquals(Rendition.RenditionStatus.NOT_CREATED, renditionDeleted.getStatus());
     }
+
+    @Test
+    public void testRequestVersionDeleteRendition() throws Exception
+    {
+        setRequestContext(networkOne.getId(), user1, null);
+
+        String myNodeId = getMyNodeId();
+
+        // Create multipart request - txt file
+        String renditionName = "pdf";
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                                                   .setFileData(new FileData(fileName, file))
+                                                   .setRenditions(Collections.singletonList(renditionName))
+                                                   .build();
+
+        //Upload file to user home node
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        //Update file to newer version
+        String content = "The quick brown fox jumps over the lazy dog\n the lazy dog jumps over the quick brown fox";
+        Map<String, String> params = new HashMap<>();
+        params.put("comment", "my version ");
+
+        document = updateTextFile(contentNodeId, content, params);
+        assertTrue(document.getAspectNames().contains("cm:versionable"));
+        assertNotNull(document.getProperties());
+        assertEquals("1.1", document.getProperties().get("cm:versionLabel"));
+
+        // create rendition for old version and check that rendition is created ...
+        Rendition renditionUpdated = createAndGetRendition(contentNodeId, "1.0", renditionName);
+        assertNotNull(renditionUpdated);
+        assertEquals(Rendition.RenditionStatus.CREATED, renditionUpdated.getStatus());
+
+        //clean rendition
+        delete(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null, null, null, null, 204);
+        //retry to double-check deletion
+        delete(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null, null, null, null, 404);
+
+        //check if rendition was cleaned
+        HttpResponse getResponse = getSingle(getNodeVersionRenditionIdUrl(contentNodeId, "1.0", renditionName), null,  200);
+        Rendition renditionDeleted = RestApiUtil.parseRestApiEntry(getResponse.getJsonResponse(), Rendition.class);
+        assertNotNull(renditionDeleted);
+        assertEquals(Rendition.RenditionStatus.NOT_CREATED, renditionDeleted.getStatus());
+    }
+
 }
 

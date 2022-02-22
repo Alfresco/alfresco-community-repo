@@ -31,10 +31,12 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -129,5 +131,57 @@ public class RemoveFeaturesActionExecuterTest extends BaseSpringTest
         ActionImpl action2 = new ActionImpl(null, ID, RemoveFeaturesActionExecuter.NAME, null);
         action2.setParameterValue(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
         this.executer.execute(action2, this.nodeRef);
+    }
+
+    /**
+     * Test removing aspect properties
+     */
+    @Test
+    public void testRemovingAspectPropertiesAfterExecution()
+    {
+        QName QNAME_PUBLISHER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "publisher");
+        QName QNAME_SUBJECT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subject");
+
+        // Execute the action
+        PropertyMap dublinCoreProperties = new PropertyMap(2);
+        dublinCoreProperties.put(QNAME_PUBLISHER, "publisher");
+        dublinCoreProperties.put(QNAME_SUBJECT, "subject");
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_DUBLINCORE, dublinCoreProperties);
+
+        // Check that the node has aspect properties
+        assertTrue(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_DUBLINCORE));
+        assertTrue(this.nodeService.getProperties(this.nodeRef).containsKey(QNAME_PUBLISHER));
+        assertTrue(this.nodeService.getProperties(this.nodeRef).containsKey(QNAME_SUBJECT));
+
+        // Remove the aspect
+        ActionImpl action = new ActionImpl(null, ID, RemoveFeaturesActionExecuter.NAME, null);
+        action.setParameterValue(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_DUBLINCORE);
+        this.executer.execute(action, this.nodeRef);
+
+        // Check that the node now no longer has aspect properties
+        assertFalse(this.nodeService.getProperties(this.nodeRef).containsKey(QNAME_PUBLISHER));
+        assertFalse(this.nodeService.getProperties(this.nodeRef).containsKey(QNAME_SUBJECT));
+    }
+
+    /**
+     * Test removing not added child aspect
+     */
+    @Test
+    public void testRemovingNotAddedChildAspect()
+    {
+        QName QNAME_TITLE = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "title");
+
+        // Execute the action
+        PropertyMap titledProperties = new PropertyMap(1);
+        titledProperties.put(QNAME_TITLE, "title");
+        nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, titledProperties);
+
+        // Remove the child aspect which has not been added to the node
+        ActionImpl action = new ActionImpl(null, ID, RemoveFeaturesActionExecuter.NAME, null);
+        action.setParameterValue(RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_DUBLINCORE);
+        this.executer.execute(action, this.nodeRef);
+
+        // Now check that the node has parent aspect properties
+        assertTrue(this.nodeService.getProperties(this.nodeRef).containsKey(QNAME_TITLE));
     }
 }

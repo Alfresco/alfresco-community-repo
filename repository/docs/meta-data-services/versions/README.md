@@ -82,8 +82,7 @@ Sometimes it is desirable to create a version automatically.  Whether this happe
 When _cm:autoVersion_ is true, a new version is created when the _cm:content_ of a content node changes.
 When _cm:autoVersionOnUpdateProps_ is true, a new version is created when any of the properties of a content node change.
 
-The defaults for these properties are set in the contentModel.xml file in the usual way.  But to simplify the admin experience, the values of these properties can also set using global properties:
-
+The defaults for these properties are set in the contentModel.xml file in the usual way.  But to simplify the admin experience, the values of these properties can also be set using global properties:
 * version.store.enableAutoVersioning
 * version.store.enableAutoVersionOnUpdateProps
 

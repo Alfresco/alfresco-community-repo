@@ -38,27 +38,6 @@ updates:
   - dependency-name: org.activiti:activiti-spring
     versions:
     - ">= 7.1.a, < 7.2"
-  - dependency-name: org.apache.camel:camel-activemq
-    versions:
-    - "> 3.7.1"
-  - dependency-name: org.apache.camel:camel-amqp
-    versions:
-    - "> 3.7.1"
-  - dependency-name: org.apache.camel:camel-direct
-    versions:
-    - "> 3.7.1"
-  - dependency-name: org.apache.camel:camel-directvm
-    versions:
-    - "> 3.7.1"
-  - dependency-name: org.apache.camel:camel-jackson
-    versions:
-    - "> 3.7.1"
-  - dependency-name: org.apache.camel:camel-mock
-    versions:
-    - "> 3.7.1"
-  - dependency-name: org.apache.camel:camel-spring
-    versions:
-    - "> 3.7.1"
   - dependency-name: org.apache.chemistry.opencmis:chemistry-opencmis-client-impl
     versions:
     - "> 1.0.0"

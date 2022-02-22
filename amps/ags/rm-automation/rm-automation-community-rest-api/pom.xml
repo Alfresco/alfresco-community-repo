@@ -7,20 +7,25 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-automation-community-repo</artifactId>
-      <version>14.27-SNAPSHOT</version>
+      <version>14.113-SNAPSHOT</version>
    </parent>
-
 
    <build>
       <plugins>
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>license-maven-plugin</artifactId>
-            <configuration>
-               <licenseName>alfresco_community</licenseName>
-               <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
-               <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
-            </configuration>
+            <executions>
+                <execution>
+                    <id>first</id>
+                    <phase>process-sources</phase>
+                    <configuration>
+                       <licenseName>alfresco_community</licenseName>
+                       <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+                       <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                    </configuration>
+                </execution>
+            </executions>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -39,8 +44,8 @@
    <dependencies>
       <dependency>
          <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-log4j12</artifactId>
-         <version>1.7.32</version>
+         <artifactId>slf4j-reload4j</artifactId>
+         <version>1.7.35</version>
          <scope>test</scope>
       </dependency>
       <dependency>

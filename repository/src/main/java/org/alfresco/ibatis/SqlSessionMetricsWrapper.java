@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -283,6 +283,48 @@ public class SqlSessionMetricsWrapper implements SqlSession
             {
                 reportQueryExecuted(startTime, SELECT_LABEL, statement);
             }
+        }
+    }
+
+    @Override
+    public <T> Cursor<T> selectCursor(String statement)
+    {
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
+        }
+    }
+
+    @Override
+    public <T> Cursor<T> selectCursor(String statement, Object parameter)
+    {
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement, parameter);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
+        }
+    }
+
+    @Override
+    public <T> Cursor<T> selectCursor(String statement, Object parameter, RowBounds rowBounds)
+    {
+        long startTime = System.currentTimeMillis();
+        try
+        {
+            return this.sqlSession.selectCursor(statement, parameter, rowBounds);
+        }
+        finally
+        {
+            reportQueryExecuted(startTime, SELECT_LABEL, statement);
         }
     }
 

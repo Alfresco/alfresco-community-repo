@@ -241,9 +241,9 @@
       <property name="algorithm">
          <value>${system.node_table_cleaner.algorithm}</value>
       </property>
-<!--      <property name="deletedNodeBatchCleanup">-->
-<!--         <ref bean="nodeCleanup.deletedNodeBatchCleanup" />-->
-<!--      </property>-->
+      <property name="deletedNodeBatchCleanup">
+         <ref bean="nodeCleanup.deletedNodeBatchCleanup" />
+      </property>
       <property name="deleteBatchSize">
          <value>${system.node_cleanup.delete_batchSize}</value>
       </property>

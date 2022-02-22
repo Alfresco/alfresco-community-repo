@@ -67,9 +67,9 @@ public class DeletedNodeBatchCleanup
     private final static String SELECT_TXN_STATEMENT =
                     "select id from alf_transaction  where not exists (  select 1 from alf_node node where"
                             + " node.transaction_id = alf_transaction.id)  and commit_time_ms <= ? ";
-    private final static String DELETE_NODE_PROP_STATEMENT = "DELETE FROM ALF_NODE_PROPERTIES WHERE NODE_ID IN (";
-    private final static String DELETE_NODE_STATEMENT = "DELETE FROM ALF_NODE WHERE ID IN (";
-    private final static String DELETE_TXN_STATEMENT = "DELETE FROM ALF_TRANSACTION WHERE ID IN (";
+    private final static String DELETE_NODE_PROP_STATEMENT = "delete from alf_node_properties where node_id in (";
+    private final static String DELETE_NODE_STATEMENT = "delete from alf_node where id in (";
+    private final static String DELETE_TXN_STATEMENT = "delete from alf_transaction where id in (";
     private final static Log logger = LogFactory.getLog(DeletedNodeBatchCleanup.class);
     private final AtomicLong nodeDeletionCount = new AtomicLong(0);
     private final AtomicLong txnDeletionCount = new AtomicLong(0);

@@ -801,11 +801,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-http</artifactId>
-                <version>4.1.73.Final</version>
-            </dependency>
-            <dependency>
                 <!--  If you are going to bump dependency.camel.version, please check if the netty-codec-http has higher version that the one above.-->
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-amqp</artifactId>

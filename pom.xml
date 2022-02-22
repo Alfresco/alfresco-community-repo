@@ -798,7 +798,7 @@
             <dependency>
                 <groupId>io.netty</groupId>
                 <artifactId>netty-codec-http</artifactId>
-                <version>4.1.72.Final</version>
+                <version>4.1.73.Final</version>
             </dependency>
             <dependency>
                 <!--  If you are going to bump dependency.camel.version, please check if the netty-codec-http has higher version that the one above.-->

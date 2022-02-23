@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.HashMap;
 
@@ -43,10 +44,12 @@ import static org.alfresco.model.ContentModel.PROP_CONTENT;
 /**
  * Integration tests for {@link LocalTransformClient}
  */
+
+@ContextConfiguration("classpath:rendition-services2-test-context.xml")
 public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegrationTest
 {
     @Autowired
-    protected TransformClient localTransformClient;
+    protected LocalTransformClientMock localTransformClientMock;
 
     protected TransformClient transformClient;
 
@@ -72,7 +75,7 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     {
         super.setUp();
         AuthenticationUtil.setRunAsUser(AuthenticationUtil.getAdminUserName());
-        transformClient = localTransformClient;
+        transformClient = localTransformClientMock;
     }
 
     @Test
@@ -174,6 +177,14 @@ public class LocalTransformClientIntegrationTest extends AbstractRenditionIntegr
     public void testNonWhitelistedStrictMimetype() throws Exception
     {
         checkClientRendition("quickMaskedHtml.jpeg", "avatar32", false);
+    }
+
+    @Test
+    public void checkDirectAccessUrl() throws Exception
+    {
+        System.setProperty("restApi.directAccessUrl.enabled", "true");
+        System.setProperty("system.directAccessUrl.enabled", "true");
+        checkClientRendition("quick.docx", "pdf", true);
     }
 
     private void checkClientRendition(String testFileName, String renditionDefinitionName, boolean expectedToPass) throws InterruptedException

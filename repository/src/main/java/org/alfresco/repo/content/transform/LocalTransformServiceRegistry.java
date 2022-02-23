@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.transform.client.model.config.CoreFunction;
 import org.alfresco.transform.client.model.config.TransformOptionGroup;
+import org.alfresco.transform.client.model.config.TransformOptionValue;
 import org.alfresco.transform.client.registry.CombinedConfig;
 import org.alfresco.transform.client.model.config.TransformOption;
 import org.alfresco.transform.client.registry.TransformServiceRegistryImpl;
@@ -50,6 +51,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 import static java.util.Collections.emptySet;
+
+import static org.alfresco.transform.client.util.RequestParamMap.DIRECT_ACCESS_URL;
 
 /**
  * Implements {@link TransformServiceRegistry} providing a mechanism of validating if a local transformation
@@ -308,6 +311,8 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
             }
             options.add(new TransformOptionGroup(false, oneSetOfTransformOptions));
         }
+
+        options.add(new TransformOptionValue(false, DIRECT_ACCESS_URL));
 
         // If there is only one transform name, the set from the holding TransformOptionGroup can be returned,
         // rather than having a nested structure.

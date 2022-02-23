@@ -201,7 +201,7 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         });
     }
 
-    private void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions,
+    protected void setDirectAccessUrlIfEnabled(Map<String, String> actualOptions,
                                              NodeRef sourceNodeRef,
                                              LocalTransform localTransform)
     {

@@ -326,6 +326,8 @@ public abstract class AbstractLocalTransform implements LocalTransform
             }
         }
 
+//        strippedTransformOptions.put(DIRECT_ACCESS_URL, transformOptions.get(DIRECT_ACCESS_URL));
+
         return strippedTransformOptions;
     }
 

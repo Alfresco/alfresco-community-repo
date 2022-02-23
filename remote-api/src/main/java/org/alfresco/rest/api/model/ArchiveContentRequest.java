@@ -26,19 +26,15 @@
 
 package org.alfresco.rest.api.model;
 
-import org.alfresco.service.Experimental;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Request for content archive.
- * Marked as experimental and subject to change.
  *
  * @author mpichura
  */
-@Experimental
 public class ArchiveContentRequest
 {
     /**

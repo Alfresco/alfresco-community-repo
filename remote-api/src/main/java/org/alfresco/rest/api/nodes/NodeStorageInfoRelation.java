@@ -39,7 +39,6 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.PropertyCheck;
@@ -49,11 +48,9 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Node storage information.
- * Note: Currently marked as experimental and subject to change.
  *
  * @author mpichura
  */
-@Experimental
 @RelationshipResource(name = "storage-info", entityResource = NodesEntityResource.class, title = "Node's content storage information")
 public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadById<ContentStorageInfo>, InitializingBean
 {
@@ -82,7 +79,6 @@ public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadB
         return storageInformation.getStorageInfo(nodeRef, contentPropName, parameters);
     }
 
-    @Experimental
     @Operation("archive")
     @WebApiParam(name = "archiveContentRequest", title = "Request for archive content",
             description = "Optional parameters for archive content", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
@@ -103,7 +99,6 @@ public class NodeStorageInfoRelation implements RelationshipResourceAction.ReadB
         }
     }
 
-    @Experimental
     @Operation("archive-restore")
     @WebApiParam(name = "restoreArchivedContentRequest", title = "Request for restore content from archive",
             description = "Optional parameters for restore content from archive", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)

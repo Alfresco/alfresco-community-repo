@@ -57,8 +57,6 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
 
     private static final String NODE_TABLE_CLEANER_ALG_V2 = "V2";
 
-    private DeletedNodeBatchCleanup deletedNodeBatchCleanup;
-
     /**
      * Default constructor
      */
@@ -80,14 +78,15 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
 
         if(NODE_TABLE_CLEANER_ALG_V2.equals(algorithm))
         {
-            deletedNodeBatchCleanup.setMinPurgeAgeMs(minPurgeAgeMs);
+//            deletedNodeBatchCleanup.setMinPurgeAgeMs(minPurgeAgeMs);
             refreshLock();
             if(logger.isDebugEnabled())
             {
                 logger.debug("DeletedNodeCleanupWorker using batch deletion: About to execute the clean up nodes ");
 
             }
-            purgedNodes = deletedNodeBatchCleanup.purgeOldDeletedNodes();
+//            purgedNodes = deletedNodeBatchCleanup.purgeOldDeletedNodes();
+            purgedNodes = purgeOldDeletedNodesV2(minPurgeAgeMs);
             if(logger.isDebugEnabled())
             {
                 logger.debug(purgedNodes);
@@ -98,7 +97,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
                 logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
             }
 
-            purgedTxns =  deletedNodeBatchCleanup.purgeOldEmptyTransactions();
+//            purgedTxns =  deletedNodeBatchCleanup.purgeOldEmptyTransactions();
+            purgedTxns = purgeOldEmptyTransactionsV2(minPurgeAgeMs);
             if(logger.isDebugEnabled())
             {
                 logger.debug(purgedTxns);
@@ -177,10 +177,10 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         this.deleteBatchSize = deleteBatchSize;
     }
 
-    public void setDeletedNodeBatchCleanup(DeletedNodeBatchCleanup deletedNodeBatchCleanup)
-    {
-        this.deletedNodeBatchCleanup = deletedNodeBatchCleanup;
-    }
+//    public void setDeletedNodeBatchCleanup(DeletedNodeBatchCleanup deletedNodeBatchCleanup)
+//    {
+//        this.deletedNodeBatchCleanup = deletedNodeBatchCleanup;
+//    }
 
     /**
      * Cleans up deleted nodes that are older than the given minimum age.
@@ -476,8 +476,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         }       
     }
 
-    public DeletedNodeBatchCleanup getDeletedNodeBatchCleanup()
-    {
-        return deletedNodeBatchCleanup;
-    }
+//    public DeletedNodeBatchCleanup getDeletedNodeBatchCleanup()
+//    {
+//        return deletedNodeBatchCleanup;
+//    }
 }

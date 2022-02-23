@@ -31,7 +31,6 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.Transaction;
 import org.alfresco.repo.domain.node.ibatis.NodeDAOImpl;
-import org.alfresco.repo.node.db.DeletedNodeBatchCleanup;
 import org.alfresco.repo.node.db.DeletedNodeCleanupWorker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -76,7 +75,6 @@ import java.util.Map;
     private NodeDAO nodeDAO;
     private SimpleCache<Serializable, Serializable> nodesCache;
     private DeletedNodeCleanupWorker worker;
-    private DeletedNodeBatchCleanup deletedNodeBatchCleanup;
 
     @Before public void before()
     {
@@ -90,12 +88,10 @@ import java.util.Map;
         this.nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
         this.nodesCache = (SimpleCache<Serializable, Serializable>) applicationContext.getBean("node.nodesSharedCache");
         this.worker = (DeletedNodeCleanupWorker) applicationContext.getBean("nodeCleanup.deletedNodeCleanup");
-        this.deletedNodeBatchCleanup = (DeletedNodeBatchCleanup) applicationContext.getBean("nodeCleanup.deletedNodeBatchCleanup");
 
         this.worker.setMinPurgeAgeDays(0);
         this.worker.setAlgorithm("V2");
         this.worker.setDeleteBatchSize(20);
-        this.worker.setDeletedNodeBatchCleanup(deletedNodeBatchCleanup);
 
         this.helper = transactionService.getRetryingTransactionHelper();
         authenticationService.authenticate("admin", "admin".toCharArray());

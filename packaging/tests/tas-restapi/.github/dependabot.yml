@@ -1,0 +1,17 @@
+version: 2
+registries:
+  maven-alfresco-internal:
+    type: maven-repository
+    url: https://artifacts.alfresco.com/nexus/content/groups/internal
+    username: ${{secrets.NEXUS_USERNAME}}
+    password: ${{secrets.NEXUS_PASSWORD}}
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "22:00"
+    timezone: Europe/London
+  open-pull-requests-limit: 99
+  registries:
+  - maven-alfresco-internal

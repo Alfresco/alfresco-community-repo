@@ -168,11 +168,11 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_TXN_MIN_TX_ID_IN_NODE_IDRANGE = "alfresco.node.select_TxnMinTxIdInNodeIdRange";
     private static final String SELECT_TXN_MAX_TX_ID_IN_NODE_IDRANGE = "alfresco.node.select_TxnMaxTxIdInNodeIdRange";
     private static final String SELECT_TXN_NEXT_TXN_COMMIT_TIME = "select_TxnNextTxnCommitTime";
-    private static final String SELECT_NODES_DELETED_BY_TXN_COMMIT_TIME = "alfresco.node.select_Deleted_NodesByTxnCommitTime";
-    private static final String DELETE_NODES_BY_ID = "alfresco.node.delete.delete_NodesById";
-    private static final String DELETE_NODE_PROPS_BY_NODE_ID = "alfresco.node.delete.delete_NodePropsByNodeId";
-    private static final String SELECT_TXNS_UNUSED_BY_TXN_COMMIT_TIME = "alfresco.node.select_Txns_UnusedByTxnCommitTime";
-    private static final String DELETE_TXNS_UNUSED_BY_ID = "alfresco.node.delete.delete_Txns_UnusedById";
+    private static final String SELECT_NODES_DELETED_BY_TXN_COMMIT_TIME = "alfresco.node.select.select_Deleted_NodesByTxnCommitTime";
+    private static final String DELETE_NODES_BY_ID = "alfresco.node.delete_NodesById";
+    private static final String DELETE_NODE_PROPS_BY_NODE_ID = "alfresco.node.delete_NodePropsByNodeId";
+    private static final String SELECT_TXNS_UNUSED_BY_TXN_COMMIT_TIME = "alfresco.node.select.select_Txns_UnusedByTxnCommitTime";
+    private static final String DELETE_TXNS_UNUSED_BY_ID = "alfresco.node.delete_Txns_UnusedById";
 
     
     protected QNameDAO qnameDAO;

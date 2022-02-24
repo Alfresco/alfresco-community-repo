@@ -1506,30 +1506,31 @@
             commit_time_ms > #{minCommitTime} 
     </select>
 
-    <select id="select_Deleted_NodesByTxnCommitTime" parameterType="TransactionQuery" fetchSize="100000" resultType="java.lang.Long">
-        select
-            node.id
-        from
-            alf_node node
-                join alf_transaction txn on (node.transaction_id = txn.id)
+    <delete id="delete_NodesById" parameterType="list">
+        delete from alf_node
         where
-            node.type_qname_id = #{typeQNameId}
-        <![CDATA[and commit_time_ms < #{maxCommitTime}]]>
-    </select>
+        id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
 
-    <select id="select_Txns_UnusedByTxnCommitTime" parameterType="TransactionQuery" fetchSize="100000" resultType="java.lang.Long">
-        select
-            id
-        from alf_transaction
-            where not exists
-        (
-            select 1
-            from
-                alf_node node
-            where
-                node.transaction_id = alf_transaction.id
-        )
-      <![CDATA[and commit_time_ms <= #{maxCommitTime}]]>
-    </select>
+    <delete id="delete_NodePropsByNodeId" parameterType="list">
+        delete from alf_node_properties
+        where
+        node_id IN
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
+    <delete id="delete_Txns_UnusedById" parameterType="list">
+        delete from alf_transaction
+        where
+        id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
         
 </mapper>

@@ -57,7 +57,7 @@
       <property name="testWhileIdle">
          <value>${db.pool.evict.validate}</value>
       </property>
-      <property name="RemoveAbandonedOnBorrow">
+      <property name="removeAbandonedOnBorrow">
          <value>${db.pool.abandoned.detect}</value>
       </property>
       <property name="removeAbandonedTimeout">

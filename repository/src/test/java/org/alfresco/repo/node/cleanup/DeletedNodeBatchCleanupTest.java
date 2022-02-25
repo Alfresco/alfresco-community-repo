@@ -26,12 +26,17 @@
 
 package org.alfresco.repo.node.cleanup;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Stream.of;
+
 import javax.transaction.UserTransaction;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -41,7 +46,7 @@ import org.alfresco.repo.domain.node.ibatis.NodeDAOImpl;
 import org.alfresco.repo.node.db.DeletedNodeCleanupWorker;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.ServiceRegistry;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -75,109 +80,114 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
     @Qualifier("node.nodesSharedCache")
     private SimpleCache<Serializable, Serializable> nodesCache;
     @Autowired
-    private ServiceRegistry serviceRegistry;
-    @Autowired
     private DeletedNodeCleanupWorker worker;
+    @Autowired
+    private NamespaceService namespaceService;
+    @Autowired
     private TransactionService transactionService;
+    @Autowired
     private NodeService nodeService;
-    private NodeRef nodeRef1;
-    private NodeRef nodeRef2;
-    private NodeRef nodeRef3;
-    private NodeRef nodeRef4;
-    private NodeRef nodeRef5;
+    @Autowired
+    private SearchService searchService;
     private RetryingTransactionHelper helper;
+    private List<NodeRef> testNodes;
 
     @Before
     public void before()
     {
-
-        NamespaceService namespaceService = serviceRegistry.getNamespaceService();
-        this.transactionService = serviceRegistry.getTransactionService();
-        this.nodeService = serviceRegistry.getNodeService();
-        SearchService searchService = serviceRegistry.getSearchService();
-
-        this.worker.setMinPurgeAgeDays(0);
-        this.worker.setAlgorithm("V2");
-        this.worker.setDeleteBatchSize(20);
-
-        this.helper = transactionService.getRetryingTransactionHelper();
+        helper = transactionService.getRetryingTransactionHelper();
         authenticationService.authenticate("admin", "admin".toCharArray());
 
+        resetWorkerConfig();
+
+        // create 5 test nodes
+        final NodeRef companyHome = getCompanyHome();
+        testNodes = IntStream.range(0, 5)
+            .mapToObj(i -> helper.doInTransaction(createNodeCallback(companyHome), false, true))
+            .collect(toList());
+
+        // clean up pre-existing data
+        helper.doInTransaction(() -> worker.doClean(), false, true);
+    }
+
+    private void resetWorkerConfig()
+    {
+        worker.setMinPurgeAgeDays(0);
+        worker.setAlgorithm("V2");
+        worker.setDeleteBatchSize(20);
+    }
+
+    private NodeRef getCompanyHome()
+    {
         StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
         NodeRef storeRoot = nodeService.getRootNode(storeRef);
         List<NodeRef> nodeRefs = searchService.selectNodes(storeRoot, "/app:company_home", null, namespaceService,
             false);
-        final NodeRef companyHome = nodeRefs.get(0);
 
-        RetryingTransactionHelper.RetryingTransactionCallback<NodeRef> createNode = () -> nodeService.createNode(
-            companyHome, ContentModel.ASSOC_CONTAINS, QName.createQName("test", GUID.generate()),
-            ContentModel.TYPE_CONTENT).getChildRef();
-
-        this.nodeRef1 = helper.doInTransaction(createNode, false, true);
-        this.nodeRef2 = helper.doInTransaction(createNode, false, true);
-        this.nodeRef3 = helper.doInTransaction(createNode, false, true);
-        this.nodeRef4 = helper.doInTransaction(createNode, false, true);
-        this.nodeRef5 = helper.doInTransaction(createNode, false, true);
-
-        // clean up pre-existing data
-        helper.doInTransaction(() -> this.worker.doClean(), false, true);
+        return nodeRefs.get(0);
     }
 
-    private void createTransactionsForNodePurgeTest(NodeRef nodeRef1, NodeRef nodeRef2)
+    private RetryingTransactionCallback<NodeRef> createNodeCallback(NodeRef companyHome)
     {
-        DeleteNode deleteNode1 = new DeleteNode(nodeRef1);
-        DeleteNode deleteNode2 = new DeleteNode(nodeRef2);
-        helper.doInTransaction(deleteNode1, false, true);
-        helper.doInTransaction(deleteNode2, false, true);
+        return () -> nodeService.createNode(
+            companyHome, ContentModel.ASSOC_CONTAINS, QName.createQName("test", GUID.generate()),
+            ContentModel.TYPE_CONTENT).getChildRef();
+    }
+
+    private void deleteNodes(NodeRef nodeRef, NodeRef... additionalNodeRefs)
+    {
+        Stream.concat(of(nodeRef), of(additionalNodeRefs))
+            .forEach(this::deleteNode);
+    }
+
+    private void deleteNode(NodeRef nodeRef)
+    {
+        helper.doInTransaction(new DeleteNode(nodeRef), false, true);
     }
 
     @Test
     public void testPurgeNodesDeleted()
     {
-        // delete the node 4 and node 5
-        createTransactionsForNodePurgeTest(this.nodeRef4, this.nodeRef5);
+        final NodeRef nodeRef4 = getNode(4);
+        final NodeRef nodeRef5 = getNode(5);
 
-        // Double-check that n4 and n5 are present in deleted form
+        // delete nodes 4 and 5
+        deleteNodes(nodeRef4, nodeRef5);
+
+        // double-check that node 4 and 5 are present in deleted form
         nodesCache.clear();
+        assertTrue("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef4).isDeleted());
+        assertTrue("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef5).isDeleted());
 
-        assertNotNull("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef4));
-        assertNotNull("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef5));
+        worker.doClean();
 
-        List<String> reports = this.worker.doClean();
-        for (String report : reports)
-        {
-            logger.debug(report);
-        }
-
+        // verify that node 4 and 5 were purged
         nodesCache.clear();
-
         assertNull("Node 4 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef4));
-
         assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef5));
     }
 
     @Test
     public void testNodesDeletedNotPurgedWhenNotAfterPurgeAge()
     {
-        // delete the node 1 and node 2
-        createTransactionsForNodePurgeTest(this.nodeRef1, this.nodeRef2);
+        final NodeRef nodeRef1 = getNode(1);
+        final NodeRef nodeRef2 = getNode(2);
 
+        // delete nodes 1 and 2
+        deleteNodes(nodeRef1, nodeRef2);
+
+        // double-check that node 1 and 2 are present in deleted form
         nodesCache.clear();
+        assertTrue("Node 1 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef1).isDeleted());
+        assertTrue("Node 2 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef2).isDeleted());
 
-        assertNotNull("Node 1 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef1));
-        assertNotNull("Node 2 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef2));
+        // run the worker
+        worker.setMinPurgeAgeDays(1);
+        worker.doClean();
 
-        this.worker.setMinPurgeAgeDays(1);
-        List<String> reports = this.worker.doClean();
-        for (String report : reports)
-        {
-            logger.debug(report);
-        }
-
+        // verify that node 1 and 2 were not purged
         nodesCache.clear();
-
-        assertNotNull("Node 1 was  cleaned up", nodeDAO.getNodeRefStatus(nodeRef1));
-
+        assertNotNull("Node 1 was cleaned up", nodeDAO.getNodeRefStatus(nodeRef1));
         assertNotNull("Node 2 was cleaned up", nodeDAO.getNodeRefStatus(nodeRef2));
     }
 
@@ -189,9 +199,9 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
         final Long minTxnId = nodeDAO.getMinTxnId();
 
         final Map<NodeRef, List<String>> txnIds = createTransactions();
-        final List<String> txnIds1 = txnIds.get(nodeRef1);
-        final List<String> txnIds2 = txnIds.get(nodeRef2);
-        final List<String> txnIds3 = txnIds.get(nodeRef3);
+        final List<String> txnIds1 = txnIds.get(getNode(1));
+        final List<String> txnIds2 = txnIds.get(getNode(2));
+        final List<String> txnIds3 = txnIds.get(getNode(3));
 
         // Double-check that n4 and n5 are present in deleted form
         nodesCache.clear();
@@ -199,8 +209,8 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
         txn.begin();
         try
         {
-            assertNotNull("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef4));
-            assertNotNull("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(nodeRef5));
+            assertTrue("Node 4 is deleted but not purged", nodeDAO.getNodeRefStatus(getNode(4)).isDeleted());
+            assertTrue("Node 5 is deleted but not purged", nodeDAO.getNodeRefStatus(getNode(5)).isDeleted());
         }
         finally
         {
@@ -208,12 +218,7 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
         }
 
         // run the transaction cleaner
-
-        List<String> reports = worker.doClean();
-        for (String report : reports)
-        {
-            logger.debug(report);
-        }
+        worker.doClean();
 
         // Get transactions committed after the test started
         RetryingTransactionHelper.RetryingTransactionCallback<List<Transaction>> getTxnsCallback = () -> ((NodeDAOImpl) nodeDAO).selectTxns(
@@ -232,30 +237,23 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
 
         // check that the correct transactions have been purged i.e. all except the last one to update the node
         // i.e. in this case, all but the last one in txnIds1
-        int numFoundUnusedTxnIds = 0;
-        for (String txnId : expectedUnusedTxnIds)
+        List<String> unusedTxnsNotPurged = expectedUnusedTxnIds.stream()
+            .filter(txnId -> containsTransaction(txns, txnId))
+            .collect(toList());
+        if (!unusedTxnsNotPurged.isEmpty())
         {
-            if (!containsTransaction(txns, txnId))
-            {
-                numFoundUnusedTxnIds++;
-            }
-            else if (txnIds1.contains(txnId))
-            {
-                fail("Unused transaction(s) were not purged: " + txnId);
-            }
+            fail("Unused transaction(s) were not purged: " + unusedTxnsNotPurged);
         }
+
+        long numFoundUnusedTxnIds = expectedUnusedTxnIds.stream()
+            .filter(txnId -> !containsTransaction(txns, txnId))
+            .count();
         assertEquals(9, numFoundUnusedTxnIds);
 
         // check that the correct transactions remain i.e. all those in txnIds2, txnIds3, txnIds4 and txnIds5
-        int numFoundUsedTxnIds = 0;
-        for (String txnId : expectedUsedTxnIds)
-        {
-            if (containsTransaction(txns, txnId))
-            {
-                numFoundUsedTxnIds++;
-            }
-        }
-
+        long numFoundUsedTxnIds = expectedUsedTxnIds.stream()
+            .filter(txnId -> containsTransaction(txns, txnId))
+            .count();
         assertEquals(3, numFoundUsedTxnIds);
 
         // Get transactions committed after the test started
@@ -267,44 +265,40 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
 
         // Double-check that n4 and n5 were removed as well
         nodesCache.clear();
-        assertNull("Node 4 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef4));
-        assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(nodeRef5));
+        assertNull("Node 4 was not cleaned up", nodeDAO.getNodeRefStatus(getNode(4)));
+        assertNull("Node 5 was not cleaned up", nodeDAO.getNodeRefStatus(getNode(5)));
     }
 
     private boolean containsTransaction(List<Transaction> txns, String txnId)
     {
-        boolean found = false;
-        for (Transaction tx : txns)
-        {
-            if (tx.getChangeTxnId().equals(txnId))
-            {
-                found = true;
-                break;
-            }
-        }
-        return found;
+        return txns.stream()
+            .map(Transaction::getChangeTxnId)
+            .filter(changeTxnId -> changeTxnId.equals(txnId))
+            .map(match -> true)
+            .findFirst()
+            .orElse(false);
     }
 
     private Map<NodeRef, List<String>> createTransactions()
     {
         Map<NodeRef, List<String>> txnIds = new HashMap<>();
 
-        UpdateNode updateNode1 = new UpdateNode(nodeRef1);
-        UpdateNode updateNode2 = new UpdateNode(nodeRef2);
-        UpdateNode updateNode3 = new UpdateNode(nodeRef3);
-        DeleteNode deleteNode4 = new DeleteNode(nodeRef4);
-        DeleteNode deleteNode5 = new DeleteNode(nodeRef5);
+        UpdateNode updateNode1 = new UpdateNode(getNode(1));
+        UpdateNode updateNode2 = new UpdateNode(getNode(2));
+        UpdateNode updateNode3 = new UpdateNode(getNode(3));
+        DeleteNode deleteNode4 = new DeleteNode(getNode(4));
+        DeleteNode deleteNode5 = new DeleteNode(getNode(5));
 
         List<String> txnIds1 = new ArrayList<>();
         List<String> txnIds2 = new ArrayList<>();
         List<String> txnIds3 = new ArrayList<>();
         List<String> txnIds4 = new ArrayList<>();
         List<String> txnIds5 = new ArrayList<>();
-        txnIds.put(nodeRef1, txnIds1);
-        txnIds.put(nodeRef2, txnIds2);
-        txnIds.put(nodeRef3, txnIds3);
-        txnIds.put(nodeRef4, txnIds4);
-        txnIds.put(nodeRef5, txnIds5);
+        txnIds.put(getNode(1), txnIds1);
+        txnIds.put(getNode(2), txnIds2);
+        txnIds.put(getNode(3), txnIds3);
+        txnIds.put(getNode(4), txnIds4);
+        txnIds.put(getNode(5), txnIds5);
 
         for (int i = 0; i < 10; i++)
         {
@@ -362,6 +356,11 @@ public class DeletedNodeBatchCleanupTest extends BaseSpringTest
             nodeService.deleteNode(nodeRef);
             return AlfrescoTransactionSupport.getTransactionId();
         }
+    }
+
+    private NodeRef getNode(int i)
+    {
+        return testNodes.get(i - 1);
     }
 
 }

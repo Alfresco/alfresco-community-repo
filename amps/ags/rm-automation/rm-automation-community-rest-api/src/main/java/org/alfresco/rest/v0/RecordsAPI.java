@@ -26,17 +26,28 @@
  */
 package org.alfresco.rest.v0;
 
+import static org.alfresco.rest.core.RestRequest.simpleRequest;
+import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.springframework.http.HttpMethod.GET;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.restassured.response.ResponseBody;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpResponse;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -94,6 +105,21 @@ public class RecordsAPI extends BaseAPI
         requestParams.put("nodeRef", recNodeRef);
 
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+    }
+
+    public List GetRecordActions(String user, String password, String recordName){
+
+        JSONArray jsonArray=doGetRequest(user, password, ACTIONS_API).getJSONArray(recordName);
+
+        ArrayList<String> actionItems = new ArrayList<String>();
+        if (jsonArray != null) {
+            for (int i=0;i<jsonArray.length();i++){
+                actionItems.add(jsonArray.getString(i));
+                System.out.println(actionItems.get(i));
+            }
+        }
+
+        return actionItems;
     }
 
     /**
@@ -267,7 +293,7 @@ public class RecordsAPI extends BaseAPI
      * @param recordName the String with which the record name starts
      * @return the record object in case it exists, null otherwise
      */
-    private CmisObject getRecord(String username, String password, String folderName, String recordName)
+    public CmisObject getRecord(String username, String password, String folderName, String recordName)
     {
         for (CmisObject record : contentService.getFolderObject(contentService.getCMISSession(username, password), RM_SITE_ID, folderName).getChildren())
         {
@@ -343,6 +369,7 @@ public class RecordsAPI extends BaseAPI
 
         return doPostJsonRequest(user, password, SC_OK, requestParams, ACTIONS_API);
     }
+
 
     /**
      * Retrieves the record's nodeRef

@@ -33,6 +33,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.testng.Assert.assertNotNull;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.rest.core.v0.BaseAPI.RMProperty;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
@@ -41,8 +42,8 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
-import org.apache.http.HttpResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -75,23 +76,18 @@ public class CreateNonElectronicRecordsTests extends BaseRMRestTest
 
     private final String TEST_PREFIX = generateTestPrefix(CreateNonElectronicRecordsTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
-    String category1 = TEST_PREFIX + "RM-2777 category1";
-    String folder1 = TEST_PREFIX + "RM-2777 folder1";
-    String folder2 = TEST_PREFIX + "RM-2777 folder2";
-    String recordName = "RM-2777 record";
-    String recordTitle = recordName + " title";
-    String recordDescription = recordName + " description";
-    String editedRecord = "edited RM-2777 record";
-    String editedRecordTitle = "edited RM-2777 record title";
-    String editedRecordDescription = "edited RM-2777 record description";
+    private final String recordName = "RM-2777 record";
+    private final String recordTitle = recordName + " title";
+    private final String recordDescription = recordName + " description";
 
 
     @BeforeClass (alwaysRun = true)
-    public void CreateNonElectronicRecordsTestsBeforeClass()
+    public void preConditions()
     {
+        STEP("Create RM Site");
         createRMSiteIfNotExists();
 
-        // create "rm admin" user
+        STEP("Create RM Admin user");
         rmRolesAndActionsAPI.createUserAndAssignToRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_ADMIN,
                 getAdminUser().getPassword(),
                 "Administrator");
@@ -104,12 +100,15 @@ public class CreateNonElectronicRecordsTests extends BaseRMRestTest
 
     }
 
+    /**
+     * Test v0 methods to create and get non-electronic records.
+     */
     @Test
     @AlfrescoTest (jira = "RM-2777")
-    public void createNonElectronicRecord()
+    public void createNonElectronicRecordTest()
     {
-        // create a non-electronic record by completing some of the fields
-        HashMap<Enum<?>, String> properties = new HashMap<Enum<?>, String>();
+        STEP("Create a non-electronic record by completing some of the fields");
+        Map<Enum<?>, String> properties = new HashMap<Enum<?>, String>();
         properties.put(RMProperty.TITLE, recordTitle);
         properties.put(RMProperty.DESCRIPTION, recordDescription);
         properties.put(RMProperty.NAME, recordName);
@@ -120,14 +119,21 @@ public class CreateNonElectronicRecordsTests extends BaseRMRestTest
         properties.put(RMProperty.BOX, "");
         properties.put(RMProperty.FILE, "");
 
-        HttpResponse response = recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
+        recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
                 getAdminUser().getPassword(), properties, rootCategory.getName(), recordFolder.getName());
 
-        // check the non-electronic record has been created
+        STEP("Check the non-electronic record has been created");
         assertStatusCode(CREATED);
         assertNotNull(recordsAPI.getRecord(getAdminUser().getUsername(), getAdminUser().getPassword(),
                 recordFolder.getName(), recordName));
 
+    }
+
+    @AfterClass (alwaysRun = true)
+    public void deletePreConditions()
+    {
+        STEP("Delete the created rootCategory along with corresponding record folders/records present in it");
+        getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(rootCategory.getId());
     }
 
 }

@@ -107,17 +107,17 @@ public class RecordsAPI extends BaseAPI
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 
-    public List GetRecordActions(String user, String password, String recordName){
-
-        JSONArray jsonArray=doGetRequest(user, password, ACTIONS_API).getJSONArray(recordName);
-
-        ArrayList<String> actionItems = new ArrayList<String>();
-        if (jsonArray != null) {
-            for (int i=0;i<jsonArray.length();i++){
-                actionItems.add(jsonArray.getString(i));
-                System.out.println(actionItems.get(i));
-            }
-        }
+//    public List GetRecordActions(String user, String password, String recordName){
+//
+//        JSONArray jsonArray=doGetRequest(user, password, ACTIONS_API).getJSONArray(recordName);
+//
+//        ArrayList<String> actionItems = new ArrayList<String>();
+//        if (jsonArray != null) {
+//            for (int i=0;i<jsonArray.length();i++){
+//                actionItems.add(jsonArray.getString(i));
+//                System.out.println(actionItems.get(i));
+//            }
+//        }
 
         return actionItems;
     }

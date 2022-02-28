@@ -47,7 +47,7 @@ public class RecordFoldersAPI extends BaseAPI
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(RecordFoldersAPI.class);
 
-    private static final String MOVE_RM_Folder_API = "{0}rma/actions/rm-move-to/site/";
+    //private static final String MOVE_RM_Folder_API = "{0}rma/actions/rm-move-to/site/";
     /**
      * Close the record folder
      *

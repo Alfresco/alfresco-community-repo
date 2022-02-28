@@ -26,28 +26,17 @@
  */
 package org.alfresco.rest.v0;
 
-import static org.alfresco.rest.core.RestRequest.simpleRequest;
-import static org.alfresco.rest.rm.community.util.ParameterCheck.mandatoryString;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.springframework.http.HttpMethod.GET;
 import static org.testng.AssertJUnit.assertTrue;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.restassured.response.ResponseBody;
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpResponse;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -107,21 +96,6 @@ public class RecordsAPI extends BaseAPI
         return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
     }
 
-//    public List GetRecordActions(String user, String password, String recordName){
-//
-//        JSONArray jsonArray=doGetRequest(user, password, ACTIONS_API).getJSONArray(recordName);
-//
-//        ArrayList<String> actionItems = new ArrayList<String>();
-//        if (jsonArray != null) {
-//            for (int i=0;i<jsonArray.length();i++){
-//                actionItems.add(jsonArray.getString(i));
-//                System.out.println(actionItems.get(i));
-//            }
-//        }
-
-        return actionItems;
-    }
-
     /**
      * Reject the record given as parameter
      *
@@ -140,11 +114,11 @@ public class RecordsAPI extends BaseAPI
     /**
      * Reject the record given as parameter
      *
-     * @param user the user declaring the document as record
-     * @param password the user's password
+     * @param user               the user declaring the document as record
+     * @param password           the user's password
      * @param expectedStatusCode The expected return status code.
-     * @param recordName the record name
-     * @param reason reject reason
+     * @param recordName         the record name
+     * @param reason             reject reason
      * @return The HTTP Response.
      * @throws AssertionError If the expectedStatusCode was not returned.
      */
@@ -155,8 +129,8 @@ public class RecordsAPI extends BaseAPI
         JSONObject requestParams = new JSONObject();
         requestParams.put("name", "reject");
         requestParams.put("nodeRef", recNodeRef);
-        requestParams.put("params",new JSONObject()
-                    .put("reason",reason));
+        requestParams.put("params", new JSONObject()
+                .put("reason", reason));
 
         return doPostJsonRequest(user, password, expectedStatusCode, requestParams, RM_ACTIONS_API);
     }
@@ -247,6 +221,7 @@ public class RecordsAPI extends BaseAPI
      * Uploads an electronic record
      * <p>
      * eg. of usage for creating record directly in Unfiled Records : uploadElectronicRecord(getAdminName(), getAdminPassword(), recordPropertiesStringMap, UNFILED_RECORDS_BREADCRUMB, DocumentType.HTML)
+     *
      * @param username   the username
      * @param password   the password
      * @param properties a map of record properties and their values
@@ -267,6 +242,7 @@ public class RecordsAPI extends BaseAPI
      * <li>eg. of usage in the case in which the record is inside a folder in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "unfiled records folder");
      * <li>eg. of usage in the case in which the record is created directly in Unfiled Records : deleteRecord(getAdminName(), getAdminPassword(), "f1 (2016-1472716888713)", UNFILED_RECORDS_BREADCRUMB, "");
      * </ul>
+     *
      * @param username     user's username
      * @param password     its password
      * @param recordName   the record name
@@ -354,9 +330,9 @@ public class RecordsAPI extends BaseAPI
     /**
      * Hide in place record
      *
-     * @param user         the user
-     * @param password     the user's password
-     * @param nodeId     the in place record node id
+     * @param user     the user
+     * @param password the user's password
+     * @param nodeId   the in place record node id
      * @return The HTTP Response.
      */
     public HttpResponse hideRecord(String user, String password, String nodeId)

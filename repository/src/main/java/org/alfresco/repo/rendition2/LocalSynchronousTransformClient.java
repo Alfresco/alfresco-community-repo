@@ -162,14 +162,14 @@ public class LocalSynchronousTransformClient implements SynchronousTransformClie
         }
     }
 
-    private Map<String, String> addDirectAccessUrlToOptionsIfPossible(Map<String, String> actualOptions, NodeRef sourceNodeRef, LocalTransform transform)
+    private Map<String, String> addDirectAccessUrlToOptionsIfPossible(Map<String, String> actualOptions,
+                                                                      NodeRef sourceNodeRef, LocalTransform transform)
     {
         if (directAccessUrlEnabled &&
             localTransformServiceRegistry.isSupported(CoreFunction.DIRECT_ACCESS_URL, transform) &&
             contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT))
         {
-            // TODO check if attachment should be true or false
-            DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, false);
+            DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, true);
             actualOptions = new HashMap<>(actualOptions);
             actualOptions.put(DIRECT_ACCESS_URL, directAccessUrl.getContentUrl());
         }

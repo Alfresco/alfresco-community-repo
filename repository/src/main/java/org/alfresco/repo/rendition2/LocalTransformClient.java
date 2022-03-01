@@ -143,9 +143,9 @@ public class LocalTransformClient implements TransformClient, InitializingBean
     {
         String renditionName = renditionDefinition.getRenditionName();
         String targetMimetype = renditionDefinition.getTargetMimetype();
-        Map<String, String> actualOptions = new HashMap<>(renditionDefinition.getTransformOptions());
+        Map<String, String> renditionOptions = renditionDefinition.getTransformOptions();
         LocalTransform localTransform = transform.get();
-        addDirectAccessUrlToOptionsIfPossible(sourceNodeRef, actualOptions, localTransform);
+        Map<String, String> actualOptions = addDirectAccessUrlToOptionsIfPossible(renditionOptions, sourceNodeRef, localTransform);
 
         executorService.submit(() ->
         {
@@ -202,15 +202,17 @@ public class LocalTransformClient implements TransformClient, InitializingBean
         });
     }
 
-    private void addDirectAccessUrlToOptionsIfPossible(NodeRef sourceNodeRef, Map<String, String> actualOptions, LocalTransform localTransform)
+    private Map<String, String> addDirectAccessUrlToOptionsIfPossible(Map<String, String> actualOptions,
+                                                                      NodeRef sourceNodeRef, LocalTransform transform)
     {
         if (directAccessUrlEnabled &&
-            localTransformServiceRegistry.isSupported(CoreFunction.DIRECT_ACCESS_URL, localTransform) &&
+            localTransformServiceRegistry.isSupported(CoreFunction.DIRECT_ACCESS_URL, transform) &&
             contentService.isContentDirectUrlEnabled(sourceNodeRef, PROP_CONTENT))
         {
-            // TODO check if attachment should be true or false
-            DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, false);
+            DirectAccessUrl directAccessUrl = contentService.requestContentDirectUrl(sourceNodeRef, PROP_CONTENT, true);
+            actualOptions = new HashMap<>(actualOptions);
             actualOptions.put(DIRECT_ACCESS_URL, directAccessUrl.getContentUrl());
         }
+        return actualOptions;
     }
 }

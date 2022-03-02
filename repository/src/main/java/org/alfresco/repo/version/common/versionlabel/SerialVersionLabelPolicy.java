@@ -164,7 +164,7 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
         {
             this.minorRevisionNumber += 1;
         }
-
+        
         /**
          * Converts the serial version number into a string
          */

@@ -27,7 +27,7 @@ services:
                 -Dsolr.host=search
                 -Dsolr.port=8983
                 -Dsolr.secureComms=secret
-                -Dsolr.secureComms.secret=secret
+                -Dsolr.sharedSecret=secret
                 -Dsolr.base.url=/solr
                 -Dindex.subsystem.name=solr6
                 -Dalfresco.restApi.basicAuthScheme=true

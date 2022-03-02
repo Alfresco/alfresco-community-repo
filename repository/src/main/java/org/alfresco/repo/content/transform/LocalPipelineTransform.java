@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 Alfresco Software Limited
+ * Copyright (C) 2019-2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -38,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.alfresco.transform.client.util.RequestParamMap.DIRECT_ACCESS_URL;
 
 /**
  * Transformer that passes a document through a pipeline of transformations to arrive at an target mimetype.
@@ -118,6 +120,8 @@ public class LocalPipelineTransform extends AbstractLocalTransform
 
             transformer.intermediateTransformer.transform(currentReader, currentWriter, transformOptions, renditionName, sourceNodeRef);
 
+            removeDirectAccessUrlAfterFirstTransform(transformOptions);
+
             // Clear the sourceNodeRef after the first transformation to avoid later transformers thinking the
             // intermediate file is the original node.
             if (i == 0)
@@ -131,5 +135,10 @@ public class LocalPipelineTransform extends AbstractLocalTransform
                 currentReader = currentWriter.getReader();
             }
         }
+    }
+
+    private void removeDirectAccessUrlAfterFirstTransform(Map<String, String> transformOptions)
+    {
+        transformOptions.remove(DIRECT_ACCESS_URL);
     }
 }

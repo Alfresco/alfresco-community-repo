@@ -1874,11 +1874,6 @@ public class NodesImpl implements Nodes
                 versionMajor = null;
             }
         }
-        else
-        {
-            versionMajor = null;
-        }
-
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
         // Create the node

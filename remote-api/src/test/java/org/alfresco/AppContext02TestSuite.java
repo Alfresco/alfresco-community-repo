@@ -51,6 +51,8 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.tests.GroupsTest.class,
     org.alfresco.rest.api.tests.ModulePackagesApiTest.class,
     org.alfresco.rest.api.tests.NodeApiTest.class,
+    org.alfresco.rest.api.tests.NodeApiVersioningMultipartParameterizedTest.class,
+    org.alfresco.rest.api.tests.NodeApiVersioningJsonParameterizedTest.class,
     org.alfresco.rest.api.tests.NodeAssociationsApiTest.class,
     org.alfresco.rest.api.tests.NodeVersionsApiTest.class,
     org.alfresco.rest.api.tests.NodeVersionRenditionsApiTest.class,

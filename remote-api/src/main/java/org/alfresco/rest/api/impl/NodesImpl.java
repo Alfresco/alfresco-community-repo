@@ -1874,6 +1874,11 @@ public class NodesImpl implements Nodes
                 versionMajor = null;
             }
         }
+        else
+        {
+            versionMajor = null;
+        }
+
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
         // Create the node
@@ -3132,26 +3137,18 @@ public class NodesImpl implements Nodes
             // Write content
             writeContent(nodeRef, fileName, content.getInputStream(), true);
         }
-        
+
         if ((versionMajor != null) || (versionComment != null))
         {
-            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-            try
+            // by default, first version is major, unless specified otherwise
+            VersionType versionType = VersionType.MAJOR;
+            if ((versionMajor != null) && (!versionMajor))
             {
-                // by default, first version is major, unless specified otherwise
-                VersionType versionType = VersionType.MAJOR;
-                if ((versionMajor != null) && (!versionMajor))
-                {
-                    versionType = VersionType.MINOR;
-                }
-
-                createVersion(nodeRef, false, versionType, versionComment);
-
-                extractMetadata(nodeRef);
-            } finally
-            {
-                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                versionType = VersionType.MINOR;
             }
+
+            createVersion(nodeRef, false, versionType, versionComment);
+            extractMetadata(nodeRef);
         }
 
         return nodeRef;

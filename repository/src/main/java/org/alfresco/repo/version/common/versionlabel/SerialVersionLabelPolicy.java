@@ -97,6 +97,10 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
         {
             serialVersionNumber.majorIncrement();
         }
+        else if(VersionType.MINOR.equals(versionType) == true && serialVersionNumber.isVersion(0, 0))
+        {
+            serialVersionNumber.majorIncrement();
+        }
         else
         {
             serialVersionNumber.minorIncrement();
@@ -164,7 +168,12 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
         {
             this.minorRevisionNumber += 1;
         }
-        
+
+        public boolean isVersion(int majorRevisionNumber, int minorRevisionNumber)
+        {
+            return this.majorRevisionNumber == majorRevisionNumber && this.minorRevisionNumber == minorRevisionNumber;
+        }
+
         /**
          * Converts the serial version number into a string
          */

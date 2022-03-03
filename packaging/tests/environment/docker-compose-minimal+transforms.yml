@@ -75,7 +75,6 @@ services:
       ALFRESCO_SECURE_COMMS: "secret"
       JAVA_TOOL_OPTIONS:
         "
-        -Dalfresco.secureComms=secret
         -Dalfresco.secureComms.secret=secret
         "
     ports:

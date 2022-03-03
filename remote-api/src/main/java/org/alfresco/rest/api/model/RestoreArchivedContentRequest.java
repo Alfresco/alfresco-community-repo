@@ -26,15 +26,11 @@
 
 package org.alfresco.rest.api.model;
 
-import org.alfresco.service.Experimental;
-
 /**
  * Request for restore content from archive.
- * Marked as experimental and subject to change.
  *
  * @author mpichura
  */
-@Experimental
 public class RestoreArchivedContentRequest
 {
     /**

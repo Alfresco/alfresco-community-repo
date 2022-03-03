@@ -25,9 +25,6 @@
  */
 package org.alfresco.rest.framework.core.exceptions;
 
-import org.alfresco.service.Experimental;
-
-@Experimental
 public class RestoreInProgressException extends  ApiException
 {
     public static String DEFAULT_MESSAGE_ID = "framework.exception.RestoreInProgress";

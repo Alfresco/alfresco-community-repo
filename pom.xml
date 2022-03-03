@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>14.111-SNAPSHOT</version>
+    <version>14.125-SNAPSHOT</version> 
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -51,7 +51,7 @@
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-model.version>1.4.9</dependency.alfresco-transform-model.version>
+        <dependency.alfresco-transform-model.version>1.4.13</dependency.alfresco-transform-model.version>
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.13</dependency.acs-event-model.version>
 
@@ -73,7 +73,7 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.35</dependency.slf4j.version>
-        <dependency.gytheio.version>0.13</dependency.gytheio.version>
+        <dependency.gytheio.version>0.16</dependency.gytheio.version>
         <dependency.groovy.version>3.0.9</dependency.groovy.version>
         <dependency.tika.version>2.2.1</dependency.tika.version> 
         <dependency.spring-security.version>5.6.1</dependency.spring-security.version>
@@ -82,7 +82,7 @@
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>15.0.2</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.3.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.7.7</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies (can cause dependency conflicts)-->
+        <dependency.camel.version>3.15.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies (can cause dependency conflicts)-->
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
         <dependency.apache-compress.version>1.21</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
@@ -107,7 +107,7 @@
 
         <alfresco.googledrive.version>3.2.1.3</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.4.0.1</alfresco.aos-module.version>
-        <alfresco.api-explorer.version>7.2.0-A3</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
+        <alfresco.api-explorer.version>7.2.0-A4</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.0.1.alfresco-1</license-maven-plugin.version>
@@ -118,7 +118,7 @@
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.47</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.71</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.78</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.31</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
@@ -766,7 +766,12 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.camel</groupId>
-                <artifactId>camel-spring</artifactId>
+                <artifactId>camel-core</artifactId>
+                <version>${dependency.camel.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.camel</groupId>
+                <artifactId>camel-spring-xml</artifactId>
                 <version>${dependency.camel.version}</version>
                 <exclusions>
                     <exclusion>
@@ -794,11 +799,6 @@
                         <artifactId>geronimo-jta_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-codec-http</artifactId>
-                <version>4.1.72.Final</version>
             </dependency>
             <dependency>
                 <!--  If you are going to bump dependency.camel.version, please check if the netty-codec-http has higher version that the one above.-->
@@ -945,7 +945,7 @@
                                 <failOnMissing>true</failOnMissing>
                                 <excludedScopes>provided,test</excludedScopes>
                                 <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio).*</excludedGroups>
-                                <failIfWarning>false</failIfWarning>
+                                <failIfWarning>true</failIfWarning>
                                 <includedLicenses>
                                     https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicenses.txt
                                 </includedLicenses>

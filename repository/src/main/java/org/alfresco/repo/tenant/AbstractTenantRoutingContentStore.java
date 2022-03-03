@@ -43,7 +43,6 @@ import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.transaction.TransactionService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -276,7 +275,6 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
     /**
      * {@inheritDoc}
      */
-    @Experimental
     @Override
     public Map<String, String> getStorageProperties(String contentUrl)
     {
@@ -287,7 +285,6 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
     {
         return getTenantContentStore().requestSendContentToArchive(contentUrl, archiveParams);
@@ -297,7 +294,6 @@ public abstract class AbstractTenantRoutingContentStore extends AbstractRoutingC
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
     {
         return getTenantContentStore().requestRestoreContentFromArchive(contentUrl, restoreParams);

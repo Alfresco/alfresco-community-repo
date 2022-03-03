@@ -47,7 +47,7 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
 
-import static org.alfresco.transform.client.util.RequestParamMap.INCLUDE_CORE_VERSION;
+import static org.alfresco.transform.client.util.RequestParamMap.ENDPOINT_TRANSFORM_CONFIG_LATEST;
 
 /**
  * This class reads multiple T-Engine config and local files and registers as if they were all
@@ -106,7 +106,7 @@ public class CombinedConfig extends CombinedTransformConfig
 
     private boolean addRemoteConfig(String baseUrl, String remoteType)
     {
-        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + "transform/config?" + INCLUDE_CORE_VERSION + "=" + true;
+        String url = baseUrl + (baseUrl.endsWith("/") ? "" : "/") + ENDPOINT_TRANSFORM_CONFIG_LATEST;
         HttpGet httpGet = new HttpGet(url);
         boolean successReadingConfig = true;
         try

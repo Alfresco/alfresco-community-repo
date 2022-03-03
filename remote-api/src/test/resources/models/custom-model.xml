@@ -54,7 +54,20 @@
       		</property>
          </properties>
       </type>
-	  
+
+       <type name="custom:document">
+           <title>Sample Document Type</title>
+           <parent>cm:content</parent>
+           <properties>
+               <property name="custom:sample">
+                   <type>d:text</type>
+               </property>
+           </properties>
+           <mandatory-aspects>
+               <aspect>cm:versionable</aspect>
+           </mandatory-aspects>
+       </type>
+
 	</types>
 	 
 	

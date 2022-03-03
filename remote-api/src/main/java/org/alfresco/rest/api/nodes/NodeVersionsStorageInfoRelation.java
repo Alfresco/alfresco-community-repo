@@ -40,7 +40,6 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.util.PropertyCheck;
@@ -52,12 +51,9 @@ import javax.servlet.http.HttpServletResponse;
  * Node Versions storage information.
  *
  *  - GET  /nodes/{nodeId}/versions/{versionId}/storage-info/{contentPropQNameId}
- * 
- * Note: Currently marked as experimental and subject to change.
  *
  * @author janv
  */
-@Experimental
 @RelationshipResource(name = "storage-info", entityResource = NodeVersionsRelation.class, title = "Node Version's content storage information")
 public class NodeVersionsStorageInfoRelation implements RelationshipResourceAction.ReadById<ContentStorageInfo>, InitializingBean
 {
@@ -91,7 +87,6 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
         return storageInformation.getStorageInfo(versionNodeRef, contentPropQNameId, parameters);
     }
 
-    @Experimental
     @Operation("archive")
     @WebApiParam(name = "archiveContentRequest", title = "Request for archive version content",
             description = "Optional parameters for archive version content", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
@@ -116,7 +111,6 @@ public class NodeVersionsStorageInfoRelation implements RelationshipResourceActi
         }
     }
 
-    @Experimental
     @Operation("archive-restore")
     @WebApiParam(name = "restoreArchivedContentRequest", title = "Request for restore version content from archive",
             description = "Optional parameters for restore version content from archive", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)

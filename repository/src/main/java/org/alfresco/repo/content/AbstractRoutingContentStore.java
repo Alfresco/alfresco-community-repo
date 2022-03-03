@@ -35,7 +35,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -425,7 +424,6 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public Map<String, String> getStorageProperties(String contentUrl)
     {
         ContentStore contentStore = selectReadStore(contentUrl);
@@ -445,7 +443,6 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
     {
         final ContentStore contentStore = selectReadStore(contentUrl);
@@ -463,7 +460,6 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
     {
         final ContentStore contentStore = selectReadStore(contentUrl);

@@ -29,7 +29,6 @@ package org.alfresco.service.cmr.repository;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
 import org.alfresco.service.namespace.QName;
 
@@ -260,7 +259,6 @@ public interface ContentService
      * @return Returns a key-value (String-String) collection of storage headers/properties with their respective values for a given {@link NodeRef}.
      */
     @Auditable(parameters = {"nodeRef", "propertyQName"})
-    @Experimental
     default Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
     {
         return Collections.emptyMap();
@@ -270,7 +268,6 @@ public interface ContentService
      * Submit a request to send content to archive (offline) state.
      * If no connector is present or connector is not supporting sending to archive, then {@link UnsupportedOperationException} will be returned.
      * Specific connector will decide which storage class/tier will be set for content.
-     * This method is experimental and subject to changes.
      *
      * @param nodeRef a reference to a node having a content property
      * @param propertyQName the name of the property, which must be of type <b>content</b>
@@ -279,7 +276,6 @@ public interface ContentService
      * @throws UnsupportedOperationException when method not implemented
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "archiveParams"})
-    @Experimental
     default boolean requestSendContentToArchive(NodeRef nodeRef, QName propertyQName,
                                                 Map<String, Serializable> archiveParams)
     {
@@ -293,7 +289,6 @@ public interface ContentService
      * Keys of this map should be restricted to {@code ContentRestoreParams} enumeration.
      * For AWS S3 map can indicating expiry days, Glacier restore tier.
      * For Azure Blob map can indicate rehydrate priority.
-     * This method is experimental and subject to changes.
      *
      * @param nodeRef a reference to a node having a content property
      * @param propertyQName the name of the property, which must be of type <b>content</b>
@@ -302,7 +297,6 @@ public interface ContentService
      * @throws UnsupportedOperationException when method not implemented
      */
     @Auditable(parameters = {"nodeRef", "propertyQName", "restoreParams"})
-    @Experimental
     default boolean requestRestoreContentFromArchive(NodeRef nodeRef, QName propertyQName, Map<String, Serializable> restoreParams)
     {
         throw new UnsupportedOperationException("Request to restore content from archive is not supported by content service.");

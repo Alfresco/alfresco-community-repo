@@ -7,7 +7,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-community-repo</artifactId>
-      <version>14.111-SNAPSHOT</version>
+      <version>14.125-SNAPSHOT</version>
    </parent>
 
    <dependencies>
@@ -56,7 +56,7 @@
       <dependency>
          <groupId>ch.qos.reload4j</groupId>
          <artifactId>reload4j</artifactId>
-         <version>1.2.19</version>
+         <version>1.2.18.3</version>
       </dependency>
       <dependency>
          <groupId>org.json</groupId>

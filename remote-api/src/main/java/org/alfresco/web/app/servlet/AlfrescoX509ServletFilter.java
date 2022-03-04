@@ -85,8 +85,7 @@ public class AlfrescoX509ServletFilter extends X509ServletFilterBase
                 throw new AlfrescoRuntimeException("Missing value for sharedSecretHeader");
             }
         }
-        /*
-        // TODO: Activate this part after OPSEXP-1163 got implemented
+
         if(secureComms == SecureCommsType.NONE)
         {
             if(!"true".equalsIgnoreCase(config.getInitParameter("allow-unauthenticated-solr-endpoint")))
@@ -94,7 +93,7 @@ public class AlfrescoX509ServletFilter extends X509ServletFilterBase
                 throw new AlfrescoRuntimeException("solr.secureComms=none is no longer supported. Please use https or secret");
             }
         }
-        */
+
         super.init(config);
     }
 

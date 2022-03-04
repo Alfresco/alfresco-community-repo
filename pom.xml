@@ -78,7 +78,7 @@
         <dependency.tika.version>2.2.1</dependency.tika.version> 
         <dependency.spring-security.version>5.6.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>4.1.2</dependency.poi.version>
+        <dependency.poi.version>5.2.1</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>15.0.2</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.4.3.Final</dependency.jboss.logging.version>

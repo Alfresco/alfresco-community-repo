@@ -32,7 +32,7 @@ env:
 
 stages:
   - name: test
-    if: commit_message !~ /\[skip tests\]/ AND commit_message !~ /\[force[^\]*]\]/
+    if: commit_message !~ /\[skip tests\]/ AND commit_message !~ /\[force[^\]]*\]/
   - name: release
     if: commit_message !~ /\[no release\]/ AND (branch = master OR branch =~ /release\/.*/) AND type != pull_request AND fork = false
   - name: update_downstream

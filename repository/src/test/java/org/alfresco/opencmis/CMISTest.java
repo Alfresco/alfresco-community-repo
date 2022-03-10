@@ -3972,7 +3972,6 @@ public class CMISTest
      *  This test makes sure that once a copy is checked out, updateProperties method can be called
      *  and properly adds the new properties.
      */
-    @Category(FrequentlyFailingTests.class) // ACS-961
     @Test
     public void aPrivateCopyMustAllowTheAdditionOfAspects_CMIS_1_1_Version()
     {

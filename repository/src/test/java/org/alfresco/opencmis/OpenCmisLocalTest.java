@@ -25,6 +25,7 @@
  */
 package org.alfresco.opencmis;
 
+import javax.swing.text.Utilities;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -500,6 +501,13 @@ public class OpenCmisLocalTest extends TestCase
         NodeRef doc1NodeRef = cmisIdToNodeRef(doc1.getId());
         NodeRef doc1WorkingCopy = cociService.getWorkingCopy(doc1NodeRef);
 
+        try
+        {
+            Thread.sleep(1000);
+        } catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
         /* Cancel Checkout */
         cociService.cancelCheckout(doc1WorkingCopy);
 

@@ -1830,38 +1830,45 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return cursor.iterator();
     }
 
-    @Override public List<String> purgeDeletedNodes(long minAge, int deleteBatchSize)
+    @Override
+    public List<String> purgeDeletedNodes(long minAge, int deleteBatchSize)
     {
         final long maxCommitTime = System.currentTimeMillis() - minAge;
         Iterator<Long> nodeIdIterator = this.selectDeletedNodesByCommitTime(maxCommitTime);
         ArrayList<Long> nodeIdList = new ArrayList<>();
         List<String> deleteResult = new ArrayList<>();
-        logger.debug("nodes selected for deletion, deleteBatchSize:" + deleteBatchSize);
-        while (nodeIdIterator!=null && nodeIdIterator.hasNext())
+        if (isDebugEnabled)
+        {
+            logger.debug("nodes selected for deletion, deleteBatchSize:" + deleteBatchSize);
+        }
+        while (nodeIdIterator != null && nodeIdIterator.hasNext())
         {
             if (deleteBatchSize == nodeIdList.size())
             {
                 int count = deleteSelectedNodesAndProperties(nodeIdList);
-                logger.debug("nodes deleted:" + count);
+                if (isDebugEnabled)
+                {
+                    logger.debug("nodes deleted:" + count);
+                }
                 deleteResult.add("Purged old nodes: " + count);
                 nodeIdList.clear();
-
             }
             else
             {
                 nodeIdList.add(nodeIdIterator.next());
             }
-
         }
         if (nodeIdList.size() > 0)
         {
             int count = deleteSelectedNodesAndProperties(nodeIdList);
-           logger.debug("remaining nodes deleted:" + count);
+            if (isDebugEnabled)
+            {
+                logger.debug("remaining nodes deleted:" + count);
+            }
             deleteResult.add("Purged old nodes: " + count);
             nodeIdList.clear();
         }
         return deleteResult;
-
     }
 
     public List<String> purgeEmptyTransactions(long minAge, int deleteBatchSize)
@@ -1870,15 +1877,20 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         Iterator<Long> transactionIdIterator = this.selectUnusedTransactionsByCommitTime(maxCommitTime);
         ArrayList<Long> transactionIdList = new ArrayList<>();
         List<String> deleteResult = new ArrayList<>();
-        logger.debug("transactions selected for deletion, deleteBatchSize:"+deleteBatchSize);
-
+        if (isDebugEnabled)
+        {
+            logger.debug("transactions selected for deletion, deleteBatchSize:" + deleteBatchSize);
+        }
         while (transactionIdIterator.hasNext())
         {
             if (deleteBatchSize == transactionIdList.size())
             {
                 int count = deleteSelectedTransactions(transactionIdList);
                 deleteResult.add("Purged old transactions: " + count);
-                logger.debug("transactions deleted:" + count);
+                if (isDebugEnabled)
+                {
+                    logger.debug("transactions deleted:" + count);
+                }
                 transactionIdList.clear();
 
             }
@@ -1886,26 +1898,33 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             {
                 transactionIdList.add(transactionIdIterator.next());
             }
-
         }
         if (transactionIdList.size() > 0)
         {
-            int count  = deleteSelectedTransactions(transactionIdList);
+            int count = deleteSelectedTransactions(transactionIdList);
             deleteResult.add("Purged old transactions: " + count);
-            logger.debug("final batch of transactions deleted:" + count);
+            if (isDebugEnabled)
+            {
+                logger.debug("final batch of transactions deleted:" + count);
+            }
             transactionIdList.clear();
         }
         return deleteResult;
-
     }
 
     private int deleteSelectedNodesAndProperties(List<Long> nodeIdList)
     {
         int cnt = template.delete(DELETE_NODE_PROPS_BY_NODE_ID, nodeIdList);
-        logger.debug("nodes props deleted:" + cnt);
-        // Finally remove the nodes
+        if (isDebugEnabled)
+        {
+            logger.debug("nodes props deleted:" + cnt);
+        }
+        // Finally, remove the nodes
         cnt = template.delete(DELETE_NODES_BY_ID, nodeIdList);
-        logger.debug("nodes  deleted:" + cnt);
+        if (isDebugEnabled)
+        {
+            logger.debug("nodes  deleted:" + cnt);
+        }
         return cnt;
     }
 

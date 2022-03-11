@@ -76,21 +76,21 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         }
         List<String> purgedNodes, purgedTxns;
 
-        if(NODE_TABLE_CLEANER_ALG_V2.equals(algorithm))
+        if (NODE_TABLE_CLEANER_ALG_V2.equals(algorithm))
         {
             refreshLock();
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("DeletedNodeCleanupWorker using batch deletion: About to execute the clean up nodes ");
 
             }
             purgedNodes = purgeOldDeletedNodesV2(minPurgeAgeMs);
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug(purgedNodes);
             }
             refreshLock();
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("DeletedNodeCleanupWorker: About to execute the clean up txns ");
             }
@@ -100,7 +100,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         else
         {
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("DeletedNodeCleanupWorker: About to start purgeOldDeletedNodes ");
             }
@@ -108,7 +108,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             purgedNodes = purgeOldDeletedNodes(minPurgeAgeMs);
             logger.debug(purgedNodes);
 
-            if(logger.isDebugEnabled())
+            if (logger.isDebugEnabled())
             {
                 logger.debug("DeletedNodeCleanupWorker: About to start purgeOldEmptyTransactions ");
             }
@@ -116,7 +116,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             purgedTxns = purgeOldEmptyTransactions(minPurgeAgeMs);
         }
 
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
             logger.debug(purgedTxns);
         }
@@ -124,7 +124,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         List<String> allResults = new ArrayList<>(100);
         allResults.addAll(purgedNodes);
         allResults.addAll(purgedTxns);
-        
+
         return allResults;
     }
 
@@ -195,7 +195,6 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         }
         
         long loopPurgeSize = purgeSize;
-        Long purgeCount = 0l;
         if(logger.isDebugEnabled())
         {
             logger.debug("DeletedNodeCleanupWorker: purgeOldDeletedNodes started ");
@@ -218,9 +217,9 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             try
             {
                 DeleteNodesByTransactionsCallback purgeNodesCallback = new DeleteNodesByTransactionsCallback(nodeDAO, fromCommitTime, toCommitTime);
-                purgeCount = txnHelper.doInTransaction(purgeNodesCallback, false, true);
+                Long purgeCount = txnHelper.doInTransaction(purgeNodesCallback, false, true);
 
-                if (purgeCount.longValue() > 0)
+                if (purgeCount > 0)
                 {
                     String msg =
                         "Purged old nodes: \n" +
@@ -368,9 +367,9 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             }
 
             fromCommitTime += purgeSize;
-            if(fromCommitTime >= maxCommitTime)
+            if (fromCommitTime >= maxCommitTime)
             {
-            	break;
+                break;
             }
         }
         logger.debug("DeletedNodeCleanupWorker: purgeOldEmptyTransactions finished ");
@@ -382,7 +381,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
     private List<String> purgeOldDeletedNodesV2(long minAge)
     {
         refreshLock();
-         final List<String> returnList = new ArrayList<>();
+        final List<String> returnList = new ArrayList<>();
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
 
         RetryingTransactionCallback<Void> callback = () -> {
@@ -390,7 +389,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
             return null;
         };
 
-        txnHelper.doInTransaction(callback,false,true);
+        txnHelper.doInTransaction(callback, false, true);
         return returnList;
     }
 
@@ -403,9 +402,8 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         RetryingTransactionCallback<Void> callback = () -> {
             returnList.addAll(nodeDAO.purgeEmptyTransactions(minAge, deleteBatchSize));
             return null;
-
         };
-        txnHelper.doInTransaction(callback,false,true);
+        txnHelper.doInTransaction(callback, false, true);
 
         return returnList;
     }

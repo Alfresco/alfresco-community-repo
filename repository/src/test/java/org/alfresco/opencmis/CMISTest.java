@@ -2017,7 +2017,7 @@ public class CMISTest
      * MNT-20139
      * CmisConnector returns wrong values for changeLogToken and hasMoreItems
      */
- /*   @Test
+    @Test
     public void testGetContentChanges()
     {
         setupAudit();
@@ -2034,29 +2034,29 @@ public class CMISTest
 
             Holder<String> changeLogToken = new Holder<String>();
 
-            *//*
+            /*
              * GetContentChanges with maxitems = 2 and null changeLogToken
              * Check that changeLogToken should be the latest from the retrieved entries
-             *//*
+            */
             ObjectList ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
             assertEquals(2, ol.getObjects().size());
             assertEquals("ChangeLogToken should be latest from retrieved entries.", "2", changeLogToken.getValue());
             assertTrue(ol.hasMoreItems());
 
-            *//*
+            /*
              * GetContentChanges with maxitems = 2 and changeLogToken = 0
              * Check that changeLogToken should be the latest from the retrieved entries
-             *//*
+            */
             changeLogToken.setValue(Integer.toString(0));
             ol = this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("2"));
             assertEquals(2, ol.getObjects().size());
             assertEquals("ChangeLogToken should be latest from retrieved entries.", "2", changeLogToken.getValue());
             assertTrue(ol.hasMoreItems());
 
-            *//*
+            /*
              * GetContentChanges with changeLogToken = maxChangeLogToken - 2
              * Check that changeLogToken is not null when the latest entries (fromToken) are retrieved
-             *//*
+            */
             Long latestToken = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Long>()
             {
                 public Long execute() throws Exception
@@ -2080,7 +2080,6 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         };
     }
-*/
     /**
      * MNT-10223
      * Check the IsLatestMajorVersion for a doc with minor version.
@@ -2353,7 +2352,7 @@ public class CMISTest
         }
     }
 
- /*   @Category(RedundantTests.class)
+    @Category(RedundantTests.class)
     @Test
     public void mnt10548test() throws Exception
     {
@@ -2370,19 +2369,19 @@ public class CMISTest
                     {
                         NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
                         
-                        *//* Create folder within companyHome *//*
+                        //* Create folder within companyHome *//
                         String folderName = TEST_NAME + GUID.generate();
                         FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
                         nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
                         assertNotNull(folderInfo);
                         
-                        *//* Create content *//*
+                        //* Create content *//
                         String docName = TEST_NAME + GUID.generate();
                         FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
                         assertNotNull(document);
                         nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, docName);
                         
-                        *//* Add some tags *//*
+                        //* Add some tags *//
                         NodeRef nodeRef = document.getNodeRef();
                         taggingService.addTag(nodeRef, "tag1");
                         taggingService.addTag(nodeRef, "tag2");
@@ -2421,13 +2420,13 @@ public class CMISTest
         List<?> props = propData.getValues();
         assertTrue(props.size() == 3);
         
-        *//* MNT-10548 fix : CMIS should return List of String, not List of NodeRef *//*
+        //* MNT-10548 fix : CMIS should return List of String, not List of NodeRef *//
         for(Object o : props)
         {
             assertTrue(o.getClass() + " found but String expected", o instanceof String);
         }
     }
-*/
+
     /**
      * CMIS 1.0 aspect properties should provide the following CMIS attributes:
      * propertyDefinitionId, displayName, localName, queryName

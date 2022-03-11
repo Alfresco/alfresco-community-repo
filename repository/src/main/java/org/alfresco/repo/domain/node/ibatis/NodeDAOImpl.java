@@ -25,16 +25,6 @@
  */
 package org.alfresco.repo.domain.node.ibatis;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
@@ -65,12 +55,24 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 
 
 /**
@@ -166,6 +168,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_TXN_MIN_TX_ID_IN_NODE_IDRANGE = "alfresco.node.select_TxnMinTxIdInNodeIdRange";
     private static final String SELECT_TXN_MAX_TX_ID_IN_NODE_IDRANGE = "alfresco.node.select_TxnMaxTxIdInNodeIdRange";
     private static final String SELECT_TXN_NEXT_TXN_COMMIT_TIME = "select_TxnNextTxnCommitTime";
+    private static final String SELECT_NODES_DELETED_BY_TXN_COMMIT_TIME = "alfresco.node.select.select_Deleted_NodesByTxnCommitTime";
+    private static final String DELETE_NODES_BY_ID = "alfresco.node.delete_NodesById";
+    private static final String DELETE_NODE_PROPS_BY_NODE_ID = "alfresco.node.delete_NodePropsByNodeId";
+    private static final String SELECT_TXNS_UNUSED_BY_TXN_COMMIT_TIME = "alfresco.node.select.select_Txns_UnusedByTxnCommitTime";
+    private static final String DELETE_TXNS_UNUSED_BY_ID = "alfresco.node.delete_Txns_UnusedById";
+
     
     protected QNameDAO qnameDAO;
     protected DictionaryService dictionaryService;
@@ -1794,8 +1802,138 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         return template.selectOne(SELECT_TXN_NEXT_TXN_COMMIT_TIME, fromCommitTimeEntity);
     }
-    
-    
+
+    public Iterator<Long> selectDeletedNodesByCommitTime(long maxCommitTime)
+    {
+        // Get the deleted nodes
+        Pair<Long, QName> deletedTypePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
+        if (deletedTypePair == null)
+        {
+            // Nothing to do
+            return null;
+        }
+
+        TransactionQueryEntity transactionQueryEntity = new TransactionQueryEntity();
+        transactionQueryEntity.setMaxCommitTime(maxCommitTime);
+        transactionQueryEntity.setTypeQNameId(deletedTypePair.getFirst());
+        Cursor<Long> cursor = template.selectCursor(SELECT_NODES_DELETED_BY_TXN_COMMIT_TIME, transactionQueryEntity);
+
+        return cursor.iterator();
+    }
+
+    public Iterator<Long> selectUnusedTransactionsByCommitTime(long maxCommitTime)
+    {
+        TransactionQueryEntity maxCommitTimeEntity = new TransactionQueryEntity();
+        maxCommitTimeEntity.setMaxCommitTime(maxCommitTime);
+        Cursor<Long> cursor = template.selectCursor(SELECT_TXNS_UNUSED_BY_TXN_COMMIT_TIME, maxCommitTimeEntity);
+
+        return cursor.iterator();
+    }
+
+    @Override
+    public List<String> purgeDeletedNodes(long minAge, int deleteBatchSize)
+    {
+        final long maxCommitTime = System.currentTimeMillis() - minAge;
+        Iterator<Long> nodeIdIterator = this.selectDeletedNodesByCommitTime(maxCommitTime);
+        ArrayList<Long> nodeIdList = new ArrayList<>();
+        List<String> deleteResult = new ArrayList<>();
+        if (isDebugEnabled)
+        {
+            logger.debug("nodes selected for deletion, deleteBatchSize:" + deleteBatchSize);
+        }
+        while (nodeIdIterator != null && nodeIdIterator.hasNext())
+        {
+            if (deleteBatchSize == nodeIdList.size())
+            {
+                int count = deleteSelectedNodesAndProperties(nodeIdList);
+                if (isDebugEnabled)
+                {
+                    logger.debug("nodes deleted:" + count);
+                }
+                deleteResult.add("Purged old nodes: " + count);
+                nodeIdList.clear();
+            }
+            else
+            {
+                nodeIdList.add(nodeIdIterator.next());
+            }
+        }
+        if (nodeIdList.size() > 0)
+        {
+            int count = deleteSelectedNodesAndProperties(nodeIdList);
+            if (isDebugEnabled)
+            {
+                logger.debug("remaining nodes deleted:" + count);
+            }
+            deleteResult.add("Purged old nodes: " + count);
+            nodeIdList.clear();
+        }
+        return deleteResult;
+    }
+
+    public List<String> purgeEmptyTransactions(long minAge, int deleteBatchSize)
+    {
+        final long maxCommitTime = System.currentTimeMillis() - minAge;
+        Iterator<Long> transactionIdIterator = this.selectUnusedTransactionsByCommitTime(maxCommitTime);
+        ArrayList<Long> transactionIdList = new ArrayList<>();
+        List<String> deleteResult = new ArrayList<>();
+        if (isDebugEnabled)
+        {
+            logger.debug("transactions selected for deletion, deleteBatchSize:" + deleteBatchSize);
+        }
+        while (transactionIdIterator.hasNext())
+        {
+            if (deleteBatchSize == transactionIdList.size())
+            {
+                int count = deleteSelectedTransactions(transactionIdList);
+                deleteResult.add("Purged old transactions: " + count);
+                if (isDebugEnabled)
+                {
+                    logger.debug("transactions deleted:" + count);
+                }
+                transactionIdList.clear();
+
+            }
+            else
+            {
+                transactionIdList.add(transactionIdIterator.next());
+            }
+        }
+        if (transactionIdList.size() > 0)
+        {
+            int count = deleteSelectedTransactions(transactionIdList);
+            deleteResult.add("Purged old transactions: " + count);
+            if (isDebugEnabled)
+            {
+                logger.debug("final batch of transactions deleted:" + count);
+            }
+            transactionIdList.clear();
+        }
+        return deleteResult;
+    }
+
+    private int deleteSelectedNodesAndProperties(List<Long> nodeIdList)
+    {
+        int cnt = template.delete(DELETE_NODE_PROPS_BY_NODE_ID, nodeIdList);
+        if (isDebugEnabled)
+        {
+            logger.debug("nodes props deleted:" + cnt);
+        }
+        // Finally, remove the nodes
+        cnt = template.delete(DELETE_NODES_BY_ID, nodeIdList);
+        if (isDebugEnabled)
+        {
+            logger.debug("nodes  deleted:" + cnt);
+        }
+        return cnt;
+    }
+
+    private int deleteSelectedTransactions(List<Long> transactionIdList)
+    {
+        return template.delete(DELETE_TXNS_UNUSED_BY_ID, transactionIdList);
+    }
+
+
     /*
      * DAO OVERRIDES
      */

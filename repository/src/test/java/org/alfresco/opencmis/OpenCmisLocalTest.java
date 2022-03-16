@@ -472,7 +472,6 @@ public class OpenCmisLocalTest extends TestCase
      * This test would have fit better within CheckOutCheckInServiceImplTest but
      * was added here to make use of existing methods
      */
-    @Category(FrequentlyFailingTests.class) // ACS-962
     public void testCancelCheckoutWhileInCheckedOutState()
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);

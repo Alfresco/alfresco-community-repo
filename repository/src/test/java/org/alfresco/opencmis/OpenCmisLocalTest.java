@@ -25,6 +25,9 @@
  */
 package org.alfresco.opencmis;
 
+import static java.time.Duration.of;
+import static java.time.temporal.ChronoUnit.MILLIS;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +36,8 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -500,21 +505,45 @@ public class OpenCmisLocalTest extends TestCase
         NodeRef doc1NodeRef = cmisIdToNodeRef(doc1.getId());
         NodeRef doc1WorkingCopy = cociService.getWorkingCopy(doc1NodeRef);
 
-        try
-        {
-            Thread.sleep(1000);
-        } catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-
         /* Cancel Checkout */
-        cociService.cancelCheckout(doc1WorkingCopy);
+        waitForMethodToFinish(of(100, MILLIS), () ->
+                cociService.cancelCheckout(doc1WorkingCopy));
 
         /* Check if both the working copy and the document were deleted */
         NodeService nodeService = serviceRegistry.getNodeService();
         assertFalse(nodeService.exists(doc1NodeRef));
         assertFalse(nodeService.exists(doc1WorkingCopy));
+    }
+
+    private void waitForMethodToFinish(Duration timeout, Runnable method)
+    {
+        final long lastStep = 10;
+        final long delayMillis = timeout.toMillis() > lastStep ? timeout.toMillis() / lastStep : 1;
+
+        for (int step = 0; step <= lastStep; step++)
+        {
+            try
+            {
+                method.run();
+            }
+            catch (Exception e)
+            {
+                if (step == lastStep)
+                {
+                    //Method failed - no more waiting.
+                    throw e;
+                }
+            }
+        }
+        try
+        {
+            Thread.sleep(delayMillis);
+        }
+        catch (InterruptedException e)
+        {
+            Thread.currentThread().interrupt();
+            fail("Thread has been interrupted.");
+        }
     }
 
     public void testEncodingForCreateContentStream()
@@ -578,4 +607,6 @@ public class OpenCmisLocalTest extends TestCase
         // because Alfresco does automatic charset detection, so we will ignore this explicit request
         return target.createDocument(props, contentStream, VersioningState.MAJOR);
     }
+
+
 }

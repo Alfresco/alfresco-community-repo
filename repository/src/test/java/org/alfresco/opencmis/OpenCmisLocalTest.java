@@ -525,8 +525,7 @@ public class OpenCmisLocalTest extends TestCase
             {
                 method.run();
                 return;
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
                 if (step == lastStep)
                 {
@@ -534,15 +533,14 @@ public class OpenCmisLocalTest extends TestCase
                     throw e;
                 }
             }
-        }
-        try
-        {
-            Thread.sleep(delayMillis);
-        }
-        catch (InterruptedException e)
-        {
-            Thread.currentThread().interrupt();
-            fail("Thread has been interrupted.");
+            try
+            {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+                fail("Thread has been interrupted.");
+            }
         }
     }
 
@@ -607,6 +605,4 @@ public class OpenCmisLocalTest extends TestCase
         // because Alfresco does automatic charset detection, so we will ignore this explicit request
         return target.createDocument(props, contentStream, VersioningState.MAJOR);
     }
-
-
 }

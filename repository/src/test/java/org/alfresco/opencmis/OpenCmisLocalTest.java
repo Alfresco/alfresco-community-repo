@@ -37,7 +37,6 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.time.Duration;
-import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -542,6 +541,8 @@ public class OpenCmisLocalTest extends TestCase
                 fail("Thread has been interrupted.");
             }
         }
+
+        throw new IllegalStateException("Unexpected.");
     }
 
     public void testEncodingForCreateContentStream()

@@ -488,7 +488,7 @@ public class OpenCmisLocalTest extends TestCase
 
         // Set file properties
         String docname = "myDoc-" + GUID.generate() + ".txt";
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         {
             props.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
             props.put(PropertyIds.NAME, docname);
@@ -524,6 +524,7 @@ public class OpenCmisLocalTest extends TestCase
             try
             {
                 method.run();
+                return;
             }
             catch (Exception e)
             {

@@ -31,6 +31,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import org.alfresco.repo.domain.locks.LockDAO;
@@ -551,19 +552,19 @@ public class JobLockServiceTest extends TestCase
             TestHelper.waitForMethodToFinish(of(100, MILLIS), () -> {
                 assertEquals(false,callback.released);
                 assertEquals(0,callback.getIsActiveCount());
-            });
+            }, AssertionFailedError.class);
 
             TestHelper.waitForMethodToFinish(of(1, SECONDS), () -> {
                 assertEquals(false, callback.released);
                 assertEquals(1, callback.getIsActiveCount());
-            });
+            }, AssertionFailedError.class);
 
             callback.isActive = false;
 
             TestHelper.waitForMethodToFinish(of(2, SECONDS), () -> {
                 assertEquals(true, callback.released);
                 assertEquals(2, callback.getIsActiveCount());
-            });
+            }, AssertionFailedError.class);
         }
         catch (IllegalArgumentException e)
         {            

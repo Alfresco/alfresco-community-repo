@@ -80,6 +80,7 @@ import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStorageException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
@@ -90,6 +91,7 @@ import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Tests basic local CMIS interaction
@@ -504,7 +506,8 @@ public class OpenCmisLocalTest extends TestCase
 
         /* Cancel Checkout */
         TestHelper.waitForMethodToFinish(of(100, MILLIS), () ->
-                cociService.cancelCheckout(doc1WorkingCopy));
+                cociService.cancelCheckout(doc1WorkingCopy),
+                CmisRuntimeException.class, ConcurrencyFailureException.class);
 
         /* Check if both the working copy and the document were deleted */
         NodeService nodeService = serviceRegistry.getNodeService();

@@ -30,10 +30,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A helper class to create a concise test.
@@ -43,6 +45,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TestHelper
 {
+    private static final Log logger = LogFactory.getLog(TestHelper.class);
+
     /**
      * Checks the thrown exception is the expected exception.
      *
@@ -106,13 +110,17 @@ public class TestHelper
      * it waits and re-executes the given method again.
      * This will continue until the method do not fail or the <b>{@code timeout}</b> has been reached.
      *
-     * @param timeout       max time of wait.
-     * @param method        the method that is called for retry.
-     * @throws Exception    after failing to finish given method with success.
+     * @param timeout               max time of wait.
+     * @param method                the method that is called for retry.
+     * @param expectedExceptions    array of excepted exception.
+     * @throws Exception            after failing to finish given method with success.
      */
-    public static void waitForMethodToFinish(Duration timeout, Runnable method)
+    @SafeVarargs
+    public static void waitForMethodToFinish(
+            @NotNull Duration timeout,
+            Runnable method,
+            Class<? extends Throwable> ... expectedExceptions)
     {
-        final Log logger = LogFactory.getLog(method.getClass());
         logger.debug("Waiting for method to succeed.");
         final long lastStep = 10;
         final long delayMillis = timeout.toMillis() > lastStep ? timeout.toMillis() / lastStep : 1;
@@ -124,8 +132,12 @@ public class TestHelper
                 method.run();
                 logger.debug("Method succeeded.");
                 return;
-            } catch (Exception e)
+            } catch (Throwable e)
             {
+                if(!Arrays.asList(expectedExceptions).contains(e))
+                {
+                    throw e;
+                }
                 if (step == lastStep)
                 {
                     logger.debug("Method failed - no more waiting.");

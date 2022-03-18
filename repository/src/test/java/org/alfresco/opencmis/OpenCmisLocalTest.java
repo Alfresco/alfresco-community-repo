@@ -36,7 +36,6 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.time.Duration;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +64,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.testing.category.FrequentlyFailingTests;
+import org.alfresco.util.TestHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -504,45 +503,13 @@ public class OpenCmisLocalTest extends TestCase
         NodeRef doc1WorkingCopy = cociService.getWorkingCopy(doc1NodeRef);
 
         /* Cancel Checkout */
-        waitForMethodToFinish(of(100, MILLIS), () ->
+        TestHelper.waitForMethodToFinish(of(100, MILLIS), () ->
                 cociService.cancelCheckout(doc1WorkingCopy));
 
         /* Check if both the working copy and the document were deleted */
         NodeService nodeService = serviceRegistry.getNodeService();
         assertFalse(nodeService.exists(doc1NodeRef));
         assertFalse(nodeService.exists(doc1WorkingCopy));
-    }
-
-    private void waitForMethodToFinish(Duration timeout, Runnable method)
-    {
-        final long lastStep = 10;
-        final long delayMillis = timeout.toMillis() > lastStep ? timeout.toMillis() / lastStep : 1;
-
-        for (int step = 0; step <= lastStep; step++)
-        {
-            try
-            {
-                method.run();
-                return;
-            } catch (Exception e)
-            {
-                if (step == lastStep)
-                {
-                    //Method failed - no more waiting.
-                    throw e;
-                }
-            }
-            try
-            {
-                Thread.sleep(delayMillis);
-            } catch (InterruptedException e)
-            {
-                Thread.currentThread().interrupt();
-                fail("Thread has been interrupted.");
-            }
-        }
-
-        throw new IllegalStateException("Unexpected.");
     }
 
     public void testEncodingForCreateContentStream()

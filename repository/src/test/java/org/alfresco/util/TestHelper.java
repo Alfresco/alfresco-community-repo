@@ -134,7 +134,7 @@ public class TestHelper
                 return;
             } catch (Throwable e)
             {
-                if(!Arrays.asList(expectedExceptions).contains(e))
+                if(Arrays.stream(expectedExceptions).noneMatch(expEx -> expEx.isInstance(e)))
                 {
                     throw e;
                 }

@@ -35,7 +35,6 @@ import java.util.function.Supplier;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * A helper class to create a concise test.
@@ -117,7 +116,7 @@ public class TestHelper
      */
     @SafeVarargs
     public static void waitForMethodToFinish(
-            @NotNull Duration timeout,
+            Duration timeout,
             Runnable method,
             Class<? extends Throwable> ... expectedExceptions)
     {

@@ -112,8 +112,7 @@ public class TestHelper
      */
     public static void waitForMethodToFinish(Duration timeout, Runnable method)
     {
-        final Log logger = LogFactory.getLog(method.getClass());
-        logger.debug("Waiting for method to succeed.");
+        //Waiting for method to succeed.
         final long lastStep = 10;
         final long delayMillis = timeout.toMillis() > lastStep ? timeout.toMillis() / lastStep : 1;
 
@@ -122,16 +121,16 @@ public class TestHelper
             try
             {
                 method.run();
-                logger.debug("Method succeeded.");
+                //Method succeeded.
                 return;
             } catch (Exception e)
             {
                 if (step == lastStep)
                 {
-                    logger.debug("Method failed - no more waiting.");
+                    //Method failed - no more waiting.
                     throw e;
                 }
-                logger.debug("Method failed. Waiting until it succeeds.", e);
+                //Method failed. Waiting until it succeeds.
             }
             try
             {

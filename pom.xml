@@ -27,7 +27,7 @@
         <acs.version.minor>1</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
         <acs.version.label />
-        <amp.min.version>${acs.version.major}.0.0</amp.min.version>
+        <amp.min.version>${acs.version.major}.1.0</amp.min.version>
 
         <version.edition>Community</version.edition>
         <licenseName>community</licenseName>

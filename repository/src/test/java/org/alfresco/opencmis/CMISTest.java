@@ -41,6 +41,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -126,6 +128,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.TestHelper;
 import org.alfresco.util.testing.category.FrequentlyFailingTests;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
@@ -3972,7 +3975,6 @@ public class CMISTest
      *  This test makes sure that once a copy is checked out, updateProperties method can be called
      *  and properly adds the new properties.
      */
-    @Category(FrequentlyFailingTests.class) // ACS-961
     @Test
     public void aPrivateCopyMustAllowTheAdditionOfAspects_CMIS_1_1_Version()
     {
@@ -4008,16 +4010,20 @@ public class CMISTest
                 String objectId = cmisService.create(repositoryId, properties, repositoryHelper.getCompanyHome().getId(), contentStream, VersioningState.MAJOR, null, null);
 
                 final Holder<String> objectIdHolder = new Holder<String>(objectId);
-                cmisService.checkOut(repositoryId, objectIdHolder, null, null);
-                cmisService.getObject(repositoryId, objectIdHolder.getValue(), null, null, null, null, null, null, null);
+                TestHelper.waitForMethodToFinish(Duration.of(1, ChronoUnit.SECONDS), () -> {
+                    cmisService.checkOut(repositoryId, objectIdHolder, null, null);
+                    cmisService.getObject(repositoryId, objectIdHolder.getValue(), null, null, null, null, null, null, null);
+                }, CmisRuntimeException.class);
 
                 properties = new PropertiesImpl();
                 properties.addProperty(new PropertyStringImpl(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, Arrays.asList(aspectName)));
                 properties.addProperty(new PropertyStringImpl(propertyName, propertyValue));
 
-                cmisService.updateProperties(repositoryId, objectIdHolder, null, properties, null);
-
-                cmisService.checkIn(repositoryId, objectIdHolder, false, null, null, "checkin", null, null, null, null);
+                PropertiesImpl finalProperties = properties;
+                TestHelper.waitForMethodToFinish(Duration.of(1, ChronoUnit.SECONDS), () -> {
+                    cmisService.updateProperties(repositoryId, objectIdHolder, null, finalProperties, null);
+                    cmisService.checkIn(repositoryId, objectIdHolder, false, null, null, "checkin", null, null, null, null);
+                }, CmisRuntimeException.class);
 
                 Properties propertiesValues = cmisService.getProperties(repositoryId, objectIdHolder.getValue(), null, null);
                 return propertiesValues;

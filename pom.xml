@@ -115,7 +115,7 @@
         <dependency.postgresql.version>42.3.2</dependency.postgresql.version>
         <dependency.mysql.version>8.0.27</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
-        <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
+        <dependency.mariadb.version>3.0.4</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.47</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
         <dependency.tas-restapi.version>1.79</dependency.tas-restapi.version>

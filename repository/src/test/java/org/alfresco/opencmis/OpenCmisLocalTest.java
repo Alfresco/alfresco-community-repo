@@ -25,6 +25,9 @@
  */
 package org.alfresco.opencmis;
 
+import static java.time.Duration.of;
+import static java.time.temporal.ChronoUnit.MILLIS;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +64,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.testing.category.FrequentlyFailingTests;
+import org.alfresco.util.TestHelper;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
@@ -77,6 +80,7 @@ import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStorageException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
@@ -87,6 +91,7 @@ import org.apache.chemistry.opencmis.server.shared.TempStoreOutputStreamFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.ConcurrencyFailureException;
 
 /**
  * Tests basic local CMIS interaction
@@ -467,7 +472,6 @@ public class OpenCmisLocalTest extends TestCase
      * This test would have fit better within CheckOutCheckInServiceImplTest but
      * was added here to make use of existing methods
      */
-    @Category(FrequentlyFailingTests.class) // ACS-962
     public void testCancelCheckoutWhileInCheckedOutState()
     {
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -484,7 +488,7 @@ public class OpenCmisLocalTest extends TestCase
 
         // Set file properties
         String docname = "myDoc-" + GUID.generate() + ".txt";
-        Map<String, String> props = new HashMap<String, String>();
+        Map<String, String> props = new HashMap<>();
         {
             props.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
             props.put(PropertyIds.NAME, docname);
@@ -501,7 +505,9 @@ public class OpenCmisLocalTest extends TestCase
         NodeRef doc1WorkingCopy = cociService.getWorkingCopy(doc1NodeRef);
 
         /* Cancel Checkout */
-        cociService.cancelCheckout(doc1WorkingCopy);
+        TestHelper.waitForMethodToFinish(of(100, MILLIS), () ->
+                cociService.cancelCheckout(doc1WorkingCopy),
+                CmisRuntimeException.class, ConcurrencyFailureException.class);
 
         /* Check if both the working copy and the document were deleted */
         NodeService nodeService = serviceRegistry.getNodeService();

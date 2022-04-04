@@ -128,7 +128,7 @@ public interface RuntimeActionService
 
     /**
      * Allows you to check if an action can be executed/used in a given execution context
-     * @param actionExecutionData describes action and its execution context
+     * @param actionExecutionContext describes action and its execution context
      * @return true if action can be executed, false otherwise
      */
     default boolean isExposed(ActionExecutionContext actionExecutionContext)

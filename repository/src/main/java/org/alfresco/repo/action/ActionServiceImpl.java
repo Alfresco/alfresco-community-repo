@@ -1921,7 +1921,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             return isPublic.test(actionExecutionContext.getActionId());
         }
 
-        private Stream<String> getConfigKeys(ActionExecutionContext actionExecutionContext)
+        private static Stream<String> getConfigKeys(ActionExecutionContext actionExecutionContext)
         {
             if (actionExecutionContext.isExecutionSourceKnown())
             {
@@ -1932,9 +1932,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             return Stream.of(getConfigKey(actionExecutionContext.getActionId()));
         }
 
-        private String getConfigKey(String... parts)
+        static String getConfigKey(String... parts)
         {
-            return Stream.of(parts).collect(Collectors.joining(".", "org.alfresco.repo.action.", ".enabled"));
+            return Stream.of(parts).collect(Collectors.joining(".", "org.alfresco.repo.action.", ".exposed"));
         }
     }
 }

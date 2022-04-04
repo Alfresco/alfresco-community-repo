@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -33,7 +33,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
@@ -145,6 +151,13 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * All the parameter constraints
      */
     private Map<String, ParameterConstraint> parameterConstraints = new HashMap<String, ParameterConstraint>();
+
+    private final ActionExecutionValidator actionExecutionValidator;
+
+    public ActionServiceImpl()
+    {
+        actionExecutionValidator = new ActionExecutionValidator(System::getProperty, actionDefinitions::containsKey);
+    }
 
     /**
      * Set the application context
@@ -1870,5 +1883,58 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         LoggingAwareExecuter executer = (LoggingAwareExecuter) this.applicationContext.getBean(action.getActionDefinitionName());
         return executer.onLogException(logger,t, message);
     }
-    
+
+    @Override
+    public boolean isExposed(ActionExecutionContext actionExecutionContext)
+    {
+        return actionExecutionValidator.isExposed(actionExecutionContext);
+    }
+
+    static class ActionExecutionValidator
+    {
+        private final Function<String, String> config;
+        private final Predicate<String> isPublic;
+
+        ActionExecutionValidator(Function<String, String> config, Predicate<String> isPublic)
+        {
+            this.config = Objects.requireNonNull(config);
+            this.isPublic = Objects.requireNonNull(isPublic);
+        }
+
+        boolean isExposed(ActionExecutionContext actionExecutionContext)
+        {
+            Objects.requireNonNull(actionExecutionContext);
+            return isExposedInConfig(actionExecutionContext).orElseGet(() -> isPublic(actionExecutionContext));
+        }
+
+        private Optional<Boolean> isExposedInConfig(ActionExecutionContext actionExecutionContext)
+        {
+            return getConfigKeys(actionExecutionContext).
+                    map(config).
+                    filter(Objects::nonNull).
+                    map(Boolean::parseBoolean).
+                    findFirst();
+        }
+
+        private Boolean isPublic(ActionExecutionContext actionExecutionContext)
+        {
+            return isPublic.test(actionExecutionContext.getActionId());
+        }
+
+        private Stream<String> getConfigKeys(ActionExecutionContext actionExecutionContext)
+        {
+            if (actionExecutionContext.isExecutionSourceKnown())
+            {
+                return Stream.of(
+                        getConfigKey(actionExecutionContext.getExecutionSource(), actionExecutionContext.getActionId()),
+                        getConfigKey(actionExecutionContext.getActionId()));
+            }
+            return Stream.of(getConfigKey(actionExecutionContext.getActionId()));
+        }
+
+        private String getConfigKey(String... parts)
+        {
+            return Stream.of(parts).collect(Collectors.joining(".", "org.alfresco.repo.action.", ".enabled"));
+        }
+    }
 }

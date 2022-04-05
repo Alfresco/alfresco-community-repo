@@ -75,6 +75,9 @@
         <property name="monitor">
             <ref bean="actionServiceMonitor"/>
         </property>
+        <property name="configurationProperties">
+            <ref bean="global-properties"/>
+        </property>
     </bean>
 
     <bean id="defaultAsynchronousActionExecutionQueue" class="org.alfresco.repo.action.AsynchronousActionExecutionQueueImpl" init-method="init">

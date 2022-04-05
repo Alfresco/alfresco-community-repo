@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -126,6 +127,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     private ActionTrackingService actionTrackingService;
     private PolicyComponent policyComponent;
     private ActionServiceMonitor monitor;
+    private Properties configProperties;
+    private ActionExecutionValidator actionExecutionValidator;
 
     /**
      * The asynchronous action execution queues map of name, queue
@@ -151,13 +154,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * All the parameter constraints
      */
     private Map<String, ParameterConstraint> parameterConstraints = new HashMap<String, ParameterConstraint>();
-
-    private final ActionExecutionValidator actionExecutionValidator;
-
-    public ActionServiceImpl()
-    {
-        actionExecutionValidator = new ActionExecutionValidator(System::getProperty, actionDefinitions::containsKey);
-    }
 
     /**
      * Set the application context
@@ -249,7 +245,12 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     {
         this.asynchronousActionExecutionQueues = asynchronousActionExecutionQueues;
     }
-    
+
+    public void setConfigurationProperties(Properties properties)
+    {
+        this.configProperties = properties;
+    }
+
     /**
      * This method registers an {@link AsynchronousActionExecutionQueue} with the {@link ActionService}.
      * @param key String
@@ -269,6 +270,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
                     ActionModel.TYPE_ACTION_PARAMETER, new JavaBehaviour(this, "getCopyCallback"));
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete"),
                     ActionModel.TYPE_ACTION_PARAMETER, new JavaBehaviour(this, "onCopyComplete"));
+        if (configProperties == null)
+        {
+            configProperties = applicationContext.getBean("global-properties", Properties.class);
+        }
+        actionExecutionValidator = new ActionExecutionValidator(configProperties::getProperty, actionDefinitions::containsKey);
     }
 
     /**

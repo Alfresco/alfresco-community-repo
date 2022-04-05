@@ -263,6 +263,7 @@ jobs:
 
     - name: "Remote-api - AppContext01TestSuite"
       if: commit_message !~ /\[skip repo\]/
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
@@ -270,6 +271,7 @@ jobs:
 
     - name: "Remote-api - AppContext02TestSuite"
       if: commit_message !~ /\[skip repo\]/
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
@@ -278,6 +280,7 @@ jobs:
 
     - name: "Remote-api - AppContext03TestSuite"
       if: commit_message !~ /\[skip repo\]/
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
@@ -286,6 +289,7 @@ jobs:
 
     - name: "Remote-api - AppContext04TestSuite"
       if: commit_message !~ /\[skip repo\]/
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1
@@ -294,6 +298,7 @@ jobs:
 
     - name: "Remote-api - AppContextExtraTestSuite"
       if: commit_message !~ /\[skip repo\]/
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       before_script:
         - docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:13.3 postgres -c 'max_connections=300'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.16.1

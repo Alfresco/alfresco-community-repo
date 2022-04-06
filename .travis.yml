@@ -307,8 +307,7 @@ jobs:
     - name: "REST API TAS tests part1"
       # TAS tests are generally skipped on feature branches as they will be repeated on the enterprise repo or community packaging builds
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -316,8 +315,7 @@ jobs:
 
     - name: "REST API TAS tests part2"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -325,8 +323,7 @@ jobs:
 
     - name: "REST API TAS tests part3"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -334,8 +331,7 @@ jobs:
 
     - name: "CMIS TAS tests - BROWSER binding"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -343,8 +339,7 @@ jobs:
 
     - name: "CMIS TAS tests - ATOM binding"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -352,8 +347,7 @@ jobs:
 
     - name: "CMIS TAS tests - WEBSERVICES binding"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal+transforms.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -361,8 +355,7 @@ jobs:
 
     - name: "Email TAS tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -370,8 +363,7 @@ jobs:
 
     - name: "WebDAV TAS tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -379,8 +371,7 @@ jobs:
 
     - name: "Integration TAS tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip tas\]/) OR commit_message =~ /\[tas\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
@@ -395,44 +386,37 @@ jobs:
 
     - name: "AGS Unit & Integration Tests 01 (PostgreSQL)"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 02 (PostgreSQL)"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt2 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 03 (PostgreSQL)"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt3 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Unit & Integration Tests 01 (MySQL) "
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 02 (MySQL) "
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags on MySQL\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt2 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS        Integration Tests 03 (MySQL) "
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-#      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
-      install: skip
+      install: travis_retry travis_wait 40 env REQUIRES_INSTALLED_ARTIFACTS=true bash scripts/travis/build.sh
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt3 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Community Rest API Tests"
       if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
-      install: skip
-#      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
+      install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       addons:
         artifacts:
           paths:

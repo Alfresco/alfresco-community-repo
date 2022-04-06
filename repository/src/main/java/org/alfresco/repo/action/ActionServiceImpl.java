@@ -251,6 +251,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         this.configProperties = properties;
     }
 
+    protected Properties getConfigurationProperties()
+    {
+        return configProperties;
+    }
+
     /**
      * This method registers an {@link AsynchronousActionExecutionQueue} with the {@link ActionService}.
      * @param key String

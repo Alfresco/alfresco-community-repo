@@ -11,6 +11,18 @@
          <value>1000</value>
       </property>
    </bean>
+
+   <bean id="public-test-action" class="org.alfresco.repo.action.ActionServiceImplTest$NoOpActionExecuter" parent="action-executer">
+      <property name="publicAction">
+         <value>true</value>
+      </property>
+   </bean>
+
+   <bean id="private-test-action" class="org.alfresco.repo.action.ActionServiceImplTest$NoOpActionExecuter" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+   </bean>
    
    <bean id="sleepActionFilter" class="org.alfresco.repo.action.ActionServiceImplTest$SleepActionFilter" parent="baseActionFilter">
        <property name="name">
@@ -31,4 +43,28 @@
    <bean id="transient-fail-action"
          class="org.alfresco.repo.action.ActionServiceImplTest$TransientFailActionExecuter"
          parent="action-executer" />
+
+   <bean id="extendedActionServiceWithoutConfigurationProperty" class="org.alfresco.repo.action.ActionServiceImplTest$TestExtendedActionServiceImpl" init-method="init">
+      <property name="policyComponent">
+         <ref bean="policyComponent" />
+      </property>
+      <property name="nodeService">
+         <ref bean="NodeService" />
+      </property>
+      <property name="searchService">
+         <ref bean="ADMSearchService" />
+      </property>
+      <property name="authenticationContext">
+         <ref bean="authenticationContext" />
+      </property>
+      <property name="actionTrackingService">
+         <ref bean="actionTrackingService" />
+      </property>
+      <property name="dictionaryService">
+         <ref bean="DictionaryService" />
+      </property>
+      <property name="monitor">
+         <ref bean="actionServiceMonitor"/>
+      </property>
+   </bean>
 </beans>

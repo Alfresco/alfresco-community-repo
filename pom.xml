@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>13.4-SNAPSHOT</version> 
+    <version>13.4-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -61,7 +61,7 @@
         <dependency.jackson-databind.version>2.12.4</dependency.jackson-databind.version>
         <dependency.cxf.version>3.4.4</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.27</dependency.webscripts.version>
+        <dependency.webscripts.version>8.29</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.69</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.11.2</dependency.mockito-core.version>
         <dependency.mockito-all.version>1.10.19</dependency.mockito-all.version>

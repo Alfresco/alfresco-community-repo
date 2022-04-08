@@ -81,6 +81,11 @@ public class PrivateActionValidationTest
 
         Assert.assertTrue(validator.isExposed(builder("privateA").build()));
         Assert.assertTrue(validator.isExposed(builder("privateA").withExecutionSource("test").build()));
+        Assert.assertTrue(validator.isExposed(builder("privateA").withExecutionSource("test2").build()));
+
+        Assert.assertFalse(validator.isExposed(builder("privateB").build()));
+        Assert.assertFalse(validator.isExposed(builder("privateB").withExecutionSource("test").build()));
+        Assert.assertFalse(validator.isExposed(builder("privateB").withExecutionSource("test2").build()));
     }
 
     @Test
@@ -91,6 +96,11 @@ public class PrivateActionValidationTest
 
         Assert.assertFalse(validator.isExposed(builder("privateA").build()));
         Assert.assertTrue(validator.isExposed(builder("privateA").withExecutionSource("test").build()));
+        Assert.assertFalse(validator.isExposed(builder("privateA").withExecutionSource("test2").build()));
+
+        Assert.assertFalse(validator.isExposed(builder("privateB").build()));
+        Assert.assertFalse(validator.isExposed(builder("privateB").withExecutionSource("test").build()));
+        Assert.assertFalse(validator.isExposed(builder("privateB").withExecutionSource("test2").build()));
     }
 
     @Test

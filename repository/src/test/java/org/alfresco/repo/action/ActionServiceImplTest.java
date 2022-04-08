@@ -1299,73 +1299,73 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     public void testActionExposureBasedOnConfiguration()
     {
         globalConfig.remove("org.alfresco.repo.action.public-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.test.public-test-action.exposed");
+        globalConfig.remove("org.alfresco.repo.action.source.public-test-action.exposed");
         globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
         assertTrue(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("test").build()));
+        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
         assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.setProperty("org.alfresco.repo.action.public-test-action.exposed", "true");
-        globalConfig.remove("org.alfresco.repo.action.test.public-test-action.exposed");
+        globalConfig.remove("org.alfresco.repo.action.source.public-test-action.exposed");
         globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
         assertTrue(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("test").build()));
+        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
         assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.setProperty("org.alfresco.repo.action.public-test-action.exposed", "false");
-        globalConfig.remove("org.alfresco.repo.action.test.public-test-action.exposed");
+        globalConfig.remove("org.alfresco.repo.action.source.public-test-action.exposed");
         globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
         assertFalse(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("test").build()));
+        assertFalse(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
         assertFalse(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.remove("org.alfresco.repo.action.public-test-action.exposed");
-        globalConfig.setProperty("org.alfresco.repo.action.test.public-test-action.exposed", "true");
+        globalConfig.setProperty("org.alfresco.repo.action.source.public-test-action.exposed", "true");
         globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
         assertTrue(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("test").build()));
+        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
         assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.remove("org.alfresco.repo.action.public-test-action.exposed");
-        globalConfig.setProperty("org.alfresco.repo.action.test.public-test-action.exposed", "false");
+        globalConfig.setProperty("org.alfresco.repo.action.source.public-test-action.exposed", "false");
         globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
         assertTrue(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("test").build()));
+        assertFalse(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
         assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.remove("org.alfresco.repo.action.private-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.test.private-test-action.exposed");
+        globalConfig.remove("org.alfresco.repo.action.source.private-test-action.exposed");
         globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
         assertFalse(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("test").build()));
+        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
         assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.setProperty("org.alfresco.repo.action.private-test-action.exposed", "true");
-        globalConfig.remove("org.alfresco.repo.action.test.private-test-action.exposed");
+        globalConfig.remove("org.alfresco.repo.action.source.private-test-action.exposed");
         globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
         assertTrue(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("test").build()));
+        assertTrue(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
         assertTrue(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.setProperty("org.alfresco.repo.action.private-test-action.exposed", "false");
-        globalConfig.remove("org.alfresco.repo.action.test.private-test-action.exposed");
+        globalConfig.remove("org.alfresco.repo.action.source.private-test-action.exposed");
         globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
         assertFalse(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("test").build()));
+        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
         assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.remove("org.alfresco.repo.action.private-test-action.exposed");
-        globalConfig.setProperty("org.alfresco.repo.action.test.private-test-action.exposed", "true");
+        globalConfig.setProperty("org.alfresco.repo.action.source.private-test-action.exposed", "true");
         globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
         assertFalse(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("test").build()));
+        assertTrue(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
         assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
 
         globalConfig.remove("org.alfresco.repo.action.private-test-action.exposed");
-        globalConfig.setProperty("org.alfresco.repo.action.test.private-test-action.exposed", "false");
+        globalConfig.setProperty("org.alfresco.repo.action.source.private-test-action.exposed", "false");
         globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
         assertFalse(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("test").build()));
+        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
         assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
     }
 

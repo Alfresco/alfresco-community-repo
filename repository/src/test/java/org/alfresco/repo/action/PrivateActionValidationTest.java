@@ -46,7 +46,8 @@ public class PrivateActionValidationTest
         try
         {
             validator.isExposed(null);
-        } catch (NullPointerException e)
+        }
+        catch (NullPointerException e)
         {
             assertNotNull(e);
             return;

@@ -29,7 +29,7 @@ import static org.testng.Assert.assertTrue;
 
 public class DeclareInPlaceRecordTests extends BaseRMRestTest {
 
-    private final String TEST_PREFIX = generateTestPrefix(CreateNonElectronicRecordsTests.class);
+    private final String TEST_PREFIX = generateTestPrefix(DeclareInPlaceRecordTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
 
     private UserModel testUser;

@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 /**
  * Convenience test suite that runs all the tests. THIS HAS BEEN SPLIT INTO PARTS SO THAT THE BUILD TIME IS REDUCED.
  *
- * @author Roy Wetherall
+ * @author Marcin Strankowski
  * @since 2.1
  */
 @RunWith(ClasspathSuite.class)
@@ -43,7 +43,11 @@ import org.junit.runner.RunWith;
 @ClassnameFilters({
 
     // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
     // There appears to be some common setup taking place in the first 2 packages, which is why all legacy tests are
     // together even though they take a little longer to run that way.
 
@@ -67,6 +71,6 @@ import org.junit.runner.RunWith;
     // Tests should not be dependant on other test classes and should run in any order without any problems.
     "!.*EmailMapScriptTest"
 })
-public class AllTestSuitePt1
+public class AllTestSuitePt4
 {
 }

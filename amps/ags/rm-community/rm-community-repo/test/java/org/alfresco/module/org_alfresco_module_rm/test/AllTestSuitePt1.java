@@ -44,6 +44,7 @@ import org.junit.runner.RunWith;
 
     // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
     "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
 
     // Exclude all UnitTests
     "!.*UnitTest",
@@ -51,7 +52,7 @@ import org.junit.runner.RunWith;
     // Put the test classes you want to exclude here
     "!.*DispositionServiceImplTest",
     "!.*FilePlanPermissionServiceImplTest",
-    // above 2 tests from service poackage require setup from FileReportActionTest so they've been moved
+    // above 2 tests from service package require setup from FileReportActionTest so they've been moved to part 4
     "!.*DataLoadSystemTest",
     "!.*RM2072Test",
     "!.*RM2190Test",

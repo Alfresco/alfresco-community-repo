@@ -44,6 +44,9 @@ import org.junit.runner.RunWith;
 
     // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
     "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
     // There appears to be some common setup taking place in the first 2 packages, which is why all legacy tests are
     // together even though they take a little longer to run that way.
 
@@ -51,6 +54,8 @@ import org.junit.runner.RunWith;
     "!.*UnitTest",
 
     // Put the test classes you want to exclude here
+    "!.*DispositionServiceImplTest",
+    "!.*FilePlanPermissionServiceImplTest",
     "!.*DataLoadSystemTest",
     "!.*RM2072Test",
     "!.*RM2190Test",

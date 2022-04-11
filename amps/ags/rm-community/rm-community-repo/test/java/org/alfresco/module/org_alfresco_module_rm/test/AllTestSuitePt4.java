@@ -45,9 +45,9 @@ import org.junit.runner.RunWith;
     // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
     "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
     "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*DispositionServiceImplTest",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*FilePlanPermissionServiceImplTest",
+
     // There appears to be some common setup taking place in the first 2 packages, which is why all legacy tests are
     // together even though they take a little longer to run that way.
 

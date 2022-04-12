@@ -268,55 +268,55 @@ public class IntegrationFullTestsBulk2  extends IntegrationTest
      * 9. User2 deletes document1
      * 10. User1 tries to delete tag2
      */
-    @Test(groups = { TestGroup.INTEGRATION, TestGroup.FULL })
-    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Check negative scenarios for tags")
-    public void tagsNegativeScenariosTest() throws Exception
-    {
-        STEP("1. Create user1, user2");
-        UserModel user1 = dataUser.createRandomTestUser();
-        UserModel user2 = dataUser.createRandomTestUser();
-        user2.setUserRole(UserRole.SiteManager);
-        
-        STEP("2. User1 creates site1 and invites user2 as manager");
-        SiteModel site = dataSite.usingUser(user1).createPublicRandomSite();
-        restAPI.authenticateUser(user1).withCoreAPI().usingSite(site).addPerson(user2);
-        
-        STEP("3. User1 adds document1 and tag1 to doc");
-        dataContent.usingUser(user1).usingSite(site).createContent(testFile);
-        RestTagModel tag = restAPI.withCoreAPI().usingResource(testFile).addTag("tag1");
-        restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag1");
-        
-        STEP("4. User2 gets tags and verifies tag1 appears");
-        restAPI.authenticateUser(user2).withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag1");
-        
-        STEP("5. User2 delete tag1");
-        restAPI.withCoreAPI().usingResource(testFile).deleteTag(tag);
-        restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListDoesNotContain("tag", "tag1");
-        
-        STEP("6. User1 tries to update tag1");
-        restAPI.authenticateUser(user2).withCoreAPI().usingTag(tag).update("updatedTag");
-        restAPI.assertStatusCodeIs(HttpStatus.FORBIDDEN)
-            .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
-            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY);
-        
-        STEP("7. User1 add new tag tag2");
-        tag = restAPI.authenticateUser(user1).withCoreAPI().usingResource(testFile).addTag("tag2");
-        restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag2");
-        
-        STEP("8. User2 verifies tag2 appears and tag1 is not in the list");
-        restAPI.authenticateUser(user2).withCoreAPI().usingResource(testFile).getNodeTags()
-            .assertThat().entriesListDoesNotContain("tag", "tag1")
-            .assertThat().entriesListContains("tag", "tag2");
-        
-        STEP("9. User2 deletes document1");
-        dataContent.usingUser(user2).usingResource(testFile).deleteContent();
-        
-        STEP("10. User1 tries to delete tag2");
-        restAPI.authenticateUser(user1).withCoreAPI().usingResource(testFile).deleteTag(tag);
-        restAPI.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, testFile.getNodeRefWithoutVersion()))
-            .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
-    }
+//    @Test(groups = { TestGroup.INTEGRATION, TestGroup.FULL })
+//    @TestRail(section = { TestGroup.INTEGRATION, TestGroup.CONTENT, TestGroup.TAGS }, executionType = ExecutionType.REGRESSION, description = "Check negative scenarios for tags")
+//    public void tagsNegativeScenariosTest() throws Exception
+//    {
+//        STEP("1. Create user1, user2");
+//        UserModel user1 = dataUser.createRandomTestUser();
+//        UserModel user2 = dataUser.createRandomTestUser();
+//        user2.setUserRole(UserRole.SiteManager);
+//
+//        STEP("2. User1 creates site1 and invites user2 as manager");
+//        SiteModel site = dataSite.usingUser(user1).createPublicRandomSite();
+//        restAPI.authenticateUser(user1).withCoreAPI().usingSite(site).addPerson(user2);
+//
+//        STEP("3. User1 adds document1 and tag1 to doc");
+//        dataContent.usingUser(user1).usingSite(site).createContent(testFile);
+//        RestTagModel tag = restAPI.withCoreAPI().usingResource(testFile).addTag("tag1");
+//        restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag1");
+//
+//        STEP("4. User2 gets tags and verifies tag1 appears");
+//        restAPI.authenticateUser(user2).withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag1");
+//
+//        STEP("5. User2 delete tag1");
+//        restAPI.withCoreAPI().usingResource(testFile).deleteTag(tag);
+//        restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListDoesNotContain("tag", "tag1");
+//
+//        STEP("6. User1 tries to update tag1");
+//        restAPI.authenticateUser(user2).withCoreAPI().usingTag(tag).update("updatedTag");
+//        restAPI.assertStatusCodeIs(HttpStatus.FORBIDDEN)
+//            .assertLastError().containsSummary(RestErrorModel.PERMISSION_WAS_DENIED)
+//            .containsErrorKey(RestErrorModel.PERMISSION_DENIED_ERRORKEY);
+//
+//        STEP("7. User1 add new tag tag2");
+//        tag = restAPI.authenticateUser(user1).withCoreAPI().usingResource(testFile).addTag("tag2");
+//        restAPI.withCoreAPI().usingResource(testFile).getNodeTags().assertThat().entriesListContains("tag", "tag2");
+//
+//        STEP("8. User2 verifies tag2 appears and tag1 is not in the list");
+//        restAPI.authenticateUser(user2).withCoreAPI().usingResource(testFile).getNodeTags()
+//            .assertThat().entriesListDoesNotContain("tag", "tag1")
+//            .assertThat().entriesListContains("tag", "tag2");
+//
+//        STEP("9. User2 deletes document1");
+//        dataContent.usingUser(user2).usingResource(testFile).deleteContent();
+//
+//        STEP("10. User1 tries to delete tag2");
+//        restAPI.authenticateUser(user1).withCoreAPI().usingResource(testFile).deleteTag(tag);
+//        restAPI.assertStatusCodeIs(HttpStatus.NOT_FOUND)
+//            .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, testFile.getNodeRefWithoutVersion()))
+//            .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY);
+//    }
     
     /**
      * Scenario 83

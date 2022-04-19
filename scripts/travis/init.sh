@@ -14,6 +14,7 @@ echo "${QUAY_PASSWORD}" | docker login -u="${QUAY_USERNAME}" --password-stdin qu
 
 # Retrieve Transform Tag
 TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)
+export TRANSFORMERS_TAG
 
 popd
 set +vex

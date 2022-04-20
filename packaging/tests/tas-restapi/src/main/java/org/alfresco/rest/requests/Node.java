@@ -591,6 +591,18 @@ public class Node extends ModelRequest<Node>
 
 
     /**
+     * Delete the rendition identified by renditionId using DELETE call on "/nodes/{nodeId}/renditions/{renditionId}"
+     *
+     * @param renditionId id of rendition to delete
+     * @throws Exception
+     */
+    public void deleteNodeRendition(String renditionId) throws Exception
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/renditions/{renditionId}", repoModel.getNodeRef(), renditionId);
+        restWrapper.processEmptyModel(request);
+    }
+
+    /**
      * Get a node's children using GET call 'nodes/{nodeId}/children
      * 
      * @return a collection of nodes

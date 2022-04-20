@@ -38,7 +38,7 @@ public abstract class RenditionIntegrationTests extends RestTest
         FileModel file = new FileModel();
         file.setNodeRef(nodeId);
 
-        // 1. Preventive delete an existing rendition of the file using RESTAPI
+        // 1. Preemptively delete an existing rendition of the file using RESTAPI
         restClient.withCoreAPI().usingNode(file).deleteNodeRendition(renditionId);
 
         // 2. Create a rendition of the file using RESTAPI

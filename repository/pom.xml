@@ -713,7 +713,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-transform-model</artifactId>
-            <version>${dependency.alfresco-transform-model.version}</version>
+            <version>${dependency.alfresco-transform-core.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -735,7 +735,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-transform-model</artifactId>
-            <version>${dependency.alfresco-transform-model.version}</version>
+            <version>${dependency.alfresco-transform-core.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

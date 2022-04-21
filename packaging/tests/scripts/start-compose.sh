@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -x
+
 export DOCKER_COMPOSE_PATH=$1
 export CLEAN_UP="$2"
 

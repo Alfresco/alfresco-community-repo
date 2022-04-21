@@ -33,7 +33,7 @@ TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-
 TRANSFORM_ROUTER_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-service.version -q -DforceStdout)
 
 # .env files are picked up from project directory correctly on docker-compose 1.23.0+
-docker-compose --file "${DOCKER_COMPOSE_PATH}" --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") -e "TRANSFORMERS_TAG=${TRANSFORMERS_TAG}" -e "TRANSFORM_ROUTER_TAG=${TRANSFORM_ROUTER_TAG}" up -d
+"TRANSFORMERS_TAG=${TRANSFORMERS_TAG}" "TRANSFORM_ROUTER_TAG=${TRANSFORM_ROUTER_TAG}" docker-compose --file "${DOCKER_COMPOSE_PATH}" --project-directory $(dirname "${DOCKER_COMPOSE_PATH}") up -d
 
 if [ $? -eq 0 ]
 then

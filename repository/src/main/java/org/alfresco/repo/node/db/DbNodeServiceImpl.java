@@ -1318,7 +1318,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         }
         
         // check that the child addition of the child has not created a cyclic relationship
-        nodeDAO.cycleCheck(childNodeId);
+     //   nodeDAO.cycleCheck(childNodeId);
+        getPaths(childRef, false);
 
         // Invoke policy behaviours
         for (ChildAssociationRef childAssocRef : childAssociationRefs)

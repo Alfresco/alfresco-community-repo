@@ -321,7 +321,7 @@ public class LockServiceImpl implements LockService,
     public void lock(NodeRef nodeRef, LockType lockType)
     {
         // Lock with no expiration
-        lock(nodeRef, lockType, 0);
+        lock(nodeRef, lockType, -1);
     }
 
     /**

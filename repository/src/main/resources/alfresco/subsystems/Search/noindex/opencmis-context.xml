@@ -5,7 +5,7 @@
 
    <import resource="../common-opencmis-context.xml" />
 
-  <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.solr.SolrOpenCMISQueryServiceImpl" >
+  <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.OpenCMISQueryServiceImpl" >
        <property name="cmisDictionaryService">
             <ref bean="OpenCMISDictionaryService" />
         </property>
@@ -15,12 +15,12 @@
         <property name="alfrescoDictionaryService">
             <ref bean="dictionaryService" />
         </property>
-        <property name="solrQueryLanguage">
+        <property name="queryLanguage">
             <ref bean="search.cmis.alfresco.switching" />
         </property>
     </bean>
 
-   <bean id="search.OpenCMISQueryService1.1" class="org.alfresco.repo.search.impl.solr.SolrOpenCMISQueryServiceImpl" >
+   <bean id="search.OpenCMISQueryService1.1" class="org.alfresco.repo.search.impl.OpenCMISQueryServiceImpl" >
        <property name="cmisDictionaryService">
             <ref bean="OpenCMISDictionaryService1.1" />
         </property>
@@ -30,7 +30,7 @@
         <property name="alfrescoDictionaryService">
             <ref bean="dictionaryService" />
         </property>
-        <property name="solrQueryLanguage">
+        <property name="queryLanguage">
             <ref bean="search.cmis.alfresco.switching1.1" />
         </property>
     </bean>

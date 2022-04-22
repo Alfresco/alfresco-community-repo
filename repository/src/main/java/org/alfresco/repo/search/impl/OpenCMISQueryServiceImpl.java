@@ -61,7 +61,7 @@ public class OpenCMISQueryServiceImpl implements CMISQueryService
     private DictionaryService alfrescoDictionaryService;
 
     private CMISDictionaryService cmisDictionaryService;
-    
+
     public void setQueryLanguage(LuceneQueryLanguageSPI queryLanguage)
     {
         this.queryLanguage = queryLanguage;

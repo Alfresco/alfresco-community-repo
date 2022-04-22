@@ -390,8 +390,14 @@ public class LockInfoImpl implements Serializable, LockInfo
         else
         {
             Date now = dateNow();
-            long timeout = ((expires.getTime() - now.getTime()) / 1000);
-            return timeout;
+
+            double remainingTimeoutInMs = expires.getTime() - now.getTime();
+            double remainingTimeoutInS = remainingTimeoutInMs / 1000;
+
+            long timeoutRoundedUp = (long) Math.ceil(remainingTimeoutInS);
+            long minTimeout = 0L;
+
+            return Math.max(minTimeout, timeoutRoundedUp);
         }
     }
 

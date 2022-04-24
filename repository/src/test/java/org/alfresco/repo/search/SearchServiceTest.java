@@ -28,7 +28,7 @@ package org.alfresco.repo.search;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.search.impl.solr.DisabledFeatureException;
+import org.alfresco.repo.search.impl.DisabledFeatureException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;

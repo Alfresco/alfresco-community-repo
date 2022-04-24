@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.solr;
+package org.alfresco.repo.search.impl;
 
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryOptions;

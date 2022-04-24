@@ -56,7 +56,9 @@ public interface WebDAVLockService
     void lock(NodeRef nodeRef, String userName, int timeout);
 
     void lock(NodeRef nodeRef, LockInfo lockInfo);
-    
+
+    void lock(NodeRef nodeRef, LockInfo lockInfo, int timeout);
+
     /**
      * Shared method for webdav/vti to unlock node. Unlocked node is automatically removed from
      * current sessions's locked resources list.

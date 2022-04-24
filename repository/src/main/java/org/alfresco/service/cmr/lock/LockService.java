@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 @AlfrescoPublicApi
 public interface LockService
 {
+   int TIMEOUT_INFINITY = 0;
+
    /**
     * Places a lock on a node.  
     * <p>

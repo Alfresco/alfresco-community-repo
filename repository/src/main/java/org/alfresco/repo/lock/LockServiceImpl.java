@@ -321,7 +321,7 @@ public class LockServiceImpl implements LockService,
     public void lock(NodeRef nodeRef, LockType lockType)
     {
         // Lock with no expiration
-        lock(nodeRef, lockType, -1);
+        lock(nodeRef, lockType, TIMEOUT_INFINITY);
     }
 
     /**
@@ -440,9 +440,6 @@ public class LockServiceImpl implements LockService,
         {
             throw new IllegalArgumentException("Attempt to create ephemeral lock for " +
                     timeToExpire + " seconds - exceeds maximum allowed time.");
-        } else if (timeToExpire == 0) {
-            throw new IllegalArgumentException("Attempt to create lock for " +
-                    timeToExpire + " seconds - lock would be already expired.");
         }
     }
 
@@ -479,7 +476,7 @@ public class LockServiceImpl implements LockService,
      */
     private Date makeExpiryDate(int timeToExpire)
     {
-        boolean permanent = timeToExpire < 0;
+        boolean permanent = timeToExpire <= TIMEOUT_INFINITY;
         if (permanent) {
             return null;
         }

@@ -32,7 +32,6 @@ import java.util.List;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -240,9 +239,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     public void lock(NodeRef nodeRef, LockInfo lockInfo)
     {
         boolean performSessionBehavior = false;
-        long timeout;
-        
-        timeout = lockInfo.getRemainingTimeoutSeconds();    
+        long timeout = lockInfo.getRemainingTimeoutSeconds();
         
         // ALF-11777 fix, do not lock node for more than 24 hours (webdav and vti)
         if (timeout >= WebDAV.TIMEOUT_24_HOURS || timeout == WebDAV.TIMEOUT_INFINITY)
@@ -250,6 +247,10 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
             timeout = WebDAV.TIMEOUT_24_HOURS;
             lockInfo.setTimeoutSeconds((int) timeout);
             performSessionBehavior = true;
+        } else if (timeout == LockService.TIMEOUT_INFINITY) {
+            throw new IllegalArgumentException("Timeout == " + LockService.TIMEOUT_INFINITY +
+                    " is treated as permanence for locks. If this lock were to be permanent, " +
+                    "it would have the value of a proper static variable");
         }
         
         // TODO: lock children according to depth? lock type?

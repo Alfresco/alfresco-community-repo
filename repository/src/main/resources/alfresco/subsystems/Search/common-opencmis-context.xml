@@ -4,7 +4,7 @@
 <!-- Core and miscellaneous bean definitions -->
 <beans>
 
-    <bean id="base.search.cmis.alfresco.switching" abstract="true">
+    <bean id="base.search.cmis.alfresco.switching" abstract="true" class="org.alfresco.repo.search.impl.DbOrIndexSwitchingQueryLanguage">
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />
@@ -23,7 +23,7 @@
         <property name="searchDao" ref="searchDAO"/>
     </bean>
 
-    <bean id="base.search.cmis.alfresco.switching1.1" abstract="true" >
+    <bean id="base.search.cmis.alfresco.switching1.1" abstract="true" class="org.alfresco.repo.search.impl.DbOrIndexSwitchingQueryLanguage">
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />
@@ -40,7 +40,7 @@
         </property>
     </bean>
 
-    <bean id="base.search.cmis.strict.switching" abstract="true" >
+    <bean id="base.search.cmis.strict.switching" abstract="true" class="org.alfresco.repo.search.impl.DbOrIndexSwitchingQueryLanguage">
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />

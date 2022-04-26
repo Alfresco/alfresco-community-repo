@@ -65,7 +65,7 @@
         <!-- Query collections should be loaded on demand using this component - once loaded thay are available for use -->
     </bean>
 
-    <bean id="base.search.fts.alfresco.switching" abstract="true" >
+    <bean id="base.search.fts.alfresco.switching" abstract="true" class="org.alfresco.repo.search.impl.DbOrIndexSwitchingQueryLanguage">
         <property name="factories">
             <list>
                 <ref bean="search.indexerAndSearcherFactory" />

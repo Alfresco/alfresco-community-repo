@@ -257,7 +257,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
      * Then I receive an error indicating that I have attempted to declare and file a document into an invalid record folder
      * And the document is not declared as a record
      */
-    @Test (dataProvider = "invalidDestinationPaths")
+    @Test (dataProvider = "invalidDestinationPaths",groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
     public void declareAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Declare document as record with an invalid location parameter value");

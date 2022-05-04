@@ -73,6 +73,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.alfresco.utility.model.TestGroup;
 
 /**
  * API tests for declaring document as record and filing it immediately to a record folder location within the file plan

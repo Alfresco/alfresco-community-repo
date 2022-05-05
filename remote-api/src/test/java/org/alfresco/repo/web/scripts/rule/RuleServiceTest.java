@@ -27,15 +27,14 @@ package org.alfresco.repo.web.scripts.rule;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.LinkRules;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.repo.web.scripts.rule.util.DefaultRuleServiceTestUtil;
-import org.alfresco.repo.web.scripts.rule.util.PrivateActionRuleServiceTestUtil;
-import org.alfresco.repo.web.scripts.rule.util.RuleServiceTestUtil;
+import org.alfresco.repo.web.scripts.rule.util.RuleJsonUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterConstraint;
@@ -94,8 +93,6 @@ public class RuleServiceTest extends BaseWebScriptTest
     private NodeRef testNodeRef2;
     private NodeRef testWorkNodeRef;
 
-    private RuleServiceTestUtil ruleServiceTestUtil;
-
     @Override
     protected void setUp() throws Exception
     {
@@ -108,8 +105,6 @@ public class RuleServiceTest extends BaseWebScriptTest
         this.authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext().getBean("authenticationComponent");
 
         this.authenticationComponent.setSystemUserAsCurrentUser();
-
-        this.ruleServiceTestUtil = new DefaultRuleServiceTestUtil();
 
         createTestFolders();
 
@@ -299,7 +294,7 @@ public class RuleServiceTest extends BaseWebScriptTest
     {
         String url = formateQueueActionUrl(false);
 
-        JSONObject copyAction = ruleServiceTestUtil.buildCopyAction(testWorkNodeRef);
+        JSONObject copyAction = RuleJsonUtil.buildCopyAction(testWorkNodeRef);
 
         copyAction.put("actionedUponNode", testNodeRef);
 
@@ -448,7 +443,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
     public void testCreatePrivateActionRule() throws Exception
     {
-        JSONObject result = createRule(testNodeRef, "test_rule", new PrivateActionRuleServiceTestUtil());
+        JSONObject result = createRule(testNodeRef, "test_rule", 500, RuleJsonUtil.getSetPrivateActionConsumer());
 
         verifyPrivateActionFailureResponse(result);
 
@@ -465,12 +460,8 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         JSONObject before = new JSONObject(getResponse.getContentAsString());
 
-        // do some changes for action object
-        JSONObject beforeAction = before.getJSONObject("action");
-        JSONArray beforeActions = beforeAction.getJSONArray("actions");
-        JSONObject firstInnerAction = (JSONObject) beforeActions.get(0);
-        firstInnerAction.put("actionDefinitionName", "privateAction");
-        firstInnerAction.remove("id");
+        RuleJsonUtil.getSetPrivateActionConsumer()
+                .accept(before);
 
         Response putResponse = sendRequest(new PutRequest(formateRuleUrl(testNodeRef, ruleId), before.toString(), "application/json"), 500);
 
@@ -767,15 +758,19 @@ public class RuleServiceTest extends BaseWebScriptTest
 
     private JSONObject createRule(NodeRef ruleOwnerNodeRef, String title) throws Exception
     {
-        return createRule(ruleOwnerNodeRef, title, ruleServiceTestUtil);
+        return createRule(ruleOwnerNodeRef, title, 200, null);
     }
 
-    private JSONObject createRule(NodeRef ruleOwnerNodeRef, String title, RuleServiceTestUtil ruleServiceTestUtil) throws Exception
+    private JSONObject createRule(NodeRef ruleOwnerNodeRef, String title, int expectedStatus, Consumer<JSONObject> modifyRequest) throws Exception
     {
-        JSONObject jsonRule = ruleServiceTestUtil.buildTestRule(title);
+        JSONObject jsonRule = RuleJsonUtil.buildTestRule(title);
+
+        if (null != modifyRequest) {
+            modifyRequest.accept(jsonRule);
+        }
 
         PostRequest postRequest = new PostRequest(formatRulesUrl(ruleOwnerNodeRef, false), jsonRule.toString(), "application/json");
-        Response response = sendRequest(postRequest, ruleServiceTestUtil.getTestRuleExpectedStatus());
+        Response response = sendRequest(postRequest, expectedStatus);
 
         JSONObject result = new JSONObject(response.getContentAsString());
 

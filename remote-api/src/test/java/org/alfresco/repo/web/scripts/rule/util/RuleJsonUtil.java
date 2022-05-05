@@ -30,9 +30,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class DefaultRuleServiceTestUtil implements RuleServiceTestUtil {
+import java.util.function.Consumer;
 
-    public JSONObject buildTestRule(String title) throws JSONException
+public class RuleJsonUtil {
+
+    public static JSONObject buildTestRule(String title) throws JSONException
     {
         JSONObject result = new JSONObject();
 
@@ -55,7 +57,7 @@ public class DefaultRuleServiceTestUtil implements RuleServiceTestUtil {
         return result;
     }
 
-    protected JSONObject buildTestAction(String actionName, boolean addActions, boolean addCompensatingAction) throws JSONException
+    private static JSONObject buildTestAction(String actionName, boolean addActions, boolean addCompensatingAction) throws JSONException
     {
         JSONObject result = new JSONObject();
 
@@ -88,7 +90,7 @@ public class DefaultRuleServiceTestUtil implements RuleServiceTestUtil {
         return result;
     }
 
-    protected JSONObject buildTestCondition(String conditionName) throws JSONException
+    private static JSONObject buildTestCondition(String conditionName) throws JSONException
     {
         JSONObject result = new JSONObject();
 
@@ -98,12 +100,7 @@ public class DefaultRuleServiceTestUtil implements RuleServiceTestUtil {
         return result;
     }
 
-    @Override
-    public int getTestRuleExpectedStatus() {
-        return 200;
-    }
-
-    public JSONObject buildCopyAction(NodeRef destination) throws JSONException
+    public static JSONObject buildCopyAction(NodeRef destination) throws JSONException
     {
         JSONObject result = new JSONObject();
 
@@ -121,5 +118,15 @@ public class DefaultRuleServiceTestUtil implements RuleServiceTestUtil {
         result.put("executeAsync", false);
 
         return result;
+    }
+
+    public static Consumer<JSONObject> getSetPrivateActionConsumer() {
+        return json -> {
+            JSONObject action = json.getJSONObject("action");
+            JSONArray subActions = action.getJSONArray("actions");
+            JSONObject firstInnerAction = (JSONObject) subActions.get(0);
+            firstInnerAction.put("actionDefinitionName", "privateAction");
+            firstInnerAction.remove("id");
+        };
     }
 }

@@ -451,8 +451,8 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         List<Action> actionList = new ArrayList<>();
         Action action = rule.getAction();
 
-        if (action instanceof ActionList) {
-            actionList.addAll(((ActionList<Action>) action).getActions());
+        if (action instanceof CompositeAction) {
+            actionList.addAll(((CompositeAction) action).getActions());
         } else {
             actionList.add(action);
         }

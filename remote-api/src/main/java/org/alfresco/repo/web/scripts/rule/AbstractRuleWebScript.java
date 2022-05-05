@@ -36,13 +36,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ActionConditionImpl;
+import org.alfresco.repo.action.ActionExecutionContext;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
-import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.cmr.action.ActionService;
-import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
+import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.service.cmr.action.*;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -73,6 +71,8 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
 
     public static final SimpleDateFormat dateFormate = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 
+    public static final String RULE_ACTION_CONTEXT = "rules";
+
     private static final String RULE_OUTBOUND = "outbound";
     private static final String ACTION_CHECK_OUT = "check-out";
 
@@ -82,6 +82,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     protected RuleService ruleService;
     protected DictionaryService dictionaryService;
     protected ActionService actionService;
+    protected RuntimeActionService runtimeActionService;
     protected FileFolderService fileFolderService;
     protected NamespaceService namespaceService;
 
@@ -123,6 +124,15 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     public void setActionService(ActionService actionService)
     {
         this.actionService = actionService;
+    }
+
+    /**
+     * Set runtime action service instance
+     *
+     * @param runtimeActionService
+     */
+    public void setRuntimeActionService(RuntimeActionService runtimeActionService) {
+        this.runtimeActionService = runtimeActionService;
     }
 
     /**
@@ -432,10 +442,40 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
 
     protected void checkRule(Rule rule)
     {
+        List<Action> actions = getAllActions(rule);
+        blockPrivateActions(actions);
+        validateOutboundRuleActions(rule, actions);
+    }
+
+    private List<Action> getAllActions(Rule rule) {
+        List<Action> actionList = new ArrayList<>();
+        Action action = rule.getAction();
+
+        if (action instanceof ActionList) {
+            actionList.addAll(((ActionList<Action>) action).getActions());
+        } else {
+            actionList.add(action);
+        }
+
+        return actionList;
+    }
+
+    private void blockPrivateActions(List<Action> actions) {
+        for (Action action : actions)
+        {
+            ActionExecutionContext aec = ActionExecutionContext.builder(action.getActionDefinitionName())
+                    .withExecutionSource(RULE_ACTION_CONTEXT)
+                    .build();
+            if (!runtimeActionService.isExposed(aec)) {
+                throw new WebScriptException("Cannot create a rule with private actions.");
+            }
+        }
+    }
+
+    private void validateOutboundRuleActions(Rule rule, List<Action> actions) {
         List<String> ruleTypes = rule.getRuleTypes();
         if (ruleTypes.contains(RULE_OUTBOUND))
         {
-            List<Action> actions = ((CompositeActionImpl) rule.getAction()).getActions();
             for (Action action : actions)
             {
                 if (action.getActionDefinitionName().equalsIgnoreCase(ACTION_CHECK_OUT))

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -278,8 +278,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     private void validateLockTimeout(int timeout) {
         if (timeout != WebDAV.TIMEOUT_INFINITY && timeout == LockService.TIMEOUT_INFINITY) {
             throw new IllegalArgumentException("Timeout == " + LockService.TIMEOUT_INFINITY +
-                    " is treated as permanence for locks. If this lock were intended to be permanent, " +
-                    "it should have the value of a proper static variable");
+                    " is treated as permanence for locks. For maximum allowed timeout set " + WebDAV.TIMEOUT_INFINITY);
         }
     }
 

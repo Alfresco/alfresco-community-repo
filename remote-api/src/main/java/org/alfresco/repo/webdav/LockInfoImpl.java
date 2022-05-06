@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -390,14 +390,9 @@ public class LockInfoImpl implements Serializable, LockInfo
         else
         {
             Date now = dateNow();
+            long remainingTimeoutInSecondsRoundedUp = (Math.max(expires.getTime() - now.getTime(), 0) + 999) / 1000;
 
-            double remainingTimeoutInMs = expires.getTime() - now.getTime();
-            double remainingTimeoutInS = remainingTimeoutInMs / 1000;
-
-            long timeoutRoundedUp = (long) Math.ceil(remainingTimeoutInS);
-            long minTimeout = 0L;
-
-            return Math.max(minTimeout, timeoutRoundedUp);
+            return remainingTimeoutInSecondsRoundedUp;
         }
     }
 

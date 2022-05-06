@@ -443,7 +443,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
     public void testCreatePrivateActionRule() throws Exception
     {
-        JSONObject result = createRule(testNodeRef, "test_rule", 500, RuleJsonUtil.getSetPrivateActionConsumer());
+        JSONObject result = createRule(testNodeRef, "test_rule", 500, RuleJsonUtil.getPrivateActionConsumer());
 
         verifyPrivateActionFailureResponse(result);
 
@@ -460,7 +460,7 @@ public class RuleServiceTest extends BaseWebScriptTest
 
         JSONObject before = new JSONObject(getResponse.getContentAsString());
 
-        RuleJsonUtil.getSetPrivateActionConsumer()
+        RuleJsonUtil.getPrivateActionConsumer()
                 .accept(before);
 
         Response putResponse = sendRequest(new PutRequest(formateRuleUrl(testNodeRef, ruleId), before.toString(), "application/json"), 500);

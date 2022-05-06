@@ -120,7 +120,7 @@ public class RuleJsonUtil {
         return result;
     }
 
-    public static Consumer<JSONObject> getSetPrivateActionConsumer() {
+    public static Consumer<JSONObject> getPrivateActionConsumer() {
         return json -> {
             JSONObject action = json.getJSONObject("action");
             JSONArray subActions = action.getJSONArray("actions");

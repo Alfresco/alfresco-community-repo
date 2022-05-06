@@ -741,7 +741,7 @@ public class RuleServiceTest extends BaseWebScriptTest
         assertTrue(result.has("message"));
         String message = result.getString("message");
         // Verify that it was the private action attempt that caused the failure
-        assertTrue(message.contains("Cannot create a rule with private actions"));
+        assertTrue(message.contains("Cannot create a rule with non-exposed action:"));
     }
 
     private NodeRef createRuleNodeRef(NodeRef folder, String title) throws Exception

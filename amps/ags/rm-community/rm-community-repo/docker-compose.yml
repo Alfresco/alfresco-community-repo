@@ -8,7 +8,7 @@ services:
         image: alfresco/alfresco-governance-repository-community-base:latest
         environment:
             CATALINA_OPTS : "
-                -agentlib:jdwp=transport=dt_socket,address=*:8000,server=y,suspend=n
+                -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n
                 "
             JAVA_TOOL_OPTIONS: "
                -Dencryption.keystore.type=JCEKS

@@ -340,7 +340,7 @@ public class PersonServiceTest extends BaseWebScriptTest
 
         // Ensure that the REST call with no filter will always be routed to a DB canned query rather than a FTS
         // (see ALF-18876 for details)
-        String filter = "*%20[hint:useCQ]";
+        String filter = "*";
 
         Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
         JSONObject res = new JSONObject(response.getContentAsString());

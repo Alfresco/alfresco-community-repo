@@ -582,8 +582,16 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     {
         ParameterCheck.mandatory("pagingRequest", pagingRequest);
         
-        boolean useCQ = honorHintUseCQ;
-        if (filter == null)
+        boolean useCQ = false;
+        if (filter != null)
+        {
+            if (filter.endsWith(HINT_CQ_SUFFIX))
+            {
+                useCQ = honorHintUseCQ;
+                filter = filter.substring(0, filter.length()-HINT_CQ_SUFFIX.length());
+            }
+        }
+        else
         {
             filter = "*";
         }

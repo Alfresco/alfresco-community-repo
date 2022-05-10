@@ -57,9 +57,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
@@ -75,11 +72,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Unit test to test person Web Script API
@@ -99,11 +91,6 @@ public class PersonServiceTest extends BaseWebScriptTest
     private ContentUsageImpl contentUsage;
     private TransactionService transactionService;
 
-    @Mock
-    private SearchService mockSearchService;
-    @Mock
-    private ResultSet mockSearchServiceQueryResultSet;
-    private List<NodeRef> dummySearchServiceQueryNodeRefs = new ArrayList<>();
     private int callCount = 0;
     private ServiceDescriptorRegistry serviceRegistry;
 
@@ -129,7 +116,6 @@ public class PersonServiceTest extends BaseWebScriptTest
     protected void setUp() throws Exception
     {
         super.setUp();
-        MockitoAnnotations.initMocks(this);
 
         ApplicationContext ctx = getServer().getApplicationContext();
         this.authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
@@ -143,9 +129,6 @@ public class PersonServiceTest extends BaseWebScriptTest
         this.transactionService = (TransactionService) ctx.getBean("TransactionService");
 
     	serviceRegistry = (ServiceDescriptorRegistry) ctx.getBean("ServiceRegistry");
-    	serviceRegistry.setMockSearchService(mockSearchService);
-        when(mockSearchService.query(any())).thenReturn(mockSearchServiceQueryResultSet);
-        when(mockSearchServiceQueryResultSet.getNodeRefs()).thenReturn(dummySearchServiceQueryNodeRefs);
 
         // enable usages
         contentUsage.setEnabled(true);
@@ -200,11 +183,6 @@ public class PersonServiceTest extends BaseWebScriptTest
         // Clear the list
         this.createdPeople.clear();
 
-        // Should be safe not to do the following as we don't have a search service, but it is cleaner to remove the mock.
-        if (serviceRegistry != null)
-        {
-        	serviceRegistry.setMockSearchService(null);
-        }
     }
     
     private JSONObject updatePerson(String userName, String title, String firstName, String lastName, 
@@ -302,20 +280,15 @@ public class PersonServiceTest extends BaseWebScriptTest
         
         createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                 userJob, "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                Status.STATUS_OK);  
-        dummySearchServiceQueryNodeRefs.clear();
+                Status.STATUS_OK);
         NodeRef nodeRef = personService.getPerson(userName);
-        dummySearchServiceQueryNodeRefs.add(nodeRef);
         
         // Get a person 
         Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + jobSearchString)), 200);
-        assertSearchQuery("jobtitle:\"" + jobSearchString + "\"", false);
         JSONObject res = new JSONObject(response.getContentAsString());
         assertEquals(1, res.getJSONArray("people").length());
-        
-        dummySearchServiceQueryNodeRefs.clear();
-        response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + userJob)), 200);
-        assertSearchQuery("jobtitle:\""+userJob.replace(" ", "\" \"")+"\" ", false);
+
+        response = sendRequest(new GetRequest(URL_PEOPLE + "?filter="+ URLEncoder.encode("jobtitle:" + userJob)), 200);
         res = new JSONObject(response.getContentAsString());
         assertEquals(0, res.getJSONArray("people").length());
     }
@@ -368,7 +341,6 @@ public class PersonServiceTest extends BaseWebScriptTest
 
     public void testGetPeoplePaging() throws Exception
     {
-        dummySearchServiceQueryNodeRefs.clear();
         final String filter = GUID.generate();
         for (int i = 0; i < 6; i++)
         {
@@ -376,7 +348,6 @@ public class PersonServiceTest extends BaseWebScriptTest
             createPerson(username, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                     "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", 0, Status.STATUS_OK);
             NodeRef nodeRef = personService.getPerson(username);
-            dummySearchServiceQueryNodeRefs.add(nodeRef);
         }
 
         // fetch all users (6)
@@ -386,7 +357,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 0 +
                         "&pageSize=" + 6
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         JSONObject res = new JSONObject(response.getContentAsString());
         JSONArray peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 6, peopleAsc.length());
@@ -398,7 +368,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 0 +
                         "&pageSize=" + 2
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -416,7 +385,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 2 +
                         "&pageSize=" + 2
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -434,7 +402,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 4 +
                         "&pageSize=" + 2
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 2, peopleAsc.length());
@@ -452,7 +419,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&startIndex=" + 3 +
                         "&pageSize=" + 5
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         peopleAsc = res.getJSONArray("people");
         assertEquals("The number of returned results is not correct.", 3, peopleAsc.length());
@@ -506,11 +472,9 @@ public class PersonServiceTest extends BaseWebScriptTest
 
     private void checkSorting(String filter, String sortBy, String... usernames) throws Exception
     {
-        dummySearchServiceQueryNodeRefs.clear();
         for (String username : usernames)
         {
             NodeRef nodeRef = personService.getPerson(username);
-            dummySearchServiceQueryNodeRefs.add(nodeRef);
         }
 
         Response response = sendRequest(
@@ -519,7 +483,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&filter=" + filter +
                         "&dir=" + ASC_DIR
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         JSONObject res = new JSONObject(response.getContentAsString());
         JSONArray peopleAsc = res.getJSONArray("people");
         assertEquals(usernames.length, peopleAsc.length());
@@ -530,7 +493,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                         "&filter=" + filter +
                         "&dir=" + DESC_DIR
                 ), Status.STATUS_OK);
-        assertSearchQuery(filter, true);
         res = new JSONObject(response.getContentAsString());
         JSONArray peopleDesc = res.getJSONArray("people");
         assertEquals(usernames.length, peopleDesc.length());
@@ -615,11 +577,6 @@ public class PersonServiceTest extends BaseWebScriptTest
             String termWithEscapedAsterisks = term.replaceAll("\\*", "\\\\*");
             term = "\"*" + termWithEscapedAsterisks + "*" + "\"";
         }
-        String expectedQuery = "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (" + term + ")";
-        ArgumentCaptor<SearchParameters> searchParametersCaptor = ArgumentCaptor.forClass(SearchParameters.class);
-        verify(mockSearchService, times(++callCount)).query(searchParametersCaptor.capture());
-        SearchParameters parameters = searchParametersCaptor.getValue();
-        assertEquals("Query", expectedQuery, parameters.getQuery());
     }
 
     private void addUserUsageContent(final String userName, final int stringDataLength)

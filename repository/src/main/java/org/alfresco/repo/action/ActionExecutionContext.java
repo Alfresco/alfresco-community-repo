@@ -38,6 +38,8 @@ import java.util.Objects;
  */
 public class ActionExecutionContext
 {
+    public static final String RULES_CONTEXT = "rules";
+
     private final String actionId;
     private final String executionSource;
 

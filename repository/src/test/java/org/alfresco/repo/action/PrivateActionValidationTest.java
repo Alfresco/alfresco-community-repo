@@ -31,6 +31,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.alfresco.repo.action.ActionServiceImpl.ActionExecutionValidator;
 import org.junit.Assert;
@@ -60,8 +61,8 @@ public class PrivateActionValidationTest
     {
         final ActionExecutionValidator validator = givenActionExecutionValidator(Map.of(), Set.of());
 
-        Assert.assertFalse(validator.isExposed(builder("privateA").build()));
-        Assert.assertFalse(validator.isExposed(builder("privateA").withExecutionSource("test").build()));
+        Assert.assertFalse(validator.isExposed(getAEC("privateA")));
+        Assert.assertFalse(validator.isExposed(getAEC("privateA", "test")));
     }
 
     @Test
@@ -69,8 +70,8 @@ public class PrivateActionValidationTest
     {
         final ActionExecutionValidator validator = givenActionExecutionValidator(Map.of(), Set.of("publicA"));
 
-        Assert.assertTrue(validator.isExposed(builder("publicA").build()));
-        Assert.assertTrue(validator.isExposed(builder("publicA").withExecutionSource("test").build()));
+        Assert.assertTrue(validator.isExposed(getAEC("publicA")));
+        Assert.assertTrue(validator.isExposed(getAEC("publicA", "test")));
     }
 
     @Test
@@ -79,13 +80,13 @@ public class PrivateActionValidationTest
         final ActionExecutionValidator validator = givenActionExecutionValidator(Map.of(
                 "org.alfresco.repo.action.privateA.exposed", "true"), Set.of());
 
-        Assert.assertTrue(validator.isExposed(builder("privateA").build()));
-        Assert.assertTrue(validator.isExposed(builder("privateA").withExecutionSource("test").build()));
-        Assert.assertTrue(validator.isExposed(builder("privateA").withExecutionSource("test2").build()));
+        Assert.assertTrue(validator.isExposed(getAEC("privateA")));
+        Assert.assertTrue(validator.isExposed(getAEC("privateA", "test")));
+        Assert.assertTrue(validator.isExposed(getAEC("privateA", "test2")));
 
-        Assert.assertFalse(validator.isExposed(builder("privateB").build()));
-        Assert.assertFalse(validator.isExposed(builder("privateB").withExecutionSource("test").build()));
-        Assert.assertFalse(validator.isExposed(builder("privateB").withExecutionSource("test2").build()));
+        Assert.assertFalse(validator.isExposed(getAEC("privateB")));
+        Assert.assertFalse(validator.isExposed(getAEC("privateB", "test")));
+        Assert.assertFalse(validator.isExposed(getAEC("privateB", "test2")));
     }
 
     @Test
@@ -94,13 +95,13 @@ public class PrivateActionValidationTest
         final ActionExecutionValidator validator = givenActionExecutionValidator(Map.of(
                 "org.alfresco.repo.action.test.privateA.exposed", "true"), Set.of());
 
-        Assert.assertFalse(validator.isExposed(builder("privateA").build()));
-        Assert.assertTrue(validator.isExposed(builder("privateA").withExecutionSource("test").build()));
-        Assert.assertFalse(validator.isExposed(builder("privateA").withExecutionSource("test2").build()));
+        Assert.assertFalse(validator.isExposed(getAEC("privateA")));
+        Assert.assertTrue(validator.isExposed(getAEC("privateA", "test")));
+        Assert.assertFalse(validator.isExposed(getAEC("privateA", "test2")));
 
-        Assert.assertFalse(validator.isExposed(builder("privateB").build()));
-        Assert.assertFalse(validator.isExposed(builder("privateB").withExecutionSource("test").build()));
-        Assert.assertFalse(validator.isExposed(builder("privateB").withExecutionSource("test2").build()));
+        Assert.assertFalse(validator.isExposed(getAEC("privateB")));
+        Assert.assertFalse(validator.isExposed(getAEC("privateB", "test")));
+        Assert.assertFalse(validator.isExposed(getAEC("privateB", "test2")));
     }
 
     @Test
@@ -110,8 +111,8 @@ public class PrivateActionValidationTest
                 "org.alfresco.repo.action.test.privateA.exposed", "true",
                 "org.alfresco.repo.action.privateA.exposed", "false"), Set.of());
 
-        Assert.assertFalse(validator.isExposed(builder("privateA").build()));
-        Assert.assertTrue(validator.isExposed(builder("privateA").withExecutionSource("test").build()));
+        Assert.assertFalse(validator.isExposed(getAEC("privateA")));
+        Assert.assertTrue(validator.isExposed(getAEC("privateA", "test")));
     }
 
     @Test
@@ -120,8 +121,8 @@ public class PrivateActionValidationTest
         final ActionExecutionValidator validator = givenActionExecutionValidator(Map.of(
                 "org.alfresco.repo.action.publicA.exposed", "false"), Set.of("publicA"));
 
-        Assert.assertFalse(validator.isExposed(builder("publicA").build()));
-        Assert.assertFalse(validator.isExposed(builder("publicA").withExecutionSource("test").build()));
+        Assert.assertFalse(validator.isExposed(getAEC("publicA")));
+        Assert.assertFalse(validator.isExposed(getAEC("publicA", "test")));
     }
 
     @Test
@@ -130,8 +131,8 @@ public class PrivateActionValidationTest
         final ActionExecutionValidator validator = givenActionExecutionValidator(Map.of(
                 "org.alfresco.repo.action.test.publicA.exposed", "false"), Set.of("publicA"));
 
-        Assert.assertTrue(validator.isExposed(builder("publicA").build()));
-        Assert.assertFalse(validator.isExposed(builder("publicA").withExecutionSource("test").build()));
+        Assert.assertTrue(validator.isExposed(getAEC("publicA")));
+        Assert.assertFalse(validator.isExposed(getAEC("publicA", "test")));
     }
 
     @Test
@@ -141,12 +142,26 @@ public class PrivateActionValidationTest
                 "org.alfresco.repo.action.test.publicA.exposed", "false",
                 "org.alfresco.repo.action.publicA.exposed", "true"), Set.of("publicA"));
 
-        Assert.assertTrue(validator.isExposed(builder("publicA").build()));
-        Assert.assertFalse(validator.isExposed(builder("publicA").withExecutionSource("test").build()));
+        Assert.assertTrue(validator.isExposed(getAEC("publicA")));
+        Assert.assertFalse(validator.isExposed(getAEC("publicA", "test")));
+    }
+
+    private ActionExecutionContext getAEC(String actionName) {
+        return getAEC(actionName, null);
+    }
+
+    private ActionExecutionContext getAEC(String actionName, String executionSource) {
+        Assert.assertNotNull("Action name can't be empty", actionName);
+        ActionExecutionContext.Builder builder = builder(actionName);
+        if (executionSource != null) {
+            builder.withExecutionSource(executionSource);
+        }
+        return builder.build();
     }
 
     private ActionExecutionValidator givenActionExecutionValidator(Map<String, String> configuration, Set<String> publicActions)
     {
-        return new ActionExecutionValidator(configuration::get, publicActions::contains);
+        Predicate<ActionExecutionContext> isPublic = aec -> publicActions.contains(aec.getActionId());
+        return new ActionExecutionValidator(configuration::get, isPublic);
     }
 }

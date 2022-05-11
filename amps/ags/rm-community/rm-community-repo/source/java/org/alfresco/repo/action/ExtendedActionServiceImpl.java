@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -53,7 +54,7 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class ExtendedActionServiceImpl extends ActionServiceImpl implements ApplicationContextAware
 {
-    private static final Set<String> ALLOWED_CONTEXTS_FOR_RM_ACTIONS = Set.of("rules");
+    private static final Set<String> ALLOWED_CONTEXTS_FOR_RM_ACTIONS = Set.of(ActionExecutionContext.RULES_CONTEXT);
 
     /** File plan service */
     private FilePlanService filePlanService;
@@ -62,7 +63,7 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
     private ApplicationContext extendedApplicationContext;
 
 
-    private Set<String> recordManagementActions;
+    private AtomicReference<Set<String>> recordManagementActionsCache = new AtomicReference<>();
 
     /**
      * @see org.alfresco.repo.action.ActionServiceImpl#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -83,25 +84,27 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
 
     @Override
     protected Predicate<ActionExecutionContext> isActionPublicPredicate() {
-        return aec -> {
-            boolean isPublic = super.isActionPublicPredicate().test(aec);
-            boolean allowsRecordManagement = ALLOWED_CONTEXTS_FOR_RM_ACTIONS.contains(aec.getExecutionSource());
-            boolean isRecordsManagement = getRecordManagementActions().contains(aec.getActionId());
+        return super.isActionPublicPredicate().or(this::isRmActionAllowed);
+    }
 
-            return isPublic || (allowsRecordManagement && isRecordsManagement);
-        };
+    private boolean isRmActionAllowed(ActionExecutionContext aec) {
+        boolean allowsRecordManagement = ALLOWED_CONTEXTS_FOR_RM_ACTIONS.contains(aec.getExecutionSource());
+        boolean isRecordsManagement = getRecordManagementActions().contains(aec.getActionId());
+
+        return allowsRecordManagement && isRecordsManagement;
     }
 
     private Set<String> getRecordManagementActions() {
-        if (recordManagementActions == null) {
+        if (recordManagementActionsCache.get() == null) {
             Collection<RecordsManagementAction> rmActions =
                     extendedApplicationContext.getBeansOfType(RecordsManagementAction.class).values();
-            recordManagementActions = rmActions.stream()
+            recordManagementActionsCache.compareAndSet(null,
+                    rmActions.stream()
                     .map(rma -> rma.getRecordsManagementActionDefinition().getName())
-                    .collect(Collectors.toUnmodifiableSet());
+                    .collect(Collectors.toUnmodifiableSet()));
         }
 
-        return recordManagementActions;
+        return recordManagementActionsCache.get();
     }
 
     /**

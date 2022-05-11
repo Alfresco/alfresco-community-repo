@@ -76,8 +76,6 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
 
     public static final SimpleDateFormat dateFormate = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
 
-    public static final String RULE_ACTION_CONTEXT = "rules";
-
     private static final String RULE_OUTBOUND = "outbound";
     private static final String ACTION_CHECK_OUT = "check-out";
 
@@ -469,11 +467,11 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
         for (Action action : actions)
         {
             ActionExecutionContext aec = ActionExecutionContext.builder(action.getActionDefinitionName())
-                    .withExecutionSource(RULE_ACTION_CONTEXT)
+                    .withExecutionSource(ActionExecutionContext.RULES_CONTEXT)
                     .build();
             if (!runtimeActionService.isExposed(aec)) {
                 throw new WebScriptException("Cannot create a rule with non-exposed action: " + action.getActionDefinitionName()
-                        + ", at context: " + RULE_ACTION_CONTEXT);
+                        + ", at context: " + ActionExecutionContext.RULES_CONTEXT);
             }
         }
     }

@@ -279,7 +279,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         {
             configProperties = applicationContext.getBean("global-properties", Properties.class);
         }
-        actionExecutionValidator = new ActionExecutionValidator(configProperties::getProperty, actionDefinitions::containsKey);
+        actionExecutionValidator = new ActionExecutionValidator(configProperties::getProperty, isActionPublicPredicate());
+    }
+
+    protected Predicate<ActionExecutionContext> isActionPublicPredicate() {
+        return aec -> actionDefinitions.containsKey(aec.getActionId());
     }
 
     /**
@@ -1904,9 +1908,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     static class ActionExecutionValidator
     {
         private final Function<String, String> config;
-        private final Predicate<String> isPublic;
+        private final Predicate<ActionExecutionContext> isPublic;
 
-        ActionExecutionValidator(Function<String, String> config, Predicate<String> isPublic)
+        ActionExecutionValidator(Function<String, String> config, Predicate<ActionExecutionContext> isPublic)
         {
             this.config = Objects.requireNonNull(config);
             this.isPublic = Objects.requireNonNull(isPublic);
@@ -1929,7 +1933,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
 
         private Boolean isPublic(ActionExecutionContext actionExecutionContext)
         {
-            return isPublic.test(actionExecutionContext.getActionId());
+            return isPublic.test(actionExecutionContext);
         }
 
         private static Stream<String> getConfigKeys(ActionExecutionContext actionExecutionContext)

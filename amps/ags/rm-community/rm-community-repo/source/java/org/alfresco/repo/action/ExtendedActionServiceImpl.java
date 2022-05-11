@@ -28,9 +28,13 @@
 package org.alfresco.repo.action;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -49,11 +53,16 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class ExtendedActionServiceImpl extends ActionServiceImpl implements ApplicationContextAware
 {
+    private static final Set<String> ALLOWED_CONTEXTS_FOR_RM_ACTIONS = Set.of("rules");
+
     /** File plan service */
     private FilePlanService filePlanService;
 
     /** Application context */
     private ApplicationContext extendedApplicationContext;
+
+
+    private Set<String> recordManagementActions;
 
     /**
      * @see org.alfresco.repo.action.ActionServiceImpl#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -71,6 +80,29 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
     {
 		this.filePlanService = filePlanService;
 	}
+
+    @Override
+    protected Predicate<ActionExecutionContext> isActionPublicPredicate() {
+        return aec -> {
+            boolean isPublic = super.isActionPublicPredicate().test(aec);
+            boolean allowsRecordManagement = ALLOWED_CONTEXTS_FOR_RM_ACTIONS.contains(aec.getExecutionSource());
+            boolean isRecordsManagement = getRecordManagementActions().contains(aec.getActionId());
+
+            return isPublic || (allowsRecordManagement && isRecordsManagement);
+        };
+    }
+
+    private Set<String> getRecordManagementActions() {
+        if (recordManagementActions == null) {
+            Collection<RecordsManagementAction> rmActions =
+                    extendedApplicationContext.getBeansOfType(RecordsManagementAction.class).values();
+            recordManagementActions = rmActions.stream()
+                    .map(rma -> rma.getRecordsManagementActionDefinition().getName())
+                    .collect(Collectors.toUnmodifiableSet());
+        }
+
+        return recordManagementActions;
+    }
 
     /**
      * @see org.alfresco.repo.action.ActionServiceImpl#getActionConditionDefinition(java.lang.String)

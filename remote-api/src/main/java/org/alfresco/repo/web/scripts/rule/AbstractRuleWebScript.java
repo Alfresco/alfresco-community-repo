@@ -472,7 +472,8 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
                     .withExecutionSource(RULE_ACTION_CONTEXT)
                     .build();
             if (!runtimeActionService.isExposed(aec)) {
-                throw new WebScriptException("Cannot create a rule with non-exposed action: " + action.getActionDefinitionName());
+                throw new WebScriptException("Cannot create a rule with non-exposed action: " + action.getActionDefinitionName()
+                        + ", at context: " + RULE_ACTION_CONTEXT);
             }
         }
     }

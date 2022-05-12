@@ -276,7 +276,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         String userJob = "myJob" + RandomStringUtils.randomNumeric(2) + " myJob" + RandomStringUtils.randomNumeric(3);
         
         //we need to ecape a spaces for search
-        String jobSearchString = userJob.replace(" ", "\\ ");
+        String jobSearchString = userJob.replace(" ", "\\") ;
         
         createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                 userJob, "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
@@ -481,6 +481,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         JSONArray peopleAsc = res.getJSONArray("people");
         assertEquals(usernames.length, peopleAsc.length());
 
+
         response = sendRequest(
                 new GetRequest(URL_PEOPLE +
                         "?filter=" + filter +
@@ -529,6 +530,7 @@ public class PersonServiceTest extends BaseWebScriptTest
                 String jobUser1 = person.getString("jobtitle");
                 person = peopleAsc.getJSONObject(i + 1);
                 String jobUser2 = person.getString("jobtitle");
+
 
                 assertTrue("Users are not ordered correctly ascending by jobtitle",
                         (jobUser1 == null ? "" : jobUser1).compareToIgnoreCase(jobUser2 == null ? "" : jobUser2) <= 0);

@@ -281,7 +281,6 @@ public class PersonServiceTest extends BaseWebScriptTest
         createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                 userJob, "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
                 Status.STATUS_OK);
-        NodeRef nodeRef = personService.getPerson(userName);
         
         // Get a person 
         Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + jobSearchString)), 200);
@@ -472,15 +471,10 @@ public class PersonServiceTest extends BaseWebScriptTest
 
     private void checkSorting(String filter, String sortBy, String... usernames) throws Exception
     {
-        for (String username : usernames)
-        {
-            NodeRef nodeRef = personService.getPerson(username);
-        }
-
         Response response = sendRequest(
                 new GetRequest(URL_PEOPLE +
-                        "?sortBy=" + sortBy +
-                        "&filter=" + filter +
+                        "?filter=" + filter +
+                        "&sortBy=" + sortBy +
                         "&dir=" + ASC_DIR
                 ), Status.STATUS_OK);
         JSONObject res = new JSONObject(response.getContentAsString());
@@ -489,8 +483,8 @@ public class PersonServiceTest extends BaseWebScriptTest
 
         response = sendRequest(
                 new GetRequest(URL_PEOPLE +
-                        "?sortBy=" + sortBy +
-                        "&filter=" + filter +
+                        "?filter=" + filter +
+                        "&sortBy=" + sortBy +
                         "&dir=" + DESC_DIR
                 ), Status.STATUS_OK);
         res = new JSONObject(response.getContentAsString());
@@ -567,15 +561,6 @@ public class PersonServiceTest extends BaseWebScriptTest
 
                 assertTrue("Users are not ordered correctly ascending by usage", usageUser1 <= usageUser2);
             }
-        }
-    }
-
-    private void assertSearchQuery(String term, boolean buildFilter)
-    {
-        if (buildFilter)
-        {
-            String termWithEscapedAsterisks = term.replaceAll("\\*", "\\\\*");
-            term = "\"*" + termWithEscapedAsterisks + "*" + "\"";
         }
     }
 

@@ -283,11 +283,11 @@ public class PersonServiceTest extends BaseWebScriptTest
                 Status.STATUS_OK);
         
         // Get a person 
-        Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + jobSearchString)), 200);
+        Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=jobtitle:" + jobSearchString), 200);
         JSONObject res = new JSONObject(response.getContentAsString());
         assertEquals(1, res.getJSONArray("people").length());
 
-        response = sendRequest(new GetRequest(URL_PEOPLE + "?filter="+ URLEncoder.encode("jobtitle:" + userJob)), 200);
+        response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=jobtitle:" + userJob), 200);
         res = new JSONObject(response.getContentAsString());
         assertEquals(0, res.getJSONArray("people").length());
     }

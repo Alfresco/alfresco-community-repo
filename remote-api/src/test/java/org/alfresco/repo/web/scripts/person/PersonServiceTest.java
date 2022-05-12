@@ -57,6 +57,9 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
@@ -72,6 +75,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit test to test person Web Script API
@@ -91,6 +99,11 @@ public class PersonServiceTest extends BaseWebScriptTest
     private ContentUsageImpl contentUsage;
     private TransactionService transactionService;
 
+    @Mock
+    private SearchService mockSearchService;
+    @Mock
+    private ResultSet mockSearchServiceQueryResultSet;
+    private List<NodeRef> dummySearchServiceQueryNodeRefs = new ArrayList<>();
     private int callCount = 0;
     private ServiceDescriptorRegistry serviceRegistry;
 
@@ -116,6 +129,7 @@ public class PersonServiceTest extends BaseWebScriptTest
     protected void setUp() throws Exception
     {
         super.setUp();
+        MockitoAnnotations.initMocks(this);
 
         ApplicationContext ctx = getServer().getApplicationContext();
         this.authenticationService = (MutableAuthenticationService)ctx.getBean("AuthenticationService");
@@ -129,6 +143,9 @@ public class PersonServiceTest extends BaseWebScriptTest
         this.transactionService = (TransactionService) ctx.getBean("TransactionService");
 
     	serviceRegistry = (ServiceDescriptorRegistry) ctx.getBean("ServiceRegistry");
+    	serviceRegistry.setMockSearchService(mockSearchService);
+        when(mockSearchService.query(any())).thenReturn(mockSearchServiceQueryResultSet);
+        when(mockSearchServiceQueryResultSet.getNodeRefs()).thenReturn(dummySearchServiceQueryNodeRefs);
 
         // enable usages
         contentUsage.setEnabled(true);
@@ -183,6 +200,11 @@ public class PersonServiceTest extends BaseWebScriptTest
         // Clear the list
         this.createdPeople.clear();
 
+        // Should be safe not to do the following as we don't have a search service, but it is cleaner to remove the mock.
+        if (serviceRegistry != null)
+        {
+        	serviceRegistry.setMockSearchService(null);
+        }
     }
     
     private JSONObject updatePerson(String userName, String title, String firstName, String lastName, 
@@ -276,18 +298,24 @@ public class PersonServiceTest extends BaseWebScriptTest
         String userJob = "myJob" + RandomStringUtils.randomNumeric(2) + " myJob" + RandomStringUtils.randomNumeric(3);
         
         //we need to ecape a spaces for search
-        String jobSearchString = userJob.replace(" ", "\\") ;
+        String jobSearchString = userJob.replace(" ", "\\ ");
         
         createPerson(userName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                 userJob, "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
-                Status.STATUS_OK);
+                Status.STATUS_OK);  
+        dummySearchServiceQueryNodeRefs.clear();
+        NodeRef nodeRef = personService.getPerson(userName);
+        dummySearchServiceQueryNodeRefs.add(nodeRef);
         
         // Get a person 
-        Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=jobtitle:" + jobSearchString), 200);
+        Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + jobSearchString)), 200);
+        assertSearchQuery("jobtitle:\"" + jobSearchString + "\"", false);
         JSONObject res = new JSONObject(response.getContentAsString());
         assertEquals(1, res.getJSONArray("people").length());
-
-        response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=jobtitle:" + userJob), 200);
+        
+        dummySearchServiceQueryNodeRefs.clear();
+        response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + URLEncoder.encode("jobtitle:" + userJob)), 200);
+        assertSearchQuery("jobtitle:\""+userJob.replace(" ", "\" \"")+"\" ", false);
         res = new JSONObject(response.getContentAsString());
         assertEquals(0, res.getJSONArray("people").length());
     }
@@ -340,6 +368,7 @@ public class PersonServiceTest extends BaseWebScriptTest
 
     public void testGetPeoplePaging() throws Exception
     {
+        dummySearchServiceQueryNodeRefs.clear();
         final String filter = GUID.generate();
         for (int i = 0; i < 6; i++)
         {
@@ -347,6 +376,7 @@ public class PersonServiceTest extends BaseWebScriptTest
             createPerson(username, "myTitle", "myFirstName", "myLastName", "myOrganisation",
                     "myJobTitle", "myEmailAddress", "myBio", "images/avatar.jpg", 0, Status.STATUS_OK);
             NodeRef nodeRef = personService.getPerson(username);
+            dummySearchServiceQueryNodeRefs.add(nodeRef);
         }
 
         // fetch all users (6)
@@ -471,21 +501,27 @@ public class PersonServiceTest extends BaseWebScriptTest
 
     private void checkSorting(String filter, String sortBy, String... usernames) throws Exception
     {
+        dummySearchServiceQueryNodeRefs.clear();
+        for (String username : usernames)
+        {
+            NodeRef nodeRef = personService.getPerson(username);
+            dummySearchServiceQueryNodeRefs.add(nodeRef);
+        }
+
         Response response = sendRequest(
                 new GetRequest(URL_PEOPLE +
-                        "?filter=" + filter +
-                        "&sortBy=" + sortBy +
+                        "?sortBy=" + sortBy +
+                        "&filter=" + filter +
                         "&dir=" + ASC_DIR
                 ), Status.STATUS_OK);
         JSONObject res = new JSONObject(response.getContentAsString());
         JSONArray peopleAsc = res.getJSONArray("people");
         assertEquals(usernames.length, peopleAsc.length());
 
-
         response = sendRequest(
                 new GetRequest(URL_PEOPLE +
-                        "?filter=" + filter +
-                        "&sortBy=" + sortBy +
+                        "?sortBy=" + sortBy +
+                        "&filter=" + filter +
                         "&dir=" + DESC_DIR
                 ), Status.STATUS_OK);
         res = new JSONObject(response.getContentAsString());
@@ -531,7 +567,6 @@ public class PersonServiceTest extends BaseWebScriptTest
                 person = peopleAsc.getJSONObject(i + 1);
                 String jobUser2 = person.getString("jobtitle");
 
-
                 assertTrue("Users are not ordered correctly ascending by jobtitle",
                         (jobUser1 == null ? "" : jobUser1).compareToIgnoreCase(jobUser2 == null ? "" : jobUser2) <= 0);
             }
@@ -564,6 +599,20 @@ public class PersonServiceTest extends BaseWebScriptTest
                 assertTrue("Users are not ordered correctly ascending by usage", usageUser1 <= usageUser2);
             }
         }
+    }
+
+    private void assertSearchQuery(String term, boolean buildFilter)
+    {
+        if (buildFilter)
+        {
+            String termWithEscapedAsterisks = term.replaceAll("\\*", "\\\\*");
+            term = "\"*" + termWithEscapedAsterisks + "*" + "\"";
+        }
+        String expectedQuery = "TYPE:\"{http://www.alfresco.org/model/content/1.0}person\" AND (" + term + ")";
+        ArgumentCaptor<SearchParameters> searchParametersCaptor = ArgumentCaptor.forClass(SearchParameters.class);
+        verify(mockSearchService, times(++callCount)).query(searchParametersCaptor.capture());
+        SearchParameters parameters = searchParametersCaptor.getValue();
+        assertEquals("Query", expectedQuery, parameters.getQuery());
     }
 
     private void addUserUsageContent(final String userName, final int stringDataLength)

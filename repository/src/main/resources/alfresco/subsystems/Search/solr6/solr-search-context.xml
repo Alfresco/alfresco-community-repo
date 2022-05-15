@@ -239,8 +239,6 @@
     </bean>
 
     <bean id="search.fts.alfresco.switching" parent="base.search.fts.alfresco.switching" >
-        <property name="queryConsistency" value="${solr.query.fts.queryConsistency}"/>
-        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
         <property name="subsystemName" value="solr6"/>
     </bean>
 

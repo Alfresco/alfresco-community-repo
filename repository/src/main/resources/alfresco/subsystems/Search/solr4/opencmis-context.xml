@@ -5,19 +5,14 @@
    <import resource="../common-opencmis-context.xml" />
 
     <bean id="search.cmis.alfresco.switching" parent="base.search.cmis.alfresco.switching" >
-        <property name="queryConsistency" value="${solr.query.cmis.queryConsistency}"/>
-        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
         <property name="subsystemName" value="solr4"/>
     </bean>
 
     <bean id="search.cmis.alfresco.switching1.1" parent="base.search.cmis.alfresco.switching1.1" >
-        <property name="queryConsistency" value="${solr.query.cmis.queryConsistency}"/>
         <property name="subsystemName" value="solr4"/>
     </bean>
 
     <bean id="search.cmis.strict.switching" parent="base.search.cmis.strict.switching" >
-        <property name="queryConsistency" value="${solr.query.cmis.queryConsistency}"/>
-        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
         <property name="subsystemName" value="solr4"/>
     </bean>
 

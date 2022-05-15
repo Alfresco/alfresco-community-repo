@@ -19,6 +19,8 @@
         <property name="indexQueryLanguage">
             <ref bean="search.cmis.alfresco.index" />
         </property>
+        <property name="queryConsistency" value="${query.cmis.queryConsistency:${solr.query.cmis.queryConsistency}}"/>
+        <property name="hybridEnabled" value="${query.hybrid.enabled:${solr.query.hybrid.enabled}}"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="searchDao" ref="searchDAO"/>
     </bean>
@@ -38,6 +40,7 @@
         <property name="indexQueryLanguage">
             <ref bean="search.cmis.alfresco.index" />
         </property>
+        <property name="queryConsistency" value="${query.cmis.queryConsistency:${solr.query.cmis.queryConsistency}}"/>
     </bean>
 
     <bean id="base.search.cmis.strict.switching" abstract="true" class="org.alfresco.repo.search.impl.DbOrIndexSwitchingQueryLanguage">
@@ -55,6 +58,8 @@
         <property name="indexQueryLanguage">
             <ref bean="search.cmis.alfresco.index" />
         </property>
+        <property name="queryConsistency" value="${query.cmis.queryConsistency:${solr.query.cmis.queryConsistency}}"/>
+        <property name="hybridEnabled" value="${query.hybrid.enabled:${solr.query.hybrid.enabled}}"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="searchDao" ref="searchDAO"/>
     </bean>

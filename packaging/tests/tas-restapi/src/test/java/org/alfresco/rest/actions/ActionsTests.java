@@ -11,6 +11,7 @@ import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
@@ -21,10 +22,14 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.util.Properties;
+
 public class ActionsTests extends RestTest
 {
     private UserModel adminUser;
     private FileModel document;
+    private FolderModel folder;
+    private FileModel randomFile;
     private SiteModel publicSite;
 
     @BeforeClass(alwaysRun = true)
@@ -33,6 +38,8 @@ public class ActionsTests extends RestTest
         adminUser = dataUser.getAdminUser();
         publicSite = dataSite.createPublicRandomSite();
         document = dataContent.usingSite(publicSite).usingUser(adminUser).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+        folder = dataContent.usingUser(adminUser).createFolder();
+        randomFile = dataContent.usingUser(adminUser).usingResource(folder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
     @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
@@ -106,6 +113,22 @@ public class ActionsTests extends RestTest
         });
     }
 
+    @TestRail(section = { TestGroup.REST_API,TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
+            description = "Test for private action execution from POST api/-default-/public/alfresco/versions/1/action-executions, should not be possible to execute private action using V1 REST API")
+    @Test(groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY})
+    public void executePrivateActionV1RESTAPI() throws Exception
+    {
+        // 'count-children' action is expected to be private (not exposed) by default
+        String actionDefinitionId = "count-children";
+        JSONObject response = restClient.authenticateUser(adminUser)
+                .withCoreAPI()
+                .usingActions()
+                .executeAction(actionDefinitionId, folder);
+
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
+        restClient.assertLastError().containsSummary("Action '" + actionDefinitionId + "' is not exposed within 'http-v1' execution source.");
+    }
+
     @TestRail (section = { TestGroup.REST_API, TestGroup.ACTIONS }, executionType = ExecutionType.SANITY,
             description = "Sanity test for POST /action-executions")
     @Test (groups = { TestGroup.REST_API, TestGroup.ACTIONS, TestGroup.SANITY })
@@ -141,7 +164,7 @@ public class ActionsTests extends RestTest
                 withCoreAPI().
                 usingActions().
                 getActionDefinitionById("add-features");
-        
+
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertFalse(restActionDefinition.getId().isEmpty());
         restActionDefinition.getId().equals("add-features");

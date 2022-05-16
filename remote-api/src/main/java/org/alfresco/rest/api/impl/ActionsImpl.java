@@ -26,14 +26,11 @@
 package org.alfresco.rest.api.impl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.action.ActionExecutionContext;
-import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
@@ -75,9 +72,6 @@ public class ActionsImpl implements Actions
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private NamespacePrefixResolver prefixResolver;
-    private RuntimeActionService runtimeActionService;
-
-    private final String HTTP_V1_EXECUTION_SOURCE = "http-v1";
 
     public void setActionService(ActionService actionService)
     {
@@ -102,11 +96,6 @@ public class ActionsImpl implements Actions
     public void setPrefixResolver(NamespacePrefixResolver prefixResolver)
     {
         this.prefixResolver = prefixResolver;
-    }
-
-    public void setRuntimeActionService(RuntimeActionService runtimeActionService)
-    {
-        this.runtimeActionService = runtimeActionService;
     }
 
     @Override
@@ -272,16 +261,6 @@ public class ActionsImpl implements Actions
         if (actionDef == null)
         {
             throw new EntityNotFoundException(action.getActionDefinitionId());
-        }
-
-        final ActionExecutionContext actionExecutionContext = ActionExecutionContext
-                .builder(actionDef.getName())
-                .withExecutionSource(HTTP_V1_EXECUTION_SOURCE)
-                .build();
-
-        if (!runtimeActionService.isExposed(actionExecutionContext))
-        {
-            throw new PermissionDeniedException("Action '" + actionDef.getName() + "' is not exposed within '" + HTTP_V1_EXECUTION_SOURCE + "' execution source.");
         }
 
         // targetId is optional, however, currently targetId must be a valid node ID.

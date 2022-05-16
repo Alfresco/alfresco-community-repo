@@ -82,10 +82,10 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
 		this.filePlanService = filePlanService;
 	}
 
-    @Override
-    protected Predicate<ActionExecutionContext> isActionPublicPredicate() {
-        return super.isActionPublicPredicate().or(this::isRmActionAllowed);
-    }
+//    @Override
+//    protected Predicate<ActionExecutionContext> isActionPublicPredicate() {
+//        return super.isActionPublicPredicate().or(this::isRmActionAllowed);
+//    }
 
     private boolean isRmActionAllowed(ActionExecutionContext aec) {
         boolean allowsRecordManagement = ALLOWED_CONTEXTS_FOR_RM_ACTIONS.contains(aec.getExecutionSource());

@@ -62,12 +62,14 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     LuceneQueryLanguageSPI indexQueryLanguage;
     
     QueryConsistency queryConsistency = QueryConsistency.DEFAULT;
+    QueryConsistency solrQueryConsistency = null; // Deprecated
     
     private NodeService nodeService;
     
     private SearchDAO searchDao;
     
-    private boolean hybridEnabled;
+    private Boolean hybridEnabled;
+    private Boolean solrHybridEnabled = null; // Deprecated
 
     private String subsystemName;
     
@@ -95,6 +97,12 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.queryConsistency = queryConsistency;
     }
 
+    // Deprecated
+    public void setSolrQueryConsistency(QueryConsistency solrQueryConsistency)
+    {
+        this.solrQueryConsistency = solrQueryConsistency;
+    }
+
     /**
      * @param nodeService the nodeService to set
      */
@@ -108,9 +116,15 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.searchDao = searchDao;
     }
 
-    public void setHybridEnabled(boolean hybridEnabled)
+    public void setHybridEnabled(Boolean hybridEnabled)
     {
         this.hybridEnabled = hybridEnabled;
+    }
+
+    // Deprecated
+    public void setSolrHybridEnabled(Boolean solrHybridEnabled)
+    {
+        this.solrHybridEnabled = solrHybridEnabled;
     }
 
     public void setSubsystemName(String subsystemName)
@@ -123,7 +137,14 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         QueryConsistency consistency = searchParameters.getQueryConsistency();
         if(consistency == QueryConsistency.DEFAULT)
         {
-            consistency = queryConsistency;
+            if(solrQueryConsistency != null)
+            {
+                consistency = solrQueryConsistency;
+            }
+            else 
+            {
+                consistency = queryConsistency;
+            }
         }
  
         switch(consistency)
@@ -173,7 +194,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 throw new QueryModelException("No query language available");
             }
         case HYBRID:
-            if (!hybridEnabled)
+            if (((solrHybridEnabled != null) && (!solrHybridEnabled)) || (!hybridEnabled))
             {
                 throw new DisabledFeatureException("Hybrid query is disabled.");
             }

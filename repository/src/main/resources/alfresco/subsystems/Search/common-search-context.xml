@@ -80,9 +80,14 @@
         <property name="indexQueryLanguage">
             <ref bean="search.fts.alfresco.index" />
         </property>
+
         <property name="queryConsistency" value="${query.fts.queryConsistency}"/>
-        <property name="solrQueryConsistency" value="${solr.query.fts.queryConsistency}"/> <!-- Deprecated -->
-        <property name="hybridEnabled" value="${solr.query.hybrid.enabled}"/>
+        <property name="solrQueryConsistency" value="${solr.query.fts.queryConsistency}"/>
+
+        <!-- Deprecated -->
+        <property name="hybridEnabled" value="${query.hybrid.enabled}"/>
+        <property name="solrHybridEnabled" value="${solr.query.hybrid.enabled}"/> 
+
         <property name="searchDao" ref="searchDAO"/>
     </bean>
 

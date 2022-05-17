@@ -69,7 +69,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     private SearchDAO searchDao;
     
     private Boolean hybridEnabled;
-    private Boolean solrHybridEnabled = null; // Deprecated
+    private Boolean solrHybridEnabled; // Deprecated
 
     private String subsystemName;
     
@@ -194,7 +194,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 throw new QueryModelException("No query language available");
             }
         case HYBRID:
-            if (((solrHybridEnabled != null) && (!solrHybridEnabled)) || (!hybridEnabled))
+            if (((solrHybridEnabled != null) && (!solrHybridEnabled)) || (hybridEnabled == null) || (!hybridEnabled))
             {
                 throw new DisabledFeatureException("Hybrid query is disabled.");
             }

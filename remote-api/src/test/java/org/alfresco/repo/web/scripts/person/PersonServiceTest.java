@@ -490,8 +490,11 @@ public class PersonServiceTest extends BaseWebScriptTest
         addUserUsageContent(usernameD, 50);
         userUsageTrackingComponent.execute();
 
+        //check sorting for CQ
         checkSorting(filter, SORT_BY_USERNAME, usernameA, usernameB, usernameC, usernameD);
         checkSorting(filter, SORT_BY_FULLNAME, usernameA, usernameB, usernameC, usernameD);
+
+        //since CQ search only sorts by fullname and username test the other sorts by filtering for a job which bypasses CQ (MNT 22905)
         checkSorting(filterByJob, SORT_BY_USERNAME, usernameA, usernameB, usernameC, usernameD);
         checkSorting(filterByJob, SORT_BY_FULLNAME, usernameA, usernameB, usernameC, usernameD);
         checkSorting(filterByJob, SORT_BY_JOBTITLE, usernameA, usernameB, usernameC, usernameD);

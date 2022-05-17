@@ -238,6 +238,10 @@
         </property>
     </bean>
 
+    <bean id="search.fts.alfresco.switching" parent="base.search.fts.alfresco.switching" >
+        <property name="subsystemName" value="solr6"/>
+    </bean>
+
     <bean id="search.fts.alfresco.index" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
         <property name="factories">
             <list>

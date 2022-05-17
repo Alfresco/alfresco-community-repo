@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.solr;
+package org.alfresco.repo.search.impl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,19 +52,19 @@ import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
 /**
  * @author Andy
  */
-public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
+public class OpenCMISQueryServiceImpl implements CMISQueryService
 {
-    private LuceneQueryLanguageSPI solrQueryLanguage;
+    private LuceneQueryLanguageSPI queryLanguage;
     
     private NodeService nodeService;
 
     private DictionaryService alfrescoDictionaryService;
 
     private CMISDictionaryService cmisDictionaryService;
-    
-    public void setSolrQueryLanguage(LuceneQueryLanguageSPI solrQueryLanguage)
+
+    public void setQueryLanguage(LuceneQueryLanguageSPI queryLanguage)
     {
-        this.solrQueryLanguage = solrQueryLanguage;
+        this.queryLanguage = queryLanguage;
     }
 
     public void setNodeService(NodeService nodeService)
@@ -87,7 +87,7 @@ public class SolrOpenCMISQueryServiceImpl implements CMISQueryService
     {
     	SearchParameters searchParameters = options.getAsSearchParmeters();
     	searchParameters.addExtraParameter("cmisVersion", options.getCmisVersion().toString());
-        ResultSet rs = solrQueryLanguage.executeQuery(searchParameters);
+        ResultSet rs = queryLanguage.executeQuery(searchParameters);
         
         CapabilityJoin joinSupport = getJoinSupport();
         if(options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)

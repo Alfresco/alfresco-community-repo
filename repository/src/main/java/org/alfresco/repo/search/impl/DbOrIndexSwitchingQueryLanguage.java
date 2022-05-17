@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.search.impl.solr;
+package org.alfresco.repo.search.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,6 +36,7 @@ import org.alfresco.repo.domain.solr.SearchDAO;
 import org.alfresco.repo.search.impl.lucene.AbstractLuceneQueryLanguage;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryLanguageSPI;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
+import org.alfresco.repo.search.impl.solr.SolrJSONResultSet;
 import org.alfresco.repo.search.results.ChildAssocRefResultSet;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -61,12 +62,16 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     LuceneQueryLanguageSPI indexQueryLanguage;
     
     QueryConsistency queryConsistency = QueryConsistency.DEFAULT;
+    QueryConsistency solrQueryConsistency = null; // Deprecated
     
     private NodeService nodeService;
     
     private SearchDAO searchDao;
     
-    private boolean hybridEnabled;
+    private Boolean hybridEnabled;
+    private Boolean solrHybridEnabled; // Deprecated
+
+    private String subsystemName;
     
     /**
      * @param dbQueryLanguage the dbQueryLanguage to set
@@ -92,6 +97,12 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.queryConsistency = queryConsistency;
     }
 
+    // Deprecated
+    public void setSolrQueryConsistency(QueryConsistency solrQueryConsistency)
+    {
+        this.solrQueryConsistency = solrQueryConsistency;
+    }
+
     /**
      * @param nodeService the nodeService to set
      */
@@ -105,9 +116,20 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         this.searchDao = searchDao;
     }
 
-    public void setHybridEnabled(boolean hybridEnabled)
+    public void setHybridEnabled(Boolean hybridEnabled)
     {
         this.hybridEnabled = hybridEnabled;
+    }
+
+    // Deprecated
+    public void setSolrHybridEnabled(Boolean solrHybridEnabled)
+    {
+        this.solrHybridEnabled = solrHybridEnabled;
+    }
+
+    public void setSubsystemName(String subsystemName)
+    {
+        this.subsystemName = subsystemName;
     }
 
     public ResultSet executeQuery(SearchParameters searchParameters)
@@ -115,7 +137,14 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         QueryConsistency consistency = searchParameters.getQueryConsistency();
         if(consistency == QueryConsistency.DEFAULT)
         {
-            consistency = queryConsistency;
+            if(solrQueryConsistency != null)
+            {
+                consistency = solrQueryConsistency;
+            }
+            else 
+            {
+                consistency = queryConsistency;
+            }
         }
  
         switch(consistency)
@@ -125,7 +154,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             {
                 if(logger.isDebugEnabled())
                 {
-                    logger.debug("Using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
+                    logger.debug("Using "+subsystemName+" query: "+dbQueryLanguage.getName()+" for "+searchParameters);
                 }
                 StopWatch stopWatch = new StopWatch("index only");
                 stopWatch.start();
@@ -133,7 +162,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 stopWatch.stop();
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("SOLR returned " + results.length() + " results in " +
+                    logger.debug(subsystemName+" returned " + results.length() + " results in " +
                                  stopWatch.getLastTaskTimeMillis() + "ms");
                 }
                 return results;
@@ -165,7 +194,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 throw new QueryModelException("No query language available");
             }
         case HYBRID:
-            if (!hybridEnabled)
+            if (((solrHybridEnabled != null) && (!solrHybridEnabled)) || (hybridEnabled == null) || (!hybridEnabled))
             {
                 throw new DisabledFeatureException("Hybrid query is disabled.");
             }
@@ -209,7 +238,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                     {
                         if(logger.isDebugEnabled())
                         {
-                            logger.debug("Using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
+                            logger.debug("Using "+subsystemName+" query: "+dbQueryLanguage.getName()+" for "+searchParameters);
                         }
                         stopWatch.start();
 
@@ -218,7 +247,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                         stopWatch.stop();
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("SOLR returned " + results.length() + " results in " +
+                            logger.debug(subsystemName+" returned " + results.length() + " results in " +
                                          stopWatch.getLastTaskTimeMillis() + "ms");
                         }
                         return results;
@@ -231,14 +260,14 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 {
                     if(logger.isDebugEnabled())
                     {
-                        logger.debug("(No DB QL) Using SOLR query: "+"dbQueryLanguage==null"+" for "+searchParameters);
+                        logger.debug("(No DB QL) Using "+subsystemName+" query: "+"dbQueryLanguage==null"+" for "+searchParameters);
                     }
                     stopWatch.start();
                     ResultSet results = indexQueryLanguage.executeQuery(searchParameters);
                     stopWatch.stop();
                     if (logger.isDebugEnabled())
                     {
-                        logger.debug("SOLR returned " + results.length() + " results in " +
+                        logger.debug(subsystemName+" returned " + results.length() + " results in " +
                                      stopWatch.getLastTaskTimeMillis() + "ms");
                     }
                     return results;
@@ -282,21 +311,21 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
     {        
         if (indexQueryLanguage == null || dbQueryLanguage == null)
         {
-            throw new QueryModelException("Both index and DB query language required for hybrid search [index=" +
+            throw new QueryModelException("Both "+subsystemName+" and DB query language required for hybrid search [index=" +
                                           indexQueryLanguage + ", DB=" + dbQueryLanguage + "]");
         }
         
         StopWatch stopWatch = new StopWatch("hybrid search");
         if (logger.isDebugEnabled())
         {
-            logger.debug("Hybrid search, using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
+            logger.debug("Hybrid search, using "+subsystemName+" query: "+dbQueryLanguage.getName()+" for "+searchParameters);
         }
         stopWatch.start("index query");
         ResultSet indexResults = indexQueryLanguage.executeQuery(searchParameters);
         stopWatch.stop();
         if (logger.isDebugEnabled())
         {
-            logger.debug("SOLR query returned " + indexResults.length() + " results in " +
+            logger.debug(subsystemName+" query returned " + indexResults.length() + " results in " +
                          stopWatch.getLastTaskTimeMillis() + "ms");
         }
         // TODO: if the results are up-to-date, then nothing more to do - return the results.
@@ -305,7 +334,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         {
             if (logger.isWarnEnabled())
             {
-                logger.warn("Hybrid search can only use database when SOLR is also in use. " +
+                logger.warn("Hybrid search can only use database when "+subsystemName+" is also in use. " +
                             "Skipping DB search, returning results from index.");
             }
             return indexResults;            
@@ -345,7 +374,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         {
             nodeRefs.add(n.getNodeRef());
         }
-        // Only use the SOLR results for nodes that haven't changed since indexing.
+        // Only use the Search Index results for nodes that haven't changed since indexing.
         for (ChildAssociationRef car : indexResults.getChildAssocRefs())
         {
             if (!nodeRefs.contains(car.getChildRef()))
@@ -360,7 +389,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         stopWatch.stop(); // merge result sets
         if (logger.isDebugEnabled())
         {
-            String stats = String.format("SOLR=%d, DB=%d, total=%d",
+            String stats = String.format(subsystemName+"=%d, DB=%d, total=%d",
                         indexResults.length(), dbResults.length(), results.length());
             logger.debug("Hybrid search returning combined results with counts: " + stats);
             logger.debug(stopWatch.prettyPrint());

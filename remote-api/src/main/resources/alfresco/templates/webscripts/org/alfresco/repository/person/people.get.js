@@ -3,6 +3,7 @@ function main()
 
 // Get the args
 var filter = args["filter"];
+if (filter!==null && !filter.includes(":")) {filter += " [hint:useCQ]";}
 var maxResults = args["maxResults"];
 var skipCountStr = args["skipCount"];
 var skipCount = skipCountStr != null ? parseInt(skipCountStr) : -1;

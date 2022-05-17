@@ -790,13 +790,13 @@ public class PersonServiceTest extends BaseWebScriptTest
 
             //try with canned query
             String filter = "PerSOnSerVIceTest.MixEDCasEUseR";
-            assertCaseSensitivityCQ(filter);
+            assertPersonIsFound(filter);
 
             filter = "MyFiRsTnAmE";
-            assertCaseSensitivityCQ(filter);
+            assertPersonIsFound(filter);
 
             filter = "MyLaStNaMe";
-            assertCaseSensitivityCQ(filter);
+            assertPersonIsFound(filter);
         }
         finally
         {
@@ -804,7 +804,7 @@ public class PersonServiceTest extends BaseWebScriptTest
         }
     }
 
-    private void assertCaseSensitivityCQ(String filter) throws Exception
+    private void assertPersonIsFound(String filter) throws Exception
     {
         Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
         JSONObject res = new JSONObject(response.getContentAsString());

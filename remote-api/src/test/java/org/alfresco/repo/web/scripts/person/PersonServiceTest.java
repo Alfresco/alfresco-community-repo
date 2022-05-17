@@ -52,7 +52,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.alfresco.util.testing.category.LuceneTests;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -86,7 +85,6 @@ import static org.mockito.Mockito.when;
  * 
  * @author Glen Johnson
  */
-@Category(LuceneTests.class)
 public class PersonServiceTest extends BaseWebScriptTest
 {    
     private MutableAuthenticationService authenticationService;
@@ -471,6 +469,7 @@ public class PersonServiceTest extends BaseWebScriptTest
     public void testGetPeopleSorting() throws Exception
     {
         String filter = GUID.generate();
+        String filterByJob = "jobtitle:job";
         String usernameA = filter + "-aaa-";
         String usernameB = filter + "-BBB-";
         String usernameC = filter + "-ccc-";
@@ -493,10 +492,12 @@ public class PersonServiceTest extends BaseWebScriptTest
 
         checkSorting(filter, SORT_BY_USERNAME, usernameA, usernameB, usernameC, usernameD);
         checkSorting(filter, SORT_BY_FULLNAME, usernameA, usernameB, usernameC, usernameD);
-        checkSorting(filter, SORT_BY_JOBTITLE, usernameA, usernameB, usernameC, usernameD);
-        checkSorting(filter, SORT_BY_EMAIL, usernameA, usernameB, usernameC, usernameD);
-        checkSorting(filter, SORT_BY_QUOTA, usernameA, usernameB, usernameC, usernameD);
-        checkSorting(filter, SORT_BY_USAGE, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_USERNAME, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_FULLNAME, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_JOBTITLE, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_EMAIL, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_QUOTA, usernameA, usernameB, usernameC, usernameD);
+        checkSorting(filterByJob, SORT_BY_USAGE, usernameA, usernameB, usernameC, usernameD);
     }
 
     private void checkSorting(String filter, String sortBy, String... usernames) throws Exception
@@ -534,7 +535,11 @@ public class PersonServiceTest extends BaseWebScriptTest
             assertEquals(peopleAsc.getJSONObject(i).getString("userName"),
                     peopleDesc.getJSONObject(peopleAsc.length() - i - 1).getString("userName"));
         }
+        assertCorrectSort(sortBy, peopleAsc);
+    }
 
+    private void assertCorrectSort(String sortBy, JSONArray peopleAsc)
+    {
         // Check Asc sorting for each field
         for (int i = 0; i < peopleAsc.length() - 1; i++)
         {
@@ -758,7 +763,53 @@ public class PersonServiceTest extends BaseWebScriptTest
         createPerson(userName, "myTitle", "", "myLastName", "myOrganisation",
                         "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
                         Status.STATUS_BAD_REQUEST);        
-    }  
+    }
+
+    public void testUserNameCaseSensitivityCQ() throws Exception
+    {
+        String upperCaseUserName = "PersonServiceTest.MixedCaseUser";
+        String lowerCaseUserName = upperCaseUserName.toLowerCase();
+        // Create a new person
+
+        String currentUser = this.authenticationComponent.getCurrentUserName();
+        try
+        {
+            /**
+             *  simulate cloud with lower case user names
+             */
+            createPerson(lowerCaseUserName, "myTitle", "myFirstName", "myLastName", "myOrganisation",
+                    "myJobTitle", "firstName.lastName@email.com", "myBio", "images/avatar.jpg", 0,
+                    Status.STATUS_OK);
+
+            String adminUser = this.authenticationComponent.getSystemUserName();
+            this.authenticationComponent.setCurrentUser(adminUser);
+            personService.setCreateMissingPeople(false);
+
+            //try with canned query
+            String filter = "PerSOnSerVIceTest.MixEDCasEUseR";
+            Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
+            JSONObject res = new JSONObject(response.getContentAsString());
+            int peopleFound = res.getJSONArray("people").length();
+            assertTrue("No people found", peopleFound > 0);
+
+            filter = "MyFiRsTnAmE";
+            response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
+            res = new JSONObject(response.getContentAsString());
+            peopleFound = res.getJSONArray("people").length();
+            assertTrue("No people found", peopleFound > 0);
+
+            filter = "MyLaStNaMe";
+            response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
+            res = new JSONObject(response.getContentAsString());
+            peopleFound = res.getJSONArray("people").length();
+            assertTrue("No people found", peopleFound > 0);
+        }
+        finally
+        {
+            this.authenticationComponent.setCurrentUser(currentUser);
+        }
+    }
+
     /**
      * 
      * @throws Exception

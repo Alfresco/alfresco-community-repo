@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -790,27 +790,26 @@ public class PersonServiceTest extends BaseWebScriptTest
 
             //try with canned query
             String filter = "PerSOnSerVIceTest.MixEDCasEUseR";
-            Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
-            JSONObject res = new JSONObject(response.getContentAsString());
-            int peopleFound = res.getJSONArray("people").length();
-            assertTrue("No people found", peopleFound > 0);
+            assertCaseSensitivityCQ(filter);
 
             filter = "MyFiRsTnAmE";
-            response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
-            res = new JSONObject(response.getContentAsString());
-            peopleFound = res.getJSONArray("people").length();
-            assertTrue("No people found", peopleFound > 0);
+            assertCaseSensitivityCQ(filter);
 
             filter = "MyLaStNaMe";
-            response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
-            res = new JSONObject(response.getContentAsString());
-            peopleFound = res.getJSONArray("people").length();
-            assertTrue("No people found", peopleFound > 0);
+            assertCaseSensitivityCQ(filter);
         }
         finally
         {
             this.authenticationComponent.setCurrentUser(currentUser);
         }
+    }
+
+    private void assertCaseSensitivityCQ(String filter) throws Exception
+    {
+        Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
+        JSONObject res = new JSONObject(response.getContentAsString());
+        int peopleFound = res.getJSONArray("people").length();
+        assertTrue("No people found", peopleFound > 0);
     }
 
     /**

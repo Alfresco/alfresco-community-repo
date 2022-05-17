@@ -3,7 +3,7 @@ function main()
    // Get the args
    var siteShortName = url.templateArgs.shortname,
       site = siteService.getSite(siteShortName),
-      filter = (args.filter != null) ? args.filter : (args.shortNameFilter != null) ? args.shortNameFilter : "",
+      filter = ((args.filter != null) ? args.filter : (args.shortNameFilter != null) ? args.shortNameFilter : "" )+ " [hint:useCQ]",
       maxResults = (args.maxResults == null) ? 10 : parseInt(args.maxResults, 10),
       authorityType = args.authorityType,
       zone = args.zone,

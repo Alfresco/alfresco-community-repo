@@ -2,9 +2,6 @@ package org.alfresco.cmis.search;
 
 import org.alfresco.cmis.CmisWrapper;
 import org.alfresco.dataprep.SiteService.Visibility;
-import org.alfresco.rest.core.RestProperties;
-import org.alfresco.rest.core.RestWrapper;
-import org.alfresco.utility.TasProperties;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUser;

@@ -24,12 +24,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
     protected static final int SEARCH_MAX_ATTEMPTS = 1;
 
     @Autowired
-    protected RestProperties restProperties;
-
-    @Autowired
-    protected TasProperties properties;
-
-    @Autowired
     protected ServerHealth serverHealth;
 
     @Autowired
@@ -37,9 +31,6 @@ public abstract class AbstractE2EFunctionalTest extends AbstractTestNGSpringCont
 
     @Autowired
     protected DataContent dataContent;
-
-    @Autowired
-    protected RestWrapper restClient;
 
     @Autowired
     protected CmisWrapper cmisApi;

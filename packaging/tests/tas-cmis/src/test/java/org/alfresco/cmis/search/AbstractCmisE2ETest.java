@@ -37,7 +37,7 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
         LOGGER.info(String.format("*** ENDING Test: [%s] ***", method.getName()));
     }
 
-    public Integer getSolrWaitTimeInSeconds()
+    public Integer getElasticWaitTimeInSeconds()
     {
         return cmisProperties.envProperty().getSolrWaitTimeInSeconds();
     }
@@ -65,7 +65,7 @@ public abstract class AbstractCmisE2ETest extends AbstractE2EFunctionalTest
             }
 
 
-            Utility.waitToLoopTime(properties.getSolrWaitTimeInSeconds(), "Wait For Indexing");
+            Utility.waitToLoopTime(getElasticWaitTimeInSeconds(), "Wait For Indexing");
 
         }
 

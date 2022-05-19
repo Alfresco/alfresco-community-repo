@@ -42,7 +42,7 @@ public class ElasticSearchInFolderTests extends AbstractCmisE2ETest
                 .createFile(subFile3)
                 .createFile(subFile4);
         // wait for elastic index
-        Utility.waitToLoopTime(getSolrWaitTimeInSeconds());
+        Utility.waitToLoopTime(getElasticWaitTimeInSeconds());
     }
 
     @AfterClass(alwaysRun = true)

@@ -31,6 +31,7 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.v0.RecordsAPI;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
@@ -41,13 +42,12 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.concurrent.TimeUnit;
-
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.test.util.AssertionErrors.assertTrue;
+import static org.testng.Assert.fail;
 
 public class InplaceRecordSearchTests extends BaseRMRestTest {
 
@@ -116,17 +116,20 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
 
         STEP("Allow the Document to be index for it to be available");
 
-        try {
-            TimeUnit.SECONDS.sleep(25L);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        try
+        {
+            Utility.sleep(1000, 20000, () ->
+            {
+                JSONObject siteConsumerSearchJson = getSearchApi().liveSearchForDocuments(siteConsumer.getUsername(),
+                    siteConsumer.getPassword(),
+                    uploadedDocbyCollabUser.getName());
+                assertFalse("Site Consumer not able to find the document.",siteConsumerSearchJson.getJSONArray("items").isEmpty());
+            });
         }
-
-        JSONObject siteConsumerSearchJson = getSearchApi().liveSearchForDocuments(siteConsumer.getUsername(),
-            siteConsumer.getPassword(),
-            uploadedDocbyCollabUser.getName());
-
-        assertFalse("Site Consumer not able to find the document.",siteConsumerSearchJson.getJSONArray("items").isEmpty());
+        catch (InterruptedException e)
+        {
+            fail("InterruptedException received while waiting for results.");
+        }
 
         JSONObject siteCollaboratorSearchJson = getSearchApi().liveSearchForDocuments(siteCollaborator.getUsername(),
             siteCollaborator.getPassword(),

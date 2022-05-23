@@ -78,7 +78,7 @@ public class ObjectTypeIdLuceneBuilder extends BaseLuceneBuilder
         String field = getLuceneFieldName();
         String stringValue = getValueAsString(value);
         TypeDefinitionWrapper type = cmisDictionaryService.findType(stringValue);
-        if(type == null)
+        if (type == null)
         {
             throw new CmisInvalidArgumentException("Unknown type: " + stringValue);
         }

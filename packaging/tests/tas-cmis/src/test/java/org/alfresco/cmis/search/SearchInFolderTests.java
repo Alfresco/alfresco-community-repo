@@ -12,7 +12,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class ElasticSearchInFolderTests extends AbstractCmisE2ETest
+public class SearchInFolderTests extends AbstractCmisE2ETest
 {
     private FolderModel parentFolder, subFolder1, subFolder2, subFolder3;
     private FileModel subFile1, subFile2, subFile3, subFile4, subFile5;
@@ -41,7 +41,7 @@ public class ElasticSearchInFolderTests extends AbstractCmisE2ETest
                 .createFile(subFile2)
                 .createFile(subFile3)
                 .createFile(subFile4);
-        // wait for elastic index
+        // wait for index
         Utility.waitToLoopTime(getElasticWaitTimeInSeconds());
     }
 

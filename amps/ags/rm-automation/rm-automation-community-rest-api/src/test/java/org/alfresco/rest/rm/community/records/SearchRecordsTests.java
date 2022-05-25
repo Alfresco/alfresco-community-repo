@@ -79,7 +79,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
     public static final String TEST_CONTENT = "This is some test content";
     public static final String UNFILED_RECORDS_BREADCRUMB = "Unfiled Records";
     private RecordCategory categoryAll, category_Admin_Only;
-    private RecordCategoryChild folder_Search, folder_Admin_Only;
+    private RecordCategoryChild folder_Admin_Only;
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
@@ -99,7 +99,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         createRMAdmin();
 
         categoryAll = createCategoryIfDoesNotExist(CATEGORY_ALL);
-        folder_Search = createRecordFolderInCategory(FOLDER_SEARCH, categoryAll);
+        createRecordFolderInCategory(FOLDER_SEARCH, categoryAll);
 
         category_Admin_Only = createCategoryIfDoesNotExist(CATEGORY_ADMIN_ONLY);
         folder_Admin_Only = createRecordFolderInCategory(FOLDER_SEARCH, category_Admin_Only);

@@ -53,11 +53,8 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
 
     private UserModel siteCollaborator, siteConsumer, nonSiteMember;
     private SiteModel privateSite;
-
     private Record uploadedDocRecordbyCollabUser;
-
     private FileModel uploadedDocbyCollabUser;
-
     @Autowired
     private RecordsAPI recordsAPI;
 
@@ -172,5 +169,4 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
         dataUser.deleteUser(siteConsumer);
         dataUser.deleteUser(nonSiteMember);
     }
-
 }

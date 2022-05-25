@@ -78,17 +78,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Shishuraj Bisht
  */
 
-
-
 public class CreateElectronicRecordsTests extends BaseRMRestTest {
 
     private RecordCategory rootCategory;
-    private UserModel RmAdminUser;
     private UserModel updateUser;
-
-    private RecordCategoryChild recordFolder;
     private final String recordName = "RM-2790 record";
-    private final String recordDescription = recordName + " description";
 
     /**
      * data prep services
@@ -97,12 +91,8 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest {
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
 
-    @Autowired
-    private RecordsAPI recordsAPI;
-
     private final String TEST_PREFIX = generateTestPrefix(CreateElectronicRecordsTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
-
 
     @BeforeClass (alwaysRun = true)
     public void preConditions()
@@ -120,9 +110,6 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest {
 
         STEP("Create the record folder1 inside the rootCategory");
         String recordFolder1 = createCategoryFolderInFilePlan().getId();
-
-
-
     }
 
     /**
@@ -144,8 +131,7 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest {
         // Get recordsAPI instance initialised to updateUser
         org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI(updateUser);
 
-        for (Record record: asList(electronicRecord))
-        {
+        for (Record record: asList(electronicRecord)) {
             recordsAPI.getRecord(record.getId());
             assertStatusCode(OK);
 
@@ -157,7 +143,6 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest {
             // Update record
             recordsAPI.updateRecord(createRecordModel(newName, newDescription, newTitle), record.getId());
             assertStatusCode(OK);
-
         }
 
 
@@ -170,23 +155,16 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest {
             .getNodeAPI(toContentModel(electronicRecord.getId()))
             .move(createBodyForMoveCopy(recordFolder2));
         assertStatusCode(OK);
-
-
-
-
-
     }
 
-    private String getModifiedPropertyValue(String originalValue)
-    {
+    private String getModifiedPropertyValue(String originalValue) {
         /* to be used to append to modifications */
         String MODIFIED_PREFIX = "modified_";
         return MODIFIED_PREFIX + originalValue;
     }
 
     @AfterClass (alwaysRun = true)
-    public void deletePreConditions()
-    {
+    public void deletePreConditions() {
         STEP("Delete the created rootCategory along with corresponding record folders/records present in it");
         getRestAPIFactory().getRecordCategoryAPI().deleteRecordCategory(rootCategory.getId());
     }

@@ -69,16 +69,12 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest {
     private final String TEST_PREFIX = generateTestPrefix(FileUnfiledRecordsTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
     public static final String NODE_REF_WORKSPACE_SPACES_STORE = "workspace://SpacesStore/";
-
     private UserModel testUser;
     private SiteModel testSite;
     private String unfiledRecordFolderId;
     private UserModel RmAdminUser;
-
     private RecordCategory rootCategory;
-
     private RecordCategoryChild recordFolder;
-
     private final String recordName = "RM-2790 record";
     private final String recordTitle = recordName + " title";
     private final String recordDescription = recordName + " description";
@@ -87,7 +83,6 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest {
      */
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
-
     @Autowired
     private RecordsAPI recordsAPI;
 
@@ -110,7 +105,6 @@ public class FileUnfiledRecordsTests extends BaseRMRestTest {
 
         // invite collab_user to Collaboration site with Contributor role
         getDataUser().addUserToSite(testUser, testSite, UserRole.SiteContributor);
-
     }
 
     @Test

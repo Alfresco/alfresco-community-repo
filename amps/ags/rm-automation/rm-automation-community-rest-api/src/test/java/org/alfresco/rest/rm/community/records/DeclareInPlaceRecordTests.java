@@ -57,7 +57,6 @@ public class DeclareInPlaceRecordTests extends BaseRMRestTest {
 
     private final String TEST_PREFIX = generateTestPrefix(DeclareInPlaceRecordTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
-
     private UserModel testUser;
     private UserModel RmAdminUser;
     private SiteModel testSite;
@@ -68,13 +67,11 @@ public class DeclareInPlaceRecordTests extends BaseRMRestTest {
      */
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
-
     @Autowired
     private RecordsAPI recordsAPI;
 
     @BeforeClass(alwaysRun = true)
-    public void preConditions()
-    {
+    public void preConditions() {
         STEP("Create RM Site");
         createRMSiteIfNotExists();
 

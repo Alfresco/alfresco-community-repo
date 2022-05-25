@@ -477,7 +477,7 @@
             <ref bean="NodeService" />
         </property>
         <property name="cociService">
-            <ref bean="checkOutCheckInService"></ref>
+            <ref bean="CheckOutCheckInService"></ref>
         </property>
         <property name="applicableTypes">
             <list>
@@ -491,7 +491,7 @@
             <ref bean="NodeService" />
         </property>
         <property name="cociService">
-            <ref bean="checkOutCheckInService"></ref>
+            <ref bean="CheckOutCheckInService"></ref>
         </property>
         <property name="applicableTypes">
             <list>

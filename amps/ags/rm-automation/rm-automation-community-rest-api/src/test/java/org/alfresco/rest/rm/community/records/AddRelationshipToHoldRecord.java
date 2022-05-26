@@ -10,7 +10,6 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.testng.Assert.assertNotNull;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.rest.core.v0.BaseAPI.RMProperty;

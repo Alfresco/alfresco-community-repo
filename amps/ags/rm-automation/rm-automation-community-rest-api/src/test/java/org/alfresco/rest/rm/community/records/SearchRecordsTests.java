@@ -37,6 +37,7 @@ import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.SearchAPI;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.UserModel;
+import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
@@ -51,8 +52,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
-import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_READ_RECORDS;
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertFalse;
@@ -67,6 +67,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
     private final String TEST_PREFIX = generateTestPrefix(SearchRecordsTests.class);
     private final String CATEGORY_ALL = TEST_PREFIX + "everybody's category";
     private final String FOLDER_SEARCH = TEST_PREFIX + "basic search folder";
+    private final String FOLDER_ADMIN_ONLY = TEST_PREFIX + "rm admin category";
     private final String CATEGORY_ADMIN_ONLY = TEST_PREFIX + "rm admin category";
     public static final String ROLE_RM_USER = "User";
     public static final String ADMIN = "Administrator";
@@ -79,7 +80,6 @@ public class SearchRecordsTests extends BaseRMRestTest {
     public static final String TEST_CONTENT = "This is some test content";
     public static final String UNFILED_RECORDS_BREADCRUMB = "Unfiled Records";
     private RecordCategory categoryAll, category_Admin_Only;
-    private RecordCategoryChild folder_Admin_Only;
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
@@ -87,63 +87,27 @@ public class SearchRecordsTests extends BaseRMRestTest {
     @Autowired
     private RecordsAPI recordsAPI;
 
-    @BeforeClass(alwaysRun = true)
-    private void createTestPrecondition() {
+    @BeforeClass (alwaysRun = true)
+    public void createRecordsForSearch()
+    {
         createRMSiteIfNotExists();
-
         nonRmSiteUser = Optional.ofNullable(getDataUser().createRandomTestUser());
-
         // create RM manager and RM user
         createRMManager();
         createRMUser();
         createRMAdmin();
-
         categoryAll = createCategoryIfDoesNotExist(CATEGORY_ALL);
         createRecordFolderInCategory(FOLDER_SEARCH, categoryAll);
 
         category_Admin_Only = createCategoryIfDoesNotExist(CATEGORY_ADMIN_ONLY);
-        folder_Admin_Only = createRecordFolderInCategory(FOLDER_SEARCH, category_Admin_Only);
+        createRecordFolderInCategory(FOLDER_ADMIN_ONLY,category_Admin_Only);
 
         // upload records in folder in category and in Unfiled Records
-
-        STEP("Create a electronic record by completing some of the fields");
-        Map<BaseAPI.RMProperty, String> electronic_records_properties = new HashMap<>();
-        electronic_records_properties.put(BaseAPI.RMProperty.DESCRIPTION, ELECTRONIC_RECORD);
-        electronic_records_properties.put(BaseAPI.RMProperty.NAME, ELECTRONIC_RECORD);
-
+        uploadElectronicRecordInContainer(ELECTRONIC_RECORD, FOLDER_SEARCH);
+        createNonElectronicRecordInContainer(NON_ELECTRONIC_RECORD, CATEGORY_ALL, FOLDER_SEARCH);
+        uploadElectronicRecordInContainer(ADMIN_ELECTRONIC_RECORD, FOLDER_ADMIN_ONLY);
         recordsAPI.uploadElectronicRecord(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(),
-            electronic_records_properties, FOLDER_SEARCH, CMISUtil.DocumentType.TEXT_PLAIN);
-
-        STEP("Create a non-electronic record by completing some of the fields");
-        Map<Enum<?>, String> non_electronic_records_properties = new HashMap<>();
-        non_electronic_records_properties.put(BaseAPI.RMProperty.TITLE, NON_ELECTRONIC_RECORD);
-        non_electronic_records_properties.put(BaseAPI.RMProperty.DESCRIPTION, NON_ELECTRONIC_RECORD);
-        non_electronic_records_properties.put(BaseAPI.RMProperty.NAME, NON_ELECTRONIC_RECORD);
-        non_electronic_records_properties.put(BaseAPI.RMProperty.PHYSICAL_SIZE, "");
-        non_electronic_records_properties.put(BaseAPI.RMProperty.NUMBER_OF_COPIES, "");
-        non_electronic_records_properties.put(BaseAPI.RMProperty.SHELF, "");
-        non_electronic_records_properties.put(BaseAPI.RMProperty.STORAGE_LOCATION, "");
-        non_electronic_records_properties.put(BaseAPI.RMProperty.BOX, "");
-        non_electronic_records_properties.put(BaseAPI.RMProperty.FILE, "");
-
-        recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
-            getAdminUser().getPassword(), non_electronic_records_properties, CATEGORY_ALL, FOLDER_SEARCH);
-
-        Map<BaseAPI.RMProperty, String> admin_electronic_records_properties = new HashMap<>();
-        admin_electronic_records_properties.put(BaseAPI.RMProperty.DESCRIPTION, ADMIN_ELECTRONIC_RECORD);
-        admin_electronic_records_properties.put(BaseAPI.RMProperty.NAME, ADMIN_ELECTRONIC_RECORD);
-
-        recordsAPI.uploadElectronicRecord(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(),
-            admin_electronic_records_properties, folder_Admin_Only.getName(), CMISUtil.DocumentType.TEXT_PLAIN);
-
-        recordsAPI.uploadElectronicRecord(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(),
-            getDefaultElectronicRecordProperties(UNFILED_ELECTRONIC_RECORD),
-            UNFILED_RECORDS_BREADCRUMB,
-            CMISUtil.DocumentType.TEXT_PLAIN);
-
+            getDataUser().usingAdmin().getAdminUser().getPassword(), getDefaultElectronicRecordProperties(UNFILED_ELECTRONIC_RECORD), UNFILED_RECORDS_BREADCRUMB, CMISUtil.DocumentType.TEXT_PLAIN);
     }
 
     /**
@@ -230,31 +194,57 @@ public class SearchRecordsTests extends BaseRMRestTest {
      */
     @Test (priority = 2)
     public void nonRMUserSearchResults() {
-        JSONObject foundRecords = (searchAPI
-            .facetedSearchForTerm(nonRmSiteUser.get().getUsername(),
-                nonRmSiteUser.get().getPassword(),
-                ELECTRONIC_RECORD));
-        assertEquals(foundRecords.get("totalRecords"),0, "The file with search term" + ELECTRONIC_RECORD + " was found using RM Not Site User "+ nonRmSiteUser.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
+                        nonRmSiteUser.get().getPassword(),
+                        ELECTRONIC_RECORD));
+                assertFalse("The file with search term " + ELECTRONIC_RECORD + " was found using RM Not Site User "+ nonRmSiteUser.get().getUsername(),getResult(ELECTRONIC_RECORD,stringList));
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords2 = (searchAPI
-            .facetedSearchForTerm(nonRmSiteUser.get().getUsername(),
-                nonRmSiteUser.get().getPassword(),
-                UNFILED_ELECTRONIC_RECORD));
-        assertEquals(foundRecords2.get("totalRecords"),0, "The file with search term" + UNFILED_ELECTRONIC_RECORD + " was found using RM Not Site User "+ nonRmSiteUser.get().
-            getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
+                        nonRmSiteUser.get().getPassword(),
+                        UNFILED_ELECTRONIC_RECORD));
+                assertFalse("The file with search term " + UNFILED_ELECTRONIC_RECORD + " was not found using RM Not Site User "+ nonRmSiteUser.get().getUsername(),getResult(UNFILED_ELECTRONIC_RECORD,stringList));
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords3 = (searchAPI
-            .facetedSearchForTerm(nonRmSiteUser.get().getUsername(),
-                nonRmSiteUser.get().getPassword(),
-                NON_ELECTRONIC_RECORD));
-        assertEquals(foundRecords3.get("totalRecords"),0, "The file with search term" + NON_ELECTRONIC_RECORD + " was found using RM Not Site User "+ nonRmSiteUser.get().
-            getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
+                        nonRmSiteUser.get().getPassword(),
+                        NON_ELECTRONIC_RECORD));
+                assertFalse("The file with search term " + NON_ELECTRONIC_RECORD + " was not found using RM Not Site User "+ nonRmSiteUser.get().getUsername(),getResult(NON_ELECTRONIC_RECORD,stringList));
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords4 = (searchAPI
-            .facetedSearchForTerm(nonRmSiteUser.get().getUsername(),
-                nonRmSiteUser.get().getPassword(),
-                ADMIN_ELECTRONIC_RECORD));
-        assertEquals(foundRecords4.get("totalRecords"),0, "The file with search term" + ADMIN_ELECTRONIC_RECORD + " was found using RM Not Site User "+ nonRmSiteUser.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = searchAPI
+                    .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
+                        nonRmSiteUser.get().getPassword(),
+                        ADMIN_ELECTRONIC_RECORD);
+                assertFalse("The file with search term " + ADMIN_ELECTRONIC_RECORD + " was not found using RM Not Site User "+ nonRmSiteUser.get().getUsername(),getResult(ADMIN_ELECTRONIC_RECORD,stringList));
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
     }
 
     /**
@@ -265,31 +255,60 @@ public class SearchRecordsTests extends BaseRMRestTest {
      */
     @Test (priority = 3)
     public void rmUserSearchResults() {
-        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_user_search.get(), PERMISSION_FILING);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_user_search.get(), PERMISSION_READ_RECORDS);
+        getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_user_search.get(), PERMISSION_FILE_RECORDS);
 
-        JSONObject foundRecords = (searchAPI
-            .facetedSearchForTerm(rm_user_search.get().getUsername(),
-                rm_user_search.get().getPassword(),
-                ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords.get("totalRecords"),0, "The file with search term" + ELECTRONIC_RECORD + " was not found using RM User "+ rm_user_search.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
+                        rm_user_search.get().getPassword(),
+                        ELECTRONIC_RECORD));
+                assertTrue(getResult(ELECTRONIC_RECORD,stringList),"The file with search term" + ELECTRONIC_RECORD + " was not found using RM User "+ rm_user_search.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords2 = (searchAPI
-            .facetedSearchForTerm(rm_user_search.get().getUsername(),
-                rm_user_search.get().getPassword(),
-                UNFILED_ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords2.get("totalRecords"),0, "The file with search term" + UNFILED_ELECTRONIC_RECORD + " was not found using RM User "+ rm_user_search.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
+                        rm_user_search.get().getPassword(),
+                        UNFILED_ELECTRONIC_RECORD));
+                assertTrue(getResult(UNFILED_ELECTRONIC_RECORD,stringList),"The file with search term" + UNFILED_ELECTRONIC_RECORD + " was not found using RM User "+ rm_user_search.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords3 = (searchAPI
-            .facetedSearchForTerm(rm_user_search.get().getUsername(),
-                rm_user_search.get().getPassword(),
-                NON_ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords3.get("totalRecords"),0, "The file with search term" + NON_ELECTRONIC_RECORD + " was not found using RM User "+ rm_user_search.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
+                        rm_user_search.get().getPassword(),
+                        NON_ELECTRONIC_RECORD));
+                assertTrue(getResult(NON_ELECTRONIC_RECORD,stringList),"The file with search term" + NON_ELECTRONIC_RECORD + " was not found using RM User "+ rm_user_search.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords4 = (searchAPI
-            .facetedSearchForTerm(rm_user_search.get().getUsername(),
-                rm_user_search.get().getPassword(),
-                ADMIN_ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords4.get("totalRecords"),0, "The file with search term" + ADMIN_ELECTRONIC_RECORD + " was not found using RM User "+ rm_user_search.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = searchAPI
+                    .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
+                        rm_user_search.get().getPassword(),
+                        ADMIN_ELECTRONIC_RECORD);
+                assertFalse("The file with search term" + ADMIN_ELECTRONIC_RECORD + " was not found using RM User "+ rm_user_search.get().getUsername(),getResult(ADMIN_ELECTRONIC_RECORD,stringList));
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
     }
 
     /**
@@ -302,29 +321,57 @@ public class SearchRecordsTests extends BaseRMRestTest {
     public void rmManagerSearchResults() {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_manager.get(), PERMISSION_READ_RECORDS);
 
-        JSONObject foundRecords = (searchAPI
-            .facetedSearchForTerm(rm_manager.get().getUsername(),
-                rm_manager.get().getPassword(),
-                ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords.get("totalRecords"),0, "The file with search term" + ELECTRONIC_RECORD + " was not found using RM manager User "+ rm_manager.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_manager.get().getUsername(),
+                        rm_manager.get().getPassword(),
+                        ELECTRONIC_RECORD));
+                assertTrue(getResult(ELECTRONIC_RECORD,stringList),"The file with search term " + ELECTRONIC_RECORD + " was not found using RM manager User "+ rm_manager.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords2 = (searchAPI
-            .facetedSearchForTerm(rm_manager.get().getUsername(),
-                rm_manager.get().getPassword(),
-                UNFILED_ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords2.get("totalRecords"),0, "The file with search term" + UNFILED_ELECTRONIC_RECORD + " was not found using RM manager User "+ rm_manager.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_manager.get().getUsername(),
+                        rm_manager.get().getPassword(),
+                        UNFILED_ELECTRONIC_RECORD));
+                assertTrue(getResult(UNFILED_ELECTRONIC_RECORD,stringList),"The file with search term " + UNFILED_ELECTRONIC_RECORD + " was not found using RM manager User "+ rm_manager.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords3 = (searchAPI
-            .facetedSearchForTerm(rm_manager.get().getUsername(),
-                rm_manager.get().getPassword(),
-                NON_ELECTRONIC_RECORD));
-        assertEquals(foundRecords3.get("totalRecords"),0, "The file with search term" + NON_ELECTRONIC_RECORD + " was not found using RM manager User "+ rm_manager.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_manager.get().getUsername(),
+                        rm_manager.get().getPassword(),
+                        NON_ELECTRONIC_RECORD));
+                assertTrue(getResult(NON_ELECTRONIC_RECORD,stringList),"The file with search term " + NON_ELECTRONIC_RECORD + " was not found using RM manager User "+ rm_manager.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords4 = (searchAPI
-            .facetedSearchForTerm(rm_manager.get().getUsername(),
-                rm_manager.get().getPassword(),
-                ADMIN_ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords4.get("totalRecords"),0, "The file with search term" + ADMIN_ELECTRONIC_RECORD + " was found using RM manager User "+ rm_manager.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = searchAPI
+                    .searchForDocumentsAsUser(rm_manager.get().getUsername(),
+                        rm_manager.get().getPassword(),
+                        ADMIN_ELECTRONIC_RECORD);
+                assertFalse("The file with search term" + ADMIN_ELECTRONIC_RECORD + " was found using RM manager User "+ rm_manager.get().getUsername(),getResult(ADMIN_ELECTRONIC_RECORD,stringList));
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
     }
 
     /**
@@ -335,29 +382,44 @@ public class SearchRecordsTests extends BaseRMRestTest {
      */
     @Test(priority = 5)
     public void rmAdminSearchResults() {
-        JSONObject foundRecords = (searchAPI
-            .facetedSearchForTerm(rm_admin_search.get().getUsername(),
-                rm_admin_search.get().getPassword(),
-                ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords.get("totalRecords"),0, "The file with search term" + ELECTRONIC_RECORD + " was not found using RM Admin User "+ rm_admin_search.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
+                        rm_admin_search.get().getPassword(),
+                        ELECTRONIC_RECORD));
+                assertTrue(getResult(ELECTRONIC_RECORD,stringList),"The file with search term " + ELECTRONIC_RECORD + " was not found using RM Admin User "+ rm_admin_search.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords2 = (searchAPI
-            .facetedSearchForTerm(rm_admin_search.get().getUsername(),
-                rm_admin_search.get().getPassword(),
-                UNFILED_ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords2.get("totalRecords"),0, "The file with search term" + UNFILED_ELECTRONIC_RECORD + " was not found using RM Admin User "+ rm_admin_search.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
+                        rm_admin_search.get().getPassword(),
+                        UNFILED_ELECTRONIC_RECORD));
+                assertTrue(getResult(UNFILED_ELECTRONIC_RECORD,stringList),"The file with search term " + UNFILED_ELECTRONIC_RECORD + " was not found using RM Admin User "+ rm_admin_search.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
 
-        JSONObject foundRecords3 = (searchAPI
-            .facetedSearchForTerm(rm_admin_search.get().getUsername(),
-                rm_admin_search.get().getPassword(),
-                NON_ELECTRONIC_RECORD));
-        assertEquals(foundRecords3.get("totalRecords"),0, "The file with search term" + NON_ELECTRONIC_RECORD + " was not found using RM Admin User "+ rm_admin_search.get().getUsername());
-
-        JSONObject foundRecords4 = (searchAPI
-            .facetedSearchForTerm(rm_admin_search.get().getUsername(),
-                rm_admin_search.get().getPassword(),
-                ADMIN_ELECTRONIC_RECORD));
-        assertNotEquals(foundRecords4.get("totalRecords"),0, "The file with search term" + ADMIN_ELECTRONIC_RECORD + " was found using RM Admin User "+ rm_admin_search.get().getUsername());
+        try {
+            Utility.sleep(1000, 20000, () -> {
+                List<String> stringList = (searchAPI
+                    .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
+                        rm_admin_search.get().getPassword(),
+                        NON_ELECTRONIC_RECORD));
+                assertTrue(getResult(NON_ELECTRONIC_RECORD,stringList),"The file with search term " + NON_ELECTRONIC_RECORD + " was not found using RM Admin User "+ rm_admin_search.get().getUsername());
+            });
+        }
+        catch (InterruptedException e) {
+            fail("InterruptedException received while waiting for results.");
+        }
     }
 
     private void createRMManager() {
@@ -401,6 +463,23 @@ public class SearchRecordsTests extends BaseRMRestTest {
         return createFolder(getDataUser().usingAdmin().getAdminUser(), recordCategory.getId(), FOLDER_SEARCH);
     }
 
+    private void uploadElectronicRecordInContainer(String electronic_record, String folder_search) {
+        recordsAPI.uploadElectronicRecord(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(),
+            getDefaultElectronicRecordProperties(electronic_record), folder_search, CMISUtil.DocumentType.TEXT_PLAIN);
+    }
+
+
+    protected HttpResponse createNonElectronicRecordInContainer(String name, String categoryName, String folderName) {
+        Map<BaseAPI.RMProperty, String> defaultProperties = new HashMap<>();
+        defaultProperties.put(BaseAPI.RMProperty.NAME, name);
+        defaultProperties.put(BaseAPI.RMProperty.TITLE, TITLE);
+        defaultProperties.put(BaseAPI.RMProperty.DESCRIPTION, DESCRIPTION);
+
+        return recordsAPI.createNonElectronicRecord(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), defaultProperties, categoryName, folderName);
+    }
+
     public Map<BaseAPI.RMProperty, String> getDefaultElectronicRecordProperties(String recordName) {
         Map<BaseAPI.RMProperty, String> defaultProperties = new HashMap<>();
         defaultProperties.put(BaseAPI.RMProperty.NAME, recordName);
@@ -421,5 +500,16 @@ public class SearchRecordsTests extends BaseRMRestTest {
         Optional.of(rm_user_search).ifPresent(x -> getDataUser().deleteUser(x.get()));
         Optional.of(rm_manager).ifPresent(x -> getDataUser().deleteUser(x.get()));
         Optional.of(rm_admin_search).ifPresent(x -> getDataUser().deleteUser(x.get()));
+    }
+
+    private boolean getResult(String partialRecordName, List<String> searchResults) {
+        if(null != searchResults) {
+            for (String searchResult : searchResults) {
+                if (searchResult.startsWith(partialRecordName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

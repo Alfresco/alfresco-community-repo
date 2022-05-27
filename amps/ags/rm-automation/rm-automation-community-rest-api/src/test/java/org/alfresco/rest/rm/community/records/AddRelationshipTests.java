@@ -41,6 +41,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.v0.*;
 import org.alfresco.test.AlfrescoTest;
 import org.apache.commons.lang.StringUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -101,7 +102,7 @@ public class AddRelationshipTests extends BaseRMRestTest
         String elRecordNodeRef2 = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName2, "/" + CATEGORY_RELATIONSHIP + "/" + FOLDER);
 
-        // navigate to RECORD1 and create Relationship
+        // create Relationship
         customDefinitionsAPI.createRelationship(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(),
             SC_INTERNAL_SERVER_ERROR,
@@ -127,7 +128,7 @@ public class AddRelationshipTests extends BaseRMRestTest
         createRecordItems(recordCategoryChild, RECORD1);
         createRecordItems(recordCategoryChild, RECORD2);
 
-        // navigate to RECORD1 and click on Add Relationship button
+        // Add Relationship
         String elRecordFullName1 = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), FOLDER, RECORD1);
         String elRecordNodeRef1 = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
@@ -144,16 +145,21 @@ public class AddRelationshipTests extends BaseRMRestTest
             formatNodeRef(elRecordNodeRef2),
             CustomDefinitions.ATTACHMENT);
 
-//        customDefinitionsAPI.deleteRelationship(getDataUser().usingAdmin().getAdminUser().getUsername(),
-//            getDataUser().usingAdmin().getAdminUser().getPassword(),
-//            SC_OK,
-//            formatNodeRef(elRecordNodeRef1),
-//            formatNodeRef(elRecordNodeRef2));
+        // Get RelationshipDetails
+        JSONObject relationshipDetails = customDefinitionsAPI.getRelationshipDetails(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(),
+            formatNodeRef(elRecordNodeRef1));
+
+        // Delete RelationshipDetails
+        customDefinitionsAPI.deleteRelationship(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(),
+            formatNodeRef(elRecordNodeRef1),
+            formatNodeRef(elRecordNodeRef2),
+            relationShipUniqueName(relationshipDetails));
 
         // delete category
         tearDown(CATEGORY_RELATIONSHIP);
     }
-
 
     private void deletePrecondition()
     {
@@ -183,5 +189,10 @@ public class AddRelationshipTests extends BaseRMRestTest
             getDataUser().usingAdmin().getAdminUser().getPassword(), RM_SITE_ID, category);
         recordCategoriesAPI.deleteCategory(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), category);
+    }
+
+    private String relationShipUniqueName(JSONObject relationshipDetails) {
+        return relationshipDetails.getJSONObject("data").getJSONArray("items").getJSONObject(0).getJSONObject("node")
+            .get("relationshipUniqueName").toString();
     }
 }

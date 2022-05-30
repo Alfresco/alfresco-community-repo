@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -125,14 +125,4 @@ public interface RuntimeActionService
      * @return true if it was handled, false for default handling
      */
     public boolean onLogException(Action action, Log logger, Throwable t, String message);
-
-    /**
-     * Allows you to check if an action can be executed/used in a given execution context
-     * @param actionExecutionContext describes action and its execution context
-     * @return true if action can be executed, false otherwise
-     */
-    default boolean isExposed(ActionExecutionContext actionExecutionContext)
-    {
-        return true;
-    }
 }

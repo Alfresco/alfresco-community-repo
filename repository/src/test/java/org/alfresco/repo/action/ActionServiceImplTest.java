@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,27 +25,28 @@
  */
 package org.alfresco.repo.action;
 
-import static org.alfresco.repo.action.ActionExecutionContext.builder;
-
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
+import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
+import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -64,14 +65,19 @@ import org.alfresco.service.cmr.action.CompositeActionCondition;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -97,18 +103,13 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     private NodeRef nodeRef;
     private NodeRef folder;
     private RetryingTransactionHelper transactionHelper;
-    private Properties globalConfig;
-    private RuntimeActionService runtimeActionService;
-
     
     @Before
     public void before() throws Exception
     {
         super.before();
 
-        this.transactionHelper = applicationContext.getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
-        this.globalConfig = applicationContext.getBean("global-properties", Properties.class);
-        this.runtimeActionService = this.applicationContext.getBean("actionService", RuntimeActionService.class);
+        this.transactionHelper = (RetryingTransactionHelper)this.applicationContext.getBean("retryingTransactionHelper");
 
         // Create the node used for tests
         this.nodeRef = this.nodeService.createNode(
@@ -1294,89 +1295,6 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
        assertEquals(123455, action.getExecutionEndDate().getTime());
        assertEquals(null, action.getExecutionFailureMessage());
     }
-
-    @Test
-    public void testActionExposureBasedOnConfiguration()
-    {
-        globalConfig.remove("org.alfresco.repo.action.public-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.source.public-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.setProperty("org.alfresco.repo.action.public-test-action.exposed", "true");
-        globalConfig.remove("org.alfresco.repo.action.source.public-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.setProperty("org.alfresco.repo.action.public-test-action.exposed", "false");
-        globalConfig.remove("org.alfresco.repo.action.source.public-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
-        assertFalse(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
-        assertFalse(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.remove("org.alfresco.repo.action.public-test-action.exposed");
-        globalConfig.setProperty("org.alfresco.repo.action.source.public-test-action.exposed", "true");
-        globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.remove("org.alfresco.repo.action.public-test-action.exposed");
-        globalConfig.setProperty("org.alfresco.repo.action.source.public-test-action.exposed", "false");
-        globalConfig.remove("org.alfresco.repo.action.unknown.public-test-action.exposed");
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("source").build()));
-        assertTrue(runtimeActionService.isExposed(builder("public-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.remove("org.alfresco.repo.action.private-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.source.private-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.setProperty("org.alfresco.repo.action.private-test-action.exposed", "true");
-        globalConfig.remove("org.alfresco.repo.action.source.private-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
-        assertTrue(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
-        assertTrue(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.setProperty("org.alfresco.repo.action.private-test-action.exposed", "false");
-        globalConfig.remove("org.alfresco.repo.action.source.private-test-action.exposed");
-        globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.remove("org.alfresco.repo.action.private-test-action.exposed");
-        globalConfig.setProperty("org.alfresco.repo.action.source.private-test-action.exposed", "true");
-        globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertTrue(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
-
-        globalConfig.remove("org.alfresco.repo.action.private-test-action.exposed");
-        globalConfig.setProperty("org.alfresco.repo.action.source.private-test-action.exposed", "false");
-        globalConfig.remove("org.alfresco.repo.action.unknown.private-test-action.exposed");
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("source").build()));
-        assertFalse(runtimeActionService.isExposed(builder("private-test-action").withExecutionSource("unknown").build()));
-    }
-
-    @Test
-    public void testIfGlobalConfigurationIsUsedEvenIfNotInjectedBySpring()
-    {
-        TestExtendedActionServiceImpl extended = applicationContext.getBean("extendedActionServiceWithoutConfigurationProperty", TestExtendedActionServiceImpl.class);
-
-        assertNotNull(extended.getConfigurationProperties());
-        assertSame(globalConfig, extended.getConfigurationProperties());
-    }
     
     /**
      * This method returns an {@link Action} which will fail when executed.
@@ -1591,26 +1509,8 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
            throw new ActionServiceTransientException("action failed intentionally in " + TransientFailActionExecuter.class.getSimpleName());
        }
     }
+    
 
-    public static class NoOpActionExecuter extends ActionExecuterAbstractBase
-    {
-        @Override
-        protected void addParameterDefinitions(List<ParameterDefinition> paramList)
-        {
-            //do nothing
-        }
-
-        @Override
-        protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
-        {
-            //do nothing
-        }
-    }
-
-    public static class TestExtendedActionServiceImpl extends ActionServiceImpl
-    {
-
-    }
     
     protected static class CancellableSleepAction extends ActionImpl implements CancellableAction
     {

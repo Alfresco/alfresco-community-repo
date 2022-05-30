@@ -651,7 +651,7 @@
     
     <bean id="counter" class="org.alfresco.repo.action.executer.CounterIncrementActionExecuter" parent="action-executer">
         <property name="nodeService">
-            <ref bean="nodeService" />  <!-- runtime nodeService -->
+            <ref bean="NodeService" />
         </property>
     </bean>
     

@@ -58,7 +58,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
     @Autowired
     private RecordsAPI recordsAPI;
 
-    @BeforeClass(alwaysRun = true)
+    //@BeforeClass(alwaysRun = true)
     public void preConditions() {
 
         STEP("Create RM Site");
@@ -95,7 +95,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
      * And the user who is not a member of the site can't find the record using live search
      * And can't find the record using advanced search
      */
-    @Test
+    //@Test
     public void searchForInplaceRecord() {
         // And a document that isn't a record
         uploadedDocbyCollabUser = dataContent.usingSite(privateSite)
@@ -148,7 +148,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
      * And can't find the record using live search
      * And can't find the record using advanced search
      */
-    @Test(dependsOnMethods = {"searchForInplaceRecord"})
+    //@Test(dependsOnMethods = {"searchForInplaceRecord"})
     public void usersCantFindRecordAfterHide() {
         recordsAPI.hideRecord(siteCollaborator.getUsername(),siteCollaborator.getPassword(),uploadedDocRecordbyCollabUser.getId());
 
@@ -159,7 +159,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
         assertTrue("Site Collaborator able to find the document after it is hidden.",siteCollaboratorSearchJson.getJSONArray("items").isEmpty());
     }
 
-    @AfterClass
+    //@AfterClass
     public void tearDown() {
         // clean-up collab site
         dataSite.usingAdmin().deleteSite(privateSite);

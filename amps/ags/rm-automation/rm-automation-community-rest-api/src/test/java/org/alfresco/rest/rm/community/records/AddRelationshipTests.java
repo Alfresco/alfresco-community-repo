@@ -68,8 +68,8 @@ public class AddRelationshipTests extends BaseRMRestTest
     @Autowired
     private RecordCategoriesAPI recordCategoriesAPI;
 
-    @Test (priority = 1)
-    @AlfrescoTest (jira = "RM-1814")
+ //   @Test (priority = 1)
+ //   @AlfrescoTest (jira = "RM-1814")
     public void addRelationshipToHoldRecord()
     {
         String CATEGORY_RELATIONSHIP = CATEGORY + "To Hold";
@@ -114,8 +114,8 @@ public class AddRelationshipTests extends BaseRMRestTest
         deletePrecondition();
     }
 
-    @Test (priority = 2)
-    @AlfrescoTest (jira = "RM-1874")
+//    @Test (priority = 2)
+//    @AlfrescoTest (jira = "RM-1874")
     public void deleteRelationship()
     {
         String CATEGORY_RELATIONSHIP = CATEGORY + "deleteRelationship";

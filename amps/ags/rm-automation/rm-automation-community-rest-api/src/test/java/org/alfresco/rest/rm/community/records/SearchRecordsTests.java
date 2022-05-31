@@ -87,7 +87,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
     @Autowired
     private RecordsAPI recordsAPI;
 
-    @BeforeClass (alwaysRun = true)
+//    @BeforeClass (alwaysRun = true)
     public void createRecordsForSearch()
     {
         createRMSiteIfNotExists();
@@ -117,7 +117,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Then record X is displayed in the results
      * And the record category X's ID is also displayed in search result meta-data for record X
      */
-    @Test(priority = 1)
+//    @Test(priority = 1)
     public void searchResultsWithRecordCategoryIdentifier() {
         AtomicBoolean electronicRecordFound = new AtomicBoolean(false);
         AtomicReference<JSONArray> items = new AtomicReference<>();
@@ -192,7 +192,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Given that I am a RM User
      * I can see only the records in File Plan I have permission over and all in Unfiled Records
      */
-    @Test (priority = 2)
+//    @Test (priority = 2)
     public void nonRMUserSearchResults() {
         try {
             Utility.sleep(1000, 20000, () -> {
@@ -253,7 +253,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Given that I am a RM User
      * I can see only the records in File Plan I have permission over and all in Unfiled Records
      */
-    @Test (priority = 3)
+//    @Test (priority = 3)
     public void rmUserSearchResults() {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_user_search.get(), PERMISSION_READ_RECORDS);
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_user_search.get(), PERMISSION_FILE_RECORDS);
@@ -317,7 +317,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Given that I am a RM Manager
      * I can see only the records in File Plan I have permission over and all in Unfiled Records
      */
-    @Test (priority = 4)
+//    @Test (priority = 4)
     public void rmManagerSearchResults() {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_manager.get(), PERMISSION_READ_RECORDS);
 
@@ -380,7 +380,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Given that I am a RM Administrator
      * I can see all the records in File Plan and Unfiled Records through RM Search and Advanced Search
      */
-    @Test(priority = 5)
+//    @Test(priority = 5)
     public void rmAdminSearchResults() {
         try {
             Utility.sleep(1000, 20000, () -> {

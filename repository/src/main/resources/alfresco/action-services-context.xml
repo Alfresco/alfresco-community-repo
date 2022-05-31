@@ -375,10 +375,10 @@
          <value>false</value>
       </property>
       <property name="nodeService">
-         <ref bean="nodeService"/>
+         <ref bean="NodeService"/>
       </property>
       <property name="versionService">
-         <ref bean="versionService"/>
+         <ref bean="VersionService"/>
       </property>
    </bean>
 

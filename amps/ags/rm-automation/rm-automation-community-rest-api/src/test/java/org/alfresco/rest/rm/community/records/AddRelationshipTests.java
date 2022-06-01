@@ -30,24 +30,28 @@ import static org.alfresco.rest.core.v0.BaseAPI.RM_SITE_ID;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_DESCRIPTION;
 import static org.alfresco.rest.rm.community.base.TestData.HOLD_REASON;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-
 import java.util.Collections;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.custom.CustomDefinitions;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.v0.*;
+import org.alfresco.rest.v0.CustomDefinitionsAPI;
+import org.alfresco.rest.v0.HoldsAPI;
+import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.rest.v0.RecordsAPI;
+import org.alfresco.rest.v0.RecordCategoriesAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
-
 import static org.apache.commons.httpclient.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.commons.httpclient.HttpStatus.SC_OK;
-
+/**
+ * Add Relationship tests
+ * @author Kavit Shah
+ */
 public class AddRelationshipTests extends BaseRMRestTest
 {
     private final String TEST_PREFIX = generateTestPrefix(AddRelationshipTests.class);
@@ -155,7 +159,7 @@ public class AddRelationshipTests extends BaseRMRestTest
             getDataUser().usingAdmin().getAdminUser().getPassword(),
             formatNodeRef(elRecordNodeRef1),
             formatNodeRef(elRecordNodeRef2),
-            relationShipUniqueName(relationshipDetails));
+            relationshipUniqueName(relationshipDetails));
 
         // delete category
         tearDown(CATEGORY_RELATIONSHIP);
@@ -191,7 +195,7 @@ public class AddRelationshipTests extends BaseRMRestTest
             getDataUser().usingAdmin().getAdminUser().getPassword(), category);
     }
 
-    private String relationShipUniqueName(JSONObject relationshipDetails) {
+    private String relationshipUniqueName(JSONObject relationshipDetails) {
         return relationshipDetails.getJSONObject("data").getJSONArray("items").getJSONObject(0).getJSONObject("node")
             .get("relationshipUniqueName").toString();
     }

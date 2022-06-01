@@ -46,15 +46,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 import org.json.JSONArray;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
 import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
@@ -63,8 +64,12 @@ import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPr
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertFalse;
-import static org.testng.Assert.*;
-
+import static org.junit.Assert.fail;
+import static org.testng.Assert.assertTrue;
+/**
+ * Tests the search of records in Records Search page
+ * @author Kavit Shah
+ */
 public class SearchRecordsTests extends BaseRMRestTest {
 
     private Optional<UserModel> nonRmSiteUser, rm_user_search, rm_manager, rm_admin_search;
@@ -133,7 +138,6 @@ public class SearchRecordsTests extends BaseRMRestTest {
         AtomicBoolean electronicRecordFound = new AtomicBoolean(false);
         AtomicReference<JSONArray> items = new AtomicReference<>();
         AtomicBoolean recordCategoryIdentifier = new AtomicBoolean(false);
-
 
         STEP("Open the record search page and search by the items created");
         try {
@@ -524,7 +528,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         return false;
     }
 
-    public Object[][] getRecordsFromUnfiledRecordsContainer(UnfiledContainerChild electronicRecord)
+    private Object[][] getRecordsFromUnfiledRecordsContainer(UnfiledContainerChild electronicRecord)
     {
         UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
         return new String[][] {

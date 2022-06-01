@@ -33,18 +33,19 @@ import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.model.*;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.testng.Assert.assertTrue;
-
 /**
  * This class contains the tests for
  * Create the Document, marking them as Record, Hiding them using Site Collaborator
@@ -52,7 +53,6 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Kavit Shah
  */
-
 public class DeclareInPlaceRecordTests extends BaseRMRestTest {
 
     private final String TEST_PREFIX = generateTestPrefix(DeclareInPlaceRecordTests.class);
@@ -61,7 +61,6 @@ public class DeclareInPlaceRecordTests extends BaseRMRestTest {
     private UserModel RmAdminUser;
     private SiteModel testSite;
     private FolderModel testFolder;
-
     /**
      * data prep services
      */

@@ -27,63 +27,39 @@
 package org.alfresco.rest.rm.community.records;
 
 import static java.util.Arrays.asList;
-import static org.alfresco.rest.rm.community.base.TestData.*;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.UNFILED_RECORD_FOLDER_TYPE;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
 import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
-import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.*;
-import static org.alfresco.utility.data.RandomData.getRandomAlphanumeric;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createElectronicRecordModel;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.getFile;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.IMAGE_FILE;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordModel;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.apache.commons.compress.archivers.zip.Zip64Mode.Never;
-import static org.springframework.http.HttpStatus.*;
-import static org.testng.Assert.*;
-import static org.testng.Assert.assertEquals;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.core.v0.BaseAPI;
-import org.alfresco.rest.core.v0.BaseAPI.RMProperty;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
-import org.alfresco.rest.v0.*;
 import org.alfresco.test.AlfrescoTest;
-import org.alfresco.utility.constants.UserRole;
-import org.alfresco.utility.model.*;
-import org.apache.chemistry.opencmis.client.api.CmisObject;
-import org.json.JSONObject;
+import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
-import org.springframework.beans.factory.annotation.Autowired;
-
 /**
  * This class contains the tests for
  * CreateElectronicRecordsTests Action REST API
  *
  * @author Shishuraj Bisht
  */
-
 public class CreateElectronicRecordsTests extends BaseRMRestTest {
 
     private RecordCategory rootCategory;
     private UserModel updateUser;
-    private final String recordName = "RM-2790 record";
-
     /**
      * data prep services
      */
@@ -144,8 +120,6 @@ public class CreateElectronicRecordsTests extends BaseRMRestTest {
             recordsAPI.updateRecord(createRecordModel(newName, newDescription, newTitle), record.getId());
             assertStatusCode(OK);
         }
-
-
         // move the record from one folder1 to folder2
         STEP("Create the record folder2 inside the rootCategory");
         String recordFolder2 = createCategoryFolderInFilePlan().getId();

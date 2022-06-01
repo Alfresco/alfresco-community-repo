@@ -27,7 +27,6 @@
 package org.alfresco.rest.v0;
 
 import java.text.MessageFormat;
-import java.util.Map;
 
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.custom.CustomDefinitions;
@@ -37,9 +36,9 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
-import static org.testng.AssertJUnit.*;
-
+import static org.testng.AssertJUnit.assertTrue;
+import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNotNull;
 /**
  * Methods to make API requests using v0 API on Records Management Custom Model Reference Definitions
  *

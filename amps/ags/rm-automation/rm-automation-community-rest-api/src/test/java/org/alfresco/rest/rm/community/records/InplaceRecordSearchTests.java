@@ -43,7 +43,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.test.util.AssertionErrors.assertTrue;
@@ -58,7 +57,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
     @Autowired
     private RecordsAPI recordsAPI;
 
-    //@BeforeClass(alwaysRun = true)
+    @BeforeClass(alwaysRun = true)
     public void preConditions() {
 
         STEP("Create RM Site");
@@ -95,7 +94,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
      * And the user who is not a member of the site can't find the record using live search
      * And can't find the record using advanced search
      */
-    //@Test
+    @Test
     public void searchForInplaceRecord() {
         // And a document that isn't a record
         uploadedDocbyCollabUser = dataContent.usingSite(privateSite)
@@ -120,7 +119,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
                 JSONObject siteConsumerSearchJson = getSearchApi().liveSearchForDocuments(siteConsumer.getUsername(),
                     siteConsumer.getPassword(),
                     uploadedDocbyCollabUser.getName());
-                assertFalse("Site Consumer not able to find the document.",siteConsumerSearchJson.getJSONArray("items").isEmpty());
+                assertTrue("Site Consumer not able to find the document.",siteConsumerSearchJson.getJSONArray("items").length() != 0);
             });
         }
         catch (InterruptedException e)
@@ -128,11 +127,20 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
             fail("InterruptedException received while waiting for results.");
         }
 
-        JSONObject siteCollaboratorSearchJson = getSearchApi().liveSearchForDocuments(siteCollaborator.getUsername(),
-            siteCollaborator.getPassword(),
-            uploadedDocbyCollabUser.getName());
-
-        assertFalse("Site Collaborator not able to find the document.",siteCollaboratorSearchJson.getJSONArray("items").isEmpty());
+        try
+        {
+            Utility.sleep(1000, 20000, () ->
+                {
+                    JSONObject siteCollaboratorSearchJson = getSearchApi().liveSearchForDocuments(siteCollaborator.getUsername(),
+                    siteCollaborator.getPassword(),
+                    uploadedDocbyCollabUser.getName());
+                    assertTrue("Site Collaborator not able to find the document.",siteCollaboratorSearchJson.getJSONArray("items").length() != 0);
+                });
+        }
+        catch (InterruptedException e)
+        {
+            fail("InterruptedException received while waiting for results.");
+        }
 
         JSONObject nonSiteMemberSearchJson = getSearchApi().liveSearchForDocuments(nonSiteMember.getUsername(),
             nonSiteMember.getPassword(),
@@ -148,18 +156,17 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
      * And can't find the record using live search
      * And can't find the record using advanced search
      */
-    //@Test(dependsOnMethods = {"searchForInplaceRecord"})
+    @Test(dependsOnMethods = {"searchForInplaceRecord"})
     public void usersCantFindRecordAfterHide() {
         recordsAPI.hideRecord(siteCollaborator.getUsername(),siteCollaborator.getPassword(),uploadedDocRecordbyCollabUser.getId());
 
         JSONObject siteCollaboratorSearchJson = getSearchApi().liveSearchForDocuments(siteCollaborator.getUsername(),
             siteCollaborator.getPassword(),
             uploadedDocbyCollabUser.getName());
-
         assertTrue("Site Collaborator able to find the document after it is hidden.",siteCollaboratorSearchJson.getJSONArray("items").isEmpty());
     }
 
-    //@AfterClass
+    @AfterClass
     public void tearDown() {
         // clean-up collab site
         dataSite.usingAdmin().deleteSite(privateSite);

@@ -114,7 +114,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
 
         try
         {
-            Utility.sleep(1000, 20000, () ->
+            Utility.sleep(1000, 40000, () ->
             {
                 JSONObject siteConsumerSearchJson = getSearchApi().liveSearchForDocuments(siteConsumer.getUsername(),
                     siteConsumer.getPassword(),
@@ -129,7 +129,7 @@ public class InplaceRecordSearchTests extends BaseRMRestTest {
 
         try
         {
-            Utility.sleep(1000, 20000, () ->
+            Utility.sleep(1000, 40000, () ->
                 {
                     JSONObject siteCollaboratorSearchJson = getSearchApi().liveSearchForDocuments(siteCollaborator.getUsername(),
                     siteCollaborator.getPassword(),

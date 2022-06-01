@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 /**
  * Convenience test suite that runs all the tests. THIS HAS BEEN SPLIT INTO PARTS SO THAT THE BUILD TIME IS REDUCED.
  *
- * @author Roy Wetherall
+ * @author Marcin Strankowski
  * @since 2.1
  */
 @RunWith(ClasspathSuite.class)
@@ -43,16 +43,20 @@ import org.junit.runner.RunWith;
 @ClassnameFilters({
 
     // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*DispositionServiceImplTest",
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\.*FilePlanPermissionServiceImplTest",
+
+    // 2 tests from service package are here, they seem to require FileReportActionTest being ran beforehand
+    // and it would take too much time to run them in 1st test suite
 
     // Exclude all UnitTests
     "!.*UnitTest",
 
     // Put the test classes you want to exclude here
-    "!.*DispositionServiceImplTest",
-    "!.*FilePlanPermissionServiceImplTest",
-    // above 2 tests from service package require setup from FileReportActionTest so they've been moved to part 4
     "!.*DataLoadSystemTest",
     "!.*RM2072Test",
     "!.*RM2190Test",
@@ -69,6 +73,6 @@ import org.junit.runner.RunWith;
     // Tests should not be dependant on other test classes and should run in any order without any problems.
     "!.*EmailMapScriptTest"
 })
-public class AllTestSuitePt1
+public class AllTestSuitePt4
 {
 }

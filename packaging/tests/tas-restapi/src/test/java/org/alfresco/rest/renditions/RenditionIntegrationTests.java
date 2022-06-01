@@ -7,9 +7,7 @@ import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
-
 import org.alfresco.utility.model.UserModel;
-
 import org.springframework.http.HttpStatus;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -40,17 +38,20 @@ public abstract class RenditionIntegrationTests extends RestTest
         FileModel file = new FileModel();
         file.setNodeRef(nodeId);
 
-        // 1. Create a rendition of the file using RESTAPI
+        // 1. Preemptively delete an existing rendition of the file using RESTAPI
+        restClient.withCoreAPI().usingNode(file).deleteNodeRendition(renditionId);
+
+        // 2. Create a rendition of the file using RESTAPI
         restClient.withCoreAPI().usingNode(file).createNodeRendition(renditionId);
         Assert.assertEquals(Integer.valueOf(restClient.getStatusCode()).intValue(), HttpStatus.ACCEPTED.value(),
                 "Failed to submit a request for rendition. [" + fileName+ ", " + renditionId+"] [source file, rendition ID]. ");
 
-        // 2. Verify that a rendition of the file is created and has content using RESTAPI
+        // 3. Verify that a rendition of the file is created and has content using RESTAPI
         RestResponse restResponse = restClient.withCoreAPI().usingNode(file).getNodeRenditionContentUntilIsCreated(renditionId);
         Assert.assertEquals(Integer.valueOf(restClient.getStatusCode()).intValue(), HttpStatus.OK.value(),
                 "Failed to produce rendition. [" + fileName+ ", " + renditionId+"] [source file, rendition ID] ");
 
-        // 3. Check the returned content type
+        // 4. Check the returned content type
         Assert.assertEquals(restClient.getResponseHeaders().getValue("Content-Type"), expectedMimeType+";charset=UTF-8",
                 "Rendition was created but it has the wrong Content-Type. [" + fileName+ ", " + renditionId + "] [source file, rendition ID]");
 

@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>14.136-SNAPSHOT</version> 
+    <version>23.1.0.27-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -23,11 +23,11 @@
     </modules>
 
     <properties>
-        <acs.version.major>7</acs.version.major>
-        <acs.version.minor>2</acs.version.minor>
+        <acs.version.major>23</acs.version.major>
+        <acs.version.minor>1</acs.version.minor>
         <acs.version.revision>0</acs.version.revision>
         <acs.version.label />
-        <amp.min.version>${acs.version.major}.0.0</amp.min.version>
+        <amp.min.version>${acs.version.major}.1.0</amp.min.version>
 
         <version.edition>Community</version.edition>
         <licenseName>community</licenseName>
@@ -47,25 +47,26 @@
         <dependency.alfresco-trashcan-cleaner.version>2.4.1</dependency.alfresco-trashcan-cleaner.version>
         <dependency.alfresco-jlan.version>7.1</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
-        <dependency.alfresco-messaging-repo.version>1.2.15</dependency.alfresco-messaging-repo.version>
+        <dependency.alfresco-messaging-repo.version>1.2.19</dependency.alfresco-messaging-repo.version>
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-model.version>1.4.15</dependency.alfresco-transform-model.version>
+        <dependency.alfresco-transform-service.version>1.5.3</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>2.6.0</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.13</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.3.15</dependency.spring.version>
+        <dependency.spring.version>5.3.18</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.13.1</dependency.jackson.version>
         <dependency.jackson-databind.version>2.13.1</dependency.jackson-databind.version>
         <dependency.cxf.version>3.5.0</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.28</dependency.webscripts.version>
+        <dependency.webscripts.version>8.29</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>3.11.2</dependency.mockito-core.version>
         <dependency.org-json.version>20211205</dependency.org-json.version>
-        <dependency.commons-dbcp.version>1.4-DBCP330</dependency.commons-dbcp.version>
+        <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
         <dependency.gson.version>2.8.5</dependency.gson.version>
         <dependency.httpclient.version>4.5.13</dependency.httpclient.version>
@@ -75,7 +76,7 @@
         <dependency.slf4j.version>1.7.35</dependency.slf4j.version>
         <dependency.gytheio.version>0.16</dependency.gytheio.version>
         <dependency.groovy.version>3.0.9</dependency.groovy.version>
-        <dependency.tika.version>2.2.1</dependency.tika.version> 
+        <dependency.tika.version>2.2.1</dependency.tika.version>
         <dependency.spring-security.version>5.6.1</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>4.1.2</dependency.poi.version>
@@ -106,11 +107,11 @@
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
         <alfresco.googledrive.version>3.2.1.3</alfresco.googledrive.version>
-        <alfresco.aos-module.version>1.4.1</alfresco.aos-module.version>
+        <alfresco.aos-module.version>1.4.1</alfresco.aos-module.version> 
         <alfresco.api-explorer.version>7.2.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
-        <license-maven-plugin.version>2.0.1.alfresco-1</license-maven-plugin.version>
+        <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
 
         <dependency.postgresql.version>42.3.2</dependency.postgresql.version>
         <dependency.mysql.version>8.0.27</dependency.mysql.version>
@@ -118,7 +119,7 @@
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.47</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.79</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.80</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.31</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
@@ -755,8 +756,8 @@
                 <version>${dependency.mockito-core.version}</version>
             </dependency>
             <dependency>
-                <groupId>commons-dbcp</groupId>
-                <artifactId>commons-dbcp</artifactId>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-dbcp2</artifactId>
                 <version>${dependency.commons-dbcp.version}</version>
             </dependency>
             <dependency>
@@ -887,7 +888,7 @@
                 <plugin>
                     <groupId>io.fabric8</groupId>
                     <artifactId>docker-maven-plugin</artifactId>
-                    <version>0.38.0</version>
+                    <version>0.39.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>

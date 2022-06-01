@@ -87,7 +87,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
     @Autowired
     private RecordsAPI recordsAPI;
 
-//    @BeforeClass (alwaysRun = true)
+    @BeforeClass (alwaysRun = true)
     public void createRecordsForSearch()
     {
         createRMSiteIfNotExists();
@@ -117,7 +117,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Then record X is displayed in the results
      * And the record category X's ID is also displayed in search result meta-data for record X
      */
-//    @Test(priority = 1)
+    @Test(priority = 1)
     public void searchResultsWithRecordCategoryIdentifier() {
         AtomicBoolean electronicRecordFound = new AtomicBoolean(false);
         AtomicReference<JSONArray> items = new AtomicReference<>();
@@ -126,7 +126,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
 
         STEP("Open the record search page and search by the items created");
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 JSONObject searchResult = (searchAPI
                     .rmSearch(getDataUser().usingAdmin().getAdminUser().getUsername(),
                         getDataUser().usingAdmin().getAdminUser().getPassword(),
@@ -157,7 +157,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
 
         STEP("Change the search filter to return only record folders and record categories");
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 JSONObject searchResult = (searchAPI
                     .rmSearch(getDataUser().usingAdmin().getAdminUser().getUsername(),
                         getDataUser().usingAdmin().getAdminUser().getPassword(),
@@ -192,10 +192,10 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Given that I am a RM User
      * I can see only the records in File Plan I have permission over and all in Unfiled Records
      */
-//    @Test (priority = 2)
+    @Test (priority = 2)
     public void nonRMUserSearchResults() {
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
                         nonRmSiteUser.get().getPassword(),
@@ -208,7 +208,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
                         nonRmSiteUser.get().getPassword(),
@@ -221,7 +221,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
                         nonRmSiteUser.get().getPassword(),
@@ -234,7 +234,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = searchAPI
                     .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
                         nonRmSiteUser.get().getPassword(),
@@ -253,13 +253,13 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Given that I am a RM User
      * I can see only the records in File Plan I have permission over and all in Unfiled Records
      */
-//    @Test (priority = 3)
+    @Test (priority = 3)
     public void rmUserSearchResults() {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_user_search.get(), PERMISSION_READ_RECORDS);
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_user_search.get(), PERMISSION_FILE_RECORDS);
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
                         rm_user_search.get().getPassword(),
@@ -272,7 +272,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
                         rm_user_search.get().getPassword(),
@@ -285,7 +285,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
                         rm_user_search.get().getPassword(),
@@ -298,7 +298,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = searchAPI
                     .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
                         rm_user_search.get().getPassword(),
@@ -317,12 +317,12 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Given that I am a RM Manager
      * I can see only the records in File Plan I have permission over and all in Unfiled Records
      */
-//    @Test (priority = 4)
+    @Test (priority = 4)
     public void rmManagerSearchResults() {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_manager.get(), PERMISSION_READ_RECORDS);
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_manager.get().getUsername(),
                         rm_manager.get().getPassword(),
@@ -335,7 +335,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_manager.get().getUsername(),
                         rm_manager.get().getPassword(),
@@ -348,7 +348,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_manager.get().getUsername(),
                         rm_manager.get().getPassword(),
@@ -361,7 +361,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = searchAPI
                     .searchForDocumentsAsUser(rm_manager.get().getUsername(),
                         rm_manager.get().getPassword(),
@@ -380,10 +380,10 @@ public class SearchRecordsTests extends BaseRMRestTest {
      * Given that I am a RM Administrator
      * I can see all the records in File Plan and Unfiled Records through RM Search and Advanced Search
      */
-//    @Test(priority = 5)
+    @Test(priority = 5)
     public void rmAdminSearchResults() {
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
                         rm_admin_search.get().getPassword(),
@@ -396,7 +396,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
                         rm_admin_search.get().getPassword(),
@@ -409,7 +409,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 20000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
                         rm_admin_search.get().getPassword(),

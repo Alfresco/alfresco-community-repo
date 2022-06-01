@@ -106,8 +106,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         uploadElectronicRecordInContainer(ELECTRONIC_RECORD, FOLDER_SEARCH);
         createNonElectronicRecordInContainer(NON_ELECTRONIC_RECORD, CATEGORY_ALL, FOLDER_SEARCH);
         uploadElectronicRecordInContainer(ADMIN_ELECTRONIC_RECORD, FOLDER_ADMIN_ONLY);
-        recordsAPI.uploadElectronicRecord(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), getDefaultElectronicRecordProperties(UNFILED_ELECTRONIC_RECORD), UNFILED_RECORDS_BREADCRUMB, CMISUtil.DocumentType.TEXT_PLAIN);
+        uploadElectronicRecordInContainer(UNFILED_ELECTRONIC_RECORD,UNFILED_RECORDS_BREADCRUMB);
     }
 
     /**

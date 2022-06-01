@@ -30,8 +30,11 @@ package org.alfresco.rest.rm.community.records;
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.record.RecordContent;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
+import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.SearchAPI;
@@ -52,8 +55,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.CONTENT_TYPE;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createTempFile;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertFalse;
 import static org.testng.Assert.*;
@@ -78,7 +85,6 @@ public class SearchRecordsTests extends BaseRMRestTest {
     public static final String TITLE = "Title";
     public static final String DESCRIPTION = "Description";
     public static final String TEST_CONTENT = "This is some test content";
-    public static final String UNFILED_RECORDS_BREADCRUMB = "Unfiled Records";
     private RecordCategory categoryAll, category_Admin_Only;
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
@@ -106,7 +112,13 @@ public class SearchRecordsTests extends BaseRMRestTest {
         uploadElectronicRecordInContainer(ELECTRONIC_RECORD, FOLDER_SEARCH);
         createNonElectronicRecordInContainer(NON_ELECTRONIC_RECORD, CATEGORY_ALL, FOLDER_SEARCH);
         uploadElectronicRecordInContainer(ADMIN_ELECTRONIC_RECORD, FOLDER_ADMIN_ONLY);
-        uploadElectronicRecordInContainer(UNFILED_ELECTRONIC_RECORD,UNFILED_RECORDS_BREADCRUMB);
+
+        UnfiledContainerChild electronicRecord = UnfiledContainerChild.builder()
+            .name(UNFILED_ELECTRONIC_RECORD)
+            .nodeType(CONTENT_TYPE)
+            .content(RecordContent.builder().mimeType("text/plain").build())
+            .build();
+        getRecordsFromUnfiledRecordsContainer(electronicRecord);
     }
 
     /**
@@ -510,5 +522,14 @@ public class SearchRecordsTests extends BaseRMRestTest {
             }
         }
         return false;
+    }
+
+    public Object[][] getRecordsFromUnfiledRecordsContainer(UnfiledContainerChild electronicRecord)
+    {
+        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
+        return new String[][] {
+            { unfiledContainersAPI.uploadRecord(electronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS,
+                createTempFile(ELECTRONIC_RECORD_NAME, ELECTRONIC_RECORD_NAME)).getId()}
+        };
     }
 }

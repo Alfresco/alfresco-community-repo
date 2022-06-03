@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.BaseActionUnitTest;
@@ -86,7 +86,7 @@ public class FileReportActionUnitTest extends BaseActionUnitTest
         fileReportAction.executeImpl(getMockedAction(), actionedUponNodeRef);
 
         // == then ==
-        verifyZeroInteractions(mockedReportService, mockedNodeService);
+        verifyNoInteractions(mockedReportService, mockedNodeService);
     }
 
     /**
@@ -110,6 +110,6 @@ public class FileReportActionUnitTest extends BaseActionUnitTest
         fileReportAction.executeImpl(getMockedAction(), actionedUponNodeRef);
 
         // == then ==
-        verifyZeroInteractions(mockedReportService, mockedNodeService);
+        verifyNoInteractions(mockedReportService, mockedNodeService);
     }
 }

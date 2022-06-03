@@ -28,7 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.WebScriptExceptionMatcher.badRequest;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;

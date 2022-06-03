@@ -109,7 +109,7 @@ public class SolrQueryHTTPClientTest
         when(namespaceDAO.getPrefixes()).thenReturn(Arrays.asList(CONTENT_MODEL_PREFIX, "exif"));
         when(namespaceDAO.getNamespaceURI(anyString())).thenReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
 
-        when(dictionaryService.getProperty(notNull(QName.class))).thenAnswer(invocation -> {
+        when(dictionaryService.getProperty(notNull())).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
             QName qName = (QName) args[0];
             if (qName.getLocalName().contains("created"))

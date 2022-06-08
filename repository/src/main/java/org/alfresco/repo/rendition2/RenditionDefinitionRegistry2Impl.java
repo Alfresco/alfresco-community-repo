@@ -369,7 +369,7 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
             renditionNamesWithMaxSize = data.renditionsFor.get(sourceMimetype);
             if (renditionNamesWithMaxSize == null)
             {
-                renditionNamesWithMaxSize = getRenditionNamesWithMaxSize(sourceMimetype);
+                renditionNamesWithMaxSize = getRenditionNamesWithMaxSize(data, sourceMimetype);
                 data.renditionsFor.put(sourceMimetype, renditionNamesWithMaxSize);
             }
         }
@@ -394,10 +394,9 @@ public class RenditionDefinitionRegistry2Impl implements RenditionDefinitionRegi
 
     // Gets a list of rendition names that can be created from the given sourceMimetype.
     // Includes the maxSize for each.
-    private Set<Pair<String,Long>> getRenditionNamesWithMaxSize(String sourceMimetype)
+    private Set<Pair<String,Long>> getRenditionNamesWithMaxSize(Data data, String sourceMimetype)
     {
         Set<Pair<String,Long>> renditions = new HashSet();
-        Data data = getData();
         for (Map.Entry<String, RenditionDefinition2> entry : data.renditionDefinitions.entrySet())
         {
             RenditionDefinition2 renditionDefinition2 = entry.getValue();

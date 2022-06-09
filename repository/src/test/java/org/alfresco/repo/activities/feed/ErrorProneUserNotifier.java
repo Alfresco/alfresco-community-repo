@@ -36,8 +36,6 @@ import org.alfresco.service.namespace.QName;
 
 public class ErrorProneUserNotifier extends AbstractUserNotifier
 {
-//	private AtomicInteger numSuccessful = new AtomicInteger();
-//	private AtomicInteger numFailed = new AtomicInteger();
 
 	private NodeRef failingPersonNodeRef;
 	private ActionService actionService;
@@ -78,21 +76,10 @@ public class ErrorProneUserNotifier extends AbstractUserNotifier
 		return emailFeedDBID;
 	}
 
-//	public int getNumSuccess()
-//	{
-//		return numSuccessful.get();
-//	}
-//	
-//	public int getNumFailed()
-//	{
-//		return numFailed.get();
-//	}
-
 	@Override
 	protected void notifyUser(NodeRef personNodeRef, String subjectText, Object[] subjectParams,
 			Map<String, Object> model, String templateNodeRef)
 	{
-//		super.notifyUser(personNodeRef, subjectText, model, templateNodeRef);
 
 		String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
 
@@ -103,16 +90,5 @@ public class ErrorProneUserNotifier extends AbstractUserNotifier
         action.setParameterValue(ErrorProneActionExecutor.PARAM_USERNAME, userName);
 
         actionService.executeAction(action, null);
-//		String userName = (String)nodeService.getProperty(personNodeRef, ContentModel.PROP_USERNAME);
-//
-//		System.out.println("userName = " + userName);
-//
-//		if(personNodeRef.equals(failingPersonNodeRef))
-//		{
-//			numFailed.incrementAndGet();
-//			throw new AlfrescoRuntimeException("");
-//		}
-//
-//		numSuccessful.incrementAndGet();
 	}
 }

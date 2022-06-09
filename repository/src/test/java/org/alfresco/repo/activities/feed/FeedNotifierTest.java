@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -62,6 +62,7 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collections;
 import java.util.List;
@@ -71,6 +72,7 @@ import java.util.List;
  * 
  * @author steveglover
  */
+@ContextConfiguration ({"classpath:org/alfresco/repo/activities/feed/test-action-services-context.xml"})
 public class FeedNotifierTest
 {
     private static ApplicationContext ctx = null;

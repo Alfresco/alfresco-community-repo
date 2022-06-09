@@ -72,7 +72,6 @@ import java.util.List;
  * 
  * @author steveglover
  */
-@ContextConfiguration ({"classpath:org/alfresco/repo/activities/feed/test-action-services-context.xml"})
 public class FeedNotifierTest
 {
     private static ApplicationContext ctx = null;
@@ -107,7 +106,9 @@ public class FeedNotifierTest
         ApplicationContextHelper.setUseLazyLoading(false);
         ApplicationContextHelper.setNoAutoStart(true);
 
-        ctx = ApplicationContextHelper.getApplicationContext();
+        String[] config = new String[] { "classpath:alfresco/application-context.xml",
+            "classpath:org/alfresco/repo/activities/feed/test-action-services-context.xml" };
+        ctx = ApplicationContextHelper.getApplicationContext(config);
     }
 
     @Before

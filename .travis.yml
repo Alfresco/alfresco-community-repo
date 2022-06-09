@@ -23,6 +23,7 @@ branches:
     - /release\/.*/
     - /feature\/.*/
     - /fix\/.*/
+    - test-veracode-cvss-version
 
 env:
   global:

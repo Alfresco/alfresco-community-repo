@@ -108,7 +108,7 @@ public class FeedNotifierTest
         ApplicationContextHelper.setNoAutoStart(true);
 
         String[] config = new String[] { "classpath:alfresco/application-context.xml",
-            "classpath:alfresco/repo/activities/feed/test-action-services-context.xml" };
+            "classpath:alfresco/feednotifier-tests/test-action-services-context.xml" };
         ctx = ApplicationContextHelper.getApplicationContext(config);
     }
 

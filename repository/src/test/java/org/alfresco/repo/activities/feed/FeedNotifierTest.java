@@ -64,6 +64,7 @@ import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 
+import java.security.KeyStore;
 import java.util.Collections;
 import java.util.List;
 
@@ -107,7 +108,7 @@ public class FeedNotifierTest
         ApplicationContextHelper.setNoAutoStart(true);
 
         String[] config = new String[] { "classpath:alfresco/application-context.xml",
-            "classpath:org/alfresco/repo/activities/feed/test-action-services-context.xml" };
+            "classpath:alfresco/repo/activities/feed/test-action-services-context.xml" };
         ctx = ApplicationContextHelper.getApplicationContext(config);
     }
 

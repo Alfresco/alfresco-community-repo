@@ -119,9 +119,9 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerPropertyAccessor(new DirectProperty(serviceRegistry, cmisConnector, PropertyIds.CREATED_BY,
                 ContentModel.PROP_CREATOR));
         registerPropertyAccessor(new CreationDateProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, cmisConnector, PropertyIds.LAST_MODIFIED_BY,
-                ContentModel.PROP_MODIFIER));
-        registerPropertyAccessor(new ModificationDateProperty(serviceRegistry, cmisConnector));
+//        registerPropertyAccessor(new DirectProperty(serviceRegistry, cmisConnector, PropertyIds.LAST_MODIFIED_BY,
+//                ContentModel.PROP_MODIFIER));
+//        registerPropertyAccessor(new ModificationDateProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new FixedValueProperty(serviceRegistry, cmisConnector, PropertyIds.CHANGE_TOKEN, null));
         registerPropertyAccessor(new NameProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new IsImmutableProperty(serviceRegistry, cmisConnector));

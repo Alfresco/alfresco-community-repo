@@ -27,9 +27,12 @@ package org.alfresco.rest.api.tests;
 
 
 import java.lang.reflect.Proxy;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.tck.CmisTestResult;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.basics.RepositoryInfoTest;
@@ -53,13 +56,21 @@ class AlfrescoCMISBasicsTestGroup extends AbstractSessionTestGroup
             @Override
             protected CmisTestResult assertEquals(CmisObject expected, CmisObject actual, CmisTestResult success, CmisTestResult failure, boolean checkAcls, boolean checkPolicies)
             {
-                return super.assertEquals(hideAuditProperties(expected), hideAuditProperties(actual), success, failure, checkAcls, checkPolicies);
+                return super.assertEquals(hideAsynchronouslyChangedProperties(expected), hideAsynchronouslyChangedProperties(actual), success, failure, checkAcls, checkPolicies);
             }
         });
     }
 
-    private CmisObject hideAuditProperties(final CmisObject target)
+    private CmisObject hideAsynchronouslyChangedProperties(final CmisObject target)
     {
-        return (CmisObject) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { CmisObject.class }, (proxy, method, args) -> method.invoke(target, args));
+        return (CmisObject) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { CmisObject.class }, (proxy, method, args) -> {
+            Object result = method.invoke(target, args);
+            if ("getProperties".equals(method.getName()))
+            {
+                List<Property<?>> properties = (List<Property<?>>) result;
+                result = properties.stream().filter(p -> !p.getId().startsWith("cmis:lastMod")).collect(Collectors.toUnmodifiableList());
+            }
+            return result;
+        });
     }
 }

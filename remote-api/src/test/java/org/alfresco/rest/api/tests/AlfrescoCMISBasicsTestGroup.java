@@ -26,7 +26,6 @@
 package org.alfresco.rest.api.tests;
 
 
-import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,23 +33,24 @@ import java.util.stream.Collectors;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.tck.CmisTestResult;
-import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
-import org.apache.chemistry.opencmis.tck.tests.basics.RepositoryInfoTest;
+import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.basics.RootFolderTest;
-import org.apache.chemistry.opencmis.tck.tests.basics.SecurityTest;
 
-class AlfrescoCMISBasicsTestGroup extends AbstractSessionTestGroup
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
+
+class AlfrescoCMISBasicsTestGroup extends BasicsTestGroup
 {
     @Override
     public void init(Map<String, String> parameters) throws Exception
     {
         super.init(parameters);
 
-        setName("Basics Test Group");
-        setDescription("Basic tests.");
+        replaceRootFolderTest();
+    }
 
-        addTest(new SecurityTest());
-        addTest(new RepositoryInfoTest());
+    private void replaceRootFolderTest() throws Exception {
+        getTests().removeIf(t -> t instanceof RootFolderTest);
         addTest(new RootFolderTest()
         {
             @Override
@@ -63,14 +63,14 @@ class AlfrescoCMISBasicsTestGroup extends AbstractSessionTestGroup
 
     private CmisObject hideAsynchronouslyChangedProperties(final CmisObject target)
     {
-        return (CmisObject) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { CmisObject.class }, (proxy, method, args) -> {
-            Object result = method.invoke(target, args);
-            if ("getProperties".equals(method.getName()))
-            {
-                List<Property<?>> properties = (List<Property<?>>) result;
-                result = properties.stream().filter(p -> !p.getId().startsWith("cmis:lastMod")).collect(Collectors.toUnmodifiableList());
-            }
-            return result;
+        CmisObject spiedObject = spy(target);
+        when(spiedObject.getProperties()).then(a -> {
+            List<Property<?>> properties = (List<Property<?>>) a.callRealMethod();
+            return properties.stream()
+                    .filter(p -> !p.getId().startsWith("cmis:lastMod"))
+                    .collect(Collectors.toUnmodifiableList());
         });
+
+        return spiedObject;
     }
 }

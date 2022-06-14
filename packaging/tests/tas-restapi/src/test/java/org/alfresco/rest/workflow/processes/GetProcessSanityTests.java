@@ -61,7 +61,7 @@ public class GetProcessSanityTests extends RestTest
                 .and().field("startUserId").is(addedProcess.getStartUserId());
     }
 
-    @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
             description = "Verify User that is not involved in a process cannot get that process using REST API and status code is FORBIDDEN (403)")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
     public void shouldNotGetProcessesByNotInvolvedUser() throws Exception

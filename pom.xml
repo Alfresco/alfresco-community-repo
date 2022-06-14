@@ -82,7 +82,7 @@
         <dependency.poi.version>4.1.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>15.0.2</dependency.keycloak.version>
-        <dependency.jboss.logging.version>3.4.3.Final</dependency.jboss.logging.version>
+        <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.15.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies (can cause dependency conflicts)-->
         <dependency.activemq.version>5.16.1</dependency.activemq.version>
         <dependency.apache-compress.version>1.21</dependency.apache-compress.version>

@@ -35,7 +35,6 @@ import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
-import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.BulkUpdatePropertiesTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
@@ -69,7 +68,7 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
     @Test
     public void testCMISTCKBasics() throws Exception
     {
-        BasicsTestGroup basicsTestGroup = new BasicsTestGroup();
+        AlfrescoCMISBasicsTestGroup basicsTestGroup = new AlfrescoCMISBasicsTestGroup();
         JUnitHelper.run(basicsTestGroup);
     }
 

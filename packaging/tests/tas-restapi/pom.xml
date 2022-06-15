@@ -30,7 +30,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <tas.utility.version>3.0.48</tas.utility.version>
         <rest-assured.version>3.3.0</rest-assured.version>
-        <httpclient-osgi-version>4.5.3</httpclient-osgi-version>
+        <httpclient-osgi-version>4.5.13</httpclient-osgi-version>
         <json-path.version>5.1.1</json-path.version>
         <xml-path.version>3.3.0</xml-path.version>
         <json-schema-validator.version>5.1.1</json-schema-validator.version>

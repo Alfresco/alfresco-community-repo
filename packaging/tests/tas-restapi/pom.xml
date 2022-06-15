@@ -33,7 +33,7 @@
         <httpclient-osgi-version>4.5.3</httpclient-osgi-version>
         <json-path.version>5.1.1</json-path.version>
         <xml-path.version>3.3.0</xml-path.version>
-        <json-schema-validator.version>3.3.0</json-schema-validator.version>
+        <json-schema-validator.version>5.1.1</json-schema-validator.version>
         <jackson-databind.version>2.9.10.8</jackson-databind.version>
         <maven-release.version>2.5.3</maven-release.version>
         <org.glassfish.version>1.1.4</org.glassfish.version>

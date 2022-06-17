@@ -143,7 +143,7 @@ public class SearchAPI extends BaseAPI
     /**
      * Search as a user for nodes on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
      * by sortby and returns the property value for the given nodeRef and property name
-     * 
+     *
      * @param username
      * @param password
      * @param query
@@ -157,9 +157,9 @@ public class SearchAPI extends BaseAPI
     {
         String searchFilterParamaters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
                     Boolean.toString(includeCategories));
-        return getItemProperty(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby), nodeRef, propertyName); 
+        return getItemProperty(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby), nodeRef, propertyName);
     }
-    
+
     /**
      * Generic faceted search.
      * @param username
@@ -229,28 +229,30 @@ public class SearchAPI extends BaseAPI
 
     /**
      * Helper method to extract list of names from search result.
-     * 
+     *
      * @param searchResult
      * @return list of document or record names in search result
-     * @throws FileNotFoundException 
-     * @throws JsonSyntaxException 
-     * @throws JsonIOException 
+     * @throws FileNotFoundException
+     * @throws JsonSyntaxException
+     * @throws JsonIOException
      * @throws RuntimeException for malformed search response
      */
     /**
      * Helper method to extract list of names from search result.
-     * 
+     *
      * @param searchResult
      * @return
      */
     private List<String> getItemNames(JSONObject searchResult)
     {
+        // Delay because parsing not always completed yet
+        Utility.sleep(1000, 20000, () -> assertTrue(searchResult.has("name")));
         return getPropertyValues(searchResult, "name");
     }
-    
+
     /**
      * Helper method to extract list of property values from search result for the given nodeRef.
-     * 
+     *
      * @param searchResult
      * @param nodeRef
      * @param propertyName

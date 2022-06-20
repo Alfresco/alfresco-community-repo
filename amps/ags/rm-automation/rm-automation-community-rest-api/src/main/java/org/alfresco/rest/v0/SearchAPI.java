@@ -245,8 +245,6 @@ public class SearchAPI extends BaseAPI
      */
     private List<String> getItemNames(JSONObject searchResult)
     {
-        // Delay because parsing not always completed yet
-        Utility.sleep(1000, 20000, () -> assertTrue(searchResult.has("name")));
         return getPropertyValues(searchResult, "name");
     }
 

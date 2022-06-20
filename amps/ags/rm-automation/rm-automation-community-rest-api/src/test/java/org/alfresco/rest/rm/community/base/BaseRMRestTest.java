@@ -710,8 +710,15 @@ public class BaseRMRestTest extends RestTest
                 }
             }
 
-            results = searchApi.searchForNodeNamesAsUser(user.getUsername(), user.getPassword(), term, sortby,
-                    includeFolders, includeCategories);
+            String searchFilterParameters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
+                Boolean.toString(includeCategories));
+            JSONObject jsonResults = rmSearch(user.getUsername(), user.getPassword(), "rm", term, searchFilterParameters, sortby);
+            if (expectedResults != null && !expectedResults.isEmpty())
+            {
+                // Delay because JSON parsing not always completed yet
+                Utility.sleep(1000, 20000, () -> assertTrue(searchResult.has("items")));
+            }
+            results = getItemNames(jsonResults);
             if (!results.isEmpty() && results.containsAll(expectedResults))
             {
                 break;

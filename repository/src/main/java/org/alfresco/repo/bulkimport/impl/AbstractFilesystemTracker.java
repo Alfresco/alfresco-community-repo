@@ -35,7 +35,8 @@ import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.FilesystemTracker;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.util.PropertyCheck;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -44,7 +45,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class AbstractFilesystemTracker implements FilesystemTracker
 {
-	protected static Logger logger = Logger.getLogger(FilesystemTracker.class);
+	protected static Logger logger = LoggerFactory.getLogger(FilesystemTracker.class);
 
     protected DirectoryAnalyser directoryAnalyser = null;
 

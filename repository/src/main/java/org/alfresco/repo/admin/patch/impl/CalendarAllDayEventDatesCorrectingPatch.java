@@ -40,7 +40,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -57,7 +58,7 @@ public class CalendarAllDayEventDatesCorrectingPatch extends AbstractPatch
 {
     private static final String MSG_SUCCESS = "patch.calendarAllDayEventDatesCorrectingPatch.result";
 
-    private static final Logger LOGGER = Logger.getLogger(CalendarAllDayEventDatesCorrectingPatch.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CalendarAllDayEventDatesCorrectingPatch.class);
 
     private int batchSize = 1000;
 

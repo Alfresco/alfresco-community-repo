@@ -37,7 +37,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract {@link EventFilter} implementation, containing common event filtering
@@ -47,7 +48,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class AbstractNodeEventFilter implements EventFilter<QName>
 {
-    private static final Logger LOGGER = Logger.getLogger(AbstractNodeEventFilter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractNodeEventFilter.class);
 
     private static final String MARKER_INCLUDE_SUBTYPES = "include_subtypes";
     private static final String WILDCARD = "*";

@@ -24,8 +24,8 @@
  */
 package org.alfresco.util.log.log4j;
 
+import org.alfresco.util.log.NDC;
 import org.alfresco.util.log.NDCDelegate;
-import org.apache.log4j.NDC;
 
 /**
  * A stand in for the org.apache.log4j.NDC class that avoids introducing runtime dependencies against the otherwise

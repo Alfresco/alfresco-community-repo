@@ -710,15 +710,47 @@ public class BaseRMRestTest extends RestTest
                 }
             }
 
-            String searchFilterParameters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
-                Boolean.toString(includeCategories));
-            JSONObject jsonResults = rmSearch(user.getUsername(), user.getPassword(), "rm", term, searchFilterParameters, sortby);
-            if (expectedResults != null && !expectedResults.isEmpty())
+            results = searchApi.searchForNodeNamesAsUser(user.getUsername(), user.getPassword(), term, sortby,
+                    includeFolders, includeCategories);
+            if (!results.isEmpty() && results.containsAll(expectedResults))
             {
-                // Delay because JSON parsing not always completed yet
-                Utility.sleep(1000, 20000, () -> assertTrue(searchResult.has("items")));
+                break;
             }
-            results = getItemNames(jsonResults);
+            else
+            {
+                counter++;
+            }
+            // double wait time to not overdo solr search
+            waitInMilliSeconds = waitInMilliSeconds * 2;
+        }
+        return results;
+    }
+
+    // Poc code to see if waiting for JSON parsing to complete has any effect on intermittent error
+    public List<String> searchForRMContentAsUserWithWait(UserModel user, String term, String sortby, boolean includeFolders,
+                                                 boolean includeCategories, List<String> expectedResults)
+    {
+        List<String> results = new ArrayList<>();
+        // wait for solr indexing
+        int counter = 0;
+        int waitInMilliSeconds = 7000;
+        while (counter < 4)
+        {
+            synchronized (this)
+            {
+                try
+                {
+                    this.wait(waitInMilliSeconds);
+                }
+                catch (InterruptedException e)
+                {
+                    // Restore interrupted state...
+                    Thread.currentThread().interrupt();
+                }
+            }
+
+            results = searchApi.searchForNodeNamesAsUserWithWait(user.getUsername(), user.getPassword(), term, sortby,
+                includeFolders, includeCategories);
             if (!results.isEmpty() && results.containsAll(expectedResults))
             {
                 break;

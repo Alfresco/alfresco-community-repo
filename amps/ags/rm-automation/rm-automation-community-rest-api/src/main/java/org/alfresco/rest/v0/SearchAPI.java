@@ -140,6 +140,24 @@ public class SearchAPI extends BaseAPI
         return getItemNames(rmSearch(username, password, "rm", query, searchFilterParamaters, sortby));
     }
 
+    public List<String> searchForNodeNamesAsUserWithWait(String username, String password, String query, String sortby,
+                boolean includeCategories, boolean includeFolders ) throws InterruptedException
+    {
+        String searchFilterParameters = MessageFormat.format(RM_DEFAULT_NODES_FILTERS, Boolean.toString(includeFolders),
+            Boolean.toString(includeCategories));
+        JSONObject jsonResults = rmSearch(username, password, "rm", query, searchFilterParameters, sortby);
+        // Delay because JSON parsing not always completed yet
+        for (int i = 0 ; i < 20; i++)
+        {
+            if (jsonResults.has("items"))
+            {
+                break;
+            }
+            Thread.sleep(1000);
+        }
+        return getItemNames(jsonResults);
+    }
+
     /**
      * Search as a user for nodes on site "rm" matching query, using SearchAPI.RM_DEFAULT_RECORD_FILTERS and sorted
      * by sortby and returns the property value for the given nodeRef and property name

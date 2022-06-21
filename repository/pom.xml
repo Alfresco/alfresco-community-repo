@@ -281,11 +281,6 @@
             <artifactId>jaxen</artifactId>
             <version>1.2.0</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.xmlbeans</groupId>
-            <artifactId>xmlbeans</artifactId>
-            <version>5.1.0</version>
-        </dependency>
         <!-- Apache POI -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -328,12 +323,6 @@
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-scratchpad</artifactId>
             <version>${dependency.poi.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.xmlbeans</groupId>
-                    <artifactId>xmlbeans</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>

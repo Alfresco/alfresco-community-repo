@@ -181,7 +181,7 @@ jobs:
       script: travis_wait 20 mvn -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 
     - name: "Repository - MySQL 5.7.23 tests"
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
+      if: (branch =~ /release\/.*/ AND commit_message !~ /\[skip db\]/ AND type != pull_request) OR commit_message =~ /\[db\]/
       install: skip
       before_script:
         - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:5.7.23 --transaction-isolation='READ-COMMITTED' --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci

@@ -27,8 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.patch.v32;
 
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -92,8 +92,8 @@ public class RMv32HoldReportUpdatePatchUnitTest
 
         patch.applyInternal();
         verify(mockedNodeService, times(1)).addAspect(hold_report, ContentModel.ASPECT_VERSIONABLE, null);
-        verify(mockedVersionService, times(1)).createVersion((NodeRef) anyObject(), anyMap());
-        verify(mockedContentWriter, times(1)).putContent((InputStream) anyObject());
+        verify(mockedVersionService, times(1)).createVersion((NodeRef) any(), anyMap());
+        verify(mockedContentWriter, times(1)).putContent((InputStream) any());
     }
 }
 

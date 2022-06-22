@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -32,7 +32,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Matchers.notNull;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -519,8 +519,8 @@ public class ParamsExtractorTests
         ResourceMetadata resourceMock = mock(ResourceMetadata.class);
         ResourceOperation resourceOperation = mock(ResourceOperation.class);
         when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.ENTITY);
-        when(resourceMock.getOperation(notNull(HttpMethod.class))).thenReturn(resourceOperation);
-        when(resourceMock.getObjectType(notNull(ResourceOperation.class))).thenReturn(Farmer.class);
+        when(resourceMock.getOperation(notNull())).thenReturn(resourceOperation);
+        when(resourceMock.getObjectType(notNull())).thenReturn(Farmer.class);
         return resourceMock;
     }
  
@@ -556,9 +556,9 @@ public class ParamsExtractorTests
     {
         ResourceMetadata resourceMock = mock(ResourceMetadata.class);
         ResourceOperation resourceOperation = mock(ResourceOperation.class);
-        when(resourceMock.getOperation(notNull(HttpMethod.class))).thenReturn(resourceOperation);
+        when(resourceMock.getOperation(notNull())).thenReturn(resourceOperation);
         when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.RELATIONSHIP);
-        when(resourceMock.getObjectType(notNull(ResourceOperation.class))).thenReturn(Farmer.class);
+        when(resourceMock.getObjectType(notNull())).thenReturn(Farmer.class);
         return resourceMock;
     }
     

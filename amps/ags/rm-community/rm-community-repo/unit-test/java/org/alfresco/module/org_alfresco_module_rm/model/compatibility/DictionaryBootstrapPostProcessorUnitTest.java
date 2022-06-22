@@ -31,7 +31,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.junit.Test;
@@ -73,7 +73,7 @@ public class DictionaryBootstrapPostProcessorUnitTest extends BaseUnitTest
         // === then ===
         verify(mockedBeanFactory, times(1)).containsBean(BEAN_SITESERVICE_BOOTSTRAP);
         verifyNoMoreInteractions(mockedBeanFactory);
-        verifyZeroInteractions(mockedBeanDefinition);
+        verifyNoInteractions(mockedBeanDefinition);
     }
 
     /**

@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -72,7 +72,7 @@ public class RMv22RemoveInPlaceRolesFromAllPatchUnitTest extends BaseUnitTest
         patch.applyInternal();
         
         // then
-        verifyZeroInteractions(mockedAuthorityService);
+        verifyNoInteractions(mockedAuthorityService);
     }
 
     /**

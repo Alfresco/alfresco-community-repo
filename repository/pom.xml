@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>17.11-SNAPSHOT</version>
+        <version>17.26-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>com.ibm.icu</groupId>
             <artifactId>icu4j</artifactId>
-            <version>70.1</version>
+            <version>71.1</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
@@ -265,7 +265,7 @@
         <dependency>
             <groupId>com.sun.xml.fastinfoset</groupId>
             <artifactId>FastInfoset</artifactId>
-            <version>2.0.0</version>
+            <version>2.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.htmlparser</groupId>
@@ -374,7 +374,7 @@
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
-            <version>6.2.7</version>
+            <version>6.2.8</version>
         </dependency>
 
         <!-- GData -->
@@ -413,7 +413,7 @@
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
-            <version>3.5.9</version>
+            <version>3.5.10</version>
         </dependency>
         <dependency>
             <groupId>org.mybatis</groupId>
@@ -800,7 +800,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>1.9.7</version>
+            <version>1.9.9.1</version>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>

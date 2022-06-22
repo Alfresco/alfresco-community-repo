@@ -511,7 +511,9 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
         {
             throw new InvalidArgumentException("processId is required to get the process info");
         }
-        
+
+        validateIfUserAllowedToWorkWithProcess(processId);
+
         HistoricProcessInstance processInstance = activitiProcessEngine
                 .getHistoryService()
                 .createHistoricProcessInstanceQuery()

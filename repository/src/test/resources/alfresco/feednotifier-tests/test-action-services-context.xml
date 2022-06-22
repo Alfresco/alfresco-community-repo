@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="errorProneActionExecutor" class="org.alfresco.repo.activities.feed.ErrorProneActionExecutor" parent="action-executer">
+      <property name="publicAction">
+         <value>false</value>
+      </property>
+   </bean>
+
+</beans>

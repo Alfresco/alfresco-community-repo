@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,10 +24,6 @@
  * #L%
  */
 package org.alfresco.repo.activities.feed;
-
-import static junit.framework.Assert.fail;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
@@ -52,6 +48,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.json.JSONObject;
@@ -62,6 +59,7 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Collections;
 import java.util.List;
@@ -71,10 +69,10 @@ import java.util.List;
  * 
  * @author steveglover
  */
-public class FeedNotifierTest
+@ContextConfiguration({"classpath:alfresco/application-context.xml",
+        "classpath:alfresco/feednotifier-tests/test-action-services-context.xml"})
+public class FeedNotifierTest extends BaseSpringTest
 {
-    private static ApplicationContext ctx = null;
-
     private PersonService personService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
@@ -104,14 +102,12 @@ public class FeedNotifierTest
     {
         ApplicationContextHelper.setUseLazyLoading(false);
         ApplicationContextHelper.setNoAutoStart(true);
-
-        ctx = ApplicationContextHelper.getApplicationContext();
     }
 
     @Before
     public void before() throws Exception
     {
-        ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory) ctx.getBean("ActivitiesFeed");
+        ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory) applicationContext.getBean("ActivitiesFeed");
         ApplicationContext activitiesFeedCtx = activitiesFeed.getApplicationContext();
         this.feedNotifier = (FeedNotifierImpl) activitiesFeedCtx.getBean("feedNotifier");
         this.activityService = (ActivityService) activitiesFeedCtx.getBean("activityService");
@@ -119,7 +115,7 @@ public class FeedNotifierTest
         this.feedGenerator = (FeedGenerator) activitiesFeedCtx.getBean("feedGenerator");
         ObjectFactory<ActivitiesFeedModelBuilder> feedModelBuilderFactory = (ObjectFactory<ActivitiesFeedModelBuilder>) activitiesFeedCtx.getBean("feedModelBuilderFactory");
 
-        Scheduler scheduler = (Scheduler) ctx.getBean("schedulerFactory");
+        Scheduler scheduler = (Scheduler) applicationContext.getBean("schedulerFactory");
 
         JobDetail feedGeneratorJobDetail = (JobDetail) activitiesFeedCtx.getBean("feedGeneratorJobDetail");
         JobDetail postLookupJobDetail = (JobDetail) activitiesFeedCtx.getBean("postLookupJobDetail");
@@ -134,17 +130,17 @@ public class FeedNotifierTest
         scheduler.pauseJob(postCleanerJobDetail.getKey());
         scheduler.pauseJob(feedNotifierJobDetail.getKey());
 
-        this.personService = (PersonService) ctx.getBean("personService");
-        this.nodeService = (NodeService) ctx.getBean("nodeService");
-        this.namespaceService = (NamespaceService) ctx.getBean("namespaceService");
-        this.siteService = (SiteService) ctx.getBean("siteService");
-        this.repoAdminService = (RepoAdminService) ctx.getBean("repoAdminService");
-        this.transactionService = (TransactionService) ctx.getBean("transactionService");
-        this.postDAO = (ActivityPostDAO) ctx.getBean("postDAO");
-        this.fileFolderService = (FileFolderService) ctx.getBean("fileFolderService");
-        this.subscriptionService = (SubscriptionService) ctx.getBean("SubscriptionService");
-        this.errorProneActionExecutor = (ErrorProneActionExecutor) ctx.getBean("errorProneActionExecutor");
-        this.actionService = (ActionService) ctx.getBean("ActionService");
+        this.personService = (PersonService) applicationContext.getBean("personService");
+        this.nodeService = (NodeService) applicationContext.getBean("nodeService");
+        this.namespaceService = (NamespaceService) applicationContext.getBean("namespaceService");
+        this.siteService = (SiteService) applicationContext.getBean("siteService");
+        this.repoAdminService = (RepoAdminService) applicationContext.getBean("repoAdminService");
+        this.transactionService = (TransactionService) applicationContext.getBean("transactionService");
+        this.postDAO = (ActivityPostDAO) applicationContext.getBean("postDAO");
+        this.fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
+        this.subscriptionService = (SubscriptionService) applicationContext.getBean("SubscriptionService");
+        this.errorProneActionExecutor = (ErrorProneActionExecutor) applicationContext.getBean("errorProneActionExecutor");
+        this.actionService = (ActionService) applicationContext.getBean("ActionService");
 
         // create some users
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()

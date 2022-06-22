@@ -530,13 +530,7 @@
             </list>
         </property>
     </bean>
-    
-    <bean id="errorProneActionExecutor" class="org.alfresco.repo.activities.feed.ErrorProneActionExecutor" parent="action-executer">
-      <property name="publicAction">
-         <value>false</value>
-      </property>
-   </bean>
-   
+
     <!-- Import MailService from the OutboundSMTP subsystem (needed for email space/invited users actions) -->
     <bean id="mailService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory">

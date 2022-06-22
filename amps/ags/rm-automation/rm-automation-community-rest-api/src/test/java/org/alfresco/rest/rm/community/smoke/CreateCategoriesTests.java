@@ -59,7 +59,6 @@ public class CreateCategoriesTests extends BaseRMRestTest {
     private RecordCategory Category2;
     private RecordCategory SubCategory1;
     private RecordCategory SubCategory2;
-    private RecordCategory recordCategoryUpdated;
 
     @BeforeClass(alwaysRun = true)
     public void preconditionForCreateCategoriesTests()
@@ -103,10 +102,9 @@ public class CreateCategoriesTests extends BaseRMRestTest {
         RecordCategory Category1 = createRootCategory(categoryName, categoryTitle);
 
         String newCategoryName = "Rename " + categoryName;
-        //String newCategoryTitle = "title" + categoryTitle;
 
         // Build the properties which will be updated
-        recordCategoryUpdated = Category1.builder().name(newCategoryName).build();
+        RecordCategory  recordCategoryUpdated = Category1.builder().name(newCategoryName).build();
 
         // Update the record category
         RecordCategory renamedRecordCategory = getRestAPIFactory().getRecordCategoryAPI().updateRecordCategory(recordCategoryUpdated,Category1.getId());

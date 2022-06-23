@@ -15,3 +15,8 @@ updates:
   open-pull-requests-limit: 99
   registries:
   - maven-alfresco-internal
+  ignore:
+    # httpclient 4.5.7 and above normalize URIs removing empty path params
+    # check https://alfresco.atlassian.net/browse/ACS-3186 for more details
+    - dependency-name: "org.apache.httpcomponents:httpclient-osgi"
+      versions: ">= 4.5.7"

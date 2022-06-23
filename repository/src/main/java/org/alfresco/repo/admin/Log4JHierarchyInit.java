@@ -25,6 +25,9 @@
  */
 package org.alfresco.repo.admin;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -33,6 +36,10 @@ import java.util.List;
 import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.properties.PropertiesConfiguration;
+import org.apache.logging.log4j.core.config.properties.PropertiesConfigurationBuilder;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -73,6 +80,7 @@ public class Log4JHierarchyInit implements ApplicationContextAware
     private static Log logger = LogFactory.getLog(Log4JHierarchyInit.class);
     private List<String> extraLog4jUrls;
     private ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+    private final String LOG4J1_COMPATIBILITY = "log4j1.compatibility";
 
     public Log4JHierarchyInit()
     {
@@ -108,15 +116,37 @@ public class Log4JHierarchyInit implements ApplicationContextAware
         try
         {
             Properties mainProperties=new Properties();
-            // Get the PropertyConfigurator
-            Class<?> clazz = Class.forName("org.apache.log4j.PropertyConfigurator");
-            Method method = clazz.getMethod("configure", Properties.class);
+
+            try{
+                File file = ((LoggerContext) LogManager.getContext()).getConfiguration().getConfigurationSource().getFile();
+                if(file != null){
+                    mainProperties.load(new FileInputStream(file));
+                }
+            } catch (FileNotFoundException e){
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Failed to find initial configuration: \n" + "   Error: " + e.getMessage(), e);
+                }
+            }
             // Import using this method
             for (String url : extraLog4jUrls)
             {
                 importLogSettings(url, mainProperties);
             }
-            method.invoke(null, mainProperties);
+
+            if("true".equals(System.getProperty(LOG4J1_COMPATIBILITY)))
+            {
+                // Get the PropertyConfigurator
+                Class<?> clazz = Class.forName("org.apache.log4j.PropertyConfigurator");
+                Method method = clazz.getMethod("configure", Properties.class);
+                method.invoke(null, mainProperties);
+            }
+            else
+            {
+                //implementation needed
+                PropertiesConfiguration propertiesConfiguration = new PropertiesConfigurationBuilder().setRootProperties(mainProperties).build();
+                ((LoggerContext) LogManager.getContext()).reconfigure(propertiesConfiguration);
+            }
         }
         catch (ClassNotFoundException e)
         {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -46,7 +46,7 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,12 +97,12 @@ public class ScriptTransferServiceTest extends BaseAlfrescoSpringTest
       
       // When the transfer method is called return a node ref - mocks a good call.
       // When the transfer method is called with a transfer name of exception - throw a transferException
-      Mockito.when(mockedTransferService.transfer(Matchers.anyString(), Matchers.isA(TransferDefinition.class))).thenReturn(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "123"));
-      Mockito.when(mockedTransferService.transfer(Matchers.eq("exception"), Matchers.isA(TransferDefinition.class))).thenThrow(new TransferException("mocked transfer exception"));
+      Mockito.when(mockedTransferService.transfer(ArgumentMatchers.anyString(), ArgumentMatchers.isA(TransferDefinition.class))).thenReturn(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "123"));
+      Mockito.when(mockedTransferService.transfer(ArgumentMatchers.eq("exception"), ArgumentMatchers.isA(TransferDefinition.class))).thenThrow(new TransferException("mocked transfer exception"));
       
       // When getTransferTarget called return a TransferTarget      
-      Mockito.when(mockedTransferService.getTransferTarget(Matchers.anyString())).thenReturn(dummyTarget);
-      Mockito.when(mockedTransferService.getTransferTargets(Matchers.anyString())).thenReturn(dummyTargets);
+      Mockito.when(mockedTransferService.getTransferTarget(ArgumentMatchers.anyString())).thenReturn(dummyTarget);
+      Mockito.when(mockedTransferService.getTransferTargets(ArgumentMatchers.anyString())).thenReturn(dummyTargets);
       Mockito.when(mockedTransferService.getTransferTargets()).thenReturn(dummyTargets);
       
       // Execute the unit test script

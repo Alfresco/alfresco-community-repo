@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
  */
 public class GetProcessSanityTests extends RestTest
 {
-    private UserModel userWhoStartsProcess, assignee;
+    private UserModel userWhoStartsProcess, assignee, user;
     private RestProcessModel addedProcess, process;
 
     @BeforeClass(alwaysRun = true)
@@ -24,6 +24,7 @@ public class GetProcessSanityTests extends RestTest
     {
         userWhoStartsProcess = dataUser.createRandomTestUser();
         assignee = dataUser.createRandomTestUser();
+        user = dataUser.createRandomTestUser();
         addedProcess = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().addProcess("activitiAdhoc", assignee, false, CMISUtil.Priority.High);
     }
 
@@ -58,5 +59,14 @@ public class GetProcessSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         process.assertThat().field("id").is(addedProcess.getId())
                 .and().field("startUserId").is(addedProcess.getStartUserId());
+    }
+
+    @TestRail(section = { TestGroup.REST_API, TestGroup.PROCESSES }, executionType = ExecutionType.SANITY,
+            description = "Verify User that is not involved in a process cannot get that process using REST API and status code is FORBIDDEN (403)")
+    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.SANITY })
+    public void shouldNotGetProcessesByNotInvolvedUser() throws Exception
+    {
+        process = restClient.authenticateUser(user).withWorkflowAPI().usingProcess(addedProcess).getProcess();
+        restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 }

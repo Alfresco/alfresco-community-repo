@@ -38,6 +38,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
@@ -432,10 +433,23 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
 
     protected void checkRule(Rule rule)
     {
-        List<String> ruleTypes = rule.getRuleTypes();
-        if (ruleTypes.contains(RULE_OUTBOUND))
+        List<Action> actions = ((CompositeActionImpl) rule.getAction()).getActions();
+
+        checkRestrictedAccessActions(actions);
+        checkRuleOutboundHasNoCheckOutAction(rule, actions);
+    }
+
+    private void checkRestrictedAccessActions(List<Action> actions) {
+        for (Action action : actions) {
+            ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.RULE_ACTION_CONTEXT);
+            actionService.getActionAccessRestrictions(action.getActionDefinitionName())
+                    .forEach(ac -> ac.checkAccess(action));
+        }
+    }
+
+    private void checkRuleOutboundHasNoCheckOutAction(Rule rule, List<Action> actions) {
+        if (rule.getRuleTypes().contains(RULE_OUTBOUND))
         {
-            List<Action> actions = ((CompositeActionImpl) rule.getAction()).getActions();
             for (Action action : actions)
             {
                 if (action.getActionDefinitionName().equalsIgnoreCase(ACTION_CHECK_OUT))

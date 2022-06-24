@@ -768,5 +768,16 @@
             <ref bean="TemplateService"/>
         </property>
     </bean>
+
+    <!-- Action Restriction Beans -->
+
+    <bean id="adminActionAccessRestriction" class="org.alfresco.repo.action.access.AdminActionAccessRestriction">
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
+        </property>
+    </bean>
     
 </beans>

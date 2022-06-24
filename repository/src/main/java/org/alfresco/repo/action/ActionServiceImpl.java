@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
@@ -140,6 +141,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * All the action definitions currently registered
      */
     private Map<String, ActionDefinition> actionDefinitions = new HashMap<String, ActionDefinition>();
+
+    /**
+     * Action access restrictions for action
+     */
+    private Map<String, List<ActionAccessRestriction>> accessRestrictedActionCheck = new HashMap<>();
 
     /**
      * All the parameter constraints
@@ -298,7 +304,14 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      */
     public List<ActionDefinition> getActionDefinitions()
     {
-        return new ArrayList<ActionDefinition>(this.actionDefinitions.values());
+        return new ArrayList<>(this.actionDefinitions.values());
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.action.ActionService#getActionAccessRestrictions(String actionDefinitionName)
+     */
+    public List<ActionAccessRestriction> getActionAccessRestrictions(String actionDefinitionName) {
+        return this.accessRestrictedActionCheck.get(actionDefinitionName);
     }
 
     /**
@@ -911,6 +924,13 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     {
         ActionDefinition action = actionExecuter.getActionDefinition();
         this.actionDefinitions.put(action.getName(), action);
+    }
+
+    /**
+     * @see org.alfresco.repo.action.RuntimeActionService#registerActionAccessRestrictions(String, List<ActionAccessRestriction>)
+     */
+    public void registerActionAccessRestrictions(String actionDefinitionName, List<ActionAccessRestriction> actionAccessRestrictions) {
+        this.accessRestrictedActionCheck.put(actionDefinitionName, actionAccessRestrictions);
     }
 
     /**

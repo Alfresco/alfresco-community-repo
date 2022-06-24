@@ -25,12 +25,15 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.action.Action;
@@ -64,6 +67,9 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     
     /** Indicated whether the action is public or internal (default <tt>true</tt>) */
     protected boolean publicAction = true;
+
+    /** List of action access restrictions (default <tt>empty list</tt> */
+    protected List<ActionAccessRestriction> actionAccessRestrictions = new ArrayList<>();
     
     /** List of types and aspects for which this action is applicable */
     protected Set<QName> applicableTypes = new HashSet<QName>();
@@ -79,9 +85,13 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
      */
     public void init()
     {
-        if (this.publicAction == true)
+        if (this.publicAction)
         {
             this.runtimeActionService.registerActionExecuter(this);
+        }
+
+        if (!this.actionAccessRestrictions.isEmpty()) {
+            this.runtimeActionService.registerActionAccessRestrictions(actionDefinition.getName(), new ArrayList<>(actionAccessRestrictions));
         }
     }
     
@@ -109,7 +119,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Set whether the action is public or not.
      * 
@@ -118,6 +128,15 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     public void setPublicAction(boolean publicAction)
     {
         this.publicAction = publicAction;
+    }
+
+    /**
+     * Set action access restrictions
+     *
+     * @param actionAccessRestrictions
+     */
+    public void setActionAccessRestrictions(List<ActionAccessRestriction> actionAccessRestrictions) {
+        this.actionAccessRestrictions = actionAccessRestrictions;
     }
 
     /**
@@ -270,6 +289,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         if ( !nodeIsLockedForThisUser)
         {
             // Execute the implementation
+            verifyActionAccess(action);
             executeImpl(action, actionedUponNodeRef);
         }
         else
@@ -281,6 +301,10 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
                              ") is locked.");
             }
         }
+    }
+
+    private void verifyActionAccess(Action action) {
+        actionAccessRestrictions.forEach(ar -> ar.checkRunningActionAccess(action));
     }
     
     /**

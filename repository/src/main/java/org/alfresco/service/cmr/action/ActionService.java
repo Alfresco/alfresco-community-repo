@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -58,6 +58,14 @@ public interface ActionService
      */
     @Auditable()
     List<ActionDefinition> getActionDefinitions();
+
+    /**
+     * Get restricted access validations for action
+     *
+     * @return    Validation
+     */
+    @Auditable()
+    List<ActionAccessRestriction> getActionAccessRestrictions(String actionDefinitionName);
     
     /**
      * Get all the action definitions that are applicable for the given node, based on

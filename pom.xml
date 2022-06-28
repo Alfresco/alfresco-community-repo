@@ -76,10 +76,10 @@
         <dependency.slf4j.version>1.7.35</dependency.slf4j.version>
         <dependency.gytheio.version>0.16</dependency.gytheio.version>
         <dependency.groovy.version>3.0.11</dependency.groovy.version>
-        <dependency.tika.version>2.2.1</dependency.tika.version>
+        <dependency.tika.version>2.4.1</dependency.tika.version>
         <dependency.spring-security.version>5.7.2</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>4.1.2</dependency.poi.version>
+        <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>15.0.2</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
@@ -404,7 +404,7 @@
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
-                <version>3.1.0</version>
+                <version>5.1.0</version>
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>

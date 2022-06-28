@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2022 Alfresco Software Limited.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -24,8 +24,8 @@
  */
 package org.alfresco.util.log.log4j;
 
+import org.alfresco.util.log.NDC;
 import org.alfresco.util.log.NDCDelegate;
-import org.apache.log4j.NDC;
 
 /**
  * A stand in for the org.apache.log4j.NDC class that avoids introducing runtime dependencies against the otherwise

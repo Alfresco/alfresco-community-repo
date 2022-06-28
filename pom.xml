@@ -74,6 +74,7 @@
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
         <dependency.slf4j.version>1.7.35</dependency.slf4j.version>
+        <dependency.log4j.version>2.17.2</dependency.log4j.version>
         <dependency.gytheio.version>0.16</dependency.gytheio.version>
         <dependency.groovy.version>3.0.11</dependency.groovy.version>
         <dependency.tika.version>2.2.1</dependency.tika.version>
@@ -612,9 +613,9 @@
                 <version>${dependency.slf4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.slf4j</groupId>
-                <artifactId>slf4j-reload4j</artifactId>
-                <version>${dependency.slf4j.version}</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${dependency.log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>xerces</groupId>

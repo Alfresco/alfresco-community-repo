@@ -40,8 +40,8 @@ import org.alfresco.transform.client.model.config.TransformOptionValue;
 import org.alfresco.transform.client.model.config.Transformer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -217,7 +217,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryTe
         initTestData();
 
         super.setUp();
-        LogManager.getLogger(LocalTransformServiceRegistryConfigTest.class).setLevel(Level.DEBUG);
+        Configurator.setLevel(LocalTransformServiceRegistryConfigTest.class, Level.DEBUG);
     }
 
     @Override

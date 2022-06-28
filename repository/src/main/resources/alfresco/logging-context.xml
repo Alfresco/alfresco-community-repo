@@ -25,5 +25,6 @@
                 <value>classpath*:alfresco/extension/dev-log4j.properties</value>
             </list>
         </property>
+        <property name="isLog4j1Compatible" value="${log4j1.compatibility:true}" />
     </bean>
 </beans>

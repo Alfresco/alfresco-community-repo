@@ -442,8 +442,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     private void checkRestrictedAccessActions(List<Action> actions) {
         for (Action action : actions) {
             ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.RULE_ACTION_CONTEXT);
-            actionService.getActionAccessRestrictions(action.getActionDefinitionName())
-                    .forEach(ac -> ac.checkAccess(action));
+            actionService.verifyActionAccessRestrictions(action);
         }
     }
 

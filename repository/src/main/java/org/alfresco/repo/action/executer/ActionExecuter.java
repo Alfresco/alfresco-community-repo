@@ -76,6 +76,13 @@ public interface ActionExecuter
      * @return  the action definition
      */
     ActionDefinition getActionDefinition();
+
+    /**
+     * Verify action access restrictions
+     *
+     * @param action
+     */
+    void verifyActionAccessRestrictions(Action action);
     
     /**
      * Execute the action executer

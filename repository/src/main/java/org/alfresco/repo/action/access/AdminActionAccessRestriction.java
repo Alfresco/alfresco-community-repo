@@ -53,23 +53,16 @@ public class AdminActionAccessRestriction implements ActionAccessRestriction {
         this.nodeService = nodeService;
     }
 
-    @Override
-    public void checkAccess(Action action) {
-        if (isActionFromControlledContext(action)) {
+    /**
+     * {@inheritDoc}
+     */
+    public void verifyAccessRestriction(Action action) {
+        if (isActionFromControlledContext(action) && !isActionCausedByRule(action)) {
             boolean isAdminOrSystemUser = authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser();
             if (!isAdminOrSystemUser) {
                 throw new ActionAccessException("Only admin or system user is allowed to define uses of/directly execute this action");
             }
         }
-    }
-
-    @Override
-    public void checkRunningActionAccess(Action action) {
-        if (!isActionFromControlledContext(action) || isActionCausedByRule(action)) {
-            return;
-        }
-
-        checkAccess(action);
     }
 
     private boolean isActionFromControlledContext(Action action) {
@@ -86,6 +79,10 @@ public class AdminActionAccessRestriction implements ActionAccessRestriction {
      * @return
      */
     private boolean isActionCausedByRule(Action action) {
+        if (action.getNodeRef() == null) {
+            return false;
+        }
+
         NodeRef ruleParent = getPotentialRuleParent(action.getNodeRef());
         return isRule(ruleParent);
     }
@@ -93,9 +90,9 @@ public class AdminActionAccessRestriction implements ActionAccessRestriction {
     private NodeRef getPotentialRuleParent(NodeRef nodeRef) {
         NodeRef parentNode = nodeService.getPrimaryParent(nodeRef).getParentRef();
 
-        if (isCompositeAction(parentNode))
+        while (isCompositeAction(parentNode))
         {
-            return nodeService.getPrimaryParent(parentNode).getParentRef();
+            parentNode = nodeService.getPrimaryParent(parentNode).getParentRef();
         }
 
         return parentNode;

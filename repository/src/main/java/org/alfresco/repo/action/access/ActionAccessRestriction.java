@@ -45,19 +45,9 @@ public interface ActionAccessRestriction {
     }
 
     /**
-     * Action access restriction, best used in places of declaration of future executions
-     * (e.g. rule with such action)
+     * Verify action access restriction
      *
      * @param action
      */
-    void checkAccess(Action action);
-
-    /**
-     * Access check for when action is actually executed.
-     * In some cases we want to allow an execution of action even though checkAccess would fail.
-     * E.g. rules created by an admin, but executed by a user - changing the user responsible for executing action.
-     *
-     * @param action
-     */
-    void checkRunningActionAccess(Action action);
+    void verifyAccessRestriction(Action action);
 }

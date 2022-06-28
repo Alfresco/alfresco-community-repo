@@ -58,14 +58,6 @@ public interface ActionService
      */
     @Auditable()
     List<ActionDefinition> getActionDefinitions();
-
-    /**
-     * Get restricted access validations for action
-     *
-     * @return    Validation
-     */
-    @Auditable()
-    List<ActionAccessRestriction> getActionAccessRestrictions(String actionDefinitionName);
     
     /**
      * Get all the action definitions that are applicable for the given node, based on
@@ -163,7 +155,14 @@ public interface ActionService
     */
     @Auditable()
    CompositeActionCondition createCompositeActionCondition();
-    
+
+    /**
+     * Verify users access to an action with restrictions
+     *
+     * @param action
+     */
+    void verifyActionAccessRestrictions(Action action);
+
     /**
      * The actions conditions are always checked.
      * 

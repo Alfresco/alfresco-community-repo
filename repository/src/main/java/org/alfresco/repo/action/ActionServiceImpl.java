@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
@@ -143,9 +142,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     private Map<String, ActionDefinition> actionDefinitions = new HashMap<String, ActionDefinition>();
 
     /**
-     * Action access restrictions for action
+     * Action access restricted executers
      */
-    private Map<String, List<ActionAccessRestriction>> accessRestrictedActionCheck = new HashMap<>();
+    private Map<String, ActionExecuter> accessRestrictedActionExecuters = new HashMap<>();
 
     /**
      * All the parameter constraints
@@ -305,16 +304,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public List<ActionDefinition> getActionDefinitions()
     {
         return new ArrayList<>(this.actionDefinitions.values());
-    }
-
-    /**
-     * @see org.alfresco.service.cmr.action.ActionService#getActionAccessRestrictions(String actionDefinitionName)
-     */
-    public List<ActionAccessRestriction> getActionAccessRestrictions(String actionDefinitionName) {
-        if (!this.accessRestrictedActionCheck.containsKey(actionDefinitionName)) {
-            return new ArrayList<>();
-        }
-        return this.accessRestrictedActionCheck.get(actionDefinitionName);
     }
 
     /**
@@ -591,6 +580,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public void executeAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions,
                 boolean executeAsychronously)
     {
+        verifyActionAccessRestrictions(action);
+
         Set<String> actionChain = this.currentActionChain.get();
 
         // Like emails (see RuleServiceImpl), metadata extraction is now normally performed asynchronously.
@@ -607,6 +598,15 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             // Add to the post transaction pending action list
             addPostTransactionPendingAction(action, actionedUponNodeRef, checkConditions, actionChain);
         }
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.action.ActionService#verifyActionAccessRestrictions(Action action)
+     */
+    @Override
+    public void verifyActionAccessRestrictions(Action action) {
+        ActionExecuter actionExecuter = this.accessRestrictedActionExecuters.get(action.getActionDefinitionName());
+        actionExecuter.verifyActionAccessRestrictions(action);
     }
 
     private boolean isExecuteAsynchronously(Action action, NodeRef actionedUponNodeRef, boolean executeAsynchronously)
@@ -930,10 +930,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.repo.action.RuntimeActionService#registerActionAccessRestrictions(String, List<ActionAccessRestriction>)
+     * @see org.alfresco.repo.action.RuntimeActionService#registerAccessRestrictedActionExecuter(org.alfresco.repo.action.executer.ActionExecuter)
      */
-    public void registerActionAccessRestrictions(String actionDefinitionName, List<ActionAccessRestriction> actionAccessRestrictions) {
-        this.accessRestrictedActionCheck.put(actionDefinitionName, actionAccessRestrictions);
+    public void registerAccessRestrictedActionExecuter(ActionExecuter actionExecuter) {
+        this.accessRestrictedActionExecuters.put(actionExecuter.getActionDefinition().getName(), actionExecuter);
     }
 
     /**

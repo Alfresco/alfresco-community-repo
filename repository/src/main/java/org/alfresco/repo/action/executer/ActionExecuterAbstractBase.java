@@ -91,7 +91,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         }
 
         if (!this.actionAccessRestrictions.isEmpty()) {
-            this.runtimeActionService.registerActionAccessRestrictions(actionDefinition.getName(), new ArrayList<>(actionAccessRestrictions));
+            this.runtimeActionService.registerAccessRestrictedActionExecuter(this);
         }
     }
     
@@ -289,7 +289,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         if ( !nodeIsLockedForThisUser)
         {
             // Execute the implementation
-            verifyActionAccess(action);
+            verifyActionAccessRestrictions(action);
             executeImpl(action, actionedUponNodeRef);
         }
         else
@@ -303,8 +303,11 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         }
     }
 
-    private void verifyActionAccess(Action action) {
-        actionAccessRestrictions.forEach(ar -> ar.checkRunningActionAccess(action));
+    /**
+     * {@inheritDoc}
+     */
+    public void verifyActionAccessRestrictions(Action action) {
+        actionAccessRestrictions.forEach(ar -> ar.verifyAccessRestriction(action));
     }
     
     /**

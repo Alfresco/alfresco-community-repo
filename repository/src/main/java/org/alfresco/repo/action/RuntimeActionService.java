@@ -25,10 +25,8 @@
  */
 package org.alfresco.repo.action;
 
-import java.util.List;
 import java.util.Set;
 
-import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.service.cmr.action.Action;
@@ -65,12 +63,11 @@ public interface RuntimeActionService
     void registerActionExecuter(ActionExecuter actionExecuter);
 
     /**
-     * Register a restricted access action restrictions
+     * Register an executor containing restricted access
      *
-     * @param actionDefinitionName
-     * @param actionAccessRestrictions
+     * @param actionExecuter
      */
-    void registerActionAccessRestrictions(String actionDefinitionName, List<ActionAccessRestriction> actionAccessRestrictions);
+    void registerAccessRestrictedActionExecuter(ActionExecuter actionExecuter);
     
     /**
      * Register parameter constraint

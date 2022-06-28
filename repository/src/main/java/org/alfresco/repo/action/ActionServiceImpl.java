@@ -311,6 +311,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * @see org.alfresco.service.cmr.action.ActionService#getActionAccessRestrictions(String actionDefinitionName)
      */
     public List<ActionAccessRestriction> getActionAccessRestrictions(String actionDefinitionName) {
+        if (!this.accessRestrictedActionCheck.containsKey(actionDefinitionName)) {
+            return new ArrayList<>();
+        }
         return this.accessRestrictedActionCheck.get(actionDefinitionName);
     }
 

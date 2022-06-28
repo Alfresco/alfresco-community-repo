@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FormData;
@@ -164,6 +165,7 @@ public class ActionFormProcessor extends FilteredFormProcessor<ActionDefinition,
         final boolean isAsync = isAsynchronousActionRequest(item, data);
         
         // execute the action
+        ActionAccessRestriction.setActionContext(actionToExecute, ActionAccessRestriction.FORM_PROCESSOR_ACTION_CONTEXT);
         actionService.executeAction(actionToExecute, actionedUponNodeRef, true, isAsync);
         
         // extract the result

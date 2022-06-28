@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,6 +90,7 @@ public class ActionQueuePost extends AbstractRuleWebScript
             }
 
             // Execute action
+            ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.V0_ACTION_CONTEXT);
             actionService.executeAction(action, actionedUponNode, true, async);
 
             // Prepair model

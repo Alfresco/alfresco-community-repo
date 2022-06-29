@@ -580,8 +580,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public void executeAction(Action action, NodeRef actionedUponNodeRef, boolean checkConditions,
                 boolean executeAsychronously)
     {
-        verifyActionAccessRestrictions(action);
-
         Set<String> actionChain = this.currentActionChain.get();
 
         // Like emails (see RuleServiceImpl), metadata extraction is now normally performed asynchronously.
@@ -595,6 +593,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
         else
         {
+            verifyActionAccessRestrictions(action);
             // Add to the post transaction pending action list
             addPostTransactionPendingAction(action, actionedUponNodeRef, checkConditions, actionChain);
         }
@@ -605,8 +604,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      */
     @Override
     public void verifyActionAccessRestrictions(Action action) {
-        ActionExecuter actionExecuter = this.accessRestrictedActionExecuters.get(action.getActionDefinitionName());
-        actionExecuter.verifyActionAccessRestrictions(action);
+        String actionDefinitionName = action.getActionDefinitionName();
+        if (this.accessRestrictedActionExecuters.containsKey(actionDefinitionName)) {
+            ActionExecuter actionExecuter = this.accessRestrictedActionExecuters.get(actionDefinitionName);
+            actionExecuter.verifyActionAccessRestrictions(action);
+        }
     }
 
     private boolean isExecuteAsynchronously(Action action, NodeRef actionedUponNodeRef, boolean executeAsynchronously)

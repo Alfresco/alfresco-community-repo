@@ -286,8 +286,8 @@ public class ActionsImpl implements Actions
         {
             cmrAction = actionService.createAction(action.getActionDefinitionId());
         }
-        ActionAccessRestriction.setActionContext(cmrAction, ActionAccessRestriction.V1_ACTION_CONTEXT);
 
+        ActionAccessRestriction.setActionContext(cmrAction, ActionAccessRestriction.V1_ACTION_CONTEXT);
         actionService.executeAction(cmrAction, actionedUponNodeRef, true, true);
 
         // Create user result.

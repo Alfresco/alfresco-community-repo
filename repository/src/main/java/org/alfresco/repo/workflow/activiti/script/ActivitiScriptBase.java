@@ -151,46 +151,32 @@ public class ActivitiScriptBase
     }
 
     /**
-     * Adds the secure flag to the supplied model map
+     * Adds the secure flag to the supplied model map based on current {@link DeploymentEntity}
      *
      * @param model
      *            the model where secure flag will be injected
      */
     private void setSecure(Map<String, Object> model)
     {
+        DeploymentEntity de = null;
+
+        try
+        {
+            de = Context.getExecutionContext().getDeployment();
+        }
+        catch (Exception e)
+        {
+            // No action required
+        }
+
+        // If workflow is deployed at app server (extensions folder, jar/amp) the deployment entity name is filled in
+        // If workflow file is deployed in repo (e.g., data dictionary) the name is null
+        boolean isSecureDeploy = de != null && de.getName() != null;
+
         if (model != null)
         {
-            DelegateExecution dex = (DelegateExecution) model.get(EXECUTION_BINDING_NAME);
-            if (dex != null)
-            {
-                DeploymentEntity de = null;
-
-                try
-                {
-                    de = Context.getExecutionContext().getDeployment();
-                }
-                catch (Exception e)
-                {
-                    // No action required
-                }
-
-                model.put(ScriptProcessor.SECURE, isSecureDeploy(de));
-            }
+            model.put(ScriptProcessor.SECURE, isSecureDeploy);
         }
-    }
-
-    /**
-     * If {@link DeploymentEntity} name is filled in, the workflow file is deployed on application server, otherwise, it
-     * is uploaded at repo level.
-     *
-     * @param de
-     *            the deployment entity to check
-     *
-     * @return true if workflow is deployed at a secure location
-     */
-    private boolean isSecureDeploy(DeploymentEntity de)
-    {
-        return de != null && de.getName() != null;
     }
 
     /**

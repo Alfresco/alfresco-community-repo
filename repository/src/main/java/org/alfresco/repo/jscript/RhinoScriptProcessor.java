@@ -297,8 +297,8 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      * @param model
      *            the model containing the secure flag
      *
-     * @return true by default, i.e., if flag is not present in supplied model. If it is, returns false in case
-     *         execution should be performed in a sandbox, true otherwise.
+     * @return true by default, i.e., if flag is not present in supplied model. If it is, returns true or false
+     *         depending on whether the execution is secure or not
      */
     private boolean isSecure(Map<String, Object> model)
     {

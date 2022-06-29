@@ -113,7 +113,6 @@ public class BasicRulesIntegration extends BaseRMRestTest {
         rulesAPI.updateRule(getAdminUser().getUsername(), getAdminUser().getPassword(),
             NODE_PREFIX + Category.getId(), ruleDefinition.description("description").id(description));
 
-
         //Delete the root category and rules
         deleteRecordCategory(Category.getId());
         rulesAPI.deleteAllRulesOnContainer(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + Category.getId());

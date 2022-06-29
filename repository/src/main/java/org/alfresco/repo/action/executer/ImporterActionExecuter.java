@@ -64,6 +64,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.poi.openxml4j.util.ZipArchiveThresholdInputStream;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 
 /**
  * Importer action executor
@@ -199,7 +201,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                else if (MimetypeMap.MIMETYPE_ZIP.equals(reader.getMimetype()))
                {
                    // perform an import of a standard ZIP file
-                   ZipFile zipFile = null;
+                   ZipSecureFile zipSecureFile = null;
                    File tempFile = null;
                    try
                    {
@@ -220,7 +222,9 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                                encoding = null;
                            }
                        }
-                       zipFile = new ZipFile(tempFile, encoding, true);
+                       //zipFile = new ZipFile(tempFile, encoding, true);
+                       // TODO: Need to ensure encoding as above
+                       zipSecureFile = new ZipSecureFile(tempFile);
                        // build a temp dir name based on the ID of the noderef we are importing
                        // also use the long life temp folder as large ZIP files can take a while
                        File alfTempDir = TempFileProvider.getLongLifeTempDir("import");
@@ -229,7 +233,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        {
                            // TODO: improve this code to directly pipe the zip stream output into the repo objects - 
                            //       to remove the need to expand to the filesystem first?
-                           extractFile(zipFile, tempDir.getPath());
+                           extractFile(zipSecureFile, tempDir.getPath());
                            importDirectory(tempDir.getPath(), importDest);
                        }
                        finally
@@ -248,11 +252,11 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        {
                            tempFile.delete();
                        }
-                       if (zipFile != null)
+                       if (zipSecureFile != null)
                        {
                            try
                            {
-                               zipFile.close();
+                               zipSecureFile.close();
                            }
                            catch (IOException e)
                            {
@@ -345,8 +349,10 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
      * @param archive       The ZIP archive to extract
      * @param extractDir    The directory to extract into
      */
-    public static void extractFile(ZipFile archive, String extractDir)
+    public static void extractFile(ZipSecureFile archive, String extractDir)
     {
+
+
         String fileName;
         String destFileName;
         byte[] buffer = new byte[BUFFER_SIZE];
@@ -374,14 +380,15 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                         File parentFile = new File(parent);
                         if (!parentFile.exists()) parentFile.mkdirs();
                     }
-                    InputStream in = new BufferedInputStream(archive.getInputStream(entry), BUFFER_SIZE);
+                    //InputStream in = new BufferedInputStream(archive.getInputStream(entry), BUFFER_SIZE);
+                    ZipArchiveThresholdInputStream zin = archive.getInputStream(entry);
                     OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE);
                     int count;
-                    while ((count = in.read(buffer)) != -1)
+                    while ((count = zin.read(buffer)) != -1)
                     {
                         out.write(buffer, 0, count);
                     }
-                    in.close();
+                    zin.close();
                     out.close();
                 }
                 else

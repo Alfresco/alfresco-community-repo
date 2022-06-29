@@ -64,6 +64,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.utils.InputStreamStatistics;
 
 /**
  * Importer action executor
@@ -347,12 +348,20 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
      */
     public static void extractFile(ZipFile archive, String extractDir)
     {
+        extractFile(archive, extractDir, new ZipBombProtection(200));
+    }
+
+    private static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker)
+    {
         String fileName;
         String destFileName;
         byte[] buffer = new byte[BUFFER_SIZE];
         extractDir = extractDir + File.separator;
         try
         {
+            long totalCompressedBytesCount = 0;
+            long totalUncompressedBytesCount = 0;
+            tracker.reportProgress(0, 0);
             for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements();)
             {
                 ZipArchiveEntry entry = e.nextElement();
@@ -374,13 +383,20 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                         File parentFile = new File(parent);
                         if (!parentFile.exists()) parentFile.mkdirs();
                     }
-                    InputStream in = new BufferedInputStream(archive.getInputStream(entry), BUFFER_SIZE);
+                    //Better resource management needed to not leak unclosed streams in case of an exception
+                    final InputStream zis = archive.getInputStream(entry);
+                    final InputStreamStatistics entryStats = (InputStreamStatistics) zis;
+                    InputStream in = new BufferedInputStream(zis, BUFFER_SIZE);
                     OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE);
                     int count;
                     while ((count = in.read(buffer)) != -1)
                     {
+                        tracker.reportProgress(totalCompressedBytesCount + entryStats.getCompressedCount(), totalUncompressedBytesCount + entryStats.getUncompressedCount());
                         out.write(buffer, 0, count);
                     }
+                    totalCompressedBytesCount += entryStats.getCompressedCount();
+                    totalUncompressedBytesCount += entryStats.getUncompressedCount();
+
                     in.close();
                     out.close();
                 }
@@ -431,5 +447,36 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
             // delete provided directory
             dir.delete();
         }
+    }
+
+    private static class ZipBombProtection implements ExtractionProgressTracker
+    {
+        private final long rateThreshold;
+
+        private ZipBombProtection(long rateThreshold)
+        {
+            this.rateThreshold = rateThreshold;
+        }
+
+        @Override
+        public void reportProgress(long compressedBytesCount, long uncompressedBytesCount)
+        {
+            if (compressedBytesCount <= 0 || uncompressedBytesCount <= 0)
+            {
+                return;
+            }
+
+            long rate = uncompressedBytesCount / compressedBytesCount;
+
+            if (rate > rateThreshold)
+            {
+                throw new AlfrescoRuntimeException("Unexpected compression rate detected (" + rate + "%). Possible zip bomb attack. Breaking the extraction process.");
+            }
+        }
+    }
+
+    private interface ExtractionProgressTracker
+    {
+        void reportProgress(long compressedBytesCount, long uncompressedBytesCount);
     }
 }

@@ -451,11 +451,11 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 
     private static class ZipBombProtection implements ExtractionProgressTracker
     {
-        private final long rateThreshold;
+        private final long ratioThreshold;
 
-        private ZipBombProtection(long rateThreshold)
+        private ZipBombProtection(long ratioThreshold)
         {
-            this.rateThreshold = rateThreshold;
+            this.ratioThreshold = ratioThreshold;
         }
 
         @Override
@@ -466,11 +466,11 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                 return;
             }
 
-            long rate = uncompressedBytesCount / compressedBytesCount;
+            long ratio = uncompressedBytesCount / compressedBytesCount;
 
-            if (rate > rateThreshold)
+            if (ratio > ratioThreshold)
             {
-                throw new AlfrescoRuntimeException("Unexpected compression rate detected (" + rate + "%). Possible zip bomb attack. Breaking the extraction process.");
+                throw new AlfrescoRuntimeException("Unexpected compression ratio detected (" + ratio * 100 + "%). Possible zip bomb attack. Breaking the extraction process.");
             }
         }
     }

@@ -283,12 +283,44 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 Context.exit();
             }
-            return executeScriptImpl(script, model, true, "string script");
+            return executeScriptImpl(script, model, isSecure(model), "string script");
         }
         catch (Throwable err)
         {
             throw new ScriptException("Failed to execute supplied script: " + err.getMessage(), err);
         }
+    }
+
+    /**
+     * Checks if the supplied model has the secure flag.
+     *
+     * @param model
+     *            the model containing the secure flag
+     *
+     * @return true by default, i.e., if flag is not present in supplied model. If it is, returns false in case
+     *         execution should be performed in a sandbox, true otherwise.
+     */
+    private boolean isSecure(Map<String, Object> model)
+    {
+        boolean secure = true;
+
+        if (model != null && model.containsKey(SECURE))
+        {
+            try
+            {
+                secure = (boolean) model.get(SECURE);
+            }
+            catch (Exception e)
+            {
+                // No action required
+            }
+            finally
+            {
+                model.remove(SECURE);
+            }
+        }
+
+        return secure;
     }
 
     /**

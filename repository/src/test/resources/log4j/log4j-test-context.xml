@@ -8,8 +8,8 @@
         <property name="extraLog4jUrls">
             <list>
                 <!-- Uses 'test-resources' folder, which is on the classpath -->
-                <value>classpath*:log4j/custom-log4j.properties</value>
-                <value>classpath*:log4j/log4j.properties</value>
+                <value>classpath*:log4j/custom-log4j2.properties</value>
+                <value>classpath*:log4j/log4j2.properties</value>
             </list>
         </property>
     </bean>

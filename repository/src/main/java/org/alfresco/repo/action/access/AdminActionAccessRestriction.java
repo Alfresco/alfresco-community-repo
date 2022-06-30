@@ -26,83 +26,27 @@
 
 package org.alfresco.repo.action.access;
 
-import org.alfresco.repo.action.ActionModel;
-import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 
-import java.util.List;
-
-public class AdminActionAccessRestriction implements ActionAccessRestriction {
+public class AdminActionAccessRestriction extends ActionAccessRestrictionAbstractBase {
 
     private AuthorityService authorityService;
-    private NodeService nodeService;
-
-    private static final List<String> CONTROLLED_ACTION_ACCESS_CONTEXT =
-            List.of(ActionAccessRestriction.RULE_ACTION_CONTEXT, ActionAccessRestriction.FORM_PROCESSOR_ACTION_CONTEXT,
-                    ActionAccessRestriction.V0_ACTION_CONTEXT, ActionAccessRestriction.V1_ACTION_CONTEXT);
 
     public void setAuthorityService(AuthorityService authorityService) {
         this.authorityService = authorityService;
     }
 
-    public void setNodeService(NodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
     /**
-     * {@inheritDoc}
-     */
-    public void verifyAccessRestriction(Action action) {
-        if (isActionFromControlledContext(action) && !isActionCausedByRule(action)) {
-            boolean isAdminOrSystemUser = authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser();
-            if (!isAdminOrSystemUser) {
-                throw new ActionAccessException("Only admin or system user is allowed to define uses of/directly execute this action");
-            }
-        }
-    }
-
-    private boolean isActionFromControlledContext(Action action) {
-        String actionContext = ActionAccessRestriction.getActionContext(action);
-        return actionContext != null && CONTROLLED_ACTION_ACCESS_CONTEXT.contains(actionContext);
-    }
-
-    /**
-     * Checks the hierarchy of primary parents of action node ref to look for Rule node ref
-     * Finding it means that the action was triggered by an existing rule, which are deemed secure.
-     * Direct parent can be a composite action, if that's the case then we need to look for a parent 1 level higher
+     * Only admin can run action access restriction
      *
      * @param action
-     * @return
      */
-    private boolean isActionCausedByRule(Action action) {
-        if (action.getNodeRef() == null) {
-            return false;
+    protected void innerVerifyAccessRestriction(Action action) {
+        boolean isAdminOrSystemUser = authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser();
+        if (!isAdminOrSystemUser) {
+            throw new ActionAccessException("Only admin or system user is allowed to define uses of/directly execute this action");
         }
-
-        NodeRef ruleParent = getPotentialRuleParent(action.getNodeRef());
-        return isRule(ruleParent);
-    }
-
-    private NodeRef getPotentialRuleParent(NodeRef nodeRef) {
-        NodeRef parentNode = nodeService.getPrimaryParent(nodeRef).getParentRef();
-
-        while (isCompositeAction(parentNode))
-        {
-            parentNode = nodeService.getPrimaryParent(parentNode).getParentRef();
-        }
-
-        return parentNode;
-    }
-
-    private boolean isCompositeAction(NodeRef nodeRef) {
-        return ActionModel.TYPE_COMPOSITE_ACTION.equals(nodeService.getType(nodeRef));
-    }
-
-    private boolean isRule(NodeRef nodeRef) {
-        return RuleModel.TYPE_RULE.equals(nodeService.getType(nodeRef));
     }
 }

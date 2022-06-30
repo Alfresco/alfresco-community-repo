@@ -169,8 +169,8 @@ public class ActivitiScriptBase
             // No action required
         }
 
-        // If workflow is deployed at app server (extensions folder, jar/amp) the deployment entity name is filled in
-        // If workflow file is deployed in repo (e.g., data dictionary) the name is null
+        // If workflow is deployed at app server the deployment entity name is filled in with filename
+        // If workflow is deployed in repo (e.g., data dictionary) the name is null
         boolean isSecureDeploy = de != null && de.getName() != null;
 
         if (model != null)

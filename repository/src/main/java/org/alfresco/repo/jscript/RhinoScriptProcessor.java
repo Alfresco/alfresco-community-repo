@@ -302,7 +302,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      */
     private boolean isSecure(Map<String, Object> model)
     {
-        boolean secure = true;
+        boolean secure = false;
 
         if (model != null && model.containsKey(SECURE))
         {

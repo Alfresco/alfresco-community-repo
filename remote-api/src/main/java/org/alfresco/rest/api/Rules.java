@@ -31,7 +31,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 
 /**
- * Folder node's rules API.
+ * Folder node rules API.
  *
  * @author krdabrowski
  */

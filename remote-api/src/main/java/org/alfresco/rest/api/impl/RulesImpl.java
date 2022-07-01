@@ -56,7 +56,7 @@ public class RulesImpl implements Rules
 
         final Set<QName> folders = new HashSet<>(List.of(ContentModel.TYPE_FOLDER));
         if (!nodes.nodeMatches(nodeRef, folders, null)) {
-            throw new InvalidArgumentException("NodeId of a folder is expected");
+            throw new InvalidArgumentException("NodeId of a folder is expected!");
         }
 
         final List<org.alfresco.service.cmr.rule.Rule> rulesModels = ruleService.getRules(nodeRef);

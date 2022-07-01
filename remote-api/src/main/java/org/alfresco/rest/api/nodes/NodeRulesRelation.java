@@ -45,7 +45,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author krdabrowski
  */
-@RelationshipResource(name = "rules", entityResource = NodesEntityResource.class, title = "Folder node's rules")
+@RelationshipResource(name = "rules", entityResource = NodesEntityResource.class, title = "Folder node rules")
 public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, InitializingBean
 {
 
@@ -58,14 +58,14 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     }
 
     /**
-     * Returns a paged list of folder node's rules for given node's ID
+     * Returns a paged list of folder node rules for given node's ID
      *
      * @param nodeId - entity resource context for this relationship
      * @param parameters - will never be null and will have the PAGING default values
      * @return a paged list of folder rules
      */
     @WebApiDescription(
-        title = "Get folder node's rules",
+        title = "Get folder node rules",
         description = "Returns a paged list of folder rules for given node's ID",
         successStatus = HttpServletResponse.SC_OK
     )

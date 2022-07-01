@@ -96,10 +96,8 @@ public class ListPagesTest extends TestCase
     @Test
     public void testCreatePageForNullList()
     {
-        final Paging paging = Paging.DEFAULT;
-
         // when
-        final CollectionWithPagingInfo<Object> page = ListPages.createPage(null, paging);
+        final CollectionWithPagingInfo<Object> page = ListPages.createPage(null, Paging.DEFAULT);
 
         assertThat(page)
                 .isNotNull()

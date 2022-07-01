@@ -36,6 +36,10 @@ public class Rule
     private String name;
 
     public static Rule of(final org.alfresco.service.cmr.rule.Rule ruleModel) {
+        if (ruleModel == null) {
+            return null;
+        }
+
         final Rule rule = new Rule();
         rule.id = ruleModel.getNodeRef().getId();
         rule.name = ruleModel.getTitle();

@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.action;
 
 import java.util.Map;
 
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.springframework.extensions.webscripts.Cache;
@@ -58,6 +59,7 @@ public abstract class AbstractExecuteActionWebscript extends AbstractActionWebsc
            
            // Ask for it to be run in the background
            // It will be available to execute once the webscript finishes
+           ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.V0_ACTION_CONTEXT);
            actionService.executeAction(
                  action, null, 
                  false, true

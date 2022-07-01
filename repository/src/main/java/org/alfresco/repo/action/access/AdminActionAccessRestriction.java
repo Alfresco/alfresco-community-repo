@@ -46,7 +46,8 @@ public class AdminActionAccessRestriction extends ActionAccessRestrictionAbstrac
     protected void innerVerifyAccessRestriction(Action action) {
         boolean isAdminOrSystemUser = authorityService.hasAdminAuthority() || AuthenticationUtil.isRunAsUserTheSystemUser();
         if (!isAdminOrSystemUser) {
-            throw new ActionAccessException("Only admin or system user is allowed to define uses of/directly execute this action");
+            throw new ActionAccessException("Only admin or system user is allowed to define uses of " +
+                    "or directly execute this action");
         }
     }
 }

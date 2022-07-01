@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -81,9 +81,11 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private static final int BUFFER_SIZE = 16384;
     private static final String TEMP_FILE_PREFIX = "alf";
     private static final String TEMP_FILE_SUFFIX_ACP = ".acp";
-    
+
+    private static long ratioThreshold;
+    private static long uncompressedBytesLimit = -1L;
     private boolean highByteZip = false;
-    
+
     /**
      * The importer service
      */
@@ -158,6 +160,36 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     public void setHighByteZip(boolean highByteZip)
     {
        this.highByteZip = highByteZip;
+    }
+
+    /**
+     * @param ratioThreshold the compression ratio threshold for Zip bomb detection
+     */
+    public void setRatioThreshold(long ratioThreshold)
+    {
+        this.ratioThreshold = ratioThreshold;
+    }
+
+    /**
+     * This method sets a value for the uncompressed bytes limit. If the string does not {@link Long#parseLong(String) parse} to a
+     * java long.
+     *
+     * @param limit a String representing a valid Java long.
+     */
+    public void setUncompressedBytesLimit(String limit)
+    {
+        // A string parameter is used here in order to not to require end users to provide a value for the limit in a property
+        // file. This results in the empty string being injected to this method.
+        long longLimit = -1L;
+        try
+        {
+            longLimit = Long.parseLong(limit);
+        }
+        catch (NumberFormatException ignored)
+        {
+            // Intentionally empty
+        }
+        this.uncompressedBytesLimit = longLimit;
     }
 
     /**
@@ -348,7 +380,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
      */
     public static void extractFile(ZipFile archive, String extractDir)
     {
-        extractFile(archive, extractDir, new ZipBombProtection(200));
+        extractFile(archive, extractDir, new ZipBombProtection(ratioThreshold));
     }
 
     private static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker)
@@ -383,22 +415,21 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                         File parentFile = new File(parent);
                         if (!parentFile.exists()) parentFile.mkdirs();
                     }
-                    //Better resource management needed to not leak unclosed streams in case of an exception
-                    final InputStream zis = archive.getInputStream(entry);
-                    final InputStreamStatistics entryStats = (InputStreamStatistics) zis;
-                    InputStream in = new BufferedInputStream(zis, BUFFER_SIZE);
-                    OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE);
-                    int count;
-                    while ((count = in.read(buffer)) != -1)
-                    {
-                        tracker.reportProgress(totalCompressedBytesCount + entryStats.getCompressedCount(), totalUncompressedBytesCount + entryStats.getUncompressedCount());
-                        out.write(buffer, 0, count);
-                    }
-                    totalCompressedBytesCount += entryStats.getCompressedCount();
-                    totalUncompressedBytesCount += entryStats.getUncompressedCount();
 
-                    in.close();
-                    out.close();
+                    try (InputStream zis = archive.getInputStream(entry);
+                         InputStream in = new BufferedInputStream(zis, BUFFER_SIZE);
+                         OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE))
+                    {
+                        final InputStreamStatistics entryStats = (InputStreamStatistics) zis;
+                        int count;
+                        while ((count = in.read(buffer)) != -1)
+                        {
+                            tracker.reportProgress(totalCompressedBytesCount + entryStats.getCompressedCount(), totalUncompressedBytesCount + entryStats.getUncompressedCount());
+                            out.write(buffer, 0, count);
+                        }
+                        totalCompressedBytesCount += entryStats.getCompressedCount();
+                        totalUncompressedBytesCount += entryStats.getUncompressedCount();
+                    }
                 }
                 else
                 {
@@ -470,7 +501,12 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 
             if (ratio > ratioThreshold)
             {
-                throw new AlfrescoRuntimeException("Unexpected compression ratio detected (" + ratio * 100 + "%). Possible zip bomb attack. Breaking the extraction process.");
+                throw new AlfrescoRuntimeException("Unexpected compression ratio detected (" + ratio + "%). Possible zip bomb attack. Breaking the extraction process.");
+            }
+
+            if (uncompressedBytesLimit > 0 && uncompressedBytesCount > uncompressedBytesLimit)
+            {
+                throw new AlfrescoRuntimeException("Uncompressed bytes limit exceeded (" + uncompressedBytesCount + "). Possible zip bomb attack. Breaking the extraction process.");
             }
         }
     }

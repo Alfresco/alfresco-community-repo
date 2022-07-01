@@ -51,11 +51,6 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
 
     private Rules rules;
 
-    public void setRules(Rules rules)
-    {
-        this.rules = rules;
-    }
-
     @Override
     public void afterPropertiesSet() throws Exception
     {
@@ -78,5 +73,10 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     public CollectionWithPagingInfo<Rule> readAll(String nodeId, Parameters parameters)
     {
         return rules.getRules(nodeId, parameters.getPaging());
+    }
+
+    public void setRules(Rules rules)
+    {
+        this.rules = rules;
     }
 }

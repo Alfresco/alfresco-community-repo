@@ -856,12 +856,8 @@
     </bean>
 
     <bean id="Rules" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.rest.api.Rules</value>
-        </property>
-        <property name="target">
-            <ref bean="rules" />
-        </property>
+        <property name="proxyInterfaces" value="org.alfresco.rest.api.Rules"/>
+        <property name="target" ref="rules"/>
         <property name="interceptorNames">
             <list>
                 <idref bean="legacyExceptionInterceptor" />

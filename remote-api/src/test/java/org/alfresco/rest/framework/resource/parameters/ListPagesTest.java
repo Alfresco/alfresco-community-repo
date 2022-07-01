@@ -109,8 +109,8 @@ public class ListPagesTest extends TestCase
                 .isEqualTo(true);
     }
 
-    private static <T> List<T> randomListOf(final int min, final int max, final Class<T> clazz) {
-        return createListOf(new Random().nextInt((max - min) + 1) + min, clazz);
+    private static <T> List<T> randomListOf(final int minSize, final int maxSize, final Class<T> clazz) {
+        return createListOf(new Random().nextInt((maxSize - minSize) + 1) + minSize, clazz);
     }
 
     private static <T> List<T> createListOf(final int size, final Class<T> clazz) {

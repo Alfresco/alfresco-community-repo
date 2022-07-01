@@ -65,4 +65,14 @@ public class RulesImpl implements Rules
 
         return ListPages.createPage(rules, paging);
     }
+
+    public void setNodes(Nodes nodes)
+    {
+        this.nodes = nodes;
+    }
+
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
 }

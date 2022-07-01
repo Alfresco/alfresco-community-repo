@@ -63,7 +63,7 @@ public class RulesImpl implements Rules
 
         final List<org.alfresco.service.cmr.rule.Rule> rulesModels = ruleService.getRules(nodeRef);
         final List<Rule> rules = new ArrayList<>(rulesModels.size());
-        rulesModels.forEach(ruleModel -> rules.add(new Rule(ruleModel)));
+        rulesModels.forEach(ruleModel -> rules.add(Rule.of(ruleModel)));
 
         return ListPages.createPage(rules, paging);
     }

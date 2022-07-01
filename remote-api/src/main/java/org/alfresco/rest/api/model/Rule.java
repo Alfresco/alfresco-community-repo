@@ -32,15 +32,16 @@ import org.alfresco.service.Experimental;
 @Experimental
 public class Rule
 {
-    public Rule() {}
-
-    public Rule(final org.alfresco.service.cmr.rule.Rule ruleModel)
-    {
-        mapProperties(ruleModel);
-    }
-
     private String id;
     private String name;
+
+    public static Rule of(final org.alfresco.service.cmr.rule.Rule ruleModel) {
+        final Rule rule = new Rule();
+        rule.id = ruleModel.getNodeRef().getId();
+        rule.name = ruleModel.getTitle();
+
+        return rule;
+    }
 
     @UniqueId
     public String getId()
@@ -61,10 +62,5 @@ public class Rule
     public void setName(String name)
     {
         this.name = name;
-    }
-
-    private void mapProperties(final org.alfresco.service.cmr.rule.Rule ruleModel) {
-        this.id = ruleModel.getNodeRef().getId();
-        this.name = ruleModel.getTitle();
     }
 }

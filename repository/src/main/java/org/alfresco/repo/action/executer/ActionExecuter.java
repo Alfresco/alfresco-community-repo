@@ -82,7 +82,9 @@ public interface ActionExecuter
      *
      * @param action
      */
-    void verifyActionAccessRestrictions(Action action);
+    default void verifyActionAccessRestrictions(Action action){
+        //Will be extended by ActionExecutor implementation, to provide security if needed
+    };
     
     /**
      * Execute the action executer

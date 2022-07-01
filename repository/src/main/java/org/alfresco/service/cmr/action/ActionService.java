@@ -157,13 +157,6 @@ public interface ActionService
    CompositeActionCondition createCompositeActionCondition();
 
     /**
-     * Verify users access to an action with restrictions
-     *
-     * @param action
-     */
-    void verifyActionAccessRestrictions(Action action);
-
-    /**
      * The actions conditions are always checked.
      * 
      * @see ActionService#executeAction(Action, NodeRef, boolean)

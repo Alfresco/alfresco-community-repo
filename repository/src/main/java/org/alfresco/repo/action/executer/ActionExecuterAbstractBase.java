@@ -89,10 +89,6 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
         {
             this.runtimeActionService.registerActionExecuter(this);
         }
-
-        if (!this.actionAccessRestrictions.isEmpty()) {
-            this.runtimeActionService.registerAccessRestrictedActionExecuter(this);
-        }
     }
     
     public void setMlAwareNodeService(NodeService mlAwareNodeService)
@@ -137,6 +133,10 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
      */
     public void setActionAccessRestrictions(List<ActionAccessRestriction> actionAccessRestrictions) {
         this.actionAccessRestrictions = actionAccessRestrictions;
+    }
+
+    public List<ActionAccessRestriction> getActionAccessRestrictions() {
+        return actionAccessRestrictions;
     }
 
     /**

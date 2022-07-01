@@ -61,13 +61,6 @@ public interface RuntimeActionService
      * @param actionExecuter    action executer
      */
     void registerActionExecuter(ActionExecuter actionExecuter);
-
-    /**
-     * Register an executor containing restricted access
-     *
-     * @param actionExecuter
-     */
-    void registerAccessRestrictedActionExecuter(ActionExecuter actionExecuter);
     
     /**
      * Register parameter constraint
@@ -102,6 +95,13 @@ public interface RuntimeActionService
      * @param action        the action 
      */
     void saveActionImpl(NodeRef actionNodeRef, Action action);
+
+    /**
+     * Verify users access to an action with restrictions
+     *
+     * @param action
+     */
+    void verifyActionAccessRestrictions(Action action);
     
     /**
      * Perform low-level action execution

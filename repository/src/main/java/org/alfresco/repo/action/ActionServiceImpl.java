@@ -144,7 +144,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Action access restricted executers
      */
-    private Map<String, ActionExecuter> accessRestrictedActionExecuters = new HashMap<>();
+    private Map<String, ActionExecuter> actionExecuters = new HashMap<>();
 
     /**
      * All the parameter constraints
@@ -599,18 +599,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
     }
 
-    /**
-     * @see org.alfresco.service.cmr.action.ActionService#verifyActionAccessRestrictions(Action action)
-     */
-    @Override
-    public void verifyActionAccessRestrictions(Action action) {
-        String actionDefinitionName = action.getActionDefinitionName();
-        if (this.accessRestrictedActionExecuters.containsKey(actionDefinitionName)) {
-            ActionExecuter actionExecuter = this.accessRestrictedActionExecuters.get(actionDefinitionName);
-            actionExecuter.verifyActionAccessRestrictions(action);
-        }
-    }
-
     private boolean isExecuteAsynchronously(Action action, NodeRef actionedUponNodeRef, boolean executeAsynchronously)
     {
         if (executeAsynchronously == false)
@@ -633,6 +621,23 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             }
         }
         return executeAsynchronously;
+    }
+
+    /**
+     * @see RuntimeActionService#verifyActionAccessRestrictions(Action action)
+     */
+    @Override
+    public void verifyActionAccessRestrictions(Action action) {
+        getActionExecuter(action.getActionDefinitionName())
+                .verifyActionAccessRestrictions(action);
+    }
+
+    private ActionExecuter getActionExecuter(String actionDefName) {
+        if (!actionExecuters.containsKey(actionDefName)) {
+            actionExecuters.put(actionDefName, (ActionExecuter) applicationContext.getBean(actionDefName));
+        }
+
+        return actionExecuters.get(actionDefName);
     }
 
     /**
@@ -929,13 +934,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     {
         ActionDefinition action = actionExecuter.getActionDefinition();
         this.actionDefinitions.put(action.getName(), action);
-    }
-
-    /**
-     * @see org.alfresco.repo.action.RuntimeActionService#registerAccessRestrictedActionExecuter(org.alfresco.repo.action.executer.ActionExecuter)
-     */
-    public void registerAccessRestrictedActionExecuter(ActionExecuter actionExecuter) {
-        this.accessRestrictedActionExecuters.put(actionExecuter.getActionDefinition().getName(), actionExecuter);
     }
 
     /**

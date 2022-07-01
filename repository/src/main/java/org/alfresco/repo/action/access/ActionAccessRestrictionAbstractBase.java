@@ -32,17 +32,17 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class ActionAccessRestrictionAbstractBase implements ActionAccessRestriction {
 
-    private static final List<String> CONTROLLED_ACTION_ACCESS_CONTEXT =
-            List.of(ActionAccessRestriction.RULE_ACTION_CONTEXT, ActionAccessRestriction.FORM_PROCESSOR_ACTION_CONTEXT,
+    private static final Set<String> CONTROLLED_ACTION_ACCESS_CONTEXT =
+            Set.of(ActionAccessRestriction.RULE_ACTION_CONTEXT, ActionAccessRestriction.FORM_PROCESSOR_ACTION_CONTEXT,
                     ActionAccessRestriction.V0_ACTION_CONTEXT, ActionAccessRestriction.V1_ACTION_CONTEXT);
 
     protected NodeService nodeService;
@@ -73,9 +73,6 @@ public abstract class ActionAccessRestrictionAbstractBase implements ActionAcces
 
     private boolean isActionExposed(Action action) {
         return !isActionFromControlledContext(action) || isExposedInConfig(action).orElse(Boolean.FALSE);
-        //TODO consider idea of action from not controlled contexts but restricted in config
-        //e.g. new, custom customer action context
-        //I don't think it has that much merit though
     }
 
     private boolean isActionFromControlledContext(Action action) {

@@ -27,7 +27,9 @@
 package org.alfresco.rest.api.model;
 
 import org.alfresco.rest.framework.resource.UniqueId;
+import org.alfresco.service.Experimental;
 
+@Experimental
 public class Rule
 {
     public Rule() {}

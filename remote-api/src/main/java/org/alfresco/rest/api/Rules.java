@@ -29,12 +29,14 @@ package org.alfresco.rest.api;
 import org.alfresco.rest.api.model.Rule;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.service.Experimental;
 
 /**
  * Folder node rules API.
  *
  * @author krdabrowski
  */
+@Experimental
 public interface Rules
 {
     /**

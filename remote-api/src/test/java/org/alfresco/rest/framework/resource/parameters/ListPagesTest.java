@@ -27,6 +27,7 @@
 package org.alfresco.rest.framework.resource.parameters;
 
 import junit.framework.TestCase;
+import org.alfresco.service.Experimental;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -40,6 +41,7 @@ import java.util.Random;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+@Experimental
 @RunWith(MockitoJUnitRunner.class)
 public class ListPagesTest extends TestCase
 {

@@ -31,6 +31,7 @@ import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.service.Experimental;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +43,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.then;
 
+@Experimental
 @RunWith(MockitoJUnitRunner.class)
 public class NodeRulesRelationTest extends TestCase
 {

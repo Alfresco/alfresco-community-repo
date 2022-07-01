@@ -31,11 +31,13 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.rest.api.impl.Util;
 import org.alfresco.rest.api.search.context.SearchContext;
+import org.alfresco.service.Experimental;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+@Experimental
 public class ListPages<T> extends CollectionWithPagingInfo<T>
 {
     /**

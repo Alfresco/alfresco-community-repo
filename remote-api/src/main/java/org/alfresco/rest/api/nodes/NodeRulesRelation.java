@@ -33,6 +33,7 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -45,6 +46,7 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author krdabrowski
  */
+@Experimental
 @RelationshipResource(name = "rules", entityResource = NodesEntityResource.class, title = "Folder node rules")
 public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, InitializingBean
 {

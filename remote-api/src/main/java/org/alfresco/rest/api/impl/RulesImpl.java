@@ -31,18 +31,18 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.Rule;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.resource.parameters.ListPages;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.ListPages;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Experimental
 public class RulesImpl implements Rules
@@ -62,8 +62,7 @@ public class RulesImpl implements Rules
         }
 
         final List<org.alfresco.service.cmr.rule.Rule> rulesModels = ruleService.getRules(nodeRef);
-        final List<Rule> rules = new ArrayList<>(rulesModels.size());
-        rulesModels.forEach(ruleModel -> rules.add(Rule.of(ruleModel)));
+        final List<Rule> rules = rulesModels.stream().map(Rule::of).collect(Collectors.toList());
 
         return ListPages.createPage(rules, paging);
     }

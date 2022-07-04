@@ -441,16 +441,13 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     protected void checkRule(Rule rule)
     {
         List<Action> actions = ((CompositeActionImpl) rule.getAction()).getActions();
-
-        checkRestrictedAccessActions(actions);
+        applyActionContext(actions);
         checkRuleOutboundHasNoCheckOutAction(rule, actions);
     }
 
-    private void checkRestrictedAccessActions(List<Action> actions) {
-        for (Action action : actions) {
-            ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.RULE_ACTION_CONTEXT);
-            runtimeActionService.verifyActionAccessRestrictions(action);
-        }
+    private void applyActionContext(List<Action> actions) {
+        actions.stream()
+                .forEach(a -> ActionAccessRestriction.setActionContext(a, ActionAccessRestriction.RULE_ACTION_CONTEXT));
     }
 
     private void checkRuleOutboundHasNoCheckOutAction(Rule rule, List<Action> actions) {

@@ -863,6 +863,8 @@ public class RuleServiceImpl
         {
             throw new RuleServiceException("An action must be specified when defining a rule.");
         }
+
+        checkRestrictedAccessAction(action);
         
         // Get the current action node reference
         NodeRef actionNodeRef = null;
@@ -892,6 +894,10 @@ public class RuleServiceImpl
         // Update the action node
         this.runtimeActionService.saveActionImpl(actionNodeRef, action);
             
+    }
+
+    private void checkRestrictedAccessAction(Action action) {
+        this.runtimeActionService.verifyActionAccessRestrictions(action);
     }
     
     @Override

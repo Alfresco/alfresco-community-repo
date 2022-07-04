@@ -61,6 +61,15 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public void verifyActionAccessRestrictions(Action action) {
+        for (Action subAction : ((CompositeAction)action).getActions()) {
+            this.actionService.verifyActionAccessRestrictions(subAction);
+        }
+    }
+
+    /**
      * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
     public void executeImpl(Action action, NodeRef actionedUponNodeRef)

@@ -25,7 +25,6 @@
  * #L%
  */
 package org.alfresco.rest.rm.community.smoke;
-
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
@@ -37,8 +36,6 @@ import org.alfresco.rest.v0.RulesAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
-
-
 import java.util.Collections;
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
@@ -46,7 +43,6 @@ import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.*;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.*;
-import static org.testng.Assert.assertEquals;
 
 public class BasicRulesIntegrationTests extends BaseRMRestTest {
 
@@ -93,15 +89,19 @@ public class BasicRulesIntegrationTests extends BaseRMRestTest {
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder1);
         assertStatusCode(CREATED);
 
-       /* // Update the rules for record Category
+        // Update the rules for record Category
         rulesAPI.updateRule(getAdminUser().getUsername(), getAdminUser().getPassword(),
             NODE_PREFIX + Category.getId(), ruleDefinition.description("description").id(description));
-*/
+
+
         //Delete the root category and rules
         deleteRecordCategory(Category.getId());
         rulesAPI.deleteAllRulesOnContainer(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + Category.getId());
 
     }
+
+
+
 
 
 }

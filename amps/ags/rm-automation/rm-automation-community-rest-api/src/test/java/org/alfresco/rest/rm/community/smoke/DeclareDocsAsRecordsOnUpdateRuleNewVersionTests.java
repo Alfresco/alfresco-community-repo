@@ -103,7 +103,7 @@ public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestT
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
         assertStatusCode(CREATED);
 
-        // verify the declared record is in Unfiled Records folder
+        // verify the declared record is in Unfilled Records folder
         UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
         List<UnfiledContainerChildEntry> matchingRecords = unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
             .getEntries()

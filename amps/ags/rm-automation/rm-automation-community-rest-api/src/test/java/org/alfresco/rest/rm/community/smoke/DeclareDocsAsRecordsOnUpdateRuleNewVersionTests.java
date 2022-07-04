@@ -56,7 +56,6 @@ import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.apache.chemistry.opencmis.client.util.FileUtils.createFolder;
 import static org.springframework.http.HttpStatus.CREATED;
 
 public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestTest {

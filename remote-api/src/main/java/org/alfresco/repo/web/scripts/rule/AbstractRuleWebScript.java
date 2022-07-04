@@ -87,8 +87,6 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     protected FileFolderService fileFolderService;
     protected NamespaceService namespaceService;
 
-    private RuntimeActionService runtimeActionService;
-
     /**
      * Sets the node service instance
      * 
@@ -147,10 +145,6 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
-    }
-
-    public void setRuntimeActionService(RuntimeActionService runtimeActionService) {
-        this.runtimeActionService = runtimeActionService;
     }
 
     /**

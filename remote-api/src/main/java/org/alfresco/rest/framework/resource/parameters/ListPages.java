@@ -62,9 +62,8 @@ public class ListPages<T> extends CollectionWithPagingInfo<T>
      * @param paging - Paging request info
      * @return ListPages which extends {@link CollectionWithPagingInfo}
      * @param <T> List element type
-     * @param <L> List type
      */
-    public static <T, L extends List<T>> ListPages<T> createPage(final L list, final Paging paging)
+    public static <T> ListPages<T> createPage(final List<T> list, final Paging paging)
     {
         if (list == null) {
             return new ListPages<>(Collections.emptyList(), paging, false, 0, null, null);

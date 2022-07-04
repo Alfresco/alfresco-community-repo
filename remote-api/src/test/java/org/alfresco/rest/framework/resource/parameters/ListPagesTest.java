@@ -79,7 +79,8 @@ public class ListPagesTest extends TestCase
     }
 
     @Test
-    public void testCreatePageForBiggerOffsetThanListSize() {
+    public void testCreatePageForBiggerOffsetThanListSize()
+    {
         final int offset = 10;
         final List<Object> list = createListOf(8, Object.class);
         final Paging paging = Paging.valueOf(offset, 5);

@@ -64,14 +64,18 @@ public abstract class ActionAccessRestrictionAbstractBase implements ActionAcces
      * @param action
      */
     public void verifyAccessRestriction(Action action) {
-        if (isActionExposed(action) || isActionCausedByRule(action)) {
+        if (blockAccessRestriction(action)) {
             return;
         }
 
         innerVerifyAccessRestriction(action);
     }
 
-    private boolean isActionExposed(Action action) {
+    protected boolean blockAccessRestriction(Action action) {
+        return isActionExposed(action) || isActionCausedByRule(action);
+    }
+
+    protected boolean isActionExposed(Action action) {
         return !isActionFromControlledContext(action) || isExposedInConfig(action).orElse(Boolean.FALSE);
     }
 
@@ -117,7 +121,7 @@ public abstract class ActionAccessRestrictionAbstractBase implements ActionAcces
      * @param action
      * @return
      */
-    private boolean isActionCausedByRule(Action action) {
+    protected boolean isActionCausedByRule(Action action) {
         if (action.getNodeRef() == null) {
             return false;
         }

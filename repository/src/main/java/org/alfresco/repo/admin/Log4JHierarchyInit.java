@@ -120,10 +120,14 @@ public class Log4JHierarchyInit implements ApplicationContextAware
                 importLogSettings(url, mainProperties);
             }
 
-            //implementation needed
-            PropertiesConfiguration propertiesConfiguration = new PropertiesConfigurationBuilder().setRootProperties(
-                    mainProperties).build();
-            ((LoggerContext) LogManager.getContext()).reconfigure(propertiesConfiguration);
+            PropertiesConfiguration propertiesConfiguration = new PropertiesConfigurationBuilder()
+                    .setConfigurationSource(null)
+                    .setRootProperties(mainProperties)
+                    .setLoggerContext((LoggerContext) LogManager.getContext(false))
+                    .build();
+
+            propertiesConfiguration.initialize();
+            ((LoggerContext) LogManager.getContext(false)).reconfigure(propertiesConfiguration);
         }
         catch (Throwable t)
         {

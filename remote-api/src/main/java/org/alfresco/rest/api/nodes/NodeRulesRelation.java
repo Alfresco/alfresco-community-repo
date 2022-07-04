@@ -42,8 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Folder node's rules.
  *
- * - GET /nodes/{nodeId}/rules
- *
  * @author krdabrowski
  */
 @Experimental
@@ -61,6 +59,8 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
 
     /**
      * Returns a paged list of folder node rules for given node's ID
+     *
+     * - GET /nodes/{folderNodeId}/rules
      *
      * @param nodeId - entity resource context for this relationship
      * @param parameters - will never be null and will have the PAGING default values

@@ -47,16 +47,9 @@ import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import static java.util.Arrays.asList;
+import java.util.Collections;
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
-import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
-import static org.alfresco.rest.rm.community.base.TestData.NONELECTRONIC_RECORD_NAME;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
-import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentType.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.*;
 import static org.alfresco.utility.data.RandomData.getRandomName;

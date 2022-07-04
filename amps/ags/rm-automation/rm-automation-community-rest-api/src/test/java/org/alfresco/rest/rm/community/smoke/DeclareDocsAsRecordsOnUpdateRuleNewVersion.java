@@ -37,7 +37,6 @@ import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChi
 import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.v0.RulesAPI;
 import org.alfresco.test.AlfrescoTest;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.data.DataContent;
 import org.alfresco.utility.data.DataSite;
 import org.alfresco.utility.data.DataUserAIS;
@@ -76,7 +75,6 @@ public class DeclareDocsAsRecordsOnUpdateRuleNewVersion extends BaseRMRestTest {
     @Getter(value = PROTECTED)
     protected DataUserAIS dataUser;
     private final static String title = "Rule to convert document as record";
-    private UserModel testUser;
 
     @BeforeClass (alwaysRun = true)
     public void setUp()
@@ -93,7 +91,7 @@ public class DeclareDocsAsRecordsOnUpdateRuleNewVersion extends BaseRMRestTest {
 
         STEP("Create test collaboration site to store documents in.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
-        testUser = getDataUser().createRandomTestUser();
+
 
 
         STEP("Create a record folder with a DECLARE_AS_RECORD");

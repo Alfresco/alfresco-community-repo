@@ -3760,13 +3760,14 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     @Override
     public void cycleCheck(Long nodeId)
     {
-        CycleCallBack callback = new CycleCallBack();
-        callback.cycleCheck(nodeId);
-        if (callback.toThrow != null)
-        {
-            throw callback.toThrow;
-        }        
-    }    
+//        CycleCallBack callback = new CycleCallBack();
+//        callback.cycleCheck(nodeId);
+//        if (callback.toThrow != null)
+//        {
+//            throw callback.toThrow;
+//        }
+        selectChildAssocs(nodeId, null, null, null, null, null);
+    }
 
     private class CycleCallBack implements ChildAssocRefQueryCallback
     {
@@ -4995,6 +4996,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /**
      * Parameters are all optional except the parent node ID and the callback
      */
+    protected abstract void selectChildAssocs(
+            Long parentNodeId,
+            Long childNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            Boolean isPrimary,
+            Boolean sameStore);
     protected abstract void selectChildAssocs(
             Long parentNodeId,
             Long childNodeId,

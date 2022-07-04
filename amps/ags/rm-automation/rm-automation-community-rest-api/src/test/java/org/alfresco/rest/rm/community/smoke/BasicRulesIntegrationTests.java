@@ -93,10 +93,10 @@ public class BasicRulesIntegrationTests extends BaseRMRestTest {
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder1);
         assertStatusCode(CREATED);
 
-        // Update the rules for record Category
+       /* // Update the rules for record Category
         rulesAPI.updateRule(getAdminUser().getUsername(), getAdminUser().getPassword(),
             NODE_PREFIX + Category.getId(), ruleDefinition.description("description").id(description));
-
+*/
         //Delete the root category and rules
         deleteRecordCategory(Category.getId());
         rulesAPI.deleteAllRulesOnContainer(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + Category.getId());

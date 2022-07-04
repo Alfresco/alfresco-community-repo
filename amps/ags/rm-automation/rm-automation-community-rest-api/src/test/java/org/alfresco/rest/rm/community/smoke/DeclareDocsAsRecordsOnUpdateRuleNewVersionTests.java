@@ -43,7 +43,6 @@ import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -60,7 +59,7 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import static org.apache.chemistry.opencmis.client.util.FileUtils.createFolder;
 import static org.springframework.http.HttpStatus.CREATED;
 
-public class DeclareDocsAsRecordsOnUpdateRuleNewVersion extends BaseRMRestTest {
+public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestTest {
 
 
     @Autowired

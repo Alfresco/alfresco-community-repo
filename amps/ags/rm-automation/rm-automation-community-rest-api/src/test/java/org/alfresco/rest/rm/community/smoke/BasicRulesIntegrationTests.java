@@ -26,24 +26,15 @@
  */
 package org.alfresco.rest.rm.community.smoke;
 
-import com.mysql.cj.x.protobuf.MysqlxCrud;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
-import org.alfresco.rest.rm.community.model.record.RecordContent;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
-import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
-import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RulesAPI;
 import org.alfresco.test.AlfrescoTest;
-import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
@@ -57,7 +48,7 @@ import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.*;
 import static org.testng.Assert.assertEquals;
 
-public class BasicRulesIntegration extends BaseRMRestTest {
+public class BasicRulesIntegrationTests extends BaseRMRestTest {
 
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;

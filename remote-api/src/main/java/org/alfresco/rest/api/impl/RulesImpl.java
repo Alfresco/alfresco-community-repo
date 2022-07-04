@@ -52,9 +52,9 @@ public class RulesImpl implements Rules
     private RuleService ruleService;
 
     @Override
-    public CollectionWithPagingInfo<Rule> getRules(final String nodeId, final Paging paging)
+    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final Paging paging)
     {
-        final NodeRef nodeRef = nodes.validateNode(nodeId);
+        final NodeRef nodeRef = nodes.validateNode(folderNodeId);
 
         final Set<QName> folders = new HashSet<>(List.of(ContentModel.TYPE_FOLDER));
         if (!nodes.nodeMatches(nodeRef, folders, null)) {

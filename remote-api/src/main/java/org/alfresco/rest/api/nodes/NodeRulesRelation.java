@@ -62,7 +62,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
      *
      * - GET /nodes/{folderNodeId}/rules
      *
-     * @param nodeId - entity resource context for this relationship
+     * @param folderNodeId - entity resource context for this relationship
      * @param parameters - will never be null and will have the PAGING default values
      * @return a paged list of folder rules
      */
@@ -72,9 +72,9 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
         successStatus = HttpServletResponse.SC_OK
     )
     @Override
-    public CollectionWithPagingInfo<Rule> readAll(String nodeId, Parameters parameters)
+    public CollectionWithPagingInfo<Rule> readAll(String folderNodeId, Parameters parameters)
     {
-        return rules.getRules(nodeId, parameters.getPaging());
+        return rules.getRules(folderNodeId, parameters.getPaging());
     }
 
     public void setRules(Rules rules)

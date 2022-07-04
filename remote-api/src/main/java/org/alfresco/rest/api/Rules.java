@@ -42,9 +42,9 @@ public interface Rules
     /**
      * Get rules for node's ID
      *
-     * @param nodeId node ID
+     * @param folderNodeId node ID
      * @param paging {@link Paging} information
      * @return {@link CollectionWithPagingInfo} containing a paged list of folder rules
      */
-    CollectionWithPagingInfo<Rule> getRules(String nodeId, Paging paging);
+    CollectionWithPagingInfo<Rule> getRules(String folderNodeId, Paging paging);
 }

@@ -74,7 +74,7 @@ public class BasicRulesIntegrationTests extends BaseRMRestTest {
         String recordFolder1 = createRecordFolder(Category.getId(), getRandomName("recFolder")).getId();
 
 
-        //create a rule for completing a record
+       /* //create a rule for completing a record
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description1")
             .applyToChildren(true).title(title)
             .actions(Collections.singletonList(ActionsOnRule.COMPLETE_RECORD.getActionValue()));
@@ -88,7 +88,7 @@ public class BasicRulesIntegrationTests extends BaseRMRestTest {
 
         // create non-electronic record in record folder
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder1);
-        assertStatusCode(CREATED);
+        assertStatusCode(CREATED);*/
 
         /*// Update the rules for record Category
         rulesAPI.updateRule(getAdminUser().getUsername(), getAdminUser().getPassword(),

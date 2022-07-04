@@ -104,7 +104,4 @@ public class BasicRulesIntegrationTests extends BaseRMRestTest {
     }
 
 
-
-
-
 }

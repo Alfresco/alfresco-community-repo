@@ -90,8 +90,6 @@ public class DeclareDocsAsRecordsOnUpdateRuleNewVersionTests extends BaseRMRestT
         STEP("Create test collaboration site to store documents in.");
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
 
-
-
         STEP("Create a record folder with a DECLARE_AS_RECORD");
         RecordCategoryChild folderWithRule = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description")

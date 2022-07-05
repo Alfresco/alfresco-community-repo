@@ -40,6 +40,7 @@ import org.testng.annotations.Test;
 
 import java.util.Collections;
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
+import static org.alfresco.rest.rm.community.base.TestData.ELECTRONIC_RECORD_NAME;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.*;
 import static org.alfresco.utility.data.RandomData.getRandomName;
@@ -82,13 +83,16 @@ public class BasicRulesIntegrationTests extends BaseRMRestTest {
 
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
 
-       /* // create electronic record in record folder
-        Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder1, getFile(IMAGE_FILE));
+        // create electronic record in record folder
+        //Record electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder1, getFile(IMAGE_FILE));
+
+        String electronicRecordId = createElectronicRecord(recordFolder1, ELECTRONIC_RECORD_NAME).getId();
         assertStatusCode(CREATED);
 
-        // create non-electronic record in record folder
+
+        //create non-electronic record in record folder
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder1);
-        assertStatusCode(CREATED);*/
+        assertStatusCode(CREATED);
 
         // Update the rules for record Category
         rulesAPI.updateRule(getAdminUser().getUsername(), getAdminUser().getPassword(),

@@ -63,7 +63,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.jscript.ScriptSearchTest.class,
     org.alfresco.repo.lock.LockUtilsTest.class,
     org.alfresco.repo.lock.mem.LockStoreImplTest.class,
-    //org.alfresco.repo.management.CheckRequiredClassesForLoggingConsoleUnitTest.class,
+    org.alfresco.repo.management.CheckRequiredClassesForLoggingConsoleUnitTest.class,
     org.alfresco.repo.management.subsystems.CryptodocSwitchableApplicationContextFactoryTest.class,
     org.alfresco.repo.module.ModuleDetailsImplTest.class,
     org.alfresco.repo.module.ModuleVersionNumberTest.class,

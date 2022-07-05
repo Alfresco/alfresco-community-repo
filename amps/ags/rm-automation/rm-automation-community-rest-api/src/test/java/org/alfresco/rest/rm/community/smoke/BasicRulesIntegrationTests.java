@@ -84,13 +84,12 @@ public class BasicRulesIntegrationTests extends BaseRMRestTest {
 
         RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
 
-        //create electronic record in record folder
-        String electronicRecordId = createElectronicRecord(recordFolder1, ELECTRONIC_RECORD_NAME).getId();
+        //create two electronic record in record folder
+        String electronicRecordId1 = createElectronicRecord(recordFolder1, ELECTRONIC_RECORD_NAME).getId();
+        String electronicRecordId2 = createElectronicRecord(recordFolder1, ELECTRONIC_RECORD_NAME).getId();
         assertStatusCode(CREATED);
 
-        //create non-electronic record in record folder
-        String nonelectronicRecordId = createNonElectronicRecord(recordFolder1,NONELECTRONIC_RECORD_NAME).getId();
-        assertStatusCode(CREATED);
+
 
         // Update the rules for record Category
         rulesAPI.updateRule(getAdminUser().getUsername(), getAdminUser().getPassword(),

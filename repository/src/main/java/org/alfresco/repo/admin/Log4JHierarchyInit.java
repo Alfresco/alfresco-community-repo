@@ -53,14 +53,14 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * The actual implementation uses introspection to avoid any hard-coded references to Log4J classes.  If Log4J is
  * not present, this class will do nothing.
  * <p>
- * Alfresco modules can provide their own log4j.properties file, which augments/overrides the global log4j.properties
+ * Alfresco modules can provide their own log4j2.properties file, which augments/overrides the global log4j2.properties
  * within the Alfresco webapp. Within the module's source tree, suppose you create:
  * <pre>
- *      config/alfresco/module/{module.id}/log4j.properties
+ *      config/alfresco/module/{module.id}/log4j2.properties
  * </pre>
- * At deployment time, this log4j.properties file will be placed in:
+ * At deployment time, this log4j2.properties file will be placed in:
  * <pre>
- *      WEB-INF/classes/alfresco/module/{module.id}/log4j.properties
+ *      WEB-INF/classes/alfresco/module/{module.id}/log4j2.properties
  * </pre>
  * Where {module.id} is whatever value is set within the AMP's module.properties file. For details, see: <a
  * href='http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module'>Developing an Alfresco Module</a>
@@ -68,12 +68,12 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * For example, if {module.id} is "org.alfresco.module.someModule", then within your source code you'll have:
  *
  * <pre>
- * config / alfresco / module / org.alfresco.module.someModule / log4j.properties
+ * config / alfresco / module / org.alfresco.module.someModule / log4j2.properties
  * </pre>
  * <p>
  * This would be deployed to:
  * <pre>
- * WEB - INF / classes / alfresco / module / org.alfresco.module.someModule / log4j.properties
+ * WEB - INF / classes / alfresco / module / org.alfresco.module.someModule / log4j2.properties
  * </pre>
  */
 public class Log4JHierarchyInit implements ApplicationContextAware
@@ -88,7 +88,7 @@ public class Log4JHierarchyInit implements ApplicationContextAware
     }
 
     /**
-     * Loads a set of augmenting/overriding log4j.properties files from locations specified via an array of Spring URLS.
+     * Loads a set of augmenting/overriding log4j2.properties files from locations specified via an array of Spring URLS.
      * <p>
      * This function supports Spring's syntax for retrieving multiple class path resources with the same name,
      * via the "classpath&#042;:" prefix. For details, see: {@link PathMatchingResourcePatternResolver}.

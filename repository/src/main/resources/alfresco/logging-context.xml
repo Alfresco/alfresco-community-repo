@@ -13,16 +13,16 @@
                 <!-- NOTE: value entries are listed from lowest precedence to highest.  -->
 
                 <!--  Installed  AMP modules  -->
-                <value>classpath*:alfresco/module/*/log4j.properties</value>
+                <value>classpath*:alfresco/module/*/log4j2.properties</value>
 
                 <!--  Enterprise extensions  -->
-                <value>classpath*:alfresco/enterprise/*-log4j.properties</value>
+                <value>classpath*:alfresco/enterprise/*-log4j2.properties</value>
 
                 <!--  Other installed extensions  -->
-                <value>classpath*:alfresco/extension/*-log4j.properties</value>
+                <value>classpath*:alfresco/extension/*-log4j2.properties</value>
 
                 <!--  private developer overrides -->
-                <value>classpath*:alfresco/extension/dev-log4j.properties</value>
+                <value>classpath*:alfresco/extension/dev-log4j2.properties</value>
             </list>
         </property>
     </bean>

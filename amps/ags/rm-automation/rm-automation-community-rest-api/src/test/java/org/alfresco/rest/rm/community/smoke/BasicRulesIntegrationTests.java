@@ -90,9 +90,9 @@ public class BasicRulesIntegrationTests extends BaseRMRestTest {
         assertStatusCode(CREATED);
 
 
-        //create non-electronic record in record folder
+       /* //create non-electronic record in record folder
         Record nonElectronicRecord = recordFolderAPI.createRecord(createNonElectronicRecordModel(), recordFolder1);
-        assertStatusCode(CREATED);
+        assertStatusCode(CREATED);*/
 
         // Update the rules for record Category
         rulesAPI.updateRule(getAdminUser().getUsername(), getAdminUser().getPassword(),

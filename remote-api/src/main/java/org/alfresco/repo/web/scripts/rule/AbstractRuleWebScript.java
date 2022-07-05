@@ -38,6 +38,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -85,6 +86,8 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     protected ActionService actionService;
     protected FileFolderService fileFolderService;
     protected NamespaceService namespaceService;
+
+    private RuntimeActionService runtimeActionService;
 
     /**
      * Sets the node service instance
@@ -144,6 +147,10 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+
+    public void setRuntimeActionService(RuntimeActionService runtimeActionService) {
+        this.runtimeActionService = runtimeActionService;
     }
 
     /**
@@ -434,13 +441,16 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     protected void checkRule(Rule rule)
     {
         List<Action> actions = ((CompositeActionImpl) rule.getAction()).getActions();
-        applyActionContext(actions);
+
+        checkRestrictedAccessActions(actions);
         checkRuleOutboundHasNoCheckOutAction(rule, actions);
     }
 
-    private void applyActionContext(List<Action> actions) {
-        actions.stream()
-                .forEach(a -> ActionAccessRestriction.setActionContext(a, ActionAccessRestriction.RULE_ACTION_CONTEXT));
+    private void checkRestrictedAccessActions(List<Action> actions) {
+        for (Action action : actions) {
+            ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.RULE_ACTION_CONTEXT);
+            runtimeActionService.verifyActionAccessRestrictions(action);
+        }
     }
 
     private void checkRuleOutboundHasNoCheckOutAction(Rule rule, List<Action> actions) {

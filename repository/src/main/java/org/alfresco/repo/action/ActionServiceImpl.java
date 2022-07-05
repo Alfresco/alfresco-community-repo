@@ -605,10 +605,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      */
     @Override
     public void verifyActionAccessRestrictions(Action action) {
-        if (ActionAccessRestriction.isActionFromControlledContext(action)) {
-            getActionExecuter(action.getActionDefinitionName())
-                    .verifyActionAccessRestrictions(action);
-        }
+        getActionExecuter(action.getActionDefinitionName())
+                .verifyActionAccessRestrictions(action);
     }
 
     private ActionExecuter getActionExecuter(String actionDefName) {

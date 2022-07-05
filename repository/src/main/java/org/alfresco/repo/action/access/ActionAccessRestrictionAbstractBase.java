@@ -35,15 +35,10 @@ import org.alfresco.service.cmr.repository.NodeService;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public abstract class ActionAccessRestrictionAbstractBase implements ActionAccessRestriction {
-
-    private static final Set<String> CONTROLLED_ACTION_ACCESS_CONTEXT =
-            Set.of(ActionAccessRestriction.RULE_ACTION_CONTEXT, ActionAccessRestriction.FORM_PROCESSOR_ACTION_CONTEXT,
-                    ActionAccessRestriction.V0_ACTION_CONTEXT, ActionAccessRestriction.V1_ACTION_CONTEXT);
 
     protected NodeService nodeService;
     private Properties configProperties;
@@ -76,12 +71,8 @@ public abstract class ActionAccessRestrictionAbstractBase implements ActionAcces
     }
 
     protected boolean isActionExposed(Action action) {
-        return !isActionFromControlledContext(action) || isExposedInConfig(action).orElse(Boolean.FALSE);
-    }
-
-    private boolean isActionFromControlledContext(Action action) {
-        String actionContext = ActionAccessRestriction.getActionContext(action);
-        return actionContext != null && CONTROLLED_ACTION_ACCESS_CONTEXT.contains(actionContext);
+        return !ActionAccessRestriction.isActionFromControlledContext(action)
+                || isExposedInConfig(action).orElse(Boolean.FALSE);
     }
 
     private Optional<Boolean> isExposedInConfig(Action action)

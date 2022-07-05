@@ -33,10 +33,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
@@ -600,6 +600,25 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
     }
 
+    /**
+     * @see RuntimeActionService#verifyActionAccessRestrictions(Action action)
+     */
+    @Override
+    public void verifyActionAccessRestrictions(Action action) {
+        if (ActionAccessRestriction.isActionFromControlledContext(action)) {
+            getActionExecuter(action.getActionDefinitionName())
+                    .verifyActionAccessRestrictions(action);
+        }
+    }
+
+    private ActionExecuter getActionExecuter(String actionDefName) {
+        if (!actionExecuters.containsKey(actionDefName)) {
+            actionExecuters.put(actionDefName, applicationContext.getBean(actionDefName, ActionExecuter.class));
+        }
+
+        return actionExecuters.get(actionDefName);
+    }
+
     private boolean isExecuteAsynchronously(Action action, NodeRef actionedUponNodeRef, boolean executeAsynchronously)
     {
         if (executeAsynchronously == false)
@@ -622,30 +641,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             }
         }
         return executeAsynchronously;
-    }
-
-    /**
-     * @see RuntimeActionService#verifyActionAccessRestrictions(Action action)
-     */
-    @Override
-    public void verifyActionAccessRestrictions(Action action) {
-        getActionExecuter(action.getActionDefinitionName())
-                .ifPresent(ae -> ae.verifyActionAccessRestrictions(action));
-    }
-
-    private Optional<ActionExecuter> getActionExecuter(String actionDefName) {
-        if (!actionExecuters.containsKey(actionDefName)) {
-            Object actionBean = applicationContext.getBean(actionDefName);
-            if (actionBean instanceof ActionExecuter) {
-                actionExecuters.put(actionDefName, applicationContext.getBean(actionDefName, ActionExecuter.class));
-            } else {
-                //Some things are marked as actions, but have no actionExecuter,
-                // e.g. ComparePropertyValueEvaluator. We need to skip those
-                actionExecuters.put(actionDefName, null);
-            }
-        }
-
-        return Optional.ofNullable(actionExecuters.get(actionDefName));
     }
 
     /**

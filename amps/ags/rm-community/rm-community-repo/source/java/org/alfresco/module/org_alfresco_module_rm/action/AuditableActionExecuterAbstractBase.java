@@ -121,11 +121,6 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     @Override
     public void init()
     {
-        if (!(this instanceof RecordsManagementAction))
-        {
-            super.init();
-        }
-
         if (isAuditable())
         {
             // get the details of the action

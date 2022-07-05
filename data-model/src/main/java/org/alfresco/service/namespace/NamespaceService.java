@@ -146,6 +146,8 @@ public interface NamespaceService extends NamespacePrefixResolver
 
     /** Email Server Application Model Prefix */
     static final String EMAILSERVER_MODEL_PREFIX = "emailserver";
+
+    String RULE_MODEL_PREFIX = "rule";
     
     /**
      * Register a prefix for namespace uri. 

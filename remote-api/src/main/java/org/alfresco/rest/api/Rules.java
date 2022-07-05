@@ -47,4 +47,11 @@ public interface Rules
      * @return {@link CollectionWithPagingInfo} containing a paged list of folder rules
      */
     CollectionWithPagingInfo<Rule> getRules(String folderNodeId, Paging paging);
+
+    /**
+     *
+     * @param folderNodeId
+     * @return
+     */
+    Rule getRuleById(String folderNodeId, String ruleId);
 }

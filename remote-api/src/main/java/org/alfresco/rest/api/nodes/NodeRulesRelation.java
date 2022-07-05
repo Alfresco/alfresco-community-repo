@@ -29,6 +29,7 @@ package org.alfresco.rest.api.nodes;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.Rule;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -46,7 +47,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Experimental
 @RelationshipResource(name = "rules", entityResource = NodesEntityResource.class, title = "Folder node rules")
-public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, InitializingBean
+public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, RelationshipResourceAction.ReadById<Rule>, InitializingBean
 {
 
     private Rules rules;
@@ -75,6 +76,23 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     public CollectionWithPagingInfo<Rule> readAll(String folderNodeId, Parameters parameters)
     {
         return rules.getRules(folderNodeId, parameters.getPaging());
+    }
+
+    /**
+     * Return specific rule for given node's ID
+     *
+     * - GET /nodes/{folderNodeId}/rules/{ruleId}
+     *
+     * @param folderNodeId
+     * @param ruleId
+     * @param parameters
+     * @return
+     * @throws RelationshipResourceNotFoundException
+     */
+    @Override
+    public Rule readById(String folderNodeId, String ruleId, Parameters parameters) throws RelationshipResourceNotFoundException
+    {
+        return rules.getRuleById(folderNodeId, ruleId);
     }
 
     public void setRules(Rules rules)

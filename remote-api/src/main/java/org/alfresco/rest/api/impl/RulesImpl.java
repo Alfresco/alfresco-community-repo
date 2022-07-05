@@ -54,17 +54,23 @@ public class RulesImpl implements Rules
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final Paging paging)
     {
-        final NodeRef nodeRef = nodes.validateNode(folderNodeId);
-
-        final Set<QName> folders = new HashSet<>(List.of(ContentModel.TYPE_FOLDER));
-        if (!nodes.nodeMatches(nodeRef, folders, null)) {
-            throw new InvalidArgumentException("NodeId of a folder is expected!");
-        }
+        final NodeRef nodeRef = validateFolderNode(folderNodeId);
 
         final List<org.alfresco.service.cmr.rule.Rule> rulesModels = ruleService.getRules(nodeRef);
         final List<Rule> rules = rulesModels.stream().map(Rule::of).collect(Collectors.toList());
 
         return ListPages.createPage(rules, paging);
+    }
+
+    @Override
+    public Rule getRuleById(final String folderNodeId, final String ruleId)
+    {
+        validateFolderNode(folderNodeId);
+        final NodeRef ruleNodeRef = validateRuleNode(ruleId);
+
+        final Rule rule = Rule.of(ruleService.getRule(ruleNodeRef));
+
+        return rule;
     }
 
     public void setNodes(Nodes nodes)
@@ -75,5 +81,35 @@ public class RulesImpl implements Rules
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
+    }
+
+    private NodeRef validateFolderNode(final String folderNodeId)
+    {
+        final NodeRef nodeRef = nodes.validateNode(folderNodeId);
+
+        final Set<QName> folders = new HashSet<>(List.of(ContentModel.TYPE_FOLDER));
+        if (!nodes.nodeMatches(nodeRef, folders, null)) {
+            throw new InvalidArgumentException("NodeId of a folder is expected!");
+        }
+
+        return nodeRef;
+        return validateNode(folderNodeId, ContentModel.TYPE_FOLDER);
+    }
+
+    private NodeRef validateRuleNode(final String ruleNodeId)
+    {
+        return validateNode(ruleNodeId, ContentModel.TYPE_RULE);
+    }
+
+    private NodeRef validateNode(final String nodeId, final QName namespaceType)
+    {
+        final NodeRef nodeRef = nodes.validateNode(nodeId);
+
+        final Set<QName> expectedTypes = Set.of(namespaceType);
+        if (!nodes.nodeMatches(nodeRef, expectedTypes, null)) {
+            throw new InvalidArgumentException("NodeId of a " + namespaceType.getLocalName() + " is expected!");
+        }
+
+        return nodeRef;
     }
 }

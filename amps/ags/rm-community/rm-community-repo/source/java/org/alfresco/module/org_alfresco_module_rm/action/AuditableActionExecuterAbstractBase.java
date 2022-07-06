@@ -121,6 +121,8 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     @Override
     public void init()
     {
+        super.init();
+
         if (isAuditable())
         {
             // get the details of the action

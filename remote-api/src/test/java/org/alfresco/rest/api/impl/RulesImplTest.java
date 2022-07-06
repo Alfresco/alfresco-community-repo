@@ -57,8 +57,9 @@ import static org.mockito.BDDMockito.then;
 public class RulesImplTest extends TestCase
 {
 
-    private static final String NODE_ID = "dummy-node-id";
-    private static final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
+    private static final String FOLDER_NODE_ID = "dummy-node-id";
+    private static final String RULE_SET_ID = "dummy-rule-set-id";
+    private static final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, FOLDER_NODE_ID);
 
     @Mock
     private Nodes nodes;
@@ -84,9 +85,9 @@ public class RulesImplTest extends TestCase
         given(nodes.nodeMatches(any(), any(), any())).willReturn(true);
 
         // when
-        final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(NODE_ID, paging);
+        final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, paging);
 
-        then(nodes).should().validateNode(eq(NODE_ID));
+        then(nodes).should().validateNode(eq(FOLDER_NODE_ID));
         then(nodes).should().nodeMatches(eq(nodeRef), any(), isNull());
         then(nodes).shouldHaveNoMoreInteractions();
         then(ruleService).should().getRules(eq(nodeRef));
@@ -106,9 +107,9 @@ public class RulesImplTest extends TestCase
 
         // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
-            () -> rules.getRules(NODE_ID, paging));
+            () -> rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, paging));
 
-        then(nodes).should().validateNode(eq(NODE_ID));
+        then(nodes).should().validateNode(eq(FOLDER_NODE_ID));
         then(nodes).should().nodeMatches(eq(nodeRef), any(), isNull());
         then(nodes).shouldHaveNoMoreInteractions();
         then(ruleService).shouldHaveNoMoreInteractions();

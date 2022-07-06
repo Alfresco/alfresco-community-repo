@@ -43,7 +43,7 @@ import java.util.Collections;
  * 
  * @author Gethin James.
  */
-public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
+public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<T>
 {
 
     private final Collection<T> collection;
@@ -78,6 +78,18 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
         }
         this.sourceEntity = sourceEntity;
         this.context = context;
+    }
+
+    /**
+     * Constructs a new CollectionWithPagingInfo from a {@link SerializablePagedCollection} instance.
+     *
+     * @param pagedCollection - a collection with paging information
+     * @return CollectionWithPagingInfo
+     */
+    public static <T> CollectionWithPagingInfo<T> of(SerializablePagedCollection<T> pagedCollection)
+    {
+        return new CollectionWithPagingInfo<>(pagedCollection.getCollection(), pagedCollection.getPaging(), pagedCollection.hasMoreItems(), pagedCollection.getTotalItems(),
+            pagedCollection.getSourceEntity(), pagedCollection.getContext());
     }
 
     /**

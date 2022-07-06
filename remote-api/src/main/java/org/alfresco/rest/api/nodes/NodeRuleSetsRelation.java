@@ -24,27 +24,17 @@
  * #L%
  */
 
-package org.alfresco.rest.api;
+package org.alfresco.rest.api.nodes;
 
-import org.alfresco.rest.api.model.Rule;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.service.Experimental;
 
 /**
- * Folder node rules API.
+ * Folder node rule sets.
  *
  */
 @Experimental
-public interface Rules
+@RelationshipResource(name = "rulesets", entityResource = NodesEntityResource.class, title = "Folder node rule sets")
+public class NodeRuleSetsRelation
 {
-    /**
-     * Get rules for node's and rule set's IDs
-     *
-     * @param folderNodeId node ID
-     * @param ruleSetId rule set ID
-     * @param paging {@link Paging} information
-     * @return {@link CollectionWithPagingInfo} containing a list page of folder rules
-     */
-    CollectionWithPagingInfo<Rule> getRules(String folderNodeId, String ruleSetId, Paging paging);
 }

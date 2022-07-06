@@ -43,7 +43,7 @@ import static org.mockito.Mockito.mock;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
-public class ListPagesTest extends TestCase
+public class ListPageTest extends TestCase
 {
 
     private List<PageFormat> getPageFormats() {
@@ -66,7 +66,7 @@ public class ListPagesTest extends TestCase
             final Paging paging = Paging.valueOf(offset, pageSize);
 
             // when
-            final CollectionWithPagingInfo<Object> page = ListPages.createPage(list, paging);
+            final CollectionWithPagingInfo<Object> page = ListPage.of(list, paging);
 
             assertThat(page)
                     .isNotNull()
@@ -86,7 +86,7 @@ public class ListPagesTest extends TestCase
         final Paging paging = Paging.valueOf(offset, 5);
 
         // when
-        final CollectionWithPagingInfo<Object> page = ListPages.createPage(list, paging);
+        final CollectionWithPagingInfo<Object> page = ListPage.of(list, paging);
 
         assertThat(page)
                 .isNotNull()
@@ -100,7 +100,7 @@ public class ListPagesTest extends TestCase
     public void testCreatePageForNullList()
     {
         // when
-        final CollectionWithPagingInfo<Object> page = ListPages.createPage(null, Paging.DEFAULT);
+        final CollectionWithPagingInfo<Object> page = ListPage.of(null, Paging.DEFAULT);
 
         assertThat(page)
                 .isNotNull()
@@ -108,6 +108,22 @@ public class ListPagesTest extends TestCase
                 .isNotNull()
             .extracting(Collection::isEmpty)
                 .isEqualTo(true);
+    }
+
+    @Test
+    public void testCreatePageForNullPaging()
+    {
+        final List<Object> list = createListOf(18, Object.class);
+
+        // when
+        final CollectionWithPagingInfo<Object> page = ListPage.of(list, null);
+
+        assertThat(page)
+            .isNotNull()
+            .extracting(CollectionWithPagingInfo::getCollection)
+            .isNotNull()
+            .extracting(Collection::size)
+            .isEqualTo(18);
     }
 
     private static <T> List<T> randomListOf(final int minSize, final int maxSize, final Class<T> clazz) {

@@ -32,7 +32,7 @@ import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.Rule;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.ListPages;
+import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -52,19 +52,20 @@ public class RulesImpl implements Rules
     private RuleService ruleService;
 
     @Override
-    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final Paging paging)
+    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
     {
         final NodeRef nodeRef = nodes.validateNode(folderNodeId);
 
         final Set<QName> folders = new HashSet<>(List.of(ContentModel.TYPE_FOLDER));
-        if (!nodes.nodeMatches(nodeRef, folders, null)) {
+        if (!nodes.nodeMatches(nodeRef, folders, null))
+        {
             throw new InvalidArgumentException("NodeId of a folder is expected!");
         }
 
         final List<org.alfresco.service.cmr.rule.Rule> rulesModels = ruleService.getRules(nodeRef);
         final List<Rule> rules = rulesModels.stream().map(Rule::of).collect(Collectors.toList());
 
-        return ListPages.createPage(rules, paging);
+        return ListPage.of(rules, paging);
     }
 
     public void setNodes(Nodes nodes)

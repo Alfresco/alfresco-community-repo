@@ -42,10 +42,9 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Folder node's rules.
  *
- * @author krdabrowski
  */
 @Experimental
-@RelationshipResource(name = "rules", entityResource = NodesEntityResource.class, title = "Folder node rules")
+@RelationshipResource(name = "rules", entityResource = NodeRuleSetsRelation.class, title = "Folder node rules")
 public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, InitializingBean
 {
 
@@ -58,23 +57,25 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     }
 
     /**
-     * Returns a paged list of folder node rules for given node's ID
+     * List folder node rules for given node's and rule set's IDs as a page.
      *
-     * - GET /nodes/{folderNodeId}/rules
+     * - GET /nodes/{folderNodeId}/rulesets/{ruleSetId}/rules
      *
      * @param folderNodeId - entity resource context for this relationship
-     * @param parameters - will never be null and will have the PAGING default values
+     * @param parameters - will never be null. Contains i.a. paging information and ruleSetId (relationshipId)
      * @return a paged list of folder rules
      */
     @WebApiDescription(
         title = "Get folder node rules",
-        description = "Returns a paged list of folder rules for given node's ID",
+        description = "Returns a paged list of folder rules for given node's and rule set's ID",
         successStatus = HttpServletResponse.SC_OK
     )
     @Override
     public CollectionWithPagingInfo<Rule> readAll(String folderNodeId, Parameters parameters)
     {
-        return rules.getRules(folderNodeId, parameters.getPaging());
+        final String ruleSetId = parameters.getRelationshipId();
+
+        return rules.getRules(folderNodeId, ruleSetId, parameters.getPaging());
     }
 
     public void setRules(Rules rules)

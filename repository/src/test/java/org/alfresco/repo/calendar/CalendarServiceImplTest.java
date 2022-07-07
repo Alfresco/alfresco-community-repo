@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -72,7 +72,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.context.ApplicationContext;
@@ -156,7 +156,7 @@ public class CalendarServiceImplTest
     {
        // Inject a mock to a real calendar service instead of tagging service
        ((CalendarServiceImpl) testContext.getBean("calendarService")).setTaggingService(TAGGING_SERVICE);
-       when(TAGGING_SERVICE.isTagScope(Matchers.any(NodeRef.class))).thenReturn(true);
+       when(TAGGING_SERVICE.isTagScope(ArgumentMatchers.any(NodeRef.class))).thenReturn(true);
     }
 
     @Test public void createNewEntry() throws Exception

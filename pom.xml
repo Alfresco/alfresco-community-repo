@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>17.21-SNAPSHOT</version>
+    <version>17.37-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -54,17 +54,17 @@
         <dependency.alfresco-transform-service.version>1.5.3</dependency.alfresco-transform-service.version>
         <dependency.alfresco-transform-core.version>2.6.0</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
-        <dependency.acs-event-model.version>0.0.13</dependency.acs-event-model.version>
+        <dependency.acs-event-model.version>0.0.15</dependency.acs-event-model.version>
 
         <dependency.spring.version>5.3.21</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.13.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.13.3</dependency.jackson-databind.version>
-        <dependency.cxf.version>3.5.2</dependency.cxf.version>
+        <dependency.cxf.version>3.5.3</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.30</dependency.webscripts.version>
+        <dependency.webscripts.version>8.31</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
-        <dependency.mockito-core.version>3.11.2</dependency.mockito-core.version>
+        <dependency.mockito-core.version>4.6.1</dependency.mockito-core.version>
         <dependency.org-json.version>20220320</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
@@ -76,10 +76,10 @@
         <dependency.slf4j.version>1.7.35</dependency.slf4j.version>
         <dependency.gytheio.version>0.16</dependency.gytheio.version>
         <dependency.groovy.version>3.0.11</dependency.groovy.version>
-        <dependency.tika.version>2.2.1</dependency.tika.version>
-        <dependency.spring-security.version>5.7.1</dependency.spring-security.version>
+        <dependency.tika.version>2.4.1</dependency.tika.version>
+        <dependency.spring-security.version>5.7.2</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>4.1.2</dependency.poi.version>
+        <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>15.0.2</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
@@ -119,7 +119,7 @@
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.48</dependency.tas-utility.version>
         <dependency.rest-assured.version>3.3.0</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.80</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.87</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.31</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.8</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.6</dependency.tas-webdav.version>
@@ -404,7 +404,7 @@
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
-                <version>3.1.0</version>
+                <version>5.1.0</version>
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>

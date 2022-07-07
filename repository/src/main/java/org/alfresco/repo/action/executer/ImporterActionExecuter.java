@@ -82,6 +82,9 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private static final String TEMP_FILE_PREFIX = "alf";
     private static final String TEMP_FILE_SUFFIX_ACP = ".acp";
 
+    private static final long NO_RATIO_THRESHOLD_CHECK = -1;
+    private static final long NO_UNCOMPRESSED_BYTES_CHECK = -1;
+
     private long ratioThreshold;
     private long uncompressedBytesLimit = -1L;
     private boolean highByteZip = false;
@@ -380,62 +383,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
      */
     public static void extractFile(ZipFile archive, String extractDir)
     {
-        String fileName;
-        String destFileName;
-        byte[] buffer = new byte[BUFFER_SIZE];
-        extractDir = extractDir + File.separator;
-        try
-        {
-            for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements();)
-            {
-                ZipArchiveEntry entry = e.nextElement();
-                if (!entry.isDirectory())
-                {
-                    fileName = entry.getName();
-                    fileName = fileName.replace('/', File.separatorChar);
-
-                    if (fileName.startsWith("/") || fileName.indexOf(":" + File.separator) == 1 || fileName.contains(".." + File.separator))
-                    {
-                        throw new AlfrescoRuntimeException(ARCHIVE_CONTAINS_SUSPICIOUS_PATHS_ERROR);
-                    }
-
-                    destFileName = extractDir + fileName;
-                    File destFile = new File(destFileName);
-                    String parent = destFile.getParent();
-                    if (parent != null)
-                    {
-                        File parentFile = new File(parent);
-                        if (!parentFile.exists()) parentFile.mkdirs();
-                    }
-                    InputStream in = new BufferedInputStream(archive.getInputStream(entry), BUFFER_SIZE);
-                    OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE);
-                    int count;
-                    while ((count = in.read(buffer)) != -1)
-                    {
-                        out.write(buffer, 0, count);
-                    }
-                    in.close();
-                    out.close();
-                }
-                else
-                {
-                    File newdir = new File(extractDir + entry.getName());
-                    newdir.mkdirs();
-                }
-            }
-        }
-        catch (ZipException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-        }
-        catch (FileNotFoundException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-        }
-        catch (IOException e)
-        {
-            throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
-        }
+        extractFile(archive, extractDir, new ZipBombProtection(NO_RATIO_THRESHOLD_CHECK, NO_UNCOMPRESSED_BYTES_CHECK));
     }
 
     /**
@@ -563,7 +511,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 
             long ratio = uncompressedBytesCount / compressedBytesCount;
 
-            if (ratio > ratioThreshold)
+            if (ratioThreshold > 0 && ratio > ratioThreshold)
             {
                 throw new AlfrescoRuntimeException("Unexpected compression ratio detected (" + ratio + "%). Possible zip bomb attack. Breaking the extraction process.");
             }

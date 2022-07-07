@@ -1,15 +1,9 @@
-package org.alfresco.email.security;
+package org.alfresco.rest.actions.access;
 
 import com.google.common.collect.ImmutableMap;
-import org.alfresco.email.EmailTest;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.rest.RestTest;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
-//import org.apache.cxf.common.i18n.Exception;
-import org.apache.http.HttpResponse;
-import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -17,15 +11,12 @@ import org.testng.annotations.Test;
 import org.alfresco.rest.core.RestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.Collections;
+public class AdminActionAccessRestrictionV1Test extends RestTest {
 
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.testng.Assert.assertTrue;
+    private UserModel adminUser;
+    private UserModel testUser;
+    private FolderModel testFolder;
 
-public class EmailActionSecurityTests extends EmailTest {
     @Autowired
     protected RestWrapper restClientAlfresco;
 

@@ -1,37 +1,50 @@
-package org.alfresco.email.security;
+/*
+ * #%L
+ * Alfresco Records Management Module
+ * %%
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * %%
+ * This file is part of the Alfresco software.
+ * -
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
+ * provided under the following open source license terms:
+ * -
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * -
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * -
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
+ */
+package org.alfresco.rest.rm.community.rule.action.security;
 
-import com.google.common.collect.ImmutableMap;
-import org.alfresco.email.EmailTest;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
 import org.alfresco.rest.v0.RulesAPI;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.TestGroup;
+import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
-import org.alfresco.utility.testrail.ExecutionType;
-import org.alfresco.utility.testrail.annotation.TestRail;
-//import org.apache.cxf.common.i18n.Exception;
-import org.apache.http.HttpResponse;
-import org.json.JSONObject;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import org.alfresco.rest.core.RestWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.Collections;
 
-import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
-import static org.alfresco.utility.data.RandomData.getRandomName;
-import static org.alfresco.utility.report.log.Step.STEP;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.testng.Assert.assertTrue;
+public class AdminActionAccessRestrictionRuleTest extends RestTest {
 
-public class EmailRulesSecurityTests extends EmailTest {
+    private UserModel adminUser;
+    private UserModel testUser;
+    private FolderModel testFolder;
+
     @Autowired
     protected RestWrapper restClientAlfresco;
 
@@ -59,7 +72,7 @@ public class EmailRulesSecurityTests extends EmailTest {
 
         rulesAPI.createRule(testUser.getUsername(),
                 testUser.getPassword(),
-                NODE_PREFIX + testFolder.getNodeRef(),
+                BaseAPI.NODE_PREFIX + testFolder.getNodeRef(),
                 ruleDefinition);
 
         //TODO: Assert that correct status code was returned
@@ -73,9 +86,10 @@ public class EmailRulesSecurityTests extends EmailTest {
                 .description("Trying to test mail")
                 .actions(Collections.singletonList("mail"));
 
+        //TODO use admin user here
         rulesAPI.createRule(testUser.getUsername(),
                 testUser.getPassword(),
-                NODE_PREFIX + testFolder.getNodeRef(),
+                BaseAPI.NODE_PREFIX + testFolder.getNodeRef(),
                 ruleDefinition);
 
         //TODO: Assert that correct status code was returned

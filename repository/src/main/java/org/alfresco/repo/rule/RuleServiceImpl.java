@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -24,15 +24,6 @@
  * #L%
  */
 package org.alfresco.repo.rule;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -66,11 +57,21 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Rule service implementation.
@@ -1610,5 +1611,16 @@ public class RuleServiceImpl
             }
         }
         return result;
+    }
+
+    @Override
+    public boolean  isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
+        return findAssociatedParents(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .map(ChildAssociationRef::getParentRef)
+            .anyMatch(folderNodeRef::equals);
+    }
+
+    private List<ChildAssociationRef> findAssociatedParents(final NodeRef nodeRef, final QNamePattern pattern) {
+        return runtimeNodeService.getParentAssocs(nodeRef, pattern, pattern);
     }
 }

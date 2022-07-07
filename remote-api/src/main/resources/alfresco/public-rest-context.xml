@@ -850,6 +850,26 @@
         </property>
     </bean>
 
+    <bean id="rules" class="org.alfresco.rest.api.impl.RulesImpl">
+        <property name="nodes" ref="Nodes" />
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="ruleService" ref="RuleService" />
+    </bean>
+
+    <bean id="Rules" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces" value="org.alfresco.rest.api.Rules"/>
+        <property name="target" ref="rules"/>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeRulesRelation">
+        <property name="rules" ref="Rules" />
+    </bean>
+
     <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="supported">

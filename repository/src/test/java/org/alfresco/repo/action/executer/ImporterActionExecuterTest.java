@@ -240,6 +240,7 @@ public class ImporterActionExecuterTest
 
                 try
                 {
+                    importerActionExecuter.setRatioThreshold(3);
                     importerActionExecuter.execute(action, zipFileNodeRef);
                     fail("Import action should have detected that zip file exceeds compression ration threshold");
                 }
@@ -285,6 +286,7 @@ public class ImporterActionExecuterTest
 
                 try
                 {
+                    importerActionExecuter.setUncompressedBytesLimit("1000");
                     importerActionExecuter.execute(action, zipFileNodeRef);
                     fail("Import action should have detected that uncompressed bytes exceed limit");
                 }

@@ -82,8 +82,8 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private static final String TEMP_FILE_PREFIX = "alf";
     private static final String TEMP_FILE_SUFFIX_ACP = ".acp";
 
-    private static long ratioThreshold;
-    private static long uncompressedBytesLimit = -1L;
+    private long ratioThreshold;
+    private long uncompressedBytesLimit = -1L;
     private boolean highByteZip = false;
 
     /**
@@ -262,7 +262,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        {
                            // TODO: improve this code to directly pipe the zip stream output into the repo objects - 
                            //       to remove the need to expand to the filesystem first?
-                           extractFile(zipFile, tempDir.getPath());
+                           extractFile(zipFile, tempDir.getPath(), new ZipBombProtection(ratioThreshold, uncompressedBytesLimit));
                            importDirectory(tempDir.getPath(), importDest);
                        }
                        finally
@@ -371,18 +371,80 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
         paramList.add(new ParameterDefinitionImpl(PARAM_ENCODING, DataTypeDefinition.TEXT, 
               false, getParamDisplayLabel(PARAM_ENCODING)));
     }
-    
+
     /**
      * Extract the file and folder structure of a ZIP file into the specified directory
-     * 
+     *
      * @param archive       The ZIP archive to extract
      * @param extractDir    The directory to extract into
      */
     public static void extractFile(ZipFile archive, String extractDir)
     {
-        extractFile(archive, extractDir, new ZipBombProtection(ratioThreshold));
+        String fileName;
+        String destFileName;
+        byte[] buffer = new byte[BUFFER_SIZE];
+        extractDir = extractDir + File.separator;
+        try
+        {
+            for (Enumeration<ZipArchiveEntry> e = archive.getEntries(); e.hasMoreElements();)
+            {
+                ZipArchiveEntry entry = e.nextElement();
+                if (!entry.isDirectory())
+                {
+                    fileName = entry.getName();
+                    fileName = fileName.replace('/', File.separatorChar);
+
+                    if (fileName.startsWith("/") || fileName.indexOf(":" + File.separator) == 1 || fileName.contains(".." + File.separator))
+                    {
+                        throw new AlfrescoRuntimeException(ARCHIVE_CONTAINS_SUSPICIOUS_PATHS_ERROR);
+                    }
+
+                    destFileName = extractDir + fileName;
+                    File destFile = new File(destFileName);
+                    String parent = destFile.getParent();
+                    if (parent != null)
+                    {
+                        File parentFile = new File(parent);
+                        if (!parentFile.exists()) parentFile.mkdirs();
+                    }
+                    InputStream in = new BufferedInputStream(archive.getInputStream(entry), BUFFER_SIZE);
+                    OutputStream out = new BufferedOutputStream(new FileOutputStream(destFileName), BUFFER_SIZE);
+                    int count;
+                    while ((count = in.read(buffer)) != -1)
+                    {
+                        out.write(buffer, 0, count);
+                    }
+                    in.close();
+                    out.close();
+                }
+                else
+                {
+                    File newdir = new File(extractDir + entry.getName());
+                    newdir.mkdirs();
+                }
+            }
+        }
+        catch (ZipException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
+        }
+        catch (FileNotFoundException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
+        }
+        catch (IOException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to process ZIP file.", e);
+        }
     }
 
+    /**
+     * Extract the file and folder structure of a ZIP file into the specified directory using a progress tracker
+     *
+     * @param archive       The ZIP archive to extract
+     * @param extractDir    The directory to extract into
+     * @param tracker       The extraction progress tracker to check against during the extraction process
+     */
     private static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker)
     {
         String fileName;
@@ -483,10 +545,12 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private static class ZipBombProtection implements ExtractionProgressTracker
     {
         private final long ratioThreshold;
+        private final long uncompressedBytesLimit;
 
-        private ZipBombProtection(long ratioThreshold)
+        private ZipBombProtection(long ratioThreshold, long uncompressedBytesLimit)
         {
             this.ratioThreshold = ratioThreshold;
+            this.uncompressedBytesLimit = uncompressedBytesLimit;
         }
 
         @Override

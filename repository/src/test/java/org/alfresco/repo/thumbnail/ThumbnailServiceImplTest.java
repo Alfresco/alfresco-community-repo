@@ -85,10 +85,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -112,6 +109,7 @@ import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_F
 import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_MIME_TYPE;
 import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_PROPERTY_VALUE;
 import static org.alfresco.repo.rendition2.TestSynchronousTransformClient.TEST_LONG_RUNNING_TRANSFORM_TIME;
+import static org.alfresco.util.log4j.Log4jAppenderUtil.addAbstractAppenderToLogger;
 
 /**
  * Thumbnail service implementation unit test
@@ -751,12 +749,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         LogErrorAppender logErrorAppender = new LogErrorAppender();
         Logger rootLogger = LogManager.getRootLogger();
 
-        final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        final Configuration config = ctx.getConfiguration();
-        logErrorAppender.start();
-        LoggerConfig loggerConfig = config.getLoggerConfig(rootLogger.getName());
-        loggerConfig.addAppender(logErrorAppender, null, null);
-        ctx.updateLoggers();
+        addAbstractAppenderToLogger(logErrorAppender, rootLogger);
 
         // create content node for thumbnail node
         NodeRef pdfOrig = createOriginalContent(folder, MimetypeMap.MIMETYPE_PDF);

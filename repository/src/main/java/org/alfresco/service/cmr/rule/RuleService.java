@@ -337,5 +337,6 @@ public interface RuleService
      * @param folderNodeRef - node reference of a folder
      * @return true if rule set is associated with folder
      */
+    @Auditable(parameters = {"nodeRef"})
     boolean isRuleSetAssociatedWithFolder(NodeRef ruleSetNodeRef, NodeRef folderNodeRef);
 }

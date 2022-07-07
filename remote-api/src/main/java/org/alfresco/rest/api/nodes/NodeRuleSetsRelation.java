@@ -34,7 +34,7 @@ import org.alfresco.service.Experimental;
  *
  */
 @Experimental
-@RelationshipResource(name = "rulesets", entityResource = NodesEntityResource.class, title = "Folder node rule sets")
+@RelationshipResource(name = "rule-sets", entityResource = NodesEntityResource.class, title = "Folder node rule sets")
 public class NodeRuleSetsRelation
 {
 }

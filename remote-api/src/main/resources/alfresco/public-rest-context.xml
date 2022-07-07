@@ -851,8 +851,9 @@
     </bean>
 
     <bean id="rules" class="org.alfresco.rest.api.impl.RulesImpl">
-        <property name="nodes" ref="nodes" />
-        <property name="ruleService" ref="ruleService" />
+        <property name="nodes" ref="Nodes" />
+        <property name="permissionService" ref="PermissionService"/>
+        <property name="ruleService" ref="RuleService" />
     </bean>
 
     <bean id="Rules" class="org.springframework.aop.framework.ProxyFactoryBean">

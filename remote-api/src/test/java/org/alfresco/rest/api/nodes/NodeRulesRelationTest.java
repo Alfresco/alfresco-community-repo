@@ -48,7 +48,8 @@ import static org.mockito.BDDMockito.then;
 public class NodeRulesRelationTest extends TestCase
 {
 
-    private static final String NODE_ID = "dummy-node-id";
+    private static final String FOLDER_NODE_ID = "dummy-node-id";
+    private static final String RULE_SET_ID = "dummy-rule-set-id";
 
     @Mock
     private Rules rules;
@@ -68,12 +69,12 @@ public class NodeRulesRelationTest extends TestCase
     {
         final Paging paging = Paging.DEFAULT;
         final Params.RecognizedParams params = new Params.RecognizedParams(null, paging, null, null, null, null, null, null, false);
-        final Parameters parameters = Params.valueOf(NODE_ID, params, null, null);
+        final Parameters parameters = Params.valueOf(FOLDER_NODE_ID, RULE_SET_ID, params, null, null);
 
         // when
-        nodeRulesRelation.readAll(NODE_ID, parameters);
+        nodeRulesRelation.readAll(FOLDER_NODE_ID, parameters);
 
-        then(rules).should().getRules(eq(NODE_ID), eq(paging));
+        then(rules).should().getRules(eq(FOLDER_NODE_ID), eq(RULE_SET_ID), eq(paging));
         then(rules).shouldHaveNoMoreInteractions();
     }
 }

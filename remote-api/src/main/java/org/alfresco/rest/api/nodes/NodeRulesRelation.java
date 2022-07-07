@@ -29,7 +29,6 @@ package org.alfresco.rest.api.nodes;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.Rule;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -43,11 +42,10 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Folder node's rules.
  *
- * @author krdabrowski
  */
 @Experimental
-@RelationshipResource(name = "rules", entityResource = NodesEntityResource.class, title = "Folder node rules")
-public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, RelationshipResourceAction.ReadById<Rule>, InitializingBean
+@RelationshipResource(name = "rules", entityResource = NodeRuleSetsRelation.class, title = "Folder node rules")
+public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, InitializingBean
 {
 
     private Rules rules;
@@ -59,40 +57,25 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     }
 
     /**
-     * Returns a paged list of folder node rules for given node's ID
+     * List folder node rules for given node's and rule set's IDs as a page.
      *
-     * - GET /nodes/{folderNodeId}/rules
+     * - GET /nodes/{folderNodeId}/rulesets/{ruleSetId}/rules
      *
      * @param folderNodeId - entity resource context for this relationship
-     * @param parameters - will never be null and will have the PAGING default values
+     * @param parameters - will never be null. Contains i.a. paging information and ruleSetId (relationshipId)
      * @return a paged list of folder rules
      */
     @WebApiDescription(
         title = "Get folder node rules",
-        description = "Returns a paged list of folder rules for given node's ID",
+        description = "Returns a paged list of folder rules for given node's and rule set's ID",
         successStatus = HttpServletResponse.SC_OK
     )
     @Override
     public CollectionWithPagingInfo<Rule> readAll(String folderNodeId, Parameters parameters)
     {
-        return rules.getRules(folderNodeId, parameters.getPaging());
-    }
+        final String ruleSetId = parameters.getRelationshipId();
 
-    /**
-     * Return specific rule for given node's ID
-     *
-     * - GET /nodes/{folderNodeId}/rules/{ruleId}
-     *
-     * @param folderNodeId
-     * @param ruleId
-     * @param parameters
-     * @return
-     * @throws RelationshipResourceNotFoundException
-     */
-    @Override
-    public Rule readById(String folderNodeId, String ruleId, Parameters parameters) throws RelationshipResourceNotFoundException
-    {
-        return rules.getRuleById(folderNodeId, ruleId);
+        return rules.getRules(folderNodeId, ruleSetId, parameters.getPaging());
     }
 
     public void setRules(Rules rules)

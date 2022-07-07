@@ -24,47 +24,17 @@
  * #L%
  */
 
-package org.alfresco.rest.api.model;
+package org.alfresco.rest.api.nodes;
 
-import org.alfresco.rest.framework.resource.UniqueId;
+import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.service.Experimental;
 
+/**
+ * Folder node rule sets.
+ *
+ */
 @Experimental
-public class Rule
+@RelationshipResource(name = "rule-sets", entityResource = NodesEntityResource.class, title = "Folder node rule sets")
+public class NodeRuleSetsRelation
 {
-    private String id;
-    private String name;
-
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel) {
-        if (ruleModel == null) {
-            return null;
-        }
-
-        final Rule rule = new Rule();
-        rule.id = ruleModel.getNodeRef().getId();
-        rule.name = ruleModel.getTitle();
-
-        return rule;
-    }
-
-    @UniqueId
-    public String getId()
-    {
-        return id;
-    }
-
-    public void setId(String id)
-    {
-        this.id = id;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
 }

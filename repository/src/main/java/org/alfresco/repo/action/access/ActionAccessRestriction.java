@@ -1,6 +1,6 @@
 /*
  * #%L
- * Alfresco Remote API
+ * Alfresco Repository
  * %%
  * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
@@ -17,54 +17,37 @@
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Lesser General Public License for more details.
+ * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
 
-package org.alfresco.rest.api.model;
+package org.alfresco.repo.action.access;
 
-import org.alfresco.rest.framework.resource.UniqueId;
-import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.Action;
 
-@Experimental
-public class Rule
-{
-    private String id;
-    private String name;
+public interface ActionAccessRestriction {
 
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel) {
-        if (ruleModel == null) {
-            return null;
-        }
+    String ACTION_CONTEXT_PARAM_NAME = "actionContext";
+    String RULE_ACTION_CONTEXT = "rule";
+    String FORM_PROCESSOR_ACTION_CONTEXT = "formProcessor";
+    String V0_ACTION_CONTEXT = "v0";
+    String V1_ACTION_CONTEXT = "v1";
 
-        final Rule rule = new Rule();
-        rule.id = ruleModel.getNodeRef().getId();
-        rule.name = ruleModel.getTitle();
-
-        return rule;
+    static void setActionContext(Action action, String actionContext) {
+        action.setParameterValue(ACTION_CONTEXT_PARAM_NAME, actionContext);
     }
 
-    @UniqueId
-    public String getId()
-    {
-        return id;
+    static String getActionContext(Action action) {
+        return (String) action.getParameterValue(ACTION_CONTEXT_PARAM_NAME);
     }
 
-    public void setId(String id)
-    {
-        this.id = id;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
-    }
+    /**
+     * Verify action access restriction
+     *
+     * @param action
+     */
+    void verifyAccessRestriction(Action action);
 }

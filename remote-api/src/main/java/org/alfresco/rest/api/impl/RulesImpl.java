@@ -31,15 +31,17 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.Rule;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.ListPages;
+import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,18 +50,32 @@ import java.util.stream.Collectors;
 public class RulesImpl implements Rules
 {
 
+    private static final String DEFAULT_RULE_SET_ID = "-default-";
+
     private Nodes nodes;
+
+    private PermissionService permissionService;
+
     private RuleService ruleService;
 
     @Override
-    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final Paging paging)
+    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
     {
-        final NodeRef nodeRef = validateFolderNode(folderNodeId);
+        final NodeRef folderNodeRef = validateNode(folderNodeId, ContentModel.TYPE_FOLDER);
 
-        final List<org.alfresco.service.cmr.rule.Rule> rulesModels = ruleService.getRules(nodeRef);
-        final List<Rule> rules = rulesModels.stream().map(Rule::of).collect(Collectors.toList());
+        if (isNotDefaultId(ruleSetId)) {
+            final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, "rule set");
 
-        return ListPages.createPage(rules, paging);
+            if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef)) {
+                throw new InvalidArgumentException("Rule set is not associated with folder node!");
+            }
+        }
+
+        final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
+            .map(Rule::from)
+            .collect(Collectors.toList());
+
+        return ListPage.of(rules, paging);
     }
 
     @Override
@@ -78,38 +94,47 @@ public class RulesImpl implements Rules
         this.nodes = nodes;
     }
 
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
 
-    private NodeRef validateFolderNode(final String folderNodeId)
-    {
-        final NodeRef nodeRef = nodes.validateNode(folderNodeId);
-
-        final Set<QName> folders = new HashSet<>(List.of(ContentModel.TYPE_FOLDER));
-        if (!nodes.nodeMatches(nodeRef, folders, null)) {
-            throw new InvalidArgumentException("NodeId of a folder is expected!");
-        }
-
-        return nodeRef;
-        return validateNode(folderNodeId, ContentModel.TYPE_FOLDER);
-    }
-
-    private NodeRef validateRuleNode(final String ruleNodeId)
-    {
-        return validateNode(ruleNodeId, ContentModel.TYPE_RULE);
-    }
-
     private NodeRef validateNode(final String nodeId, final QName namespaceType)
+    {
+        return validateNode(nodeId, namespaceType, null);
+    }
+
+    /**
+     * Validates if node exists, user have permission to read from it and is of a given type.
+     *
+     * @param nodeId - node ID
+     * @param expectedType - expected type
+     * @param expectedTypeName - expected type local name
+     * @return node reference
+     */
+    private NodeRef validateNode(final String nodeId, final QName expectedType, final String expectedTypeName)
     {
         final NodeRef nodeRef = nodes.validateNode(nodeId);
 
-        final Set<QName> expectedTypes = Set.of(namespaceType);
+        if (permissionService.hasReadPermission(nodeRef) != AccessStatus.ALLOWED) {
+            throw new PermissionDeniedException("Cannot read from this node!");
+        }
+
+        final Set<QName> expectedTypes = Set.of(expectedType);
         if (!nodes.nodeMatches(nodeRef, expectedTypes, null)) {
-            throw new InvalidArgumentException("NodeId of a " + namespaceType.getLocalName() + " is expected!");
+            final String expectedTypeLocalName = (expectedTypeName != null)? expectedTypeName : expectedType.getLocalName();
+            throw new InvalidArgumentException(String.format("NodeId of a %s is expected!", expectedTypeLocalName));
         }
 
         return nodeRef;
+    }
+
+    private static boolean isNotDefaultId(final String ruleSetId) {
+        return !DEFAULT_RULE_SET_ID.equals(ruleSetId);
     }
 }

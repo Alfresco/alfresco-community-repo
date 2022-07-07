@@ -527,6 +527,7 @@
             <list>
                 <value>org.alfresco.repo.action.executer.ActionExecuter</value>
                 <value>org.alfresco.repo.action.executer.TestModeable</value>
+                <value>org.alfresco.repo.action.executer.LoggingAwareExecuter</value>
             </list>
         </property>
     </bean>
@@ -766,6 +767,23 @@
         </property>
         <property name="templateService">
             <ref bean="TemplateService"/>
+        </property>
+    </bean>
+
+    <!-- Action Restriction Beans -->
+
+    <bean id="actionAccessRestrictionBase" abstract="true" class="org.alfresco.repo.action.access.ActionAccessRestrictionAbstractBase">
+        <property name="nodeService">
+            <ref bean="NodeService"/>
+        </property>
+        <property name="configProperties">
+            <ref bean="global-properties" />
+        </property>
+    </bean>
+
+    <bean id="adminActionAccessRestriction" class="org.alfresco.repo.action.access.AdminActionAccessRestriction" parent="actionAccessRestrictionBase">
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
         </property>
     </bean>
     

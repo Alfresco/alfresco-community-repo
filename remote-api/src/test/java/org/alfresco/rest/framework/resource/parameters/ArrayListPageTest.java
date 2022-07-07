@@ -27,6 +27,7 @@
 package org.alfresco.rest.framework.resource.parameters;
 
 import junit.framework.TestCase;
+import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 import org.alfresco.service.Experimental;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +44,7 @@ import static org.mockito.Mockito.mock;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
-public class ListPagesTest extends TestCase
+public class ArrayListPageTest extends TestCase
 {
 
     private List<PageFormat> getPageFormats() {
@@ -66,16 +67,45 @@ public class ListPagesTest extends TestCase
             final Paging paging = Paging.valueOf(offset, pageSize);
 
             // when
-            final CollectionWithPagingInfo<Object> page = ListPages.createPage(list, paging);
+            final SerializablePagedCollection<Object> page = new ArrayListPage<>(list, paging);
 
             assertThat(page)
                     .isNotNull()
-                .extracting(CollectionWithPagingInfo::getCollection)
+                .extracting(SerializablePagedCollection::getCollection)
                     .isNotNull()
                     .isEqualTo(list.subList(offset, Math.min(offset + pageSize, list.size())))
                 .extracting(Collection::size)
                     .isEqualTo(Math.min(pageSize, list.size() - offset));
+            assertThat(page.getTotalItems())
+                .isEqualTo(list.size());
+            assertThat(page.hasMoreItems())
+                .isEqualTo(list.size() - offset > pageSize);
+            assertThat(page.getPaging())
+                .isNotNull();
         }
+    }
+
+    @Test
+    public void testCreatePageWithoutPaging()
+    {
+        final List<Object> list = randomListOf(0,100, Object.class);
+
+        // when
+        final SerializablePagedCollection<Object> page = new ArrayListPage<>(list);
+
+        assertThat(page)
+                .isNotNull()
+            .extracting(SerializablePagedCollection::getCollection)
+                .isNotNull()
+                .isEqualTo(list)
+            .extracting(Collection::size)
+                .isEqualTo(list.size());
+        assertThat(page.getTotalItems())
+            .isEqualTo(list.size());
+        assertThat(page.hasMoreItems())
+            .isFalse();
+        assertThat(page.getPaging())
+            .isNull();
     }
 
     @Test
@@ -86,28 +116,58 @@ public class ListPagesTest extends TestCase
         final Paging paging = Paging.valueOf(offset, 5);
 
         // when
-        final CollectionWithPagingInfo<Object> page = ListPages.createPage(list, paging);
+        final SerializablePagedCollection<Object> page = new ArrayListPage<>(list, paging);
 
         assertThat(page)
                 .isNotNull()
-            .extracting(CollectionWithPagingInfo::getCollection)
+            .extracting(SerializablePagedCollection::getCollection)
                 .isNotNull()
             .extracting(Collection::isEmpty)
                 .isEqualTo(true);
+        assertThat(page.getTotalItems())
+            .isEqualTo(list.size());
+        assertThat(page.hasMoreItems())
+            .isFalse();
     }
 
     @Test
     public void testCreatePageForNullList()
     {
         // when
-        final CollectionWithPagingInfo<Object> page = ListPages.createPage(null, Paging.DEFAULT);
+        final SerializablePagedCollection<Object> page = new ArrayListPage<>(null, Paging.DEFAULT);
 
         assertThat(page)
                 .isNotNull()
-            .extracting(CollectionWithPagingInfo::getCollection)
+            .extracting(SerializablePagedCollection::getCollection)
                 .isNotNull()
             .extracting(Collection::isEmpty)
                 .isEqualTo(true);
+        assertThat(page.getTotalItems())
+            .isEqualTo(0);
+        assertThat(page.hasMoreItems())
+            .isFalse();
+    }
+
+    @Test
+    public void testCreatePageForNullPaging()
+    {
+        final List<Object> list = createListOf(18, Object.class);
+
+        // when
+        final SerializablePagedCollection<Object> page = new ArrayListPage<>(list, null);
+
+        assertThat(page)
+                .isNotNull()
+            .extracting(SerializablePagedCollection::getCollection)
+                .isNotNull()
+            .extracting(Collection::size)
+                .isEqualTo(list.size());
+        assertThat(page.getTotalItems())
+            .isEqualTo(list.size());
+        assertThat(page.hasMoreItems())
+            .isFalse();
+        assertThat(page.getPaging())
+            .isNull();
     }
 
     private static <T> List<T> randomListOf(final int minSize, final int maxSize, final Class<T> clazz) {

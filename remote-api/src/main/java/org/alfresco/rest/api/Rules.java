@@ -34,19 +34,19 @@ import org.alfresco.service.Experimental;
 /**
  * Folder node rules API.
  *
- * @author krdabrowski
  */
 @Experimental
 public interface Rules
 {
     /**
-     * Get rules for node's ID
+     * Get rules for node's and rule set's IDs
      *
      * @param folderNodeId node ID
+     * @param ruleSetId rule set ID
      * @param paging {@link Paging} information
-     * @return {@link CollectionWithPagingInfo} containing a paged list of folder rules
+     * @return {@link CollectionWithPagingInfo} containing a list page of folder rules
      */
-    CollectionWithPagingInfo<Rule> getRules(String folderNodeId, Paging paging);
+    CollectionWithPagingInfo<Rule> getRules(String folderNodeId, String ruleSetId, Paging paging);
 
     /**
      *

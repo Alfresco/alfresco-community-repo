@@ -32,6 +32,7 @@ import org.alfresco.service.Experimental;
 import org.alfresco.util.Pair;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,7 +72,7 @@ public interface ListPage<E> extends List<E>, PagingResults<E>, SerializablePage
     {
         if (list == null)
         {
-            return CollectionWithPagingInfo.asPaged(paging, null);
+            return CollectionWithPagingInfo.asPaged(paging, Collections.emptyList());
         }
 
         return CollectionWithPagingInfo.from(new ArrayListPage<>(list, paging));

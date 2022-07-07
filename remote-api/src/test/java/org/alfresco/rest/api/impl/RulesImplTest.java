@@ -30,12 +30,15 @@ import junit.framework.TestCase;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Rule;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,6 +69,9 @@ public class RulesImplTest extends TestCase
     private Nodes nodes;
 
     @Mock
+    private PermissionService permissionService;
+
+    @Mock
     private RuleService ruleService;
 
     @InjectMocks
@@ -79,13 +85,14 @@ public class RulesImplTest extends TestCase
 
         given(nodes.validateNode(eq(FOLDER_NODE_ID))).willReturn(folderNodeRef);
         given(nodes.validateNode(eq(RULE_SET_ID))).willReturn(ruleSetNodeRef);
+        given(nodes.nodeMatches(any(), any(), any())).willReturn(true);
+        given(permissionService.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
     }
 
     @Test
     public void testGetRules()
     {
         final Paging paging = Paging.DEFAULT;
-        given(nodes.nodeMatches(any(), any(), any())).willReturn(true);
         given(ruleService.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
 
         // when
@@ -96,6 +103,9 @@ public class RulesImplTest extends TestCase
         then(nodes).should().nodeMatches(eq(folderNodeRef), any(), isNull());
         then(nodes).should().nodeMatches(eq(ruleSetNodeRef), any(), isNull());
         then(nodes).shouldHaveNoMoreInteractions();
+        then(permissionService).should().hasReadPermission(eq(folderNodeRef));
+        then(permissionService).should().hasReadPermission(eq(ruleSetNodeRef));
+        then(permissionService).shouldHaveNoMoreInteractions();
         then(ruleService).should().isRuleSetAssociatedWithFolder(eq(ruleSetNodeRef), eq(folderNodeRef));
         then(ruleService).should().getRules(eq(folderNodeRef));
         then(ruleService).shouldHaveNoMoreInteractions();
@@ -110,7 +120,6 @@ public class RulesImplTest extends TestCase
     {
         final String defaultRuleSetId = "-default-";
         final Paging paging = Paging.DEFAULT;
-        given(nodes.nodeMatches(any(), any(), any())).willReturn(true);
 
         // when
         final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, defaultRuleSetId, paging);
@@ -118,6 +127,8 @@ public class RulesImplTest extends TestCase
         then(nodes).should().validateNode(eq(FOLDER_NODE_ID));
         then(nodes).should().nodeMatches(eq(folderNodeRef), any(), isNull());
         then(nodes).shouldHaveNoMoreInteractions();
+        then(permissionService).should().hasReadPermission(eq(folderNodeRef));
+        then(permissionService).shouldHaveNoMoreInteractions();
         then(ruleService).should().getRules(eq(folderNodeRef));
         then(ruleService).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
@@ -157,8 +168,6 @@ public class RulesImplTest extends TestCase
     public void testGetRulesForNotAssociatedRuleSetToFolder()
     {
         final Paging paging = Paging.DEFAULT;
-        given(nodes.nodeMatches(eq(folderNodeRef), any(), any())).willReturn(true);
-        given(nodes.nodeMatches(eq(ruleSetNodeRef), any(), any())).willReturn(true);
         given(ruleService.isRuleSetAssociatedWithFolder(any(), any())).willReturn(false);
 
         // when
@@ -167,5 +176,18 @@ public class RulesImplTest extends TestCase
 
         then(ruleService).should().isRuleSetAssociatedWithFolder(eq(ruleSetNodeRef), eq(folderNodeRef));
         then(ruleService).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testGetRulesWithoutReadPermission()
+    {
+        final Paging paging = Paging.DEFAULT;
+        given(permissionService.hasReadPermission(any())).willReturn(AccessStatus.DENIED);
+
+        // when
+        assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(
+            () -> rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, paging));
+
+        then(ruleService).shouldHaveNoInteractions();
     }
 }

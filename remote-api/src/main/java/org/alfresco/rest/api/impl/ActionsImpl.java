@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.impl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
@@ -286,6 +287,7 @@ public class ActionsImpl implements Actions
             cmrAction = actionService.createAction(action.getActionDefinitionId());
         }
 
+        ActionAccessRestriction.setActionContext(cmrAction, ActionAccessRestriction.V1_ACTION_CONTEXT);
         actionService.executeAction(cmrAction, actionedUponNodeRef, true, true);
 
         // Create user result.

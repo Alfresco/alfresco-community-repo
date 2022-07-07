@@ -58,7 +58,7 @@ public class RulesImpl implements Rules
     {
         final NodeRef folderNodeRef = validateNode(folderNodeId, ContentModel.TYPE_FOLDER);
 
-        if (notDefaultId(ruleSetId)) {
+        if (isNotDefaultId(ruleSetId)) {
             final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER);
 
             if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef)) {
@@ -95,7 +95,7 @@ public class RulesImpl implements Rules
         return nodeRef;
     }
 
-    private static boolean notDefaultId(final String ruleSetId) {
+    private static boolean isNotDefaultId(final String ruleSetId) {
         return !DEFAULT_RULE_SET_ID.equals(ruleSetId);
     }
 }

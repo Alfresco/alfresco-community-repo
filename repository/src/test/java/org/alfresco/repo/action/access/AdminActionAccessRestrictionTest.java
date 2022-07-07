@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.action.access;
 
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
@@ -43,19 +44,24 @@ public class AdminActionAccessRestrictionTest extends BaseSpringTest {
     private static final String MAIL_ACTION = "mail";
     private static final String CONTROLLED_CONTEXT = ActionAccessRestriction.V1_ACTION_CONTEXT;
 
-    private ActionService actionService;
     private ActionAccessRestriction adminActionAccessRestriction;
 
     @Before
     public void setup() {
-        actionService = applicationContext.getBean("ActionService", ActionService.class);
         adminActionAccessRestriction = applicationContext.getBean("adminActionAccessRestriction", AdminActionAccessRestriction.class);
-
     }
 
     @Test
     public void adminCanExecute() {
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        Action action = createMailAction();
+        adminActionAccessRestriction.verifyAccessRestriction(action);
+    }
+
+    @Test
+    public void systemCanExecute() {
+        AuthenticationUtil.setRunAsUserSystem();
 
         Action action = createMailAction();
         adminActionAccessRestriction.verifyAccessRestriction(action);
@@ -76,7 +82,7 @@ public class AdminActionAccessRestrictionTest extends BaseSpringTest {
         params.put("subject", "test");
         params.put("text", "test");
 
-        Action action = actionService.createAction(MAIL_ACTION, params);
+        Action action = new ActionImpl(null, "123", MAIL_ACTION, params);
         ActionAccessRestriction.setActionContext(action, CONTROLLED_CONTEXT);
 
         return action;

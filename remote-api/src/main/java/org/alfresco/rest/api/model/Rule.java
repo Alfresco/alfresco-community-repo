@@ -35,7 +35,7 @@ public class Rule
     private String id;
     private String name;
 
-    public static Rule of(final org.alfresco.service.cmr.rule.Rule ruleModel) {
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel) {
         if (ruleModel == null) {
             return null;
         }

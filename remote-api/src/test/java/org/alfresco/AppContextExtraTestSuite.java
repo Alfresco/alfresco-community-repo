@@ -58,7 +58,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.search.SearchQuerySerializerTests.class,
     org.alfresco.rest.api.search.StoreMapperTests.class,
     org.alfresco.rest.api.tests.ModulePackageTest.class,
-    org.alfresco.rest.framework.resource.parameters.ListPageTest.class,
+    org.alfresco.rest.framework.resource.parameters.ArrayListPageTest.class,
     org.alfresco.rest.framework.tests.core.InspectorTests.class,
     org.alfresco.rest.framework.tests.core.JsonJacksonTests.class,
     org.alfresco.rest.framework.tests.core.ParamsExtractorTests.class,

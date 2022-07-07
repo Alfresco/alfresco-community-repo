@@ -34,6 +34,12 @@ import org.alfresco.util.Pair;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * List page with paging information.
+ *
+ *
+ * @param <E> - list element type
+ */
 @Experimental
 public interface ListPage<E> extends List<E>, PagingResults<E>, SerializablePagedCollection<E>
 {
@@ -45,7 +51,7 @@ public interface ListPage<E> extends List<E>, PagingResults<E>, SerializablePage
 
     default Pair<Integer, Integer> getTotalResultCount()
     {
-        return new Pair<>(this.size(), this.size());
+        return new Pair<>(this.getTotalItems(), this.getTotalItems());
     }
 
     default Collection<E> getCollection()
@@ -53,18 +59,13 @@ public interface ListPage<E> extends List<E>, PagingResults<E>, SerializablePage
         return this;
     }
 
-    default Integer getTotalItems()
-    {
-        return this.size();
-    }
-
     /**
      * Builds a collection with paging information.
      *
-     * @param list - The list that needs to be paged
-     * @param paging - Paging request info
-     * @return List page in {@link CollectionWithPagingInfo}
-     * @param <E> List element type
+     * @param list - the list that needs to be paged
+     * @param paging - paging request info
+     * @return list page in {@link CollectionWithPagingInfo}
+     * @param <E> - list element type
      */
     static <E> CollectionWithPagingInfo<E> of(final List<? extends E> list, final Paging paging)
     {
@@ -73,6 +74,6 @@ public interface ListPage<E> extends List<E>, PagingResults<E>, SerializablePage
             return CollectionWithPagingInfo.asPaged(paging, null);
         }
 
-        return CollectionWithPagingInfo.of(new ArrayListPage<>(list, paging));
+        return CollectionWithPagingInfo.from(new ArrayListPage<>(list, paging));
     }
 }

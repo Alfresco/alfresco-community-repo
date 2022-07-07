@@ -329,4 +329,13 @@ public interface RuleService
      */
     @Auditable(parameters = {"nodeRef"})
     public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef);
+
+    /**
+     * Check if rule set's associated parent is equal to folder node.
+     *
+     * @param ruleSetNodeRef - node reference of a rule set
+     * @param folderNodeRef - node reference of a folder
+     * @return true if rule set is associated with folder
+     */
+    boolean isRuleSetAssociatedWithFolder(NodeRef ruleSetNodeRef, NodeRef folderNodeRef);
 }

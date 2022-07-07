@@ -37,12 +37,14 @@ import java.util.List;
 public class ArrayListPage<E> extends ArrayList<E> implements ListPage<E>
 {
     private final Paging paging;
+    private final int totalItems;
     private final boolean hasMore;
 
     public ArrayListPage(final List<? extends E> list)
     {
-        super(list);
+        super(list != null ? list : Collections.emptyList());
         this.paging = null;
+        this.totalItems = this.size();
         this.hasMore = false;
     }
 
@@ -50,12 +52,19 @@ public class ArrayListPage<E> extends ArrayList<E> implements ListPage<E>
     {
         super(sublistFrom(list, paging));
         this.paging = paging;
-        if (this.paging != null)
+        if (list != null)
         {
-            final int start = this.paging.getSkipCount();
-            final int end = (this.paging.getMaxItems() == 0) ? list.size() : Math.min(list.size(), start + this.paging.getMaxItems());
-            this.hasMore = !(list.size() == end);
+            this.totalItems = list.size();
+            if (paging != null)
+            {
+                final int start = paging.getSkipCount();
+                final int end = (paging.getMaxItems() == 0) ? list.size() : Math.min(list.size(), start + paging.getMaxItems());
+                this.hasMore = !(list.size() == end);
+            } else {
+                this.hasMore = false;
+            }
         } else {
+            this.totalItems = 0;
             this.hasMore = false;
         }
     }
@@ -64,6 +73,12 @@ public class ArrayListPage<E> extends ArrayList<E> implements ListPage<E>
     public Paging getPaging()
     {
         return paging;
+    }
+
+    @Override
+    public Integer getTotalItems()
+    {
+        return totalItems;
     }
 
     @Override
@@ -90,7 +105,8 @@ public class ArrayListPage<E> extends ArrayList<E> implements ListPage<E>
         return null;
     }
 
-    private static <E> List<? extends E> sublistFrom(final List<? extends E> list, final Paging paging) {
+    private static <E> List<? extends E> sublistFrom(final List<? extends E> list, final Paging paging)
+    {
         if (list == null)
         {
             return Collections.emptyList();

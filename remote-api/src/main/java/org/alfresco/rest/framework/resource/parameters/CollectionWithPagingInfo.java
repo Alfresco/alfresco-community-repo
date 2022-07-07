@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -86,7 +86,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection<
      * @param pagedCollection - a collection with paging information
      * @return CollectionWithPagingInfo
      */
-    public static <T> CollectionWithPagingInfo<T> of(SerializablePagedCollection<T> pagedCollection)
+    public static <T> CollectionWithPagingInfo<T> from(SerializablePagedCollection<T> pagedCollection)
     {
         return new CollectionWithPagingInfo<>(pagedCollection.getCollection(), pagedCollection.getPaging(), pagedCollection.hasMoreItems(), pagedCollection.getTotalItems(),
             pagedCollection.getSourceEntity(), pagedCollection.getContext());

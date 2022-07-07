@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.namespace.QName;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,22 +47,27 @@ import java.util.stream.Collectors;
 public class RulesImpl implements Rules
 {
 
+    private static final String DEFAULT_RULE_SET_ID = "-default-";
+
     private Nodes nodes;
+
     private RuleService ruleService;
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
     {
-        final NodeRef nodeRef = nodes.validateNode(folderNodeId);
+        final NodeRef folderNodeRef = validateNode(folderNodeId, ContentModel.TYPE_FOLDER);
 
-        final Set<QName> folders = new HashSet<>(List.of(ContentModel.TYPE_FOLDER));
-        if (!nodes.nodeMatches(nodeRef, folders, null))
-        {
-            throw new InvalidArgumentException("NodeId of a folder is expected!");
+        if (notDefaultId(ruleSetId)) {
+            final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER);
+
+            if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef)) {
+                throw new InvalidArgumentException("Rule set is not associated with folder node!");
+            }
         }
 
-        final List<org.alfresco.service.cmr.rule.Rule> rulesModels = ruleService.getRules(nodeRef);
-        final List<Rule> rules = rulesModels.stream().map(Rule::of).collect(Collectors.toList());
+        final List<org.alfresco.service.cmr.rule.Rule> rulesModels = ruleService.getRules(folderNodeRef);
+        final List<Rule> rules = rulesModels.stream().map(Rule::from).collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
     }
@@ -76,5 +80,22 @@ public class RulesImpl implements Rules
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
+    }
+
+    private NodeRef validateNode(final String nodeId, final QName namespaceType)
+    {
+        final NodeRef nodeRef = nodes.validateNode(nodeId);
+
+        final Set<QName> expectedTypes = Set.of(namespaceType);
+        if (!nodes.nodeMatches(nodeRef, expectedTypes, null)) {
+            final String expectedType = namespaceType.getLocalName().replace("systemfolder", "rule set");
+            throw new InvalidArgumentException(String.format("NodeId of a %s is expected!", expectedType));
+        }
+
+        return nodeRef;
+    }
+
+    private static boolean notDefaultId(final String ruleSetId) {
+        return !DEFAULT_RULE_SET_ID.equals(ruleSetId);
     }
 }

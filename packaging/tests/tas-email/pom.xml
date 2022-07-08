@@ -31,13 +31,11 @@
             <artifactId>email</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.alfresco.tas</groupId>
             <artifactId>restapi</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-governance-services-automation-community-rest-api</artifactId>

@@ -24,7 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.rm.community.rule.action.security;
+package org.alfresco.email.action.access;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestWrapper;
@@ -48,6 +48,7 @@ public class AdminActionAccessRestrictionRuleTest extends RestTest {
     @Autowired
     protected RestWrapper restClientAlfresco;
 
+    //TODO to replace with own testing API implementation, preferably in restapi
     @Autowired
     private RulesAPI rulesAPI;
 

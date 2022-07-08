@@ -176,6 +176,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.action.CompositeActionImplTest.class,
     org.alfresco.repo.action.CompositeActionConditionImplTest.class,
     org.alfresco.repo.action.executer.TransformActionExecuterTest.class,
+    org.alfresco.repo.action.executer.ImporterActionExecutorUnitTest.class,
     org.alfresco.repo.audit.AuditableAnnotationTest.class,
     org.alfresco.repo.audit.PropertyAuditFilterTest.class,
     org.alfresco.repo.audit.access.NodeChangeTest.class,

@@ -57,7 +57,7 @@ public class Log4jAppenderUtil
 
         final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         final Configuration config = ctx.getConfiguration();
-        appender.start();
+        appender.stop();
         LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
         loggerConfig.removeAppender(appender.getName());
         ctx.updateLoggers();

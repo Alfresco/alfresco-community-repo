@@ -73,7 +73,17 @@ public interface ScriptProcessor extends Processor
      * @return Obejct   the result of the script 
      */
     public Object executeString(String script, Map<String, Object> model);
-    
+
+    /**
+     * Execute script string
+     *
+     * @param script    the script string
+     * @param model     the context model
+     * @param secure    the flag that indicates if string is considered secure to be executed
+     * @return Obejct   the result of the script
+     */
+    public Object executeString(String script, Map<String, Object> model, boolean secure);
+
     /**
      * Reset the processor - such as clearing any internal caches etc.
      */

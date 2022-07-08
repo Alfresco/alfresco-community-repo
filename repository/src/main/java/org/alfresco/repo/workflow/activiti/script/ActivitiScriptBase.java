@@ -32,12 +32,14 @@ import org.activiti.engine.delegate.VariableScope;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.el.Expression;
+import org.activiti.engine.impl.persistence.entity.DeploymentEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -102,14 +104,18 @@ public class ActivitiScriptBase
     {
         // Execute the script using the appropriate processor
         Object scriptResult = null;
+
+        // Checks if current workflow is secure
+        boolean secure = isSecure();
+
         if (scriptProcessorName != null)
         {
-            scriptResult = getServiceRegistry().getScriptService().executeScriptString(scriptProcessorName, theScript, model);
+            scriptResult = getServiceRegistry().getScriptService().executeScriptString(scriptProcessorName, theScript, model, secure);
         }
         else
         {
             // Use default script-processor
-            scriptResult = getServiceRegistry().getScriptService().executeScriptString(theScript, model);
+            scriptResult = getServiceRegistry().getScriptService().executeScriptString(theScript, model, secure);
         }
         
         return scriptResult;
@@ -140,6 +146,32 @@ public class ActivitiScriptBase
             return registry;
         }
         throw new IllegalStateException("No ProcessEngineCOnfiguration found in active context");
+    }
+
+    /**
+     * Checks whether the workflow is deployed on a secure location or not, based on {@link DeploymentEntity} name
+     *
+     * @return true if workflow is considered secure, false otherwise
+     */
+    private boolean isSecure()
+    {
+        DeploymentEntity de = null;
+
+        try
+        {
+            if (Context.isExecutionContextActive())
+            {
+                de = Context.getExecutionContext().getDeployment();
+            }
+        }
+        catch (Exception e)
+        {
+            // No action required
+        }
+
+        // If workflow is deployed at app server (classpath) the deployment entity name is filled in with filename
+        // If workflow is deployed in repo (e.g., data dictionary) the deployment entity name is null
+        return de != null && de.getName() != null;
     }
 
     /**

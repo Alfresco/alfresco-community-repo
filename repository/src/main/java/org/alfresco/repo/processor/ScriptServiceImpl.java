@@ -191,13 +191,32 @@ public class ScriptServiceImpl implements ScriptService
     }
 
     /**
+     * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map, boolean)
+     */
+    public Object executeScriptString(String script, Map<String, Object> model, boolean secure)
+        throws ScriptException
+    {
+        return executeScriptString(this.defaultScriptProcessor, script, model, secure);
+    }
+
+    /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map)
      */
     public Object executeScriptString(String engine, String script, Map<String, Object> model)
         throws ScriptException
     {
         ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
-        return executeString(scriptProcessor, script, model);
+        return executeString(scriptProcessor, script, model, false);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map, boolean)
+     */
+    public Object executeScriptString(String engine, String script, Map<String, Object> model, boolean secure)
+        throws ScriptException
+    {
+        ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
+        return executeString(scriptProcessor, script, model, secure);
     }
     
     /**
@@ -278,9 +297,10 @@ public class ScriptServiceImpl implements ScriptService
      * 
      * @param script    the script string
      * @param model     the context model
+     * @param secure    the flag indicating if string script is considered secure
      * @return Object   the result of the script 
      */
-    protected Object executeString(ScriptProcessor processor, String script, Map<String, Object> model)
+    protected Object executeString(ScriptProcessor processor, String script, Map<String, Object> model, boolean secure)
     {
         ParameterCheck.mandatoryString("script", script);
         
@@ -290,7 +310,7 @@ public class ScriptServiceImpl implements ScriptService
         }
         try
         {
-            return processor.executeString(script, model);
+            return processor.executeString(script, model, secure);
         }
         catch (Throwable err)
         {

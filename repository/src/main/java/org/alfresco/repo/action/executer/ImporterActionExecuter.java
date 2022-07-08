@@ -82,9 +82,6 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private static final String TEMP_FILE_PREFIX = "alf";
     private static final String TEMP_FILE_SUFFIX_ACP = ".acp";
 
-    private static final long NO_RATIO_THRESHOLD_CHECK = -1;
-    private static final long NO_UNCOMPRESSED_BYTES_CHECK = -1;
-
     private long ratioThreshold;
     private long uncompressedBytesLimit = -1L;
     private boolean highByteZip = false;
@@ -383,7 +380,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
      */
     public static void extractFile(ZipFile archive, String extractDir)
     {
-        extractFile(archive, extractDir, new ZipBombProtection(NO_RATIO_THRESHOLD_CHECK, NO_UNCOMPRESSED_BYTES_CHECK));
+        extractFile(archive, extractDir, ExtractionProgressTracker.NONE);
     }
 
     /**
@@ -393,7 +390,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
      * @param extractDir    The directory to extract into
      * @param tracker       The extraction progress tracker to check against during the extraction process
      */
-    private static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker)
+    public static void extractFile(ZipFile archive, String extractDir, ExtractionProgressTracker tracker)
     {
         String fileName;
         String destFileName;
@@ -511,7 +508,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 
             long ratio = uncompressedBytesCount / compressedBytesCount;
 
-            if (ratioThreshold > 0 && ratio > ratioThreshold)
+            if (ratio > ratioThreshold)
             {
                 throw new AlfrescoRuntimeException("Unexpected compression ratio detected (" + ratio + "%). Possible zip bomb attack. Breaking the extraction process.");
             }
@@ -526,5 +523,14 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     private interface ExtractionProgressTracker
     {
         void reportProgress(long compressedBytesCount, long uncompressedBytesCount);
+
+        ExtractionProgressTracker NONE = new ExtractionProgressTracker()
+        {
+            @Override
+            public void reportProgress(long compressedBytesCount, long uncompressedBytesCount)
+            {
+                // intentionally do nothing
+            }
+        };
     }
 }

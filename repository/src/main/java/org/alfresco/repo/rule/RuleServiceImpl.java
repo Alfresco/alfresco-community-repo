@@ -1631,6 +1631,6 @@ public class RuleServiceImpl
     }
 
     private List<ChildAssociationRef> findAssociatedParents(final NodeRef nodeRef, final QNamePattern pattern) {
-        return runtimeNodeService.getParentAssocs(nodeRef);
+        return runtimeNodeService.getParentAssocs(nodeRef, pattern, pattern);
     }
 }

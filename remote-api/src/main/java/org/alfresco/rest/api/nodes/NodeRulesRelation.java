@@ -29,6 +29,7 @@ package org.alfresco.rest.api.nodes;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.Rule;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -45,7 +46,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Experimental
 @RelationshipResource(name = "rules", entityResource = NodeRuleSetsRelation.class, title = "Folder node rules")
-public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, InitializingBean
+public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, RelationshipResourceAction.ReadById<Rule>, InitializingBean
 {
 
     private Rules rules;
@@ -57,17 +58,17 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     }
 
     /**
-     * List folder node rules for given node's and rule set's IDs as a page.
+     * List folder rules for given folder node's and rule set's IDs as a page.
      *
-     * - GET /nodes/{folderNodeId}/rulesets/{ruleSetId}/rules
+     * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules
      *
      * @param folderNodeId - entity resource context for this relationship
      * @param parameters - will never be null. Contains i.a. paging information and ruleSetId (relationshipId)
-     * @return a paged list of folder rules
+     * @return {@link CollectionWithPagingInfo} containing a page of folder rules
      */
     @WebApiDescription(
         title = "Get folder node rules",
-        description = "Returns a paged list of folder rules for given node's and rule set's ID",
+        description = "Returns a paged list of folder rules for given node's and rule set's IDs",
         successStatus = HttpServletResponse.SC_OK
     )
     @Override
@@ -76,6 +77,30 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
         final String ruleSetId = parameters.getRelationshipId();
 
         return rules.getRules(folderNodeId, ruleSetId, parameters.getPaging());
+    }
+
+    /**
+     * Get single folder rule for given node's, rule set's and rule's IDs.
+     *
+     * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
+     *
+     * @param folderNodeId - entity resource context for this relationship
+     * @param ruleSetId - rule set node ID (associated with folder node)
+     * @param parameters - will never be null. Contains i.a. ruleId (relationship2Id)
+     * @return {@link Rule} information
+     * @throws RelationshipResourceNotFoundException in case resource was not found
+     */
+    @WebApiDescription(
+        title="Get folder node rule",
+        description = "Returns a folder single rule information for given node's, rule set's and rule's IDs",
+        successStatus = HttpServletResponse.SC_OK
+    )
+    @Override
+    public Rule readById(String folderNodeId, String ruleSetId, Parameters parameters) throws RelationshipResourceNotFoundException
+    {
+        final String ruleId = parameters.getRelationship2Id();
+
+        return rules.getRuleById(folderNodeId, ruleSetId, ruleId);
     }
 
     public void setRules(Rules rules)

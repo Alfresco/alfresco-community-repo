@@ -24,37 +24,48 @@
  * #L%
  */
 
-package org.alfresco.rest.api;
+package org.alfresco.rest.api.model;
 
-import org.alfresco.rest.api.model.Rule;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 
-/**
- * Folder node rules API.
- *
- */
 @Experimental
-public interface Rules
+public class RuleSet
 {
-    /**
-     * Get rules for node's and rule set's IDs
-     *
-     * @param folderNodeId - folder node ID
-     * @param ruleSetId - rule set ID
-     * @param paging - {@link Paging} information
-     * @return {@link CollectionWithPagingInfo} containing a list page of folder rules
-     */
-    CollectionWithPagingInfo<Rule> getRules(String folderNodeId, String ruleSetId, Paging paging);
+    private static final String DEFAULT_ID = "-default-";
 
-    /**
-     * Get rule for rule's ID and check associations with folder node and rule set node
-     *
-     * @param folderNodeId - folder node ID
-     * @param ruleSetId - rule set ID
-     * @param ruleId - rule ID
-     * @return {@link Rule} information
-     */
-    Rule getRuleById(String folderNodeId, String ruleSetId, String ruleId);
+    private String id;
+
+    public static RuleSet of(String id)
+    {
+        final RuleSet ruleSet = new RuleSet();
+        ruleSet.id = id;
+
+        return ruleSet;
+    }
+
+    public boolean isNotDefaultId() {
+        return isNotDefaultId(this.id);
+    }
+
+    public boolean isDefaultId() {
+        return isDefaultId(this.id);
+    }
+
+    public static boolean isNotDefaultId(final String id) {
+        return !isDefaultId(id);
+    }
+
+    public static boolean isDefaultId(final String id) {
+        return DEFAULT_ID.equals(id);
+    }
+
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
 }

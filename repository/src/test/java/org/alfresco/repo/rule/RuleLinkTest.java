@@ -386,6 +386,41 @@ public class RuleLinkTest extends BaseSpringTest
         assertFalse(associated);
     }
 
+    @Test
+    public void testIsRuleAssociatedWithRuleSet()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderOne, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
+
+        // when
+        final boolean associated = ruleService.isRuleSetAssociatedWithFolder(rule.getNodeRef(), ruleSetNodeRef);
+
+        assertTrue(associated);
+    }
+
+    @Test
+    public void testIsRuleNotAssociatedWithRuleSet()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        final Rule otherRule = createTestRule(false, "bobs rule");
+        this.ruleService.saveRule(folderTwo , rule);
+        final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderTwo, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
+
+        // when
+        final boolean associated = ruleService.isRuleSetAssociatedWithFolder(otherRule.getNodeRef(), ruleSetNodeRef);
+
+        assertFalse(associated);
+    }
+
     protected Rule createTestRule(boolean isAppliedToChildren, String title)
     {
         // Rule properties

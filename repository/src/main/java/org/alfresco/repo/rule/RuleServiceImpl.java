@@ -40,6 +40,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
@@ -1614,13 +1615,22 @@ public class RuleServiceImpl
     }
 
     @Override
-    public boolean  isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
+    @Experimental
+    public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
         return findAssociatedParents(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER).stream()
             .map(ChildAssociationRef::getParentRef)
             .anyMatch(folderNodeRef::equals);
     }
 
+    @Override
+    @Experimental
+    public boolean isRuleAssociatedWithRuleSet(final NodeRef ruleNodeRef, final NodeRef ruleSetNodeRef) {
+        return findAssociatedParents(ruleNodeRef, ContentModel.ASSOC_CONTAINS).stream()
+            .map(ChildAssociationRef::getParentRef)
+            .anyMatch(ruleSetNodeRef::equals);
+    }
+
     private List<ChildAssociationRef> findAssociatedParents(final NodeRef nodeRef, final QNamePattern pattern) {
-        return runtimeNodeService.getParentAssocs(nodeRef, pattern, pattern);
+        return runtimeNodeService.getParentAssocs(nodeRef);
     }
 }

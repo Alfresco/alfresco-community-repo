@@ -593,6 +593,8 @@
         <property name="fileFolderService">
             <ref bean="FileFolderService"/>
         </property>
+       <property name="ratioThreshold" value="${import.zip.compressionRatioThreshold}"/>
+       <property name="uncompressedBytesLimit" value="${import.zip.uncompressedBytesLimit}"/>
     </bean>
     
     <bean id="export" class="org.alfresco.repo.action.executer.ExporterActionExecuter" parent="action-executer">

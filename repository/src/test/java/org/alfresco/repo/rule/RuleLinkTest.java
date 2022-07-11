@@ -408,8 +408,8 @@ public class RuleLinkTest extends BaseSpringTest
     {
         final Rule rule = createTestRule(false, "luke");
         final Rule otherRule = createTestRule(false, "bobs rule");
-        this.ruleService.saveRule(folderOne , rule);
-        this.ruleService.saveRule(folderTwo , otherRule);
+        this.ruleService.saveRule(folderOne, rule);
+        this.ruleService.saveRule(folderTwo, otherRule);
         final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderOne, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
             .filter(ChildAssociationRef::isPrimary)
             .map(ChildAssociationRef::getChildRef)

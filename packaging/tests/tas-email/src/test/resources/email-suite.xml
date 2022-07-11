@@ -9,7 +9,7 @@
 
     <test name="Email tests">
         <packages>
-            <package name="org.alfresco.email.*"/>
+            <package name="org.alfresco.email.action.access.*"/>
         </packages>
     </test>
 </suite>

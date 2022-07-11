@@ -36,12 +36,6 @@
             <artifactId>restapi</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-governance-services-automation-community-rest-api</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

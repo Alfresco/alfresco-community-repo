@@ -1,7 +1,6 @@
 package org.alfresco.email.action.access;
 
 import com.google.common.collect.ImmutableMap;
-import org.alfresco.email.EmailTest;
 import org.alfresco.rest.RestTest;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
@@ -12,7 +11,7 @@ import org.testng.annotations.Test;
 import org.alfresco.rest.core.RestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class AdminActionAccessRestrictionV1Test extends EmailTest {
+public class V1AdminAccessRestrictionTest extends RestTest {
 
     private UserModel adminUser;
     private UserModel testUser;

@@ -36,7 +36,6 @@ import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChild;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildProperties;
-import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RulesAPI;
 import org.alfresco.test.AlfrescoTest;
@@ -63,7 +62,6 @@ public class UnfiledRecordsRuleTests extends BaseRMRestTest {
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
     private RecordCategory Category2;
     private RecordCategoryChild Folder2;
-    private final List<UnfiledContainerChild> unfiledRecords = new ArrayList<>();
     @Autowired
     private RulesAPI rulesAPI;
 

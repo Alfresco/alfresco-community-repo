@@ -398,7 +398,7 @@ public class RuleLinkTest extends BaseSpringTest
             .orElse(null);
 
         // when
-        final boolean associated = ruleService.isRuleSetAssociatedWithFolder(rule.getNodeRef(), ruleSetNodeRef);
+        final boolean associated = ruleService.isRuleAssociatedWithRuleSet(rule.getNodeRef(), ruleSetNodeRef);
 
         assertTrue(associated);
     }
@@ -417,7 +417,7 @@ public class RuleLinkTest extends BaseSpringTest
             .orElse(null);
 
         // when
-        final boolean associated = ruleService.isRuleSetAssociatedWithFolder(otherRule.getNodeRef(), ruleSetNodeRef);
+        final boolean associated = ruleService.isRuleAssociatedWithRuleSet(otherRule.getNodeRef(), ruleSetNodeRef);
 
         assertFalse(associated);
     }

@@ -3780,12 +3780,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         @Override
         public boolean handle(
-                Pair<Long, ChildAssociationRef> cAssocPair,
-                Pair<Long, NodeRef> pNodePair,
-                Pair<Long, NodeRef> cNodePair)
+                Pair<Long, ChildAssociationRef> childAssocPair,
+                Pair<Long, NodeRef> parentNodePair,
+                Pair<Long, NodeRef> childNodePair)
         {
             // this will be parent node id for getting next child association
-            Long childNodeId = cNodePair.getFirst();
+            Long childNodeId = childNodePair.getFirst();
             // added first child in node id list
             nodeIds.add(childNodeId);
             // getting hierarchical child associations (replacing multiple database call with recursive query )
@@ -3793,13 +3793,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             for (ChildAssocEntity assoc : assocs)
             {
 
-                Pair<Long, ChildAssociationRef> childAssocPair = assoc.getPair(qnameDAO);
-                Pair<Long, NodeRef> childNodePair = assoc.getChildNode().getNodePair();
-                Long nodeId = childNodePair.getFirst();
+                Pair<Long, ChildAssociationRef> nextChildAssocPair = assoc.getPair(qnameDAO);
+                Pair<Long, NodeRef> nextChildNodePair = assoc.getChildNode().getNodePair();
+                Long nodeId = nextChildNodePair.getFirst();
 
                 if (!nodeIds.add(nodeId))
                 {
-                    ChildAssociationRef childAssociationRef = childAssocPair.getSecond();
+                    ChildAssociationRef childAssociationRef = nextChildAssocPair.getSecond();
                     // Remember exception we want to throw and exit. If we throw within here, it will be wrapped by IBatis
                     toThrow = new CyclicChildRelationshipException(
                             "Child Association Cycle detected hitting nodes: " + nodeIds,
@@ -3807,7 +3807,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     return false;
                 }
             }
-            // cycleCheck(nodeId);
             nodeIds.clear();
             return toThrow == null;
         }

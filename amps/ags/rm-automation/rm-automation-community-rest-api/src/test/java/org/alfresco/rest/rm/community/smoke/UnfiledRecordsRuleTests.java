@@ -65,7 +65,6 @@ public class UnfiledRecordsRuleTests extends BaseRMRestTest {
     @Autowired
     private RulesAPI rulesAPI;
 
-
     @Test
     @AlfrescoTest(jira = "RM-2794")
     public void unfiledRecordsRule() {

@@ -13,6 +13,8 @@ import java.util.Map;
 public class AccessRestrictionUtil {
 
     public static final String MAIL_ACTION = "mail";
+    public static final String EXPECTED_ERROR_MESSAGE =
+            "Only admin or system user is allowed to define uses of or directly execute this action";
 
     public static Map<String, String> createMailParameters(UserModel sender, UserModel recipient) {
         Map<String, String> parameterValues = new HashMap<>();

@@ -38,10 +38,7 @@ import org.springframework.http.HttpMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.alfresco.email.action.access.AccessRestrictionUtil.MAIL_ACTION;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.createMailParameters;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.createRuleWithAction;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.mapObjectToJSON;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.*;
 import static org.junit.Assert.assertEquals;
 
 public class RuleAdminAccessRestrictionTest extends RestTest {
@@ -69,38 +66,6 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
                 .createFolder();
     }
 
-//    @Test
-//    public void userShouldNotBeAbleToCreateANewRule() {
-//        RuleDefinition ruleDefinition = RuleDefinition.createNewRule()
-//                .title("Mail")
-//                .description("Trying to test mail")
-//                .actions(Collections.singletonList("mail"));
-//
-//        rulesAPI.createRule(testUser.getUsername(),
-//                testUser.getPassword(),
-//                BaseAPI.NODE_PREFIX + testFolder.getNodeRef(),
-//                ruleDefinition);
-//
-//        //TODO: Assert that correct status code was returned
-//        //TODO: Assert that correct message was returned
-//    }
-//
-//    @Test
-//    public void adminUserShouldSuccessfullyCreateANewRule() {
-//        RuleDefinition ruleDefinition = RuleDefinition.createNewRule()
-//                .title("Mail")
-//                .description("Trying to test mail")
-//                .actions(Collections.singletonList("mail"));
-//
-//        //TODO use admin user here
-//        rulesAPI.createRule(testUser.getUsername(),
-//                testUser.getPassword(),
-//                BaseAPI.NODE_PREFIX + testFolder.getNodeRef(),
-//                ruleDefinition);
-//
-//        //TODO: Assert that correct status code was returned
-//    }
-
     @Test
     public void userShouldNotBeAbleToCreateANewRule() {
         restClient.authenticateUser(testUser);
@@ -114,8 +79,21 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
         RestResponse response = restClient.process(request);
 
         assertEquals(FAILURE_STATUS_CODE, response.getStatusCode());
-        //TODO add verification for error message
+        response.assertThat().body("message", org.hamcrest.Matchers.containsString(EXPECTED_ERROR_MESSAGE));
     }
 
+    @Test
+    public void adminShouldBeAbleToCreateANewRule() {
+        restClient.authenticateUser(adminUser);
 
+        Rule rule = createRuleWithAction(MAIL_ACTION, createMailParameters(adminUser, testUser));
+
+        String ruleRequestBody = mapObjectToJSON(rule);
+        String ruleEndpoint = String.format(CREATE_RULE_ENDPOINT, testFolder.getNodeRef());
+
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, ruleRequestBody, ruleEndpoint);
+        RestResponse response = restClient.process(request);
+
+        assertEquals(SUCCESS_STATUS_CODE, response.getStatusCode());
+    }
 }

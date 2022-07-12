@@ -3760,13 +3760,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     @Override
     public void cycleCheck(Long nodeId)
     {
-//        CycleCallBack callback = new CycleCallBack();
-//        callback.cycleCheck(nodeId);
-//        if (callback.toThrow != null)
-//        {
-//            throw callback.toThrow;
-//        }
-        selectChildAssocs(nodeId, null, null, null, null, null);
+        CycleCallBack callback = new CycleCallBack();
+        callback.cycleCheck(nodeId);
+        if (callback.toThrow != null)
+        {
+            throw callback.toThrow;
+        }
     }
 
     private class CycleCallBack implements ChildAssocRefQueryCallback
@@ -3781,22 +3780,35 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         @Override
         public boolean handle(
-                Pair<Long, ChildAssociationRef> childAssocPair,
-                Pair<Long, NodeRef> parentNodePair,
-                Pair<Long, NodeRef> childNodePair)
+                Pair<Long, ChildAssociationRef> cAssocPair,
+                Pair<Long, NodeRef> pNodePair,
+                Pair<Long, NodeRef> cNodePair)
         {
-            Long nodeId = childNodePair.getFirst();
-            if (!nodeIds.add(nodeId))
+            // this will be parent node id for getting next child association
+            Long childNodeId = cNodePair.getFirst();
+            // added first child in node id list
+            nodeIds.add(childNodeId);
+            // getting hierarchical child associations (replacing multiple database call with recursive query )
+            List<ChildAssocEntity> assocs = selectChildAssocs(childNodeId);
+            for (ChildAssocEntity assoc : assocs)
             {
-                ChildAssociationRef childAssociationRef = childAssocPair.getSecond();
-                // Remember exception we want to throw and exit. If we throw within here, it will be wrapped by IBatis
-                toThrow = new CyclicChildRelationshipException(
-                        "Child Association Cycle detected hitting nodes: " + nodeIds,
-                        childAssociationRef);
-                return false;
+
+                Pair<Long, ChildAssociationRef> childAssocPair = assoc.getPair(qnameDAO);
+                Pair<Long, NodeRef> childNodePair = assoc.getChildNode().getNodePair();
+                Long nodeId = childNodePair.getFirst();
+
+                if (!nodeIds.add(nodeId))
+                {
+                    ChildAssociationRef childAssociationRef = childAssocPair.getSecond();
+                    // Remember exception we want to throw and exit. If we throw within here, it will be wrapped by IBatis
+                    toThrow = new CyclicChildRelationshipException(
+                            "Child Association Cycle detected hitting nodes: " + nodeIds,
+                            childAssociationRef);
+                    return false;
+                }
             }
-            cycleCheck(nodeId);
-            nodeIds.remove(nodeId);
+            // cycleCheck(nodeId);
+            nodeIds.clear();
             return toThrow == null;
         }
 
@@ -4996,13 +5008,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /**
      * Parameters are all optional except the parent node ID and the callback
      */
-    protected abstract void selectChildAssocs(
-            Long parentNodeId,
-            Long childNodeId,
-            QName assocTypeQName,
-            QName assocQName,
-            Boolean isPrimary,
-            Boolean sameStore);
+    protected abstract List<ChildAssocEntity> selectChildAssocs(
+            Long parentNodeId);
     protected abstract void selectChildAssocs(
             Long parentNodeId,
             Long childNodeId,

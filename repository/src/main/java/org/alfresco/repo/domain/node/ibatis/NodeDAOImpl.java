@@ -51,7 +51,6 @@ import org.alfresco.repo.domain.node.TransactionQueryEntity;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -180,6 +179,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected DictionaryService dictionaryService;
 
     private SqlSessionTemplate template;
+
     private static final String SELECT_All_CHILD_ASSOCS_OF_PARENT = "alfresco.node.select_allChildAssocsOfParent";
 
     public void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 

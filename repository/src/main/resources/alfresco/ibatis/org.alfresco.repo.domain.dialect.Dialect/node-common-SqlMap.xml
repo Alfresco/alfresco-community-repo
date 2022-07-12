@@ -953,6 +953,7 @@
             ca.child_node_id
         ]]>
     </sql>
+
     <select id="select_allChildAssocsOfParent" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssocsOfParentWithRecursive"></include>
         <include refid="alfresco.node.select_ChildAssocsOfParent_Snippet"></include>

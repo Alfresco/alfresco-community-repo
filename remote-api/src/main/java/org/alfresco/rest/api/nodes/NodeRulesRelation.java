@@ -39,6 +39,7 @@ import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * Folder node's rules.
@@ -46,7 +47,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Experimental
 @RelationshipResource(name = "rules", entityResource = NodeRuleSetsRelation.class, title = "Folder node rules")
-public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, RelationshipResourceAction.ReadById<Rule>, InitializingBean
+public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, RelationshipResourceAction.ReadById<Rule>, RelationshipResourceAction.Create<Rule>,
+    InitializingBean
 {
 
     private Rules rules;
@@ -101,6 +103,14 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
         final String ruleId = parameters.getRelationship2Id();
 
         return rules.getRuleById(folderNodeId, ruleSetId, ruleId);
+    }
+
+    @Override
+    public List<Rule> create(String folderNodeId, List<Rule> rules, Parameters parameters)
+    {
+        final String ruleSetId = parameters.getRelationshipId();
+
+        return this.rules.saveRule(folderNodeId, ruleSetId, rules);
     }
 
     public void setRules(Rules rules)

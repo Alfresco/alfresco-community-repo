@@ -31,6 +31,8 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 
+import java.util.List;
+
 /**
  * Folder node rules API.
  *
@@ -57,4 +59,6 @@ public interface Rules
      * @return {@link Rule} definition
      */
     Rule getRuleById(String folderNodeId, String ruleSetId, String ruleId);
+
+    void saveRule(String folderNodeId, String ruleSetId, List<Rule> rules);
 }

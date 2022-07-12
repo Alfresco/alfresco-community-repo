@@ -1117,7 +1117,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             }
         }
     }
-
+    
     @Override
     protected void selectChildAssocs(
             Long parentNodeId,
@@ -1170,11 +1170,11 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         // Ordered
         assoc.setOrdered(resultsCallback.orderResults());
-
+        
         ChildAssocResultHandler resultHandler = new ChildAssocResultHandler(resultsCallback);
-
+        
         template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
-
+        
         resultsCallback.done();
     }
 

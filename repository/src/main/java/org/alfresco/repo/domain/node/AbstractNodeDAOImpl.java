@@ -3765,8 +3765,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (callback.toThrow != null)
         {
             throw callback.toThrow;
-        }
-    }
+        }        
+    }    
 
     private class CycleCallBack implements ChildAssocRefQueryCallback
     {

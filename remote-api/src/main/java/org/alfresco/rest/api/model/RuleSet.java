@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.api.model.rules;
+package org.alfresco.rest.api.model;
 
 import org.alfresco.service.Experimental;
 
@@ -67,11 +67,5 @@ public class RuleSet
     public void setId(String id)
     {
         this.id = id;
-    }
-
-    @Override
-    public String toString()
-    {
-        return "RuleSet{" + "id='" + id + '\'' + '}';
     }
 }

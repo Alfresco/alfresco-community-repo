@@ -357,7 +357,11 @@ public class RuleLinkTest extends BaseSpringTest
     {
         final Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderOne, rule);
-        final NodeRef ruleSetNodeRef = getRuleSetNode(folderOne);
+        final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderOne, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
 
         // when
         final boolean associated = ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderOne);
@@ -370,7 +374,11 @@ public class RuleLinkTest extends BaseSpringTest
     {
         final Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderTwo , rule);
-        final NodeRef ruleSetNodeRef = getRuleSetNode(folderTwo);
+        final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderTwo, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
 
         // when
         final boolean associated = ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderOne);
@@ -383,18 +391,15 @@ public class RuleLinkTest extends BaseSpringTest
     {
         final Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderOne, rule);
-        final NodeRef ruleSetNodeRef = getRuleSetNode(folderOne);
-
-        List<ChildAssociationRef> folderChildes = nodeService.getChildAssocs(folderOne);
-        List<ChildAssociationRef> ruleSetChildes = nodeService.getChildAssocs(ruleSetNodeRef);
-        List<ChildAssociationRef> ruleParents = nodeService.getParentAssocs(rule.getNodeRef());
+        final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderOne, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
 
         // when
         final boolean associated = ruleService.isRuleAssociatedWithRuleSet(rule.getNodeRef(), ruleSetNodeRef);
 
-        assertNotNull(folderChildes);
-        assertNotNull(ruleSetChildes);
-        assertNotNull(ruleParents);
         assertTrue(associated);
     }
 
@@ -405,7 +410,11 @@ public class RuleLinkTest extends BaseSpringTest
         final Rule otherRule = createTestRule(false, "bobs rule");
         this.ruleService.saveRule(folderOne, rule);
         this.ruleService.saveRule(folderTwo, otherRule);
-        final NodeRef ruleSetNodeRef = getRuleSetNode(folderOne);
+        final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderOne, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
 
         // when
         final boolean associated = ruleService.isRuleAssociatedWithRuleSet(otherRule.getNodeRef(), ruleSetNodeRef);
@@ -443,12 +452,5 @@ public class RuleLinkTest extends BaseSpringTest
 
         return rule;
     }
-
-    private NodeRef getRuleSetNode(final NodeRef folderNodeRef) {
-        return nodeService.getChildAssocs(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
-            .filter(ChildAssociationRef::isPrimary)
-            .map(ChildAssociationRef::getChildRef)
-            .findFirst()
-            .orElse(null);
-    }
+        
 }

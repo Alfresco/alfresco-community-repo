@@ -140,6 +140,7 @@ public class RulesImplTest extends TestCase
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(permissionServiceMock).should().hasReadPermission(eq(folderNodeRef));
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().getRuleSetNode(eq(folderNodeRef));
         then(ruleServiceMock).should().getRules(eq(folderNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
@@ -239,6 +240,8 @@ public class RulesImplTest extends TestCase
     {
         final String defaultRuleSetId = "-default-";
         given(nodesMock.validateNode(eq(RULE_ID))).willReturn(ruleNodeRef);
+        given(ruleServiceMock.getRuleSetNode(any())).willReturn(ruleSetNodeRef);
+        given(ruleServiceMock.isRuleAssociatedWithRuleSet(any(), any())).willReturn(true);
         given(ruleServiceMock.getRule(any())).willReturn(createRule(RULE_ID));
 
         // when
@@ -251,6 +254,8 @@ public class RulesImplTest extends TestCase
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(permissionServiceMock).should().hasReadPermission(eq(folderNodeRef));
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().getRuleSetNode(eq(folderNodeRef));
+        then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(eq(ruleNodeRef), eq(ruleSetNodeRef));
         then(ruleServiceMock).should().getRule(eq(ruleNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rule)

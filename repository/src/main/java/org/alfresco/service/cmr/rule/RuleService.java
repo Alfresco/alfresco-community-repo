@@ -28,6 +28,7 @@ package org.alfresco.service.cmr.rule;
 import java.util.List;
 
 import org.alfresco.service.Auditable;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -175,7 +176,7 @@ public interface RuleService
      * @return 			a list of the rules associated with the node
      */
     @Auditable(parameters = {"nodeRef"})
-    public List<Rule> getRules(NodeRef nodeRef);
+    public List<Rule>   getRules(NodeRef nodeRef);
 
     /**
      * Get the rules associated with an actionable node.
@@ -331,12 +332,34 @@ public interface RuleService
     public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef);
 
     /**
-     * Check if rule set's associated parent is equal to folder node.
+     * Get rule set node associated with folder
+     *
+     * @param folderNodeRef - folder node reference
+     * @return node reference of a rule set
+     */
+    @Auditable(parameters = {"folderNodeRef"})
+    @Experimental
+    NodeRef getRuleSetNode(final NodeRef folderNodeRef);
+
+    /**
+     * Check if rule set's associated parent matches folder node.
      *
      * @param ruleSetNodeRef - node reference of a rule set
      * @param folderNodeRef - node reference of a folder
      * @return true if rule set is associated with folder
      */
-    @Auditable(parameters = {"nodeRef"})
+    @Auditable(parameters = {"ruleSetNodeRef", "folderNodeRef"})
+    @Experimental
     boolean isRuleSetAssociatedWithFolder(NodeRef ruleSetNodeRef, NodeRef folderNodeRef);
+
+    /**
+     * Check if rule's associated parent matches rule set node.
+     *
+     * @param ruleNodeRef - node reference of a rule
+     * @param ruleSetNodeRef - node reference of a rule set
+     * @return true if rule is associated with rule set
+     */
+    @Auditable(parameters = {"ruleNodeRef", "ruleSetNodeRef"})
+    @Experimental
+    boolean isRuleAssociatedWithRuleSet(final NodeRef ruleNodeRef, final NodeRef ruleSetNodeRef);
 }

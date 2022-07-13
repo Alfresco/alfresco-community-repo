@@ -24,30 +24,41 @@
  * #L%
  */
 
-package org.alfresco.rest.api.model;
+package org.alfresco.rest.api.model.rules;
 
-import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
 
 @Experimental
-public class Rule
+public class RuleSet
 {
+    private static final String DEFAULT_ID = "-default-";
+
     private String id;
-    private String name;
 
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel) {
-        if (ruleModel == null) {
-            return null;
-        }
+    public static RuleSet of(String id)
+    {
+        final RuleSet ruleSet = new RuleSet();
+        ruleSet.id = id;
 
-        final Rule rule = new Rule();
-        rule.id = ruleModel.getNodeRef().getId();
-        rule.name = ruleModel.getTitle();
-
-        return rule;
+        return ruleSet;
     }
 
-    @UniqueId
+    public boolean isNotDefaultId() {
+        return isNotDefaultId(this.id);
+    }
+
+    public boolean isDefaultId() {
+        return isDefaultId(this.id);
+    }
+
+    public static boolean isNotDefaultId(final String id) {
+        return !isDefaultId(id);
+    }
+
+    public static boolean isDefaultId(final String id) {
+        return DEFAULT_ID.equals(id);
+    }
+
     public String getId()
     {
         return id;
@@ -58,13 +69,9 @@ public class Rule
         this.id = id;
     }
 
-    public String getName()
+    @Override
+    public String toString()
     {
-        return name;
-    }
-
-    public void setName(String name)
-    {
-        this.name = name;
+        return "RuleSet{" + "id='" + id + '\'' + '}';
     }
 }

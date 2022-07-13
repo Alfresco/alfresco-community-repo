@@ -26,6 +26,10 @@
 
 package org.alfresco.rest.api.impl;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
@@ -43,10 +47,6 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Experimental
 public class RulesImpl implements Rules
@@ -83,16 +83,16 @@ public class RulesImpl implements Rules
     }
 
     @Override
-    public void saveRule(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
+    public List<Rule> saveRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
         validateRuleSetNode(ruleSetId, folderNodeRef);
 
-        rules.forEach(rule -> {
-            org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
-            ruleModel.setTitle(rule.getName());
-            ruleService.saveRule(folderNodeRef, ruleModel);
-        });
+        return rules.stream()
+                    .map(rule -> rule.toServiceModel(nodes))
+                    .map(rule -> ruleService.saveRule(folderNodeRef, rule))
+                    .map(Rule::from)
+                    .collect(Collectors.toList());
     }
 
     public void setNodes(Nodes nodes)

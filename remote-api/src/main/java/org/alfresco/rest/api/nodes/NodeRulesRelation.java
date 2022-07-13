@@ -110,7 +110,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     {
         final String ruleSetId = parameters.getRelationshipId();
 
-        return this.rules.saveRule(folderNodeId, ruleSetId, rules);
+        return this.rules.saveRules(folderNodeId, ruleSetId, rules);
     }
 
     public void setRules(Rules rules)

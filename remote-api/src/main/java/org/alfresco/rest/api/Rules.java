@@ -60,5 +60,13 @@ public interface Rules
      */
     Rule getRuleById(String folderNodeId, String ruleSetId, String ruleId);
 
-    void saveRule(String folderNodeId, String ruleSetId, List<Rule> rules);
+    /**
+     * Create new rules (and potentially a rule set if "_default_" is supplied).
+     *
+     * @param folderNodeId The node id of a folder.
+     * @param ruleSetId The id of a rule set (or "_default_" to use/create the default rule set for the folder).
+     * @param rule The definition of the rule.
+     * @return The newly created rules.
+     */
+    List<Rule> saveRules(String folderNodeId, String ruleSetId, List<Rule> rule);
 }

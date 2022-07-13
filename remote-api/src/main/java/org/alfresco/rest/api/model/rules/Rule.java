@@ -26,17 +26,16 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import java.util.Objects;
+
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.CompositeAction;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 @Experimental
 public class Rule
 {
-
     private String id;
     private String name;
 
@@ -45,11 +44,26 @@ public class Rule
             return null;
         }
 
-        final Rule rule = new Rule();
+        final Rule rule = new RuleBuilder().createRule();
         rule.id = ruleModel.getNodeRef().getId();
         rule.name = ruleModel.getTitle();
 
         return rule;
+    }
+
+    /**
+     * Convert the REST model object to the equivalent service POJO.
+     *
+     * @param nodes The nodes API.
+     * @return The rule service POJO.
+     */
+    public org.alfresco.service.cmr.rule.Rule toServiceModel(Nodes nodes)
+    {
+        org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
+        NodeRef nodeRef = nodes.validateOrLookupNode(id, null);
+        ruleModel.setNodeRef(nodeRef);
+        ruleModel.setTitle(name);
+        return ruleModel;
     }
 
     @UniqueId
@@ -71,6 +85,28 @@ public class Rule
     public void setName(String name)
     {
         this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (!(o instanceof Rule))
+        {
+            return false;
+        }
+        Rule rule = (Rule) o;
+        return Objects.equals(id, rule.id) &&
+                Objects.equals(name, rule.name);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, name);
     }
 
     @Override

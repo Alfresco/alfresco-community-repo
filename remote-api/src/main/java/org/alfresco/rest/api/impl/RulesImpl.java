@@ -30,8 +30,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Rules;
-import org.alfresco.rest.api.model.Rule;
-import org.alfresco.rest.api.model.RuleSet;
+import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -51,6 +51,8 @@ import java.util.stream.Collectors;
 @Experimental
 public class RulesImpl implements Rules
 {
+    private static final String RULE_SET_EXPECTED_TYPE_NAME = "rule set";
+
     private Nodes nodes;
 
     private PermissionService permissionService;
@@ -101,6 +103,7 @@ public class RulesImpl implements Rules
      * @param folderNodeId - folder node ID
      * @return folder node reference
      * @throws InvalidArgumentException if node is not of an expected type
+     * @throws PermissionDeniedException if user doesn't have right to read from folder
      */
     private NodeRef validateFolderNode(final String folderNodeId)
     {
@@ -126,10 +129,11 @@ public class RulesImpl implements Rules
     {
         if (RuleSet.isDefaultId(ruleSetId))
         {
+            // returns null as default rule set's node is never used
             return null;
         }
 
-        final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, "rule set");
+        final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
         if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef)) {
             throw new InvalidArgumentException("Rule set is not associated with folder node!");
         }
@@ -141,7 +145,7 @@ public class RulesImpl implements Rules
      * Validates if rule node exists and associated rule set node matches.
      *
      * @param ruleId - rule node ID
-     * @param associatedRuleSetNodeRef - rule set node ref to check the association
+     * @param associatedRuleSetNodeRef - rule set node ref to check the association. Can be null
      * @return rule node reference
      * @throws InvalidArgumentException in case of not matching associated rule set node
      */

@@ -28,7 +28,7 @@ package org.alfresco.rest.api.impl;
 
 import junit.framework.TestCase;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.Rule;
+import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;

@@ -47,15 +47,13 @@ import static org.junit.Assert.assertEquals;
 public class RuleAdminAccessRestrictionTest extends RestTest {
 
     private static final String CREATE_RULE_ENDPOINT = "alfresco/service/api/node/workspace/SpacesStore/%s/ruleset/rules";
-    private static final String SUCCESS_STATUS_CODE = "200";
-    private static final String FAILURE_STATUS_CODE = "500";
 
     private UserModel adminUser;
     private UserModel testUser;
     private FolderModel testFolder;
 
     @Autowired
-    protected RestWrapper restClientAlfresco;
+    protected RestWrapper restClient;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception {

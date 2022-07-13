@@ -28,7 +28,6 @@ package org.alfresco.repo.action.access;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.util.BaseSpringTest;
 import org.junit.Before;
 import org.junit.Test;

@@ -27,7 +27,7 @@
 package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.Rules;
-import org.alfresco.rest.api.model.Rule;
+import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;

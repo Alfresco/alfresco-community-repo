@@ -1617,20 +1617,25 @@ public class RuleServiceImpl
     @Override
     @Experimental
     public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
-        return findAssociatedParents(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER).stream()
-            .map(ChildAssociationRef::getParentRef)
-            .anyMatch(folderNodeRef::equals);
+        return isChildOf(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, folderNodeRef);
     }
 
     @Override
     @Experimental
     public boolean isRuleAssociatedWithRuleSet(final NodeRef ruleNodeRef, final NodeRef ruleSetNodeRef) {
-        return findAssociatedParents(ruleNodeRef, ContentModel.ASSOC_CONTAINS).stream()
-            .map(ChildAssociationRef::getParentRef)
-            .anyMatch(ruleSetNodeRef::equals);
+        return isChildOf(ruleNodeRef, null, ruleSetNodeRef);
     }
 
-    private List<ChildAssociationRef> findAssociatedParents(final NodeRef nodeRef, final QNamePattern pattern) {
-        return runtimeNodeService.getParentAssocs(nodeRef, pattern, pattern);
+    private boolean isChildOf(final NodeRef childNodeRef, final QNamePattern associationType, final NodeRef parentNodeRef) {
+        final List<ChildAssociationRef> associations;
+        if (associationType == null) {
+            associations = runtimeNodeService.getParentAssocs(childNodeRef);
+        } else {
+            associations = runtimeNodeService.getParentAssocs(childNodeRef, associationType, associationType);
+        }
+
+        return associations.stream()
+            .map(ChildAssociationRef::getParentRef)
+            .anyMatch(parentNodeRef::equals);
     }
 }

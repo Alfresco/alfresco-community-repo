@@ -1617,11 +1617,12 @@ public class RuleServiceImpl
     @Override
     @Experimental
     public NodeRef getRuleSetNode(final NodeRef folderNodeRef) {
-        return getChildNode(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER);
+        return getPrimaryChildNode(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER);
     }
 
-    private NodeRef getChildNode(final NodeRef nodeRef, final QNamePattern associationType) {
+    private NodeRef getPrimaryChildNode(final NodeRef nodeRef, final QNamePattern associationType) {
         return runtimeNodeService.getChildAssocs(nodeRef, associationType, associationType).stream()
+            .filter(ChildAssociationRef::isPrimary)
             .map(ChildAssociationRef::getChildRef)
             .findFirst()
             .orElse(null);

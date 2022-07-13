@@ -353,6 +353,18 @@ public class RuleLinkTest extends BaseSpringTest
     }
 
     @Test
+    public void testGetRuleSetNode() {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        final NodeRef expectedRuleSetNodeRef = getRuleSetNode(folderOne);
+
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderOne);
+
+        assertNotNull(ruleSetNodeRef);
+        assertEquals(expectedRuleSetNodeRef, ruleSetNodeRef);
+    }
+
+    @Test
     public void testIsRuleSetAssociatedWithFolder()
     {
         final Rule rule = createTestRule(false, "luke");

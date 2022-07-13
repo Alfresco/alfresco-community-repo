@@ -1616,6 +1616,19 @@ public class RuleServiceImpl
 
     @Override
     @Experimental
+    public NodeRef getRuleSetNode(final NodeRef folderNodeRef) {
+        return getChildNode(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER);
+    }
+
+    private NodeRef getChildNode(final NodeRef nodeRef, final QNamePattern associationType) {
+        return runtimeNodeService.getChildAssocs(nodeRef, associationType, associationType).stream()
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
+    }
+
+    @Override
+    @Experimental
     public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
         return isChildOf(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, folderNodeRef);
     }

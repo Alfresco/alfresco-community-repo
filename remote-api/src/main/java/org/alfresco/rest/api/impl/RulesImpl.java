@@ -129,7 +129,7 @@ public class RulesImpl implements Rules
     {
         if (RuleSet.isDefaultId(ruleSetId))
         {
-            // returns null as default rule set's node is never used
+            // returns null because default rule set's node don't have to be checked in further validations
             return null;
         }
 

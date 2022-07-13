@@ -26,6 +26,9 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import org.alfresco.service.Experimental;
+
+@Experimental
 public enum ConditionOperator
 {
     AND, OR

@@ -68,7 +68,6 @@ public class Rule
             rule.actions = ((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList());
         }
 
-
         return rule;
     }
 

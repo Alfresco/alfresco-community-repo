@@ -26,16 +26,20 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.ParameterizedItem;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Experimental
 public class CompositeCondition
 {
 
     private String conditionDefinitionId;
     private boolean inverted;
-    private ConditionOperator booleanMode;
+    private ConditionOperator booleanMode = ConditionOperator.AND;
     private List<CompositeCondition> compositeConditions;
     private List<SimpleCondition> simpleConditions;
 
@@ -45,7 +49,14 @@ public class CompositeCondition
         }
 
         final CompositeCondition condition = new CompositeCondition();
-        // TODO add implementation
+        conditionModels.forEach(conditionModel -> {
+            condition.conditionDefinitionId = conditionModel.getActionConditionDefinitionName();
+            condition.inverted = conditionModel.getInvertCondition();
+            condition.simpleConditions = conditionModels.stream()
+                .map(ParameterizedItem::getParameterValues)
+                .map(SimpleCondition::from)
+                .collect(Collectors.toList());
+        });
 
         return condition;
     }

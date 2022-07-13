@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import org.alfresco.service.Experimental;
+
 import java.io.Serializable;
 import java.util.Map;
 
@@ -33,6 +35,7 @@ import static org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator.P
 import static org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator.PARAM_OPERATION;
 import static org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator.PARAM_VALUE;
 
+@Experimental
 public class SimpleCondition
 {
 

@@ -24,47 +24,56 @@
  * #L%
  */
 
-package org.alfresco.rest.api.model;
+package org.alfresco.rest.api.model.rules;
 
-import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
 
-@Experimental
-public class Rule
-{
-    private String id;
-    private String name;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel) {
-        if (ruleModel == null) {
+@Experimental
+public class Action
+{
+
+    private String actionDefinitionId;
+    private Map<String, Serializable> params;
+
+    public static Action from(final org.alfresco.service.cmr.action.Action actionModel) {
+        if (actionModel == null) {
             return null;
         }
 
-        final Rule rule = new Rule();
-        rule.id = ruleModel.getNodeRef().getId();
-        rule.name = ruleModel.getTitle();
+        final Action action = new Action();
+        action.actionDefinitionId = actionModel.getActionDefinitionName();
+        action.params = new HashMap<>(actionModel.getParameterValues());
 
-        return rule;
+        return action;
     }
 
-    @UniqueId
-    public String getId()
+    public String getActionDefinitionId()
     {
-        return id;
+        return actionDefinitionId;
     }
 
-    public void setId(String id)
+    public void setActionDefinitionId(String actionDefinitionId)
     {
-        this.id = id;
+        this.actionDefinitionId = actionDefinitionId;
     }
 
-    public String getName()
+    public Map<String, Serializable> getParams()
     {
-        return name;
+        return params;
     }
 
-    public void setName(String name)
+    public void setParams(Map<String, Serializable> params)
     {
-        this.name = name;
+        this.params = params;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Action{" + "actionDefinitionId='" + actionDefinitionId + '\'' + ", params=" + params + '}';
     }
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,12 +25,6 @@
  */
 package org.alfresco.repo.rule;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
@@ -41,6 +35,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -55,6 +50,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Parameter definition implementation unit test.
@@ -350,7 +351,41 @@ public class RuleLinkTest extends BaseSpringTest
         assertTrue(nodeService.hasAspect(folderThree, RuleModel.ASPECT_RULES));
         assertEquals(rules1, rules3);
     }
-    
+
+    @Test
+    public void testIsRuleSetAssociatedWithFolder()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderOne, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
+
+        // when
+        final boolean associated = ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderOne);
+
+        assertTrue(associated);
+    }
+
+    @Test
+    public void testIsRuleSetNotAssociatedWithFolder()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderTwo , rule);
+        final NodeRef ruleSetNodeRef = nodeService.getChildAssocs(folderTwo, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
+
+        // when
+        final boolean associated = ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderOne);
+
+        assertFalse(associated);
+    }
+
     protected Rule createTestRule(boolean isAppliedToChildren, String title)
     {
         // Rule properties

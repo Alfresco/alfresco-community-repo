@@ -54,6 +54,25 @@ public class AccessRestrictionUtil {
         return rule;
     }
 
+    public static Action createActionWithParameters(String actionName, Map<String, String> parameterValues) {
+        Action compositeAction = new Action();
+        compositeAction.setActionDefinitionName("composite-action");
+
+        ActionCondition actionCondition = new ActionCondition();
+        actionCondition.setConditionDefinitionName("no-condition");
+        actionCondition.setParameterValues(new HashMap<>());
+
+        compositeAction.setConditions(List.of(actionCondition));
+
+        Action action = createAction(actionName, parameterValues);
+        action.setExecuteAsynchronously(false);
+
+        compositeAction.setActions(List.of(action));
+
+        return action;
+    }
+
+
     public static Action createAction(String actionName, Map<String, String> parameterValues) {
         Action action = new Action();
         action.setActionDefinitionName(actionName);

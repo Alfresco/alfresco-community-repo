@@ -76,7 +76,7 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, ruleRequestBody, ruleEndpoint);
         RestResponse response = restClient.process(request);
 
-        assertEquals(FAILURE_STATUS_CODE, response.getStatusCode());
+        assertEquals("500", response.getStatusCode());
         response.assertThat().body("message", org.hamcrest.Matchers.containsString(EXPECTED_ERROR_MESSAGE));
     }
 
@@ -92,6 +92,6 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, ruleRequestBody, ruleEndpoint);
         RestResponse response = restClient.process(request);
 
-        assertEquals(SUCCESS_STATUS_CODE, response.getStatusCode());
+        assertEquals("200", response.getStatusCode());
     }
 }

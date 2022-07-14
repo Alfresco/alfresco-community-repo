@@ -10,6 +10,11 @@ public class Action {
     private List<Action> actions;
     private Map<String, String> parameterValues;
 
+    private boolean executeAsynchronously;
+
+    public void setExecuteAsynchronously(boolean executeAsynchronously) {
+        this.executeAsynchronously = executeAsynchronously;
+    }
     public String getActionDefinitionName() {
         return actionDefinitionName;
     }

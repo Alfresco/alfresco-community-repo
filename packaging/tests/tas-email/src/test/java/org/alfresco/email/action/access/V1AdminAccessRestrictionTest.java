@@ -20,7 +20,7 @@ public class V1AdminAccessRestrictionTest extends RestTest {
     private FolderModel testFolder;
 
     @Autowired
-    protected RestWrapper restClientAlfresco;
+    protected RestWrapper restClient;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation() throws Exception {
@@ -36,26 +36,26 @@ public class V1AdminAccessRestrictionTest extends RestTest {
 
     @Test
     public void userShouldNotExecuteMailAction() throws Exception {
-        restClientAlfresco.authenticateUser(testUser)
+        restClient.authenticateUser(testUser)
                           .withCoreAPI()
                           .usingActions()
                           .executeAction("mail", testFolder, createMailParameters(adminUser, testUser));
 
-        restClientAlfresco.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
-        restClientAlfresco.assertLastError().containsSummary(EXPECTED_ERROR_MESSAGE);
-        restClientAlfresco.onResponse()
+        restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
+        restClient.assertLastError().containsSummary(EXPECTED_ERROR_MESSAGE);
+        restClient.onResponse()
                           .assertThat().body("entry.id", org.hamcrest.Matchers.nullValue());
     }
 
     @Test
     public void adminShouldExecuteMailAction() throws Exception {
-        restClientAlfresco.authenticateUser(adminUser)
+        restClient.authenticateUser(adminUser)
                           .withCoreAPI()
                           .usingActions()
                           .executeAction("mail", testFolder, createMailParameters(adminUser, testUser));
 
-        restClientAlfresco.assertStatusCodeIs(HttpStatus.ACCEPTED);
-        restClientAlfresco.onResponse()
+        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
+        restClient.onResponse()
                           .assertThat().body("entry.id", org.hamcrest.Matchers.notNullValue());
     }
 }

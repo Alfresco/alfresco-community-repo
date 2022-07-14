@@ -9,14 +9,19 @@ import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.alfresco.email.action.access.AccessRestrictionUtil.*;
-import static org.junit.Assert.assertEquals;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.MAIL_ACTION;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.createActionWithParameters;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.createMailParameters;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.getExpectedEmailSendFailureMessage;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.mapObjectToJSON;
+import static org.hamcrest.Matchers.containsString;
 
 public class V0AdminAccessRestrictionTest extends RestTest {
-    //TODO implement
     private static final String ACTION_QUEUE_ENDPOINT = "alfresco/service/api/actionQueue?async=false";
     private UserModel adminUser;
     private UserModel testUser;
@@ -30,10 +35,10 @@ public class V0AdminAccessRestrictionTest extends RestTest {
 
         testUser = dataUser.createRandomTestUser();
         testSite = dataSite.usingUser(testUser)
-                           .createPublicRandomSite();
+                .createPublicRandomSite();
         testFolder = dataContent.usingUser(testUser)
-                                .usingSite(testSite)
-                                .createFolder();
+                .usingSite(testSite)
+                .createFolder();
     }
 
     @Test
@@ -41,14 +46,14 @@ public class V0AdminAccessRestrictionTest extends RestTest {
         restClient.authenticateUser(testUser);
 
         Action action = createActionWithParameters(MAIL_ACTION, createMailParameters(adminUser, testUser));
-
         String actionRequestBody = mapObjectToJSON(action);
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, actionRequestBody, ACTION_QUEUE_ENDPOINT);
+        restClient.configureRequestSpec().setBasePath("");
         RestResponse response = restClient.process(request);
 
-        assertEquals("500", response.getStatusCode());
-        response.assertThat().body("message", org.hamcrest.Matchers.containsString(EXPECTED_ERROR_MESSAGE));
+        response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .assertThat().body("message", containsString(EXPECTED_ERROR_MESSAGE));
     }
 
     @Test
@@ -56,12 +61,13 @@ public class V0AdminAccessRestrictionTest extends RestTest {
         restClient.authenticateUser(adminUser);
 
         Action action = createActionWithParameters(MAIL_ACTION, createMailParameters(adminUser, testUser));
-
         String actionRequestBody = mapObjectToJSON(action);
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, actionRequestBody, ACTION_QUEUE_ENDPOINT);
+        restClient.configureRequestSpec().setBasePath("");
         RestResponse response = restClient.process(request);
 
-        assertEquals("200", response.getStatusCode());
+        response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .assertThat().body("message", containsString(getExpectedEmailSendFailureMessage(testUser)));
     }
 }

@@ -26,19 +26,31 @@
  */
 package org.alfresco.email.action.access;
 
+import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.email.action.access.pojo.Rule;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.utility.model.FileModel;
+import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.alfresco.email.action.access.AccessRestrictionUtil.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.alfresco.email.action.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.MAIL_ACTION;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.createMailParameters;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.createRuleWithAction;
+import static org.alfresco.email.action.access.AccessRestrictionUtil.mapObjectToJSON;
 import static org.junit.Assert.assertEquals;
 
 public class RuleAdminAccessRestrictionTest extends RestTest {
@@ -48,6 +60,8 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
     private UserModel adminUser;
     private UserModel testUser;
     private FolderModel testFolder;
+
+    private FileModel testFile;
 
     @Autowired
     protected RestWrapper restClient;
@@ -69,15 +83,14 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
         restClient.authenticateUser(testUser);
 
         Rule rule = createRuleWithAction(MAIL_ACTION, createMailParameters(adminUser, testUser));
-
         String ruleRequestBody = mapObjectToJSON(rule);
         String ruleEndpoint = String.format(CREATE_RULE_ENDPOINT, testFolder.getNodeRef());
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, ruleRequestBody, ruleEndpoint);
         RestResponse response = restClient.process(request);
 
-        assertEquals("500", response.getStatusCode());
-        response.assertThat().body("message", org.hamcrest.Matchers.containsString(EXPECTED_ERROR_MESSAGE));
+        response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .assertThat().body("message", org.hamcrest.Matchers.containsString(EXPECTED_ERROR_MESSAGE));
     }
 
     @Test
@@ -85,13 +98,31 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
         restClient.authenticateUser(adminUser);
 
         Rule rule = createRuleWithAction(MAIL_ACTION, createMailParameters(adminUser, testUser));
-
         String ruleRequestBody = mapObjectToJSON(rule);
         String ruleEndpoint = String.format(CREATE_RULE_ENDPOINT, testFolder.getNodeRef());
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, ruleRequestBody, ruleEndpoint);
         RestResponse response = restClient.process(request);
 
-        assertEquals("200", response.getStatusCode());
+        response.assertThat().statusCode(HttpStatus.OK.value());
+    }
+
+    @Test
+    public void userShouldAddAFileToFolderWithMailRule() {
+        restClient.authenticateUser(adminUser);
+
+        Rule rule = createRuleWithAction(MAIL_ACTION, createMailParameters(adminUser, testUser));
+        String ruleRequestBody = mapObjectToJSON(rule);
+        String ruleEndpoint = String.format(CREATE_RULE_ENDPOINT, testFolder.getNodeRef());
+
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, ruleRequestBody, ruleEndpoint);
+        RestResponse response = restClient.process(request);
+
+        response.assertThat().statusCode(HttpStatus.OK.value());
+
+        dataContent.usingUser(testUser)
+                .usingSite(testSite)
+                .usingResource(testFolder)
+                .createContent(FileModel.getRandomFileModel(FileType.TEXT_PLAIN));
     }
 }

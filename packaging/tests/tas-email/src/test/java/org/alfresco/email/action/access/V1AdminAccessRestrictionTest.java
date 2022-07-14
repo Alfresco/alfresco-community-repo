@@ -41,10 +41,10 @@ public class V1AdminAccessRestrictionTest extends RestTest {
                           .usingActions()
                           .executeAction("mail", testFolder, createMailParameters(adminUser, testUser));
 
-        restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
-        restClient.assertLastError().containsSummary(EXPECTED_ERROR_MESSAGE);
         restClient.onResponse()
-                          .assertThat().body("entry.id", org.hamcrest.Matchers.nullValue());
+                .assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .assertThat().body("entry.id", org.hamcrest.Matchers.nullValue());
+        restClient.assertLastError().containsSummary(EXPECTED_ERROR_MESSAGE);
     }
 
     @Test
@@ -54,9 +54,10 @@ public class V1AdminAccessRestrictionTest extends RestTest {
                           .usingActions()
                           .executeAction("mail", testFolder, createMailParameters(adminUser, testUser));
 
-        restClient.assertStatusCodeIs(HttpStatus.ACCEPTED);
         restClient.onResponse()
-                          .assertThat().body("entry.id", org.hamcrest.Matchers.notNullValue());
+                .assertThat().statusCode(HttpStatus.ACCEPTED.value())
+                .assertThat().body("entry.id", org.hamcrest.Matchers.notNullValue());
+
     }
 }
 

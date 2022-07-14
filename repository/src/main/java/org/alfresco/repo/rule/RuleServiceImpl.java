@@ -40,6 +40,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
@@ -1614,13 +1615,41 @@ public class RuleServiceImpl
     }
 
     @Override
-    public boolean  isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
-        return findAssociatedParents(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER).stream()
-            .map(ChildAssociationRef::getParentRef)
-            .anyMatch(folderNodeRef::equals);
+    @Experimental
+    public NodeRef getRuleSetNode(final NodeRef folderNodeRef) {
+        return getPrimaryChildNode(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER);
     }
 
-    private List<ChildAssociationRef> findAssociatedParents(final NodeRef nodeRef, final QNamePattern pattern) {
-        return runtimeNodeService.getParentAssocs(nodeRef, pattern, pattern);
+    private NodeRef getPrimaryChildNode(final NodeRef nodeRef, final QNamePattern associationType) {
+        return runtimeNodeService.getChildAssocs(nodeRef, associationType, associationType).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
+    }
+
+    @Override
+    @Experimental
+    public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
+        return isChildOf(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, folderNodeRef);
+    }
+
+    @Override
+    @Experimental
+    public boolean isRuleAssociatedWithRuleSet(final NodeRef ruleNodeRef, final NodeRef ruleSetNodeRef) {
+        return isChildOf(ruleNodeRef, null, ruleSetNodeRef);
+    }
+
+    private boolean isChildOf(final NodeRef childNodeRef, final QNamePattern associationType, final NodeRef parentNodeRef) {
+        final List<ChildAssociationRef> associations;
+        if (associationType == null) {
+            associations = runtimeNodeService.getParentAssocs(childNodeRef);
+        } else {
+            associations = runtimeNodeService.getParentAssocs(childNodeRef, associationType, associationType);
+        }
+
+        return associations.stream()
+            .map(ChildAssociationRef::getParentRef)
+            .anyMatch(parentNodeRef::equals);
     }
 }

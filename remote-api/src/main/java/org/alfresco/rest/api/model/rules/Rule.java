@@ -24,37 +24,58 @@
  * #L%
  */
 
-package org.alfresco.rest.api;
+package org.alfresco.rest.api.model.rules;
 
-import org.alfresco.rest.api.model.rules.Rule;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.CompositeAction;
 
-/**
- * Folder node rules API.
- *
- */
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Experimental
-public interface Rules
+public class Rule
 {
-    /**
-     * Get rules for node's and rule set's IDs
-     *
-     * @param folderNodeId - folder node ID
-     * @param ruleSetId - rule set ID
-     * @param paging - {@link Paging} information
-     * @return {@link CollectionWithPagingInfo} containing a list page of folder rules
-     */
-    CollectionWithPagingInfo<Rule> getRules(String folderNodeId, String ruleSetId, Paging paging);
 
-    /**
-     * Get rule for rule's ID and check associations with folder node and rule set node
-     *
-     * @param folderNodeId - folder node ID
-     * @param ruleSetId - rule set ID
-     * @param ruleId - rule ID
-     * @return {@link Rule} definition
-     */
-    Rule getRuleById(String folderNodeId, String ruleSetId, String ruleId);
+    private String id;
+    private String name;
+
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel) {
+        if (ruleModel == null) {
+            return null;
+        }
+
+        final Rule rule = new Rule();
+        rule.id = ruleModel.getNodeRef().getId();
+        rule.name = ruleModel.getTitle();
+
+        return rule;
+    }
+
+    @UniqueId
+    public String getId()
+    {
+        return id;
+    }
+
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + '}';
+    }
 }

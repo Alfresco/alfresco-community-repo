@@ -30,7 +30,7 @@ import junit.framework.TestCase;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.tests.core.ParamsExtender;
 import org.alfresco.service.Experimental;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,9 +50,10 @@ public class NodeRulesRelationTest extends TestCase
 
     private static final String FOLDER_NODE_ID = "dummy-node-id";
     private static final String RULE_SET_ID = "dummy-rule-set-id";
+    private static final String RULE_ID = "dummy-rule-id";
 
     @Mock
-    private Rules rules;
+    private Rules rulesMock;
 
     @InjectMocks
     private NodeRulesRelation nodeRulesRelation;
@@ -68,13 +69,24 @@ public class NodeRulesRelationTest extends TestCase
     public void testReadAll()
     {
         final Paging paging = Paging.DEFAULT;
-        final Params.RecognizedParams params = new Params.RecognizedParams(null, paging, null, null, null, null, null, null, false);
-        final Parameters parameters = Params.valueOf(FOLDER_NODE_ID, RULE_SET_ID, params, null, null);
+        final Parameters parameters = ParamsExtender.valueOf(paging, FOLDER_NODE_ID, RULE_SET_ID, null);
 
         // when
         nodeRulesRelation.readAll(FOLDER_NODE_ID, parameters);
 
-        then(rules).should().getRules(eq(FOLDER_NODE_ID), eq(RULE_SET_ID), eq(paging));
-        then(rules).shouldHaveNoMoreInteractions();
+        then(rulesMock).should().getRules(eq(FOLDER_NODE_ID), eq(RULE_SET_ID), eq(paging));
+        then(rulesMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testReadById()
+    {
+        final Parameters parameters = ParamsExtender.valueOf(null, FOLDER_NODE_ID, RULE_SET_ID, RULE_ID);
+
+        // when
+        nodeRulesRelation.readById(FOLDER_NODE_ID, RULE_SET_ID, parameters);
+
+        then(rulesMock).should().getRuleById(eq(FOLDER_NODE_ID), eq(RULE_SET_ID), eq(RULE_ID));
+        then(rulesMock).shouldHaveNoMoreInteractions();
     }
 }

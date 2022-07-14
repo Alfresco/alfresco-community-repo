@@ -12,7 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_FIELD;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createActionWithParameters;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
@@ -51,7 +52,7 @@ public class V0AdminAccessRestrictionTest extends RestTest {
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .assertThat().body("message", containsString(EXPECTED_ERROR_MESSAGE));
+                .assertThat().body(ERROR_MESSAGE_FIELD, containsString(ERROR_MESSAGE_ACCESS_RESTRICTED));
     }
 
     @Test
@@ -66,6 +67,6 @@ public class V0AdminAccessRestrictionTest extends RestTest {
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .assertThat().body("message", containsString(getExpectedEmailSendFailureMessage(testUser)));
+                .assertThat().body(ERROR_MESSAGE_FIELD, containsString(getExpectedEmailSendFailureMessage(testUser)));
     }
 }

@@ -31,11 +31,6 @@
             <artifactId>email</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.alfresco.tas</groupId>
-            <artifactId>restapi</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

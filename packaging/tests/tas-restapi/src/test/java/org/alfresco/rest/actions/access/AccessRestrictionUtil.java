@@ -13,9 +13,11 @@ import java.util.Map;
 public class AccessRestrictionUtil {
 
     public static final String MAIL_ACTION = "mail";
-    public static final String EXPECTED_ERROR_MESSAGE =
+
+    public static final String ERROR_MESSAGE_FIELD = "message";
+    public static final String ERROR_MESSAGE_ACCESS_RESTRICTED =
             "Only admin or system user is allowed to define uses of or directly execute this action";
-    private static final String EXPECTED_EMAIL_SEND_FAILURE_MESSAGE = "Failed to send email to:";
+    private static final String ERROR_MESSAGE_FAILED_TO_SEND_EMAIL = "Failed to send email to:";
 
     public static Map<String, String> createMailParameters(UserModel sender, UserModel recipient) {
         Map<String, String> parameterValues = new HashMap<>();
@@ -87,7 +89,14 @@ public class AccessRestrictionUtil {
         return gson.toJson(object);
     }
 
+    /**
+     * Return error message that in fact means that the action has passed access restriction correctly,
+     * but due to non-configured smtp couldn't send email.
+     *
+     * @param userModel
+     * @return
+     */
     public static String getExpectedEmailSendFailureMessage(UserModel userModel) {
-        return EXPECTED_EMAIL_SEND_FAILURE_MESSAGE + userModel.getEmailAddress();
+        return ERROR_MESSAGE_FAILED_TO_SEND_EMAIL + userModel.getEmailAddress();
     }
 }

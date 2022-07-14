@@ -41,11 +41,13 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_FIELD;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createRuleWithAction;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.mapObjectToJSON;
+import static org.hamcrest.Matchers.containsString;
 
 public class RuleAdminAccessRestrictionTest extends RestTest {
 
@@ -82,7 +84,7 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .assertThat().body("message", org.hamcrest.Matchers.containsString(EXPECTED_ERROR_MESSAGE));
+                .assertThat().body(ERROR_MESSAGE_FIELD, containsString(ERROR_MESSAGE_ACCESS_RESTRICTED));
     }
 
     @Test

@@ -14,7 +14,8 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_FIELD;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.getExpectedEmailSendFailureMessage;
@@ -23,6 +24,8 @@ import static org.hamcrest.Matchers.containsString;
 public class FormProcAdminAccessRestrictionTest extends RestTest {
 
     private static final String ACTION_FORM_PROCESSOR_ENDPOINT = "alfresco/service/api/action/%s/formprocessor";
+
+    private static final String PROPERTY_PREFIX = "prop_";
 
     private UserModel adminUser;
     private UserModel testUser;
@@ -48,7 +51,7 @@ public class FormProcAdminAccessRestrictionTest extends RestTest {
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .assertThat().body("message", containsString(EXPECTED_ERROR_MESSAGE));
+                .assertThat().body(ERROR_MESSAGE_FIELD, containsString(ERROR_MESSAGE_ACCESS_RESTRICTED));
     }
 
     @Test
@@ -64,12 +67,12 @@ public class FormProcAdminAccessRestrictionTest extends RestTest {
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .assertThat().body("message", containsString(getExpectedEmailSendFailureMessage(testUser)));
+                .assertThat().body(ERROR_MESSAGE_FIELD, containsString(getExpectedEmailSendFailureMessage(testUser)));
     }
 
     private String generateBody(Map<String, String> mailParameters) {
         JSONObject json = new JSONObject();
-        mailParameters.forEach((key, value) -> json.put("prop_" + key, value));
+        mailParameters.forEach((key, value) -> json.put(PROPERTY_PREFIX + key, value));
 
         return json.toJSONString();
     }

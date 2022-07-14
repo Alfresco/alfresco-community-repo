@@ -10,8 +10,11 @@ import org.testng.annotations.Test;
 import org.alfresco.rest.core.RestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.alfresco.rest.actions.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 public class V1AdminAccessRestrictionTest extends RestTest {
 
@@ -39,12 +42,12 @@ public class V1AdminAccessRestrictionTest extends RestTest {
         restClient.authenticateUser(testUser)
                           .withCoreAPI()
                           .usingActions()
-                          .executeAction("mail", testFolder, createMailParameters(adminUser, testUser));
+                          .executeAction(MAIL_ACTION, testFolder, createMailParameters(adminUser, testUser));
 
         restClient.onResponse()
                 .assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .assertThat().body("entry.id", org.hamcrest.Matchers.nullValue());
-        restClient.assertLastError().containsSummary(EXPECTED_ERROR_MESSAGE);
+                .assertThat().body("entry.id", nullValue());
+        restClient.assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
     }
 
     @Test
@@ -52,12 +55,11 @@ public class V1AdminAccessRestrictionTest extends RestTest {
         restClient.authenticateUser(adminUser)
                           .withCoreAPI()
                           .usingActions()
-                          .executeAction("mail", testFolder, createMailParameters(adminUser, testUser));
+                          .executeAction(MAIL_ACTION, testFolder, createMailParameters(adminUser, testUser));
 
         restClient.onResponse()
                 .assertThat().statusCode(HttpStatus.ACCEPTED.value())
-                .assertThat().body("entry.id", org.hamcrest.Matchers.notNullValue());
-
+                .assertThat().body("entry.id", notNullValue());
     }
 }
 

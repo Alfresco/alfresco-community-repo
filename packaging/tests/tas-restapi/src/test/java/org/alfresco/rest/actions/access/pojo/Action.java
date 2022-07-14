@@ -1,4 +1,4 @@
-package org.alfresco.email.action.access.pojo;
+package org.alfresco.rest.actions.access.pojo;
 
 import java.util.List;
 import java.util.Map;

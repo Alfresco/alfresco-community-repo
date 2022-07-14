@@ -1,6 +1,6 @@
-package org.alfresco.email.action.access;
+package org.alfresco.rest.actions.access;
 
-import org.alfresco.email.EmailTest;
+import org.alfresco.rest.RestTest;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
@@ -14,13 +14,13 @@ import org.testng.annotations.Test;
 
 import java.util.Map;
 
-import static org.alfresco.email.action.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.MAIL_ACTION;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.createMailParameters;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.getExpectedEmailSendFailureMessage;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.getExpectedEmailSendFailureMessage;
 import static org.hamcrest.Matchers.containsString;
 
-public class FormProcAdminAccessRestrictionTest extends EmailTest {
+public class FormProcAdminAccessRestrictionTest extends RestTest {
 
     private static final String ACTION_FORM_PROCESSOR_ENDPOINT = "alfresco/service/api/action/%s/formprocessor";
 

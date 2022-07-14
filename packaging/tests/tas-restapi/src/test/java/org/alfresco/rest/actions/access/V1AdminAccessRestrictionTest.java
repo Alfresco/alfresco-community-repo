@@ -1,4 +1,4 @@
-package org.alfresco.email.action.access;
+package org.alfresco.rest.actions.access;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.utility.model.FolderModel;
@@ -10,8 +10,8 @@ import org.testng.annotations.Test;
 import org.alfresco.rest.core.RestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.alfresco.email.action.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.createMailParameters;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
 
 public class V1AdminAccessRestrictionTest extends RestTest {
 

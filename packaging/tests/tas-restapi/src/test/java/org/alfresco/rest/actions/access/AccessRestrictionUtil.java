@@ -1,9 +1,9 @@
-package org.alfresco.email.action.access;
+package org.alfresco.rest.actions.access;
 
 import com.google.gson.Gson;
-import org.alfresco.email.action.access.pojo.Action;
-import org.alfresco.email.action.access.pojo.ActionCondition;
-import org.alfresco.email.action.access.pojo.Rule;
+import org.alfresco.rest.actions.access.pojo.Action;
+import org.alfresco.rest.actions.access.pojo.ActionCondition;
+import org.alfresco.rest.actions.access.pojo.Rule;
 import org.alfresco.utility.model.UserModel;
 
 import java.util.HashMap;

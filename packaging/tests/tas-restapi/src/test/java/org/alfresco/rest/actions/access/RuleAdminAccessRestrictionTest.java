@@ -24,11 +24,10 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.email.action.access;
+package org.alfresco.rest.actions.access;
 
-import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.email.action.access.pojo.Rule;
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.actions.access.pojo.Rule;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
@@ -42,16 +41,11 @@ import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.alfresco.email.action.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.MAIL_ACTION;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.createMailParameters;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.createRuleWithAction;
-import static org.alfresco.email.action.access.AccessRestrictionUtil.mapObjectToJSON;
-import static org.junit.Assert.assertEquals;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.EXPECTED_ERROR_MESSAGE;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createRuleWithAction;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.mapObjectToJSON;
 
 public class RuleAdminAccessRestrictionTest extends RestTest {
 
@@ -60,8 +54,6 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
     private UserModel adminUser;
     private UserModel testUser;
     private FolderModel testFolder;
-
-    private FileModel testFile;
 
     @Autowired
     protected RestWrapper restClient;

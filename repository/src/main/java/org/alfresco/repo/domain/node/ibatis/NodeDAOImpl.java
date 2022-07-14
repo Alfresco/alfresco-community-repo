@@ -180,8 +180,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
 
     private SqlSessionTemplate template;
 
-    private static final String SELECT_All_CHILD_ASSOCS_OF_PARENT = "alfresco.node.select_allChildAssocsOfParent";
-
     public void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
         this.template = sqlSessionTemplate;
@@ -1176,18 +1174,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         template.select(SELECT_CHILD_ASSOCS_OF_PARENT, assoc, resultHandler);
         
         resultsCallback.done();
-    }
-
-    @Override
-    protected List<ChildAssocEntity> selectChildAssocs(
-            Long parentNodeId)
-    {
-        ChildAssocEntity assoc = new ChildAssocEntity();
-        // Parent
-        NodeEntity parentNode = new NodeEntity();
-        parentNode.setId(parentNodeId);
-        assoc.setParentNode(parentNode);
-        return template.selectList(SELECT_All_CHILD_ASSOCS_OF_PARENT, assoc);
     }
 
     @SuppressWarnings("unchecked")

@@ -62,4 +62,3 @@ public class V1AdminAccessRestrictionTest extends RestTest {
                 .assertThat().body("entry.id", notNullValue());
     }
 }
-

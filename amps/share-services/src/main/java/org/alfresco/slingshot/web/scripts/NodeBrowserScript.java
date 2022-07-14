@@ -176,6 +176,7 @@ public class NodeBrowserScript extends NodeBrowserPost implements Serializable
 			{
 				status.setCode(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				status.setMessage(e.getMessage());
+				status.setException(e);
 				status.setRedirect(true);
 			}
     		return tmplMap;

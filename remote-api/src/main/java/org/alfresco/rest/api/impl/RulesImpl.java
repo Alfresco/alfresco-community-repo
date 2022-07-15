@@ -83,7 +83,7 @@ public class RulesImpl implements Rules
     }
 
     @Override
-    public List<Rule> saveRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
+    public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
         validateRuleSetNode(ruleSetId, folderNodeRef);

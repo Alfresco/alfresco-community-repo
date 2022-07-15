@@ -27,9 +27,11 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.rule.RuleServiceException;
 
 import java.util.List;
 
@@ -67,6 +69,8 @@ public interface Rules
      * @param ruleSetId The id of a rule set (or "_default_" to use/create the default rule set for the folder).
      * @param rule The definition of the rule.
      * @return The newly created rules.
+     * @throws InvalidArgumentException If the nodes are not the expected types, or the rule set does not correspond to the folder.
+     * @throws RuleServiceException If the folder is already linked to another rule set.
      */
-    List<Rule> saveRules(String folderNodeId, String ruleSetId, List<Rule> rule);
+    List<Rule> createRules(String folderNodeId, String ruleSetId, List<Rule> rule);
 }

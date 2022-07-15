@@ -44,11 +44,10 @@ public class Rule
             return null;
         }
 
-        final Rule rule = new RuleBuilder().createRule();
-        rule.id = ruleModel.getNodeRef().getId();
-        rule.name = ruleModel.getTitle();
-
-        return rule;
+        return builder()
+                .setId(ruleModel.getNodeRef().getId())
+                .setName(ruleModel.getTitle())
+                .createRule();
     }
 
     /**
@@ -113,5 +112,37 @@ public class Rule
     public String toString()
     {
         return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + '}';
+    }
+
+    public static RuleBuilder builder()
+    {
+        return new RuleBuilder();
+    }
+
+    /** Builder class. */
+    public static class RuleBuilder
+    {
+        private String id;
+        private String name;
+
+        public RuleBuilder setId(String id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public RuleBuilder setName(String name)
+        {
+            this.name = name;
+            return this;
+        }
+
+        public Rule createRule()
+        {
+            Rule rule = new Rule();
+            rule.setId(id);
+            rule.setName(name);
+            return rule;
+        }
     }
 }

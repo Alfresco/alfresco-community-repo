@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.impl;
 
+import static java.util.Collections.emptyList;
+
 import static org.alfresco.rest.api.model.rules.RuleSet.DEFAULT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -43,7 +45,6 @@ import java.util.List;
 import junit.framework.TestCase;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.rules.Rule;
-import org.alfresco.rest.api.model.rules.RuleBuilder;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -298,7 +299,7 @@ public class RulesImplTest extends TestCase
         given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
 
         // when
-        List<Rule> actual = rules.saveRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
+        List<Rule> actual = rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
@@ -322,7 +323,7 @@ public class RulesImplTest extends TestCase
         given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
 
         // when
-        List<Rule> actual = rules.saveRules(folderNodeRef.getId(), DEFAULT_ID, ruleList);
+        List<Rule> actual = rules.createRules(folderNodeRef.getId(), DEFAULT_ID, ruleList);
 
         then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
@@ -334,14 +335,14 @@ public class RulesImplTest extends TestCase
     @Test
     public void testSaveRules_ruleSetNotAssociatedWithFolder()
     {
-        Rule rule = new RuleBuilder().setName(RULE_NAME)
-                                     .createRule();
+        Rule rule = Rule.builder().setName(RULE_NAME)
+                                  .createRule();
         List<Rule> ruleList = List.of(rule);
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef)).willReturn(false);
 
         // when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
-                () -> rules.saveRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList));
+                () -> rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList));
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
@@ -351,14 +352,14 @@ public class RulesImplTest extends TestCase
     public void testSaveRules_emptyRuleList()
     {
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
-        List<Rule> ruleList = List.of();
+        List<Rule> ruleList = emptyList();
 
         // when
-        List<Rule> actual = this.rules.saveRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
+        List<Rule> actual = this.rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
-        assertThat(actual).isEqualTo(List.of());
+        assertThat(actual).isEqualTo(emptyList());
     }
 
     /** Create three rules in a single call and check they are all passed to the RuleService. */
@@ -382,7 +383,7 @@ public class RulesImplTest extends TestCase
         }
 
         // when
-        List<Rule> actual = rules.saveRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleBodyList);
+        List<Rule> actual = rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleBodyList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         for (Rule ruleBody : ruleBodyList)

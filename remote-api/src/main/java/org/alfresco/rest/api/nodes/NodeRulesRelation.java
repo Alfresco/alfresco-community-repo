@@ -105,12 +105,25 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
         return rules.getRuleById(folderNodeId, ruleSetId, ruleId);
     }
 
+    /**
+     * Create one or more rules inside a given folder and rule set.
+     *
+     * @param folderNodeId The folder in which to create the rule.
+     * @param ruleList The list of rules to create.
+     * @param parameters List of parameters including the rule set id as the relationship.
+     * @return The newly created rules.
+     */
+    @WebApiDescription(
+            title = "Create folder rule",
+            description = "Creates one or more folder rules for the given folder and rule set",
+            successStatus = HttpServletResponse.SC_CREATED
+    )
     @Override
-    public List<Rule> create(String folderNodeId, List<Rule> rules, Parameters parameters)
+    public List<Rule> create(String folderNodeId, List<Rule> ruleList, Parameters parameters)
     {
         final String ruleSetId = parameters.getRelationshipId();
 
-        return this.rules.saveRules(folderNodeId, ruleSetId, rules);
+        return rules.createRules(folderNodeId, ruleSetId, ruleList);
     }
 
     public void setRules(Rules rules)

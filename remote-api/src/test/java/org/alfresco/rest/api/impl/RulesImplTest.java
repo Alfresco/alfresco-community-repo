@@ -335,8 +335,7 @@ public class RulesImplTest extends TestCase
     @Test
     public void testSaveRules_ruleSetNotAssociatedWithFolder()
     {
-        Rule rule = Rule.builder().setName(RULE_NAME)
-                                  .createRule();
+        Rule rule = Rule.builder().name(RULE_NAME).create();
         List<Rule> ruleList = List.of(rule);
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef)).willReturn(false);
 

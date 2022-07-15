@@ -26,11 +26,13 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.CompositeAction;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Experimental
@@ -44,12 +46,19 @@ public class Rule
     private boolean cascade;
     private boolean asynchronous;
     private boolean shared;
-    private Action errorScript;
+    private String errorScript;
     private List<RuleTrigger> triggers;
     private CompositeCondition conditions;
     private List<Action> actions;
 
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel) {
+    /**
+     * Converts service POJO rule to REST model rule.
+     *
+     * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
+     * @return {@link Rule} REST model
+     */
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel)
+    {
         if (ruleModel == null) {
             return null;
         }
@@ -62,7 +71,9 @@ public class Rule
         rule.cascade = ruleModel.isAppliedToChildren();
         rule.asynchronous = ruleModel.getExecuteAsynchronously();
         rule.triggers = ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList());
-        rule.errorScript = Action.from(ruleModel.getAction().getCompensatingAction());
+        if (ruleModel.getAction().getCompensatingAction() != null) {
+            rule.errorScript = ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString();
+        }
         rule.conditions = CompositeCondition.from(ruleModel.getAction().getActionConditions());
         if (ruleModel.getAction() instanceof CompositeAction) {
             rule.actions = ((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList());
@@ -132,12 +143,12 @@ public class Rule
         this.asynchronous = asynchronous;
     }
 
-    public Action getErrorScript()
+    public String getErrorScript()
     {
         return errorScript;
     }
 
-    public void setErrorScript(Action errorScript)
+    public void setErrorScript(String errorScript)
     {
         this.errorScript = errorScript;
     }
@@ -188,5 +199,24 @@ public class Rule
         return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", enabled=" + enabled + ", cascade=" + cascade
             + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript=" + errorScript + ", triggers=" + triggers + ", conditions=" + conditions + ", actions="
             + actions + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Rule rule = (Rule) o;
+        return enabled == rule.enabled && cascade == rule.cascade && asynchronous == rule.asynchronous && shared == rule.shared && Objects.equals(id, rule.id) && Objects.equals(
+            name, rule.name) && Objects.equals(description, rule.description) && Objects.equals(errorScript, rule.errorScript) && Objects.equals(triggers, rule.triggers)
+            && Objects.equals(conditions, rule.conditions) && Objects.equals(actions, rule.actions);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, conditions, actions);
     }
 }

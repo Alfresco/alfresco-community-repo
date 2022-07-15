@@ -31,6 +31,7 @@ import org.alfresco.service.Experimental;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Experimental
 public class Action
@@ -39,6 +40,12 @@ public class Action
     private String actionDefinitionId;
     private Map<String, Serializable> params;
 
+    /**
+     * Converts service POJO action to REST model action.
+     *
+     * @param actionModel - {@link org.alfresco.service.cmr.action.Action} service POJO
+     * @return {@link Action} REST model
+     */
     public static Action from(final org.alfresco.service.cmr.action.Action actionModel) {
         if (actionModel == null) {
             return null;
@@ -75,5 +82,22 @@ public class Action
     public String toString()
     {
         return "Action{" + "actionDefinitionId='" + actionDefinitionId + '\'' + ", params=" + params + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Action action = (Action) o;
+        return Objects.equals(actionDefinitionId, action.actionDefinitionId) && Objects.equals(params, action.params);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(actionDefinitionId, params);
     }
 }

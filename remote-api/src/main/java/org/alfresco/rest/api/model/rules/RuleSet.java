@@ -28,6 +28,8 @@ package org.alfresco.rest.api.model.rules;
 
 import org.alfresco.service.Experimental;
 
+import java.util.Objects;
+
 @Experimental
 public class RuleSet
 {
@@ -73,5 +75,22 @@ public class RuleSet
     public String toString()
     {
         return "RuleSet{" + "id='" + id + '\'' + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RuleSet ruleSet = (RuleSet) o;
+        return Objects.equals(id, ruleSet.id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id);
     }
 }

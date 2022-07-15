@@ -28,47 +28,82 @@ package org.alfresco.rest.api.model.rules;
 
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.cmr.action.ParameterizedItem;
+import org.apache.commons.collections.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Experimental
 public class CompositeCondition
 {
 
-    private String conditionDefinitionId;
     private boolean inverted;
     private ConditionOperator booleanMode = ConditionOperator.AND;
     private List<CompositeCondition> compositeConditions;
     private List<SimpleCondition> simpleConditions;
 
-    public static CompositeCondition from(final List<ActionCondition> conditionModels) {
-        if (conditionModels == null) {
+    /**
+     * Converts Action conditions (service POJO) list to composite condition (REST model).
+     *
+     * @param actionConditions - list of {@link ActionCondition} service POJOs
+     * @return {@link CompositeCondition} REST model
+     */
+    public static CompositeCondition from(final List<ActionCondition> actionConditions) {
+        if (actionConditions == null) {
             return null;
         }
 
-        final CompositeCondition condition = new CompositeCondition();
-        conditionModels.forEach(conditionModel -> {
-            condition.conditionDefinitionId = conditionModel.getActionConditionDefinitionName();
-            condition.inverted = conditionModel.getInvertCondition();
-            condition.simpleConditions = conditionModels.stream()
-                .map(ParameterizedItem::getParameterValues)
-                .map(SimpleCondition::from)
-                .collect(Collectors.toList());
-        });
+        final CompositeCondition conditions = new CompositeCondition();
+        conditions.compositeConditions = new ArrayList<>();
+        // group action conditions by inversion flag
+        actionConditions.stream().collect(Collectors.groupingBy(ActionCondition::getInvertCondition))
+            // map action condition sub lists
+            .forEach((inverted, actionConditionsPart) -> Optional.ofNullable(CompositeCondition.ofActionConditions(actionConditionsPart, inverted, ConditionOperator.AND))
+                // if composite condition present add to final list
+                .ifPresent(compositeCondition -> conditions.compositeConditions.add(compositeCondition)));
 
-        return condition;
+        return conditions;
     }
 
-    public String getConditionDefinitionId()
+    private static CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions, final boolean inverted, final ConditionOperator conditionOperator)
     {
-        return conditionDefinitionId;
+        if (actionConditions == null) {
+            return null;
+        }
+
+        return ofSimpleConditions(SimpleCondition.listOf(actionConditions), inverted, conditionOperator);
     }
 
-    public void setConditionDefinitionId(String conditionDefinitionId)
+    /**
+     * Creates a composite condition instance of simple conditions.
+     *
+     * @param simpleConditions - list of {@link SimpleCondition}
+     * @param inverted - determines if condition should be inverted
+     * @param conditionOperator - determines the operation, see {@link ConditionOperator}
+     * @return {@link CompositeCondition}
+     */
+    public static CompositeCondition ofSimpleConditions(final List<SimpleCondition> simpleConditions, final boolean inverted, final ConditionOperator conditionOperator)
     {
-        this.conditionDefinitionId = conditionDefinitionId;
+        return of(simpleConditions, null, inverted, conditionOperator);
+    }
+
+    private static CompositeCondition of(final List<SimpleCondition> simpleConditions, final List<CompositeCondition> compositeConditions,
+        final boolean inverted, final ConditionOperator conditionOperator)
+    {
+        if (CollectionUtils.isEmpty(simpleConditions) && CollectionUtils.isEmpty(compositeConditions)) {
+            return null;
+        }
+
+        final CompositeCondition conditions = new CompositeCondition();
+        conditions.inverted = inverted;
+        conditions.booleanMode = conditionOperator;
+        conditions.simpleConditions = simpleConditions;
+        conditions.compositeConditions = compositeConditions;
+
+        return conditions;
     }
 
     public boolean isInverted()
@@ -114,7 +149,25 @@ public class CompositeCondition
     @Override
     public String toString()
     {
-        return "CompositeCondition{" + "conditionDefinitionId='" + conditionDefinitionId + '\'' + ", inverted=" + inverted + ", booleanMode=" + booleanMode
-            + ", compositeConditions=" + compositeConditions + ", simpleConditions=" + simpleConditions + '}';
+        return "CompositeCondition{" + "inverted=" + inverted + ", booleanMode=" + booleanMode + ", compositeConditions=" + compositeConditions + ", simpleConditions="
+            + simpleConditions + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        CompositeCondition that = (CompositeCondition) o;
+        return inverted == that.inverted && booleanMode == that.booleanMode && Objects.equals(compositeConditions, that.compositeConditions) && Objects.equals(
+            simpleConditions, that.simpleConditions);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(inverted, booleanMode, compositeConditions, simpleConditions);
     }
 }

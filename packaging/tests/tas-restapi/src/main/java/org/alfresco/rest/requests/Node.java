@@ -979,4 +979,12 @@ public class Node extends ModelRequest<Node>
                 .withContentPropName(contentPropName)
                 .withVersionId(versionId);
     }
+
+    public FolderRules requestRules(String ruleId, String ruleSetId)
+    {
+        return new FolderRules(restWrapper)
+                .withNodeId(repoModel.getNodeRef())
+                .withRuleId(ruleId)
+                .withRuleSetId(ruleSetId);
+    }
 }

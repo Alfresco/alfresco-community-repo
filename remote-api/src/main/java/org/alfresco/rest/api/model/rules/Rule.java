@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
@@ -34,11 +35,11 @@ import org.alfresco.service.cmr.action.CompositeAction;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 @Experimental
 public class Rule
 {
-
     private String id;
     private String name;
     private String description;
@@ -59,7 +60,8 @@ public class Rule
      */
     public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel)
     {
-        if (ruleModel == null) {
+        if (ruleModel == null)
+        {
             return null;
         }
 
@@ -71,15 +73,34 @@ public class Rule
         rule.cascade = ruleModel.isAppliedToChildren();
         rule.asynchronous = ruleModel.getExecuteAsynchronously();
         rule.triggers = ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList());
-        if (ruleModel.getAction().getCompensatingAction() != null) {
+        if (ruleModel.getAction().getCompensatingAction() != null)
+        {
             rule.errorScript = ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString();
         }
         rule.conditions = CompositeCondition.from(ruleModel.getAction().getActionConditions());
-        if (ruleModel.getAction() instanceof CompositeAction) {
+        if (ruleModel.getAction() instanceof CompositeAction)
+        {
             rule.actions = ((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList());
         }
-
+        /*return builder()
+                .setId(ruleModel.getNodeRef().getId())
+                .setName(ruleModel.getTitle())
+                .createRule();*/
         return rule;
+    }
+    /**
+     * Convert the REST model object to the equivalent service POJO.
+     *
+     * @param nodes The nodes API.
+     * @return The rule service POJO.
+     */
+    public org.alfresco.service.cmr.rule.Rule toServiceModel(Nodes nodes)
+    {
+        org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
+        NodeRef nodeRef = nodes.validateOrLookupNode(id, null);
+        ruleModel.setNodeRef(nodeRef);
+        ruleModel.setTitle(name);
+        return ruleModel;
     }
 
     @UniqueId
@@ -218,5 +239,37 @@ public class Rule
     public int hashCode()
     {
         return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, conditions, actions);
+    }
+
+    public static RuleBuilder builder()
+    {
+        return new RuleBuilder();
+    }
+
+    /** Builder class. */
+    public static class RuleBuilder
+    {
+        private String id;
+        private String name;
+
+        public RuleBuilder setId(String id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public RuleBuilder setName(String name)
+        {
+            this.name = name;
+            return this;
+        }
+
+        public Rule createRule()
+        {
+            Rule rule = new Rule();
+            rule.setId(id);
+            rule.setName(name);
+            return rule;
+        }
     }
 }

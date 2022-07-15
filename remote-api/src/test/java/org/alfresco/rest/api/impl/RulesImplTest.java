@@ -26,6 +26,22 @@
 
 package org.alfresco.rest.api.impl;
 
+import static java.util.Collections.emptyList;
+
+import static org.alfresco.rest.api.model.rules.RuleSet.DEFAULT_ID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import junit.framework.TestCase;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.rules.Rule;
@@ -47,22 +63,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.Collection;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
-
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
 public class RulesImplTest extends TestCase
 {
-
     private static final String FOLDER_NODE_ID = "dummy-folder-node-id";
     private static final String RULE_SET_ID = "dummy-rule-set-id";
     private static final String RULE_ID = "dummy-rule-id";
@@ -70,6 +74,7 @@ public class RulesImplTest extends TestCase
     private static final NodeRef ruleSetNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_SET_ID);
     private static final NodeRef ruleNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_ID);
     private static final Paging paging = Paging.DEFAULT;
+    private static final String RULE_NAME = "Rule name";
 
     @Mock
     private Nodes nodesMock;
@@ -129,11 +134,10 @@ public class RulesImplTest extends TestCase
     @Test
     public void testGetRulesForDefaultRuleSet()
     {
-        final String defaultRuleSetId = "-default-";
         given(ruleServiceMock.getRules(any())).willReturn(List.of(createRule(RULE_ID)));
 
         // when
-        final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, defaultRuleSetId, paging);
+        final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, DEFAULT_ID, paging);
 
         then(nodesMock).should().validateOrLookupNode(eq(FOLDER_NODE_ID), isNull());
         then(nodesMock).should().nodeMatches(eq(folderNodeRef), any(), isNull());
@@ -279,6 +283,115 @@ public class RulesImplTest extends TestCase
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(eq(ruleSetNodeRef), eq(folderNodeRef));
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(eq(ruleNodeRef), eq(ruleSetNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    /** Create a single rule. */
+    @Test
+    public void testSaveRules()
+    {
+        Rule ruleBody = mock(Rule.class);
+        List<Rule> ruleList = List.of(ruleBody);
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
+        org.alfresco.service.cmr.rule.Rule serviceRuleBody = mock(org.alfresco.service.cmr.rule.Rule.class);
+        given(ruleBody.toServiceModel(nodesMock)).willReturn(serviceRuleBody);
+        org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
+        given(ruleServiceMock.saveRule(folderNodeRef, serviceRuleBody)).willReturn(serviceRule);
+        given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
+
+        // when
+        List<Rule> actual = rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
+
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        List<Rule> expected = List.of(Rule.from(serviceRule));
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    /** Check that when passing the default rule set then we don't perform any validation around the rule set node. */
+    @Test
+    public void testSaveRules_defaultRuleSet()
+    {
+        NodeRef defaultRuleSetNodeRef = new NodeRef("default://rule/set");
+        given(ruleServiceMock.getRuleSetNode(folderNodeRef)).willReturn(defaultRuleSetNodeRef);
+        Rule ruleBody = mock(Rule.class);
+        List<Rule> ruleList = List.of(ruleBody);
+        org.alfresco.service.cmr.rule.Rule serviceRuleBody = mock(org.alfresco.service.cmr.rule.Rule.class);
+        given(ruleBody.toServiceModel(nodesMock)).willReturn(serviceRuleBody);
+        org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
+        given(ruleServiceMock.saveRule(folderNodeRef, serviceRuleBody)).willReturn(serviceRule);
+        given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
+
+        // when
+        List<Rule> actual = rules.createRules(folderNodeRef.getId(), DEFAULT_ID, ruleList);
+
+        then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
+        then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        List<Rule> expected = List.of(Rule.from(serviceRule));
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void testSaveRules_ruleSetNotAssociatedWithFolder()
+    {
+        Rule rule = Rule.builder().setName(RULE_NAME)
+                                  .createRule();
+        List<Rule> ruleList = List.of(rule);
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef)).willReturn(false);
+
+        // when
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
+                () -> rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList));
+
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testSaveRules_emptyRuleList()
+    {
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
+        List<Rule> ruleList = emptyList();
+
+        // when
+        List<Rule> actual = this.rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
+
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        assertThat(actual).isEqualTo(emptyList());
+    }
+
+    /** Create three rules in a single call and check they are all passed to the RuleService. */
+    @Test
+    public void testSaveRules_createMultipleRules()
+    {
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
+        List<Rule> ruleBodyList = new ArrayList<>();
+        List<Rule> expected = new ArrayList<>();
+        for (String ruleId : List.of("A", "B", "C"))
+        {
+            Rule ruleBody = mock(Rule.class);
+            ruleBodyList.add(ruleBody);
+            org.alfresco.service.cmr.rule.Rule serviceRuleBody = mock(org.alfresco.service.cmr.rule.Rule.class);
+            given(ruleBody.toServiceModel(nodesMock)).willReturn(serviceRuleBody);
+            org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
+            given(ruleServiceMock.saveRule(folderNodeRef, serviceRuleBody)).willReturn(serviceRule);
+            NodeRef ruleNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, ruleId);
+            given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
+            expected.add(Rule.from(serviceRule));
+        }
+
+        // when
+        List<Rule> actual = rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleBodyList);
+
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        for (Rule ruleBody : ruleBodyList)
+        {
+            then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
+        }
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        assertThat(actual).isEqualTo(expected);
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRule(final String id) {

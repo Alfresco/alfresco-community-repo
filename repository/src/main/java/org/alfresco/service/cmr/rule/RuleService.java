@@ -332,6 +332,16 @@ public interface RuleService
     public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef);
 
     /**
+     * Get rule set node associated with folder
+     *
+     * @param folderNodeRef - folder node reference
+     * @return node reference of a rule set
+     */
+    @Auditable(parameters = {"folderNodeRef"})
+    @Experimental
+    NodeRef getRuleSetNode(final NodeRef folderNodeRef);
+
+    /**
      * Check if rule set's associated parent matches folder node.
      *
      * @param ruleSetNodeRef - node reference of a rule set

@@ -87,12 +87,12 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
      * @param folderNodeId - entity resource context for this relationship
      * @param ruleSetId - rule set node ID (associated with folder node)
      * @param parameters - will never be null. Contains i.a. ruleId (relationship2Id)
-     * @return {@link Rule} information
+     * @return {@link Rule} definition
      * @throws RelationshipResourceNotFoundException in case resource was not found
      */
     @WebApiDescription(
         title="Get folder node rule",
-        description = "Returns a folder single rule information for given node's, rule set's and rule's IDs",
+        description = "Returns a folder single rule definition for given node's, rule set's and rule's IDs",
         successStatus = HttpServletResponse.SC_OK
     )
     @Override

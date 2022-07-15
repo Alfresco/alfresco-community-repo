@@ -122,15 +122,14 @@ public class RulesImpl implements Rules
      *
      * @param ruleSetId - rule set node ID
      * @param associatedFolderNodeRef - folder node ref to check the association
-     * @return rule set node reference or null if given rule set ID is the default one
+     * @return rule set node reference
      * @throws InvalidArgumentException in case of not matching associated folder node
      */
     private NodeRef validateRuleSetNode(final String ruleSetId, final NodeRef associatedFolderNodeRef)
     {
         if (RuleSet.isDefaultId(ruleSetId))
         {
-            // returns null as default rule set's node is never used
-            return null;
+            return ruleService.getRuleSetNode(associatedFolderNodeRef);
         }
 
         final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);

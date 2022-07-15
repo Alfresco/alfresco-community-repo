@@ -54,7 +54,7 @@ public interface Rules
      * @param folderNodeId - folder node ID
      * @param ruleSetId - rule set ID
      * @param ruleId - rule ID
-     * @return {@link Rule} information
+     * @return {@link Rule} definition
      */
     Rule getRuleById(String folderNodeId, String ruleSetId, String ruleId);
 }

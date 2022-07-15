@@ -6,6 +6,7 @@ import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.model.UserModel;
 import org.json.simple.JSONObject;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,14 @@ public class FormProcAdminAccessRestrictionTest extends RestTest {
         adminUser = dataUser.getAdminUser();
         testUser = dataUser.createRandomTestUser();
     }
+
+    @Before
+    public void setup() {
+        restClient.configureRequestSpec()
+                .setBasePath("")
+                .addHeader("Content-Type", "application/json");
+    }
+
     @Test
     public void userShouldNotCreateAMailForm() {
         restClient.authenticateUser(testUser);
@@ -46,8 +55,6 @@ public class FormProcAdminAccessRestrictionTest extends RestTest {
         String endpoint = String.format(ACTION_FORM_PROCESSOR_ENDPOINT, MAIL_ACTION);
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, body, endpoint);
-        restClient.configureRequestSpec().addHeader("Content-Type", "application/json")
-                                         .setBasePath("");
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -62,8 +69,6 @@ public class FormProcAdminAccessRestrictionTest extends RestTest {
         String endpoint = String.format(ACTION_FORM_PROCESSOR_ENDPOINT, MAIL_ACTION);
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, body, endpoint);
-        restClient.configureRequestSpec().addHeader("Content-Type", "application/json")
-                                         .setBasePath("");
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())

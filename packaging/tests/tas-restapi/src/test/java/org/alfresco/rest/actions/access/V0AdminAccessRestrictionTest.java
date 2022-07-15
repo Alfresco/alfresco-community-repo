@@ -6,6 +6,7 @@ import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.model.UserModel;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,11 @@ public class V0AdminAccessRestrictionTest extends RestTest {
                 .createPublicRandomSite();
     }
 
+    @Before
+    public void setup() {
+        restClient.configureRequestSpec().setBasePath("");
+    }
+
     @Test
     public void userShouldNotExecuteMailActionQueue() {
         restClient.authenticateUser(testUser);
@@ -48,7 +54,6 @@ public class V0AdminAccessRestrictionTest extends RestTest {
         String actionRequestBody = mapObjectToJSON(action);
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, actionRequestBody, ACTION_QUEUE_ENDPOINT);
-        restClient.configureRequestSpec().setBasePath("");
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
@@ -63,7 +68,6 @@ public class V0AdminAccessRestrictionTest extends RestTest {
         String actionRequestBody = mapObjectToJSON(action);
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, actionRequestBody, ACTION_QUEUE_ENDPOINT);
-        restClient.configureRequestSpec().setBasePath("");
         RestResponse response = restClient.process(request);
 
         response.assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())

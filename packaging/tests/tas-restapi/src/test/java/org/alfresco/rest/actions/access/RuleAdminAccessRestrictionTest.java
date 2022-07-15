@@ -9,6 +9,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
+import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -44,6 +45,11 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
         testFolder = dataContent.usingUser(testUser)
                 .usingSite(testSite)
                 .createFolder();
+    }
+
+    @Before
+    public void setup() {
+        restClient.configureRequestSpec().setBasePath("");
     }
 
     @Test

@@ -9,11 +9,11 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.UserModel;
-import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
@@ -47,7 +47,7 @@ public class RuleAdminAccessRestrictionTest extends RestTest {
                 .createFolder();
     }
 
-    @Before
+    @BeforeMethod(alwaysRun=true)
     public void setup() {
         restClient.configureRequestSpec().setBasePath("");
     }

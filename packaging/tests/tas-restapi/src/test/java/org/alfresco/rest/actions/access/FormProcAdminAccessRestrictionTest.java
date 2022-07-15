@@ -6,11 +6,11 @@ import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.model.UserModel;
 import org.json.simple.JSONObject;
-import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -40,7 +40,7 @@ public class FormProcAdminAccessRestrictionTest extends RestTest {
         testUser = dataUser.createRandomTestUser();
     }
 
-    @Before
+    @BeforeMethod(alwaysRun=true)
     public void setup() {
         restClient.configureRequestSpec()
                 .setBasePath("")

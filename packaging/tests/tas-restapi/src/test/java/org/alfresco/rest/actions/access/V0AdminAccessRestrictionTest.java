@@ -6,11 +6,11 @@ import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.utility.model.UserModel;
-import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
@@ -41,7 +41,7 @@ public class V0AdminAccessRestrictionTest extends RestTest {
                 .createPublicRandomSite();
     }
 
-    @Before
+    @BeforeMethod(alwaysRun=true)
     public void setup() {
         restClient.configureRequestSpec().setBasePath("");
     }

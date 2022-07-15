@@ -39,10 +39,9 @@ public class RuleSet
 
     public static RuleSet of(String id)
     {
-        final RuleSet ruleSet = new RuleSet();
-        ruleSet.id = id;
-
-        return ruleSet;
+        return builder()
+            .id(id)
+            .create();
     }
 
     public boolean isNotDefaultId() {
@@ -92,5 +91,28 @@ public class RuleSet
     public int hashCode()
     {
         return Objects.hash(id);
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String id;
+
+        public Builder id(String id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public RuleSet create()
+        {
+            final RuleSet ruleSet = new RuleSet();
+            ruleSet.setId(id);
+            return ruleSet;
+        }
     }
 }

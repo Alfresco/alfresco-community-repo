@@ -65,28 +65,24 @@ public class Rule
             return null;
         }
 
-        final Rule rule = new Rule();
-        rule.id = ruleModel.getNodeRef().getId();
-        rule.name = ruleModel.getTitle();
-        rule.description = ruleModel.getDescription();
-        rule.enabled = !ruleModel.getRuleDisabled();
-        rule.cascade = ruleModel.isAppliedToChildren();
-        rule.asynchronous = ruleModel.getExecuteAsynchronously();
-        rule.triggers = ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList());
-        if (ruleModel.getAction().getCompensatingAction() != null)
-        {
-            rule.errorScript = ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString();
+        final Rule.Builder builder = builder()
+            .id(ruleModel.getNodeRef().getId())
+            .name(ruleModel.getTitle())
+            .description(ruleModel.getDescription())
+            .enabled(!ruleModel.getRuleDisabled())
+            .cascade(ruleModel.isAppliedToChildren())
+            .asynchronous(ruleModel.getExecuteAsynchronously())
+            .triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()))
+            .conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions()));
+
+        if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null) {
+            builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
         }
-        rule.conditions = CompositeCondition.from(ruleModel.getAction().getActionConditions());
-        if (ruleModel.getAction() instanceof CompositeAction)
-        {
-            rule.actions = ((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList());
+        if (ruleModel.getAction() instanceof CompositeAction) {
+            builder.actions(((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList()));
         }
-        /*return builder()
-                .setId(ruleModel.getNodeRef().getId())
-                .setName(ruleModel.getTitle())
-                .createRule();*/
-        return rule;
+
+        return builder.create();
     }
     /**
      * Convert the REST model object to the equivalent service POJO.
@@ -241,34 +237,106 @@ public class Rule
         return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, conditions, actions);
     }
 
-    public static RuleBuilder builder()
+    public static Builder builder()
     {
-        return new RuleBuilder();
+        return new Builder();
     }
 
     /** Builder class. */
-    public static class RuleBuilder
+    public static class Builder
     {
         private String id;
         private String name;
+        private String description;
+        private boolean enabled;
+        private boolean cascade;
+        private boolean asynchronous;
+        private boolean shared;
+        private String errorScript;
+        private List<RuleTrigger> triggers;
+        private CompositeCondition conditions;
+        private List<Action> actions;
 
-        public RuleBuilder setId(String id)
+        public Builder id(String id)
         {
             this.id = id;
             return this;
         }
 
-        public RuleBuilder setName(String name)
+        public Builder name(String name)
         {
             this.name = name;
             return this;
         }
 
-        public Rule createRule()
+        public Builder description(String description)
+        {
+            this.description = description;
+            return this;
+        }
+
+        public Builder enabled(boolean enabled)
+        {
+            this.enabled = enabled;
+            return this;
+        }
+
+        public Builder cascade(boolean cascade)
+        {
+            this.cascade = cascade;
+            return this;
+        }
+
+        public Builder asynchronous(boolean asynchronous)
+        {
+            this.asynchronous = asynchronous;
+            return this;
+        }
+
+        public Builder shared(boolean shared)
+        {
+            this.shared = shared;
+            return this;
+        }
+
+        public Builder errorScript(String errorScript)
+        {
+            this.errorScript = errorScript;
+            return this;
+        }
+
+        public Builder triggers(List<RuleTrigger> triggers)
+        {
+            this.triggers = triggers;
+            return this;
+        }
+
+        public Builder conditions(CompositeCondition conditions)
+        {
+            this.conditions = conditions;
+            return this;
+        }
+
+        public Builder actions(List<Action> actions)
+        {
+            this.actions = actions;
+            return this;
+        }
+
+        public Rule create()
         {
             Rule rule = new Rule();
             rule.setId(id);
             rule.setName(name);
+            rule.setDescription(description);
+            rule.setEnabled(enabled);
+            rule.setCascade(cascade);
+            rule.setAsynchronous(asynchronous);
+            rule.setShared(shared);
+            rule.setErrorScript(errorScript);
+            rule.setTriggers(triggers);
+            rule.setConditions(conditions);
+            rule.setActions(actions);
             return rule;
         }
     }

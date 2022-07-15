@@ -97,13 +97,12 @@ public class CompositeCondition
             return null;
         }
 
-        final CompositeCondition conditions = new CompositeCondition();
-        conditions.inverted = inverted;
-        conditions.booleanMode = conditionOperator;
-        conditions.simpleConditions = simpleConditions;
-        conditions.compositeConditions = compositeConditions;
-
-        return conditions;
+        return builder()
+            .inverted(inverted)
+            .booleanMode(conditionOperator)
+            .simpleConditions(simpleConditions)
+            .compositeConditions(compositeConditions)
+            .create();
     }
 
     public boolean isInverted()
@@ -169,5 +168,52 @@ public class CompositeCondition
     public int hashCode()
     {
         return Objects.hash(inverted, booleanMode, compositeConditions, simpleConditions);
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private boolean inverted;
+        private ConditionOperator booleanMode;
+        private List<CompositeCondition> compositeConditions;
+        private List<SimpleCondition> simpleConditions;
+
+        public Builder inverted(boolean inverted)
+        {
+            this.inverted = inverted;
+            return this;
+        }
+
+        public Builder booleanMode(ConditionOperator booleanMode)
+        {
+            this.booleanMode = booleanMode;
+            return this;
+        }
+
+        public Builder compositeConditions(List<CompositeCondition> compositeConditions)
+        {
+            this.compositeConditions = compositeConditions;
+            return this;
+        }
+
+        public Builder simpleConditions(List<SimpleCondition> simpleConditions)
+        {
+            this.simpleConditions = simpleConditions;
+            return this;
+        }
+
+        public CompositeCondition create()
+        {
+            final CompositeCondition condition = new CompositeCondition();
+            condition.setInverted(inverted);
+            condition.setBooleanMode(booleanMode);
+            condition.setCompositeConditions(compositeConditions);
+            condition.setSimpleConditions(simpleConditions);
+            return condition;
+        }
     }
 }

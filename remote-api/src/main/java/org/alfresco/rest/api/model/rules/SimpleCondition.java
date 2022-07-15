@@ -81,62 +81,62 @@ public class SimpleCondition
             return null;
         }
 
-        final SimpleCondition simpleCondition = new SimpleCondition();
+        final SimpleCondition.Builder builder = builder();
         switch (actionCondition.getActionConditionDefinitionName()) {
         case ComparePropertyValueEvaluator.NAME:
             if (actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY) != null) {
-                simpleCondition.field = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY).toString().toLowerCase();
+                builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY).toString().toLowerCase());
             } else {
-                simpleCondition.field = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase();
+                builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase());
             }
-            simpleCondition.comparator = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString().toLowerCase();
-            simpleCondition.parameter = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString();
+            builder.comparator(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString().toLowerCase());
+            builder.parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString());
             break;
         case CompareMimeTypeEvaluator.NAME:
-            simpleCondition.field = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString();
-            simpleCondition.comparator = COMPARATOR_EQUALS;
-            simpleCondition.parameter = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString();
+            builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString());
+            builder.comparator(COMPARATOR_EQUALS);
+            builder.parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString());
             break;
         case HasAspectEvaluator.NAME:
-            simpleCondition.field = HasAspectEvaluator.PARAM_ASPECT;
-            simpleCondition.comparator = COMPARATOR_EQUALS;
-            simpleCondition.parameter = actionCondition.getParameterValues().get(HasAspectEvaluator.PARAM_ASPECT).toString();
+            builder.field(HasAspectEvaluator.PARAM_ASPECT);
+            builder.comparator(COMPARATOR_EQUALS);
+            builder.parameter(actionCondition.getParameterValues().get(HasAspectEvaluator.PARAM_ASPECT).toString());
             break;
         case HasChildEvaluator.NAME:
             if (actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE) != null) {
-                simpleCondition.field = actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE).toString();
+                builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE).toString());
             } else {
-                simpleCondition.field = actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_NAME).toString();
+                builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_NAME).toString());
             }
-            simpleCondition.comparator = COMPARATOR_EQUALS;
-            simpleCondition.parameter = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString();
+            builder.comparator(COMPARATOR_EQUALS);
+            builder.parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString());
             break;
         case HasTagEvaluator.NAME:
-            simpleCondition.field = HasTagEvaluator.PARAM_TAG;
-            simpleCondition.comparator = COMPARATOR_EQUALS;
-            simpleCondition.parameter = actionCondition.getParameterValues().get(HasTagEvaluator.PARAM_TAG).toString();
+            builder.field(HasTagEvaluator.PARAM_TAG);
+            builder.comparator(COMPARATOR_EQUALS);
+            builder.parameter(actionCondition.getParameterValues().get(HasTagEvaluator.PARAM_TAG).toString());
             break;
         case HasVersionHistoryEvaluator.NAME:
-            simpleCondition.field = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase();
-            simpleCondition.comparator = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString();
-            simpleCondition.parameter = actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString();
+            builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase());
+            builder.comparator(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString());
+            builder.parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString());
             break;
         case InCategoryEvaluator.NAME:
-            simpleCondition.field = actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_ASPECT).toString();
-            simpleCondition.comparator = COMPARATOR_EQUALS;
-            simpleCondition.parameter = actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_VALUE).toString();
+            builder.field(actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_ASPECT).toString());
+            builder.comparator(COMPARATOR_EQUALS);
+            builder.parameter(actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_VALUE).toString());
             break;
         case IsSubTypeEvaluator.NAME:
-            simpleCondition.field = IsSubTypeEvaluator.PARAM_TYPE;
-            simpleCondition.comparator = COMPARATOR_EQUALS;
-            simpleCondition.parameter = actionCondition.getParameterValues().get(IsSubTypeEvaluator.PARAM_TYPE).toString();
+            builder.field(IsSubTypeEvaluator.PARAM_TYPE);
+            builder.comparator(COMPARATOR_EQUALS);
+            builder.parameter(actionCondition.getParameterValues().get(IsSubTypeEvaluator.PARAM_TYPE).toString());
             break;
         case NoConditionEvaluator.NAME:
         default:
             return null;
         }
 
-        return simpleCondition;
+        return builder.create();
     }
 
     public String getField()
@@ -190,5 +190,43 @@ public class SimpleCondition
     public int hashCode()
     {
         return Objects.hash(field, comparator, parameter);
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String field;
+        private String comparator;
+        private String parameter;
+
+        public Builder field(String field)
+        {
+            this.field = field;
+            return this;
+        }
+
+        public Builder comparator(String comparator)
+        {
+            this.comparator = comparator;
+            return this;
+        }
+
+        public Builder parameter(String parameter)
+        {
+            this.parameter = parameter;
+            return this;
+        }
+
+        public SimpleCondition create() {
+            final SimpleCondition condition = new SimpleCondition();
+            condition.setField(field);
+            condition.setComparator(comparator);
+            condition.setParameter(parameter);
+            return condition;
+        }
     }
 }

@@ -51,11 +51,10 @@ public class Action
             return null;
         }
 
-        final Action action = new Action();
-        action.actionDefinitionId = actionModel.getActionDefinitionName();
-        action.params = new HashMap<>(actionModel.getParameterValues());
-
-        return action;
+        return builder()
+            .actionDefinitionId(actionModel.getActionDefinitionName())
+            .params(new HashMap<>(actionModel.getParameterValues()))
+            .create();
     }
 
     public String getActionDefinitionId()
@@ -99,5 +98,35 @@ public class Action
     public int hashCode()
     {
         return Objects.hash(actionDefinitionId, params);
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String actionDefinitionId;
+        private Map<String, Serializable> params;
+
+        public Builder actionDefinitionId(String actionDefinitionId)
+        {
+            this.actionDefinitionId = actionDefinitionId;
+            return this;
+        }
+
+        public Builder params(Map<String, Serializable> params)
+        {
+            this.params = params;
+            return this;
+        }
+
+        public Action create() {
+            final Action action = new Action();
+            action.setActionDefinitionId(actionDefinitionId);
+            action.setParams(params);
+            return action;
+        }
     }
 }

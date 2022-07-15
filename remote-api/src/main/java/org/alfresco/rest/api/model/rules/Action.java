@@ -36,7 +36,6 @@ import java.util.Objects;
 @Experimental
 public class Action
 {
-
     private String actionDefinitionId;
     private Map<String, Serializable> params;
 

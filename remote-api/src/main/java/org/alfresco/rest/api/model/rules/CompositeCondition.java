@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 @Experimental
 public class CompositeCondition
 {
-
     private boolean inverted;
     private ConditionOperator booleanMode = ConditionOperator.AND;
     private List<CompositeCondition> compositeConditions;

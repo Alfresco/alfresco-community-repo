@@ -51,6 +51,10 @@ import org.junit.runners.Suite;
     org.alfresco.repo.action.executer.ContentMetadataEmbedderTest.class,
     org.alfresco.repo.action.executer.AsynchronousExtractorTest.class,
 
+    org.alfresco.repo.action.access.ActionAccessRestrictionAbstractBaseTest.class,
+    org.alfresco.repo.action.access.ActionAccessRestrictionTest.class,
+    org.alfresco.repo.action.access.AdminActionAccessRestrictionTest.class,
+
     org.alfresco.repo.rule.RuleLinkTest.class,
     org.alfresco.repo.rule.RuleServiceCoverageTest.class,
     org.alfresco.repo.rule.RuleServiceImplTest.class,

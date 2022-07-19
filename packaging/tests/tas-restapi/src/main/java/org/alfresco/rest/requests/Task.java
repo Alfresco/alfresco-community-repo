@@ -38,9 +38,8 @@ public class Task extends ModelRequest<Task>
      * Retrieve a list of tasks visible for the authenticated user using GET call on "/tasks"
      * 
      * @return
-     * @throws Exception
      */
-    public RestTaskModelsCollection getTasks() throws Exception
+    public RestTaskModelsCollection getTasks()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestTaskModelsCollection.class, request);
@@ -51,9 +50,8 @@ public class Task extends ModelRequest<Task>
      * 
      * @param taskId
      * @return
-     * @throws Exception
      */
-    public RestTaskModel getTask() throws Exception
+    public RestTaskModel getTask()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestTaskModel.class, request);
@@ -66,7 +64,7 @@ public class Task extends ModelRequest<Task>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestTaskModel updateTask(String newStateValue) throws Exception
+    public RestTaskModel updateTask(String newStateValue)
     {
        return updateTask(JsonBodyGenerator.defineJSON().add("state", newStateValue).build());
     }
@@ -76,9 +74,8 @@ public class Task extends ModelRequest<Task>
      * 
      * @param inputJson the json used as input for PUT call
      * @return
-     * @throws Exception
      */
-    public RestTaskModel updateTask(JsonObject inputJson) throws Exception
+    public RestTaskModel updateTask(JsonObject inputJson)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, inputJson.toString(), "tasks/{taskId}?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestTaskModel.class, request);
@@ -89,9 +86,8 @@ public class Task extends ModelRequest<Task>
      * 
      * @param taskId
      * @return
-     * @throws Exception
      */
-    public RestVariableModelsCollection getTaskVariables() throws Exception
+    public RestVariableModelsCollection getTaskVariables()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}/variables?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestVariableModelsCollection.class, request);
@@ -105,7 +101,7 @@ public class Task extends ModelRequest<Task>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestVariableModel updateTaskVariable(RestVariableModel variableModel) throws Exception
+    public RestVariableModel updateTaskVariable(RestVariableModel variableModel)
     {
         String postBody = JsonBodyGenerator.taskVariable(variableModel);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tasks/{taskId}/variables/{variableName}", task.getId(),
@@ -120,7 +116,7 @@ public class Task extends ModelRequest<Task>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestVariableModel addTaskVariable(RestVariableModel variableModel) throws Exception
+    public RestVariableModel addTaskVariable(RestVariableModel variableModel)
     {
         String postBody = JsonBodyGenerator.taskVariable(variableModel);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "tasks/{taskId}/variables", task.getId());
@@ -134,7 +130,7 @@ public class Task extends ModelRequest<Task>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestVariableModelsCollection addTaskVariables(RestVariableModel... taskVariablesModel) throws Exception
+    public RestVariableModelsCollection addTaskVariables(RestVariableModel... taskVariablesModel)
     {
         JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();        
         for(RestVariableModel taskVariableModel: taskVariablesModel)
@@ -156,7 +152,7 @@ public class Task extends ModelRequest<Task>
      * @return
      * @throws JsonToModelConversionException
      */
-    public void deleteTaskVariable(RestVariableModel variableModel) throws Exception
+    public void deleteTaskVariable(RestVariableModel variableModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "tasks/{taskId}/variables/{variableName} ", task.getId(),
                 variableModel.getName());
@@ -170,7 +166,7 @@ public class Task extends ModelRequest<Task>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestItemModel addTaskItem(FileModel fileModel) throws Exception
+    public RestItemModel addTaskItem(FileModel fileModel)
     {
         String postBody = JsonBodyGenerator.keyValueJson("id", fileModel.getNodeRef().split(";")[0]);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "tasks/{taskId}/items", task.getId());
@@ -184,7 +180,7 @@ public class Task extends ModelRequest<Task>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestItemModelsCollection addTaskItems(FileModel... fileModels) throws Exception
+    public RestItemModelsCollection addTaskItems(FileModel... fileModels)
     {
         JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();        
         for(FileModel fileModel: fileModels)
@@ -203,9 +199,8 @@ public class Task extends ModelRequest<Task>
      * 
      * @param taskId
      * @return
-     * @throws Exception
      */
-    public RestItemModelsCollection getTaskItems() throws Exception
+    public RestItemModelsCollection getTaskItems()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}/items?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestItemModelsCollection.class, request);
@@ -215,9 +210,8 @@ public class Task extends ModelRequest<Task>
      * Retrieves models of the task form type definition
      * @param taskModel
      * @return
-     * @throws Exception
      */
-    public RestFormModelsCollection getTaskFormModel() throws Exception
+    public RestFormModelsCollection getTaskFormModel()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}/task-form-model?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestFormModelsCollection.class, request);
@@ -228,10 +222,8 @@ public class Task extends ModelRequest<Task>
      *
      * @param taskId
      * @param itemId
-     * 
-     * @throws Exception
      */
-    public void deleteTaskItem(RestItemModel itemModel) throws Exception
+    public void deleteTaskItem(RestItemModel itemModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "tasks/{taskId}/items/{itemId}", task.getId(),
                 itemModel.getId());
@@ -243,9 +235,8 @@ public class Task extends ModelRequest<Task>
      * 
      * @param taskId
      * @return
-     * @throws Exception
      */
-    public RestCandidateModelsCollection getTaskCandidates() throws Exception
+    public RestCandidateModelsCollection getTaskCandidates()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tasks/{taskId}/candidates?{parameters}", task.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestCandidateModelsCollection.class, request);

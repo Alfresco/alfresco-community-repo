@@ -19,9 +19,8 @@ public class Queries extends ModelRequest<Queries>
      * GET on queries/nodes
      * 
      * @return
-     * @throws Exception
      */
-    public RestNodeModelsCollection findNodes() throws Exception
+    public RestNodeModelsCollection findNodes()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "queries/nodes?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestNodeModelsCollection.class, request);
@@ -31,9 +30,8 @@ public class Queries extends ModelRequest<Queries>
      * GET on queries/people
      * 
      * @return
-     * @throws Exception
      */
-    public RestPersonModelsCollection findPeople() throws Exception
+    public RestPersonModelsCollection findPeople()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "queries/people?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestPersonModelsCollection.class, request);
@@ -43,9 +41,8 @@ public class Queries extends ModelRequest<Queries>
      * GET on queries/people
      * 
      * @return
-     * @throws Exception
      */
-    public RestSiteModelsCollection findSites() throws Exception
+    public RestSiteModelsCollection findSites()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "queries/sites?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestSiteModelsCollection.class, request);

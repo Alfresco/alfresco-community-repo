@@ -47,51 +47,55 @@ public class SwaggerPaths
     /**
      * Compare requests that exist in swagger yaml file vs request implemented in your code
      * any findings are saved to a missing-request txt file.
-     * @throws Exception 
-     * 
+     *
      * @throws TestConfigurationException
      */
-    public void computeCoverage() throws Exception
+    public void computeCoverage()
     {
-        System.out.println("Start computing the coverage of TAS vs Swagger file. Stand by...");
-        File missingReq = new File(String.format("missing-requests-%s.txt", FilenameUtils.getBaseName(swaggerFilePath)));
-        missingReq.delete();
-        fileWithMissingRequests = new BufferedWriter(new FileWriter(missingReq));
-        fileWithMissingRequests.write(String.format("BasePath: {%s}", swagger.getBasePath()));
-        fileWithMissingRequests.newLine();        
-        fileWithMissingRequests.write("These requests generated should be analyzed and modified according to your needs.");
-        fileWithMissingRequests.newLine();
-        fileWithMissingRequests.write("PLEASE UPDATE your 'RestReturnedModel' name with the appropiate returned model by your request.");       
-        fileWithMissingRequests.newLine();
-        fileWithMissingRequests.newLine();
-
-        File implReq = new File(String.format("implemented-requests-%s.txt", FilenameUtils.getBaseName(swaggerFilePath)));
-        implReq.delete();
-        fileWithImplementedRequests = new BufferedWriter(new FileWriter(implReq));
-
-        for (Entry<String, io.swagger.models.Path> path : swagger.getPaths().entrySet())
+        try
         {
-            for (Map.Entry<HttpMethod, Operation> operation : path.getValue().getOperationMap().entrySet())
-            {
-                searchPattern(path.getKey(),operation);
-            }
-        }
-        
-        System.out.println(toString());
-
-        fileWithImplementedRequests.close();
-        fileWithMissingRequests.close();
-        
-        if (missingRequestCount > 0)
-        {
-            System.out.println("[ERROR] PLEASE ANALYSE THE GENERATED <missing-requests> file(s), it seems some request were NOT implemented!");            
-        }
-        else
+            System.out.println("Start computing the coverage of TAS vs Swagger file. Stand by...");
+            File missingReq = new File(String.format("missing-requests-%s.txt", FilenameUtils.getBaseName(swaggerFilePath)));
             missingReq.delete();
+            fileWithMissingRequests = new BufferedWriter(new FileWriter(missingReq));
+            fileWithMissingRequests.write(String.format("BasePath: {%s}", swagger.getBasePath()));
+            fileWithMissingRequests.newLine();
+            fileWithMissingRequests.write("These requests generated should be analyzed and modified according to your needs.");
+            fileWithMissingRequests.newLine();
+            fileWithMissingRequests.write("PLEASE UPDATE your 'RestReturnedModel' name with the appropiate returned model by your request.");
+            fileWithMissingRequests.newLine();
+            fileWithMissingRequests.newLine();
 
-        System.out.println("ALSO ANALYZE <implemented-requests.txt> for current implementation, take a look at duplicated requests if any!");
+            File implReq = new File(String.format("implemented-requests-%s.txt", FilenameUtils.getBaseName(swaggerFilePath)));
+            implReq.delete();
+            fileWithImplementedRequests = new BufferedWriter(new FileWriter(implReq));
 
+            for (Entry<String, io.swagger.models.Path> path : swagger.getPaths().entrySet())
+            {
+                for (Map.Entry<HttpMethod, Operation> operation : path.getValue().getOperationMap().entrySet())
+                {
+                    searchPattern(path.getKey(), operation);
+                }
+            }
 
+            System.out.println(toString());
+
+            fileWithImplementedRequests.close();
+            fileWithMissingRequests.close();
+
+            if (missingRequestCount > 0)
+            {
+                System.out.println("[ERROR] PLEASE ANALYSE THE GENERATED <missing-requests> file(s), it seems some request were NOT implemented!");
+            }
+            else
+                missingReq.delete();
+
+            System.out.println("ALSO ANALYZE <implemented-requests.txt> for current implementation, take a look at duplicated requests if any!");
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Exception while trying to create coverage report.", e);
+        }
     }
 
     /**
@@ -100,9 +104,8 @@ public class SwaggerPaths
      * @param httpMethod
      * @param pathUrl
      * @param methodName
-     * @throws Exception 
      */
-    private void searchPattern(String pathUrl, Entry<HttpMethod, Operation> operation) throws Exception
+    private void searchPattern(String pathUrl, Entry<HttpMethod, Operation> operation)
     {
         String originalPathUrl = pathUrl;
         String httpMethod = operation.getKey().name();

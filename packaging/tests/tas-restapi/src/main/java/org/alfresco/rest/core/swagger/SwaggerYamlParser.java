@@ -26,12 +26,12 @@ public class SwaggerYamlParser
 
     }
 
-    public void computeCoverage() throws Exception
+    public void computeCoverage()
     {
         new SwaggerPaths(swagger, this.swaggerFilePath).computeCoverage();
     }
 
-    public void generateMissingModules() throws Exception
+    public void generateMissingModules()
     {
         String modelParamValue = System.getProperty("models");
         

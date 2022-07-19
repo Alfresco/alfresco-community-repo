@@ -14,7 +14,7 @@ public abstract class NetworkDataPrep extends RestTest
     protected static String tenantDomain;
     private static boolean isInitialized = false;
 
-    public void init() throws Exception
+    public void init()
     {
         if(!isInitialized)
         {
@@ -23,7 +23,7 @@ public abstract class NetworkDataPrep extends RestTest
         }
     }
 
-    public void initialization() throws Exception
+    public void initialization()
     {
         adminUserModel = dataUser.getAdminUser();
         //create first tenant Admin User.

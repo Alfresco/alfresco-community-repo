@@ -42,7 +42,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestProcessModelsCollection getProcesses() throws Exception
+    public RestProcessModelsCollection getProcesses()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "processes?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestProcessModelsCollection.class, request);
@@ -54,7 +54,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestProcessVariableCollection getProcessVariables() throws Exception
+    public RestProcessVariableCollection getProcessVariables()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "processes/{processId}/variables?{parameters}", processModel.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestProcessVariableCollection.class, request);
@@ -63,9 +63,8 @@ public class Processes extends ModelRequest<Processes>
     /**
      * Retrieves the process identified by processId using GET /processes/{processId}
      * @return
-     * @throws Exception
      */
-    public RestProcessModel getProcess() throws Exception
+    public RestProcessModel getProcess()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "processes/{processId}?{parameters}", processModel.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestProcessModel.class, request);
@@ -73,10 +72,8 @@ public class Processes extends ModelRequest<Processes>
 
     /**
      * Delete a process using DELETE call on processes/{processId}
-     *
-     * @throws Exception
      */
-    public void deleteProcess() throws Exception
+    public void deleteProcess()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "processes/{processId}", processModel.getId());
         restWrapper.processEmptyModel(request);
@@ -90,9 +87,8 @@ public class Processes extends ModelRequest<Processes>
      * @param sendEmailNotifications
      * @param priority
      * @return
-     * @throws Exception
      */
-    public RestProcessModel addProcess(String processDefinitionKey, UserModel assignee, boolean sendEmailNotifications, Priority priority) throws Exception
+    public RestProcessModel addProcess(String processDefinitionKey, UserModel assignee, boolean sendEmailNotifications, Priority priority)
     {
         String postBody = JsonBodyGenerator.process(processDefinitionKey, assignee, sendEmailNotifications, priority);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes");
@@ -104,9 +100,8 @@ public class Processes extends ModelRequest<Processes>
      *
      * @param postBody
      * @return
-     * @throws Exception
      */
-    public RestProcessModel addProcessWithBody(String postBody) throws Exception
+    public RestProcessModel addProcessWithBody(String postBody)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes");
         return restWrapper.processModel(RestProcessModel.class, request);
@@ -119,7 +114,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestProcessVariableModel addProcessVariable(RestProcessVariableModel variableModel) throws Exception
+    public RestProcessVariableModel addProcessVariable(RestProcessVariableModel variableModel)
     {
         String postBody = JsonBodyGenerator.processVariable(variableModel);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes/{processId}/variables", processModel.getId());
@@ -133,7 +128,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestProcessVariableCollection addProcessVariables(RestProcessVariableModel... processVariablesModel) throws Exception
+    public RestProcessVariableCollection addProcessVariables(RestProcessVariableModel... processVariablesModel)
     {      
         JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();        
         for(RestProcessVariableModel processVariableModel: processVariablesModel)
@@ -155,7 +150,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestItemModelsCollection getProcessItems() throws Exception
+    public RestItemModelsCollection getProcessItems()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "processes/{processId}/items?{parameters}", processModel.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestItemModelsCollection.class, request);
@@ -165,9 +160,8 @@ public class Processes extends ModelRequest<Processes>
      * Delete a process variable using DELETE call on processes/{processId}/variables/{variableName}
      *
      * @param variableModel
-     * @throws Exception
      */
-    public void deleteProcessVariable(RestProcessVariableModel variableModel) throws Exception
+    public void deleteProcessVariable(RestProcessVariableModel variableModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "processes/{processId}/variables/{variableName}", processModel.getId(),
                 variableModel.getName());
@@ -181,7 +175,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestProcessVariableModel updateProcessVariable(RestProcessVariableModel variableModel) throws Exception
+    public RestProcessVariableModel updateProcessVariable(RestProcessVariableModel variableModel)
     {
         String postBody = JsonBodyGenerator.processVariable(variableModel);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "processes/{processId}/variables/{variableName}", processModel.getId(),
@@ -195,7 +189,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestTaskModelsCollection getProcessTasks() throws Exception
+    public RestTaskModelsCollection getProcessTasks()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "processes/{processId}/tasks?{parameters}", processModel.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestTaskModelsCollection.class, request);
@@ -208,7 +202,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestItemModel addProcessItem(FileModel fileModel) throws Exception
+    public RestItemModel addProcessItem(FileModel fileModel)
     {
         String postBody = JsonBodyGenerator.keyValueJson("id", fileModel.getNodeRefWithoutVersion());
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "processes/{processId}/items", processModel.getId());
@@ -222,7 +216,7 @@ public class Processes extends ModelRequest<Processes>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestItemModelsCollection addProcessItems(FileModel... fileModels) throws Exception
+    public RestItemModelsCollection addProcessItems(FileModel... fileModels)
     {
         JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();        
         for(FileModel fileModel: fileModels)
@@ -239,9 +233,8 @@ public class Processes extends ModelRequest<Processes>
      * Delete a process item using DELETE call on processes/{processId}/items/{itemId}
      *
      * @param itemModel
-     * @throws Exception
      */
-    public void deleteProcessItem(RestItemModel itemModel) throws Exception
+    public void deleteProcessItem(RestItemModel itemModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "processes/{processId}/items/{itemId}", processModel.getId(), itemModel.getId());
         restWrapper.processEmptyModel(request);

@@ -2,6 +2,7 @@ package org.alfresco.rest.core.swagger;
 
 import java.io.BufferedReader;
 import java.io.Console;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -34,20 +35,27 @@ public class SwaggerDefinitions
         modelsPath = Paths.get(Paths.get(".").toAbsolutePath().normalize().toFile().getPath(), "src/main/java/org/alfresco/rest/model");
     }
 
-    public void generateMissingDefinitions() throws Exception
+    public void generateMissingDefinitions()
     {
         /*
          * read the content of ignore-moldels file
          */
         List<String> ignoreModel = new ArrayList<String>();
-        try (BufferedReader br = new BufferedReader(new FileReader(Paths.get(modelsPath.toFile().getPath(), "ignore-models").toFile())))
+        try
         {
-            String line;
-            while ((line = br.readLine()) != null)
+            try (BufferedReader br = new BufferedReader(new FileReader(Paths.get(modelsPath.toFile().getPath(), "ignore-models").toFile())))
             {
-                if (!line.startsWith("#") && !line.equals(""))
-                    ignoreModel.add(line);
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (!line.startsWith("#") && !line.equals(""))
+                        ignoreModel.add(line);
+                }
             }
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("Exception while generating missing definitions.", e);
         }
 
         /*
@@ -121,8 +129,8 @@ public class SwaggerDefinitions
             {
                 System.out.println("\nStart generating all models...");
                 for (SwaggerModel swaggerModel : missingSwaggerModels)
-                {                    
-                    swaggerModel.generate();
+                {
+                    generateModel(swaggerModel);
                 }
             }
             else
@@ -147,32 +155,43 @@ public class SwaggerDefinitions
      * Generate the model based on the ID provided
      * 
      * @param id
-     * @throws Exception
      */
-    private void generateSelectedSwaggerModel(String id) throws Exception
+    private void generateSelectedSwaggerModel(String id)
     {
-        int choise = Integer.parseInt(id);
-        if ((choise - 1) >= missingSwaggerModels.size())
+        int choice = Integer.parseInt(id);
+        if ((choice - 1) >= missingSwaggerModels.size())
         {
             throw new TestConfigurationException(
                     "You specified a wrong ID: [" + id + "] please select one value from the list displayed above. Run the command again!");
         }
-        missingSwaggerModels.get(choise - 1).generate();
+        generateModel(missingSwaggerModels.get(choice - 1));
     }
 
-    public boolean generateDefinition(String modelParamValue) throws IOException, TemplateException
+    public boolean generateDefinition(String modelParamValue)
     {
         for (Entry<String, Model> model : swagger.getDefinitions().entrySet())
         {
             SwaggerModel swaggerModel = new SwaggerModel(model, swagger);
             if (swaggerModel.getName().equals(modelParamValue))
             {
-                swaggerModel.generate();
+                generateModel(swaggerModel);
                 return true;
             }
         }
         System.err.println("Model that you provided was NOT found!");
         System.err.printf("Model [%s] not found in Swagger file: %s\n", modelParamValue, swagger.getBasePath());
         return false;
+    }
+
+    private void generateModel(SwaggerModel swaggerModel)
+    {
+        try
+        {
+            swaggerModel.generate();
+        }
+        catch (IOException | TemplateException e)
+        {
+            throw new IllegalStateException("Exception while generating model definition.", e);
+        }
     }
 }

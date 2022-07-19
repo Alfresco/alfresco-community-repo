@@ -64,9 +64,8 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
      * Provides DSL on all REST calls under <code>/sites</code> API path
      * 
      * @return {@link Site}
-     * @throws Exception
      */
-    public RestSiteModelsCollection getSites() throws Exception
+    public RestSiteModelsCollection getSites()
     {
         return new Site(null, restWrapper).getSites();
     }
@@ -75,9 +74,8 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
      * Provides DSL on all REST calls under <code>/nodes</code> API path
      * 
      * @return {@link Node}
-     * @throws Exception
      */
-    public Node usingResource(RepoTestModel node) throws Exception
+    public Node usingResource(RepoTestModel node)
     {
         return new Node(node, restWrapper);
     }
@@ -87,14 +85,13 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
      * 
      * @param node
      * @return
-     * @throws Exception
      */
-    public Node usingNode(RepoTestModel node) throws Exception
+    public Node usingNode(RepoTestModel node)
     {
         return new Node(node, restWrapper);
     }
 
-    public Node usingNode() throws Exception
+    public Node usingNode()
     {
         return new Node(restWrapper);
     }
@@ -108,9 +105,8 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
      * Provides DSL of all REST calls under <code>/people</code> API path
      * 
      * @return {@link People}
-     * @throws Exception
      */
-    public People usingUser(UserModel person) throws Exception
+    public People usingUser(UserModel person)
     {
         return new People(person, restWrapper);
     }
@@ -119,9 +115,8 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
      * Make REST calls using current authenticated user, but using -me- instead of username
      * 
      * @return {@link People}
-     * @throws Exception
      */
-    public People usingMe() throws Exception
+    public People usingMe()
     {
         UserModel userModel = new UserModel("-me-", restWrapper.getTestUser().getPassword());
         userModel.setDomain(restWrapper.getTestUser().getDomain());
@@ -134,9 +129,8 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
      * This is set on the {@link #authenticateUser(UserModel)} call
      * 
      * @return {@link People}
-     * @throws Exception
      */
-    public People usingAuthUser() throws Exception
+    public People usingAuthUser()
     {
         return new People(restWrapper.getTestUser(), restWrapper);
     }
@@ -156,12 +150,12 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
         return new Tags(tag, restWrapper);
     }
 
-    public RestTagModelsCollection getTags() throws Exception
+    public RestTagModelsCollection getTags()
     {
         return new Tags(null, restWrapper).getTags();
     }
 
-    public RestTagModel getTag(RestTagModel tag) throws Exception
+    public RestTagModel getTag(RestTagModel tag)
     {
         return new Tags(tag, restWrapper).getTag();
     }
@@ -171,7 +165,7 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
         return new Queries(restWrapper);
     }
 
-    public Audit usingAudit() throws Exception
+    public Audit usingAudit()
     {
         return new Audit(restWrapper);
     }
@@ -209,7 +203,7 @@ public class RestCoreAPI extends ModelRequest<RestCoreAPI>
         return new Downloads(restWrapper);
     }
 
-    public Downloads usingDownloads(RestDownloadsModel downloadsModel) throws Exception
+    public Downloads usingDownloads(RestDownloadsModel downloadsModel)
     {
         return new Downloads(downloadsModel, restWrapper);
     }

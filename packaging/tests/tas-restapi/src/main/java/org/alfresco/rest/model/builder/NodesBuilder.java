@@ -61,7 +61,7 @@ public class NodesBuilder
         this.lastNode = repoModel;
     }
 
-    public NodeDetail folder(String prefix) throws Exception
+    public NodeDetail folder(String prefix)
     {
         NodeDetail n = new NodeDetail(prefix, lastNode.getNodeRef(), "cm:folder");
         nodes.add(n);
@@ -81,7 +81,7 @@ public class NodesBuilder
             cm.setNodeRef(getId());
             return cm;            
         }
-        public NodeDetail(String prefix, String parentId, String nodeType) throws Exception
+        public NodeDetail(String prefix, String parentId, String nodeType)
         {
             this.prefix = prefix;
             this.name = RandomData.getRandomName(prefix);
@@ -108,14 +108,14 @@ public class NodesBuilder
 
         }
 
-        public NodeDetail folder(String prefix) throws Exception
+        public NodeDetail folder(String prefix)
         {
             NodeDetail n = new NodeDetail(prefix, parentNodeModel.getId(), "cm:folder");
             nodes.add(n);
             return n;
         }
 
-        public NodeDetail file(String prefix) throws Exception
+        public NodeDetail file(String prefix)
         {
             NodeDetail n = new NodeDetail(prefix, parentNodeModel.getId(), "cm:content");
             nodes.add(n);

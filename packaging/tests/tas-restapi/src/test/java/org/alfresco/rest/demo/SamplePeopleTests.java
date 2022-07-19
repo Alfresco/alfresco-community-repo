@@ -23,7 +23,7 @@ public class SamplePeopleTests extends RestTest
     }
 
     @Test(groups = { "demo" })
-    public void adminShouldRetrievePerson() throws Exception
+    public void adminShouldRetrievePerson()
     {
         restClient.withCoreAPI().usingUser(userModel).getPerson().assertThat().field("id").isNotEmpty();
         restClient.assertStatusCodeIs(HttpStatus.OK);

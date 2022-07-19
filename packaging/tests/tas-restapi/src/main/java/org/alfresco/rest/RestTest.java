@@ -64,9 +64,16 @@ public abstract class RestTest extends AbstractTestNGSpringContextTests
     protected SiteModel testSite;
 
     @BeforeSuite(alwaysRun = true)
-    public void checkServerHealth() throws Exception
+    public void checkServerHealth()
     {
-        super.springTestContextPrepareTestInstance();
+        try
+        {
+            super.springTestContextPrepareTestInstance();
+        }
+        catch (Exception e)
+        {
+            throw new IllegalStateException("Error while preparing for test execution", e);
+        }
         serverHealth.assertServerIsOnline();
         testSite = dataSite.createPublicRandomSite();
     }

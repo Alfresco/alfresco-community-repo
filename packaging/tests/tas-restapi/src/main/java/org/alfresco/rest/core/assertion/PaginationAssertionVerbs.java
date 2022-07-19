@@ -25,9 +25,8 @@ public class PaginationAssertionVerbs<C> {
 
   /**
    * @return the value of the field
-   * @throws Exception
    */
-  private String getFieldValue() throws Exception {
+  private String getFieldValue() {
     String value = "";
     try {
       value = BeanUtils.getProperty(pagination, fieldName);
@@ -46,34 +45,34 @@ public class PaginationAssertionVerbs<C> {
         modelCollection.getClass().getCanonicalName(), info);
   }
 
-  public C is(String expected) throws Exception {
+  public C is(String expected) {
 
     Assert.assertEquals(getFieldValue(), expected, errorMessage("is NOT correct,"));
     return modelCollection;
   }
 
-  public C isNot(Object expected) throws Exception {
+  public C isNot(Object expected) {
 
     Assert.assertNotEquals(getFieldValue(), expected, errorMessage("is correct,"));
     return modelCollection;
   }
 
-  public C isNotEmpty() throws Exception {
+  public C isNotEmpty() {
     Assert.assertNotEquals(getFieldValue(), "", errorMessage("is empty,"));
     return modelCollection;
   }
 
-  public C isNotNull() throws Exception {
+  public C isNotNull() {
     Assert.assertNotNull(getFieldValue(), errorMessage("is null,"));
     return modelCollection;
   }
   
-  public C isNotPresent() throws Exception {
+  public C isNotPresent() {
       Assert.assertNull(getFieldValue(), errorMessage("is present,"));
       return modelCollection;
     }
 
-  public C isEmpty() throws Exception {
+  public C isEmpty() {
     Assert.assertEquals(getFieldValue(), "", errorMessage("is NOT empty,"));
     return modelCollection;
   }

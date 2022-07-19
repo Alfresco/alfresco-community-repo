@@ -34,7 +34,7 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * @return RestSharedLinksModelCollection
      * @throws JsonToModelConversionException
      */
-    public RestSharedLinksModelCollection getSharedLinks() throws Exception
+    public RestSharedLinksModelCollection getSharedLinks()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "shared-links?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestSharedLinksModelCollection.class, request);
@@ -47,7 +47,7 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * @return RestSharedLinkModel
      * @throws JsonToModelConversionException
      */
-    public RestSharedLinksModel getSharedLink(RestSharedLinksModel sharedLinksModel) throws Exception
+    public RestSharedLinksModel getSharedLink(RestSharedLinksModel sharedLinksModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "shared-links/{sharedLinkId}?{parameters}", sharedLinksModel.getId(),
                 restWrapper.getParameters());
@@ -59,9 +59,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * 
      * @param sharedLinksModel
      * @return RestResponse
-     * @throws Exception
      */
-    public RestResponse getSharedLinkContent(RestSharedLinksModel sharedLinksModel) throws Exception
+    public RestResponse getSharedLinkContent(RestSharedLinksModel sharedLinksModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "shared-links/{sharedLinkId}/content?{parameters}", sharedLinksModel.getId(),
                 restWrapper.getParameters());
@@ -74,9 +73,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * @param sharedLinksModel
      * @param postBody
      * @return RestResponse
-     * @throws Exception
      */
-    public RestResponse sendSharedLinkEmail(RestSharedLinksModel sharedLinksModel, String postBody) throws Exception
+    public RestResponse sendSharedLinkEmail(RestSharedLinksModel sharedLinksModel, String postBody)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "shared-links/{sharedLinkId}/email?{parameters}", sharedLinksModel.getId(),
                 restWrapper.getParameters());
@@ -89,7 +87,7 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * @return RestRenditionInfoModelCollection
      * @throws JsonToModelConversionException
      */
-    public RestRenditionInfoModelCollection getSharedLinkRenditions(RestSharedLinksModel sharedLinksModel) throws Exception
+    public RestRenditionInfoModelCollection getSharedLinkRenditions(RestSharedLinksModel sharedLinksModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "shared-links/{sharedLinkId}/renditions?{parameters}", sharedLinksModel.getId(),
                 restWrapper.getParameters());
@@ -104,7 +102,7 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * @return RestRenditionInfoModel
      * @throws JsonToModelConversionException
      */
-    public RestRenditionInfoModel getSharedLinkRendition(RestSharedLinksModel sharedLinksModel, String renditionId) throws Exception
+    public RestRenditionInfoModel getSharedLinkRendition(RestSharedLinksModel sharedLinksModel, String renditionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "shared-links/{sharedLinkId}/renditions/{renditionId}?{parameters}",
                 sharedLinksModel.getId(), renditionId, restWrapper.getParameters());
@@ -117,9 +115,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * @param sharedLinksModel
      * @param renditionId
      * @return RestRenditionInfoModel
-     * @throws Exception
      */
-    public RestResponse getSharedLinkRenditionContent(RestSharedLinksModel sharedLinksModel, String renditionId) throws Exception
+    public RestResponse getSharedLinkRenditionContent(RestSharedLinksModel sharedLinksModel, String renditionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "shared-links/{sharedLinkId}/renditions/{renditionId}/content?{parameters}",
                 sharedLinksModel.getId(), renditionId, restWrapper.getParameters());
@@ -131,9 +128,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * 
      * @param RestSharedLinksModel
      * @return void
-     * @throws Exception
      */
-    public void deleteSharedLink(RestSharedLinksModel sharedLinksModel) throws Exception
+    public void deleteSharedLink(RestSharedLinksModel sharedLinksModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "shared-links/{sharedLinkId}", sharedLinksModel.getId());
         restWrapper.processEmptyModel(request);
@@ -144,9 +140,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * 
      * @param file
      * @return RestSharedLinksModel
-     * @throws Exception
      */
-    public RestSharedLinksModel createSharedLink(FileModel file) throws Exception
+    public RestSharedLinksModel createSharedLink(FileModel file)
     {
         String postBody = JsonBodyGenerator.keyValueJson("nodeId", file.getNodeRefWithoutVersion());
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "shared-links?{parameters}", restWrapper.getParameters());
@@ -158,9 +153,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * 
      * @param file list
      * @return RestSharedLinksModelCollection
-     * @throws Exception
      */
-    public RestSharedLinksModelCollection createSharedLinks(FileModel... files) throws Exception
+    public RestSharedLinksModelCollection createSharedLinks(FileModel... files)
     {
         JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
         for (FileModel file : files)
@@ -179,9 +173,8 @@ public class SharedLinks extends ModelRequest<SharedLinks>
      * @param file
      * @param expiryDate: format: "2027-03-23T23:00:00.000+0000";
      * @return RestSharedLinksModel
-     * @throws Exception
      */
-    public RestSharedLinksModel createSharedLinkWithExpiryDate(FileModel file, String expiryDate) throws Exception
+    public RestSharedLinksModel createSharedLinkWithExpiryDate(FileModel file, String expiryDate)
     {
         HashMap<String, String> body = new HashMap<String, String>();
         body.put("nodeId", file.getNodeRefWithoutVersion());

@@ -26,9 +26,8 @@ public class Subscribers extends ModelRequest<RestPrivateAPI>
     /**
      * Get Subscription(s) using GET call on /subscribers    
      * @return {@link RestSubscriberModelCollection}
-     * @throws Exception
      */
-    public RestSubscriberModelCollection getSubscribers() throws Exception
+    public RestSubscriberModelCollection getSubscribers()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "subscribers?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestSubscriberModelCollection.class, request);
@@ -40,9 +39,8 @@ public class Subscribers extends ModelRequest<RestPrivateAPI>
      * @param deviceOS
      * @param clientVersion
      * @return {@link RestSubscriberModel}
-     * @throws Exception
      */
-    public RestSubscriberModel registerDevice(String deviceOS, String clientVersion) throws Exception
+    public RestSubscriberModel registerDevice(String deviceOS, String clientVersion)
     {
         HashMap<String, String> body = new HashMap<String, String>();
         body.put("deviceOS", deviceOS);

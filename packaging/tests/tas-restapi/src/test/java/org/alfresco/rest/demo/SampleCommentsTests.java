@@ -21,7 +21,7 @@ public class SampleCommentsTests extends RestTest
     private FileModel document;
 
     @BeforeClass(alwaysRun=true)
-    public void dataPreparation() throws Exception
+    public void dataPreparation()
     {
         userModel = dataUser.getAdminUser();
         siteModel = dataSite.usingUser(userModel).createPublicRandomSite();
@@ -31,21 +31,21 @@ public class SampleCommentsTests extends RestTest
     }
 
     @Test(groups = { "demo" })
-    public void admiShouldAddComment() throws JsonToModelConversionException, Exception
+    public void admiShouldAddComment() throws JsonToModelConversionException
     {
         restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
     }
 
     @Test(groups = { "demo" })
-    public void admiShouldRetrieveComments() throws Exception
+    public void admiShouldRetrieveComments()
     {
         restClient.withCoreAPI().usingResource(document).getNodeComments();
         restClient.assertStatusCodeIs(HttpStatus.OK);
     }
 
     @Test(groups = { "demo" })
-    public void adminShouldUpdateComment() throws JsonToModelConversionException, Exception
+    public void adminShouldUpdateComment() throws JsonToModelConversionException
     {
         RestCommentModel commentModel = restClient.withCoreAPI().usingResource(document).addComment("This is a new comment");
 

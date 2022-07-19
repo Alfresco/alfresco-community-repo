@@ -18,7 +18,7 @@ public class RestAuthAPI extends ModelRequest<RestAuthAPI>
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }
 
-    public RestTicketModel createTicket(RestTicketBodyModel ticketBody) throws Exception
+    public RestTicketModel createTicket(RestTicketBodyModel ticketBody)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, ticketBody.toJson(), "tickets");
         return restWrapper.processModel(RestTicketModel.class, request);

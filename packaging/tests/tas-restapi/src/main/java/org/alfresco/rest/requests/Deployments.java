@@ -31,7 +31,7 @@ public class Deployments extends ModelRequest<Deployments>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestDeploymentModelsCollection getDeployments() throws Exception
+    public RestDeploymentModelsCollection getDeployments()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deployments?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestDeploymentModelsCollection.class, request);
@@ -43,7 +43,7 @@ public class Deployments extends ModelRequest<Deployments>
      * @return
      * @throws JsonToModelConversionException
      */
-    public void deleteDeployment() throws Exception
+    public void deleteDeployment()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "deployments/{deploymentId}", deployment.getId());
         restWrapper.processEmptyModel(request);
@@ -55,7 +55,7 @@ public class Deployments extends ModelRequest<Deployments>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestDeploymentModel getDeployment() throws Exception
+    public RestDeploymentModel getDeployment()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "deployments/{deploymentId}?{parameters}",
                 deployment.getId(), restWrapper.getParameters());

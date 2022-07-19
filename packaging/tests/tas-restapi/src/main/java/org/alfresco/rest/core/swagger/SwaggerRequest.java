@@ -9,6 +9,7 @@ import java.util.Map;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import io.swagger.models.Operation;
 
 public class SwaggerRequest
@@ -18,12 +19,19 @@ public class SwaggerRequest
     private String httpMethod;
     private String pathUrl;
 
-    private Configuration getConfig() throws IOException
+    private Configuration getConfig()
     {
         if (cfg == null)
         {
             cfg = new Configuration(Configuration.VERSION_2_3_23);
-            cfg.setDirectoryForTemplateLoading(new File("src/main/resources"));
+            try
+            {
+                cfg.setDirectoryForTemplateLoading(new File("src/main/resources"));
+            }
+            catch (IOException e)
+            {
+                throw new IllegalStateException("Exception while configuring Freemarker template directory.", e);
+            }
         }
         return cfg;
     }
@@ -35,18 +43,25 @@ public class SwaggerRequest
         this.pathUrl = pathUrl;
     }
 
-    public String getRequestSample() throws Exception
+    public String getRequestSample()
     {
-        Template template = getConfig().getTemplate("rest-request.ftl");
-        Map<String, Object> data = new HashMap<String, Object>();
-        data.put("operationId", swaggerRequest.getOperationId());
-        data.put("httpMethod", httpMethod);
-        data.put("pathUrl", pathUrl);
-            
-        Writer append = new StringWriter();
-        template.process(data, append);
-        
-        append.close();        
-        return append.toString();
+        try
+        {
+            Template template = getConfig().getTemplate("rest-request.ftl");
+            Map<String, Object> data = new HashMap<String, Object>();
+            data.put("operationId", swaggerRequest.getOperationId());
+            data.put("httpMethod", httpMethod);
+            data.put("pathUrl", pathUrl);
+
+            Writer append = new StringWriter();
+            template.process(data, append);
+
+            append.close();
+            return append.toString();
+        }
+        catch (IOException | TemplateException e)
+        {
+            throw new IllegalStateException("Exception while loading sample request.", e);
+        }
     }
 }

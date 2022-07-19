@@ -40,7 +40,7 @@ public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
      * 
      * @return {@link RestProcessModel}
      */
-    public RestProcessModel addProcess(String processDefinitionKey, UserModel assignee, boolean sendEmailNotifications, Priority priority) throws Exception
+    public RestProcessModel addProcess(String processDefinitionKey, UserModel assignee, boolean sendEmailNotifications, Priority priority)
     {
         return new Processes(restWrapper).addProcess(processDefinitionKey, assignee, sendEmailNotifications, priority);
     }
@@ -50,7 +50,7 @@ public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
      * 
      * @return {@link RestProcessModel}
      */
-    public RestProcessModel addProcessWithBody(JsonObject postBody) throws Exception
+    public RestProcessModel addProcessWithBody(JsonObject postBody)
     {
         return new Processes(restWrapper).addProcessWithBody(postBody.toString());
     }
@@ -70,7 +70,7 @@ public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
      * 
      * @return {@link RestProcessModelsCollection}
      */
-    public RestProcessModelsCollection getProcesses() throws Exception
+    public RestProcessModelsCollection getProcesses()
     {
         return new Processes(restWrapper).getProcesses();
     }
@@ -80,7 +80,7 @@ public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
      * 
      * @return {@link RestDeploymentModelsCollection}
      */
-    public RestDeploymentModelsCollection getDeployments() throws Exception
+    public RestDeploymentModelsCollection getDeployments()
     {
         return new Deployments(restWrapper).getDeployments();
     }
@@ -100,7 +100,7 @@ public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
      * 
      * @return {@link RestProcessDefinitionModelsCollection}
      */
-    public RestProcessDefinitionModelsCollection getAllProcessDefinitions() throws Exception
+    public RestProcessDefinitionModelsCollection getAllProcessDefinitions()
     {
         return new ProcessDefinitions(restWrapper).getAllProcessDefinitions();
     }
@@ -120,7 +120,7 @@ public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
      * 
      * @return {@link Processes}
      */
-    public Processes usingProcess(ProcessModel processModel) throws Exception
+    public Processes usingProcess(ProcessModel processModel)
     {
         return new Processes(processModel, restWrapper);
     }
@@ -130,7 +130,7 @@ public class RestWorkflowAPI extends ModelRequest<RestWorkflowAPI>
      * 
      * @return {@link RestTaskModelsCollection}
      */
-    public RestTaskModelsCollection getTasks() throws Exception
+    public RestTaskModelsCollection getTasks()
     {
         return new Task(restWrapper, null).getTasks();
     }

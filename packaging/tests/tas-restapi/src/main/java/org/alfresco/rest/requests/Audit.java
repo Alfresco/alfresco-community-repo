@@ -18,7 +18,7 @@ import org.springframework.http.HttpMethod;
 public class Audit extends ModelRequest<Audit>
 {
 
-    public Audit(RestWrapper restWrapper) throws Exception 
+    public Audit(RestWrapper restWrapper)
     {
       super(restWrapper);
     }
@@ -30,7 +30,7 @@ public class Audit extends ModelRequest<Audit>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestAuditAppModelsCollection getAuditApplications() throws Exception
+    public RestAuditAppModelsCollection getAuditApplications() throws JsonToModelConversionException
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "audit-applications?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestAuditAppModelsCollection.class, request);
@@ -41,9 +41,8 @@ public class Audit extends ModelRequest<Audit>
      * 
      * @param auditApplicationId
      * @return
-     * @throws Exception
      */
-    public RestAuditAppModel getAuditApp(RestAuditAppModel restAuditAppModel) throws Exception
+    public RestAuditAppModel getAuditApp(RestAuditAppModel restAuditAppModel)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "audit-applications/{auditApplicationId}?{parameters}", restAuditAppModel.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestAuditAppModel.class, request);
@@ -54,9 +53,8 @@ public class Audit extends ModelRequest<Audit>
      * 
      * @param auditApplicationId
      * @return
-     * @throws Exception
      */
-    public RestAuditEntryModelsCollection listAuditEntriesForAnAuditApplication(String auditApplicationId) throws Exception
+    public RestAuditEntryModelsCollection listAuditEntriesForAnAuditApplication(String auditApplicationId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "audit-applications/{auditApplicationId}/audit-entries?{parameters}", auditApplicationId, restWrapper.getParameters());
         return restWrapper.processModels(RestAuditEntryModelsCollection.class, request);
@@ -69,9 +67,8 @@ public class Audit extends ModelRequest<Audit>
      * @param key
      * @param value
      * @return
-     * @throws Exception
      */
-    public RestAuditAppModel updateAuditApp(RestAuditAppModel restAuditAppModel, String key, String value) throws Exception
+    public RestAuditAppModel updateAuditApp(RestAuditAppModel restAuditAppModel, String key, String value)
     {
         String postBody = JsonBodyGenerator.keyValueJson(key, value);
 
@@ -85,9 +82,8 @@ public class Audit extends ModelRequest<Audit>
      * @param auditApplicationId
      * @param auditEntryId
      * @return
-     * @throws Exception
      */
-    public RestAuditEntryModel getAuditEntryForAnAuditApplication(String auditApplicationId, String auditEntryId) throws Exception
+    public RestAuditEntryModel getAuditEntryForAnAuditApplication(String auditApplicationId, String auditEntryId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "audit-applications/{auditApplicationId}/audit-entries/{auditEntryId}?{parameters}", auditApplicationId, auditEntryId, restWrapper.getParameters());
         return restWrapper.processModel(RestAuditEntryModel.class, request);
@@ -99,9 +95,8 @@ public class Audit extends ModelRequest<Audit>
      * @param auditApplicationId
      * @param auditEntryId
      * @return
-     * @throws Exception
      */
-    public void deleteAuditEntryForAnAuditApplication(String auditApplicationId, String auditEntryId) throws Exception
+    public void deleteAuditEntryForAnAuditApplication(String auditApplicationId, String auditEntryId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "audit-applications/{auditApplicationId}/audit-entries/{auditEntryId}", auditApplicationId, auditEntryId);
         restWrapper.processEmptyModel(request);
@@ -112,9 +107,8 @@ public class Audit extends ModelRequest<Audit>
      * 
      * @param auditApplicationId
      * @return
-     * @throws Exception
      */
-    public void deleteAuditEntriesForAnAuditApplication(String auditApplicationId) throws Exception
+    public void deleteAuditEntriesForAnAuditApplication(String auditApplicationId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "audit-applications/{auditApplicationId}/audit-entries?{parameters}", auditApplicationId, restWrapper.getParameters());
         restWrapper.processEmptyModel(request);
@@ -125,9 +119,8 @@ public class Audit extends ModelRequest<Audit>
      * 
      * @param nodeId
      * @return
-     * @throws Exception
      */
-    public RestAuditEntryModelsCollection listAuditEntriesForNode(String nodeId) throws Exception
+    public RestAuditEntryModelsCollection listAuditEntriesForNode(String nodeId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/audit-entries?{parameters}", nodeId, restWrapper.getParameters());
         return restWrapper.processModels(RestAuditEntryModelsCollection.class, request);

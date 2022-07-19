@@ -24,7 +24,7 @@ public class Tags extends ModelRequest<Tags>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestTagModelsCollection getTags() throws Exception
+    public RestTagModelsCollection getTags()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tags?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestTagModelsCollection.class, request);
@@ -35,9 +35,8 @@ public class Tags extends ModelRequest<Tags>
      * 
      * @param tag
      * @return
-     * @throws Exception
      */
-    public RestTagModel getTag() throws Exception
+    public RestTagModel getTag()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "tags/{tagId}?{parameters}", tag.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestTagModel.class, request);
@@ -51,7 +50,7 @@ public class Tags extends ModelRequest<Tags>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestTagModel update(String newTag) throws Exception
+    public RestTagModel update(String newTag)
     {
         String postBody = JsonBodyGenerator.keyValueJson("tag", newTag);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "tags/{tagId}", tag.getId());

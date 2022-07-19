@@ -43,25 +43,25 @@ public class SolrAPI extends ModelRequest<SolrAPI>
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }
 
-    public RestTextResponse getConfig() throws Exception
+    public RestTextResponse getConfig()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "config?{parameters}", restWrapper.getParameters());
         return restWrapper.processTextResponse(request);
     }
 
-    public RestTextResponse getConfigOverlay() throws Exception
+    public RestTextResponse getConfigOverlay()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "config/overlay?{parameters}", restWrapper.getParameters());
         return restWrapper.processTextResponse(request);
     }
 
-    public RestTextResponse getConfigParams() throws Exception
+    public RestTextResponse getConfigParams()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "config/params?{parameters}", restWrapper.getParameters());
         return restWrapper.processTextResponse(request);
     }
 
-    public RestTextResponse postConfig(String queryBody) throws Exception
+    public RestTextResponse postConfig(String queryBody)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, queryBody, "config");
         return restWrapper.processTextResponse(request);
@@ -72,13 +72,13 @@ public class SolrAPI extends ModelRequest<SolrAPI>
      * @param urlActionPath some action name (like "delete")
      * @param queryBody parameters for the action
      */
-    public RestTextResponse postAction(String urlActionPath, String queryBody) throws Exception
+    public RestTextResponse postAction(String urlActionPath, String queryBody)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, queryBody, urlActionPath);
         return restWrapper.processTextResponse(request);
     }
     
-    public RestTextResponse getSelectQuery() throws Exception
+    public RestTextResponse getSelectQuery()
     {
         List<Header> headers = new ArrayList<Header>();
         headers.add(new Header("Content-Type", "application/xml"));
@@ -92,7 +92,7 @@ public class SolrAPI extends ModelRequest<SolrAPI>
     /**
      * Executes a query in SOLR using JSON format for the results
      */
-    public RestTextResponse getSelectQueryJson() throws Exception
+    public RestTextResponse getSelectQueryJson()
     {
         List<Header> headers = new ArrayList<Header>();
         headers.add(new Header("Content-Type", "application/json"));

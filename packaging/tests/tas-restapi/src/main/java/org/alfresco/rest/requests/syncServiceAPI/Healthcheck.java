@@ -24,9 +24,8 @@ public class Healthcheck extends ModelRequest<RestPrivateAPI>
     /**
      * Get Healthcheck using GET call on alfresco/healthcheck    
      * @return {@link RestSyncServiceHealthCheckModel}
-     * @throws Exception
      */
-    public RestSyncServiceHealthCheckModel getHealthcheck() throws Exception
+    public RestSyncServiceHealthCheckModel getHealthcheck()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "healthcheck?{parameters}", restWrapper.getParameters());
         return restWrapper.processModelWithoutEntryObject(RestSyncServiceHealthCheckModel.class, request);

@@ -187,9 +187,8 @@ public class Site extends ModelRequest<Site>
    * Create a collaboration site
    * 
    * @return the properties of the created site
-   * @throws Exception
    */
-  public RestSiteModel createSite() throws Exception
+  public RestSiteModel createSite()
   {
       RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, site.toJson(), "sites?{parameters}", restWrapper.getParameters());
       return restWrapper.processModel(RestSiteModel.class, request);
@@ -218,9 +217,8 @@ public class Site extends ModelRequest<Site>
    * }
    * 
    * @return the properties of an updated site
-   * @throws Exception
    */
-  public RestSiteModel updateSite(SiteModel site) throws Exception
+  public RestSiteModel updateSite(SiteModel site)
   {     
       String siteBody = JsonBodyGenerator.updateSiteRequest(site);
       RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, siteBody, "sites/{siteId}", site.getId());

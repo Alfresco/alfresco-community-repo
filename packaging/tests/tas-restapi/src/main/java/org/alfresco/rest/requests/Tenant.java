@@ -32,10 +32,9 @@ public class Tenant extends ModelRequest<Tenant>
      * 
      * @param userModel
      * @return
-     * @throws Exception
      * @throws JsonToModelConversionException
      */
-    public void createTenant(UserModel userModel) throws Exception
+    public void createTenant(UserModel userModel)
     {
         STEP(String.format("DATAPREP: Create new tenant %s", userModel.getDomain()));
         String json = String.format("{\"tenantDomain\": \"%s\", \"tenantAdminPassword\": \"%s\"}", userModel.getDomain(), DataUser.PASSWORD);
@@ -45,7 +44,7 @@ public class Tenant extends ModelRequest<Tenant>
                 .post(String.format("%s/%s", restProperties.envProperty().getFullServerUrl(), "alfresco/service/api/tenants")).andReturn();
         if (!Integer.valueOf(returnedResponse.getStatusCode()).equals(HttpStatus.OK.value()))
         {
-            throw new Exception(String.format("Tenant is not created: %s", returnedResponse.asString()));
+            throw new IllegalStateException(String.format("Tenant is not created: %s", returnedResponse.asString()));
         }
     }
 }

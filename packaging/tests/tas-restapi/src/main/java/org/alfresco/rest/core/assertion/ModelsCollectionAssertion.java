@@ -2,6 +2,7 @@ package org.alfresco.rest.core.assertion;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.alfresco.utility.model.Model;
 import org.apache.commons.beanutils.BeanUtils;
 import org.testng.Assert;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Ordering;
 import io.restassured.path.json.JsonPath;
@@ -65,14 +67,13 @@ public class ModelsCollectionAssertion<C>
   }
   
   @SuppressWarnings("unchecked")
-  public C entriesListContains(String key, String value) throws Exception 
+  public C entriesListContains(String key, String value)
   {    
     List<Model> modelEntries = modelCollection.getEntries();
     String fieldValue = "";
     for (Model m : modelEntries) {
-      Method method = m.getClass().getMethod("onModel", new Class[] {});
-      Object model = method.invoke(m, new Object[] {});
-      try {
+        Object model = loadModel(m);
+        try {
           ObjectMapper mapper = new ObjectMapper();
           String jsonInString = mapper.writeValueAsString(model);
           fieldValue = JsonPath.with(jsonInString).get(key);
@@ -91,15 +92,14 @@ public class ModelsCollectionAssertion<C>
     return (C) modelCollection;
   }
 
-  @SuppressWarnings("unchecked")
-  public C entriesListDoesNotContain(String key, String value) throws Exception 
+    @SuppressWarnings("unchecked")
+  public C entriesListDoesNotContain(String key, String value)
   {
     boolean exist = false;
     List<Model> modelEntries = modelCollection.getEntries();
     for (Model m : modelEntries) {
-      Method method = m.getClass().getMethod("onModel", new Class[] {});
-      Object model = method.invoke(m, new Object[] {});
-      String fieldValue = "";
+        Object model = loadModel(m);
+        String fieldValue = "";
       try {
           ObjectMapper mapper = new ObjectMapper();
           String jsonInString = mapper.writeValueAsString(model);
@@ -117,55 +117,54 @@ public class ModelsCollectionAssertion<C>
 
     return (C) modelCollection;
   }
-  
+
   @SuppressWarnings("unchecked")
-  public C entriesListDoesNotContain(String key) throws Exception 
+  public C entriesListDoesNotContain(String key)
   {
-    boolean exist = false;
-    List<Model> modelEntries = modelCollection.getEntries();
-    for (Model m : modelEntries) {
-      Method method = m.getClass().getMethod("onModel", new Class[] {});
-      Object model = method.invoke(m, new Object[] {});
-      String fieldValue = "";
-      ObjectMapper mapper = new ObjectMapper();
-      String jsonInString = mapper.writeValueAsString(model);
-      fieldValue = JsonPath.with(jsonInString).get(key);
-      if (fieldValue != null) {
-          exist = true;
-          break;
-      }
-    }
+    boolean exist = modelInList(key);
     Assert.assertFalse(exist,
         String.format("Entry list contains key: %s", key));
 
     return (C) modelCollection;
   }
-  
+
   @SuppressWarnings("unchecked")
-  public C entriesListContains(String key) throws Exception 
+  public C entriesListContains(String key)
   {
-    boolean exist = false;
-    List<Model> modelEntries = modelCollection.getEntries();
-    for (Model m : modelEntries) {
-      Method method = m.getClass().getMethod("onModel", new Class[] {});
-      Object model = method.invoke(m, new Object[] {});
-      Object fieldValue = null;
-      ObjectMapper mapper = new ObjectMapper();
-      String jsonInString = mapper.writeValueAsString(model);
-      fieldValue = JsonPath.with(jsonInString).get(key);
-      if (fieldValue != null) {
-          exist = true;
-          break;
-      }
-    }
+    boolean exist = modelInList(key);
     Assert.assertTrue(exist,
-        String.format("Entry list doesn't contain key: %s", key));
+    String.format("Entry list doesn't contain key: %s", key));
 
     return (C) modelCollection;
   }
 
+  private boolean modelInList(String key)
+  {
+      List<Model> modelEntries = modelCollection.getEntries();
+      for (Model m : modelEntries)
+      {
+          Object model = loadModel(m);
+          ObjectMapper mapper = new ObjectMapper();
+          String jsonInString;
+          try
+          {
+              jsonInString = mapper.writeValueAsString(model);
+          }
+          catch (JsonProcessingException e)
+          {
+              throw new IllegalStateException("Failed to convert model to string.", e);
+          }
+          Object fieldValue = JsonPath.with(jsonInString).get(key);
+          if (fieldValue != null)
+          {
+              return true;
+          }
+      }
+      return false;
+  }
+
   @SuppressWarnings("unchecked")
-  public C paginationExist() 
+  public C paginationExist()
   {
     STEP("REST API: Assert that response has pagination");
     Assert.assertNotNull(modelCollection.getPagination(), "Pagination is was not found in the response");
@@ -174,73 +173,82 @@ public class ModelsCollectionAssertion<C>
 
   /**
    * Check one field from pagination json body
-   * 
+   *
    * @param field
    * @return
-   */  
+   */
   @SuppressWarnings("rawtypes")
-  public PaginationAssertionVerbs paginationField(String field) 
+  public PaginationAssertionVerbs paginationField(String field)
   {
     return new PaginationAssertionVerbs<C>(modelCollection, field, modelCollection.getPagination());
   }
-  
+
   /**
    * check is the entries are ordered ASC by a specific field
-   * 
+   *
    * @param field from json response
    * @return
-   * @throws Exception
    */
   @SuppressWarnings("unchecked")
-  public C entriesListIsSortedAscBy(String field) throws Exception
+  public C entriesListIsSortedAscBy(String field)
   {
       List<Model> modelEntries = modelCollection.getEntries();
       List<String> fieldValues = new ArrayList<String>();
       for(Model m: modelEntries)
       {
-          Method method = m.getClass().getMethod("onModel", new Class[] {});
-          Object model = method.invoke(m, new Object[] {});
+          Object model = loadModel(m);
           String fieldValue = "";
           try {
               fieldValue = BeanUtils.getProperty(model, field);
               fieldValues.add(fieldValue);
-          } 
-          catch (Exception e) 
+          }
+          catch (Exception e)
           {
               // nothing to do
-          }    
-      } 
+          }
+      }
       Assert.assertTrue(Ordering.natural().isOrdered(fieldValues), String.format("Entries are not ordered ASC by %s", field));
       return (C) modelCollection;
   }
-  
+
   /**
    * check is the entries are ordered DESC by a specific field
-   * 
+   *
    * @param field from json response
    * @return
-   * @throws Exception
    */
   @SuppressWarnings("unchecked")
-  public C entriesListIsSortedDescBy(String field) throws Exception
+  public C entriesListIsSortedDescBy(String field)
   {
       List<Model> modelEntries = modelCollection.getEntries();
       List<String> fieldValues = new ArrayList<String>();
       for(Model m: modelEntries)
       {
-          Method method = m.getClass().getMethod("onModel", new Class[] {});
-          Object model = method.invoke(m, new Object[] {});
+          Object model = loadModel(m);
           String fieldValue = "";
           try {
               fieldValue = BeanUtils.getProperty(model, field);
               fieldValues.add(fieldValue);
-          } 
-          catch (Exception e) 
+          }
+          catch (Exception e)
           {
               // nothing to do
-          }    
-      } 
+          }
+      }
       Assert.assertTrue(Ordering.natural().reverse().isOrdered(fieldValues), String.format("Entries are not ordered DESC by %s", field));
       return (C) modelCollection;
   }
+
+    private Object loadModel(Model m)
+    {
+        try
+        {
+            Method method = m.getClass().getMethod("onModel", new Class[] {});
+            return method.invoke(m, new Object[] {});
+        }
+        catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e)
+        {
+            throw new IllegalStateException("Failed to load model using reflection.", e);
+        }
+    }
 }

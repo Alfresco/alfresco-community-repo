@@ -11,7 +11,7 @@ import org.testng.annotations.Test;
 public class RestApiWorkshopTests extends RestTest
 {    
     @Test(groups = { "demo" })
-    public void verifyGetSitesRestApiCall() throws Exception
+    public void verifyGetSitesRestApiCall()
     {
         // creating a random user in repository
        
@@ -24,7 +24,7 @@ public class RestApiWorkshopTests extends RestTest
     }
     
     @Test(groups = { "demo" })
-    public void verifyGetASiteRestApiCall() throws Exception
+    public void verifyGetASiteRestApiCall()
     {
         // creating a random user in repository
        

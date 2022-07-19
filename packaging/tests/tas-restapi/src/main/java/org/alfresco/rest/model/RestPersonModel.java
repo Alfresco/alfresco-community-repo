@@ -344,9 +344,8 @@ public class RestPersonModel extends TestModel implements IModelAssertion<RestPe
      * 
      * @param ignoredFields field to be excluded when generating a random model
      * @return
-     * @throws Exception
      */
-    public static RestPersonModel getRandomPersonModel(String... ignoredFields) throws Exception
+    public static RestPersonModel getRandomPersonModel(String... ignoredFields)
     {
         RestPersonModel personModel = new RestPersonModel();
         setRandomValuesForAllFields(personModel, ignoredFields);

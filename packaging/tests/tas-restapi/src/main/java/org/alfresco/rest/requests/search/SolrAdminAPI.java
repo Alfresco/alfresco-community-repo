@@ -44,7 +44,7 @@ public class SolrAdminAPI extends ModelRequest<SolrAdminAPI>
         restWrapper.configureRequestSpec().setBasePath(RestAssured.basePath);
     }
 
-    public RestResponse getAction(String action) throws Exception
+    public RestResponse getAction(String action)
     {
         List<Header> headers = new ArrayList<Header>();
         headers.add(new Header("Content-Type", "application/json"));

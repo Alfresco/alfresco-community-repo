@@ -18,7 +18,7 @@ public class RestApiDemoTests extends RestTest
      * Expected: the response contains the user added as a member to the site
      */
     @Test(groups = { "demo" })
-    public void verifyGetSiteMembersRestApiCall() throws Exception
+    public void verifyGetSiteMembersRestApiCall()
     {
         UserModel user = dataUser.createRandomTestUser();
         SiteModel site = dataSite.usingUser(user).createPublicRandomSite();
@@ -40,7 +40,7 @@ public class RestApiDemoTests extends RestTest
      */
 
     @Test(groups = { "demo" })
-    public void verifyGetASiteMemberApiCall() throws Exception
+    public void verifyGetASiteMemberApiCall()
     {
         UserModel user = dataUser.createRandomTestUser();
         SiteModel site = dataSite.usingUser(user).createPublicRandomSite();

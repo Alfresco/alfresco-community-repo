@@ -46,7 +46,7 @@ public class People extends ModelRequest<People>
 {
     UserModel person;
 
-    public People(UserModel person, RestWrapper restWrapper) throws Exception
+    public People(UserModel person, RestWrapper restWrapper)
     {
         super(restWrapper);
         this.person = person;
@@ -56,7 +56,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve details of a specific person using GET call on "people/{personId}"
      */
-    public RestPersonModel getPerson() throws Exception
+    public RestPersonModel getPerson()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         return restWrapper.processModel(RestPersonModel.class, request);
@@ -65,7 +65,7 @@ public class People extends ModelRequest<People>
     /**
      * Update a person properties using PUT call on "people/{personId}"
      */
-    public RestPersonModel updatePerson(String putBody) throws Exception
+    public RestPersonModel updatePerson(String putBody)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, putBody, "people/{personId}", this.person.getUsername());
         return restWrapper.processModel(RestPersonModel.class, request);
@@ -76,7 +76,7 @@ public class People extends ModelRequest<People>
      * Please note that it retries to get the list of activities several times before returning the empty list. The list of activities are not displayed as
      * they are created.
      */
-    public RestActivityModelsCollection getPersonActivitiesUntilEntriesCountIs(int expectedNoOfEntries) throws Exception
+    public RestActivityModelsCollection getPersonActivitiesUntilEntriesCountIs(int expectedNoOfEntries)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/activities?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         RestActivityModelsCollection activityCollection = restWrapper.processModels(RestActivityModelsCollection.class, request);
@@ -96,7 +96,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve list of activities for a specific person using GET call on "people/{personId}/activities" without retry
      */
-    public RestActivityModelsCollection getPersonActivities() throws Exception
+    public RestActivityModelsCollection getPersonActivities()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/activities?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         return restWrapper.processModels(RestActivityModelsCollection.class, request);
@@ -105,7 +105,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve preferences of a specific person using GET call on "people/{personId}/preferences"
      */
-    public RestPreferenceModelsCollection getPersonPreferences() throws Exception
+    public RestPreferenceModelsCollection getPersonPreferences()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/preferences?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         return restWrapper.processModels(RestPreferenceModelsCollection.class, request);
@@ -114,7 +114,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve the current site membership requests for a specific person using GET call on "/people/{personId}/site-membership-requests"
      */
-    public RestSiteMembershipRequestModelsCollection getSiteMembershipRequests() throws Exception
+    public RestSiteMembershipRequestModelsCollection getSiteMembershipRequests()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/site-membership-requests?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         return restWrapper.processModels(RestSiteMembershipRequestModelsCollection.class, request);
@@ -123,7 +123,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve a specific person's favorite sites using GET call on "people/{personId}/favorite-sites"
      */
-    public RestSiteModelsCollection getFavoriteSites() throws Exception
+    public RestSiteModelsCollection getFavoriteSites()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/favorite-sites?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         return restWrapper.processModels(RestSiteModelsCollection.class, request);
@@ -132,7 +132,7 @@ public class People extends ModelRequest<People>
     /**
      * Add a favorite site for a specific person using POST call on "people/{personId}/favorite-sites"
      */
-    public RestFavoriteSiteModel addFavoriteSite(SiteModel site) throws Exception
+    public RestFavoriteSiteModel addFavoriteSite(SiteModel site)
     {
         String postBody = JsonBodyGenerator.keyValueJson("id", site.getId());
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "people/{personId}/favorite-sites", this.person.getUsername());
@@ -142,7 +142,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve a specific preference of a specific person using GET call on "people/{personId}/preferences/{preferenceName}"
      */
-    public RestPreferenceModel getPersonPreferenceInformation(String preferenceName) throws Exception
+    public RestPreferenceModel getPersonPreferenceInformation(String preferenceName)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/preferences/{preferenceName}?{parameters}", this.person.getUsername(), preferenceName, restWrapper.getParameters());
         return restWrapper.processModel(RestPreferenceModel.class, request);
@@ -151,7 +151,7 @@ public class People extends ModelRequest<People>
     /**
      * Remove a specific site from favorite sites list of a person using DELETE call on "people/{personId}/favorite-sites/{siteId}"
      */
-    public void removeFavoriteSite(SiteModel site) throws Exception
+    public void removeFavoriteSite(SiteModel site)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "people/{personId}/favorite-sites/{siteId}", this.person.getUsername(), site.getId());
         restWrapper.processEmptyModel(request);
@@ -160,7 +160,7 @@ public class People extends ModelRequest<People>
     /**
      * Returns information on favorite site siteId of person personId. GET call on "people/{personId}/favorite-sites/{siteId}"
      */
-    public RestSiteModel getFavoriteSite(SiteModel site) throws Exception
+    public RestSiteModel getFavoriteSite(SiteModel site)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/favorite-sites/{siteId}?{parameters}", this.person.getUsername(), site.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestSiteModel.class, request);
@@ -169,7 +169,7 @@ public class People extends ModelRequest<People>
     /**
      * Delete site member with DELETE call on "people/{personId}/sites/{siteId}"
      */
-    public void deleteSiteMember(SiteModel site) throws Exception
+    public void deleteSiteMember(SiteModel site)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "people/{personId}/sites/{siteId}", person.getUsername(), site.getId());
         restWrapper.processEmptyModel(request);
@@ -178,7 +178,7 @@ public class People extends ModelRequest<People>
     /**
      * Add new site membership request using POST call on "people/{personId}/site-membership-requests"
      */
-    public RestSiteMembershipRequestModel addSiteMembershipRequest(String siteMembershipRequest) throws Exception
+    public RestSiteMembershipRequestModel addSiteMembershipRequest(String siteMembershipRequest)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, siteMembershipRequest, "people/{personId}/site-membership-requests", this.person.getUsername());
         return restWrapper.processModel(RestSiteMembershipRequestModel.class, request);
@@ -187,7 +187,7 @@ public class People extends ModelRequest<People>
     /**
      * Add new site membership request using POST call on "people/{personId}/site-membership-requests"
      */
-    public RestSiteMembershipRequestModel addSiteMembershipRequest(SiteModel siteModel) throws Exception
+    public RestSiteMembershipRequestModel addSiteMembershipRequest(SiteModel siteModel)
     {
         String json = JsonBodyGenerator.siteMemberhipRequest("Please accept me", siteModel, "New request");
         return addSiteMembershipRequest(json);
@@ -196,7 +196,7 @@ public class People extends ModelRequest<People>
     /**
      * Add new site membership request using POST call on "people/{personId}/site-membership-requests"
      */
-    public RestSiteMembershipRequestModel addSiteMembershipRequest(String message, SiteModel siteModel, String title) throws Exception
+    public RestSiteMembershipRequestModel addSiteMembershipRequest(String message, SiteModel siteModel, String title)
     {
         String json = JsonBodyGenerator.siteMemberhipRequest(message, siteModel, title);
         return addSiteMembershipRequest(json);
@@ -206,7 +206,7 @@ public class People extends ModelRequest<People>
      * Get site membership information using GET call on "/people/{personId}/sites"
      */
 
-    public RestSiteMembershipModelsCollection getSitesMembershipInformation() throws Exception
+    public RestSiteMembershipModelsCollection getSitesMembershipInformation()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/sites?{parameters}", person.getUsername(), restWrapper.getParameters());
         return restWrapper.processModels(RestSiteMembershipModelsCollection.class, request);
@@ -215,7 +215,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve site membership information for a person using GET call on "people/{personId}/sites/{siteId}"
      */
-    public RestSiteEntry getSiteMembership(SiteModel site) throws Exception
+    public RestSiteEntry getSiteMembership(SiteModel site)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/sites/{siteId}?{parameters}", person.getUsername(), site.getId(), restWrapper.getParameters());
         return restWrapper.processModel(RestSiteEntry.class, request);
@@ -224,7 +224,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve site membership request details for a person/site using GET call on "people/{personId}/site-membership-requests/{siteId}"
      */
-    public RestSiteMembershipRequestModel getSiteMembershipRequest(SiteModel site) throws Exception
+    public RestSiteMembershipRequestModel getSiteMembershipRequest(SiteModel site)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/site-membership-requests/{siteId}?{parameters}", person.getUsername(),
                 site.getId(), restWrapper.getParameters());
@@ -244,7 +244,7 @@ public class People extends ModelRequest<People>
     /**
      * Update site membership request using PUT call on "people/{personId}/site-membership-requests/{siteId}"
      */
-    public RestSiteMembershipRequestModel updateSiteMembershipRequest(SiteModel siteModel, String message) throws Exception
+    public RestSiteMembershipRequestModel updateSiteMembershipRequest(SiteModel siteModel, String message)
     {
         String json = JsonBodyGenerator.siteMemberhipRequest(message, siteModel, "New request");
         RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, json, "people/{personId}/site-membership-requests/{siteId}", person.getUsername(),
@@ -255,7 +255,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve favorite site for a specific user using GET call on "people/{personId}/favorites/{favoriteId}"
      */
-    public RestPersonFavoritesModel getFavorite(String favoriteId) throws Exception
+    public RestPersonFavoritesModel getFavorite(String favoriteId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/favorites/{favoriteId}?{parameters}", this.person.getUsername(), favoriteId, restWrapper.getParameters());
         return restWrapper.processModel(RestPersonFavoritesModel.class, request);
@@ -264,7 +264,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve specific favorites for a specific user using GET call on "people/{personId}/favorites"
      */
-    public RestPersonFavoritesModelsCollection getFavorites() throws Exception
+    public RestPersonFavoritesModelsCollection getFavorites()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/favorites?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         return restWrapper.processModels(RestPersonFavoritesModelsCollection.class, request);
@@ -273,7 +273,7 @@ public class People extends ModelRequest<People>
     /**
      * Add a folder to favorites for a specific user using POST call on "people/{personId}/favorites"
      */
-    public RestPersonFavoritesModel addFolderToFavorites(FolderModel folderModel) throws Exception
+    public RestPersonFavoritesModel addFolderToFavorites(FolderModel folderModel)
     {
         String jsonPost = JsonBodyGenerator.targetFolderWithGuid(folderModel);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, jsonPost, "people/{personId}/favorites?{parameters}", this.person.getUsername(),
@@ -284,7 +284,7 @@ public class People extends ModelRequest<People>
     /**
      * Add a folder to favorites for a specific user using POST call on "people/{personId}/favorites"
      */
-    public RestPersonFavoritesModel addFileToFavorites(FileModel fileModel) throws Exception
+    public RestPersonFavoritesModel addFileToFavorites(FileModel fileModel)
     {
         String jsonPost = JsonBodyGenerator.targetFileWithGuid(fileModel);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, jsonPost, "people/{personId}/favorites?{parameters}", this.person.getUsername(),
@@ -295,7 +295,7 @@ public class People extends ModelRequest<People>
     /**
      * Add a site to favorites for a specific user using POST call on "people/{personId}/favorites"
      */
-    public RestPersonFavoritesModel addSiteToFavorites(SiteModel siteModel) throws Exception
+    public RestPersonFavoritesModel addSiteToFavorites(SiteModel siteModel)
     {
         String jsonPost = JsonBodyGenerator.targetSiteWithGuid(siteModel);
 
@@ -307,7 +307,7 @@ public class People extends ModelRequest<People>
     /**
      * Delete site from favorites for a specific user using DELETE call on "people/{personId}/favorites/{favoriteId}"
      */
-    public RestWrapper deleteSiteFromFavorites(SiteModel site) throws Exception
+    public RestWrapper deleteSiteFromFavorites(SiteModel site)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "people/{personId}/favorites/{favoriteId}", this.person.getUsername(), site.getGuid()); 
         restWrapper.processEmptyModel(request);
@@ -317,7 +317,7 @@ public class People extends ModelRequest<People>
     /**
      * Delete a folder from favorites for a specific user using DELETE call on "people/{personId}/favorites/{favoriteId}"
      */
-    public RestWrapper deleteFolderFromFavorites(FolderModel folderModel) throws Exception
+    public RestWrapper deleteFolderFromFavorites(FolderModel folderModel)
     {
         String jsonPost = JsonBodyGenerator.targetFolderWithGuid(folderModel);
 
@@ -330,7 +330,7 @@ public class People extends ModelRequest<People>
     /**
      * Delete a file from favorites for a specific user using DELETE call on "people/{personId}/favorites/{favoriteId}"
      */
-    public RestWrapper deleteFileFromFavorites(FileModel fileModel) throws Exception
+    public RestWrapper deleteFileFromFavorites(FileModel fileModel)
     {
         String jsonPost = JsonBodyGenerator.targetFileWithGuid(fileModel);
 
@@ -343,7 +343,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve details of the current user network using GET call on "people/{personId}/networks/{networkId}"
      */
-    public RestNetworkModel getNetwork() throws Exception
+    public RestNetworkModel getNetwork()
     {
         return getNetwork(person);
     }
@@ -351,7 +351,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve details of a specific network using GET call on "people/{personId}/networks/{networkId}"
      */
-    public RestNetworkModel getNetwork(UserModel tenant) throws Exception
+    public RestNetworkModel getNetwork(UserModel tenant)
     {
         Utility.checkObjectIsInitialized(tenant.getDomain(), "tenant.getDomain()");
         String personId = tenant.getUsername().contains("-me-@")? "-me-" : tenant.getUsername();
@@ -362,7 +362,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve details of all networks related to the current person using GET call on "people/{personId}/networks"
      */
-    public RestNetworkModelsCollection getNetworks() throws Exception
+    public RestNetworkModelsCollection getNetworks()
     {
         return getNetworks(person);
     }
@@ -370,7 +370,7 @@ public class People extends ModelRequest<People>
     /**
      * Retrieve details of all networks related to a specific person using GET call on "people/{personId}/networks"
      */
-    public RestNetworkModelsCollection getNetworks(UserModel tenant) throws Exception
+    public RestNetworkModelsCollection getNetworks(UserModel tenant)
     {
         String personId = tenant.getUsername().contains("-me-@") ? "-me-" : tenant.getUsername();
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/networks?{parameters}", personId, restWrapper.getParameters());
@@ -380,7 +380,7 @@ public class People extends ModelRequest<People>
     /**
      * Create new person with given newPerson details using POST call on "people"
      */
-    public RestPersonModel createPerson(RestPersonModel newPerson) throws Exception
+    public RestPersonModel createPerson(RestPersonModel newPerson)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, newPerson.toJson(), "people");
         return restWrapper.processModel(RestPersonModel.class, request);
@@ -390,7 +390,7 @@ public class People extends ModelRequest<People>
      * Get people avatar image using GET call on '/people/{personId}/avatar Please note that it retries to get the
      * renditions response several times because on the alfresco server the rendition can take a while to be created.
      */
-    public RestResponse downloadAvatarContent() throws Exception
+    public RestResponse downloadAvatarContent()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/avatar?{parameters}",
                 this.person.getUsername(), restWrapper.getParameters());
@@ -409,7 +409,7 @@ public class People extends ModelRequest<People>
     /**
      * Update avatar image PUT call on 'people/{nodeId}/children
      */
-    public ValidatableResponse uploadAvatarContent(String fullServerUrL, File avatarFile) throws Exception
+    public ValidatableResponse uploadAvatarContent(String fullServerUrL, File avatarFile)
     {
         return given().auth().preemptive().basic(person.getUsername(), person.getPassword()).contentType(ContentType.BINARY)
                 .body(avatarFile).when()
@@ -420,7 +420,7 @@ public class People extends ModelRequest<People>
     /**
      * List group memberships for a person using GET on '/people/{personId}/groups
      */
-    public RestGroupsModelsCollection listGroupMemberships() throws Exception
+    public RestGroupsModelsCollection listGroupMemberships()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "people/{personId}/groups?{parameters}", this.person.getUsername(), restWrapper.getParameters());
         return restWrapper.processModels(RestGroupsModelsCollection.class, request);
@@ -486,7 +486,7 @@ public class People extends ModelRequest<People>
             return this;
         }
 
-        public RestPersonFavoritesModelsCollection getFavorites() throws Exception
+        public RestPersonFavoritesModelsCollection getFavorites()
         {
             restWrapper.withParams(String.format(whereClause, expression));
             return people.getFavorites();

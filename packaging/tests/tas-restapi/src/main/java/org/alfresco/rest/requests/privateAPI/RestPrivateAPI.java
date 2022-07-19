@@ -84,7 +84,7 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
      * 
      * @return {@link Subscribers}
      */
-    public Subscriptions withSubscriber(RestSubscriberModel subscriber) throws Exception
+    public Subscriptions withSubscriber(RestSubscriberModel subscriber)
     {
         return new Subscriptions(subscriber, restWrapper);
     }
@@ -94,7 +94,7 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
      * 
      * @return {@link Subscribers}
      */
-    public Subscriptions withSubscriber(String subscriberID) throws Exception
+    public Subscriptions withSubscriber(String subscriberID)
     {
         RestSubscriberModel s = new RestSubscriberModel();
         s.setId(subscriberID);
@@ -106,7 +106,7 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
      * 
      * @return {@link Subscribers}
      */
-    public Sync withSubscription(RestSyncNodeSubscriptionModel nodeSubscription) throws Exception
+    public Sync withSubscription(RestSyncNodeSubscriptionModel nodeSubscription)
     {
         RestSubscriberModel s = new RestSubscriberModel();
         s.setId(nodeSubscription.getDeviceSubscriptionId());

@@ -32,7 +32,7 @@ public class RestHtmlResponse
         this.body = body;
     }
 
-    public void assertResponseContainsImage() throws Exception
+    public void assertResponseContainsImage()
     {
         STEP("REST API: Assert that response has an image.");
         Utility.checkObjectIsInitialized(headers, "Headers");

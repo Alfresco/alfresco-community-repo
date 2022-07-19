@@ -14,7 +14,7 @@ public class Generator
 {
     public static String line = "********\n------------------------------------------------------------------------";
   
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args)
     {
         
         if (!System.getProperties().containsKey("coverage") && !System.getProperties().containsKey("models") || System.getProperties().containsKey("help") )

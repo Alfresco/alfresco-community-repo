@@ -23,9 +23,8 @@ public class Networks extends ModelRequest<Networks>
      * Retrieve details for the current user network using GET call on "networks/{networkId}"
      *
      * @return
-     * @throws Exception
      */
-    public RestNetworkModel getNetwork() throws Exception
+    public RestNetworkModel getNetwork()
     {
         return getNetwork(restWrapper.getTestUser());
     }
@@ -34,9 +33,8 @@ public class Networks extends ModelRequest<Networks>
      * Retrieve details of a specific network using GET call on "networks/{networkId}"
      *
      * @return
-     * @throws Exception
      */
-    public RestNetworkModel getNetwork(UserModel tenant) throws Exception
+    public RestNetworkModel getNetwork(UserModel tenant)
     {
         Utility.checkObjectIsInitialized(tenant.getDomain(), "tenant.getDomain()");
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "networks/{networkId}", tenant.getDomain());
@@ -47,9 +45,8 @@ public class Networks extends ModelRequest<Networks>
      * Retrieve details of a specific network using GET call with parameters on "networks/{networkId}?{parameters}"
      *
      * @return JSONObject
-     * @throws Exception
      */
-    public JSONObject getNetworkWithParams(UserModel tenant) throws Exception
+    public JSONObject getNetworkWithParams(UserModel tenant)
     {
         Utility.checkObjectIsInitialized(tenant.getDomain(), "tenant.getDomain()");
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "networks/{networkId}?{parameters}", tenant.getDomain(), restWrapper.getParameters());

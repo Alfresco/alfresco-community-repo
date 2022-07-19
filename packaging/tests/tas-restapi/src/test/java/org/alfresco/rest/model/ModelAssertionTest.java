@@ -18,13 +18,13 @@ import static org.testng.Assert.fail;
 public class ModelAssertionTest {
 
 	@Test(groups = "unit")
-	public void iCanAssertExistingProperty() throws Exception {
+	public void iCanAssertExistingProperty() {
 		Person p = new Person();
 		p.assertThat().field("id").is("1234");
 	}
 
 	@Test(groups = "unit")
-	public void iCanAssertExistingPropertyNegative() throws Exception {
+	public void iCanAssertExistingPropertyNegative() {
 		Person p = new Person();
 		p.assertThat().field("id").isNot("12342");
 		RestPersonModel rp = new RestPersonModel();
@@ -33,14 +33,14 @@ public class ModelAssertionTest {
 	}
 
 	@Test(groups = "unit", expectedExceptions = AssertionError.class)
-	public void iHaveOneExceptionThrownWithSelfExplanatoryMessageOnMissingField() throws Exception {
+	public void iHaveOneExceptionThrownWithSelfExplanatoryMessageOnMissingField() {
 		Person p = new Person();
 		p.assertThat().field("id2").is("12342");
 
 	}
 
 	@Test(groups = "unit")
-	public void iCanTakeTheValueOfFieldsThatDoesntHaveGetters() throws Exception {
+	public void iCanTakeTheValueOfFieldsThatDoesntHaveGetters() {
 		Person p = new Person();
 
 		p.assertThat().field("name").is("test");

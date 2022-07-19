@@ -32,7 +32,7 @@ public class Subscriptions extends ModelRequest<RestPrivateAPI>
     String nodeSubscriptionURL = subscriptionsURL + "/{nodeSubscriptionId}";
     String params = "?{parameters}";
 
-    public Subscriptions(RestSubscriberModel subscriber, RestWrapper restWrapper) throws Exception
+    public Subscriptions(RestSubscriberModel subscriber, RestWrapper restWrapper)
     {
         super(restWrapper);
         this.subscriber = subscriber;
@@ -44,9 +44,9 @@ public class Subscriptions extends ModelRequest<RestPrivateAPI>
      * 
      * @param targetNodeIds: one or more
      * @return RestSyncNodeSubscriptionModel
-     * @throws Exception: EmptyJsonResponseException, JsonToModelConversionException
+     * @throws EmptyJsonResponseException, JsonToModelConversionException
      */
-    public RestSyncNodeSubscriptionModelCollection subscribeToNodes(String... targetNodeIds) throws Exception
+    public RestSyncNodeSubscriptionModelCollection subscribeToNodes(String... targetNodeIds)
     {
 
         JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
@@ -86,9 +86,8 @@ public class Subscriptions extends ModelRequest<RestPrivateAPI>
      * Get NODE Subscription(s) using GET call on /subscribers/{deviceSubscriptionId}/subscriptions
      * 
      * @return {@link RestSyncNodeSubscriptionModelCollection}
-     * @throws Exception
      */
-    public RestSyncNodeSubscriptionModelCollection getSubscriptions() throws Exception
+    public RestSyncNodeSubscriptionModelCollection getSubscriptions()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, subscriptionsURL + params, this.subscriber.getId(), restWrapper.getParameters());
         return restWrapper.processModels(RestSyncNodeSubscriptionModelCollection.class, request);
@@ -98,9 +97,9 @@ public class Subscriptions extends ModelRequest<RestPrivateAPI>
      * Get NODE Subscription using GET call on /subscribers/{deviceSubscriptionId}/subscriptions/{nodeSubscriptionId}
      * 
      * @return RestSyncNodeSubscriptionModelCollection
-     * @throws Exception: EmptyJsonResponseException, JsonToModelConversionException
+     * @throws EmptyJsonResponseException, JsonToModelConversionException
      */
-    public RestSyncNodeSubscriptionModel getSubscription(String nodeSubscriptionId) throws Exception
+    public RestSyncNodeSubscriptionModel getSubscription(String nodeSubscriptionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, nodeSubscriptionURL + params, this.subscriber.getId(), nodeSubscriptionId,
                 restWrapper.getParameters());

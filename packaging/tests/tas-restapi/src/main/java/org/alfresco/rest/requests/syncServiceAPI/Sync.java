@@ -31,7 +31,7 @@ public class Sync extends ModelRequest<RestPrivateAPI>
     String syncSetURL = requestSyncURL + "/{syncId}";
     String params = "?{parameters}";
 
-    public Sync(RestSyncNodeSubscriptionModel subscription, RestWrapper restWrapper) throws Exception
+    public Sync(RestSyncNodeSubscriptionModel subscription, RestWrapper restWrapper)
     {
         super(restWrapper);
         restWrapper.configureSyncServiceEndPoint();
@@ -46,10 +46,8 @@ public class Sync extends ModelRequest<RestPrivateAPI>
      * @param nodeSubscriptionId
      * @param clientChanges
      * @return
-     * @throws Exception
      */
     public RestSyncSetRequestModel startSync(RestSyncNodeSubscriptionModel nodeSubscriptionModel, List<RestSyncSetChangesModel> clientChanges, String clientVersion)
-            throws Exception
     {
         JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
         for (RestSyncSetChangesModel change : clientChanges)
@@ -69,7 +67,7 @@ public class Sync extends ModelRequest<RestPrivateAPI>
         return model;
     }
 
-    public RestWrapper endSync(RestSyncNodeSubscriptionModel nodeSubscriptionModel, RestSyncSetRequestModel sync) throws Exception
+    public RestWrapper endSync(RestSyncNodeSubscriptionModel nodeSubscriptionModel, RestSyncSetRequestModel sync)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, syncSetURL + params, this.subscriber, nodeSubscriptionModel.getId(),
                 sync.getSyncId(), restWrapper.getParameters());
@@ -85,9 +83,8 @@ public class Sync extends ModelRequest<RestPrivateAPI>
      * 
      * @param syncRequest
      * @return
-     * @throws Exception
      */
-    public RestSyncSetGetModel getSync(RestSyncNodeSubscriptionModel nodeSubscriptionModel, RestSyncSetRequestModel sync) throws Exception
+    public RestSyncSetGetModel getSync(RestSyncNodeSubscriptionModel nodeSubscriptionModel, RestSyncSetRequestModel sync)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, syncSetURL + params, this.subscriber, nodeSubscriptionModel.getId(), sync.getSyncId(),
                 restWrapper.getParameters());

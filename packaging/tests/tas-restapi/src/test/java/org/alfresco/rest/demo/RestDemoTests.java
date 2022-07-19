@@ -34,10 +34,9 @@ public class RestDemoTests extends RestTest
      * Perform GET site call, validate that site title, description and visibility are correct <br/>
      * 
      * @throws JsonToModelConversionException
-     * @throws Exception
      */
     @Test(groups = { "demo" })
-    public void adminRetrievesCorrectSiteDetails() throws JsonToModelConversionException, Exception
+    public void adminRetrievesCorrectSiteDetails() throws JsonToModelConversionException
     {
         restClient.withCoreAPI().getSites().assertThat()
             .entriesListContains("id", siteModel.getId());
@@ -54,11 +53,10 @@ public class RestDemoTests extends RestTest
      * POST one comment to file using admin user <br/>
      * Perform GET comments, check the new one is listed <br/>
      * Update existing comment using PUT call, check that comment content is updated <br/>
-     * @throws Exception 
      */
     //Opened DESKTOPAPP-475 for fixing the failing test
    // @Test(groups = { "demo" })
-    public void adminCanPostAndUpdateComments() throws Exception
+    public void adminCanPostAndUpdateComments()
     {       
         FileModel fileModel = dataContent.usingUser(userModel)
                                   .usingResource(FolderModel.getSharedFolderModel())
@@ -80,7 +78,7 @@ public class RestDemoTests extends RestTest
      * @throws JsonToModelConversionException
      */
     @Test(groups = { "demo" })
-    public void adminCanAddAndUpdateSiteMemberDetails() throws Exception
+    public void adminCanAddAndUpdateSiteMemberDetails()
     {
         UserModel testUser = dataUser.createRandomTestUser("testUser");
         testUser.setUserRole(UserRole.SiteConsumer);

@@ -21,7 +21,7 @@ public class Actions extends ModelRequest<Actions>
     /**
      * List available actions using GET on '/action-definitions'
      */
-    public RestActionDefinitionModelsCollection listActionDefinitions() throws Exception
+    public RestActionDefinitionModelsCollection listActionDefinitions()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "action-definitions?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestActionDefinitionModelsCollection.class, request);
@@ -30,7 +30,7 @@ public class Actions extends ModelRequest<Actions>
     /**
      * Execute action with parameters using POST on '/action-executions'
      */
-    public JSONObject executeAction(String actionDefinitionId, RepoTestModel targetNode, Map<String, String> params) throws Exception
+    public JSONObject executeAction(String actionDefinitionId, RepoTestModel targetNode, Map<String, String> params)
     {
         String postBody = JsonBodyGenerator.executeActionPostBody(actionDefinitionId, targetNode, params);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "action-executions");
@@ -40,7 +40,7 @@ public class Actions extends ModelRequest<Actions>
     /**
      * Execute action without parameters using POST on '/action-executions'
      */
-    public JSONObject executeAction(String actionDefinitionId, RepoTestModel targetNode) throws Exception
+    public JSONObject executeAction(String actionDefinitionId, RepoTestModel targetNode)
     {
         String postBody = JsonBodyGenerator.executeActionPostBody(actionDefinitionId, targetNode);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "action-executions");
@@ -50,7 +50,7 @@ public class Actions extends ModelRequest<Actions>
     /**
      * Get specific action definition using GET on '/action-definitions/{actionDefinitionId}'
      */
-    public RestActionDefinitionModel getActionDefinitionById(String actionDefinitionId) throws Exception
+    public RestActionDefinitionModel getActionDefinitionById(String actionDefinitionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "action-definitions/".concat(actionDefinitionId));
         return restWrapper.processModel(RestActionDefinitionModel.class, request);

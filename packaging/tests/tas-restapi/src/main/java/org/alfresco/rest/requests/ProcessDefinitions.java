@@ -35,7 +35,7 @@ public class ProcessDefinitions extends ModelRequest<ProcessDefinitions>
      * @return
      * @throws JsonToModelConversionException
      */
-    public RestProcessDefinitionModelsCollection getAllProcessDefinitions() throws Exception
+    public RestProcessDefinitionModelsCollection getAllProcessDefinitions()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "process-definitions?{parameters}", restWrapper.getParameters());
         return restWrapper.processModels(RestProcessDefinitionModelsCollection.class, request);
@@ -45,9 +45,8 @@ public class ProcessDefinitions extends ModelRequest<ProcessDefinitions>
      * Retrieves a process definition using GET call on "/process-definitions/{processDefinitionId}"
      *
      * @return
-     * @throws Exception
      */
-    public RestProcessDefinitionModel getProcessDefinition() throws Exception
+    public RestProcessDefinitionModel getProcessDefinition()
     {
         Utility.checkObjectIsInitialized(processDefinition, "processDefinition");
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "process-definitions/{processDefinitionId}?{parameters}",
@@ -59,9 +58,8 @@ public class ProcessDefinitions extends ModelRequest<ProcessDefinitions>
      * Retrieves an image that represents a single process definition using GET call on "/process-definitions/{processDefinitionId}/image"
      *
      * @return
-     * @throws Exception
      */
-    public RestHtmlResponse getProcessDefinitionImage() throws Exception
+    public RestHtmlResponse getProcessDefinitionImage()
     {
         Utility.checkObjectIsInitialized(processDefinition, "processDefinition");
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "process-definitions/{processDefinitionId}/image", processDefinition.getId());
@@ -72,9 +70,8 @@ public class ProcessDefinitions extends ModelRequest<ProcessDefinitions>
      * Retrieves start form type definitions using GET call on "/process-definitions/{processDefinitionId}/start-form-model"
      *
      * @return
-     * @throws Exception
      */
-    public RestFormModelsCollection getProcessDefinitionStartFormModel() throws Exception
+    public RestFormModelsCollection getProcessDefinitionStartFormModel()
     {
         Utility.checkObjectIsInitialized(processDefinition, "processDefinition.onModel()");
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "process-definitions/{processDefinitionId}/start-form-model?{parameters}",

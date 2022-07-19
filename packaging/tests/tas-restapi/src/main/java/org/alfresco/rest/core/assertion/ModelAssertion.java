@@ -70,7 +70,7 @@ public class ModelAssertion<T>
         return new AssertionVerbs(model, fieldValue, fieldName);
     }
 
-    public AssertionItemVerbs fieldsCount() throws Exception
+    public AssertionItemVerbs fieldsCount()
     {
 
         int actualSize = 0;
@@ -80,7 +80,15 @@ public class ModelAssertion<T>
         {
 
             field.setAccessible(true);
-            Object fieldValue = field.get(model);
+            Object fieldValue = null;
+            try
+            {
+                fieldValue = field.get(model);
+            }
+            catch (IllegalAccessException e)
+            {
+                throw new IllegalStateException("Unable to load model using reflection.", e);
+            }
             if (fieldValue != null)
                 actualSize++;
         }
@@ -317,7 +325,7 @@ public class ModelAssertion<T>
         private Object model;
         private Object actual;
 
-        public AssertionItemVerbs(Object model, Object actual) throws Exception
+        public AssertionItemVerbs(Object model, Object actual)
         {
             this.model = model;
             this.actual = actual;

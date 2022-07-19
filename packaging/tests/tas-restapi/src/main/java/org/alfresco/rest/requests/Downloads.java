@@ -19,7 +19,7 @@ public class Downloads extends ModelRequest<Downloads> {
         super(restWrapper);
     }
 
-    public Downloads(RestDownloadsModel downloadsModel, RestWrapper restWrapper) throws Exception
+    public Downloads(RestDownloadsModel downloadsModel, RestWrapper restWrapper)
     {
         super(restWrapper);
         this.downloadsModel = downloadsModel;
@@ -28,7 +28,7 @@ public class Downloads extends ModelRequest<Downloads> {
     /**
      * Get download details using POST call on "downloads"
      */
-    public RestDownloadsModel createDownload(String postBody) throws Exception
+    public RestDownloadsModel createDownload(String postBody)
     {
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "downloads");
         return restWrapper.processModel(RestDownloadsModel.class, request);
@@ -37,7 +37,7 @@ public class Downloads extends ModelRequest<Downloads> {
     /**
      * Get download details using GET call on "downloads/{downloadId}"
      */
-    public RestDownloadsModel getDownload() throws Exception
+    public RestDownloadsModel getDownload()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "downloads/{downloadId}", downloadsModel.getId());
         return restWrapper.processModel(RestDownloadsModel.class, request);
@@ -46,7 +46,7 @@ public class Downloads extends ModelRequest<Downloads> {
     /**
      * Cancel download using DELETE call on "downloads/{downloadId}"
      */
-    public void cancelDownload() throws Exception
+    public void cancelDownload()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "downloads/{downloadId}", downloadsModel.getId());
         restWrapper.processEmptyModel(request);;

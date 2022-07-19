@@ -9,6 +9,7 @@ package org.alfresco.rest.requests;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestRuleModel;
+import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.springframework.http.HttpMethod;
 
 public class FolderRules extends ModelRequest<FolderRules>
@@ -39,10 +40,10 @@ public class FolderRules extends ModelRequest<FolderRules>
      * Gets a list of rules for the folder node using GET call on "nodes/{nodeId}/rule-sets/{ruleSetId}/rules"
      * @return
      */
-    public RestRuleModel getListOfRules()
+    public RestRuleModelsCollection getListOfRules()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, BASE_PATH, nodeId, ruleSetId);
-        return restWrapper.processModel(RestRuleModel.class, request);
+        return restWrapper.processModel(RestRuleModelsCollection.class, request);
     }
 
     /**

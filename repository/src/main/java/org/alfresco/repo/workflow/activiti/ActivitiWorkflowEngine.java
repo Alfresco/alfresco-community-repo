@@ -1017,6 +1017,46 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
     }
 
+    /**
+    * {@inheritDoc}
+    */
+    public void checkDeploymentCategory(InputStream workflowDefinition)
+    {
+        try
+        {
+            String key = getProcessKey(workflowDefinition);
+            ProcessDefinition pd = activitiUtil.getProcessDefinitionByKey(key);
+            String deploymentId = pd.getDeploymentId();
+
+            List<ProcessDefinition> definitionList = repoService.createProcessDefinitionQuery().deploymentId(deploymentId).list();
+            if (definitionList != null && definitionList.size() > 0)
+            {
+                boolean internalCategory = false;
+                for (ProcessDefinition processDefinition : definitionList)
+                {
+                    if (WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL.equals(processDefinition.getCategory()) == true)
+                    {
+                        internalCategory = true;
+                        break;
+                    }
+                }
+
+                if (!internalCategory)
+                {
+                    repoService.setDeploymentCategory(deploymentId, WorkflowDeployer.CATEGORY_FULL_ACCESS);
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Category was not set: " + e.getMessage(), e);
+            }
+        }
+    }
+
     private String getProcessKey(InputStream workflowDefinition) throws Exception
     {
         try 

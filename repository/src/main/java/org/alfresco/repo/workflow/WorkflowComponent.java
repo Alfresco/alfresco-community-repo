@@ -97,7 +97,15 @@ public interface WorkflowComponent
      * @return  true => already deployed
      */
     public boolean isDefinitionDeployed(InputStream workflowDefinition, String mimetype);
-    
+
+    /**
+     * Sets the deployment category if applicable to allow the workflow to have full access
+     *
+     * @param workflowDefinition  the definition to check
+     * @param fullAccess          true if category should be defined in order to consider the deployment secure
+     */
+    public void checkDeploymentCategory(InputStream workflowDefinition);
+
     /**
      * Undeploy an exisiting Workflow Definition
      * 

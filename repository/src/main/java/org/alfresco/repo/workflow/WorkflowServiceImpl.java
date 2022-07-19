@@ -291,6 +291,18 @@ public class WorkflowServiceImpl implements WorkflowService
     /*
      * (non-Javadoc)
      * @see
+     * org.alfresco.service.cmr.workflow.WorkflowService#checkDeploymentCategory
+     * (java.lang.String, java.io.InputStream)
+     */
+    public void checkDeploymentCategory(String engineId, InputStream workflowDefinition)
+    {
+        WorkflowComponent component = getWorkflowComponent(engineId);
+        component.checkDeploymentCategory(workflowDefinition);
+    }
+
+    /*
+     * (non-Javadoc)
+     * @see
      * org.alfresco.service.cmr.workflow.WorkflowService#deployDefinition(org
      * .alfresco.service.cmr.repository.NodeRef)
      */

@@ -307,7 +307,10 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                         if (!redeploy && workflowService.isDefinitionDeployed(engineId, workflowResource.getInputStream(), mimetype))
                         {
                             if (logger.isDebugEnabled())
-                                logger.debug("Workflow deployer: Definition '" + location + "' already deployed");
+                            {
+                                logger.debug("Workflow deployer: Definition '" + location + "' already deployed. Checking deploymentcategory...");
+                            }
+                            workflowService.checkDeploymentCategory(engineId, workflowResource.getInputStream(), true);
                         }
                         else
                         {

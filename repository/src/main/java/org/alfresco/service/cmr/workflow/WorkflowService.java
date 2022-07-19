@@ -134,6 +134,17 @@ public interface WorkflowService
             parameters = {"engineId", "workflowDefinition", "mimetype"},
             recordable = {true,       false,                true})
     public boolean isDefinitionDeployed(String engineId, InputStream workflowDefinition, String mimetype);
+
+    /**
+     * Checks if the deployment for supplied workflow definition has the proper category
+     *
+     * @param  engineId  the bpm engine id
+     * @param  workflowDefinition  the definition to check
+     */
+    @Auditable(
+            parameters = {"engineId", "workflowDefinition"},
+            recordable = {true,       false})
+    public void checkDeploymentCategory(String engineId, InputStream workflowDefinition);
     
     /**
      * Undeploy an exisiting Workflow Definition

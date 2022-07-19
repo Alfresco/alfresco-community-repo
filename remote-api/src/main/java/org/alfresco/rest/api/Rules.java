@@ -57,4 +57,13 @@ public interface Rules
      * @return {@link Rule} definition
      */
     Rule getRuleById(String folderNodeId, String ruleSetId, String ruleId);
+
+    /**
+     * Delete rule for rule's ID and check associations with folder node and rule set node
+     *
+     * @param folderNodeId - folder node ID
+     * @param ruleSetId - rule set ID
+     * @param ruleId - rule ID     *
+     */
+    void deleteRuleById(String folderNodeId, String ruleSetId, String ruleId);
 }

@@ -901,10 +901,9 @@ public class RuleServiceImpl
     {
         checkForLinkedRules(nodeRef);
         
-        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+        if (permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
         {
-            if (this.nodeService.exists(nodeRef) == true &&
-                this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
+            if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES))
             {
                 disableRules(nodeRef);
                 try
@@ -912,7 +911,7 @@ public class RuleServiceImpl
                     NodeRef ruleNodeRef = rule.getNodeRef();
                     if (ruleNodeRef != null)
                     {
-                        this.nodeService.removeChild(getSavedRuleFolderRef(nodeRef), ruleNodeRef);
+                        nodeService.removeChild(getSavedRuleFolderRef(nodeRef), ruleNodeRef);
                     }
                 }
                 finally
@@ -935,7 +934,7 @@ public class RuleServiceImpl
                         }
                     }
                     
-                    this.nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
+                    nodeService.removeAspect(nodeRef, RuleModel.ASPECT_RULES);
                 }
             }
             // Drop the rules from the cache
@@ -945,8 +944,8 @@ public class RuleServiceImpl
         {
             throw new RuleServiceException("Insufficient permissions to remove a rule.");
         }
-    }    
-    
+    }
+
     /**
      * Checks if rules are linked and throws an exception if they are.
      * 

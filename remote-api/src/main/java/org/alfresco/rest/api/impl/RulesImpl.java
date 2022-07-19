@@ -82,6 +82,16 @@ public class RulesImpl implements Rules
         return Rule.from(ruleService.getRule(ruleNodeRef));
     }
 
+    @Override
+    public void deleteRuleById(String folderNodeId, String ruleSetId, String ruleId)
+    {
+        final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
+        final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
+        final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
+        final org.alfresco.service.cmr.rule.Rule rule = ruleService.getRule(ruleNodeRef);
+        ruleService.removeRule(folderNodeRef, rule);
+    }
+
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;

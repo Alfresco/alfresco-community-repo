@@ -29,6 +29,7 @@ package org.alfresco.rest.api.impl;
 import junit.framework.TestCase;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -278,6 +279,87 @@ public class RulesImplTest extends TestCase
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(eq(ruleSetNodeRef), eq(folderNodeRef));
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(eq(ruleNodeRef), eq(ruleSetNodeRef));
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testDeleteRuleById() {
+        given(nodesMock.validateNode(eq(RULE_SET_ID))).willReturn(ruleSetNodeRef);
+        given(nodesMock.validateNode(eq(RULE_ID))).willReturn(ruleNodeRef);
+        given(ruleServiceMock.isRuleAssociatedWithRuleSet(any(), any())).willReturn(true);
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
+        org.alfresco.service.cmr.rule.Rule rule = createRule(RULE_ID);
+        given(ruleServiceMock.getRule(any())).willReturn(rule);
+
+        //when
+        rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID);
+
+        then(nodesMock).should().validateOrLookupNode(eq(FOLDER_NODE_ID), isNull());
+        then(nodesMock).should().validateNode(eq(RULE_SET_ID));
+        then(nodesMock).should().validateNode(eq(RULE_ID));
+        then(nodesMock).should().nodeMatches(eq(folderNodeRef), any(), isNull());
+        then(nodesMock).should().nodeMatches(eq(ruleSetNodeRef), any(), isNull());
+        then(nodesMock).should().nodeMatches(eq(ruleNodeRef), any(), isNull());
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(permissionServiceMock).should().hasReadPermission(eq(folderNodeRef));
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(eq(ruleSetNodeRef), eq(folderNodeRef));
+        then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(eq(ruleNodeRef), eq(ruleSetNodeRef));
+        then(ruleServiceMock).should().getRule(ruleNodeRef);
+        then(ruleServiceMock).should().removeRule(folderNodeRef, rule);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testDeleteRuleById_NonExistingRuleId() {
+        given(nodesMock.validateNode(eq(RULE_SET_ID))).willReturn(ruleSetNodeRef);
+        given(nodesMock.validateNode(eq(RULE_ID))).willThrow(new EntityNotFoundException(RULE_ID));
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
+
+        //when
+        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
+                () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
+
+        then(nodesMock).should().validateOrLookupNode(eq(FOLDER_NODE_ID), isNull());
+        then(nodesMock).should().validateNode(eq(RULE_SET_ID));
+        then(nodesMock).should().validateNode(eq(RULE_ID));
+        then(nodesMock).should().nodeMatches(eq(folderNodeRef), any(), isNull());
+        then(nodesMock).should().nodeMatches(eq(ruleSetNodeRef), any(), isNull());
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(permissionServiceMock).should().hasReadPermission(eq(folderNodeRef));
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(eq(ruleSetNodeRef), eq(folderNodeRef));
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testDeleteRuleById_NonExistingRuleSetId() {
+        given(nodesMock.validateNode(eq(RULE_SET_ID))).willThrow(new EntityNotFoundException(RULE_SET_ID));
+
+        //when
+        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
+                () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
+
+        then(nodesMock).should().validateOrLookupNode(eq(FOLDER_NODE_ID), isNull());
+        then(nodesMock).should().validateNode(eq(RULE_SET_ID));
+        then(nodesMock).should().nodeMatches(eq(folderNodeRef), any(), isNull());
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(permissionServiceMock).should().hasReadPermission(eq(folderNodeRef));
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testDeleteRuleById_NonExistingFolderId() {
+        given(nodesMock.validateOrLookupNode(eq(FOLDER_NODE_ID), isNull())).willThrow(new EntityNotFoundException(RULE_ID));
+
+        //when
+        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
+                () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
+
+        then(nodesMock).should().validateOrLookupNode(eq(FOLDER_NODE_ID), isNull());
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
     }
 

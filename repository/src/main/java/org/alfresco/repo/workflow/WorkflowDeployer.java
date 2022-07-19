@@ -85,6 +85,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     public static final String REDEPLOY = "redeploy";
     
     public static final String CATEGORY_ALFRESCO_INTERNAL = "http://alfresco.org/workflows/internal";
+    public static final String CATEGORY_FULL_ACCESS = "http://alfresco.org/workflows/fullAccess";
     
     // Dependencies
     private TransactionService transactionService;
@@ -310,8 +311,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                         }
                         else
                         {
-                            WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), 
-                                        mimetype, workflowResource.getFilename());
+                            WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), mimetype, workflowResource.getFilename(), true);
                             logDeployment(location, deployment);
                         }
                     }

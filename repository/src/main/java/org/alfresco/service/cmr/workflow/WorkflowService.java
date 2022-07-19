@@ -77,7 +77,24 @@ public interface WorkflowService
             parameters = {"engineId", "workflowDefinition", "mimetype", "name"},
             recordable = {true,       false,                true,       true})
     public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype, String name);
-    
+
+    /**
+     * Deploy a Workflow Definition to the Alfresco Repository
+     *
+     * @param  engineId  the bpm engine id
+     * @param  workflowDefinition  the workflow definition
+     * @param  mimetype  the mimetype of the workflow definition
+     * @param  name  a name representing the deployment
+     * @parm   fullAccess true if workflow should be considered secure and have full access during its execution
+     *                    false if it should be executing in a sandbox context
+     * @return  workflow deployment descriptor
+     * @since 4.0
+     */
+    @Auditable(
+            parameters = {"engineId", "workflowDefinition", "mimetype", "name", "fullAccess"},
+            recordable = {true,       false,                true,       true,   true})
+    public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype, String name, boolean fullAccess);
+
     /**
      * Deploy a Workflow Definition to the Alfresco Repository
      * 

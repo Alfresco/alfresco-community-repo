@@ -35,11 +35,11 @@ import org.activiti.engine.impl.el.Expression;
 import org.activiti.engine.impl.persistence.entity.DeploymentEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -149,19 +149,19 @@ public class ActivitiScriptBase
     }
 
     /**
-     * Checks whether the workflow is deployed on a secure location or not, based on {@link DeploymentEntity} name
+     * Checks whether the workflow must be considered secure or not - based on {@link DeploymentEntity} category
      *
      * @return true if workflow is considered secure, false otherwise
      */
     private boolean isSecure()
     {
-        DeploymentEntity de = null;
+        String category = null;
 
         try
         {
             if (Context.isExecutionContextActive())
             {
-                de = Context.getExecutionContext().getDeployment();
+                category = Context.getExecutionContext().getDeployment().getCategory();
             }
         }
         catch (Exception e)
@@ -169,9 +169,8 @@ public class ActivitiScriptBase
             // No action required
         }
 
-        // If workflow is deployed at app server (classpath) the deployment entity name is filled in with filename
-        // If workflow is deployed in repo (e.g., data dictionary) the deployment entity name is null
-        return de != null && de.getName() != null;
+        // If the workflow is considered secure, the deployment entity category matches the condition (either internal or full access)
+        return category != null && (WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL.equals(category) || WorkflowDeployer.CATEGORY_FULL_ACCESS.equals(category));
     }
 
     /**

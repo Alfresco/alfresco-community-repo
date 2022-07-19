@@ -337,6 +337,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
      */
      public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name)
      {
+         return deployDefinition(workflowDefinition, mimetype, name, false);
+     }
+
+    /**
+     * {@inheritDoc}
+     */
+     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name, boolean fullAccess)
+     {
          try 
          {
              String resourceName = GUID.generate() + BpmnDeployer.BPMN_RESOURCE_SUFFIXES[0];
@@ -362,6 +370,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                  if (internalCategory)
                  {
                      repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL);
+                 }
+                 else if (fullAccess)
+                 {
+                     repoService.setDeploymentCategory(deployment.getId(), WorkflowDeployer.CATEGORY_FULL_ACCESS);
                  }
              }
              

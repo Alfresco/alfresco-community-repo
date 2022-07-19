@@ -76,6 +76,17 @@ public interface WorkflowComponent
     public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name);
 
     /**
+     * Deploy a Workflow Definition
+     *
+     * @param workflowDefinition  the content object containing the definition
+     * @param mimetype (optional)  the mime type of the workflow definition
+     * @param name (optional)  a name to represent the deployment
+     * @return workflow deployment descriptor
+     * @since 4.0
+     */
+    public WorkflowDeployment deployDefinition(InputStream workflowDefinition, String mimetype, String name, boolean fullAccess);
+
+    /**
      * Is the specified Workflow Definition already deployed?
      * 
      * Note: the notion of "already deployed" may differ between bpm engines. For example,

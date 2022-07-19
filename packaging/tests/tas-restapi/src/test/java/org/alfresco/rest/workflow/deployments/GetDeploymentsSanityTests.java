@@ -35,7 +35,7 @@ public class GetDeploymentsSanityTests extends RestTest
         restClient.assertStatusCodeIs(HttpStatus.OK);
         deployments.assertThat().entriesListIsNotEmpty();
         deployments.getOneRandomEntry().onModel().assertThat()
-                .fieldsCount().is(3).and()
+                .fieldsCount().is(4).and()
                 .field("id").isNotEmpty().and()
                 .field("deployedAt").isNotEmpty().and()
                 .field("name").isNotEmpty();

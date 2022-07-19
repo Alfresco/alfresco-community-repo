@@ -951,11 +951,15 @@ public class Node extends ModelRequest<Node>
                 .withVersionId(versionId);
     }
 
-    public FolderRules requestRules(String ruleId, String ruleSetId)
+    public FolderRules usingDefaultRuleSet()
+    {
+        return usingRuleSet("-default-");
+    }
+
+    public FolderRules usingRuleSet(String ruleSetId)
     {
         return new FolderRules(restWrapper)
                 .withNodeId(repoModel.getNodeRef())
-                .withRuleId(ruleId)
                 .withRuleSetId(ruleSetId);
     }
 }

@@ -17,7 +17,6 @@ public class FolderRules extends ModelRequest<FolderRules>
 
     private String nodeId;
     private String ruleSetId;
-    private String ruleId;
 
     public FolderRules withNodeId(String nodeId)
     {
@@ -28,12 +27,6 @@ public class FolderRules extends ModelRequest<FolderRules>
     public FolderRules withRuleSetId(String ruleSetId)
     {
         this.ruleSetId = ruleSetId;
-        return this;
-    }
-
-    public FolderRules withRuleId(String ruleId)
-    {
-        this.ruleId = ruleId;
         return this;
     }
 
@@ -56,7 +49,7 @@ public class FolderRules extends ModelRequest<FolderRules>
      * Gets a single rule definition for the folder node using GET call on "nodes/{nodeId}/rule-sets/{ruleSetId}/rules/{ruleId}"
      * @return
      */
-    public RestRuleModel getSingleRule()
+    public RestRuleModel getSingleRule(String ruleId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, BASE_PATH + "/{ruleId}", nodeId, ruleSetId, ruleId);
         return restWrapper.processModel(RestRuleModel.class, request);

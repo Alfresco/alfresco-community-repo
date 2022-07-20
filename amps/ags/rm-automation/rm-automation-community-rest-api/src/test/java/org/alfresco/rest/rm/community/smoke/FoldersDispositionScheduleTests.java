@@ -32,15 +32,22 @@ import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
+import org.alfresco.rest.v0.RMAuditAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
+import org.alfresco.rest.v0.RecordFoldersAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
+import org.apache.chemistry.opencmis.client.api.CmisObject;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
@@ -61,9 +68,12 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
     private RecordsAPI recordsAPI;
-
+    @Autowired
+    private RecordFoldersAPI recordFoldersAPI;
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
+    @Autowired
+    private RMAuditAPI rmAuditAPI;
 
     private RecordCategory Category1;
 
@@ -101,7 +111,7 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         createRMUser();
 
         // create disposition schedule
-        dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), true);
+        dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
 
         // add cut off step
         dispositionScheduleService.addCutOffAfterPeriodStep(Category1.getName(), "day|1", CREATED_DATE);
@@ -119,7 +129,7 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
 
         recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
             getAdminUser().getPassword(),getDefaultNonElectronicRecordProperties(nonElectronicRecord),
-            recordsCategory, folderDisposition);
+            Category1.getName(), folderDisposition);
 
         // complete records
         String nonElRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
@@ -130,18 +140,32 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         recordsAPI.completeRecord(RM_ADMIN, DEFAULT_PASSWORD, elRecordName);
 
         // edit disposition date and cut off the folder
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
 
         // edit disposition date and destroy the folder
-
-        // check the folder has been successfully destroyed
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
 
         // check the electronic record content is not available
+        CmisObject elRecordContent = recordsAPI.getRecord(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),folderDisposition,elRecordName);
+
+        CmisObject nonElRecordContent = recordsAPI.getRecord(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),folderDisposition,nonElRecordName);
 
         // delete electronic record
-
-        // check the record have been deleted
+        recordsAPI.deleteRecord(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),elRecordName,Category1.getName(),folderDisposition);
+        recordsAPI.deleteRecord(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),nonElRecordName,Category1.getName(),folderDisposition);
 
         // delete category
+        deleteRecordCategory(Category1.getId());
     }
 
     @Test
@@ -202,6 +226,34 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         defaultProperties.put(BaseAPI.RMProperty.TITLE, TITLE);
         defaultProperties.put(BaseAPI.RMProperty.DESCRIPTION, DESCRIPTION);
         return defaultProperties;
+    }
+
+    private JSONObject editDispositionDateJson() {
+        JSONObject requestParams = new JSONObject();
+
+        requestParams.put("name","editDispositionActionAsOfDate");
+        JSONObject params = new JSONObject();
+        requestParams.put("params",params);
+
+        JSONObject asOfDate = new JSONObject();
+        params.put("asOfDate",asOfDate);
+        asOfDate.put("iso8601",getCurrentDate());
+        return requestParams;
+    }
+
+    private JSONObject cutOffJson() {
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name","cutoff");
+        return requestParams;
+    }
+
+    private String getCurrentDate() {
+        Date date = new Date(System.currentTimeMillis());
+        // Conversion
+        SimpleDateFormat sdf;
+        sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        sdf.setTimeZone(TimeZone.getTimeZone("CET"));
+        return sdf.format(date);
     }
 
 }

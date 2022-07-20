@@ -74,4 +74,16 @@ public class RecordFoldersAPI extends BaseAPI
         return null;
     }
 
+    public HttpResponse postFolderAction(String user, String password, JSONObject requestParams, String recordFolder) {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
+        try {
+            requestParams.put("nodeRef", recNodeRef);
+            return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        }
+        catch (JSONException error) {
+            LOGGER.error("Unable to extract response parameter", error);
+        }
+        return null;
+    }
+
 }

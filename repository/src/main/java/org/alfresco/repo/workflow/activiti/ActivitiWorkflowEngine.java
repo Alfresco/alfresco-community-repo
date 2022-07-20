@@ -1031,12 +1031,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
             List<ProcessDefinition> definitionList = repoService.createProcessDefinitionQuery().deploymentId(deploymentId).list();
             if (definitionList != null && definitionList.size() > 0)
             {
-                boolean internalCategory = false;
+                boolean internalCategory = true;
                 for (ProcessDefinition processDefinition : definitionList)
                 {
-                    if (WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL.equals(processDefinition.getCategory()) == true)
+                    if (WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL.equals(processDefinition.getCategory()) == false)
                     {
-                        internalCategory = true;
+                        internalCategory = false;
                         break;
                     }
                 }

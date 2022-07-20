@@ -246,28 +246,7 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     public <T> T processModels(Class<T> classz, RestRequest restRequest)
             throws EmptyJsonResponseException, JsonToModelConversionException
     {
-        Response returnedResponse = sendRequest(restRequest);
-
-        setStatusCode(String.valueOf(returnedResponse.getStatusCode()));
-
-        boolean responseHasErrors = checkForJsonError(returnedResponse);
-        boolean responseHasExceptions = checkForJsonStatusException(returnedResponse);
-
-        T models = null;
-
-        if (!responseHasExceptions && !responseHasErrors)
-        {
-            try
-            {
-                models = returnedResponse.jsonPath().getObject("list", classz);
-                validateJsonModelSchema(classz, models);
-            }
-            catch (Exception processError)
-            {
-            	processError.printStackTrace();
-            	throw new JsonToModelConversionException(classz, processError);
-            }
-        }
+        T models = callAPIAndCreateModel(classz, restRequest, "list");
 
         if (models == null)
         {
@@ -293,27 +272,8 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     public <T> T processModel(Class<T> classz, RestRequest restRequest)
             throws EmptyJsonResponseException, JsonToModelConversionException
     {
-        Response returnedResponse = sendRequest(restRequest);
+        T model = callAPIAndCreateModel(classz, restRequest, "entry");
 
-        setStatusCode(String.valueOf(returnedResponse.getStatusCode()));
-
-        boolean responseHasErrors = checkForJsonError(returnedResponse);
-        boolean responseHasExceptions = checkForJsonStatusException(returnedResponse);
-
-        T model = null;
-
-        try
-        {
-            if (!responseHasExceptions && !responseHasErrors)
-            {
-                model = returnedResponse.jsonPath().getObject("entry", classz);
-                validateJsonModelSchema(classz, model);
-            }
-        }
-        catch (Exception processError)
-        {
-            throw new JsonToModelConversionException(classz, processError);
-        }
         if (model == null)
         {
             try
@@ -327,6 +287,41 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
         }
 
         return model;
+    }
+
+    /**
+     * Send the request and convert the response to the appropriate model.
+     *
+     * @param classz The class of the model to create.
+     * @param restRequest The request to send.
+     * @param path The path to the part of the response from which the model should be populated.
+     * @return The populated model object.
+     */
+    private <T> T callAPIAndCreateModel(Class<T> classz, RestRequest restRequest, String path)
+    {
+        Response returnedResponse = sendRequest(restRequest);
+
+        setStatusCode(String.valueOf(returnedResponse.getStatusCode()));
+
+        boolean responseHasErrors = checkForJsonError(returnedResponse);
+        boolean responseHasExceptions = checkForJsonStatusException(returnedResponse);
+
+        T models = null;
+
+        if (!responseHasExceptions && !responseHasErrors)
+        {
+            try
+            {
+                models = returnedResponse.jsonPath().getObject(path, classz);
+                validateJsonModelSchema(classz, models);
+            }
+            catch (Exception processError)
+            {
+                processError.printStackTrace();
+                throw new JsonToModelConversionException(classz, processError);
+            }
+        }
+        return models;
     }
 
     /**

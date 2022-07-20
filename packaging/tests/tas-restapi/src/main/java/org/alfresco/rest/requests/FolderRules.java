@@ -43,7 +43,7 @@ public class FolderRules extends ModelRequest<FolderRules>
     public RestRuleModelsCollection getListOfRules()
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, BASE_PATH, nodeId, ruleSetId);
-        return restWrapper.processModel(RestRuleModelsCollection.class, request);
+        return restWrapper.processModels(RestRuleModelsCollection.class, request);
     }
 
     /**

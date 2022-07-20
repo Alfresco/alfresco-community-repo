@@ -745,62 +745,61 @@ public class RuleServiceImpl
     }
 
     @Override
-    public void saveRule(NodeRef nodeRef, Rule rule)
+    public Rule saveRule(NodeRef nodeRef, Rule rule)
     {
         checkForLinkedRules(nodeRef);
         
-        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
-        {        
-            disableRules();
-            try
-            {
-                if (this.nodeService.exists(nodeRef) == false)
-                {
-                    throw new RuleServiceException("The node does not exist.");
-                }
-        
-                NodeRef ruleNodeRef = rule.getNodeRef();
-                if (ruleNodeRef == null)
-                {
-                    if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == false)
-                    {
-                        // Add the actionable aspect
-                        this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_RULES, null);
-                    }
-        
-                    // Create the action node
-                    ruleNodeRef = this.nodeService.createNode(
-                            getSavedRuleFolderRef(nodeRef),
-                            ContentModel.ASSOC_CONTAINS,
-                            QName.createQName(RuleModel.RULE_MODEL_URI, ASSOC_NAME_RULES_PREFIX + GUID.generate()),
-                            RuleModel.TYPE_RULE).getChildRef();
-                    
-                    // Set the rule node reference and the owning node reference
-                    rule.setNodeRef(ruleNodeRef);
-                }
-                
-                // Update the properties of the rule
-                this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_TITLE, rule.getTitle());
-                this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_DESCRIPTION, rule.getDescription());
-                this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_RULE_TYPE, (Serializable)rule.getRuleTypes());
-                this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_APPLY_TO_CHILDREN, rule.isAppliedToChildren());
-                this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_EXECUTE_ASYNC, rule.getExecuteAsynchronously());
-                this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_DISABLED, rule.getRuleDisabled());  
-                
-                // Save the rule's action
-                saveAction(ruleNodeRef, rule);
-            }
-            finally
-            {
-                enableRules();
-                // Drop the rules from the cache
-                nodeRulesCache.remove(nodeRef);
-            }
-        }
-        else
+        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) != AccessStatus.ALLOWED)
         {
             throw new RuleServiceException("Insufficient permissions to save a rule.");
         }
+
+        disableRules();
+        try
+        {
+            if (this.nodeService.exists(nodeRef) == false)
+            {
+                throw new RuleServiceException("The node does not exist.");
+            }
+
+            NodeRef ruleNodeRef = rule.getNodeRef();
+            if (ruleNodeRef == null)
+            {
+                if (this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == false)
+                {
+                    // Add the actionable aspect
+                    this.nodeService.addAspect(nodeRef, RuleModel.ASPECT_RULES, null);
+                }
+
+                // Create the action node
+                ruleNodeRef = this.nodeService.createNode(
+                        getSavedRuleFolderRef(nodeRef),
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(RuleModel.RULE_MODEL_URI, ASSOC_NAME_RULES_PREFIX + GUID.generate()),
+                        RuleModel.TYPE_RULE).getChildRef();
+
+                // Set the rule node reference and the owning node reference
+                rule.setNodeRef(ruleNodeRef);
+            }
+
+            // Update the properties of the rule
+            this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_TITLE, rule.getTitle());
+            this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_DESCRIPTION, rule.getDescription());
+            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_RULE_TYPE, (Serializable)rule.getRuleTypes());
+            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_APPLY_TO_CHILDREN, rule.isAppliedToChildren());
+            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_EXECUTE_ASYNC, rule.getExecuteAsynchronously());
+            this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_DISABLED, rule.getRuleDisabled());
+
+            // Save the rule's action
+            saveAction(ruleNodeRef, rule);
+        }
+        finally
+        {
+            enableRules();
+            // Drop the rules from the cache
+            nodeRulesCache.remove(nodeRef);
+        }
+        return rule;
     }
     
     @Override

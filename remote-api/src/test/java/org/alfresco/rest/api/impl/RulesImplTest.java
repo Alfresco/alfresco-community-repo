@@ -312,8 +312,6 @@ public class RulesImplTest extends TestCase
     @Test
     public void testSaveRules_defaultRuleSet()
     {
-        NodeRef defaultRuleSetNodeRef = new NodeRef("default://rule/set");
-        given(ruleServiceMock.getRuleSetNode(folderNodeRef)).willReturn(defaultRuleSetNodeRef);
         Rule ruleBody = mock(Rule.class);
         List<Rule> ruleList = List.of(ruleBody);
         org.alfresco.service.cmr.rule.Rule serviceRuleBody = mock(org.alfresco.service.cmr.rule.Rule.class);
@@ -325,7 +323,6 @@ public class RulesImplTest extends TestCase
         // when
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), DEFAULT_ID, ruleList);
 
-        then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         List<Rule> expected = List.of(Rule.from(serviceRule));

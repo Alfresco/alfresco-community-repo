@@ -59,8 +59,11 @@ public class Rule
     public org.alfresco.service.cmr.rule.Rule toServiceModel(Nodes nodes)
     {
         org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
-        NodeRef nodeRef = nodes.validateOrLookupNode(id, null);
-        ruleModel.setNodeRef(nodeRef);
+        if (id != null)
+        {
+            NodeRef nodeRef = nodes.validateOrLookupNode(id, null);
+            ruleModel.setNodeRef(nodeRef);
+        }
         ruleModel.setTitle(name);
         return ruleModel;
     }

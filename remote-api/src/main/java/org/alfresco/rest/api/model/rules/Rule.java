@@ -26,12 +26,19 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
 
 @Experimental
 public class Rule
@@ -65,6 +72,14 @@ public class Rule
             ruleModel.setNodeRef(nodeRef);
         }
         ruleModel.setTitle(name);
+
+        // TODO: Once we have actions working properly then this needs to be replaced.
+        Map<String, Serializable> parameters = Map.of(
+                SetPropertyValueActionExecuter.PARAM_PROPERTY, ContentModel.PROP_TITLE,
+                SetPropertyValueActionExecuter.PARAM_VALUE, "UPDATED:" + GUID.generate());
+        Action action = new ActionImpl(null, GUID.generate(), SetPropertyValueActionExecuter.NAME, parameters);
+        ruleModel.setAction(action);
+
         return ruleModel;
     }
 

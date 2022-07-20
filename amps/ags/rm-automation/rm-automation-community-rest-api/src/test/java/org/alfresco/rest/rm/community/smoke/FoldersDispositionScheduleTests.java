@@ -72,31 +72,15 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
     private RecordFoldersAPI recordFoldersAPI;
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
-    @Autowired
-    private RMAuditAPI rmAuditAPI;
-
     private RecordCategory Category1;
-
-    private final String DISPOSITION_AUTHORITY_WITH_GHOSTING = "disposition authority with ghosting";
-    private final String DISPOSITION_INSTRUCTIONS = "first cut off, then destroy folder with ghosting";
-    private final String STEP_DESCRIPTION = "standard step description";
-
     private final String TEST_PREFIX = generateTestPrefix(FoldersDispositionScheduleTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
     private final String RM_USER = TEST_PREFIX + "rm_user_no_clearance";
-
-    private final String recordsCategory = TEST_PREFIX + "category with ghosting";
     private final String folderDisposition = TEST_PREFIX + "RM-2937 folder ghosting";
     private final String electronicRecord = "RM-2937 electronic 2 record";
     private final String nonElectronicRecord = "RM-2937 non-electronic record";
-
-    private final String DISPOSITION_AUTHORITY_WITHOUT_GHOSTING = "disposition authority without ghosting";
-    private final String DISPOSITION_INSTRUCTIONS_WITHOUT = "first cut off, then destroy folder without ghosting";
-
     private final String recordsCategoryWithout = TEST_PREFIX + "category without ghosting";
-    private final String folderDispositionWithout = TEST_PREFIX + "RM-2937 folder without ghosting";
     public static final String TITLE = "Title";
-
     /**
      * Test covering RM-2937 for disposition schedule applied to folders
      */
@@ -172,18 +156,51 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
     @AlfrescoTest(jira="RM-2937")
     public void foldersDispositionScheduleWithoutGhosting() {
         // create test precondition
+        createTestPrecondition(recordsCategoryWithout);
 
         // create disposition schedule
+        dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
 
         // add cut off step
+        dispositionScheduleService.addCutOffAfterPeriodStep(Category1.getName(), "day|1", CREATED_DATE);
 
-        // add destroy step with ghosting
+        // add destroy step without ghosting
+        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(Category1.getName(), "day|1", CUT_OFF_DATE);
 
-        // complete record
+        RecordCategoryChild folder1 = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
+
+        recordsAPI.uploadElectronicRecord(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),
+            getDefaultElectronicRecordProperties(electronicRecord),
+            folderDisposition,
+            CMISUtil.DocumentType.TEXT_PLAIN);
+
+        recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),getDefaultNonElectronicRecordProperties(nonElectronicRecord),
+            Category1.getName(), folderDisposition);
+
+        // complete records
+        String nonElRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
+            getAdminUser().getPassword(), folderDisposition, nonElectronicRecord);
+        String elRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
+            getAdminUser().getPassword(), folderDisposition, electronicRecord);
+        recordsAPI.completeRecord(RM_ADMIN, DEFAULT_PASSWORD, nonElRecordName);
+        recordsAPI.completeRecord(RM_ADMIN, DEFAULT_PASSWORD, elRecordName);
 
         // edit disposition date and cut off the folder
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
+
+        // edit disposition date and destroy the folder
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
 
         // delete category
+        deleteRecordCategory(Category1.getId());
     }
 
     private void createTestPrecondition(String categoryName) {
@@ -241,18 +258,12 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         return requestParams;
     }
 
-    private JSONObject cutOffJson() {
-        JSONObject requestParams = new JSONObject();
-        requestParams.put("name","cutoff");
-        return requestParams;
-    }
-
     private String getCurrentDate() {
         Date date = new Date(System.currentTimeMillis());
         // Conversion
         SimpleDateFormat sdf;
         sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        sdf.setTimeZone(TimeZone.getTimeZone("CET"));
+        sdf.setTimeZone(TimeZone.getDefault());
         return sdf.format(date);
     }
 

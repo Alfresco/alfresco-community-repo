@@ -86,7 +86,11 @@ public class RulesImpl implements Rules
     public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
-        validateRuleSetNode(ruleSetId, folderNodeRef);
+        // Don't validate the ruleset node if -default- is passed since we may need to create it.
+        if (RuleSet.isNotDefaultId(ruleSetId))
+        {
+            validateRuleSetNode(ruleSetId, folderNodeRef);
+        }
 
         return rules.stream()
                     .map(rule -> rule.toServiceModel(nodes))

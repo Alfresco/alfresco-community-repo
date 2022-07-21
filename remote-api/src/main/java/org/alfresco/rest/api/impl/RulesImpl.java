@@ -102,19 +102,6 @@ public class RulesImpl implements Rules
                     .collect(Collectors.toList());
     }
 
-    @Override
-    public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
-    {
-        final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
-        validateRuleSetNode(ruleSetId, folderNodeRef);
-
-        return rules.stream()
-                    .map(rule -> rule.toServiceModel(nodes))
-                    .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(Rule::from)
-                    .collect(Collectors.toList());
-    }
-
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;

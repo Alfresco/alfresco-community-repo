@@ -144,7 +144,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     @WebApiDescription(
             title="Delete folder node rule",
             description = "Deletes a single rule definition for given node's, rule set's and rule's IDs",
-            successStatus = HttpServletResponse.SC_OK
+            successStatus = HttpServletResponse.SC_NO_CONTENT
     )
     @Override
     public void delete(String folderNodeId, String ruleSetId, Parameters parameters)

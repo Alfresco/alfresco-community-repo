@@ -1,13 +1,14 @@
 package org.alfresco.rest.core;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
 
 import org.alfresco.dataprep.CMISUtil.Priority;
 import org.alfresco.rest.model.RestProcessVariableModel;
@@ -18,6 +19,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
 
 /**
@@ -287,5 +289,22 @@ public class JsonBodyGenerator
             builder.add(entry.getKey().toString(), entry.getValue().toString());
         }
         return builder.build().toString();
+    }
+
+    /**
+     * Convert a collection of {@link TestModel} objects to JSON for a multi-entity POST request.
+     *
+     * @param models The entities to convert.
+     * @return The JSON string.
+     */
+    public static String arrayToJson(List<? extends TestModel> models)
+    {
+        // Rather than convert backwards and forwards between Jackson and javax objects then we handle array creation ourselves.
+        StringJoiner stringJoiner = new StringJoiner(",\n");
+        for (TestModel model : models)
+        {
+            stringJoiner.add(model.toJson());
+        }
+        return "[\n" + stringJoiner.toString() + "\n]";
     }
 }

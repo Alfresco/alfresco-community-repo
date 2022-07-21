@@ -43,6 +43,7 @@ import java.util.Collection;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -50,6 +51,7 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -74,6 +76,7 @@ public class RulesImplTest extends TestCase
     private static final NodeRef ruleSetNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_SET_ID);
     private static final NodeRef ruleNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_ID);
     private static final Paging paging = Paging.DEFAULT;
+    private static final Action action = new ActionImpl(folderNodeRef, "actionId", "actionDefinitionName");
     private static final String RULE_NAME = "Rule name";
 
     @Mock
@@ -117,6 +120,7 @@ public class RulesImplTest extends TestCase
         then(permissionServiceMock).should().hasReadPermission(eq(folderNodeRef));
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(eq(ruleSetNodeRef), eq(folderNodeRef));
+        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         then(ruleServiceMock).should().getRules(eq(folderNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
@@ -134,6 +138,7 @@ public class RulesImplTest extends TestCase
     @Test
     public void testGetRulesForDefaultRuleSet()
     {
+        given(ruleServiceMock.getRuleSetNode(any())).willReturn(ruleSetNodeRef);
         given(ruleServiceMock.getRules(any())).willReturn(List.of(createRule(RULE_ID)));
 
         // when
@@ -145,6 +150,7 @@ public class RulesImplTest extends TestCase
         then(permissionServiceMock).should().hasReadPermission(eq(folderNodeRef));
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().getRuleSetNode(eq(folderNodeRef));
+        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         then(ruleServiceMock).should().getRules(eq(folderNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
@@ -231,6 +237,7 @@ public class RulesImplTest extends TestCase
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(eq(ruleSetNodeRef), eq(folderNodeRef));
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(eq(ruleNodeRef), eq(ruleSetNodeRef));
+        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         then(ruleServiceMock).should().getRule(eq(ruleNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rule)
@@ -260,6 +267,7 @@ public class RulesImplTest extends TestCase
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().getRuleSetNode(eq(folderNodeRef));
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(eq(ruleNodeRef), eq(ruleSetNodeRef));
+        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         then(ruleServiceMock).should().getRule(eq(ruleNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rule)
@@ -297,11 +305,13 @@ public class RulesImplTest extends TestCase
         org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
         given(ruleServiceMock.saveRule(folderNodeRef, serviceRuleBody)).willReturn(serviceRule);
         given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
+        given(serviceRule.getAction()).willReturn(action);
 
         // when
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         List<Rule> expected = List.of(Rule.from(serviceRule));
@@ -321,11 +331,13 @@ public class RulesImplTest extends TestCase
         org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
         given(ruleServiceMock.saveRule(folderNodeRef, serviceRuleBody)).willReturn(serviceRule);
         given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
+        given(serviceRule.getAction()).willReturn(action);
 
         // when
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), DEFAULT_ID, ruleList);
 
         then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
+        then(ruleServiceMock).should().isRuleSetShared(eq(defaultRuleSetNodeRef));
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         List<Rule> expected = List.of(Rule.from(serviceRule));
@@ -357,6 +369,7 @@ public class RulesImplTest extends TestCase
         List<Rule> actual = this.rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actual).isEqualTo(emptyList());
     }
@@ -378,6 +391,7 @@ public class RulesImplTest extends TestCase
             given(ruleServiceMock.saveRule(folderNodeRef, serviceRuleBody)).willReturn(serviceRule);
             NodeRef ruleNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, ruleId);
             given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
+            given(serviceRule.getAction()).willReturn(action);
             expected.add(Rule.from(serviceRule));
         }
 
@@ -385,6 +399,7 @@ public class RulesImplTest extends TestCase
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleBodyList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         for (Rule ruleBody : ruleBodyList)
         {
             then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
@@ -394,8 +409,11 @@ public class RulesImplTest extends TestCase
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRule(final String id) {
+        final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
         final org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
-        rule.setNodeRef(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id));
+        rule.setNodeRef(nodeRef);
+        rule.setRuleType("ruleType");
+        rule.setAction(action);
 
         return rule;
     }

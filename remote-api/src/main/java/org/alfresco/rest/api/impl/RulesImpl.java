@@ -26,10 +26,6 @@
 
 package org.alfresco.rest.api.impl;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
@@ -48,6 +44,10 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Experimental
 public class RulesImpl implements Rules
 {
@@ -63,10 +63,12 @@ public class RulesImpl implements Rules
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
-        validateRuleSetNode(ruleSetId, folderNodeRef);
+        final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
 
+        final boolean isShared = ruleService.isRuleSetShared(ruleSetNodeRef);
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
             .map(Rule::from)
+            .peek(r -> r.setShared(isShared))
             .collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
@@ -79,19 +81,24 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return Rule.from(ruleService.getRule(ruleNodeRef));
+        final Rule rule = Rule.from(ruleService.getRule(ruleNodeRef));
+        rule.setShared(ruleService.isRuleSetShared(ruleSetNodeRef));
+
+        return rule;
     }
 
     @Override
     public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
-        validateRuleSetNode(ruleSetId, folderNodeRef);
+        final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
 
+        final boolean isShared = ruleService.isRuleSetShared(ruleSetNodeRef);
         return rules.stream()
                     .map(rule -> rule.toServiceModel(nodes))
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
                     .map(Rule::from)
+                    .peek(r -> r.setShared(isShared))
                     .collect(Collectors.toList());
     }
 

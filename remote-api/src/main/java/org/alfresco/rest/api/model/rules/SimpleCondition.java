@@ -77,7 +77,7 @@ public class SimpleCondition
      */
     public static SimpleCondition from(final ActionCondition actionCondition)
     {
-        if (actionCondition == null || actionCondition.getParameterValues() == null) {
+        if (actionCondition == null || actionCondition.getActionConditionDefinitionName() == null || actionCondition.getParameterValues() == null) {
             return null;
         }
 

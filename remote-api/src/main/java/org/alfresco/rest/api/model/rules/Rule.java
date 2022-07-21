@@ -84,6 +84,7 @@ public class Rule
 
         return builder.create();
     }
+
     /**
      * Convert the REST model object to the equivalent service POJO.
      *

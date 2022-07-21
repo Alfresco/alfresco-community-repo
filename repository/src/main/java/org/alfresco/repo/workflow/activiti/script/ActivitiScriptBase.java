@@ -149,7 +149,8 @@ public class ActivitiScriptBase
     }
 
     /**
-     * Checks whether the workflow must be considered secure or not - based on {@link DeploymentEntity} category
+     * Checks whether the workflow must be considered secure or not - based on {@link DeploymentEntity} category.
+     * If it is not considered secure, the workflow will be executed in sandbox context with more restrictions
      *
      * @return true if workflow is considered secure, false otherwise
      */

@@ -297,7 +297,8 @@ public class ScriptServiceImpl implements ScriptService
      * 
      * @param script    the script string
      * @param model     the context model
-     * @param secure    the flag indicating if string script is considered secure
+     * @param secure    the flag indicating if string script is considered secure (e.g., if it comes from classpath)
+     *                  if true it will have access to the full execution context, if false the script will be executed in a sandbox context
      * @return Object   the result of the script 
      */
     protected Object executeString(ScriptProcessor processor, String script, Map<String, Object> model, boolean secure)

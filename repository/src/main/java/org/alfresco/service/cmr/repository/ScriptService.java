@@ -166,8 +166,8 @@ public interface ScriptService
      *
      * @param script       Script content as a String.
      * @param model        Object model to process script against
-     * @param secure       A flag indicating if string script is considered secure
-     *
+     * @param secure       A flag indicating if string script is considered secure (e.g., if it comes from the classpath)
+     *                     If true it will have access to the full execution context, if false the script will be executed in a sandbox context (more restricted)
      * @return output of the script (may be null or any valid wrapped JavaScript object)
      *
      * @throws ScriptException

@@ -73,4 +73,13 @@ public interface Rules
      * @throws RuleServiceException If the folder is already linked to another rule set.
      */
     List<Rule> createRules(String folderNodeId, String ruleSetId, List<Rule> rule);
+
+    /**
+     * Delete rule for rule's ID and check associations with folder node and rule set node
+     *
+     * @param folderNodeId - folder node ID
+     * @param ruleSetId - rule set ID
+     * @param ruleId - rule ID     *
+     */
+    void deleteRuleById(String folderNodeId, String ruleSetId, String ruleId);
 }

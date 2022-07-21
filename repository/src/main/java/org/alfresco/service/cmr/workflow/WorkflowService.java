@@ -85,8 +85,8 @@ public interface WorkflowService
      * @param  workflowDefinition  the workflow definition
      * @param  mimetype  the mimetype of the workflow definition
      * @param  name  a name representing the deployment
-     * @parm   fullAccess true if workflow should be considered secure and have full access during its execution
-     *                    false if it should be executing in a sandbox context
+     * @parm   fullAccess true if workflow should be considered secure (e.g., if it is deployed in classpath) and have full access to the execution context,
+     *                    false if it should be executed in a sandbox context
      * @return  workflow deployment descriptor
      * @since 4.0
      */

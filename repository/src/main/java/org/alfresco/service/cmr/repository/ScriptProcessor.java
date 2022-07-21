@@ -70,7 +70,7 @@ public interface ScriptProcessor extends Processor
      * 
      * @param script    the script string
      * @param model     the context model
-     * @return Obejct   the result of the script 
+     * @return Object   the result of the script 
      */
     public Object executeString(String script, Map<String, Object> model);
 
@@ -79,8 +79,9 @@ public interface ScriptProcessor extends Processor
      *
      * @param script    the script string
      * @param model     the context model
-     * @param secure    the flag that indicates if string is considered secure to be executed
-     * @return Obejct   the result of the script
+     * @param secure    the flag that indicates if string is considered secure to be executed, i.e., it will have 
+     *                  access to the full execution context instead of being executed in a sandbox context
+     * @return Object   the result of the script
      */
     public Object executeString(String script, Map<String, Object> model, boolean secure);
 

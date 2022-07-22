@@ -27,9 +27,14 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.utility.model.FileModel.getRandomFileModel;
+import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertEquals;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -37,6 +42,7 @@ import java.util.stream.IntStream;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
+import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -52,25 +58,24 @@ public class CreateRulesTests extends RestTest
 {
     private UserModel user;
     private SiteModel site;
+    private FolderModel ruleFolder;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
         user = dataUser.createRandomTestUser();
         site = dataSite.usingUser(user).createPublicRandomSite();
+        ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
     }
 
     /** Check we can create a rule. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
-        STEP("Create a folder in existing site");
-        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
-
         RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName("ruleName");
 
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -79,13 +84,91 @@ public class CreateRulesTests extends RestTest
             .assertThat().field("name").is("ruleName");
     }
 
+    /** Check creating a rule in a non-existent folder returns an error. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleInNonExistentFolder()
+    {
+        STEP("Try to create a rule in non-existent folder.");
+        FolderModel nonExistentFolder = FolderModel.getRandomFolderModel();
+        nonExistentFolder.setNodeRef("fake-id");
+
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("ruleName");
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistentFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertLastError().containsSummary("fake-id was not found");
+    }
+
+    /** Check creating a rule in a non-existent rule set returns an error. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleInNonExistentRuleSet()
+    {
+        STEP("Try to create a rule in non-existent rule set.");
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("ruleName");
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingRuleSet("fake-id").createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertLastError().containsSummary("fake-id was not found");
+    }
+
+    /** Check we can create two rules with the same name. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void duplicateRuleNameIsAcceptable()
+    {
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("duplicateRuleName");
+
+        STEP("Create two identical rules");
+        RestRuleModel ruleA = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        RestRuleModel ruleB = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        // Check that the names are the same but the ids are different.
+        ruleA.assertThat().field("name").is(ruleB.getName());
+        ruleA.assertThat().field("id").isNot(ruleB.getId());
+    }
+
+    /** Check that a user without permission to view the folder cannot create a rule in it. */
+    public void requirePermissionToCreateRule()
+    {
+        STEP("Create a user and use them to create a private site containing a folder");
+        UserModel privateUser = dataUser.createRandomTestUser();
+        SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
+
+        STEP("Try to use a different user to create a rule in the private folder");
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("ruleName");
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("Cannot read from this node");
+    }
+
+    /** Check we can't create a rule under a document node. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void tryToCreateRuleUnderDocument()
+    {
+        STEP("Create a document.");
+        FileModel fileModel = dataContent.usingUser(user).usingSite(site).createContent(getRandomFileModel(TEXT_PLAIN));
+
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("");
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(fileModel).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("folder is expected");
+    }
+
     /** Check we can create several rules. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRules()
     {
-        STEP("Create a folder in existing site");
-        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
-
         STEP("Create a list of rules in one POST request");
         List<String> ruleNames = List.of("ruleA", "ruleB", "ruleC");
         List<RestRuleModel> ruleModels = ruleNames.stream().map(ruleName ->
@@ -95,7 +178,7 @@ public class CreateRulesTests extends RestTest
             return ruleModel;
         }).collect(toList());
 
-        RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+        RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                                    .createListOfRules(ruleModels);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -107,4 +190,3 @@ public class CreateRulesTests extends RestTest
                     .assertThat().field("name").is(ruleNames.get(i)));
     }
 }
-

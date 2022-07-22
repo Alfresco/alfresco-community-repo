@@ -25,12 +25,19 @@
  */
 package org.alfresco.rest.rules;
 
+import static java.util.stream.Collectors.toList;
+
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -47,16 +54,29 @@ public class GetRulesTests extends RestTest
 {
     private UserModel user;
     private SiteModel site;
+    private FolderModel ruleFolder;
+    private List<RestRuleModel> createdRules;
+    private RestRuleModel createdRuleA;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
+        STEP("Create a user, site and folder");
         user = dataUser.createRandomTestUser();
         site = dataSite.usingUser(user).createPublicRandomSite();
+        ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Create rules in the folder");
+        createdRules = Stream.of("ruleA", "ruleB").map(ruleName -> {
+            RestRuleModel ruleModel = new RestRuleModel();
+            ruleModel.setName(ruleName);
+            return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        }).collect(toList());
+        createdRuleA = createdRules.get(0);
     }
 
     /** Check we can get an empty list of rules. */
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES })
     public void getEmptyRulesList()
     {
         STEP("Create a folder in existing site");
@@ -67,6 +87,21 @@ public class GetRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(OK);
         assertTrue("Expected no rules to be present.", rules.isEmpty());
+    }
+
+    /** Check we can get all the rules for a folder. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getRulesList()
+    {
+        STEP("Get the rules that apply to the folder");
+        RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().getListOfRules();
+
+        restClient.assertStatusCodeIs(OK);
+        rules.assertThat().entriesListCountIs(createdRules.size());
+        IntStream.range(0, createdRules.size()).forEach(i ->
+                rules.getEntries().get(i).onModel()
+                         .assertThat().field("id").is(createdRules.get(i).getId())
+                         .assertThat().field("name").is(createdRules.get(i).getName()));
     }
 
     /** Check we get a 404 if trying to load rules for a folder that doesn't exist. */
@@ -89,6 +124,19 @@ public class GetRulesTests extends RestTest
         STEP("Try to load rules for a non-existent rule set.");
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingRuleSet("fake-id").getListOfRules();
         restClient.assertStatusCodeIs(NOT_FOUND);
+    }
+
+    /** Check we can get a rule by its id. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getSingleRule()
+    {
+        STEP("Load a particular rule");
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().getSingleRule(createdRuleA.getId());
+
+        restClient.assertStatusCodeIs(OK);
+
+        rule.assertThat().field("id").is(createdRuleA.getId())
+            .assertThat().field("name").is(createdRuleA.getName());
     }
 
     /** Check we get a 404 if trying to load a rule from a folder that doesn't exist. */

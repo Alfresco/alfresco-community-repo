@@ -157,7 +157,7 @@ public class CreateRulesTests extends RestTest
         FileModel fileModel = dataContent.usingUser(user).usingSite(site).createContent(getRandomFileModel(TEXT_PLAIN));
 
         RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("");
+        ruleModel.setName("ruleName");
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(fileModel).usingDefaultRuleSet().createSingleRule(ruleModel);
 

@@ -444,9 +444,10 @@ public class RuleLinkTest extends BaseSpringTest
         final Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderOne, rule);
         link(folderOne, folderTwo);
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderOne);
 
         // when
-        final boolean shared = ruleService.isRuleSetShared(folderOne);
+        final boolean shared = ruleService.isRuleSetShared(ruleSetNodeRef);
 
         assertTrue(shared);
     }
@@ -456,9 +457,10 @@ public class RuleLinkTest extends BaseSpringTest
     {
         final Rule rule = createTestRule(false, "luke");
         this.ruleService.saveRule(folderOne, rule);
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderOne);
 
         // when
-        final boolean shared = ruleService.isRuleSetShared(folderOne);
+        final boolean shared = ruleService.isRuleSetShared(ruleSetNodeRef);
 
         assertFalse(shared);
     }

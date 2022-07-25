@@ -73,6 +73,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.rendition.RenditionNodeManagerTest.class,
     org.alfresco.repo.rendition.RenditionServiceImplTest.class,
     org.alfresco.repo.replication.ReplicationServiceImplTest.class,
+    org.alfresco.repo.rule.RuleServiceImplUnitTest.class,
     org.alfresco.repo.service.StoreRedirectorProxyFactoryTest.class,
     org.alfresco.repo.site.RoleComparatorImplTest.class,
     org.alfresco.repo.tenant.MultiTAdminServiceImplTest.class,

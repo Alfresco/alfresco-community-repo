@@ -235,8 +235,8 @@ public interface RuleService
      * @param rule Rule
      */
     @Auditable(parameters = {"nodeRef", "rule"})
-    public void saveRule(NodeRef nodeRef, Rule rule);
-    
+    public Rule saveRule(NodeRef nodeRef, Rule rule);
+
     /**
      * 
      * @param nodeRef NodeRef

@@ -365,6 +365,19 @@ public class RuleLinkTest extends BaseSpringTest
     }
 
     @Test
+    public void testGetRuleSetNodeForLinkedFolder() {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        link(folderOne, folderTwo);
+        final NodeRef expectedRuleSetNodeRef = getRuleSetNode(folderOne);
+
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderTwo);
+
+        assertNotNull(ruleSetNodeRef);
+        assertEquals(expectedRuleSetNodeRef, ruleSetNodeRef);
+    }
+
+    @Test
     public void testIsRuleSetAssociatedWithFolder()
     {
         final Rule rule = createTestRule(false, "luke");
@@ -423,6 +436,31 @@ public class RuleLinkTest extends BaseSpringTest
         final boolean associated = ruleService.isRuleAssociatedWithRuleSet(otherRule.getNodeRef(), ruleSetNodeRef);
 
         assertFalse(associated);
+    }
+
+    @Test
+    public void testIsRuleSetShared()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        link(folderOne, folderTwo);
+
+        // when
+        final boolean shared = ruleService.isRuleSetShared(folderOne);
+
+        assertTrue(shared);
+    }
+
+    @Test
+    public void testIsRuleSetNotShared()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+
+        // when
+        final boolean shared = ruleService.isRuleSetShared(folderOne);
+
+        assertFalse(shared);
     }
 
     protected Rule createTestRule(boolean isAppliedToChildren, String title)

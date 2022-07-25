@@ -91,7 +91,12 @@ public class RulesImpl implements Rules
     public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
-        final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
+        // Don't validate the ruleset node if -default- is passed since we may need to create it.
+        NodeRef ruleSetNodeRef = null;
+        if (RuleSet.isNotDefaultId(ruleSetId))
+        {
+            ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
+        }
 
         final boolean isShared = ruleService.isRuleSetShared(ruleSetNodeRef);
         return rules.stream()
@@ -100,6 +105,16 @@ public class RulesImpl implements Rules
                     .map(Rule::from)
                     .peek(r -> r.setShared(isShared))
                     .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteRuleById(String folderNodeId, String ruleSetId, String ruleId)
+    {
+        final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
+        final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
+        final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
+        final org.alfresco.service.cmr.rule.Rule rule = ruleService.getRule(ruleNodeRef);
+        ruleService.removeRule(folderNodeRef, rule);
     }
 
     public void setNodes(Nodes nodes)

@@ -115,6 +115,19 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("fake-id was not found");
     }
 
+    /** Try to create a rule without a name and check the error. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithEmptyName()
+    {
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("");
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
+    }
+
     /** Check we can create two rules with the same name. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void duplicateRuleNameIsAcceptable()
@@ -188,5 +201,24 @@ public class CreateRulesTests extends RestTest
                 rules.getEntries().get(i).onModel()
                     .assertThat().field("id").isNotNull()
                     .assertThat().field("name").is(ruleNames.get(i)));
+    }
+
+    /** Try to create several rules with an error in one of them. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRulesWithOneError()
+    {
+        STEP("Try to create a three rules but the middle one has an error.");
+        RestRuleModel ruleA = new RestRuleModel();
+        ruleA.setName("ruleA");
+        RestRuleModel ruleB = new RestRuleModel();
+        // Don't set a name for Rule B.
+        RestRuleModel ruleC = new RestRuleModel();
+        ruleC.setName("ruleC");
+        List<RestRuleModel> ruleModels = List.of(ruleA, ruleB, ruleC);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createListOfRules(ruleModels);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
     }
 }

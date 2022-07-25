@@ -56,8 +56,6 @@ public class Rule
     private boolean shared;
     private String errorScript;
     private List<RuleTrigger> triggers;
-    private CompositeCondition conditions;
-    private List<Action> actions;
 
     /**
      * Converts service POJO rule to REST model rule.
@@ -80,16 +78,11 @@ public class Rule
             .cascade(ruleModel.isAppliedToChildren())
             .asynchronous(ruleModel.getExecuteAsynchronously())
             .shared(shared)
-            .triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()))
-            .conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions()));
+            .triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()));
 
         if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
         {
             builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
-        }
-        if (ruleModel.getAction() instanceof CompositeAction)
-        {
-            builder.actions(((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList()));
         }
 
         return builder.create();
@@ -212,32 +205,16 @@ public class Rule
         this.triggers = triggers;
     }
 
-    public CompositeCondition getConditions()
+    public List<Void> getActions()
     {
-        return conditions;
-    }
-
-    public void setConditions(CompositeCondition conditions)
-    {
-        this.conditions = conditions;
-    }
-
-    public List<Action> getActions()
-    {
-        return actions;
-    }
-
-    public void setActions(List<Action> actions)
-    {
-        this.actions = actions;
+        return Collections.emptyList();
     }
 
     @Override
     public String toString()
     {
         return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", enabled=" + enabled + ", cascade=" + cascade
-            + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript=" + errorScript + ", triggers=" + triggers + ", conditions=" + conditions + ", actions="
-            + actions + '}';
+            + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + '}';
     }
 
     @Override
@@ -249,14 +226,13 @@ public class Rule
             return false;
         Rule rule = (Rule) o;
         return enabled == rule.enabled && cascade == rule.cascade && asynchronous == rule.asynchronous && shared == rule.shared && Objects.equals(id, rule.id) && Objects.equals(
-            name, rule.name) && Objects.equals(description, rule.description) && Objects.equals(errorScript, rule.errorScript) && Objects.equals(triggers, rule.triggers)
-            && Objects.equals(conditions, rule.conditions) && Objects.equals(actions, rule.actions);
+            name, rule.name) && Objects.equals(description, rule.description) && Objects.equals(errorScript, rule.errorScript) && Objects.equals(triggers, rule.triggers);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, conditions, actions);
+        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers);
     }
 
     public static Builder builder()
@@ -276,8 +252,6 @@ public class Rule
         private boolean shared;
         private String errorScript;
         private List<RuleTrigger> triggers;
-        private CompositeCondition conditions;
-        private List<Action> actions;
 
         public Builder id(String id)
         {
@@ -333,18 +307,6 @@ public class Rule
             return this;
         }
 
-        public Builder conditions(CompositeCondition conditions)
-        {
-            this.conditions = conditions;
-            return this;
-        }
-
-        public Builder actions(List<Action> actions)
-        {
-            this.actions = actions;
-            return this;
-        }
-
         public Rule create()
         {
             Rule rule = new Rule();
@@ -357,8 +319,6 @@ public class Rule
             rule.setShared(shared);
             rule.setErrorScript(errorScript);
             rule.setTriggers(triggers);
-            rule.setConditions(conditions);
-            rule.setActions(actions);
             return rule;
         }
     }

@@ -335,7 +335,6 @@ public class RulesImplTest extends TestCase
         // when
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), DEFAULT_ID, ruleList);
 
-        then(ruleServiceMock).should().isRuleSetShared(null);
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         List<Rule> expected = List.of(Rule.from(serviceRule, false));

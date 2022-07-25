@@ -75,6 +75,17 @@ public interface Rules
     List<Rule> createRules(String folderNodeId, String ruleSetId, List<Rule> rule);
 
     /**
+     * Update a rule.
+     *
+     * @param folderNodeId The id of a folder.
+     * @param ruleSetId The id of a rule set within the folder (or "_default_" to use the default rule set for the folder).
+     * @param ruleId The rule id.
+     * @param rule The new version of the rule.
+     * @return The newly updated rule.
+     */
+    Rule updateRuleById(String folderNodeId, String ruleSetId, String ruleId, Rule rule);
+
+    /**
      * Delete rule for rule's ID and check associations with folder node and rule set node
      *
      * @param folderNodeId - folder node ID

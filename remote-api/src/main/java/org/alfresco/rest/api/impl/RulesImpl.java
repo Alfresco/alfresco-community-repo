@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,10 +48,13 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Experimental
 public class RulesImpl implements Rules
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RulesImpl.class);
     private static final String RULE_SET_EXPECTED_TYPE_NAME = "rule set";
 
     private Nodes nodes;
@@ -97,6 +101,18 @@ public class RulesImpl implements Rules
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
                     .map(Rule::from)
                     .collect(Collectors.toList());
+    }
+
+    @Override
+    public Rule updateRuleById(String folderNodeId, String ruleSetId, String ruleId, Rule rule)
+    {
+        LOGGER.debug("Updating rule in folder {}, rule set {}, rule {} to {}", folderNodeId, ruleSetId, ruleId, rule);
+
+        NodeRef folderNodeRef = validateFolderNode(folderNodeId);
+        NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
+        validateRuleNode(ruleId, ruleSetNodeRef);
+
+        return Rule.from(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)));
     }
 
     @Override

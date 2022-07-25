@@ -47,8 +47,12 @@ import java.util.List;
  */
 @Experimental
 @RelationshipResource(name = "rules", entityResource = NodeRuleSetsRelation.class, title = "Folder node rules")
-public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, RelationshipResourceAction.ReadById<Rule>,
-        RelationshipResourceAction.Create<Rule>, RelationshipResourceAction.Delete, InitializingBean
+public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
+                                          RelationshipResourceAction.ReadById<Rule>,
+                                          RelationshipResourceAction.Create<Rule>,
+                                          RelationshipResourceAction.Update<Rule>,
+                                          RelationshipResourceAction.Delete,
+                                          InitializingBean
 {
 
     private Rules rules;
@@ -107,6 +111,8 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
 
     /**
      * Create one or more rules inside a given folder and rule set.
+     * <p>
+     * POST /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules
      *
      * @param folderNodeId The folder in which to create the rule.
      * @param ruleList The list of rules to create.
@@ -126,9 +132,28 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
         return rules.createRules(folderNodeId, ruleSetId, ruleList);
     }
 
-    public void setRules(Rules rules)
+    /**
+     * Update the specified folder rule.
+     * <p>
+     * PUT /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
+     *
+     * @param folderNodeId The folder in which to create the rule.
+     * @param rule The updated rule.
+     * @param parameters List of parameters including the rule set id and rule id.
+     * @return The updated rule.
+     * @throws RelationshipResourceNotFoundException in case resource was not found
+     */
+    @WebApiDescription (
+            title = "Update folder node rule",
+            description = "Update a single rule definition for given node's, rule set's and rule's IDs",
+            successStatus = HttpServletResponse.SC_OK
+    )
+    @Override
+    public Rule update(String folderNodeId, Rule rule, Parameters parameters)
     {
-        this.rules = rules;
+        String ruleSetId = parameters.getRelationshipId();
+        String ruleId = parameters.getRelationship2Id();
+        return rules.updateRuleById(folderNodeId, ruleSetId, ruleId, rule);
     }
 
     /**
@@ -151,5 +176,10 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     {
         final String ruleId = parameters.getRelationship2Id();
         rules.deleteRuleById(folderNodeId, ruleSetId, ruleId);
+    }
+
+    public void setRules(Rules rules)
+    {
+        this.rules = rules;
     }
 }

@@ -27,8 +27,10 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -160,5 +162,46 @@ public class GetRulesTests extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingRuleSet("fake-id").getSingleRule("fake-rule-id");
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
-}
 
+    /** Check that a user without read permission cannot view the folder rules. */
+    public void requireReadPermissionToGetRule()
+    {
+        STEP("Create a user and use them to create a private site containing a folder with a rule");
+        UserModel privateUser = dataUser.createRandomTestUser();
+        SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("Private site rule");
+        restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        STEP("Try to get the rule with another user");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().getListOfRules();
+
+        restClient.assertLastError()
+                  .statusCodeIs(FORBIDDEN)
+                  .containsSummary("Cannot read from this node");
+    }
+
+    /** Check that a user with only read permission can view the folder rules. */
+    public void dontRequireWritePermissionToGetRule()
+    {
+        STEP("Create a user and use them to create a private site containing a folder with a rule");
+        UserModel privateUser = dataUser.createRandomTestUser();
+        SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("Private site rule");
+        restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        STEP("Create a collaborator in the private site");
+        UserModel collaborator = dataUser.createRandomTestUser();
+        collaborator.setUserRole(SiteCollaborator);
+        restClient.authenticateUser(privateUser).withCoreAPI().usingSite(privateSite).addPerson(collaborator);
+
+        STEP("Check the collaborator can view the rule");
+        RestRuleModelsCollection rules = restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().getListOfRules();
+
+        restClient.assertStatusCodeIs(OK);
+        rules.assertThat().entriesListContains("name", "Private site rule");
+    }
+}

@@ -67,8 +67,7 @@ public class RulesImpl implements Rules
 
         final boolean isShared = ruleService.isRuleSetShared(ruleSetNodeRef);
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
-            .map(Rule::from)
-            .peek(r -> r.setShared(isShared))
+            .map(ruleModel -> Rule.from(ruleModel, isShared))
             .collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
@@ -81,10 +80,7 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
 
-        final Rule rule = Rule.from(ruleService.getRule(ruleNodeRef));
-        rule.setShared(ruleService.isRuleSetShared(ruleSetNodeRef));
-
-        return rule;
+        return Rule.from(ruleService.getRule(ruleNodeRef), ruleService.isRuleSetShared(ruleSetNodeRef));
     }
 
     @Override
@@ -98,12 +94,11 @@ public class RulesImpl implements Rules
             ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         }
 
-        final boolean isShared = ruleService.isRuleSetShared(ruleSetNodeRef);
+        final boolean isShared = ruleSetNodeRef != null && ruleService.isRuleSetShared(ruleSetNodeRef);
         return rules.stream()
                     .map(rule -> rule.toServiceModel(nodes))
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(Rule::from)
-                    .peek(r -> r.setShared(isShared))
+                    .map(rule -> Rule.from(rule, isShared))
                     .collect(Collectors.toList());
     }
 

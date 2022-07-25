@@ -51,6 +51,7 @@ public class RuleTest
     private static final boolean RULE_ENABLED = true;
     private static final boolean RULE_CASCADE = true;
     private static final boolean RULE_ASYNC = false;
+    private static final boolean RULE_SHARED = true;
 
     @Test
     public void testFrom()
@@ -58,7 +59,7 @@ public class RuleTest
         final org.alfresco.service.cmr.rule.Rule ruleModel = createRuleModel();
 
         // when
-        final Rule rule = Rule.from(ruleModel);
+        final Rule rule = Rule.from(ruleModel, RULE_SHARED);
 
         assertThat(rule).is(havingExpectedConstantValues());
 
@@ -76,6 +77,7 @@ public class RuleTest
                 assertThat(rule.isEnabled()).isEqualTo(RULE_ENABLED);
                 assertThat(rule.isCascade()).isEqualTo(RULE_CASCADE);
                 assertThat(rule.isAsynchronous()).isEqualTo(RULE_ASYNC);
+                assertThat(rule.isShared()).isEqualTo(RULE_SHARED);
                 assertThat(rule.getTriggers()).containsExactly(RuleTrigger.of(RuleType.INBOUND), RuleTrigger.of(RuleType.UPDATE));
                 return true;
             },

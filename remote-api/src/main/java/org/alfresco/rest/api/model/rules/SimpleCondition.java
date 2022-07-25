@@ -59,7 +59,8 @@ public class SimpleCondition
      */
     public static List<SimpleCondition> listOf(final List<ActionCondition> actionConditions)
     {
-        if (actionConditions == null) {
+        if (actionConditions == null)
+        {
             return null;
         }
 
@@ -77,14 +78,17 @@ public class SimpleCondition
      */
     public static SimpleCondition from(final ActionCondition actionCondition)
     {
-        if (actionCondition == null || actionCondition.getActionConditionDefinitionName() == null || actionCondition.getParameterValues() == null) {
+        if (actionCondition == null || actionCondition.getActionConditionDefinitionName() == null || actionCondition.getParameterValues() == null)
+        {
             return null;
         }
 
         final SimpleCondition.Builder builder = builder();
-        switch (actionCondition.getActionConditionDefinitionName()) {
+        switch (actionCondition.getActionConditionDefinitionName())
+        {
         case ComparePropertyValueEvaluator.NAME:
-            if (actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY) != null) {
+            if (actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY) != null)
+            {
                 builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY).toString().toLowerCase());
             } else {
                 builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase());
@@ -103,7 +107,8 @@ public class SimpleCondition
             builder.parameter(actionCondition.getParameterValues().get(HasAspectEvaluator.PARAM_ASPECT).toString());
             break;
         case HasChildEvaluator.NAME:
-            if (actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE) != null) {
+            if (actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE) != null)
+            {
                 builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE).toString());
             } else {
                 builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_NAME).toString());

@@ -45,8 +45,10 @@ public class Action
      * @param actionModel - {@link org.alfresco.service.cmr.action.Action} service POJO
      * @return {@link Action} REST model
      */
-    public static Action from(final org.alfresco.service.cmr.action.Action actionModel) {
-        if (actionModel == null) {
+    public static Action from(final org.alfresco.service.cmr.action.Action actionModel)
+    {
+        if (actionModel == null)
+        {
             return null;
         }
 

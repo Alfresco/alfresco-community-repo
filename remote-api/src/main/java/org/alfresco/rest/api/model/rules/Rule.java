@@ -65,7 +65,7 @@ public class Rule
      * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
      * @return {@link Rule} REST model
      */
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel)
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final boolean shared)
     {
         if (ruleModel == null)
         {
@@ -79,13 +79,16 @@ public class Rule
             .enabled(!ruleModel.getRuleDisabled())
             .cascade(ruleModel.isAppliedToChildren())
             .asynchronous(ruleModel.getExecuteAsynchronously())
+            .shared(shared)
             .triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()))
             .conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions()));
 
-        if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null) {
+        if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
+        {
             builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
         }
-        if (ruleModel.getAction() instanceof CompositeAction) {
+        if (ruleModel.getAction() instanceof CompositeAction)
+        {
             builder.actions(((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList()));
         }
 

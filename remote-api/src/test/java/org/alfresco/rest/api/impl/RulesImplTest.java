@@ -98,7 +98,7 @@ public class RulesImplTest extends TestCase
     {
         MockitoAnnotations.openMocks(this);
 
-        given(nodesMock.validateOrLookupNode(FOLDER_NODE_ID, any())).willReturn(folderNodeRef);
+        given(nodesMock.validateOrLookupNode(eq(FOLDER_NODE_ID), any())).willReturn(folderNodeRef);
         given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
         given(nodesMock.nodeMatches(any(), any(), any())).willReturn(true);
         given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
@@ -315,7 +315,7 @@ public class RulesImplTest extends TestCase
         then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
-        List<Rule> expected = List.of(Rule.from(serviceRule));
+        List<Rule> expected = List.of(Rule.from(serviceRule, false));
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -335,10 +335,10 @@ public class RulesImplTest extends TestCase
         // when
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), DEFAULT_ID, ruleList);
 
-        then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
+        then(ruleServiceMock).should().isRuleSetShared(null);
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
-        List<Rule> expected = List.of(Rule.from(serviceRule));
+        List<Rule> expected = List.of(Rule.from(serviceRule, false));
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -390,7 +390,7 @@ public class RulesImplTest extends TestCase
             NodeRef ruleNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, ruleId);
             given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
             given(serviceRule.getAction()).willReturn(action);
-            expected.add(Rule.from(serviceRule));
+            expected.add(Rule.from(serviceRule, false));
         }
 
         // when

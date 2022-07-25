@@ -50,8 +50,10 @@ public class CompositeCondition
      * @param actionConditions - list of {@link ActionCondition} service POJOs
      * @return {@link CompositeCondition} REST model
      */
-    public static CompositeCondition from(final List<ActionCondition> actionConditions) {
-        if (actionConditions == null) {
+    public static CompositeCondition from(final List<ActionCondition> actionConditions)
+    {
+        if (actionConditions == null)
+        {
             return null;
         }
 
@@ -69,7 +71,8 @@ public class CompositeCondition
 
     private static CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions, final boolean inverted, final ConditionOperator conditionOperator)
     {
-        if (actionConditions == null) {
+        if (actionConditions == null)
+        {
             return null;
         }
 
@@ -92,7 +95,8 @@ public class CompositeCondition
     private static CompositeCondition of(final List<SimpleCondition> simpleConditions, final List<CompositeCondition> compositeConditions,
         final boolean inverted, final ConditionOperator conditionOperator)
     {
-        if (CollectionUtils.isEmpty(simpleConditions) && CollectionUtils.isEmpty(compositeConditions)) {
+        if (CollectionUtils.isEmpty(simpleConditions) && CollectionUtils.isEmpty(compositeConditions))
+        {
             return null;
         }
 

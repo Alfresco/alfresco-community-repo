@@ -35,7 +35,6 @@ import static org.alfresco.rest.core.JsonBodyGenerator.arrayToJson;
 
 import java.util.List;
 
-import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestRuleModel;
@@ -45,6 +44,7 @@ import org.springframework.http.HttpMethod;
 public class FolderRules extends ModelRequest<FolderRules>
 {
     private static final String BASE_PATH = "nodes/{nodeId}/rule-sets/{ruleSetId}/rules";
+    private static final String RULE_ID_PATH = "/{ruleId}";
 
     private String nodeId;
     private String ruleSetId;
@@ -82,7 +82,7 @@ public class FolderRules extends ModelRequest<FolderRules>
      */
     public RestRuleModel getSingleRule(String ruleId)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, BASE_PATH + "/{ruleId}", nodeId, ruleSetId, ruleId);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, BASE_PATH + RULE_ID_PATH, nodeId, ruleSetId, ruleId);
         return restWrapper.processModel(RestRuleModel.class, request);
     }
 
@@ -119,7 +119,18 @@ public class FolderRules extends ModelRequest<FolderRules>
      */
     public RestRuleModel updateRule(String ruleId, RestRuleModel ruleModel)
     {
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, ruleModel.toJson(), BASE_PATH + "/{ruleId}", nodeId, ruleSetId, ruleId);
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, ruleModel.toJson(), BASE_PATH + RULE_ID_PATH, nodeId, ruleSetId, ruleId);
         return restWrapper.processModel(RestRuleModel.class, request);
+    }
+
+    /**
+     * Deletes a rule definition for the folder node using DELETE call on "nodes/{nodeId}/rule-sets/{ruleSetId}/rules/{ruleId}"
+     * @param ruleId The id of the rule to delete.
+     * @return void
+     */
+    public void deleteRule(String ruleId)
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, BASE_PATH + RULE_ID_PATH, nodeId, ruleSetId, ruleId);
+        restWrapper.processEmptyModel(request);
     }
 }

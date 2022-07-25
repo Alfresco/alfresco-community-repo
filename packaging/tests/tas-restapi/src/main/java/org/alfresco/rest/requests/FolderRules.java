@@ -109,4 +109,17 @@ public class FolderRules extends ModelRequest<FolderRules>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, ruleModel.toJson(), BASE_PATH, nodeId, ruleSetId);
         return restWrapper.processModel(RestRuleModel.class, request);
     }
+
+    /**
+     * Update a rule.
+     *
+     * @param ruleId The id of the rule to update.
+     * @param ruleModel The updated rule definition.
+     * @return The updated rule with some data populated by the repository.
+     */
+    public RestRuleModel updateRule(String ruleId, RestRuleModel ruleModel)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, ruleModel.toJson(), BASE_PATH + "/{ruleId}", nodeId, ruleSetId, ruleId);
+        return restWrapper.processModel(RestRuleModel.class, request);
+    }
 }

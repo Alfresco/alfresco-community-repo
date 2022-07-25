@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>17.35-SNAPSHOT</version>
+    <version>17.51-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -62,9 +62,10 @@
         <dependency.jackson-databind.version>2.13.3</dependency.jackson-databind.version>
         <dependency.cxf.version>3.5.3</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.30</dependency.webscripts.version>
+        <dependency.webscripts.version>8.31</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>4.6.1</dependency.mockito-core.version>
+        <dependency.assertj.version>3.23.1</dependency.assertj.version>
         <dependency.org-json.version>20220320</dependency.org-json.version>
         <dependency.commons-dbcp.version>2.9.0</dependency.commons-dbcp.version>
         <dependency.commons-io.version>2.11.0</dependency.commons-io.version>
@@ -106,7 +107,7 @@
         <dependency.jakarta-json-path.version>2.7.0</dependency.jakarta-json-path.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.2.1.3</alfresco.googledrive.version>
+        <alfresco.googledrive.version>3.2.2</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.4.1</alfresco.aos-module.version> 
         <alfresco.api-explorer.version>7.2.0</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
@@ -649,7 +650,7 @@
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
-                <version>1.15.1</version>
+                <version>1.15.2</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -754,6 +755,11 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${dependency.mockito-core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${dependency.assertj.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
@@ -923,7 +929,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.3.0</version>
+                    <version>3.4.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.alfresco.maven.plugin</groupId>

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,6 +27,7 @@ package org.alfresco.repo.web.scripts.action;
 
 import java.util.Map;
 
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.springframework.extensions.webscripts.Cache;
@@ -58,6 +59,7 @@ public abstract class AbstractExecuteActionWebscript extends AbstractActionWebsc
            
            // Ask for it to be run in the background
            // It will be available to execute once the webscript finishes
+           ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.V0_ACTION_CONTEXT);
            actionService.executeAction(
                  action, null, 
                  false, true

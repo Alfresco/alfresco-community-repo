@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,15 +25,6 @@
  */
 package org.alfresco.repo.rule;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.ActionModel;
@@ -49,6 +40,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionListener;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ActionServiceException;
@@ -66,11 +58,21 @@ import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Rule service implementation.
@@ -1610,5 +1612,44 @@ public class RuleServiceImpl
             }
         }
         return result;
+    }
+
+    @Override
+    @Experimental
+    public NodeRef getRuleSetNode(final NodeRef folderNodeRef) {
+        return getPrimaryChildNode(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER);
+    }
+
+    private NodeRef getPrimaryChildNode(final NodeRef nodeRef, final QNamePattern associationType) {
+        return runtimeNodeService.getChildAssocs(nodeRef, associationType, associationType).stream()
+            .filter(ChildAssociationRef::isPrimary)
+            .map(ChildAssociationRef::getChildRef)
+            .findFirst()
+            .orElse(null);
+    }
+
+    @Override
+    @Experimental
+    public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
+        return isChildOf(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, folderNodeRef);
+    }
+
+    @Override
+    @Experimental
+    public boolean isRuleAssociatedWithRuleSet(final NodeRef ruleNodeRef, final NodeRef ruleSetNodeRef) {
+        return isChildOf(ruleNodeRef, null, ruleSetNodeRef);
+    }
+
+    private boolean isChildOf(final NodeRef childNodeRef, final QNamePattern associationType, final NodeRef parentNodeRef) {
+        final List<ChildAssociationRef> associations;
+        if (associationType == null) {
+            associations = runtimeNodeService.getParentAssocs(childNodeRef);
+        } else {
+            associations = runtimeNodeService.getParentAssocs(childNodeRef, associationType, associationType);
+        }
+
+        return associations.stream()
+            .map(ChildAssociationRef::getParentRef)
+            .anyMatch(parentNodeRef::equals);
     }
 }

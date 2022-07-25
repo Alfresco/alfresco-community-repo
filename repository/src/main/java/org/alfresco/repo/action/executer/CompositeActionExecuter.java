@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -58,6 +58,15 @@ public class CompositeActionExecuter extends ActionExecuterAbstractBase
     public void setActionService(RuntimeActionService actionService)
     {
         this.actionService = actionService;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void verifyActionAccessRestrictions(Action action) {
+        for (Action subAction : ((CompositeAction)action).getActions()) {
+            this.actionService.verifyActionAccessRestrictions(subAction);
+        }
     }
 
     /**

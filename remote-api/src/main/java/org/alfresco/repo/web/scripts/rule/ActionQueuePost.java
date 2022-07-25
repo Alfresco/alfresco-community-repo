@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -89,6 +90,7 @@ public class ActionQueuePost extends AbstractRuleWebScript
             }
 
             // Execute action
+            ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.V0_ACTION_CONTEXT);
             actionService.executeAction(action, actionedUponNode, true, async);
 
             // Prepair model

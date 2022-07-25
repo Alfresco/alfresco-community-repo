@@ -53,9 +53,12 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 import lombok.Getter;
@@ -91,6 +94,7 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
@@ -628,8 +632,8 @@ public class BaseRMRestTest extends RestTest
      * Returns search results for the given search term
      *
      * @param user
-     * @param term
-     * @param query language
+     * @param q
+     * @param queryLanguage language
      * @return
      * @throws Exception
      */
@@ -955,6 +959,27 @@ public class BaseRMRestTest extends RestTest
         {
             return false;
         }
+    }
+
+    protected String getCurrentDate() {
+        Date date = new Date(System.currentTimeMillis());
+        // Conversion
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");;
+        sdf.setTimeZone(TimeZone.getDefault());
+        return sdf.format(date);
+    }
+
+    protected JSONObject editDispositionDateJson() {
+        JSONObject requestParams = new JSONObject();
+
+        requestParams.put("name","editDispositionActionAsOfDate");
+        JSONObject params = new JSONObject();
+        requestParams.put("params",params);
+
+        JSONObject asOfDate = new JSONObject();
+        params.put("asOfDate",asOfDate);
+        asOfDate.put("iso8601",getCurrentDate());
+        return requestParams;
     }
 
 }

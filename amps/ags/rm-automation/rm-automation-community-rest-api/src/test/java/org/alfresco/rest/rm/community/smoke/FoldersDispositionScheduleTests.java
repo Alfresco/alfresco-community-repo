@@ -32,7 +32,6 @@ import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.v0.RMAuditAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordFoldersAPI;
 import org.alfresco.rest.v0.RecordsAPI;
@@ -42,13 +41,8 @@ import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
-
 import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
@@ -80,7 +74,6 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
     private final String electronicRecord = "RM-2937 electronic 2 record";
     private final String nonElectronicRecord = "RM-2937 non-electronic record";
     private final String recordsCategoryWithout = TEST_PREFIX + "category without ghosting";
-    public static final String TITLE = "Title";
     /**
      * Test covering RM-2937 for disposition schedule applied to folders
      */
@@ -244,27 +237,4 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         defaultProperties.put(BaseAPI.RMProperty.DESCRIPTION, DESCRIPTION);
         return defaultProperties;
     }
-
-    private JSONObject editDispositionDateJson() {
-        JSONObject requestParams = new JSONObject();
-
-        requestParams.put("name","editDispositionActionAsOfDate");
-        JSONObject params = new JSONObject();
-        requestParams.put("params",params);
-
-        JSONObject asOfDate = new JSONObject();
-        params.put("asOfDate",asOfDate);
-        asOfDate.put("iso8601",getCurrentDate());
-        return requestParams;
-    }
-
-    private String getCurrentDate() {
-        Date date = new Date(System.currentTimeMillis());
-        // Conversion
-        SimpleDateFormat sdf;
-        sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        sdf.setTimeZone(TimeZone.getDefault());
-        return sdf.format(date);
-    }
-
 }

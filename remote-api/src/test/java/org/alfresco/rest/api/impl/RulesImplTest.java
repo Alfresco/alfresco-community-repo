@@ -29,6 +29,9 @@ package org.alfresco.rest.api.impl;
 import static java.util.Collections.emptyList;
 
 import static org.alfresco.rest.api.model.rules.RuleSet.DEFAULT_ID;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
+import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISSIONS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,7 +57,6 @@ import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.junit.Before;
 import org.junit.Test;
@@ -98,7 +100,8 @@ public class RulesImplTest extends TestCase
         given(nodesMock.validateOrLookupNode(eq(FOLDER_NODE_ID), any())).willReturn(folderNodeRef);
         given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
         given(nodesMock.nodeMatches(any(), any(), any())).willReturn(true);
-        given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.ALLOWED);
+        given(permissionServiceMock.hasReadPermission(any())).willReturn(ALLOWED);
+        given(permissionServiceMock.hasPermission(any(), any())).willReturn(ALLOWED);
     }
 
     @Test
@@ -201,7 +204,7 @@ public class RulesImplTest extends TestCase
     @Test
     public void testGetRulesWithoutReadPermission()
     {
-        given(permissionServiceMock.hasReadPermission(any())).willReturn(AccessStatus.DENIED);
+        given(permissionServiceMock.hasReadPermission(any())).willReturn(DENIED);
 
         // when
         assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(
@@ -392,6 +395,22 @@ public class RulesImplTest extends TestCase
         assertThat(actual).isEqualTo(expected);
     }
 
+    /** Try to create a rule without CHANGE permission and check an exception is thrown. */
+    @Test
+    public void testSaveRules_noChangePermission()
+    {
+        given(permissionServiceMock.hasPermission(folderNodeRef, CHANGE_PERMISSIONS)).willReturn(DENIED);
+
+        Rule ruleBody = mock(Rule.class);
+        List<Rule> ruleList = List.of(ruleBody);
+
+        // when
+        assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() ->
+                rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList));
+
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
     @Test
     public void testDeleteRuleById() {
         given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
@@ -411,7 +430,7 @@ public class RulesImplTest extends TestCase
         then(nodesMock).should().nodeMatches(eq(ruleSetNodeRef), any(), isNull());
         then(nodesMock).should().nodeMatches(eq(ruleNodeRef), any(), isNull());
         then(nodesMock).shouldHaveNoMoreInteractions();
-        then(permissionServiceMock).should().hasReadPermission(folderNodeRef);
+        then(permissionServiceMock).should().hasPermission(folderNodeRef, CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef);
@@ -436,7 +455,7 @@ public class RulesImplTest extends TestCase
         then(nodesMock).should().nodeMatches(eq(folderNodeRef), any(), isNull());
         then(nodesMock).should().nodeMatches(eq(ruleSetNodeRef), any(), isNull());
         then(nodesMock).shouldHaveNoMoreInteractions();
-        then(permissionServiceMock).should().hasReadPermission(folderNodeRef);
+        then(permissionServiceMock).should().hasPermission(folderNodeRef, CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
@@ -460,7 +479,7 @@ public class RulesImplTest extends TestCase
         then(nodesMock).should().nodeMatches(eq(ruleSetNodeRef), any(), isNull());
         then(nodesMock).should().nodeMatches(eq(ruleNodeRef), any(), isNull());
         then(nodesMock).shouldHaveNoMoreInteractions();
-        then(permissionServiceMock).should().hasReadPermission(folderNodeRef);
+        then(permissionServiceMock).should().hasPermission(folderNodeRef, CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef);
@@ -479,7 +498,7 @@ public class RulesImplTest extends TestCase
         then(nodesMock).should().validateNode(RULE_SET_ID);
         then(nodesMock).should().nodeMatches(eq(folderNodeRef), any(), isNull());
         then(nodesMock).shouldHaveNoMoreInteractions();
-        then(permissionServiceMock).should().hasReadPermission(folderNodeRef);
+        then(permissionServiceMock).should().hasPermission(folderNodeRef, CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
     }
@@ -498,7 +517,7 @@ public class RulesImplTest extends TestCase
         then(nodesMock).should().nodeMatches(eq(folderNodeRef), any(), isNull());
         then(nodesMock).should().nodeMatches(eq(ruleSetNodeRef), any(), isNull());
         then(nodesMock).shouldHaveNoMoreInteractions();
-        then(permissionServiceMock).should().hasReadPermission(folderNodeRef);
+        then(permissionServiceMock).should().hasPermission(folderNodeRef, CHANGE_PERMISSIONS);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
@@ -517,6 +536,20 @@ public class RulesImplTest extends TestCase
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
     }
+
+    /** Try to delete a rule without CHANGE permission and check an exception is thrown. */
+    @Test
+    public void testDeleteRuleById_noChangePermission()
+    {
+        given(permissionServiceMock.hasPermission(folderNodeRef, CHANGE_PERMISSIONS)).willReturn(DENIED);
+
+        // when
+        assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() ->
+                rules.deleteRuleById(folderNodeRef.getId(), ruleSetNodeRef.getId(), RULE_ID));
+
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
 
     private static org.alfresco.service.cmr.rule.Rule createRule(final String id) {
         final org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();

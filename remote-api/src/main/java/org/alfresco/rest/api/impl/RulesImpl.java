@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.impl;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -65,7 +66,7 @@ public class RulesImpl implements Rules
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
 
-        final boolean isShared = ruleService.isRuleSetShared(ruleSetNodeRef);
+        final boolean isShared = isRuleSetNotNullAndShared(ruleSetNodeRef);
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
             .map(ruleModel -> Rule.from(ruleModel, isShared))
             .collect(Collectors.toList());
@@ -80,7 +81,7 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return Rule.from(ruleService.getRule(ruleNodeRef), ruleService.isRuleSetShared(ruleSetNodeRef));
+        return Rule.from(ruleService.getRule(ruleNodeRef), isRuleSetNotNullAndShared(ruleSetNodeRef));
     }
 
     @Override
@@ -94,7 +95,7 @@ public class RulesImpl implements Rules
             ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         }
 
-        final boolean isShared = ruleSetNodeRef != null && ruleService.isRuleSetShared(ruleSetNodeRef);
+        final boolean isShared = isRuleSetNotNullAndShared(ruleSetNodeRef);
         return rules.stream()
                     .map(rule -> rule.toServiceModel(nodes))
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
@@ -203,5 +204,9 @@ public class RulesImpl implements Rules
             final String expectedTypeLocalName = (expectedTypeName != null)? expectedTypeName : expectedType.getLocalName();
             throw new InvalidArgumentException(String.format("NodeId of a %s is expected!", expectedTypeLocalName));
         }
+    }
+
+    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef) {
+        return ruleSetNodeRef != null && ruleService.isRuleSetShared(ruleSetNodeRef);
     }
 }

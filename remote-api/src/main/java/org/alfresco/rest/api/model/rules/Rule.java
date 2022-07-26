@@ -71,16 +71,21 @@ public class Rule
         }
 
         final Rule.Builder builder = builder()
-            .id(ruleModel.getNodeRef().getId())
             .name(ruleModel.getTitle())
             .description(ruleModel.getDescription())
             .enabled(!ruleModel.getRuleDisabled())
             .cascade(ruleModel.isAppliedToChildren())
             .asynchronous(ruleModel.getExecuteAsynchronously())
-            .shared(shared)
-            .triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()));
+            .shared(shared);
 
-        if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
+        if (ruleModel.getNodeRef() != null) {
+            builder.id(ruleModel.getNodeRef().getId());
+        }
+        if (ruleModel.getRuleTypes() != null)
+        {
+            builder.triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()));
+        }
+        if (ruleModel.getAction() != null && ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
         {
             builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
         }

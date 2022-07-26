@@ -65,6 +65,18 @@ public class RuleTest
 
     }
 
+    @Test
+    public void testFromRuleModelWithNullValues()
+    {
+        final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
+
+        // when
+        final Rule rule = Rule.from(ruleModel, false);
+
+        assertThat(rule).is(havingNullValues());
+
+    }
+
     private static Condition<Rule> havingExpectedConstantValues() {
         var ref = new Object() { Rule rule; };
         return new Condition<>(
@@ -81,7 +93,27 @@ public class RuleTest
                 assertThat(rule.getTriggers()).containsExactly(RuleTrigger.of(RuleType.INBOUND), RuleTrigger.of(RuleType.UPDATE));
                 return true;
             },
-            String.format("containing rule=%s", ref.rule)
+            String.format("having rule=%s", ref.rule)
+        );
+    }
+
+    private static Condition<Rule> havingNullValues() {
+        var ref = new Object() { Rule rule; };
+        return new Condition<>(
+            rule -> {
+                ref.rule = rule;
+                assertThat(rule).isNotNull();
+                assertThat(rule.getId()).isNull();
+                assertThat(rule.getName()).isNull();
+                assertThat(rule.getDescription()).isNull();
+                assertThat(rule.isEnabled()).isTrue();
+                assertThat(rule.isCascade()).isFalse();
+                assertThat(rule.isAsynchronous()).isFalse();
+                assertThat(rule.isShared()).isFalse();
+                assertThat(rule.getTriggers()).isNull();
+                return true;
+            },
+            String.format("having rule=%s", ref.rule)
         );
     }
 

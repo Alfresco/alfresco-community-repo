@@ -26,9 +26,9 @@
 
 package org.alfresco.rest.api.model.rules;
 
-import org.alfresco.service.Experimental;
-
 import java.util.Objects;
+
+import org.alfresco.service.Experimental;
 
 @Experimental
 public class RuleSet

@@ -38,7 +38,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     NodeRulesRelationTest.class,
     RulesImplTest.class,
-    RuleTest.class,
+    RuleTest.class
 })
 public class RulesUnitTests
 {

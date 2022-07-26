@@ -418,7 +418,7 @@ jobs:
       script: travis_retry travis_wait 80 mvn -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-mysql    -PagsAllTestSuitePt4 -f amps/ags/pom.xml ${LOG_WARN}
 
     - name: "AGS Community Rest API Tests"
-      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/
+      if: (branch =~ /(release\/.*$|master)/ AND commit_message !~ /\[skip ags\]/) OR commit_message =~ /\[ags\]/ OR commit_message =~ /\[ags api\]/
       install: travis_retry travis_wait 40 env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       addons:
         artifacts:

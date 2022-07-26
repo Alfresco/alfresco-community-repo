@@ -26,6 +26,10 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
@@ -37,10 +41,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.assertj.core.api.Condition;
 import org.junit.Test;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Experimental
 public class RuleTest

@@ -27,7 +27,6 @@
 package org.alfresco.rest.api.impl;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 

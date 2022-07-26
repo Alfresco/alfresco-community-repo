@@ -27,7 +27,6 @@
 package org.alfresco.rest.api.model.rules;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,6 +39,7 @@ import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 
@@ -85,13 +85,16 @@ public class Rule
         {
             builder.triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()));
         }
-        if (ruleModel.getAction() != null && ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
+        if (ruleModel.getAction() != null)
         {
-            builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
-        }
-        if (ruleModel.getAction() instanceof CompositeAction)
-        {
-            builder.actions(((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList()));
+            if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
+            {
+                builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
+            }
+            if (ruleModel.getAction() instanceof CompositeAction && ((CompositeAction) ruleModel.getAction()).getActions() != null)
+            {
+                builder.actions(((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList()));
+            }
         }
 
         return builder.create();

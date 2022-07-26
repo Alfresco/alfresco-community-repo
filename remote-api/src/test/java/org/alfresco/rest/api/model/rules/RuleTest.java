@@ -50,7 +50,7 @@ public class RuleTest
     private static final String RULE_DESCRIPTION = "rule description";
     private static final boolean RULE_ENABLED = true;
     private static final boolean RULE_CASCADE = true;
-    private static final boolean RULE_ASYNC = false;
+    private static final boolean RULE_ASYNC = true;
     private static final boolean RULE_SHARED = true;
 
     @Test

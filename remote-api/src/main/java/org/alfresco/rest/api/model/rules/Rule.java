@@ -55,6 +55,7 @@ public class Rule
     private boolean shared;
     private String errorScript;
     private List<RuleTrigger> triggers;
+    private CompositeCondition conditions;
     private List<Action> actions;
 
     /**
@@ -87,6 +88,7 @@ public class Rule
         }
         if (ruleModel.getAction() != null)
         {
+            builder.conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions()));
             if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
             {
                 builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
@@ -217,6 +219,16 @@ public class Rule
         this.triggers = triggers;
     }
 
+    public CompositeCondition getConditions()
+    {
+        return conditions;
+    }
+
+    public void setConditions(CompositeCondition conditions)
+    {
+        this.conditions = conditions;
+    }
+
     public List<Action> getActions()
     {
         return actions;
@@ -231,7 +243,8 @@ public class Rule
     public String toString()
     {
         return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", enabled=" + enabled + ", cascade=" + cascade
-            + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", actions=" + actions + '}';
+            + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", conditions=" + conditions
+            + ", actions=" + actions + '}';
     }
 
     @Override
@@ -244,13 +257,13 @@ public class Rule
         Rule rule = (Rule) o;
         return enabled == rule.enabled && cascade == rule.cascade && asynchronous == rule.asynchronous && shared == rule.shared && Objects.equals(id, rule.id) && Objects.equals(
             name, rule.name) && Objects.equals(description, rule.description) && Objects.equals(errorScript, rule.errorScript) && Objects.equals(triggers, rule.triggers)
-            && Objects.equals(actions, rule.actions);
+            && Objects.equals(conditions, rule.conditions) && Objects.equals(actions, rule.actions);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, actions);
+        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, conditions, actions);
     }
 
     public static Builder builder()
@@ -270,6 +283,7 @@ public class Rule
         private boolean shared;
         private String errorScript;
         private List<RuleTrigger> triggers;
+        private CompositeCondition conditions;
         private List<Action> actions;
 
         public Builder id(String id)
@@ -326,6 +340,12 @@ public class Rule
             return this;
         }
 
+        public Builder conditions(CompositeCondition conditions)
+        {
+            this.conditions = conditions;
+            return this;
+        }
+
         public Builder actions(List<Action> actions)
         {
             this.actions = actions;
@@ -344,6 +364,7 @@ public class Rule
             rule.setShared(shared);
             rule.setErrorScript(errorScript);
             rule.setTriggers(triggers);
+            rule.setConditions(conditions);
             rule.setActions(actions);
             return rule;
         }

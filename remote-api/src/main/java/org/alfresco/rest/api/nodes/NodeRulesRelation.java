@@ -137,7 +137,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
      * <p>
      * PUT /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
      *
-     * @param folderNodeId The folder in which to create the rule.
+     * @param folderNodeId The id of the folder containing the rule.
      * @param rule The updated rule.
      * @param parameters List of parameters including the rule set id and rule id.
      * @return The updated rule.

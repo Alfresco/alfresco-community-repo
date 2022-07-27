@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -145,7 +146,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a user without permission to view the folder cannot create a rule in it. */
-    public void requirePermissionToCreateRule()
+    public void requireReadPermissionToCreateRule()
     {
         STEP("Create a user and use them to create a private site containing a folder");
         UserModel privateUser = dataUser.createRandomTestUser();
@@ -159,7 +160,27 @@ public class CreateRulesTests extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
-        restClient.assertLastError().containsSummary("Cannot read from this node");
+        restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
+    }
+
+    /** Check that a user without write permission for the folder cannot create a rule in it. */
+    public void requireWritePermissionToCreateRule()
+    {
+        STEP("Create a user and use them to create a private site containing a folder");
+        UserModel privateUser = dataUser.createRandomTestUser();
+        SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
+
+        STEP("Create a collaborator and check they cannot create a rule in the private folder");
+        UserModel collaborator = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(collaborator, privateSite, SiteCollaborator);
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("ruleName");
+
+        restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
     }
 
     /** Check we can't create a rule under a document node. */

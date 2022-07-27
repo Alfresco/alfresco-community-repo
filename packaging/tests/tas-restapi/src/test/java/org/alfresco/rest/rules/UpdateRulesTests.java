@@ -133,8 +133,6 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void requirePermissionToUpdateRule()
     {
-        fail("FAILURE - TEST REQUIRES https://github.com/Alfresco/alfresco-community-repo/pull/1251");
-
         STEP("Create a user and use them to create a private site containing a folder");
         UserModel privateUser = dataUser.createRandomTestUser();
         SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();

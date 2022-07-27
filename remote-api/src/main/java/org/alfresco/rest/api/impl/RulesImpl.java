@@ -26,6 +26,13 @@
 
 package org.alfresco.rest.api.impl;
 
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISSIONS;
+
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
@@ -40,13 +47,8 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Experimental
 public class RulesImpl implements Rules
@@ -62,7 +64,7 @@ public class RulesImpl implements Rules
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
     {
-        final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
+        final NodeRef folderNodeRef = validateFolderNode(folderNodeId, false);
         validateRuleSetNode(ruleSetId, folderNodeRef);
 
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
@@ -75,11 +77,38 @@ public class RulesImpl implements Rules
     @Override
     public Rule getRuleById(final String folderNodeId, final String ruleSetId, final String ruleId)
     {
-        final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
+        final NodeRef folderNodeRef = validateFolderNode(folderNodeId, false);
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
 
         return Rule.from(ruleService.getRule(ruleNodeRef));
+    }
+
+    @Override
+    public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
+    {
+        final NodeRef folderNodeRef = validateFolderNode(folderNodeId, true);
+        // Don't validate the ruleset node if -default- is passed since we may need to create it.
+        if (RuleSet.isNotDefaultId(ruleSetId))
+        {
+            validateRuleSetNode(ruleSetId, folderNodeRef);
+        }
+
+        return rules.stream()
+                    .map(rule -> rule.toServiceModel(nodes))
+                    .map(rule -> ruleService.saveRule(folderNodeRef, rule))
+                    .map(Rule::from)
+                    .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteRuleById(String folderNodeId, String ruleSetId, String ruleId)
+    {
+        final NodeRef folderNodeRef = validateFolderNode(folderNodeId, true);
+        final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
+        final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
+        final org.alfresco.service.cmr.rule.Rule rule = ruleService.getRule(ruleNodeRef);
+        ruleService.removeRule(folderNodeRef, rule);
     }
 
     public void setNodes(Nodes nodes)
@@ -98,20 +127,31 @@ public class RulesImpl implements Rules
     }
 
     /**
-     * Validates if folder node exists and user have permission to read from it.
+     * Validates if folder node exists and the user has permission to use it.
      *
      * @param folderNodeId - folder node ID
+     * @param requireChangePermission - Whether to require change permission or just read permission.
      * @return folder node reference
      * @throws InvalidArgumentException if node is not of an expected type
-     * @throws PermissionDeniedException if user doesn't have right to read from folder
+     * @throws PermissionDeniedException if the user doesn't have the appropriate permission for the folder.
      */
-    private NodeRef validateFolderNode(final String folderNodeId)
+    private NodeRef validateFolderNode(final String folderNodeId, boolean requireChangePermission)
     {
         final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
-        if (permissionService.hasReadPermission(nodeRef) != AccessStatus.ALLOWED) {
-            throw new PermissionDeniedException("Cannot read from this node!");
+        if (requireChangePermission)
+        {
+            if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
+            {
+                throw new PermissionDeniedException("Insufficient permissions to manage rules.");
+            }
         }
-
+        else
+        {
+            if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
+            {
+                throw new PermissionDeniedException("Cannot read from this node!");
+            }
+        }
         verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 
         return nodeRef;

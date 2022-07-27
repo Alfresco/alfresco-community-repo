@@ -39,6 +39,7 @@ import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 /**
  * Folder node's rules.
@@ -46,7 +47,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Experimental
 @RelationshipResource(name = "rules", entityResource = NodeRuleSetsRelation.class, title = "Folder node rules")
-public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, RelationshipResourceAction.ReadById<Rule>, InitializingBean
+public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>, RelationshipResourceAction.ReadById<Rule>,
+        RelationshipResourceAction.Create<Rule>, RelationshipResourceAction.Delete, InitializingBean
 {
 
     private Rules rules;
@@ -103,8 +105,51 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
         return rules.getRuleById(folderNodeId, ruleSetId, ruleId);
     }
 
+    /**
+     * Create one or more rules inside a given folder and rule set.
+     *
+     * @param folderNodeId The folder in which to create the rule.
+     * @param ruleList The list of rules to create.
+     * @param parameters List of parameters including the rule set id as the relationship.
+     * @return The newly created rules.
+     */
+    @WebApiDescription(
+            title = "Create folder rule",
+            description = "Creates one or more folder rules for the given folder and rule set",
+            successStatus = HttpServletResponse.SC_CREATED
+    )
+    @Override
+    public List<Rule> create(String folderNodeId, List<Rule> ruleList, Parameters parameters)
+    {
+        final String ruleSetId = parameters.getRelationshipId();
+
+        return rules.createRules(folderNodeId, ruleSetId, ruleList);
+    }
+
     public void setRules(Rules rules)
     {
         this.rules = rules;
+    }
+
+    /**
+     * Delete single folder rule for given node's, rule set's and rule's IDs.
+     *
+     * - DELETE /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
+     *
+     * @param folderNodeId - entity resource context for this relationship
+     * @param ruleSetId - rule set node ID (associated with folder node)
+     * @param parameters - Should not be null. Should contain at least ruleId (relationship2Id)
+     * @throws RelationshipResourceNotFoundException in case resource was not found
+     */
+    @WebApiDescription(
+            title="Delete folder node rule",
+            description = "Deletes a single rule definition for given node's, rule set's and rule's IDs",
+            successStatus = HttpServletResponse.SC_NO_CONTENT
+    )
+    @Override
+    public void delete(String folderNodeId, String ruleSetId, Parameters parameters)
+    {
+        final String ruleId = parameters.getRelationship2Id();
+        rules.deleteRuleById(folderNodeId, ruleSetId, ruleId);
     }
 }

@@ -27,9 +27,13 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.rule.RuleServiceException;
+
+import java.util.List;
 
 /**
  * Folder node rules API.
@@ -57,4 +61,25 @@ public interface Rules
      * @return {@link Rule} definition
      */
     Rule getRuleById(String folderNodeId, String ruleSetId, String ruleId);
+
+    /**
+     * Create new rules (and potentially a rule set if "_default_" is supplied).
+     *
+     * @param folderNodeId The node id of a folder.
+     * @param ruleSetId The id of a rule set (or "_default_" to use/create the default rule set for the folder).
+     * @param rule The definition of the rule.
+     * @return The newly created rules.
+     * @throws InvalidArgumentException If the nodes are not the expected types, or the rule set does not correspond to the folder.
+     * @throws RuleServiceException If the folder is already linked to another rule set.
+     */
+    List<Rule> createRules(String folderNodeId, String ruleSetId, List<Rule> rule);
+
+    /**
+     * Delete rule for rule's ID and check associations with folder node and rule set node
+     *
+     * @param folderNodeId - folder node ID
+     * @param ruleSetId - rule set ID
+     * @param ruleId - rule ID     *
+     */
+    void deleteRuleById(String folderNodeId, String ruleSetId, String ruleId);
 }

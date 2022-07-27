@@ -31,7 +31,7 @@ import org.alfresco.service.Experimental;
 @Experimental
 public class RuleSet
 {
-    private static final String DEFAULT_ID = "-default-";
+    public static final String DEFAULT_ID = "-default-";
 
     private String id;
 

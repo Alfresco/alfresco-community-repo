@@ -133,6 +133,7 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
         assertStatusCode(HttpStatus.CREATED);
+        System.out.println("foldersDispositionScheduleWithGhosting - after Cutoff the Folder");
 
         System.out.println("foldersDispositionScheduleWithGhosting - Edit the Disposition Date");
         // edit disposition date and destroy the folder

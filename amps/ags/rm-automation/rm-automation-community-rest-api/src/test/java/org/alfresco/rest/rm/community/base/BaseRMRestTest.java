@@ -961,12 +961,13 @@ public class BaseRMRestTest extends RestTest
         }
     }
 
-    protected String getCurrentDate() {
+    protected String getPreviousDate() {
         Date date = new Date(System.currentTimeMillis());
+        Date previousDate = new Date(date.getTime() - 1);
         // Conversion
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");;
         sdf.setTimeZone(TimeZone.getDefault());
-        return sdf.format(date);
+        return sdf.format(previousDate);
     }
 
     protected JSONObject editDispositionDateJson() {
@@ -978,7 +979,7 @@ public class BaseRMRestTest extends RestTest
 
         JSONObject asOfDate = new JSONObject();
         params.put("asOfDate",asOfDate);
-        asOfDate.put("iso8601",getCurrentDate());
+        asOfDate.put("iso8601",getPreviousDate());
         return requestParams;
     }
 

@@ -783,7 +783,9 @@ public class RuleServiceImpl
             }
 
             // Update the properties of the rule
-            this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_TITLE, rule.getTitle());
+            String title = rule.getTitle();
+            ParameterCheck.mandatoryString("Rule name", title);
+            this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_TITLE, title);
             this.nodeService.setProperty(ruleNodeRef, ContentModel.PROP_DESCRIPTION, rule.getDescription());
             this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_RULE_TYPE, (Serializable)rule.getRuleTypes());
             this.nodeService.setProperty(ruleNodeRef, RuleModel.PROP_APPLY_TO_CHILDREN, rule.isAppliedToChildren());

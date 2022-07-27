@@ -28,6 +28,7 @@ package org.alfresco.rest.rules;
 import static java.util.stream.Collectors.toList;
 
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -138,18 +139,18 @@ public class DeleteRulesTests extends RestTest
     /**
      * Check that a user without write permission on folder cannot delete a rule inside it.
      */
-    public void deleteSingleRuleWithoutWritePermissionAndGet403()
+    public void deleteSingleRuleWithoutPermissionAndGet403()
     {
         STEP("Create a user and use them to create a private site containing a folder with a rule");
-        UserModel privateUser = dataUser.createRandomTestUser();
-        SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
-        FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        RestRuleModel ruleModel = new RestRuleModel();
+        final UserModel privateUser = dataUser.createRandomTestUser();
+        final SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
+        final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
+        final RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName("Private site rule");
-        restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        final RestRuleModel createdRule = restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Try to delete the rule with another user");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().deleteRule(ruleModel.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().deleteRule(createdRule.getId());
 
         restClient.assertLastError().statusCodeIs(FORBIDDEN);
     }
@@ -160,20 +161,21 @@ public class DeleteRulesTests extends RestTest
     public void deleteSingleRuleWithWritePermissionAndGet204()
     {
         STEP("Create a user and use them to create a private site containing a folder with a rule");
-        UserModel privateUser = dataUser.createRandomTestUser();
-        SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
-        FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        RestRuleModel ruleModel = new RestRuleModel();
+        final UserModel privateUser = dataUser.createRandomTestUser();
+        final SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
+        final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
+        final RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName("Private site rule");
-        restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        final RestRuleModel createdRule = restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
 
-        STEP("Create a collaborator in the private site");
-        UserModel collaborator = dataUser.createRandomTestUser();
-        collaborator.setUserRole(SiteCollaborator);
+        STEP("Create a manager in the private site");
+        final UserModel collaborator = dataUser.createRandomTestUser();
+        collaborator.setUserRole(SiteManager);
         restClient.authenticateUser(privateUser).withCoreAPI().usingSite(privateSite).addPerson(collaborator);
 
-        STEP("Check the collaborator can delete the rule");
-        restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().deleteRule(ruleModel.getId());
+        STEP("Check the manager can delete the rule");
+        restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().deleteRule(createdRule.getId());
 
         restClient.assertStatusCodeIs(NO_CONTENT);
     }

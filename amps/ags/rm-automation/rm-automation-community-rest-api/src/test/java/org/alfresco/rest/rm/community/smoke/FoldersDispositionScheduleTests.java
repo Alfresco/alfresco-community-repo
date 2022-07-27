@@ -37,7 +37,6 @@ import org.alfresco.rest.v0.RecordFoldersAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
-import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,13 +49,10 @@ import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPerio
 import static org.alfresco.rest.rm.community.records.SearchRecordsTests.*;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.testng.Assert.fail;
-
 /**
  * Audit Access tests
  * @author Kavit Shah
  */
-
 public class FoldersDispositionScheduleTests extends BaseRMRestTest {
 
     /** data prep services */
@@ -84,29 +80,36 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
     public void foldersDispositionScheduleWithGhosting() {
 
         STEP("foldersDispositionScheduleWithGhosting - Create the Record Category.");
+        logger.info("foldersDispositionScheduleWithGhosting - Create the Record Category.");
         // create test precondition
         createTestPrecondition(recordsCategoryWithout);
 
         STEP("foldersDispositionScheduleWithGhosting - create user with RM User role");
+        logger.info("foldersDispositionScheduleWithGhosting - create user with RM User role");
         // create user with RM User role
         createRMUser();
 
         STEP("foldersDispositionScheduleWithGhosting - create disposition schedule");
+        logger.info("foldersDispositionScheduleWithGhosting - create disposition schedule");
         // create disposition schedule
         dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
 
         STEP("foldersDispositionScheduleWithGhosting - add cut off step");
+        logger.info("foldersDispositionScheduleWithGhosting - add cut off step");
         // add cut off step
         dispositionScheduleService.addCutOffAfterPeriodStep(Category1.getName(), "day|1", CREATED_DATE);
 
         STEP("foldersDispositionScheduleWithGhosting - add destroy step with ghosting");
+        logger.info("foldersDispositionScheduleWithGhosting - add destroy step with ghosting");
         // add destroy step with ghosting
         dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(Category1.getName(), "day|1", CUT_OFF_DATE);
 
         STEP("foldersDispositionScheduleWithGhosting - Creating Folder Disposition ");
+        logger.info("foldersDispositionScheduleWithGhosting - Creating Folder Disposition");
         RecordCategoryChild folder1 = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
 
         STEP("foldersDispositionScheduleWithGhosting - Upload Electronic Record");
+        logger.info("foldersDispositionScheduleWithGhosting - Upload Electronic Record");
         recordsAPI.uploadElectronicRecord(getAdminUser().getUsername(),
             getAdminUser().getPassword(),
             getDefaultElectronicRecordProperties(electronicRecord),
@@ -114,11 +117,13 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
             CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("foldersDispositionScheduleWithGhosting - Upload Non Electronic Record");
+        logger.info("foldersDispositionScheduleWithGhosting - Upload Non Electronic Record");
         recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
             getAdminUser().getPassword(),getDefaultNonElectronicRecordProperties(nonElectronicRecord),
             Category1.getName(), folderDisposition);
 
         STEP("foldersDispositionScheduleWithGhosting - Complete Records");
+        logger.info("foldersDispositionScheduleWithGhosting - Complete Records");
         // complete records
         String nonElRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
             getAdminUser().getPassword(), folderDisposition, nonElectronicRecord);
@@ -128,29 +133,34 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         recordsAPI.completeRecord(RM_ADMIN, DEFAULT_PASSWORD, elRecordName);
 
         STEP("foldersDispositionScheduleWithGhosting - edit disposition date and cut off the folder");
+        logger.info("foldersDispositionScheduleWithGhosting - edit disposition date and cut off the folder");
         // edit disposition date and cut off the folder
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
         assertStatusCode(HttpStatus.CREATED);
 
         STEP("foldersDispositionScheduleWithGhosting - Cutoff the Folder");
+        logger.info("foldersDispositionScheduleWithGhosting - Cutoff the Folder");
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
         assertStatusCode(HttpStatus.CREATED);
 
         STEP("foldersDispositionScheduleWithGhosting - Edit the Disposition Date");
+        logger.info("foldersDispositionScheduleWithGhosting - Edit the Disposition Date");
         // edit disposition date and destroy the folder
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
         assertStatusCode(HttpStatus.CREATED);
 
         STEP("foldersDispositionScheduleWithGhosting - Destroy the folders");
+        logger.info("foldersDispositionScheduleWithGhosting - Destroy the folders");
         // edit disposition date and destroy the folder
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
         assertStatusCode(HttpStatus.CREATED);
 
         STEP("foldersDispositionScheduleWithGhosting - Delete the records");
+        logger.info("foldersDispositionScheduleWithGhosting - Delete the records");
         // delete electronic record
         recordsAPI.deleteRecord(getAdminUser().getUsername(),
             getAdminUser().getPassword(),elRecordName,Category1.getName(),folderDisposition);
@@ -158,6 +168,7 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
             getAdminUser().getPassword(),nonElRecordName,Category1.getName(),folderDisposition);
 
         STEP("foldersDispositionScheduleWithGhosting - Delete the category");
+        logger.info("foldersDispositionScheduleWithGhosting - Delete the category");
         // delete category
         deleteRecordCategory(Category1.getId());
     }

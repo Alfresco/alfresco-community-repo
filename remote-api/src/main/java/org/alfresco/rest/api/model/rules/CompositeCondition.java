@@ -52,7 +52,7 @@ public class CompositeCondition
      */
     public static CompositeCondition from(final List<ActionCondition> actionConditions)
     {
-        if (CollectionUtils.isEmpty(actionConditions))
+        if (actionConditions == null)
         {
             return null;
         }
@@ -60,11 +60,15 @@ public class CompositeCondition
         final CompositeCondition conditions = new CompositeCondition();
         conditions.compositeConditions = new ArrayList<>();
         // group action conditions by inversion flag
-        actionConditions.stream().collect(Collectors.groupingBy(ActionCondition::getInvertCondition))
+        actionConditions.stream().filter(Objects::nonNull).collect(Collectors.groupingBy(ActionCondition::getInvertCondition))
             // map action condition sub lists
             .forEach((inverted, actionConditionsPart) -> Optional.ofNullable(CompositeCondition.ofActionConditions(actionConditionsPart, inverted, ConditionOperator.AND))
                 // if composite condition present add to final list
                 .ifPresent(compositeCondition -> conditions.compositeConditions.add(compositeCondition)));
+
+        if (conditions.compositeConditions.isEmpty()) {
+            conditions.compositeConditions = null;
+        }
 
         return conditions;
     }
@@ -181,7 +185,7 @@ public class CompositeCondition
     public static class Builder
     {
         private boolean inverted;
-        private ConditionOperator booleanMode;
+        private ConditionOperator booleanMode = ConditionOperator.AND;
         private List<CompositeCondition> compositeConditions;
         private List<SimpleCondition> simpleConditions;
 

@@ -29,6 +29,8 @@ package org.alfresco.rest.api.model.rules;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,16 +79,94 @@ public class SimpleConditionTest
             final ActionCondition actionCondition = createActionCondition(testData.actionDefinitionName);
 
             // when
-            final SimpleCondition simpleCondition = SimpleCondition.from(actionCondition);
+            final SimpleCondition actualSimpleCondition = SimpleCondition.from(actionCondition);
 
-            assertThat(Objects.isNull(simpleCondition)).isEqualTo(testData.isNullResult);
+            assertThat(Objects.isNull(actualSimpleCondition)).isEqualTo(testData.isNullResult);
             if (!testData.isNullResult)
             {
-                assertThat(simpleCondition.getField()).isNotEmpty();
-                assertThat(simpleCondition.getComparator()).isNotEmpty();
-                assertThat(simpleCondition.getParameter()).isNotEmpty();
+                assertThat(actualSimpleCondition.getField()).isNotEmpty();
+                assertThat(actualSimpleCondition.getComparator()).isNotEmpty();
+                assertThat(actualSimpleCondition.getParameter()).isNotEmpty();
             }
         }
+    }
+
+    @Test
+    public void testFromNullValue()
+    {
+        // when
+        final SimpleCondition actualSimpleCondition = SimpleCondition.from(null);
+
+        assertThat(actualSimpleCondition).isNull();
+    }
+
+    @Test
+    public void testFromActionConditionWithoutDefinitionName()
+    {
+        final ActionCondition actionCondition = new ActionConditionImpl("fake-id", null, createParameterValues());
+
+        // when
+        final SimpleCondition actualSimpleCondition = SimpleCondition.from(actionCondition);
+
+        assertThat(actualSimpleCondition).isNull();
+    }
+
+    @Test
+    public void testFromActionConditionWithoutParameterValues()
+    {
+        final ActionCondition actionCondition = new ActionConditionImpl("fake-id", "fake-def-name", null);
+
+        // when
+        final SimpleCondition actualSimpleCondition = SimpleCondition.from(actionCondition);
+
+        assertThat(actualSimpleCondition).isNull();
+    }
+
+    @Test
+    public void testListOf()
+    {
+        final List<ActionCondition> actionConditions = List.of(
+            createActionCondition(ComparePropertyValueEvaluator.NAME),
+            createActionCondition(CompareMimeTypeEvaluator.NAME)
+        );
+        final List<SimpleCondition> expectedSimpleConditions = List.of(
+            SimpleCondition.builder().field("content-property").comparator("operation").parameter("value").create(),
+            SimpleCondition.builder().field("property").comparator("equals").parameter("value").create()
+        );
+
+        // when
+        final List<SimpleCondition> actualSimpleConditions = SimpleCondition.listOf(actionConditions);
+
+        assertThat(actualSimpleConditions)
+            .isNotNull()
+            .containsExactlyElementsOf(expectedSimpleConditions);
+    }
+
+    @Test
+    public void testListOfEmptyActionConditions()
+    {
+        final List<SimpleCondition> actualSimpleConditions = SimpleCondition.listOf(Collections.emptyList());
+
+        assertThat(actualSimpleConditions).isNull();
+    }
+
+    @Test
+    public void testListOfNullActionConditions()
+    {
+        final List<SimpleCondition> actualSimpleConditions = SimpleCondition.listOf(null);
+
+        assertThat(actualSimpleConditions).isNull();
+    }
+
+    @Test
+    public void testListOfActionConditionsContainingNull()
+    {
+        final List<ActionCondition> actionConditions = new ArrayList<>();
+        actionConditions.add(null);
+
+        final List<SimpleCondition> actualSimpleConditions = SimpleCondition.listOf(actionConditions);
+
+        assertThat(actualSimpleConditions).isNotNull().isEmpty();
     }
 
     private static ActionCondition createActionCondition(final String actionDefinitionName)

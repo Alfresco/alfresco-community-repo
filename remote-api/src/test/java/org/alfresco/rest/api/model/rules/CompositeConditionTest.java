@@ -29,6 +29,7 @@ package org.alfresco.rest.api.model.rules;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,31 +57,77 @@ public class CompositeConditionTest
         );
 
         // when
-        final CompositeCondition compositeCondition = CompositeCondition.from(actionConditions);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions);
 
-        assertThat(compositeCondition).is(havingCompositeConditions(2, false));
-        assertThat(compositeCondition.getCompositeConditions().get(0)).is(havingSimpleConditions(2, false));
-        assertThat(compositeCondition.getCompositeConditions().get(1)).is(havingSimpleConditions(1, true));
+        assertThat(actualCompositeCondition).is(havingCompositeConditions(2, false));
+        assertThat(actualCompositeCondition.getCompositeConditions().get(0)).is(havingSimpleConditions(2, false));
+        assertThat(actualCompositeCondition.getCompositeConditions().get(1)).is(havingSimpleConditions(1, true));
     }
 
     @Test
     public void testFromEmptyList()
     {
         final List<ActionCondition> actionConditions = Collections.emptyList();
+        final CompositeCondition expectedCompositeCondition = CompositeCondition.builder().create();
 
         // when
-        final CompositeCondition compositeCondition = CompositeCondition.from(actionConditions);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions);
 
-        assertThat(compositeCondition).isNull();
+        assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }
 
     @Test
     public void testFromNullValue()
     {
         // when
-        final CompositeCondition compositeCondition = CompositeCondition.from(null);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(null);
 
-        assertThat(compositeCondition).isNull();
+        assertThat(actualCompositeCondition).isNull();
+    }
+
+    @Test
+    public void testFromListContainingNull()
+    {
+        final List<ActionCondition> actionConditions = new ArrayList<>();
+        actionConditions.add(null);
+        final CompositeCondition expectedCompositeCondition = CompositeCondition.builder().create();
+
+        // when
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions);
+
+        assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
+    }
+
+    @Test
+    public void testOfSimpleConditions()
+    {
+        final List<SimpleCondition> simpleConditions = List.of(SimpleCondition.builder().field("field").comparator("comparator").parameter("param").create());
+        final boolean inverted = true;
+        final ConditionOperator conditionOperator = ConditionOperator.OR;
+        final CompositeCondition expectedCondition = CompositeCondition.builder().simpleConditions(simpleConditions).inverted(inverted).booleanMode(conditionOperator).create();
+
+        // when
+        final CompositeCondition actualCompositeCondition = CompositeCondition.ofSimpleConditions(simpleConditions, inverted, conditionOperator);
+
+        assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCondition);
+    }
+
+    @Test
+    public void testOfEmptySimpleConditions()
+    {
+        // when
+        final CompositeCondition actualCompositeCondition = CompositeCondition.ofSimpleConditions(Collections.emptyList(), false, ConditionOperator.AND);
+
+        assertThat(actualCompositeCondition).isNull();
+    }
+
+    @Test
+    public void testOfNullSimpleConditions()
+    {
+        // when
+        final CompositeCondition actualCompositeCondition = CompositeCondition.ofSimpleConditions(null, false, ConditionOperator.AND);
+
+        assertThat(actualCompositeCondition).isNull();
     }
 
     @SuppressWarnings("SameParameterValue")

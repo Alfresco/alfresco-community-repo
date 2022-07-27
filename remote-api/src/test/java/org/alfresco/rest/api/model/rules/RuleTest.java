@@ -63,7 +63,7 @@ public class RuleTest
         // when
         final Rule actualRule = Rule.from(ruleModel, RULE_SHARED);
 
-        assertThat(actualRule).usingRecursiveComparison().isEqualTo(expectedRule);
+        assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
     }
 
@@ -71,33 +71,13 @@ public class RuleTest
     public void testFromRuleModelWithNullValues()
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
+        final Rule expectedRule = Rule.builder().enabled(true).create();
 
         // when
-        final Rule rule = Rule.from(ruleModel, false);
+        final Rule actualRule = Rule.from(ruleModel, false);
 
-        assertThat(rule).is(havingNullValues());
+        assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
-    }
-
-    private static Condition<Rule> havingNullValues() {
-        var ref = new Object() { Rule rule; };
-        return new Condition<>(
-            rule -> {
-                ref.rule = rule;
-                assertThat(rule).isNotNull();
-                assertThat(rule.getId()).isNull();
-                assertThat(rule.getName()).isNull();
-                assertThat(rule.getDescription()).isNull();
-                assertThat(rule.isEnabled()).isTrue();
-                assertThat(rule.isCascade()).isFalse();
-                assertThat(rule.isAsynchronous()).isFalse();
-                assertThat(rule.isShared()).isFalse();
-                assertThat(rule.getTriggers()).isNull();
-                assertThat(rule.getErrorScript()).isNull();
-                return true;
-            },
-            String.format("having rule=%s", ref.rule)
-        );
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRuleModel() {

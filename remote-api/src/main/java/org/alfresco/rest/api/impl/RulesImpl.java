@@ -67,7 +67,7 @@ public class RulesImpl implements Rules
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId, false);
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
 
-        final boolean isShared = isRuleSetNotNullAndShared(ruleSetNodeRef);
+        final boolean isShared = ruleService.isRuleSetShared(ruleSetNodeRef);
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
             .map(ruleModel -> Rule.from(ruleModel, isShared))
             .collect(Collectors.toList());
@@ -82,7 +82,7 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return Rule.from(ruleService.getRule(ruleNodeRef), isRuleSetNotNullAndShared(ruleSetNodeRef));
+        return Rule.from(ruleService.getRule(ruleNodeRef), ruleService.isRuleSetShared(ruleSetNodeRef));
     }
 
     @Override
@@ -90,17 +90,12 @@ public class RulesImpl implements Rules
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId, true);
         // Don't validate the ruleset node if -default- is passed since we may need to create it.
-        NodeRef ruleSetNodeRef = null;
-        if (RuleSet.isNotDefaultId(ruleSetId))
-        {
-            ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
-        }
+        final NodeRef ruleSetNodeRef = (RuleSet.isNotDefaultId(ruleSetId)) ? validateRuleSetNode(ruleSetId, folderNodeRef) : null;
 
-        final boolean isShared = isRuleSetNotNullAndShared(ruleSetNodeRef);
         return rules.stream()
                     .map(rule -> rule.toServiceModel(nodes))
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(rule -> Rule.from(rule, isShared))
+                    .map(rule -> Rule.from(rule, isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef)))
                     .collect(Collectors.toList());
     }
 
@@ -210,7 +205,8 @@ public class RulesImpl implements Rules
         return nodeRef;
     }
 
-    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName) {
+    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName)
+    {
         final Set<QName> expectedTypes = Set.of(expectedType);
         if (!nodes.nodeMatches(nodeRef, expectedTypes, null)) {
             final String expectedTypeLocalName = (expectedTypeName != null)? expectedTypeName : expectedType.getLocalName();
@@ -218,7 +214,15 @@ public class RulesImpl implements Rules
         }
     }
 
-    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef) {
-        return ruleSetNodeRef != null && ruleService.isRuleSetShared(ruleSetNodeRef);
+    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
+    {
+        if (ruleSetNodeRef == null)
+        {
+            return ruleService.isRuleSetShared(ruleService.getRuleSetNode(folderNodeRef));
+        }
+        else
+        {
+            return ruleService.isRuleSetShared(ruleSetNodeRef);
+        }
     }
 }

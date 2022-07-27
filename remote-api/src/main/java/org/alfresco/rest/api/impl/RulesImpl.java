@@ -210,7 +210,8 @@ public class RulesImpl implements Rules
         return nodeRef;
     }
 
-    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName) {
+    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName)
+    {
         final Set<QName> expectedTypes = Set.of(expectedType);
         if (!nodes.nodeMatches(nodeRef, expectedTypes, null)) {
             final String expectedTypeLocalName = (expectedTypeName != null)? expectedTypeName : expectedType.getLocalName();
@@ -218,7 +219,8 @@ public class RulesImpl implements Rules
         }
     }
 
-    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef) {
+    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef)
+    {
         return ruleSetNodeRef != null && ruleService.isRuleSetShared(ruleSetNodeRef);
     }
 }

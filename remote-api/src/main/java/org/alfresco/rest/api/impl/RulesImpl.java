@@ -112,7 +112,8 @@ public class RulesImpl implements Rules
         NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return Rule.from(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)));
+        boolean shared = isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef);
+        return Rule.from(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)), shared);
     }
 
     @Override

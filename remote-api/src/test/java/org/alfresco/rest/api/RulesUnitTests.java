@@ -27,6 +27,7 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.impl.RulesImplTest;
+import org.alfresco.rest.api.model.rules.ActionTest;
 import org.alfresco.rest.api.model.rules.CompositeConditionTest;
 import org.alfresco.rest.api.model.rules.RuleTest;
 import org.alfresco.rest.api.model.rules.SimpleConditionTest;
@@ -41,6 +42,7 @@ import org.junit.runners.Suite;
     NodeRulesRelationTest.class,
     RulesImplTest.class,
     RuleTest.class,
+    ActionTest.class,
     SimpleConditionTest.class,
     CompositeConditionTest.class
 })

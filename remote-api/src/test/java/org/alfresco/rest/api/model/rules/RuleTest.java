@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 @Experimental
@@ -52,16 +51,18 @@ public class RuleTest
     private static final boolean RULE_CASCADE = true;
     private static final boolean RULE_ASYNC = true;
     private static final boolean RULE_SHARED = true;
+    private static final String ERROR_SCRIPT = "error-script-ref";
 
     @Test
     public void testFrom()
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = createRuleModel();
+        final Rule expectedRule = createRuleWithDefaultValues();
 
         // when
-        final Rule rule = Rule.from(ruleModel, RULE_SHARED);
+        final Rule actualRule = Rule.from(ruleModel, RULE_SHARED);
 
-        assertThat(rule).is(havingExpectedConstantValues());
+        assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
     }
 
@@ -69,52 +70,13 @@ public class RuleTest
     public void testFromRuleModelWithNullValues()
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
+        final Rule expectedRule = Rule.builder().enabled(true).create();
 
         // when
-        final Rule rule = Rule.from(ruleModel, false);
+        final Rule actualRule = Rule.from(ruleModel, false);
 
-        assertThat(rule).is(havingNullValues());
+        assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
-    }
-
-    private static Condition<Rule> havingExpectedConstantValues() {
-        var ref = new Object() { Rule rule; };
-        return new Condition<>(
-            rule -> {
-                ref.rule = rule;
-                assertThat(rule).isNotNull();
-                assertThat(rule.getId()).isEqualTo(RULE_ID);
-                assertThat(rule.getName()).isEqualTo(RULE_NAME);
-                assertThat(rule.getDescription()).isEqualTo(RULE_DESCRIPTION);
-                assertThat(rule.isEnabled()).isEqualTo(RULE_ENABLED);
-                assertThat(rule.isCascade()).isEqualTo(RULE_CASCADE);
-                assertThat(rule.isAsynchronous()).isEqualTo(RULE_ASYNC);
-                assertThat(rule.isShared()).isEqualTo(RULE_SHARED);
-                assertThat(rule.getTriggers()).containsExactly(RuleTrigger.of(RuleType.INBOUND), RuleTrigger.of(RuleType.UPDATE));
-                return true;
-            },
-            String.format("having rule=%s", ref.rule)
-        );
-    }
-
-    private static Condition<Rule> havingNullValues() {
-        var ref = new Object() { Rule rule; };
-        return new Condition<>(
-            rule -> {
-                ref.rule = rule;
-                assertThat(rule).isNotNull();
-                assertThat(rule.getId()).isNull();
-                assertThat(rule.getName()).isNull();
-                assertThat(rule.getDescription()).isNull();
-                assertThat(rule.isEnabled()).isTrue();
-                assertThat(rule.isCascade()).isFalse();
-                assertThat(rule.isAsynchronous()).isFalse();
-                assertThat(rule.isShared()).isFalse();
-                assertThat(rule.getTriggers()).isNull();
-                return true;
-            },
-            String.format("having rule=%s", ref.rule)
-        );
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRuleModel() {
@@ -127,7 +89,7 @@ public class RuleTest
         ruleModel.setExecuteAsynchronously(RULE_ASYNC);
         ruleModel.setRuleTypes(List.of(RuleType.INBOUND, RuleType.UPDATE));
         final Action compensatingAction = new ActionImpl(nodeRef, "compensatingActionId", "compensatingActionDefName");
-        compensatingAction.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, "script-ref");
+        compensatingAction.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, ERROR_SCRIPT);
         final ActionCondition actionCondition = new ActionConditionImpl("actionConditionId", "actionConditionDefName");
         final Action action = new ActionImpl(nodeRef, "actionId", "actionDefName");
         action.setCompensatingAction(compensatingAction);
@@ -135,5 +97,19 @@ public class RuleTest
         ruleModel.setAction(action);
 
         return ruleModel;
+    }
+
+    private static Rule createRuleWithDefaultValues() {
+        return Rule.builder()
+            .id(RULE_ID)
+            .name(RULE_NAME)
+            .description(RULE_DESCRIPTION)
+            .enabled(RULE_ENABLED)
+            .cascade(RULE_CASCADE)
+            .asynchronous(RULE_ASYNC)
+            .shared(RULE_SHARED)
+            .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
+            .errorScript(ERROR_SCRIPT)
+            .create();
     }
 }

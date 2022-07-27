@@ -40,6 +40,7 @@ import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -272,7 +273,7 @@ public class RulesImplTest extends TestCase
         then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef);
         then(ruleServiceMock).should().isRuleSetShared(ruleSetNodeRef);
-        then(ruleServiceMock).should().getRule(eq(ruleNodeRef));
+        then(ruleServiceMock).should().getRule(ruleNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rule)
                 .isNotNull()
@@ -315,7 +316,7 @@ public class RulesImplTest extends TestCase
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
-        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
+        then(ruleServiceMock).should().isRuleSetShared(ruleSetNodeRef);
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         List<Rule> expected = List.of(Rule.from(serviceRule, false));
@@ -330,6 +331,7 @@ public class RulesImplTest extends TestCase
         List<Rule> ruleList = List.of(ruleBody);
         org.alfresco.service.cmr.rule.Rule serviceRuleBody = mock(org.alfresco.service.cmr.rule.Rule.class);
         given(ruleBody.toServiceModel(nodesMock)).willReturn(serviceRuleBody);
+        given(ruleServiceMock.getRuleSetNode(any())).willReturn(ruleSetNodeRef);
         org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
         given(ruleServiceMock.saveRule(folderNodeRef, serviceRuleBody)).willReturn(serviceRule);
         given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
@@ -338,6 +340,8 @@ public class RulesImplTest extends TestCase
         // when
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), DEFAULT_ID, ruleList);
 
+        then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
+        then(ruleServiceMock).should().isRuleSetShared(ruleSetNodeRef);
         then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         List<Rule> expected = List.of(Rule.from(serviceRule, false));
@@ -369,7 +373,6 @@ public class RulesImplTest extends TestCase
         List<Rule> actual = this.rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
-        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actual).isEqualTo(emptyList());
     }
@@ -399,11 +402,11 @@ public class RulesImplTest extends TestCase
         List<Rule> actual = rules.createRules(folderNodeRef.getId(), ruleSetNodeRef.getId(), ruleBodyList);
 
         then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
-        then(ruleServiceMock).should().isRuleSetShared(eq(ruleSetNodeRef));
         for (Rule ruleBody : ruleBodyList)
         {
             then(ruleServiceMock).should().saveRule(folderNodeRef, ruleBody.toServiceModel(nodesMock));
         }
+        then(ruleServiceMock).should(times(ruleBodyList.size())).isRuleSetShared(ruleSetNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actual).isEqualTo(expected);
     }

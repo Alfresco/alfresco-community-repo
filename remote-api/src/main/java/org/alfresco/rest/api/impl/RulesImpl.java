@@ -90,17 +90,12 @@ public class RulesImpl implements Rules
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId, true);
         // Don't validate the ruleset node if -default- is passed since we may need to create it.
-        NodeRef ruleSetNodeRef = null;
-        if (RuleSet.isNotDefaultId(ruleSetId))
-        {
-            ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
-        }
+        final NodeRef ruleSetNodeRef = (RuleSet.isNotDefaultId(ruleSetId)) ? validateRuleSetNode(ruleSetId, folderNodeRef) : null;
 
-        final boolean isShared = isRuleSetNotNullAndShared(ruleSetNodeRef);
         return rules.stream()
                     .map(rule -> rule.toServiceModel(nodes))
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(rule -> Rule.from(rule, isShared))
+                    .map(rule -> Rule.from(rule, isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef)))
                     .collect(Collectors.toList());
     }
 
@@ -216,6 +211,19 @@ public class RulesImpl implements Rules
         if (!nodes.nodeMatches(nodeRef, expectedTypes, null)) {
             final String expectedTypeLocalName = (expectedTypeName != null)? expectedTypeName : expectedType.getLocalName();
             throw new InvalidArgumentException(String.format("NodeId of a %s is expected!", expectedTypeLocalName));
+        }
+    }
+
+    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
+    {
+        if (ruleSetNodeRef == null && folderNodeRef != null)
+        {
+            final NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNodeRef);
+            return ruleSetNode != null && ruleService.isRuleSetShared(ruleSetNode);
+        }
+        else
+        {
+            return isRuleSetNotNullAndShared(ruleSetNodeRef);
         }
     }
 

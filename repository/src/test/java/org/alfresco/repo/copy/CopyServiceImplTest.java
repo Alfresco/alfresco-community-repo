@@ -737,6 +737,7 @@ public class CopyServiceImplTest extends TestCase
         // Create a new rule and add it to the source noderef
         Rule rule = new Rule();
         rule.setRuleType(RuleType.INBOUND);
+        rule.setTitle("Rule name");
         
         Map<String, Serializable> props = new HashMap<String, Serializable>(1);
         props.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
@@ -1010,7 +1011,8 @@ public class CopyServiceImplTest extends TestCase
         Map<String, Serializable> params = new HashMap<String, Serializable>(1);
         params.put(MoveActionExecuter.PARAM_DESTINATION_FOLDER, nodeTwo);
         Rule rule = new Rule();
-        rule.setRuleType(RuleType.INBOUND);        
+        rule.setRuleType(RuleType.INBOUND);
+        rule.setTitle("Rule name");
         Action action = actionService.createAction(CopyActionExecuter.NAME, params);
         ActionCondition condition = actionService.createActionCondition(NoConditionEvaluator.NAME);
         action.addActionCondition(condition);

@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -115,6 +116,19 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("fake-id was not found");
     }
 
+    /** Try to create a rule without a name and check the error. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithEmptyName()
+    {
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("");
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
+    }
+
     /** Check we can create two rules with the same name. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void duplicateRuleNameIsAcceptable()
@@ -132,7 +146,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a user without permission to view the folder cannot create a rule in it. */
-    public void requirePermissionToCreateRule()
+    public void requireReadPermissionToCreateRule()
     {
         STEP("Create a user and use them to create a private site containing a folder");
         UserModel privateUser = dataUser.createRandomTestUser();
@@ -146,7 +160,27 @@ public class CreateRulesTests extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
-        restClient.assertLastError().containsSummary("Cannot read from this node");
+        restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
+    }
+
+    /** Check that a user without write permission for the folder cannot create a rule in it. */
+    public void requireWritePermissionToCreateRule()
+    {
+        STEP("Create a user and use them to create a private site containing a folder");
+        UserModel privateUser = dataUser.createRandomTestUser();
+        SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
+
+        STEP("Create a collaborator and check they cannot create a rule in the private folder");
+        UserModel collaborator = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(collaborator, privateSite, SiteCollaborator);
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("ruleName");
+
+        restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
     }
 
     /** Check we can't create a rule under a document node. */
@@ -188,5 +222,24 @@ public class CreateRulesTests extends RestTest
                 rules.getEntries().get(i).onModel()
                     .assertThat().field("id").isNotNull()
                     .assertThat().field("name").is(ruleNames.get(i)));
+    }
+
+    /** Try to create several rules with an error in one of them. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRulesWithOneError()
+    {
+        STEP("Try to create a three rules but the middle one has an error.");
+        RestRuleModel ruleA = new RestRuleModel();
+        ruleA.setName("ruleA");
+        RestRuleModel ruleB = new RestRuleModel();
+        // Don't set a name for Rule B.
+        RestRuleModel ruleC = new RestRuleModel();
+        ruleC.setName("ruleC");
+        List<RestRuleModel> ruleModels = List.of(ruleA, ruleB, ruleC);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createListOfRules(ruleModels);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
     }
 }

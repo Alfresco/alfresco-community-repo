@@ -39,7 +39,6 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 @Experimental

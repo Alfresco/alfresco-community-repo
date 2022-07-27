@@ -67,7 +67,7 @@ public class RulesImpl implements Rules
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId, false);
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
 
-        final boolean isShared = ruleService.isRuleSetShared(ruleSetNodeRef);
+        final boolean isShared = isRuleSetNotNullAndShared(ruleSetNodeRef);
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
             .map(ruleModel -> Rule.from(ruleModel, isShared))
             .collect(Collectors.toList());
@@ -82,7 +82,7 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return Rule.from(ruleService.getRule(ruleNodeRef), ruleService.isRuleSetShared(ruleSetNodeRef));
+        return Rule.from(ruleService.getRule(ruleNodeRef), isRuleSetNotNullAndShared(ruleSetNodeRef));
     }
 
     @Override
@@ -216,13 +216,19 @@ public class RulesImpl implements Rules
 
     private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
     {
-        if (ruleSetNodeRef == null)
+        if (ruleSetNodeRef == null && folderNodeRef != null)
         {
-            return ruleService.isRuleSetShared(ruleService.getRuleSetNode(folderNodeRef));
+            final NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNodeRef);
+            return ruleSetNode != null && ruleService.isRuleSetShared(ruleSetNode);
         }
         else
         {
-            return ruleService.isRuleSetShared(ruleSetNodeRef);
+            return isRuleSetNotNullAndShared(ruleSetNodeRef);
         }
+    }
+
+    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef)
+    {
+        return ruleSetNodeRef != null && ruleService.isRuleSetShared(ruleSetNodeRef);
     }
 }

@@ -34,11 +34,15 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.model.FolderModel;
@@ -72,6 +76,10 @@ public class GetRulesTests extends RestTest
         createdRules = Stream.of("ruleA", "ruleB").map(ruleName -> {
             RestRuleModel ruleModel = new RestRuleModel();
             ruleModel.setName(ruleName);
+            RestActionBodyExecTemplateModel actionModel = new RestActionBodyExecTemplateModel();
+            actionModel.setActionDefinitionId("add-features");
+            actionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
+            ruleModel.setActions(List.of(actionModel));
             return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());
         createdRuleA = createdRules.get(0);

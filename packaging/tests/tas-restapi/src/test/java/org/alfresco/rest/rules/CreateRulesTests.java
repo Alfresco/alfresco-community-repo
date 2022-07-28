@@ -37,10 +37,14 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.model.FileModel;
@@ -75,6 +79,10 @@ public class CreateRulesTests extends RestTest
     {
         RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName("ruleName");
+        RestActionBodyExecTemplateModel actionModel = new RestActionBodyExecTemplateModel();
+        actionModel.setActionDefinitionId("add-features");
+        actionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
+        ruleModel.setActions(List.of(actionModel));
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
@@ -135,6 +143,10 @@ public class CreateRulesTests extends RestTest
     {
         RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName("duplicateRuleName");
+        RestActionBodyExecTemplateModel actionModel = new RestActionBodyExecTemplateModel();
+        actionModel.setActionDefinitionId("add-features");
+        actionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
+        ruleModel.setActions(List.of(actionModel));
 
         STEP("Create two identical rules");
         RestRuleModel ruleA = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);

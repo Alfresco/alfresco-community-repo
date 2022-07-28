@@ -163,5 +163,5 @@ updates:
     schedule:
     interval: "daily"
     time: "22:00"
-    timezone: "Europe/London"
+    timezone: Africa/Abidjan
     open-pull-requests-limit: 99

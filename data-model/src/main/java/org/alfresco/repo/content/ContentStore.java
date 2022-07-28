@@ -269,9 +269,25 @@ public interface ContentStore
      * @return A direct access {@code URL} object for the content
      * @throws UnsupportedOperationException if the store is unable to provide the information
      */
+    @Deprecated
     default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName)
     {
-        return requestContentDirectUrl(contentUrl, attachment, fileName, null);
+        return requestContentDirectUrl(contentUrl, attachment, fileName, null, null);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param contentUrl A content store {@code URL}
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param fileName File name of the content
+     * @return A direct access {@code URL} object for the content
+     * @throws UnsupportedOperationException if the store is unable to provide the information
+     */
+    default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype)
+    {
+        return requestContentDirectUrl(contentUrl, attachment, fileName, mimetype, null);
     }
 
     /**
@@ -285,7 +301,25 @@ public interface ContentStore
      * @return A direct access {@code URL} object for the content.
      * @throws UnsupportedOperationException if the store is unable to provide the information
      */
+    @Deprecated
     default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
+    {
+        return requestContentDirectUrl(contentUrl, attachment, fileName, null, validFor);
+    }
+
+    /**
+     * Gets a presigned URL to directly access the content. It is up to the actual store
+     * implementation if it can fulfil this request with an expiry time or not.
+     *
+     * @param contentUrl A content store {@code URL}
+     * @param attachment {@code true} if an attachment URL is requested, {@code false} for an embedded {@code URL}.
+     * @param fileName File name of the content
+     * @param mimetype Mimetype of the content
+     * @param validFor The time at which the direct access {@code URL} will expire.
+     * @return A direct access {@code URL} object for the content.
+     * @throws UnsupportedOperationException if the store is unable to provide the information
+     */
+    default DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype, Long validFor)
     {
         throw new UnsupportedOperationException(
                 "Retrieving direct access URLs is not supported by this content store.");

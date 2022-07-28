@@ -317,7 +317,7 @@ public class AggregatingContentStore extends AbstractContentStore
         return isContentDirectUrlEnabled;
     }
 
-    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, Long validFor)
+    public DirectAccessUrl requestContentDirectUrl(String contentUrl, boolean attachment, String fileName, String mimetype, Long validFor)
     {
         if (primaryStore == null)
         {
@@ -337,7 +337,7 @@ public class AggregatingContentStore extends AbstractContentStore
             // Check the primary store
             try
             {
-                directAccessUrl = primaryStore.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+                directAccessUrl = primaryStore.requestContentDirectUrl(contentUrl, attachment, fileName, mimetype, validFor);
             }
             catch (UnsupportedOperationException e)
             {
@@ -360,7 +360,7 @@ public class AggregatingContentStore extends AbstractContentStore
             {
                 try
                 {
-                    directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, validFor);
+                    directAccessUrl = store.requestContentDirectUrl(contentUrl, attachment, fileName, mimetype, validFor);
                 }
                 catch (UnsupportedOperationException e)
                 {

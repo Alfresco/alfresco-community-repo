@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -209,12 +210,12 @@ public class DeleteRulesTests extends RestTest
                         .createSingleRule(ruleModel);
 
         STEP("Create a manager in the private site");
-        final UserModel collaborator = dataUser.createRandomTestUser();
-        collaborator.setUserRole(SiteManager);
-        restClient.authenticateUser(privateUser).withCoreAPI().usingSite(privateSite).addPerson(collaborator);
+        final UserModel siteManager = dataUser.createRandomTestUser();
+        siteManager.setUserRole(SiteManager);
+        restClient.authenticateUser(privateUser).withCoreAPI().usingSite(privateSite).addPerson(siteManager);
 
         STEP("Check the manager can delete the rule");
-        restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+        restClient.authenticateUser(siteManager).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
                 .deleteRule(createdRule.getId());
 
         restClient.assertStatusCodeIs(NO_CONTENT);

@@ -130,8 +130,10 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         assertStatusCode(HttpStatus.CREATED);
 
         System.out.println("foldersDispositionScheduleWithGhosting - Cutoff the Folder");
+        JSONObject cutoffJson = new JSONObject();
+        cutoffJson.put("name","cutoff");
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
+            getAdminUser().getPassword(),cutoffJson,folder1.getName());
         assertStatusCode(HttpStatus.CREATED);
         System.out.println("foldersDispositionScheduleWithGhosting - after Cutoff the Folder");
 
@@ -197,14 +199,14 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         // edit disposition date and cut off the folder
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
-
-        // edit disposition date and destroy the folder
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
+//
+//        // edit disposition date and destroy the folder
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
 
         // delete category
         deleteRecordCategory(Category1.getId());

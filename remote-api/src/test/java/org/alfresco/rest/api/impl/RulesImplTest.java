@@ -103,6 +103,7 @@ public class RulesImplTest extends TestCase
 
         given(nodesMock.validateOrLookupNode(eq(FOLDER_NODE_ID), any())).willReturn(folderNodeRef);
         given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
+        given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
         given(nodesMock.nodeMatches(any(), any(), any())).willReturn(true);
         given(permissionServiceMock.hasReadPermission(any())).willReturn(ALLOWED);
         given(permissionServiceMock.hasPermission(any(), any())).willReturn(ALLOWED);
@@ -223,7 +224,6 @@ public class RulesImplTest extends TestCase
     @Test
     public void testGetRuleById()
     {
-        given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
         given(ruleServiceMock.isRuleAssociatedWithRuleSet(any(), any())).willReturn(true);
         given(ruleServiceMock.getRule(any())).willReturn(createRule(RULE_ID));
@@ -255,7 +255,6 @@ public class RulesImplTest extends TestCase
     public void testGetRuleByIdForDefaultRuleSet()
     {
         final String defaultRuleSetId = "-default-";
-        given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
         given(ruleServiceMock.getRuleSetNode(any())).willReturn(ruleSetNodeRef);
         given(ruleServiceMock.isRuleAssociatedWithRuleSet(any(), any())).willReturn(true);
         given(ruleServiceMock.getRule(any())).willReturn(createRule(RULE_ID));
@@ -284,8 +283,6 @@ public class RulesImplTest extends TestCase
     @Test
     public void testGetRuleByIdForNotAssociatedRuleToRuleSet()
     {
-        given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
-        given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
         given(ruleServiceMock.isRuleAssociatedWithRuleSet(any(), any())).willReturn(false);
 
@@ -427,10 +424,86 @@ public class RulesImplTest extends TestCase
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
     }
 
+    /** Check that we can update a rule. */
+    @Test
+    public void testUpdateRules()
+    {
+        Rule ruleBody = mock(Rule.class);
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
+        given(ruleServiceMock.isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef)).willReturn(true);
+        given(ruleServiceMock.isRuleSetShared(ruleSetNodeRef)).willReturn(true);
+        org.alfresco.service.cmr.rule.Rule serviceRuleBody = mock(org.alfresco.service.cmr.rule.Rule.class);
+        given(ruleBody.toServiceModel(nodesMock)).willReturn(serviceRuleBody);
+        org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
+        given(ruleServiceMock.saveRule(folderNodeRef, serviceRuleBody)).willReturn(serviceRule);
+        given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
+        given(serviceRule.getAction()).willReturn(action);
+
+        // when
+        Rule updatedRule = rules.updateRuleById(folderNodeRef.getId(), ruleSetNodeRef.getId(), RULE_ID, ruleBody);
+
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef);
+        then(ruleServiceMock).should().isRuleSetShared(ruleSetNodeRef);
+        then(ruleServiceMock).should().saveRule(folderNodeRef, serviceRuleBody);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+
+        Rule expected = Rule.builder().id(RULE_ID)
+                                      .enabled(true)
+                                      .shared(true)
+                                      .triggers(emptyList()).create();
+        assertThat(updatedRule).isEqualTo(expected);
+    }
+
+    /** Check that we get an error if the rule set is not a child of the folder. */
+    @Test
+    public void testUpdateRules_ruleSetNotInFolder()
+    {
+        Rule ruleBody = mock(Rule.class);
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef)).willReturn(false);
+
+        // when
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() ->
+                rules.updateRuleById(folderNodeRef.getId(), ruleSetNodeRef.getId(), RULE_ID, ruleBody));
+
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    /** Check that we get an error if the rule is not a child of the rule set. */
+    @Test
+    public void testUpdateRules_ruleNotInRuleSet()
+    {
+        Rule ruleBody = mock(Rule.class);
+        given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
+        given(ruleServiceMock.isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef)).willReturn(false);
+
+        // when
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() ->
+                rules.updateRuleById(folderNodeRef.getId(), ruleSetNodeRef.getId(), RULE_ID, ruleBody));
+
+        then(ruleServiceMock).should().isRuleSetAssociatedWithFolder(ruleSetNodeRef, folderNodeRef);
+        then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    /** Try to update a rule without CHANGE permission and check an exception is thrown. */
+    @Test
+    public void testUpdateRules_noChangePermission()
+    {
+        given(permissionServiceMock.hasPermission(folderNodeRef, CHANGE_PERMISSIONS)).willReturn(DENIED);
+
+        Rule ruleBody = mock(Rule.class);
+
+        // when
+        assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() ->
+                rules.updateRuleById(folderNodeRef.getId(), ruleSetNodeRef.getId(), RULE_ID, ruleBody));
+
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
     @Test
     public void testDeleteRuleById() {
-        given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
-        given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
         given(ruleServiceMock.isRuleAssociatedWithRuleSet(any(), any())).willReturn(true);
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
         org.alfresco.service.cmr.rule.Rule rule = createRule(RULE_ID);
@@ -457,7 +530,6 @@ public class RulesImplTest extends TestCase
 
     @Test
     public void testDeleteRuleById_NonExistingRuleId() {
-        given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
         given(nodesMock.validateNode(RULE_ID)).willThrow(new EntityNotFoundException(RULE_ID));
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
 
@@ -479,8 +551,6 @@ public class RulesImplTest extends TestCase
 
     @Test
     public void testDeleteRuleById_RuleIdNotInRuleSet() {
-        given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
-        given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(true);
         given(ruleServiceMock.isRuleAssociatedWithRuleSet(any(), any())).willReturn(false);
 
@@ -521,7 +591,6 @@ public class RulesImplTest extends TestCase
 
     @Test
     public void testDeleteRuleById_RuleSetNotInFolder() {
-        given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
         given(ruleServiceMock.isRuleSetAssociatedWithFolder(any(), any())).willReturn(false);
 
         //when

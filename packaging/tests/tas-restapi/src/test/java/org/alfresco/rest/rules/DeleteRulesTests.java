@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -27,10 +27,8 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -40,13 +38,14 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpStatus;
+import org.junit.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -60,9 +59,6 @@ public class DeleteRulesTests extends RestTest
 
     private UserModel user;
     private SiteModel site;
-    private FolderModel ruleFolder;
-    private List<RestRuleModel> createdRules;
-    private RestRuleModel createdRuleA;
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
@@ -70,18 +66,6 @@ public class DeleteRulesTests extends RestTest
         STEP("Create a user, site and folder");
         user = dataUser.createRandomTestUser();
         site = dataSite.usingUser(user).createPublicRandomSite();
-        ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
-
-        STEP("Create rules in the folder");
-        createdRules = Stream.of("ruleA", "ruleB")
-                .map(ruleName -> {
-                    RestRuleModel ruleModel = new RestRuleModel();
-                    ruleModel.setName(ruleName);
-                    return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                            .createSingleRule(ruleModel);
-                })
-                .collect(toList());
-        createdRuleA = createdRules.get(0);
     }
 
     /**
@@ -90,9 +74,37 @@ public class DeleteRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void deleteSingleRuleAndGet204()
     {
+        STEP("Create rules in the folder");
+        final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final List<RestRuleModel> createdRules = Stream.of("ruleA", "ruleB", "ruleC")
+                .map(ruleName -> {
+                    RestRuleModel ruleModel = new RestRuleModel();
+                    ruleModel.setName(ruleName);
+                    return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                            .createSingleRule(ruleModel);
+                })
+                .collect(toList());
+
         STEP("Attempt delete the rule ");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().deleteRule(createdRuleA.getId());
+        final RestRuleModel ruleA = createdRules.get(0);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().deleteRule(ruleA.getId());
         restClient.assertStatusCodeIs(NO_CONTENT);
+
+        STEP("Get and check the rules from the folder after deleting one of them");
+        final RestRuleModelsCollection rulesAfterDeletion =
+                restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().getListOfRules();
+        restClient.assertStatusCodeIs(OK);
+        rulesAfterDeletion.assertThat().entriesListCountIs(createdRules.size() - 1);
+        Assert.assertTrue(rulesAfterDeletion.getEntries()
+                .stream()
+                .noneMatch(r -> r.onModel().getId().equals(ruleA.getId()))
+        );
+        rulesAfterDeletion.getEntries().stream()
+                .map(rulesLeft -> rulesLeft.onModel().getId())
+                .forEach(left -> Assert.assertTrue( createdRules.stream()
+                        .map(RestRuleModel::getId)
+                        .anyMatch(left::equals)
+                ));
     }
 
     /**
@@ -101,12 +113,15 @@ public class DeleteRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void deleteRuleInNonExistingFolderAndGet404()
     {
+        final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final RestRuleModel testRule = createRule(ruleFolder);
+
         STEP("Create a non-existing folder model");
         final FolderModel nonExistingFolder = new FolderModel();
         nonExistingFolder.setNodeRef(FAKE_NODE_REF);
 
         STEP("Attempt delete the rule in non-existing folder");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistingFolder).usingDefaultRuleSet().deleteRule(createdRuleA.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistingFolder).usingDefaultRuleSet().deleteRule(testRule.getId());
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND);
     }
@@ -117,9 +132,11 @@ public class DeleteRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void deleteRuleInNonExistingRuleSetAndGet404()
     {
+        final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final RestRuleModel testRule = createRule(ruleFolder);
 
         STEP("Attempt delete the rule in non-existing rule set");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingRuleSet(FAKE_NODE_REF).deleteRule(createdRuleA.getId());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingRuleSet(FAKE_NODE_REF).deleteRule(testRule.getId());
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND);
     }
@@ -130,8 +147,27 @@ public class DeleteRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void deleteNonExistingRuleAndGet404()
     {
+        final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         STEP("Attempt delete non-existing rule");
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().deleteRule(FAKE_NODE_REF);
+
+        restClient.assertLastError().statusCodeIs(NOT_FOUND);
+    }
+
+    /**
+     * Try to delete an existing rule passing a wrong but existing folder and get 404.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
+    public void deleteExistingRuleFromWrongFolderAndGet404()
+    {
+        final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final RestRuleModel testRule = createRule(ruleFolder);
+
+        STEP("Create a second folder in the site");
+        final FolderModel anotherFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Attempt delete an existing rule from a wrong but existing (second) folder");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(anotherFolder).usingDefaultRuleSet().deleteRule(testRule.getId());
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND);
     }
@@ -147,7 +183,9 @@ public class DeleteRulesTests extends RestTest
         final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
         final RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName("Private site rule");
-        final RestRuleModel createdRule = restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        final RestRuleModel createdRule =
+                restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+                        .createSingleRule(ruleModel);
 
         STEP("Try to delete the rule with another user");
         restClient.authenticateUser(user).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().deleteRule(createdRule.getId());
@@ -166,8 +204,9 @@ public class DeleteRulesTests extends RestTest
         final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
         final RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName("Private site rule");
-        final RestRuleModel createdRule = restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                .createSingleRule(ruleModel);
+        final RestRuleModel createdRule =
+                restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+                        .createSingleRule(ruleModel);
 
         STEP("Create a manager in the private site");
         final UserModel collaborator = dataUser.createRandomTestUser();
@@ -175,8 +214,17 @@ public class DeleteRulesTests extends RestTest
         restClient.authenticateUser(privateUser).withCoreAPI().usingSite(privateSite).addPerson(collaborator);
 
         STEP("Check the manager can delete the rule");
-        restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().deleteRule(createdRule.getId());
+        restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+                .deleteRule(createdRule.getId());
 
         restClient.assertStatusCodeIs(NO_CONTENT);
+    }
+
+    private RestRuleModel createRule(FolderModel ruleFolder)
+    {
+        STEP("Create a rule in the folder");
+        final RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("Test rule");
+        return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }
 }

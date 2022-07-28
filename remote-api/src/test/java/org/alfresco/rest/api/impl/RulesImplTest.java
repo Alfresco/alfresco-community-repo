@@ -51,6 +51,7 @@ import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
@@ -186,6 +187,20 @@ public class RulesImplTest extends TestCase
             () -> rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, paging));
 
         then(ruleServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testGetRulesForNotExistingDefaultRuleSetNode()
+    {
+        given(nodesMock.nodeMatches(eq(folderNodeRef), any(), any())).willReturn(true);
+        given(ruleServiceMock.getRuleSetNode(folderNodeRef)).willReturn(null);
+
+        // when
+        assertThatExceptionOfType(RelationshipResourceNotFoundException.class).isThrownBy(
+                () -> rules.getRules(FOLDER_NODE_ID, DEFAULT_ID, paging));
+
+        then(ruleServiceMock).should().getRuleSetNode(folderNodeRef);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
     }
 
     @Test

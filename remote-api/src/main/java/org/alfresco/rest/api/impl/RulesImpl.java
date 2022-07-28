@@ -41,6 +41,7 @@ import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -169,7 +170,13 @@ public class RulesImpl implements Rules
     {
         if (RuleSet.isDefaultId(ruleSetId))
         {
-            return ruleService.getRuleSetNode(associatedFolderNodeRef);
+            final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(associatedFolderNodeRef);
+            if (ruleSetNodeRef == null)
+            {
+                //folder doesn't have a -default- rule set
+                throw new RelationshipResourceNotFoundException(associatedFolderNodeRef.getId(), ruleSetId);
+            }
+            return ruleSetNodeRef;
         }
 
         final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);

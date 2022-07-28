@@ -69,7 +69,7 @@ RUN yum install -y fontconfig-2.13.1-4.el8 \
                    dejavu-fonts-common-2.35-7.el8 \
                    fontpackages-filesystem-1.44-22.el8 \
                    freetype-2.9.1-4.el8_3.1 \
-                   libpng15-1.5.30-7.el8 \
+                   libpng-1.6.34-5.el8 \
                    dejavu-sans-fonts-2.35-7.el8 && \
     yum clean all
 

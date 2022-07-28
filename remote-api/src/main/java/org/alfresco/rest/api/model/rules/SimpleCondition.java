@@ -84,65 +84,28 @@ public class SimpleCondition
             return null;
         }
 
-        final SimpleCondition.Builder builder = builder();
         switch (actionCondition.getActionConditionDefinitionName())
         {
         case ComparePropertyValueEvaluator.NAME:
-            if (actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY) != null)
-            {
-                builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY).toString().toLowerCase());
-            } else {
-                builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase());
-            }
-            builder.comparator(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString().toLowerCase());
-            builder.parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString());
-            break;
+            return createComparePropertyValueCondition(actionCondition);
         case CompareMimeTypeEvaluator.NAME:
-            builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString());
-            builder.comparator(COMPARATOR_EQUALS);
-            builder.parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString());
-            break;
+            return createCompareMimeTypeCondition(actionCondition);
         case HasAspectEvaluator.NAME:
-            builder.field(HasAspectEvaluator.PARAM_ASPECT);
-            builder.comparator(COMPARATOR_EQUALS);
-            builder.parameter(actionCondition.getParameterValues().get(HasAspectEvaluator.PARAM_ASPECT).toString());
-            break;
+            return createHasAspectCondition(actionCondition);
         case HasChildEvaluator.NAME:
-            if (actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE) != null)
-            {
-                builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE).toString());
-            } else {
-                builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_NAME).toString());
-            }
-            builder.comparator(COMPARATOR_EQUALS);
-            builder.parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString());
-            break;
+            return createHasChildCondition(actionCondition);
         case HasTagEvaluator.NAME:
-            builder.field(HasTagEvaluator.PARAM_TAG);
-            builder.comparator(COMPARATOR_EQUALS);
-            builder.parameter(actionCondition.getParameterValues().get(HasTagEvaluator.PARAM_TAG).toString());
-            break;
+            return createHasTagCondition(actionCondition);
         case HasVersionHistoryEvaluator.NAME:
-            builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase());
-            builder.comparator(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString());
-            builder.parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString());
-            break;
+            return createHasVersionHistoryCondition(actionCondition);
         case InCategoryEvaluator.NAME:
-            builder.field(actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_ASPECT).toString());
-            builder.comparator(COMPARATOR_EQUALS);
-            builder.parameter(actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_VALUE).toString());
-            break;
+            return createInCategoryCondition(actionCondition);
         case IsSubTypeEvaluator.NAME:
-            builder.field(IsSubTypeEvaluator.PARAM_TYPE);
-            builder.comparator(COMPARATOR_EQUALS);
-            builder.parameter(actionCondition.getParameterValues().get(IsSubTypeEvaluator.PARAM_TYPE).toString());
-            break;
+            return createIsSubtypeCondition(actionCondition);
         case NoConditionEvaluator.NAME:
         default:
             return null;
         }
-
-        return builder.create();
     }
 
     public String getField()
@@ -196,6 +159,82 @@ public class SimpleCondition
     public int hashCode()
     {
         return Objects.hash(field, comparator, parameter);
+    }
+
+    private static SimpleCondition createComparePropertyValueCondition(final ActionCondition actionCondition) {
+        final SimpleCondition.Builder builder = builder();
+        if (actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY) != null)
+        {
+            builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY).toString().toLowerCase());
+        } else {
+            builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase());
+        }
+        return builder
+            .comparator(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString().toLowerCase())
+            .parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString())
+            .create();
+    }
+
+    private static SimpleCondition createCompareMimeTypeCondition(final ActionCondition actionCondition) {
+        return builder()
+            .field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase())
+            .comparator(COMPARATOR_EQUALS)
+            .parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString())
+            .create();
+    }
+
+    private static SimpleCondition createHasAspectCondition(final ActionCondition actionCondition) {
+        return builder()
+            .field(HasAspectEvaluator.PARAM_ASPECT)
+            .comparator(COMPARATOR_EQUALS)
+            .parameter(actionCondition.getParameterValues().get(HasAspectEvaluator.PARAM_ASPECT).toString())
+            .create();
+    }
+
+    private static SimpleCondition createHasChildCondition(final ActionCondition actionCondition) {
+        final SimpleCondition.Builder builder = builder();
+        if (actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE) != null)
+        {
+            builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE).toString().toLowerCase());
+        } else {
+            builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_NAME).toString().toLowerCase());
+        }
+        return builder
+            .comparator(COMPARATOR_EQUALS)
+            .parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString())
+            .create();
+    }
+
+    private static SimpleCondition createHasTagCondition(final ActionCondition actionCondition) {
+        return builder()
+            .field(HasTagEvaluator.PARAM_TAG)
+            .comparator(COMPARATOR_EQUALS)
+            .parameter(actionCondition.getParameterValues().get(HasTagEvaluator.PARAM_TAG).toString())
+            .create();
+    }
+
+    private static SimpleCondition createHasVersionHistoryCondition(final ActionCondition actionCondition) {
+        return builder()
+            .field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase())
+            .comparator(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString().toLowerCase())
+            .parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString())
+            .create();
+    }
+
+    private static SimpleCondition createInCategoryCondition(final ActionCondition actionCondition) {
+        return builder()
+            .field(actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_ASPECT).toString().toLowerCase())
+            .comparator(COMPARATOR_EQUALS)
+            .parameter(actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_VALUE).toString())
+            .create();
+    }
+
+    private static SimpleCondition createIsSubtypeCondition(final ActionCondition actionCondition) {
+        return builder()
+            .field(IsSubTypeEvaluator.PARAM_TYPE)
+            .comparator(COMPARATOR_EQUALS)
+            .parameter(actionCondition.getParameterValues().get(IsSubTypeEvaluator.PARAM_TYPE).toString())
+            .create();
     }
 
     public static Builder builder()

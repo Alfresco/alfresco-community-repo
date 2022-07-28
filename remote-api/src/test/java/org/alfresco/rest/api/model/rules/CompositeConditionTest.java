@@ -30,7 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
-import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 @Experimental
@@ -51,17 +49,24 @@ public class CompositeConditionTest
     public void testFrom()
     {
         final List<ActionCondition> actionConditions = List.of(
-            createActionCondition(),
-            createActionCondition(true),
-            createActionCondition()
+            createActionCondition("value1"),
+            createActionCondition("value2", true),
+            createActionCondition("value3")
         );
+        final CompositeCondition expectedCompositeCondition = createCompositeCondition(List.of(
+            createCompositeCondition(false, List.of(
+                createSimpleCondition("value1"),
+                createSimpleCondition("value3")
+            )),
+            createCompositeCondition(true, List.of(
+                createSimpleCondition("value2")
+            ))
+        ));
 
         // when
         final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions);
 
-        assertThat(actualCompositeCondition).is(havingCompositeConditions(2, false));
-        assertThat(actualCompositeCondition.getCompositeConditions().get(0)).is(havingSimpleConditions(2, false));
-        assertThat(actualCompositeCondition.getCompositeConditions().get(1)).is(havingSimpleConditions(1, true));
+        assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }
 
     @Test
@@ -104,7 +109,7 @@ public class CompositeConditionTest
         final List<SimpleCondition> simpleConditions = List.of(SimpleCondition.builder().field("field").comparator("comparator").parameter("param").create());
         final boolean inverted = true;
         final ConditionOperator conditionOperator = ConditionOperator.OR;
-        final CompositeCondition expectedCondition = CompositeCondition.builder().simpleConditions(simpleConditions).inverted(inverted).booleanMode(conditionOperator).create();
+        final CompositeCondition expectedCondition = createCompositeCondition(inverted, conditionOperator, null, simpleConditions);
 
         // when
         final CompositeCondition actualCompositeCondition = CompositeCondition.ofSimpleConditions(simpleConditions, inverted, conditionOperator);
@@ -130,63 +135,46 @@ public class CompositeConditionTest
         assertThat(actualCompositeCondition).isNull();
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private static Condition<CompositeCondition> havingCompositeConditions(final int expectedSize, final boolean inverted)
+    private static ActionCondition createActionCondition(final String value)
     {
-        var ref = new Object() { CompositeCondition compositeCondition; };
-        return new Condition<>(
-            condition -> {
-                ref.compositeCondition = condition;
-                assertThat(condition)
-                        .isNotNull()
-                    .extracting(CompositeCondition::getCompositeConditions)
-                        .isNotNull()
-                    .extracting(Collection::size)
-                        .isEqualTo(expectedSize);
-                assertThat(condition.isInverted()).isEqualTo(inverted);
-                assertThat(condition.getBooleanMode()).isEqualTo(ConditionOperator.AND);
-                assertThat(condition.getSimpleConditions()).isNull();
-                return true;
-            },
-            String.format("containing compositeCondition=%s", ref.compositeCondition)
-        );
+        return createActionCondition(value, false);
     }
 
-    private static Condition<CompositeCondition> havingSimpleConditions(final int expectedSize, final boolean inverted)
-    {
-        var ref = new Object() { CompositeCondition compositeCondition; };
-        return new Condition<>(
-            condition -> {
-                ref.compositeCondition = condition;
-                assertThat(condition)
-                        .isNotNull()
-                    .extracting(CompositeCondition::getSimpleConditions)
-                        .isNotNull()
-                    .extracting(Collection::size)
-                        .isEqualTo(expectedSize);
-                assertThat(condition.isInverted()).isEqualTo(inverted);
-                assertThat(condition.getBooleanMode()).isEqualTo(ConditionOperator.AND);
-                assertThat(condition.getCompositeConditions()).isNull();
-                return true;
-            },
-            String.format("containing compositeCondition=%s", ref.compositeCondition)
-        );
-    }
-
-    private static ActionCondition createActionCondition()
-    {
-        return createActionCondition(false);
-    }
-
-    private static ActionCondition createActionCondition(final boolean inverted)
+    private static ActionCondition createActionCondition(final String value, final boolean inverted)
     {
         final ActionCondition actionCondition = new ActionConditionImpl("fake-id", ComparePropertyValueEvaluator.NAME);
         actionCondition.setInvertCondition(inverted);
         final Map<String, Serializable> parameterValues = new HashMap<>();
         parameterValues.put(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY, "content-property");
         parameterValues.put(ComparePropertyValueEvaluator.PARAM_OPERATION, "operation");
-        parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, "value");
+        parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, value);
         actionCondition.setParameterValues(parameterValues);
         return actionCondition;
+    }
+
+    private static SimpleCondition createSimpleCondition(final String value) {
+        return SimpleCondition.builder()
+            .field("content-property")
+            .comparator("operation")
+            .parameter(value)
+            .create();
+    }
+
+    private static CompositeCondition createCompositeCondition(final List<CompositeCondition> compositeConditions) {
+        return createCompositeCondition(false, ConditionOperator.AND, compositeConditions, null);
+    }
+
+    private static CompositeCondition createCompositeCondition(final boolean inverted, final List<SimpleCondition> simpleConditions) {
+        return createCompositeCondition(inverted, ConditionOperator.AND, null, simpleConditions);
+    }
+
+    private static CompositeCondition createCompositeCondition(final boolean inverted, final ConditionOperator conditionOperator,
+        final List<CompositeCondition> compositeConditions, final List<SimpleCondition> simpleConditions) {
+        return CompositeCondition.builder()
+            .inverted(inverted)
+            .booleanMode(conditionOperator)
+            .compositeConditions(compositeConditions)
+            .simpleConditions(simpleConditions)
+            .create();
     }
 }

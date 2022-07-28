@@ -81,8 +81,10 @@ public class RecordFoldersAPI extends BaseAPI
             System.out.println(requestParams.toString());
             return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
         }
-        catch (JSONException error) {
+        catch (Exception error) {
             LOGGER.error("Unable to extract response parameter", error);
+            error.printStackTrace();
+            System.out.println("Error getting the response from postFolderAction" + error.getMessage());
         }
         return null;
     }

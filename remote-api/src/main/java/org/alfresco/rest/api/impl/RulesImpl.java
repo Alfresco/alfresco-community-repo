@@ -49,10 +49,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Experimental
 public class RulesImpl implements Rules
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RulesImpl.class);
     private static final String RULE_SET_EXPECTED_TYPE_NAME = "rule set";
 
     private Nodes nodes;
@@ -97,6 +100,19 @@ public class RulesImpl implements Rules
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
                     .map(rule -> Rule.from(rule, isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef)))
                     .collect(Collectors.toList());
+    }
+
+    @Override
+    public Rule updateRuleById(String folderNodeId, String ruleSetId, String ruleId, Rule rule)
+    {
+        LOGGER.debug("Updating rule in folder {}, rule set {}, rule {} to {}", folderNodeId, ruleSetId, ruleId, rule);
+
+        NodeRef folderNodeRef = validateFolderNode(folderNodeId, true);
+        NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
+        validateRuleNode(ruleId, ruleSetNodeRef);
+
+        boolean shared = isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef);
+        return Rule.from(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)), shared);
     }
 
     @Override

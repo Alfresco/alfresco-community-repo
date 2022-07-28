@@ -26,12 +26,16 @@
 
 package org.alfresco.rest.api.model.rules;
 
-import org.alfresco.service.Experimental;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
+import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
 
 @Experimental
 public class Action
@@ -59,6 +63,17 @@ public class Action
         }
 
         return builder.create();
+    }
+
+    /**
+     * Convert the REST model object to the equivalent service POJO.
+     *
+     * @param nodeRef The node reference.
+     * @return The action service POJO.
+     */
+    public org.alfresco.service.cmr.action.Action toServiceModel(final NodeRef nodeRef)
+    {
+        return new ActionImpl(nodeRef, GUID.generate(), SetPropertyValueActionExecuter.NAME, params);
     }
 
     public String getActionDefinitionId()

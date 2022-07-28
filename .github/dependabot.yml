@@ -164,4 +164,3 @@ updates:
     interval: "daily"
     time: "22:00"
     timezone: Africa/Abidjan
-    open-pull-requests-limit: 99

@@ -26,17 +26,12 @@
 
 package org.alfresco.rest.api.model.rules;
 
-import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
-import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
@@ -109,21 +104,14 @@ public class Rule
      */
     public org.alfresco.service.cmr.rule.Rule toServiceModel(Nodes nodes)
     {
-        org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
-        if (id != null)
-        {
-            NodeRef nodeRef = nodes.validateOrLookupNode(id, null);
-            ruleModel.setNodeRef(nodeRef);
-        }
+        final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
+        final NodeRef nodeRef = (id != null) ? nodes.validateOrLookupNode(id, null) : null;
+        ruleModel.setNodeRef(nodeRef);
         ruleModel.setTitle(name);
 
-        // TODO: Once we have actions working properly then this needs to be replaced.
-        Map<String, Serializable> parameters = Map.of(
-                SetPropertyValueActionExecuter.PARAM_PROPERTY, ContentModel.PROP_TITLE,
-                SetPropertyValueActionExecuter.PARAM_VALUE, "UPDATED:" + GUID.generate());
-        org.alfresco.service.cmr.action.Action actionModel = new ActionImpl(null, GUID.generate(), SetPropertyValueActionExecuter.NAME, parameters);
-        org.alfresco.service.cmr.action.CompositeAction compositeAction = new CompositeActionImpl(null, GUID.generate());
-        compositeAction.addAction(actionModel);
+        // TODO: Once we have actions working properly then this may require a fix.
+        final org.alfresco.service.cmr.action.CompositeAction compositeAction = new CompositeActionImpl(nodeRef, GUID.generate());
+        actions.forEach(action -> compositeAction.addAction(action.toServiceModel(nodeRef)));
         ruleModel.setAction(compositeAction);
 
         return ruleModel;

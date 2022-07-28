@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.rest.api.Nodes;
@@ -120,8 +121,10 @@ public class Rule
         Map<String, Serializable> parameters = Map.of(
                 SetPropertyValueActionExecuter.PARAM_PROPERTY, ContentModel.PROP_TITLE,
                 SetPropertyValueActionExecuter.PARAM_VALUE, "UPDATED:" + GUID.generate());
-        org.alfresco.service.cmr.action.Action action = new ActionImpl(null, GUID.generate(), SetPropertyValueActionExecuter.NAME, parameters);
-        ruleModel.setAction(action);
+        org.alfresco.service.cmr.action.Action actionModel = new ActionImpl(null, GUID.generate(), SetPropertyValueActionExecuter.NAME, parameters);
+        org.alfresco.service.cmr.action.CompositeAction compositeAction = new CompositeActionImpl(null, GUID.generate());
+        compositeAction.addAction(actionModel);
+        ruleModel.setAction(compositeAction);
 
         return ruleModel;
     }

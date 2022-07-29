@@ -107,7 +107,6 @@ public class Rule
         ruleModel.setNodeRef(nodeRef);
         ruleModel.setTitle(name);
 
-        // TODO: Once we have actions working properly then this may require a fix.
         ruleModel.setAction(Action.toCompositeAction(actions));
 
         return ruleModel;

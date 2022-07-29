@@ -56,7 +56,7 @@
         <dependency.alfresco-greenmail.version>6.2</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.15</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.3.21</dependency.spring.version>
+        <dependency.spring.version>5.3.22</dependency.spring.version>
         <dependency.antlr.version>3.5.2</dependency.antlr.version>
         <dependency.jackson.version>2.13.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.13.3</dependency.jackson-databind.version>
@@ -877,6 +877,17 @@
                 <version>1.18.24</version>
                 <scope>provided</scope>
             </dependency>
+            <dependency>
+                <groupId>org.activiti</groupId>
+                <artifactId>activiti-spring</artifactId>
+                <version>${dependency.activiti.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-dbcp</groupId>
+                        <artifactId>commons-dbcp</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -929,7 +940,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>3.4.1</version>
+                    <version>3.4.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.alfresco.maven.plugin</groupId>

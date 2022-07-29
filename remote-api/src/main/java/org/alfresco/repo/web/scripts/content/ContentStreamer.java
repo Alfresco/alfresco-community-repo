@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
@@ -65,6 +66,8 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.util.FileCopyUtils;
+
+import org.springframework.extensions.webscripts.ui.common.StringUtils;
 
 
 /**
@@ -427,7 +430,7 @@ public class ContentStreamer implements ResourceLoaderAware
             {
                if (logger.isDebugEnabled())
                   logger.debug("Sending complete file content...");
-               
+
                // set mimetype for the content and the character encoding for the stream
                res.setContentType(mimetype);
                res.setContentEncoding(encoding);
@@ -442,7 +445,23 @@ public class ContentStreamer implements ResourceLoaderAware
                // get the content and stream directly to the response output stream
                // assuming the repository is capable of streaming in chunks, this should allow large files
                // to be streamed directly to the browser response stream.
-               reader.getContent( res.getOutputStream() );
+               if (mimetype.equals(MimetypeMap.MIMETYPE_HTML) && !attach)
+               {
+                   String cleanOutput = StringUtils.stripUnsafeHTMLTags(reader.getContentString(),false);
+                   File tempFile = TempFileProvider.createTempFile(attachFileName,".html");
+                   FileContentWriter writer2 = new FileContentWriter(tempFile);
+                   writer2.setMimetype(MimetypeMap.MIMETYPE_HTML);
+                   writer2.setEncoding("UTF-8");
+                   writer2.putContent(cleanOutput);
+                   // grab the reader from the temp writer
+                   ContentReader reader2 = writer2.getReader();
+                   reader2.getContent( res.getOutputStream() );
+               }
+               else
+               {
+                   reader.getContent( res.getOutputStream() );
+               }
+
             }
         }
         catch (SocketException e1)

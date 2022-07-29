@@ -32,7 +32,7 @@
     <arg>
         <shortname>attach</shortname>
         <description>if true, force download of content as attachment</description>
-        <default>false</default>
+        <default>true</default>
     </arg>
   </args>
   

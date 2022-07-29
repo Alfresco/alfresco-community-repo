@@ -123,7 +123,18 @@ public class ContentGet extends StreamContent implements ServletContextAware
         }
         
         // determine attachment
-        boolean attach = Boolean.valueOf(req.getParameter("a"));
+        boolean attach;
+        String attachment = req.getParameter("a");
+
+        if (req.getURL().contains("slingshot") && attachment == null)
+        {
+            attach = false;
+        }
+        else
+        {
+            attach = attachment == null || attachment.equals("true");
+        }
+        //boolean attach = Boolean.valueOf(req.getParameter("a"));
         
         // render content
         QName propertyQName = ContentModel.PROP_CONTENT;

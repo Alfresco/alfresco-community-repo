@@ -25,8 +25,8 @@
  */
 package org.alfresco.rest.rules;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createActionModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RuleTestUtils.createActionModel;
+import static org.alfresco.rest.rules.RuleTestUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;

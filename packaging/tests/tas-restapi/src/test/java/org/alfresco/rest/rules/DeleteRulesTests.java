@@ -28,6 +28,7 @@ package org.alfresco.rest.rules;
 import static java.util.stream.Collectors.toList;
 
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.constants.UserRole.SiteContributor;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -36,10 +37,11 @@ import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.EmptyRestModelCollectionException;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.model.FolderModel;
@@ -64,18 +66,19 @@ public class DeleteRulesTests extends RestTest
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
     {
-        STEP("Create a user, site and folder");
+        STEP("Create a Contributor user and a public site");
         user = dataUser.createRandomTestUser();
+        user.setUserRole(SiteContributor);
         site = dataSite.usingUser(user).createPublicRandomSite();
     }
 
     /**
-     * Delete a rule by its id.
+     * Delete previously created rule by its id (as Contributor).
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY})
     public void deleteSingleRuleAndGet204()
     {
-        STEP("Create rules in the folder");
+        STEP("Create a few rules in the folder");
         final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         final List<RestRuleModel> createdRules = Stream.of("ruleA", "ruleB", "ruleC")
                 .map(ruleName -> {
@@ -86,7 +89,7 @@ public class DeleteRulesTests extends RestTest
                 })
                 .collect(toList());
 
-        STEP("Attempt delete the rule ");
+        STEP("Attempt delete one rule");
         final RestRuleModel ruleA = createdRules.get(0);
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().deleteRule(ruleA.getId());
         restClient.assertStatusCodeIs(NO_CONTENT);
@@ -100,12 +103,14 @@ public class DeleteRulesTests extends RestTest
                 .stream()
                 .noneMatch(r -> r.onModel().getId().equals(ruleA.getId()))
         );
-        rulesAfterDeletion.getEntries().stream()
-                .map(rulesLeft -> rulesLeft.onModel().getId())
-                .forEach(left -> Assert.assertTrue( createdRules.stream()
-                        .map(RestRuleModel::getId)
-                        .anyMatch(left::equals)
-                ));
+        final Set<String> ruleIdsThatShouldBeLeft = createdRules.stream()
+                .filter(r -> !r.getName().equals("ruleA"))
+                .map(RestRuleModel::getId)
+                .collect(Collectors.toSet());
+        final Set<String> ruleIdsAfterDeletion = rulesAfterDeletion.getEntries().stream()
+                .map(r -> r.onModel().getId())
+                .collect(Collectors.toSet());
+        Assert.assertEquals(ruleIdsThatShouldBeLeft, ruleIdsAfterDeletion);
     }
 
     /**
@@ -176,7 +181,7 @@ public class DeleteRulesTests extends RestTest
     /**
      * Check that a user without write permission on folder cannot delete a rule inside it.
      */
-    public void deleteSingleRuleWithoutPermissionAndGet403()
+    public void deleteSinglePrivateRuleWithoutPermissionAndGet403()
     {
         STEP("Create a user and use them to create a private site containing a folder with a rule");
         final UserModel privateUser = dataUser.createRandomTestUser();
@@ -195,9 +200,30 @@ public class DeleteRulesTests extends RestTest
     }
 
     /**
-     * Check that a user with write permission on folder can delete a rule inside it.
+     * Check that a user with SiteCollaborator permissions on folder can delete a rule inside it.
      */
-    public void deleteSingleRuleWithWritePermissionAndGet204()
+    public void deleteSinglePublicRuleAsCollaboratorAndGet403()
+    {
+        STEP("Create a user and use them to create a private site containing a folder with a rule");
+        final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final RestRuleModel testRule = createRule(ruleFolder);
+
+        STEP("Create a manager in the private site");
+        final UserModel siteCollaborator = dataUser.createRandomTestUser();
+        siteCollaborator.setUserRole(SiteCollaborator);
+        restClient.authenticateUser(user).withCoreAPI().usingSite(site).addPerson(siteCollaborator);
+
+        STEP("Check the manager can delete the rule");
+        restClient.authenticateUser(siteCollaborator).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .deleteRule(testRule.getId());
+
+        restClient.assertLastError().statusCodeIs(FORBIDDEN);
+    }
+
+    /**
+     * Check that a user with SiteManager permissions on folder can delete a rule inside it.
+     */
+    public void deleteSinglePrivateRuleAsSiteManagerAndGet204()
     {
         STEP("Create a user and use them to create a private site containing a folder with a rule");
         final UserModel privateUser = dataUser.createRandomTestUser();

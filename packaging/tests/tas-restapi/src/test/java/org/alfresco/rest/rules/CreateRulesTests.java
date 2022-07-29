@@ -217,12 +217,7 @@ public class CreateRulesTests extends RestTest
     {
         STEP("Create a list of rules in one POST request");
         List<String> ruleNames = List.of("ruleA", "ruleB", "ruleC");
-        List<RestRuleModel> ruleModels = ruleNames.stream().map(ruleName ->
-        {
-            RestRuleModel ruleModel = new RestRuleModel();
-            ruleModel.setName(ruleName);
-            return ruleModel;
-        }).collect(toList());
+        List<RestRuleModel> ruleModels = ruleNames.stream().map(ruleName -> createRule(ruleName, List.of(createAction()))).collect(toList());
 
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                                    .createListOfRules(ruleModels);
@@ -253,5 +248,34 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
+    }
+
+    /**
+     * Create a rule.
+     *
+     * @param name The name for the rule.
+     * @param restActionModels Rule's actions.
+     * @return The created rule.
+     */
+    private RestRuleModel createRule(String name, List<RestActionBodyExecTemplateModel> restActionModels)
+    {
+        STEP("Create a rule model called " + name);
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName(name);
+        ruleModel.setActions(restActionModels);
+        return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+    }
+
+    /**
+     * Create a rule's action.
+     *
+     * @return The created action.
+     */
+    private RestActionBodyExecTemplateModel createAction() {
+        RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
+        restActionModel.setActionDefinitionId("add-features");
+        restActionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
+        return restActionModel;
     }
 }

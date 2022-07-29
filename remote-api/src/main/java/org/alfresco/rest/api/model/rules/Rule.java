@@ -30,14 +30,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.GUID;
 
 @Experimental
 public class Rule
@@ -110,12 +108,7 @@ public class Rule
         ruleModel.setTitle(name);
 
         // TODO: Once we have actions working properly then this may require a fix.
-        if (actions != null)
-        {
-            final org.alfresco.service.cmr.action.CompositeAction compositeAction = new CompositeActionImpl(null, GUID.generate());
-            actions.forEach(action -> compositeAction.addAction(action.toServiceModel(null)));
-            ruleModel.setAction(compositeAction);
-        }
+        ruleModel.setAction(Action.toCompositeAction(actions));
 
         return ruleModel;
     }

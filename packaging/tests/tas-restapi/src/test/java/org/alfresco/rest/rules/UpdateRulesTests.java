@@ -74,8 +74,7 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel rule = createRule("Rule name");
 
         STEP("Try to update the rule.");
-        RestRuleModel updatedRuleModel = new RestRuleModel();
-        updatedRuleModel.setName("Updated rule name");
+        RestRuleModel updatedRuleModel = createRule("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .updateRule(rule.getId(), updatedRuleModel);
 
@@ -175,9 +174,8 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel rule = createRule("Rule name");
 
         STEP("Try to update the rule id and check it isn't changed.");
-        RestRuleModel updatedRuleModel = new RestRuleModel();
+        RestRuleModel updatedRuleModel = createRule("Rule name");
         updatedRuleModel.setId("new-rule-id");
-        updatedRuleModel.setName("Rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                               .updateRule(rule.getId(), updatedRuleModel);
 
@@ -192,14 +190,23 @@ public class UpdateRulesTests extends RestTest
      */
     private RestRuleModel createRule(String name)
     {
-        STEP("Create a rule called " + name);
+        STEP("Create a rule model called " + name);
         RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName(name);
-        RestActionBodyExecTemplateModel actionModel = new RestActionBodyExecTemplateModel();
-        actionModel.setActionDefinitionId("add-features");
-        actionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
-        ruleModel.setActions(List.of(actionModel));
+        ruleModel.setActions(List.of(createAction()));
         return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                         .createSingleRule(ruleModel);
+            .createSingleRule(ruleModel);
+    }
+
+    /**
+     * Create a rule's action.
+     *
+     * @return The created action.
+     */
+    private RestActionBodyExecTemplateModel createAction() {
+        RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
+        restActionModel.setActionDefinitionId("add-features");
+        restActionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
+        return restActionModel;
     }
 }

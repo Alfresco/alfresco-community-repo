@@ -31,7 +31,7 @@ import java.util.Map;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
 
-public class RuleTestUtils
+public class RulesTestsUtils
 {
     public static RestRuleModel createRuleModel(String name) {
         return createRuleModel(name, List.of(createActionModel()));

@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
@@ -82,8 +83,7 @@ public class DeleteRulesTests extends RestTest
         final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         final List<RestRuleModel> createdRules = Stream.of("ruleA", "ruleB", "ruleC")
                 .map(ruleName -> {
-                    RestRuleModel ruleModel = new RestRuleModel();
-                    ruleModel.setName(ruleName);
+                    RestRuleModel ruleModel = createRuleModel(ruleName);
                     return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                             .createSingleRule(ruleModel);
                 })

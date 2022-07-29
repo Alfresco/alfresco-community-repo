@@ -28,6 +28,7 @@ package org.alfresco.rest.rules;
 import static java.util.stream.Collectors.toList;
 
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -178,6 +179,21 @@ public class CreateRulesTests extends RestTest
         ruleModel.setName("ruleName");
 
         restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
+    }
+
+    /** Check that a user consumer permission for the folder cannot create a rule in it. */
+    public void failToCreateRuleAsSiteConsumer()
+    {
+        STEP("Create a consumer and check they cannot create a rule in the public folder");
+        UserModel consumer = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(consumer, site, SiteConsumer);
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("ruleName");
+
+        restClient.authenticateUser(consumer).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");

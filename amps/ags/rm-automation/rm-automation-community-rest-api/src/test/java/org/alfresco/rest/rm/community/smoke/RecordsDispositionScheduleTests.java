@@ -129,48 +129,48 @@ public class RecordsDispositionScheduleTests extends BaseRMRestTest {
 
         String nonElRecordNameNodeRef = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordName, "/" + Category1.getName() + "/" + folderDisposition);
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),nonElRecordNameNodeRef);
+//        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),nonElRecordNameNodeRef);
 
         String elRecordNameNodeRef = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordName, "/" + Category1.getName() + "/" + folderDisposition);
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),elRecordNameNodeRef);
+//        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),elRecordNameNodeRef);
 
         // ensure the complete event action is displayed for both events
-        rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
-               getAdminUser().getPassword(),nonElRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
-        rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),elRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
+//        rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
+//               getAdminUser().getPassword(),nonElRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
+//        rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),elRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
+//
+//        // Create and Complete transfer
+//        HttpResponse nonElRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","transfer"),recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+//                getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordName, "/" + Category1.getName() + "/" + folderDisposition));
+//
+//        String nonElRecordNameTransferId = getTransferId(nonElRecordNameHttpResponse,nonElRecordNameNodeRef);
+//        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","transferComplete"),nonElRecordNameTransferId);
+//
+//        HttpResponse elRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","transfer"),recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+//                getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordName, "/" + Category1.getName() + "/" + folderDisposition));
+//
+//        String elRecordNameTransferId = getTransferId(elRecordNameHttpResponse,elRecordNameNodeRef);
+//        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","transferComplete"),elRecordNameTransferId);
+//
+//        // edit the disposition schedule date to current date
+//        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),editDispositionDateJson(),nonElRecordNameNodeRef);
+//        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRef);
 
-        // Create and Complete transfer
-        HttpResponse nonElRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","transfer"),recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-                getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordName, "/" + Category1.getName() + "/" + folderDisposition));
-
-        String nonElRecordNameTransferId = getTransferId(nonElRecordNameHttpResponse,nonElRecordNameNodeRef);
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","transferComplete"),nonElRecordNameTransferId);
-
-        HttpResponse elRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","transfer"),recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
-                getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordName, "/" + Category1.getName() + "/" + folderDisposition));
-
-        String elRecordNameTransferId = getTransferId(elRecordNameHttpResponse,elRecordNameNodeRef);
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","transferComplete"),elRecordNameTransferId);
-
-        // edit the disposition schedule date to current date
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),nonElRecordNameNodeRef);
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRef);
-
-        // destroy records
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),nonElRecordNameNodeRef);
-        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),elRecordNameNodeRef);
+//        // destroy records
+//        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),nonElRecordNameNodeRef);
+//        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),elRecordNameNodeRef);
 
         // delete category
         deleteRecordCategory(Category1.getId());

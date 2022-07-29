@@ -115,29 +115,29 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         recordsAPI.completeRecord(RM_ADMIN, DEFAULT_PASSWORD, elRecordName);
 
         // edit disposition date and cut off the folder
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
-        assertStatusCode(HttpStatus.CREATED);
-
-        System.out.println("foldersDispositionScheduleWithGhosting - Cutoff the Folder");
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
-        assertStatusCode(HttpStatus.CREATED);
-        System.out.println("foldersDispositionScheduleWithGhosting - after Cutoff the Folder");
-
-        System.out.println("foldersDispositionScheduleWithGhosting - Edit the Disposition Date");
-        // edit disposition date and destroy the folder
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
-        assertStatusCode(HttpStatus.CREATED);
-
-        System.out.println("foldersDispositionScheduleWithGhosting - Destroy the folders");
-        // edit disposition date and destroy the folder
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
-        assertStatusCode(HttpStatus.CREATED);
-
-        System.out.println("foldersDispositionScheduleWithGhosting - Delete the records");
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+//        assertStatusCode(HttpStatus.CREATED);
+//
+//        System.out.println("foldersDispositionScheduleWithGhosting - Cutoff the Folder");
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
+//        assertStatusCode(HttpStatus.CREATED);
+//        System.out.println("foldersDispositionScheduleWithGhosting - after Cutoff the Folder");
+//
+//        System.out.println("foldersDispositionScheduleWithGhosting - Edit the Disposition Date");
+//        // edit disposition date and destroy the folder
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+//        assertStatusCode(HttpStatus.CREATED);
+//
+//        System.out.println("foldersDispositionScheduleWithGhosting - Destroy the folders");
+//        // edit disposition date and destroy the folder
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
+//        assertStatusCode(HttpStatus.CREATED);
+//
+//        System.out.println("foldersDispositionScheduleWithGhosting - Delete the records");
         // delete electronic record
         recordsAPI.deleteRecord(getAdminUser().getUsername(),
             getAdminUser().getPassword(),elRecordName,Category1.getName(),folderDisposition);
@@ -184,16 +184,16 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         recordsAPI.completeRecord(RM_ADMIN, DEFAULT_PASSWORD, elRecordName);
 
         // edit disposition date and cut off the folder
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
-
-        // edit disposition date and destroy the folder
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
-        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),folder1.getName());
+//
+//        // edit disposition date and destroy the folder
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),editDispositionDateJson(),folder1.getName());
+//        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+//            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),folder1.getName());
 
         // delete category
         deleteRecordCategory(Category1.getId());

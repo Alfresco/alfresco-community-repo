@@ -25,6 +25,15 @@
  */
 package org.alfresco.repo.rule;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.ActionModel;
@@ -64,15 +73,6 @@ import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Rule service implementation.
@@ -1595,7 +1595,7 @@ public class RuleServiceImpl
     public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef)
     {
         List<NodeRef> result = new ArrayList<NodeRef>();
-        
+
         if (nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
         {
             ChildAssociationRef assoc = getSavedRuleFolderAssoc(nodeRef);
@@ -1616,13 +1616,9 @@ public class RuleServiceImpl
 
     @Override
     @Experimental
-    public NodeRef getRuleSetNode(final NodeRef folderNodeRef) {
-        return getPrimaryChildNode(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER);
-    }
-
-    private NodeRef getPrimaryChildNode(final NodeRef nodeRef, final QNamePattern associationType) {
-        return runtimeNodeService.getChildAssocs(nodeRef, associationType, associationType).stream()
-            .filter(ChildAssociationRef::isPrimary)
+    public NodeRef getRuleSetNode(final NodeRef folderNodeRef)
+    {
+        return runtimeNodeService.getChildAssocs(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
             .map(ChildAssociationRef::getChildRef)
             .findFirst()
             .orElse(null);
@@ -1630,17 +1626,20 @@ public class RuleServiceImpl
 
     @Override
     @Experimental
-    public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef) {
+    public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
+    {
         return isChildOf(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, folderNodeRef);
     }
 
     @Override
     @Experimental
-    public boolean isRuleAssociatedWithRuleSet(final NodeRef ruleNodeRef, final NodeRef ruleSetNodeRef) {
+    public boolean isRuleAssociatedWithRuleSet(final NodeRef ruleNodeRef, final NodeRef ruleSetNodeRef)
+    {
         return isChildOf(ruleNodeRef, null, ruleSetNodeRef);
     }
 
-    private boolean isChildOf(final NodeRef childNodeRef, final QNamePattern associationType, final NodeRef parentNodeRef) {
+    private boolean isChildOf(final NodeRef childNodeRef, final QNamePattern associationType, final NodeRef parentNodeRef)
+    {
         final List<ChildAssociationRef> associations;
         if (associationType == null) {
             associations = runtimeNodeService.getParentAssocs(childNodeRef);
@@ -1651,5 +1650,13 @@ public class RuleServiceImpl
         return associations.stream()
             .map(ChildAssociationRef::getParentRef)
             .anyMatch(parentNodeRef::equals);
+    }
+
+    @Override
+    @Experimental
+    public boolean isRuleSetShared(final NodeRef ruleSetNodeRef)
+    {
+        return runtimeNodeService.getParentAssocs(ruleSetNodeRef).stream()
+            .anyMatch(association -> !association.isPrimary());
     }
 }

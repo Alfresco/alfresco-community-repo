@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import java.util.Objects;
+
 import org.alfresco.service.Experimental;
 
 @Experimental
@@ -37,10 +39,9 @@ public class RuleSet
 
     public static RuleSet of(String id)
     {
-        final RuleSet ruleSet = new RuleSet();
-        ruleSet.id = id;
-
-        return ruleSet;
+        return builder()
+            .id(id)
+            .create();
     }
 
     public boolean isNotDefaultId() {
@@ -73,5 +74,45 @@ public class RuleSet
     public String toString()
     {
         return "RuleSet{" + "id='" + id + '\'' + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RuleSet ruleSet = (RuleSet) o;
+        return Objects.equals(id, ruleSet.id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id);
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String id;
+
+        public Builder id(String id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public RuleSet create()
+        {
+            final RuleSet ruleSet = new RuleSet();
+            ruleSet.setId(id);
+            return ruleSet;
+        }
     }
 }

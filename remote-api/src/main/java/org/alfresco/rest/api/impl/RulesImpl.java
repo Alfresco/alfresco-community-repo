@@ -50,10 +50,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Experimental
 public class RulesImpl implements Rules
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RulesImpl.class);
     private static final String RULE_SET_EXPECTED_TYPE_NAME = "rule set";
 
     private Nodes nodes;
@@ -66,10 +69,11 @@ public class RulesImpl implements Rules
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId, false);
-        validateRuleSetNode(ruleSetId, folderNodeRef);
+        final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
 
+        final boolean isShared = isRuleSetNotNullAndShared(ruleSetNodeRef);
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
-            .map(Rule::from)
+            .map(ruleModel -> Rule.from(ruleModel, isShared))
             .collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
@@ -82,7 +86,7 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return Rule.from(ruleService.getRule(ruleNodeRef));
+        return Rule.from(ruleService.getRule(ruleNodeRef), isRuleSetNotNullAndShared(ruleSetNodeRef));
     }
 
     @Override
@@ -90,16 +94,26 @@ public class RulesImpl implements Rules
     {
         final NodeRef folderNodeRef = validateFolderNode(folderNodeId, true);
         // Don't validate the ruleset node if -default- is passed since we may need to create it.
-        if (RuleSet.isNotDefaultId(ruleSetId))
-        {
-            validateRuleSetNode(ruleSetId, folderNodeRef);
-        }
+        final NodeRef ruleSetNodeRef = (RuleSet.isNotDefaultId(ruleSetId)) ? validateRuleSetNode(ruleSetId, folderNodeRef) : null;
 
         return rules.stream()
                     .map(rule -> rule.toServiceModel(nodes))
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(Rule::from)
+                    .map(rule -> Rule.from(rule, isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef)))
                     .collect(Collectors.toList());
+    }
+
+    @Override
+    public Rule updateRuleById(String folderNodeId, String ruleSetId, String ruleId, Rule rule)
+    {
+        LOGGER.debug("Updating rule in folder {}, rule set {}, rule {} to {}", folderNodeId, ruleSetId, ruleId, rule);
+
+        NodeRef folderNodeRef = validateFolderNode(folderNodeId, true);
+        NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
+        validateRuleNode(ruleId, ruleSetNodeRef);
+
+        boolean shared = isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef);
+        return Rule.from(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)), shared);
     }
 
     @Override
@@ -214,11 +228,30 @@ public class RulesImpl implements Rules
         return nodeRef;
     }
 
-    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName) {
+    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName)
+    {
         final Set<QName> expectedTypes = Set.of(expectedType);
         if (!nodes.nodeMatches(nodeRef, expectedTypes, null)) {
             final String expectedTypeLocalName = (expectedTypeName != null)? expectedTypeName : expectedType.getLocalName();
             throw new InvalidArgumentException(String.format("NodeId of a %s is expected!", expectedTypeLocalName));
         }
+    }
+
+    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
+    {
+        if (ruleSetNodeRef == null && folderNodeRef != null)
+        {
+            final NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNodeRef);
+            return ruleSetNode != null && ruleService.isRuleSetShared(ruleSetNode);
+        }
+        else
+        {
+            return isRuleSetNotNullAndShared(ruleSetNodeRef);
+        }
+    }
+
+    private boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef)
+    {
+        return ruleSetNodeRef != null && ruleService.isRuleSetShared(ruleSetNodeRef);
     }
 }

@@ -250,8 +250,7 @@ public class DeleteRulesTests extends RestTest
     private RestRuleModel createRule(FolderModel ruleFolder)
     {
         STEP("Create a rule in the folder");
-        final RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("Test rule");
+        final RestRuleModel ruleModel = createRuleModel("Test rule");
         return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }
 }

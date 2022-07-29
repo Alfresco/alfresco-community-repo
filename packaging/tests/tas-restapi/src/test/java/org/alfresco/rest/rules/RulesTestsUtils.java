@@ -33,6 +33,7 @@ import org.alfresco.rest.model.RestRuleModel;
 
 public class RulesTestsUtils
 {
+
     public static RestRuleModel createRuleModel(String name) {
         return createRuleModel(name, List.of(createActionModel()));
     }

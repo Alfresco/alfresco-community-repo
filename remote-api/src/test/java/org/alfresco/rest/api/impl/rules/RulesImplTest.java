@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.api.impl;
+package org.alfresco.rest.api.impl.rules;
 
 import static java.util.Collections.emptyList;
 
@@ -100,6 +100,13 @@ public class RulesImplTest extends TestCase
     public void setUp() throws Exception
     {
         MockitoAnnotations.openMocks(this);
+
+        // Create the node validator.
+        NodeValidator validator = new NodeValidator();
+        validator.setNodes(nodesMock);
+        validator.setPermissionService(permissionServiceMock);
+        validator.setRuleService(ruleServiceMock);
+        rules.setValidator(validator);
 
         given(nodesMock.validateOrLookupNode(eq(FOLDER_NODE_ID), any())).willReturn(folderNodeRef);
         given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);

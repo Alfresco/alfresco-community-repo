@@ -26,7 +26,7 @@
 
 package org.alfresco.rest.api;
 
-import org.alfresco.rest.api.impl.RulesImplTest;
+import org.alfresco.rest.api.impl.rules.RulesImplTest;
 import org.alfresco.rest.api.model.rules.RuleTest;
 import org.alfresco.rest.api.nodes.NodeRulesRelationTest;
 import org.alfresco.service.Experimental;

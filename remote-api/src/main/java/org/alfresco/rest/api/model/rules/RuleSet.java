@@ -44,14 +44,6 @@ public class RuleSet
             .create();
     }
 
-    public boolean isNotDefaultId() {
-        return isNotDefaultId(this.id);
-    }
-
-    public boolean isDefaultId() {
-        return isDefaultId(this.id);
-    }
-
     public static boolean isNotDefaultId(final String id) {
         return !isDefaultId(id);
     }

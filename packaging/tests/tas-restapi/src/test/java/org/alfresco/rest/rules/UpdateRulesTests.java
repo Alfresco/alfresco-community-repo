@@ -25,23 +25,20 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createActionModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.junit.Assert.fail;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
-import org.alfresco.rest.model.RestRuleSetModel;
-import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -71,10 +68,10 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRule()
     {
-        RestRuleModel rule = createRule("Rule name");
+        RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule.");
-        RestRuleModel updatedRuleModel = createRule("Updated rule name");
+        RestRuleModel updatedRuleModel = createRuleModel("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .updateRule(rule.getId(), updatedRuleModel);
 
@@ -87,7 +84,7 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void updateRuleForNonExistentFolder()
     {
-        RestRuleModel rule = createRule("Rule name");
+        RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update a rule in a non-existent folder.");
         FolderModel nonExistentFolder = FolderModel.getRandomFolderModel();
@@ -106,7 +103,7 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void updateRuleForNonExistentRuleSet()
     {
-        RestRuleModel rule = createRule("Rule name");
+        RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update a rule in a non-existent rule set.");
         RestRuleModel updatedRuleModel = new RestRuleModel();
@@ -156,7 +153,7 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void updateRuleToHaveEmptyName()
     {
-        RestRuleModel rule = createRule("Rule name");
+        RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule to have no name.");
         RestRuleModel updatedRuleModel = new RestRuleModel();
@@ -171,10 +168,10 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void tryToUpdateRuleId()
     {
-        RestRuleModel rule = createRule("Rule name");
+        RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule id and check it isn't changed.");
-        RestRuleModel updatedRuleModel = createRule("Rule name");
+        RestRuleModel updatedRuleModel = createRuleModel("Rule name");
         updatedRuleModel.setId("new-rule-id");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                               .updateRule(rule.getId(), updatedRuleModel);
@@ -182,31 +179,23 @@ public class UpdateRulesTests extends RestTest
         updatedRule.assertThat().field("id").is(rule.getId());
     }
 
-    /**
-     * Create a rule.
-     *
-     * @param name The name for the rule.
-     * @return The created rule.
-     */
-    private RestRuleModel createRule(String name)
+    private RestRuleModel createAndSaveRule(String name)
     {
-        STEP("Create a rule model called " + name);
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName(name);
-        ruleModel.setActions(List.of(createAction()));
-        return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-            .createSingleRule(ruleModel);
+        return createAndSaveRule(name, List.of(createActionModel()));
     }
 
     /**
-     * Create a rule's action.
+     * Create a rule for folder and store it.
      *
-     * @return The created action.
+     * @param name The name for the rule.
+     * @param restActionModels Rule's actions.
+     * @return The created rule.
      */
-    private RestActionBodyExecTemplateModel createAction() {
-        RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
-        restActionModel.setActionDefinitionId("add-features");
-        restActionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
-        return restActionModel;
+    private RestRuleModel createAndSaveRule(String name, List<RestActionBodyExecTemplateModel> restActionModels)
+    {
+        STEP("Create a rule called " + name + ", containing actions: " + restActionModels);
+        RestRuleModel ruleModel = createRuleModel(name, restActionModels);
+        return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
     }
 }

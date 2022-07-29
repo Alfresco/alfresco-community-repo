@@ -187,8 +187,7 @@ public class DeleteRulesTests extends RestTest
         final UserModel privateUser = dataUser.createRandomTestUser();
         final SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        final RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("Private site rule");
+        final RestRuleModel ruleModel = createRuleModel("Private site rule");
         final RestRuleModel createdRule =
                 restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
                         .createSingleRule(ruleModel);
@@ -229,8 +228,7 @@ public class DeleteRulesTests extends RestTest
         final UserModel privateUser = dataUser.createRandomTestUser();
         final SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        final RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("Private site rule");
+        final RestRuleModel ruleModel = createRuleModel("Private site rule");
         final RestRuleModel createdRule =
                 restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
                         .createSingleRule(ruleModel);

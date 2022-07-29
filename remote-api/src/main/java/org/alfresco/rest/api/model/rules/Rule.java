@@ -111,7 +111,10 @@ public class Rule
 
         // TODO: Once we have actions working properly then this may require a fix.
         final org.alfresco.service.cmr.action.CompositeAction compositeAction = new CompositeActionImpl(null, GUID.generate());
-        actions.forEach(action -> compositeAction.addAction(action.toServiceModel(null)));
+        if (actions != null)
+        {
+            actions.forEach(action -> compositeAction.addAction(action.toServiceModel(null)));
+        }
         ruleModel.setAction(compositeAction);
 
         return ruleModel;

@@ -448,13 +448,16 @@ public class ContentStreamer implements ResourceLoaderAware
                if (mimetype.equals(MimetypeMap.MIMETYPE_HTML) && !attach)
                {
                    String cleanOutput = StringUtils.stripUnsafeHTMLTags(reader.getContentString(),false);
-                   File tempFile = TempFileProvider.createTempFile(attachFileName,".html");
+                   File tempFile = TempFileProvider.createTempFile("HTMLsanitised",".html");
                    FileContentWriter writer2 = new FileContentWriter(tempFile);
                    writer2.setMimetype(MimetypeMap.MIMETYPE_HTML);
                    writer2.setEncoding("UTF-8");
                    writer2.putContent(cleanOutput);
                    // grab the reader from the temp writer
                    ContentReader reader2 = writer2.getReader();
+                   long size2 = reader2.getSize();
+                   res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size2-1L) + "/" + Long.toString(size2));
+                   res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size2));
                    reader2.getContent( res.getOutputStream() );
                }
                else

@@ -87,7 +87,7 @@ public class GetRulesTests extends RestTest
         STEP("Get the rules that apply to the folder");
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getListOfRules();
 
-        restClient.assertStatusCodeIs(OK);
+        restClient.assertStatusCodeIs(NOT_FOUND);
         assertTrue("Expected no rules to be present.", rules.isEmpty());
     }
 
@@ -160,6 +160,17 @@ public class GetRulesTests extends RestTest
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         STEP("Try to load rules for a non-existent rule set.");
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingRuleSet("fake-id").getSingleRule("fake-rule-id");
+        restClient.assertStatusCodeIs(NOT_FOUND);
+    }
+
+    /** Check we get a 404 if trying to load an existing rule providing a wrong but existing folder */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getSingleRuleFromWrongFolder()
+    {
+        STEP("Create a folder in existing site");
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        STEP("Try to load a rule for a wrong but existing folder.");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(createdRuleA.getId());
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 

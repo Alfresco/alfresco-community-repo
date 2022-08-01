@@ -118,7 +118,6 @@ public class DestroyRecordFolderActionsTest extends BaseRMRestTest {
             deleteRecordCategory(Category1.getId());
             deleteRecordCategory(CATEGORY_TO_MOVE.getId());
 
-
         }
 
     }

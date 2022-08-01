@@ -862,10 +862,7 @@ public class RuleServiceImpl
     {
         // Get the action definition from the rule
         Action action = rule.getAction();
-        if (action == null)
-        {
-            throw new RuleServiceException("An action must be specified when defining a rule.");
-        }
+        ParameterCheck.mandatory("Rule action", action);
         
         // Get the current action node reference
         NodeRef actionNodeRef = null;

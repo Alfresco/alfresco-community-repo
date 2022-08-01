@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
@@ -37,14 +38,10 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.model.FileModel;
@@ -77,18 +74,12 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("ruleName");
-        RestActionBodyExecTemplateModel actionModel = new RestActionBodyExecTemplateModel();
-        actionModel.setActionDefinitionId("add-features");
-        actionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
-        ruleModel.setActions(List.of(actionModel));
+        RestRuleModel ruleModel = createRuleModel("ruleName");
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
-
         rule.assertThat().field("id").isNotNull()
             .assertThat().field("name").is("ruleName");
     }
@@ -141,12 +132,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void duplicateRuleNameIsAcceptable()
     {
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("duplicateRuleName");
-        RestActionBodyExecTemplateModel actionModel = new RestActionBodyExecTemplateModel();
-        actionModel.setActionDefinitionId("add-features");
-        actionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
-        ruleModel.setActions(List.of(actionModel));
+        RestRuleModel ruleModel = createRuleModel("duplicateRuleName");
 
         STEP("Create two identical rules");
         RestRuleModel ruleA = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
@@ -217,12 +203,7 @@ public class CreateRulesTests extends RestTest
     {
         STEP("Create a list of rules in one POST request");
         List<String> ruleNames = List.of("ruleA", "ruleB", "ruleC");
-        List<RestRuleModel> ruleModels = ruleNames.stream().map(ruleName ->
-        {
-            RestRuleModel ruleModel = new RestRuleModel();
-            ruleModel.setName(ruleName);
-            return ruleModel;
-        }).collect(toList());
+        List<RestRuleModel> ruleModels = ruleNames.stream().map(RulesTestsUtils::createRuleModel).collect(toList());
 
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                                    .createListOfRules(ruleModels);
@@ -241,12 +222,10 @@ public class CreateRulesTests extends RestTest
     public void createRulesWithOneError()
     {
         STEP("Try to create a three rules but the middle one has an error.");
-        RestRuleModel ruleA = new RestRuleModel();
-        ruleA.setName("ruleA");
+        RestRuleModel ruleA = createRuleModel("ruleA");
         RestRuleModel ruleB = new RestRuleModel();
         // Don't set a name for Rule B.
-        RestRuleModel ruleC = new RestRuleModel();
-        ruleC.setName("ruleC");
+        RestRuleModel ruleC = createRuleModel("ruleC");
         List<RestRuleModel> ruleModels = List.of(ruleA, ruleB, ruleC);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createListOfRules(ruleModels);

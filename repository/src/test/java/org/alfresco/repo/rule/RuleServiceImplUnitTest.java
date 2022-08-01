@@ -136,7 +136,7 @@ public class RuleServiceImplUnitTest
         when(mockRule.getAction()).thenReturn(null);
 
         // Call the method under test.
-        assertThatExceptionOfType(RuleServiceException.class).isThrownBy(() -> ruleService.saveRule(FOLDER_NODE, mockRule));
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> ruleService.saveRule(FOLDER_NODE, mockRule));
     }
 
     @Test

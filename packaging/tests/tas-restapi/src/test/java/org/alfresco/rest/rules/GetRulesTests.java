@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
@@ -34,15 +35,11 @@ import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.model.FolderModel;
@@ -74,12 +71,7 @@ public class GetRulesTests extends RestTest
 
         STEP("Create rules in the folder");
         createdRules = Stream.of("ruleA", "ruleB").map(ruleName -> {
-            RestRuleModel ruleModel = new RestRuleModel();
-            ruleModel.setName(ruleName);
-            RestActionBodyExecTemplateModel actionModel = new RestActionBodyExecTemplateModel();
-            actionModel.setActionDefinitionId("add-features");
-            actionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
-            ruleModel.setActions(List.of(actionModel));
+            RestRuleModel ruleModel = createRuleModel(ruleName);
             return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());
         createdRuleA = createdRules.get(0);
@@ -95,7 +87,7 @@ public class GetRulesTests extends RestTest
         STEP("Get the rules that apply to the folder");
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getListOfRules();
 
-        restClient.assertStatusCodeIs(OK);
+        restClient.assertStatusCodeIs(NOT_FOUND);
         assertTrue("Expected no rules to be present.", rules.isEmpty());
     }
 
@@ -171,6 +163,17 @@ public class GetRulesTests extends RestTest
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
+    /** Check we get a 404 if trying to load an existing rule providing a wrong but existing folder */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getSingleRuleFromWrongFolder()
+    {
+        STEP("Create a folder in existing site");
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        STEP("Try to load a rule for a wrong but existing folder.");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(createdRuleA.getId());
+        restClient.assertStatusCodeIs(NOT_FOUND);
+    }
+
     /** Check that a user without read permission cannot view the folder rules. */
     public void requireReadPermissionToGetRule()
     {
@@ -197,8 +200,7 @@ public class GetRulesTests extends RestTest
         UserModel privateUser = dataUser.createRandomTestUser();
         SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("Private site rule");
+        RestRuleModel ruleModel = createRuleModel("Private site rule");
         restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Create a collaborator in the private site");

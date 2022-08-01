@@ -40,6 +40,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -62,8 +63,13 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         STEP("Create the RM site if doesn't exist");
         createRMSiteIfNotExists();
 
-        STEP("Create two record category");
+        STEP("Create record category");
         Category1 = createRootCategory(getRandomName("Title"));
+    }
+
+    @Test
+    @AlfrescoTest (jira = "RM-2937")
+    public void foldersDispositionScheduleWithGhosting() {
 
         //create retention schedule
         dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
@@ -73,11 +79,6 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
 
         // add destroy step with ghosting
         dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(Category1.getName());
-    }
-
-    @Test
-    @AlfrescoTest (jira = "RM-2937")
-    public void foldersDispositionScheduleWithGhosting() {
 
         //create folders
         RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
@@ -96,6 +97,46 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         // cut off the FOLDER_DESTROY
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),FOLDER_DESTROY.getName());
+
+        // Destroy the FOLDER_DESTROY
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","destroy"),FOLDER_DESTROY.getName());
+    }
+
+    @Test
+    @AlfrescoTest(jira="RM-2937")
+    public void foldersDispositionScheduleWithoutGhosting() {
+
+        //create retention schedule
+        dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
+
+        // add cut off step
+        dispositionScheduleService.addCutOffAfterPeriodStep(Category1.getName(), "day|2", CREATED_DATE);
+
+        // add destroy step with ghosting
+        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(Category1.getName(), "day|1", CUT_OFF_DATE);
+
+        //create folders
+        RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
+
+        Record elRecord = createElectronicRecord(FOLDER_DESTROY.getId(),electronicRecord);
+        Record nonElRecord = createNonElectronicRecord(FOLDER_DESTROY.getId(),nonElectronicRecord);
+
+        // complete records
+        completeRecord(elRecord.getId());
+        completeRecord(nonElRecord.getId());
+
+        // edit disposition date
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),FOLDER_DESTROY.getName());
+
+        // cut off the FOLDER_DESTROY
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),FOLDER_DESTROY.getName());
+
+        // edit disposition date
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),FOLDER_DESTROY.getName());
 
         // Destroy the FOLDER_DESTROY
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),

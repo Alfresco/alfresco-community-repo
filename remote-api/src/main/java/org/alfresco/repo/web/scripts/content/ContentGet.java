@@ -26,13 +26,16 @@
 package org.alfresco.repo.web.scripts.content;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -64,6 +67,16 @@ public class ContentGet extends StreamContent implements ServletContextAware
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private ContentService contentService;
+
+    private Set<String> nonAttachContentTypes = Collections.emptySet();
+
+    public void setNonAttachContentTypes(String nonAttachAllowListStr)
+    {
+        if ((nonAttachAllowListStr != null) && (! nonAttachAllowListStr.isEmpty()))
+        {
+            nonAttachContentTypes = Set.of(nonAttachAllowListStr.trim().split("\\s*,\\s*"));
+        }
+    }
 
     /**
      * @param servletContext ServletContext
@@ -122,8 +135,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find " + reference.toString());
         }
         
-        // determine attachment
-        boolean attach = Boolean.valueOf(req.getParameter("a"));
+
         
         // render content
         QName propertyQName = ContentModel.PROP_CONTENT;
@@ -138,6 +150,32 @@ public class ContentGet extends StreamContent implements ServletContextAware
             if (propertyName.length() > 0)
             {
                 propertyQName = QName.createQName(propertyName, namespaceService);
+            }
+        }
+        // determine attachment and force download for specific mimetypes - see PRODSEC-5862
+        boolean attach = Boolean.valueOf(req.getParameter("a"));
+        String mimetype = contentService.getReader(nodeRef, propertyQName).getMimetype();
+        String extensionPath = req.getExtensionPath();
+        if (mimetype == null || mimetype.length() == 0)
+        {
+            mimetype = MimetypeMap.MIMETYPE_BINARY;
+            int extIndex = extensionPath.lastIndexOf('.');
+            if (extIndex != -1)
+            {
+                String ext = extensionPath.substring(extIndex + 1);
+                mimetype = mimetypeService.getMimetype(ext);
+            }
+        }
+        if (!attach)
+        {
+            if ((nonAttachContentTypes != null) && (nonAttachContentTypes.contains(mimetype)))
+            {
+                attach = false;
+            }
+            else
+            {
+                logger.warn("Ignored a=false for " + nodeRef.getId() + " since " + mimetype + " is not in the whitelist for non-attach content types");
+                attach = true;
             }
         }
 

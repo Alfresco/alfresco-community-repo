@@ -87,35 +87,14 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
 
         // add destroy step with ghosting
         dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(Category1.getName());
-
     }
 
     @Test
     @AlfrescoTest (jira = "RM-2937")
-    public void foldersDispositionScheduleWithGhosting() throws Exception {
+    public void foldersDispositionScheduleWithGhosting() {
 
         //create folders
         RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
-
-        recordsAPI.uploadElectronicRecord(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),
-            getDefaultElectronicRecordProperties(electronicRecord),
-            folderDisposition,
-            CMISUtil.DocumentType.TEXT_PLAIN);
-
-        recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),getDefaultNonElectronicRecordProperties(nonElectronicRecord),
-            Category1.getName(), folderDisposition);
-
-        // complete records
-        String nonElRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
-            getAdminUser().getPassword(), folderDisposition, nonElectronicRecord);
-        String elRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
-            getAdminUser().getPassword(), folderDisposition, electronicRecord);
-        recordsAPI.completeRecord(getAdminUser().getUsername(),
-            getAdminUser().getPassword(), nonElRecordName);
-        recordsAPI.completeRecord(getAdminUser().getUsername(),
-            getAdminUser().getPassword(), elRecordName);
 
         // edit disposition date
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),

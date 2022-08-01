@@ -26,14 +26,11 @@
  */
 package org.alfresco.rest.rm.community.smoke;
 
-import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordFoldersAPI;
-import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
 import org.json.JSONObject;
@@ -42,28 +39,18 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.DESCRIPTION;
-import static org.alfresco.rest.rm.community.model.site.RMSiteFields.TITLE;
-import static org.alfresco.rest.rm.community.records.SearchRecordsTests.TEST_CONTENT;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 
 public class FoldersDispositionScheduleTests extends BaseRMRestTest {
 
-    private RecordCategory Category1,CATEGORY_TO_MOVE;
+    private RecordCategory Category1;
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
     @Autowired
-    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
-    @Autowired
     private RecordFoldersAPI recordFoldersAPI;
-    @Autowired
-    private RecordsAPI recordsAPI;
     private final String TEST_PREFIX = generateTestPrefix(FoldersDispositionScheduleTests.class);
     private final String folderDisposition = TEST_PREFIX + "RM-2937 folder ghosting";
     private final String electronicRecord = "RM-2937 electronic 2 record";
@@ -77,7 +64,6 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
 
         STEP("Create two record category");
         Category1 = createRootCategory(getRandomName("Title"));
-        CATEGORY_TO_MOVE = createRootCategory(getRandomName("CATEGORY_TO_MOVE"));
 
         //create retention schedule
         dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
@@ -96,6 +82,13 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
         //create folders
         RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
 
+        Record elRecord = createElectronicRecord(FOLDER_DESTROY.getId(),electronicRecord);
+        Record nonElRecord = createNonElectronicRecord(FOLDER_DESTROY.getId(),nonElectronicRecord);
+
+        // complete records
+        completeRecord(elRecord.getId());
+        completeRecord(nonElRecord.getId());
+
         // edit disposition date
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),FOLDER_DESTROY.getName());
@@ -112,23 +105,5 @@ public class FoldersDispositionScheduleTests extends BaseRMRestTest {
     @AfterMethod(alwaysRun = true)
     private  void deletePreconditions() {
         deleteRecordCategory(Category1.getId());
-        deleteRecordCategory(CATEGORY_TO_MOVE.getId());
-    }
-
-    private Map<BaseAPI.RMProperty, String> getDefaultElectronicRecordProperties(String recordName) {
-        Map<BaseAPI.RMProperty, String> defaultProperties = new HashMap<>();
-        defaultProperties.put(BaseAPI.RMProperty.NAME, recordName);
-        defaultProperties.put(BaseAPI.RMProperty.TITLE, TITLE);
-        defaultProperties.put(BaseAPI.RMProperty.DESCRIPTION, DESCRIPTION);
-        defaultProperties.put(BaseAPI.RMProperty.CONTENT, TEST_CONTENT);
-        return defaultProperties;
-    }
-
-    public Map<BaseAPI.RMProperty, String> getDefaultNonElectronicRecordProperties(String recordName) {
-        Map<BaseAPI.RMProperty, String> defaultProperties = new HashMap<>();
-        defaultProperties.put(BaseAPI.RMProperty.NAME, recordName);
-        defaultProperties.put(BaseAPI.RMProperty.TITLE, TITLE);
-        defaultProperties.put(BaseAPI.RMProperty.DESCRIPTION, DESCRIPTION);
-        return defaultProperties;
     }
 }

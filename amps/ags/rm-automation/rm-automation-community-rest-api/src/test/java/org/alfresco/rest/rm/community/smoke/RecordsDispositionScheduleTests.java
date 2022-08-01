@@ -46,8 +46,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.List;
-
 import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;

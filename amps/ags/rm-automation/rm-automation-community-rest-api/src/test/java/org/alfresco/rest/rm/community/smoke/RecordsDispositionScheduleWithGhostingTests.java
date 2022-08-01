@@ -44,10 +44,8 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
-
 import java.io.IOException;
 import java.time.Instant;
-
 import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;

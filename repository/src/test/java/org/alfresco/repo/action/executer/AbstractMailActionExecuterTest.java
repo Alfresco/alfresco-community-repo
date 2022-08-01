@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -25,6 +25,12 @@
  */
 package org.alfresco.repo.action.executer;
 
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -34,21 +40,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMessage.RecipientType;
+import java.util.Objects;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
@@ -74,7 +72,7 @@ import org.springframework.context.ApplicationContext;
  * Provides tests for the MailActionExecuter class.  Most of this logic was in MailActionExecuterTest.
  * Cloud code now includes extra tests and different rule config.
  * Unfortunately this is messy due to the extensive use of static variables and Junit rules annotations.
- * This class contains most of the test code, child classes actually setup the ClassRules and test fixtures, of
+ * This class contains most of the test code, child classes actually set up the ClassRules and test fixtures, of
  * particular importance is the static setupRuleChain() method in the child classes.  The name is just a convention because
  * it can't actually be enforced.  The setupRuleChain() actually creates the users, as well as ordering the rules.
  * You will see the AlfrescoPerson variables below are initialized as null, the assumption is that the child classes will
@@ -93,7 +91,7 @@ public abstract class AbstractMailActionExecuterTest
     public static AlfrescoPerson AUSTRALIAN_USER = null;
     public static AlfrescoPerson EXTERNAL_USER = null;
 
-    private static String ALFRESCO_EE_USER = "plainUser";
+    private static final String ALFRESCO_EE_USER = "plainUser";
 
     protected static TransactionService TRANSACTION_SERVICE;
     protected static ActionService ACTION_SERVICE;
@@ -122,7 +120,7 @@ public abstract class AbstractMailActionExecuterTest
 
         AuthenticationUtil.setRunAsUserSystem();
 
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+        Map<QName, Serializable> properties = new HashMap<>(1);
         properties.put(ContentModel.PROP_USERNAME, ALFRESCO_EE_USER);
         properties.put(ContentModel.PROP_EMAIL, "testemail@testdomain.com");
         PERSON_SERVICE.createPerson(properties, null);
@@ -130,26 +128,21 @@ public abstract class AbstractMailActionExecuterTest
         // All these test users are in the same tenant - either they're enterprise where there's only one,
         // or they're cloud, where they have the same email domain
         final String tenantId = getUsersHomeTenant(FRENCH_USER.getUsername());
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-        {
-            @Override
-            public Object doWork() throws Exception
-            {
-                final Map<String, Serializable> preferences = new HashMap<String, Serializable>();
+        TenantUtil.runAsSystemTenant(() -> {
+            final Map<String, Serializable> preferences = new HashMap<>();
 
-                preferences.put("locale", "fr");
-                PREFERENCE_SERVICE.setPreferences(FRENCH_USER.getUsername(), preferences);
+            preferences.put("locale", "fr");
+            PREFERENCE_SERVICE.setPreferences(FRENCH_USER.getUsername(), preferences);
 
-                preferences.clear();
-                preferences.put("locale", "en_GB");
-                PREFERENCE_SERVICE.setPreferences(BRITISH_USER.getUsername(), preferences);
+            preferences.clear();
+            preferences.put("locale", "en_GB");
+            PREFERENCE_SERVICE.setPreferences(BRITISH_USER.getUsername(), preferences);
 
-                preferences.clear();
-                preferences.put("locale", "en_AU");
-                PREFERENCE_SERVICE.setPreferences(AUSTRALIAN_USER.getUsername(), preferences);
+            preferences.clear();
+            preferences.put("locale", "en_AU");
+            PREFERENCE_SERVICE.setPreferences(AUSTRALIAN_USER.getUsername(), preferences);
 
-                return null;
-            }
+            return null;
         }, tenantId);
     }
 
@@ -167,7 +160,7 @@ public abstract class AbstractMailActionExecuterTest
 
         String result = TenantService.DEFAULT_DOMAIN;
 
-        // Even if we get email address-style user names in an enterprise system, those are not to be given home tenants.
+        // Even if we get email address-style usernames in an enterprise system, those are not to be given home tenants.
         if (thisIsCloud)
         {
             String[] elems = userName.split("@");
@@ -195,13 +188,13 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
 
-        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
 
         ACTION_SERVICE.executeAction(mailAction, null);
 
         MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
         Assert.assertNotNull(message);
-        Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
+        Assert.assertEquals("Hello Jan 1, 1970", message.getContent());
     }
 
     @Test
@@ -215,18 +208,18 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
 
-        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
 
         ACTION_SERVICE.executeAction(mailAction, null);
 
         MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
         Assert.assertNotNull(message);
-        Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
+        Assert.assertEquals("Hello Jan 1, 1970", message.getContent());
     }
 
     private Serializable getModel()
     {
-        Map<String, Object> model = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<>();
 
         model.put("epoch", new Date(0));
         return (Serializable) model;
@@ -243,7 +236,7 @@ public abstract class AbstractMailActionExecuterTest
         MimeMessage message = sendMessage(from, recipients, subject, template);
 
         Assert.assertNotNull(message);
-        Assert.assertEquals("Bonjour 1 janv. 1970", (String) message.getContent());
+        Assert.assertEquals("Bonjour 1 janv. 1970", message.getContent());
     }
 
     @Test
@@ -262,7 +255,7 @@ public abstract class AbstractMailActionExecuterTest
         MimeMessage message = sendMessage(from, subject, null, text, mailAction);
 
         Assert.assertNotNull(message);
-        Assert.assertEquals(text, (String) message.getContent());
+        Assert.assertEquals(text, message.getContent());
         Assert.assertEquals("text/plain", // Ignore charset 
                             message.getDataHandler().getContentType().substring(0, 10));
 
@@ -271,7 +264,7 @@ public abstract class AbstractMailActionExecuterTest
         message = sendMessage(from, subject, null, text, mailAction);
 
         Assert.assertNotNull(message);
-        Assert.assertEquals(text, (String) message.getContent());
+        Assert.assertEquals(text, message.getContent());
         Assert.assertEquals("text/html", // Ignore charset 
                             message.getDataHandler().getContentType().substring(0, 9));
 
@@ -280,7 +273,7 @@ public abstract class AbstractMailActionExecuterTest
         message = sendMessage(from, subject, null, text, mailAction);
 
         Assert.assertNotNull(message);
-        Assert.assertEquals(text, (String) message.getContent());
+        Assert.assertEquals(text, message.getContent());
         Assert.assertEquals("text/html", // Ignore charset 
                             message.getDataHandler().getContentType().substring(0, 9));
     }
@@ -316,15 +309,9 @@ public abstract class AbstractMailActionExecuterTest
 
         RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
 
-        return txHelper.doInTransaction(new RetryingTransactionCallback<MimeMessage>()
-        {
-            @Override
-            public MimeMessage execute() throws Throwable
-            {
-                ACTION_SERVICE.executeAction(mailAction, null);
-
-                return ACTION_EXECUTER.retrieveLastTestMessage();
-            }
+        return txHelper.doInTransaction(() -> {
+            ACTION_SERVICE.executeAction(mailAction, null);
+            return ACTION_EXECUTER.retrieveLastTestMessage();
         }, true);
     }
 
@@ -349,11 +336,11 @@ public abstract class AbstractMailActionExecuterTest
         MimeMessage message = sendMessage(from, recipients, subject, template);
 
         Assert.assertNotNull(message);
-        Assert.assertEquals("Hello 1 Jan 1970", (String) message.getContent());
+        Assert.assertEquals("Hello 1 Jan 1970", message.getContent());
     }
 
     @Test
-    public void testUnknowRecipientAustralianSender() throws IOException, MessagingException
+    public void testUnknownRecipientAustralianSender() throws IOException, MessagingException
     {
         String from = AUSTRALIAN_USER.getUsername();
         String to = "some.body@example.com";
@@ -363,7 +350,7 @@ public abstract class AbstractMailActionExecuterTest
         MimeMessage message = sendMessage(from, to, subject, template);
 
         Assert.assertNotNull(message);
-        Assert.assertEquals("G'Day 1 Jan. 1970", (String) message.getContent());
+        Assert.assertEquals("G'Day 1 Jan 1970", message.getContent());
     }
 
     @Test
@@ -379,15 +366,11 @@ public abstract class AbstractMailActionExecuterTest
             mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
             mailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, "This is a test message.");
 
-            TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
+            TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(
+                (RetryingTransactionCallback<Void>) () -> {
                     ACTION_EXECUTER.executeImpl(mailAction, null);
                     return null;
-                }
-            });
+                });
         }
         finally
         {
@@ -419,14 +402,8 @@ public abstract class AbstractMailActionExecuterTest
 
             RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
 
-            MimeMessage mm = txHelper.doInTransaction(new RetryingTransactionCallback<MimeMessage>()
-            {
-                @Override
-                public MimeMessage execute() throws Throwable
-                {
-                    return ACTION_EXECUTER.prepareEmail(mailAction, null, null, null).getMimeMessage();
-                }
-            }, true);
+            MimeMessage mm = txHelper.doInTransaction(
+                () -> ACTION_EXECUTER.prepareEmail(mailAction, null, null, null).getMimeMessage(), true);
 
             Address[] addresses = mm.getRecipients(Message.RecipientType.TO);
             Assert.assertEquals(1, addresses.length);
@@ -451,12 +428,12 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Test Subject Params");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
-        Pair<String, Locale> recipient = new Pair<String, Locale>("test", Locale.ENGLISH);
+        Pair<String, Locale> recipient = new Pair<>("test", Locale.ENGLISH);
         
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {"Test", "Subject", "Params", "Object", "Array"});
         Assert.assertNotNull("We should support Object[] value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
         
-        ArrayList<Object> params = new ArrayList<Object>();
+        ArrayList<Object> params = new ArrayList<>();
         params.add("Test");
         params.add("Subject");
         params.add("Params");
@@ -485,24 +462,16 @@ public abstract class AbstractMailActionExecuterTest
         personProps.put(ContentModel.PROP_USERNAME, userName);
         personProps.put(ContentModel.PROP_FIRSTNAME, userName);
         personProps.put(ContentModel.PROP_LASTNAME, userName);
-        if (email != null)
-        {
-            personProps.put(ContentModel.PROP_EMAIL, email);
-        }
-        else
-        {
-            personProps.put(ContentModel.PROP_EMAIL, userName + "@email.com");
-        }
+        personProps.put(ContentModel.PROP_EMAIL, Objects.requireNonNullElseGet(email, () -> userName + "@email.com"));
 
         return PERSON_SERVICE.createPerson(personProps);
     }
 
     /**
      * Test for MNT-10874
-     * @throws Exception 
      */
     @Test
-    public void testUserWithNonExistingTenant() throws Exception
+    public void testUserWithNonExistingTenant()
     {
         final String USER_WITH_NON_EXISTING_TENANT = "test_user_non_tenant@non_existing_tenant.com";
         
@@ -517,15 +486,11 @@ public abstract class AbstractMailActionExecuterTest
 
             // run as non admin and non system
             AuthenticationUtil.setFullyAuthenticatedUser(BRITISH_USER.getUsername());
-            TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
+            TRANSACTION_SERVICE.getRetryingTransactionHelper().doInTransaction(
+                (RetryingTransactionCallback<Void>) () -> {
                     ACTION_EXECUTER.executeImpl(mailAction, null);
                     return null;
-                }
-            });
+                });
         }
         finally
         {
@@ -539,22 +504,21 @@ public abstract class AbstractMailActionExecuterTest
     
     /**
      * Test for MNT-11488
-     * @throws IOException
      * @throws MessagingException
      */
     @Test
-    public void testSendingToMultipleUsers() throws IOException, MessagingException
+    public void testSendingToMultipleUsers() throws MessagingException
     {
         final String USER_1 = "recipient1";
         final String USER_2 = "recipient2";
         final String[] recipientsArray = { USER_1 + "@email.com", USER_2 + "@email.com" };
-        final List<String> recipientsResult = new ArrayList<String>(Arrays.asList(recipientsArray)) ;
+        final List<String> recipientsResult = new ArrayList<>(Arrays.asList(recipientsArray)) ;
 
         try
         {
             createUser(USER_1, null);
             createUser(USER_2, null);
-            ArrayList<String> recipients = new ArrayList<String>(2);
+            ArrayList<String> recipients = new ArrayList<>(2);
             recipients.add(USER_1);
             recipients.add(USER_2);
 
@@ -562,7 +526,7 @@ public abstract class AbstractMailActionExecuterTest
             mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "sender@example.com");
             mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, recipients);
             mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
-            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
 
             ACTION_EXECUTER.resetTestSentCount();
 
@@ -586,10 +550,10 @@ public abstract class AbstractMailActionExecuterTest
 
     /**
      * Test for CC / BCC 
-     * @throws Exception 
+     * @throws MessagingException
      */
     @Test
-    public void testSendingToCarbonCopy() throws IOException, MessagingException
+    public void testSendingToCarbonCopy() throws MessagingException
     {
         // PARAM_TO variant
         Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
@@ -601,7 +565,7 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing CARBON COPY");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
 
-        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
 
         ACTION_SERVICE.executeAction(mailAction, null);
 
@@ -637,13 +601,13 @@ public abstract class AbstractMailActionExecuterTest
             mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
             mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
 
-            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
 
             ACTION_SERVICE.executeAction(mailAction, null);
 
             MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
             Assert.assertNotNull(message);
-            Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
+            Assert.assertEquals("Hello Jan 1, 1970", message.getContent());
             Assert.assertEquals(1, message.getAllRecipients().length);
             javax.mail.internet.InternetAddress address = (InternetAddress) message.getAllRecipients()[0];
             Assert.assertEquals(USER_1_EMAIL, address.getAddress());
@@ -657,10 +621,9 @@ public abstract class AbstractMailActionExecuterTest
 
     /**
      * Test for MNT-12464
-     * @throws Exception
      */
     @Test
-    public void testMultipleIdenticalEmailsToUser() throws Exception
+    public void testMultipleIdenticalEmailsToUser()
     {
         final String USER_1 = "user12464_1";
         final String USER_2 = "user12464_2";
@@ -707,7 +670,7 @@ public abstract class AbstractMailActionExecuterTest
 
             Action mailAction1 = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
             mailAction1.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
-            ArrayList<String> toMany1 = new ArrayList<String>();
+            ArrayList<String> toMany1 = new ArrayList<>();
             toMany1.add(USER_1);
             toMany1.add(GROUP_1);
             toMany1.add(USER_2);
@@ -718,7 +681,7 @@ public abstract class AbstractMailActionExecuterTest
             mailAction1.setParameterValue(MailActionExecuter.PARAM_TO_MANY, toMany1);
             mailAction1.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing MNT-12464");
             mailAction1.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
-            mailAction1.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+            mailAction1.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
 
             ACTION_EXECUTER.resetTestSentCount();
             ACTION_SERVICE.executeAction(mailAction1, null);
@@ -736,15 +699,10 @@ public abstract class AbstractMailActionExecuterTest
             PERMISSION_SERVICE.deletePermissions(user6);
 
             // USER_6 not exist for USER_1, but he will be added to recipients
-            int after = AuthenticationUtil.runAs(new RunAsWork<Integer>()
-            {
-                @Override
-                public Integer doWork() throws Exception
-                {
-                    ACTION_EXECUTER.resetTestSentCount();
-                    everyoneSending();
-                    return ACTION_EXECUTER.getTestSentCount();
-                }
+            int after = AuthenticationUtil.runAs(() -> {
+                ACTION_EXECUTER.resetTestSentCount();
+                everyoneSending();
+                return ACTION_EXECUTER.getTestSentCount();
             }, USER_1);
 
             Assert.assertEquals("One additional user was created, quantity of recipients GROUP_EVERYONE must be +1 user", 1, after - before);
@@ -766,12 +724,12 @@ public abstract class AbstractMailActionExecuterTest
     {
         Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
         mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
-        ArrayList<String> toMany = new ArrayList<String>();
+        ArrayList<String> toMany = new ArrayList<>();
         toMany.add(PERMISSION_SERVICE.getAllAuthorities());
         mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, toMany);
         mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing MNT-12464");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
-        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
 
         ACTION_EXECUTER.resetTestSentCount();
 
@@ -789,29 +747,18 @@ public abstract class AbstractMailActionExecuterTest
         final String template = "alfresco/templates/mail/test.txt.ftl";
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(EXTERNAL_USER.getUsername());
-        MimeMessage message = null;
-
 
         try
         {
-
-            // these persons should be without emails
+            // these people should be without emails
             // testing for GROUP_EVERYONE
-            
             final String tenantId = getUsersHomeTenant(BRITISH_USER.getUsername());
 
             // USER_6 not exist for USER_1, but he will be added to recipients
-            message = TenantUtil.runAsTenant(new TenantRunAsWork<MimeMessage>()
-            {
-                @Override
-                public MimeMessage doWork() throws Exception
-                {
-                    return sendMessage(null, recipients, subject, template);
-                }
-            }, tenantId);
+            MimeMessage message = TenantUtil.runAsTenant(() -> sendMessage(null, recipients, subject, template), tenantId);
 
             Assert.assertNotNull(message);
-            Assert.assertEquals("Hello 1 Jan 1970", (String) message.getContent());
+            Assert.assertEquals("Hello 1 Jan 1970", message.getContent());
         }
         finally
         {
@@ -850,20 +797,15 @@ public abstract class AbstractMailActionExecuterTest
             RetryingTransactionHelper txHelper = APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
 
             // Send mail
-            MimeMessage message = txHelper.doInTransaction(new RetryingTransactionCallback<MimeMessage>()
-            {
-                @Override
-                public MimeMessage execute() throws Throwable
-                {
-                    ACTION_EXECUTER.executeImpl(mailAction, null);
-                    return ACTION_EXECUTER.retrieveLastTestMessage();
-                }
+            MimeMessage message = txHelper.doInTransaction(() -> {
+                ACTION_EXECUTER.executeImpl(mailAction, null);
+                return ACTION_EXECUTER.retrieveLastTestMessage();
             }, true);
 
             // Check that both users are displayed in message body
             String recipients = USER1 + "@email.com" + "," + USER2 + "@email.com";
             Assert.assertNotNull(message);
-            Assert.assertEquals("This email was sent to " + recipients, (String) message.getContent());
+            Assert.assertEquals("This email was sent to " + recipients, message.getContent());
         }
         finally
         {
@@ -882,7 +824,7 @@ public abstract class AbstractMailActionExecuterTest
     @Test
     public void testSendingToArrayOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
     {
-        Map<String, Serializable> params = new HashMap<String, Serializable>();
+        Map<String, Serializable> params = new HashMap<>();
         String[] ccArray = { "cc_user1@example.com", "cc_user2@example.com" };
         String[] bccArray = { "bcc_user3@example.com", "bcc_user4@example.com", "bcc_user5@example.com" };
         params.put(MailActionExecuter.PARAM_FROM, "sender@email.com");
@@ -917,11 +859,11 @@ public abstract class AbstractMailActionExecuterTest
     @Test
     public void testSendingToListOfCarbonCopyAndBlindCarbonCopyUsers() throws MessagingException
     {
-        List<String> ccList = new ArrayList<String>();
+        List<String> ccList = new ArrayList<>();
         ccList.add("cc_user1@example.com");
         ccList.add("cc_user2@example.com");
 
-        List<String> bccList = new ArrayList<String>();
+        List<String> bccList = new ArrayList<>();
         bccList.add("bcc_user3@example.com");
         bccList.add("bcc_user4@example.com");
         bccList.add("bcc_user5@example.com");

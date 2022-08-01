@@ -455,7 +455,7 @@ public class ImapMessageTest extends TestCase
             };
             // UID SEARCH SINCE
             Response[] ret = (Response[]) folder.doCommand(uid_search_since);
-            assertEquals("java.net.SocketException: Connection reset", ret[0].getException().toString());
+            assertEquals("java.io.IOException: Connection dropped by server?", ret[0].getException().toString());
         }
         catch (MessagingException e)
         {

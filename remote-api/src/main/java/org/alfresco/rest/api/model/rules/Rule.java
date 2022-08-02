@@ -195,9 +195,9 @@ public class Rule
         this.shared = shared;
     }
 
-    public List<RuleTrigger> getTriggers()
+    public List<String> getTriggers()
     {
-        return triggers;
+        return triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList());
     }
 
     public void setTriggers(List<RuleTrigger> triggers)

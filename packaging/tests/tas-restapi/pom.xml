@@ -4,7 +4,7 @@
     <groupId>org.alfresco.tas</groupId>
     <artifactId>restapi</artifactId>
     <name>alfresco-tas-restapi</name>
-    <version>1.100</version>
+    <version>1.101-SNAPSHOT</version>
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-super-pom</artifactId>
@@ -70,7 +70,7 @@
         <connection>scm:git:https://github.com/Alfresco/alfresco-tas-restapi.git</connection>
         <developerConnection>scm:git:https://github.com/Alfresco/alfresco-tas-restapi.git</developerConnection>
         <url>https://github.com/Alfresco/alfresco-tas-restapi</url>
-        <tag>v1.100</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <issueManagement>

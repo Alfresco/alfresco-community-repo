@@ -987,4 +987,38 @@ public class Node extends ModelRequest<Node>
                 .withNodeId(repoModel.getNodeRef())
                 .withRuleSetId(ruleSetId);
     }
+
+    /**
+     * Get the rule sets defined on a folder.
+     *
+     * @return The list of rule sets.
+     */
+    public RestRuleSetModelsCollection getListOfRuleSets()
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/rule-sets", repoModel.getNodeRef());
+        return restWrapper.processModels(RestRuleSetModelsCollection.class, request);
+    }
+
+    /**
+     * Get the specified rule set from a folder.
+     *
+     * @param ruleSetId The id of the rule set.
+     * @return The specified rule set.
+     */
+    public RestRuleSetModel getRuleSet(String ruleSetId)
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/rule-sets/{ruleSetId}", repoModel.getNodeRef(), ruleSetId);
+        return restWrapper.processModels(RestRuleSetModel.class, request);
+    }
+
+    /**
+     * Get the default rule set from a folder.
+     *
+     * @return The specified rule set.
+     */
+    public RestRuleSetModel getDefaultRuleSet()
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/rule-sets/{ruleSetId}", repoModel.getNodeRef(), "-default-");
+        return restWrapper.processModels(RestRuleSetModel.class, request);
+    }
 }

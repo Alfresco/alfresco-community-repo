@@ -27,40 +27,35 @@
 package org.alfresco.rest.rm.community.smoke;
 
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
-import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordFoldersAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
+import org.alfresco.utility.Utility;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.createBodyForMoveCopy;
-import static org.alfresco.rest.rm.community.utils.CoreUtil.toContentModel;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.OK;
-import static org.testng.AssertJUnit.assertNotNull;
 
+public class FoldersDispositionScheduleWithoutGhostRecordTests extends BaseRMRestTest {
 
-public class DestroyRecordFolderActionsTest extends BaseRMRestTest {
-
-    private RecordCategory Category1,CATEGORY_TO_MOVE;
+    private RecordCategory Category1;
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
     @Autowired
     private RecordFoldersAPI recordFoldersAPI;
-    private final String TEST_PREFIX = generateTestPrefix(DestroyRecordFolderActionsTest.class);
+    private final String TEST_PREFIX = generateTestPrefix(FoldersDispositionScheduleWithoutGhostRecordTests.class);
     private final String folderDisposition = TEST_PREFIX + "RM-2937 folder ghosting";
-
+    private final String electronicRecord = "RM-2937 electronic 2 record";
+    private final String nonElectronicRecord = "RM-2937 non-electronic record";
 
     @BeforeClass(alwaysRun = true)
     private void setUp(){
@@ -68,9 +63,13 @@ public class DestroyRecordFolderActionsTest extends BaseRMRestTest {
         STEP("Create the RM site if doesn't exist");
         createRMSiteIfNotExists();
 
-        STEP("Create two record category");
-        Category1 = createRootCategory(getRandomName("Category1"));
-        CATEGORY_TO_MOVE = createRootCategory(getRandomName("CATEGORY_TO_MOVE"));
+        STEP("Create record category");
+        Category1 = createRootCategory(getRandomName("Title"));
+    }
+
+    @Test
+    @AlfrescoTest(jira="RM-2937")
+    public void foldersDispositionScheduleWithoutGhosting() {
 
         //create retention schedule
         dispositionScheduleService.createCategoryRetentionSchedule(Category1.getName(), false);
@@ -79,16 +78,17 @@ public class DestroyRecordFolderActionsTest extends BaseRMRestTest {
         dispositionScheduleService.addCutOffAfterPeriodStep(Category1.getName(), "day|2", CREATED_DATE);
 
         // add destroy step with ghosting
-        dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(Category1.getName());
-
-    }
-
-    @Test
-    @AlfrescoTest (jira = "RM-1621")
-    public void moveOnCutOffDestroyFolders() throws Exception {
+        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(Category1.getName(), "day|1", CUT_OFF_DATE);
 
         //create folders
         RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
+
+        Record elRecord = createElectronicRecord(FOLDER_DESTROY.getId(),electronicRecord);
+        Record nonElRecord = createNonElectronicRecord(FOLDER_DESTROY.getId(),nonElectronicRecord);
+
+        // complete records
+        completeRecord(elRecord.getId());
+        completeRecord(nonElRecord.getId());
 
         // edit disposition date
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
@@ -98,24 +98,19 @@ public class DestroyRecordFolderActionsTest extends BaseRMRestTest {
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),FOLDER_DESTROY.getName());
 
+        // edit disposition date
+        recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),FOLDER_DESTROY.getName());
+
+        Utility.waitToLoopTime(5,"Waiting for Edit Disposition to be processed");
 
         // Destroy the FOLDER_DESTROY
         recordFoldersAPI.postFolderAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),new JSONObject().put("name","destroy"),FOLDER_DESTROY.getName());
-
-
-       //Move the FOLDER_DESTROY within the CATEGORY_TO_MOVE.");
-        getRestAPIFactory().getNodeAPI(toContentModel(FOLDER_DESTROY.getId())).move(createBodyForMoveCopy(CATEGORY_TO_MOVE.getId()));
-        assertStatusCode(OK);
-
     }
 
     @AfterMethod(alwaysRun = true)
     private  void deletePreconditions() {
-
-            deleteRecordCategory(Category1.getId());
-            deleteRecordCategory(CATEGORY_TO_MOVE.getId());
-
-        }
-
+        deleteRecordCategory(Category1.getId());
     }
+}

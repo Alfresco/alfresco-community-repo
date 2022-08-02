@@ -27,32 +27,26 @@
 
 package org.alfresco.rest.rm.community.smoke;
 
-import org.alfresco.dataprep.CMISUtil;
-import org.alfresco.rest.core.v0.BaseAPI;
 import org.alfresco.rest.core.v0.RMEvents;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
+import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordFoldersAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
+import org.alfresco.utility.Utility;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.Test;
-
 import java.io.IOException;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CUT_OFF_DATE;
-import static org.alfresco.rest.rm.community.records.SearchRecordsTests.DESCRIPTION;
-import static org.alfresco.rest.rm.community.records.SearchRecordsTests.TEST_CONTENT;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 
@@ -71,7 +65,7 @@ import static org.alfresco.utility.report.log.Step.STEP;
  */
 public class RecordsDispositionScheduleWithGhostingTests extends BaseRMRestTest {
 
-    /** data prep services */
+    /** data prep 6services */
     @Autowired
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
@@ -81,16 +75,13 @@ public class RecordsDispositionScheduleWithGhostingTests extends BaseRMRestTest 
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
     private RecordCategory Category1;
-    public static final String TITLE = "Title";
-    private final String TEST_PREFIX = generateTestPrefix(RecordsDispositionScheduleWithGhostingTests.class);
+    private final String TEST_PREFIX = generateTestPrefix(RecordsDispositionScheduleTests.class);
     private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
     private final String recordsCategory = TEST_PREFIX + "RM-2801 category";
     private final String folderDisposition = TEST_PREFIX + "RM-2801 folder";
-    private final String electronicRecord = "RM-2801 electronic record";
-    private final String nonElectronicRecord = "RM-2801 non-electronic record";
 
     @Test
-    @AlfrescoTest(jira="RM-2937")
+    @AlfrescoTest(jira="RM-2801")
     public void recordsDispositionScheduleWithGhosting() {
 
         // create test precondition
@@ -106,28 +97,25 @@ public class RecordsDispositionScheduleWithGhostingTests extends BaseRMRestTest 
         dispositionScheduleService.addTransferAfterEventStep(Category1.getName(),"transferred records","all_allowances_granted_are_terminated");
 
         // add destroy step without retaining metadata
-        dispositionScheduleService.addDestroyWithGhostingAfterPeriodStep(Category1.getName(), "day|1", CUT_OFF_DATE);
+        dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(Category1.getName());
 
         // create a folder and an electronic and a non-electronic record in it
-        createFolder(getAdminUser(),Category1.getId(),folderDisposition);
+        RecordCategoryChild FOLDER_DESTROY = createFolder(getAdminUser(),Category1.getId(),folderDisposition);
 
-        recordsAPI.uploadElectronicRecord(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),
-            getDefaultElectronicRecordProperties(electronicRecord),
-            folderDisposition,
-            CMISUtil.DocumentType.TEXT_PLAIN);
-
-        recordsAPI.createNonElectronicRecord(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),getDefaultNonElectronicRecordProperties(nonElectronicRecord),
-            Category1.getName(), folderDisposition);
+        String electronicRecord = "RM-2801 electronic record";
+        Record elRecord = createElectronicRecord(FOLDER_DESTROY.getId(), electronicRecord);
+        String nonElectronicRecord = "RM-2801 non-electronic record";
+        Record nonElRecord = createNonElectronicRecord(FOLDER_DESTROY.getId(), nonElectronicRecord);
 
         // complete records and cut them off
         String nonElRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
             getAdminUser().getPassword(), folderDisposition, nonElectronicRecord);
         String elRecordName = recordsAPI.getRecordFullName(getAdminUser().getUsername(),
             getAdminUser().getPassword(), folderDisposition, electronicRecord);
-        recordsAPI.completeRecord(RM_ADMIN, DEFAULT_PASSWORD, nonElRecordName);
-        recordsAPI.completeRecord(RM_ADMIN, DEFAULT_PASSWORD, elRecordName);
+
+        // complete records and cut them off
+        completeRecord(elRecord.getId());
+        completeRecord(nonElRecord.getId());
 
         String nonElRecordNameNodeRef = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), nonElRecordName, "/" + Category1.getName() + "/" + folderDisposition);
@@ -141,9 +129,9 @@ public class RecordsDispositionScheduleWithGhostingTests extends BaseRMRestTest 
 
         // ensure the complete event action is displayed for both events
         rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),nonElRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
+            getAdminUser().getPassword(), nonElRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
         rmRolesAndActionsAPI.completeEvent(getAdminUser().getUsername(),
-            getAdminUser().getPassword(),elRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
+            getAdminUser().getPassword(), elRecordName, RMEvents.ALL_ALLOWANCES_GRANTED_ARE_TERMINATED, Instant.now());
 
         // Create and Complete transfer
         HttpResponse nonElRecordNameHttpResponse = recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
@@ -168,6 +156,8 @@ public class RecordsDispositionScheduleWithGhostingTests extends BaseRMRestTest 
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRef);
 
+        Utility.waitToLoopTime(5,"Waiting for Edit Disposition to be processed");
+
         // destroy records
         recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
             getAdminUser().getPassword(),new JSONObject().put("name","destroy"),nonElRecordNameNodeRef);
@@ -188,7 +178,7 @@ public class RecordsDispositionScheduleWithGhostingTests extends BaseRMRestTest 
             RM_ADMIN, DEFAULT_PASSWORD, "Administrator");
 
         // create category
-        STEP("Create one category");
+        STEP("Create two category");
         Category1 = createRootCategory(categoryName,"Title");
     }
 
@@ -206,23 +196,5 @@ public class RecordsDispositionScheduleWithGhostingTests extends BaseRMRestTest 
             .get(nodeRef)
             .toString();
 
-    }
-
-    private Map<BaseAPI.RMProperty, String> getDefaultElectronicRecordProperties(String recordName) {
-        Map<BaseAPI.RMProperty, String> defaultProperties = new HashMap<>();
-        defaultProperties.put(BaseAPI.RMProperty.NAME, recordName);
-        defaultProperties.put(BaseAPI.RMProperty.TITLE, TITLE);
-        defaultProperties.put(BaseAPI.RMProperty.DESCRIPTION, DESCRIPTION);
-        defaultProperties.put(BaseAPI.RMProperty.CONTENT, TEST_CONTENT);
-        return defaultProperties;
-    }
-
-    private Map<BaseAPI.RMProperty, String> getDefaultNonElectronicRecordProperties(String recordName)
-    {
-        Map<BaseAPI.RMProperty, String> defaultProperties = new HashMap<>();
-        defaultProperties.put(BaseAPI.RMProperty.NAME, recordName);
-        defaultProperties.put(BaseAPI.RMProperty.TITLE, TITLE);
-        defaultProperties.put(BaseAPI.RMProperty.DESCRIPTION, DESCRIPTION);
-        return defaultProperties;
     }
 }

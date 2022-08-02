@@ -900,6 +900,10 @@
         </property>
     </bean>
 
+    <bean class="org.alfresco.rest.api.nodes.NodesRuleSetLinksRelation">
+        <constructor-arg name="rules" ref="Rules" />
+    </bean>
+
     <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="supported">

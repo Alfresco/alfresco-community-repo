@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.nodes;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.rules.RuleSetLink;
 import org.alfresco.rest.framework.Operation;
@@ -33,29 +35,36 @@ import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 
 @RelationshipResource(name = "rule-set-links", entityResource = NodesEntityResource.class, title = "Linking to a rule set")
-public class NodesLinkedRuleSetsRelation implements InitializingBean {
+public class NodesRuleSetLinksRelation implements InitializingBean {
 
-    private Rules rules;
+    private final Rules rules;
+
+    public NodesRuleSetLinksRelation(Rules rules)
+    {
+        this.rules = rules;
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "linkedRules", rules);
+        PropertyCheck.mandatory(this, "rules", rules);
     }
 
     @Operation("linkRuleSet")
     @WebApiParam(name = "ruleSetLinkRequest", title = "",
                 description = "", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
-    @WebApiDescription(title = "Link a rule set to a folder node")
-    public RuleSetLink linkRuleSet(String nodeId, RuleSetLink ruleSetLink, WithResponse response)
+    @WebApiDescription(title = "Link a rule set to a folder node",
+            description = "Submits a request to link a rule set to folder",
+            successStatus = HttpServletResponse.SC_OK)
+    public RuleSetLink linkRuleSet(String nodeId, RuleSetLink ruleSetLink, Parameters parameters, WithResponse response)
     {
         return rules.linkToRuleSet(nodeId, ruleSetLink.getId());
-
     }
 }

@@ -203,9 +203,6 @@ public abstract class AbstractJettyComponent implements JettyComponent
 				}
 			}    
 		});
-	    
-	    // with a login-config in web.xml, jetty seems to require this in order to start successfully
-	    webAppContext.getSecurityHandler().setLoginService(new HashLoginService());
 
 	    // arbitrary temporary file location
 	    File tmp = new File(TempFileProvider.getSystemTempDir(), String.valueOf(System.currentTimeMillis()));

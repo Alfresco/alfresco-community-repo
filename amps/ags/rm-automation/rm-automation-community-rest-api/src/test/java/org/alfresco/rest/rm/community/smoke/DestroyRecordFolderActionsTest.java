@@ -57,8 +57,6 @@ public class DestroyRecordFolderActionsTest extends BaseRMRestTest {
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
     @Autowired
-    private RMRolesAndActionsAPI rmRolesAndActionsAPI;
-    @Autowired
     private RecordFoldersAPI recordFoldersAPI;
     private final String TEST_PREFIX = generateTestPrefix(DestroyRecordFolderActionsTest.class);
     private final String folderDisposition = TEST_PREFIX + "RM-2937 folder ghosting";

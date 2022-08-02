@@ -62,7 +62,7 @@ public class NodesRuleSetLinksRelation implements InitializingBean {
                 description = "", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Link a rule set to a folder node",
             description = "Submits a request to link a rule set to folder",
-            successStatus = HttpServletResponse.SC_OK)
+            successStatus = HttpServletResponse.SC_CREATED)
     public RuleSetLink linkRuleSet(String nodeId, RuleSetLink ruleSetLink, Parameters parameters, WithResponse response)
     {
         return rules.linkToRuleSet(nodeId, ruleSetLink.getId());

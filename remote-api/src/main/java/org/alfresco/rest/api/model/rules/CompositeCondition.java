@@ -122,9 +122,9 @@ public class CompositeCondition
         this.inverted = inverted;
     }
 
-    public ConditionOperator getBooleanMode()
+    public String getBooleanMode()
     {
-        return booleanMode;
+        return booleanMode.name().toLowerCase();
     }
 
     public void setBooleanMode(ConditionOperator booleanMode)

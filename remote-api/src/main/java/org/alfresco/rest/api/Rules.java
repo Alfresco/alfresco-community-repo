@@ -27,10 +27,12 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.api.model.rules.RuleSetLink;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 
 import java.util.List;
@@ -93,4 +95,10 @@ public interface Rules
      * @param ruleId - rule ID     *
      */
     void deleteRuleById(String folderNodeId, String ruleSetId, String ruleId);
+
+    /**
+     * Link a rule set to a folder
+     *
+     */
+    RuleSetLink linkToRuleSet(String actionedUponNodeId, String linkedFromNodeId);
 }

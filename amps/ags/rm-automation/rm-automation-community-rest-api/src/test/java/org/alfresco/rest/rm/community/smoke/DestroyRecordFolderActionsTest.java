@@ -104,7 +104,7 @@ public class DestroyRecordFolderActionsTest extends BaseRMRestTest {
             getAdminUser().getPassword(),new JSONObject().put("name","destroy"),FOLDER_DESTROY.getName());
 
 
-        STEP("Move the subcategory within the rootCategory2.");
+       //Move the FOLDER_DESTROY within the CATEGORY_TO_MOVE.");
         getRestAPIFactory().getNodeAPI(toContentModel(FOLDER_DESTROY.getId())).move(createBodyForMoveCopy(CATEGORY_TO_MOVE.getId()));
         assertStatusCode(OK);
 

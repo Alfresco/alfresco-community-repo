@@ -197,6 +197,10 @@ public class Rule
 
     public List<String> getTriggers()
     {
+        if (triggers == null)
+        {
+            return null;
+        }
         return triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList());
     }
 

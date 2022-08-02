@@ -124,6 +124,10 @@ public class CompositeCondition
 
     public String getBooleanMode()
     {
+        if (booleanMode == null)
+        {
+            return null;
+        }
         return booleanMode.name().toLowerCase();
     }
 

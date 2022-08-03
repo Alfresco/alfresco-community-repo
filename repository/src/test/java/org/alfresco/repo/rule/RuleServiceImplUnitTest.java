@@ -31,10 +31,12 @@ import static org.alfresco.repo.rule.RuleModel.ASSOC_RULE_FOLDER;
 import static org.alfresco.repo.rule.RuleModel.TYPE_RULE;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -44,6 +46,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.repo.action.RuntimeActionService;
@@ -136,7 +139,7 @@ public class RuleServiceImplUnitTest
         when(mockRule.getAction()).thenReturn(null);
 
         // Call the method under test.
-        assertThatExceptionOfType(RuleServiceException.class).isThrownBy(() -> ruleService.saveRule(FOLDER_NODE, mockRule));
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> ruleService.saveRule(FOLDER_NODE, mockRule));
     }
 
     @Test
@@ -186,5 +189,171 @@ public class RuleServiceImplUnitTest
         when(permissionService.hasPermission(FOLDER_NODE, PermissionService.CHANGE_PERMISSIONS)).thenReturn(DENIED);
 
         assertThatExceptionOfType(RuleServiceException.class).isThrownBy(() -> ruleService.saveRule(FOLDER_NODE, mockRule));
+    }
+
+    @Test
+    public void testGetRuleSetNode()
+    {
+        given(runtimeNodeService.getChildAssocs(any(), any(), any())).willReturn(List.of(createAssociation(FOLDER_NODE, RULE_SET_NODE)));
+
+        // when
+        final NodeRef actualNode = ruleService.getRuleSetNode(FOLDER_NODE);
+
+        then(runtimeNodeService).should().getChildAssocs(FOLDER_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(actualNode).isNotNull();
+    }
+
+    @Test
+    public void testGetRuleSetNode_emptyAssociation()
+    {
+        given(runtimeNodeService.getChildAssocs(any(), any(), any())).willReturn(Collections.emptyList());
+
+        // when
+        final NodeRef actualNode = ruleService.getRuleSetNode(FOLDER_NODE);
+
+        then(runtimeNodeService).should().getChildAssocs(FOLDER_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(actualNode).isNull();
+    }
+
+    @Test
+    public void testGetRuleSetNode_notPrimaryAssociation()
+    {
+        given(runtimeNodeService.getChildAssocs(any(), any(), any())).willReturn(List.of(createAssociation(FOLDER_NODE, RULE_SET_NODE, false)));
+
+        // when
+        final NodeRef actualNode = ruleService.getRuleSetNode(FOLDER_NODE);
+
+        then(runtimeNodeService).should().getChildAssocs(FOLDER_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(actualNode).isNotNull();
+    }
+
+    @Test
+    public void testIsRuleSetAssociatedWithFolder()
+    {
+        given(runtimeNodeService.getParentAssocs(any(), any(), any())).willReturn(List.of(createAssociation(FOLDER_NODE, RULE_SET_NODE)));
+
+        // when
+        boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(associated).isTrue();
+    }
+
+    @Test
+    public void testIsRuleSetAssociatedWithFolder_emptyAssociation()
+    {
+        given(runtimeNodeService.getParentAssocs(any(), any(), any())).willReturn(Collections.emptyList());
+
+        // when
+        boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(associated).isFalse();
+    }
+
+    @Test
+    public void testIsRuleSetAssociatedWithFolder_improperAssociation()
+    {
+        final NodeRef fakeFolderNode = new NodeRef("folder://node/fake");
+        given(runtimeNodeService.getParentAssocs(any(), any(), any())).willReturn(List.of(createAssociation(fakeFolderNode, RULE_SET_NODE)));
+
+        // when
+        boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(associated).isFalse();
+    }
+
+    @Test
+    public void testIsRuleAssociatedWithRuleSet()
+    {
+        given(runtimeNodeService.getParentAssocs(any())).willReturn(List.of(createAssociation(RULE_SET_NODE, RULE_NODE)));
+
+        // when
+        boolean associated = ruleService.isRuleAssociatedWithRuleSet(RULE_NODE, RULE_SET_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_NODE);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(associated).isTrue();
+    }
+
+    @Test
+    public void testIsRuleAssociatedWithRuleSet_emptyAssociation()
+    {
+        given(runtimeNodeService.getParentAssocs(any())).willReturn(Collections.emptyList());
+
+        // when
+        boolean associated = ruleService.isRuleAssociatedWithRuleSet(RULE_NODE, RULE_SET_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_NODE);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(associated).isFalse();
+    }
+
+    @Test
+    public void testIsRuleAssociatedWithRuleSet_improperAssociation()
+    {
+        final NodeRef fakeRuleSetNode = new NodeRef("rule://set/node/fake");
+        given(runtimeNodeService.getParentAssocs(any())).willReturn(List.of(createAssociation(fakeRuleSetNode, RULE_NODE)));
+
+        // when
+        boolean associated = ruleService.isRuleAssociatedWithRuleSet(RULE_NODE, RULE_SET_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_NODE);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(associated).isFalse();
+    }
+
+    @Test
+    public void testIsRuleSetShared()
+    {
+        given(runtimeNodeService.getParentAssocs(any())).willReturn(List.of(createAssociation(FOLDER_NODE, RULE_SET_NODE, false)));
+
+        // when
+        boolean shared = ruleService.isRuleSetShared(RULE_SET_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(shared).isTrue();
+    }
+
+    @Test
+    public void testIsRuleSetShared_notShared()
+    {
+        given(runtimeNodeService.getParentAssocs(any())).willReturn(List.of(createAssociation(FOLDER_NODE, RULE_SET_NODE)));
+
+        // when
+        boolean shared = ruleService.isRuleSetShared(RULE_SET_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(shared).isFalse();
+    }
+
+    private static ChildAssociationRef createAssociation(final NodeRef parentRef, final NodeRef childRef)
+    {
+        return createAssociation(parentRef, childRef, true);
+    }
+
+    private static ChildAssociationRef createAssociation(final NodeRef parentRef, final NodeRef childRef, final boolean isPrimary)
+    {
+        return new ChildAssociationRef(null, parentRef, null, childRef, isPrimary, 1);
     }
 }

@@ -26,22 +26,16 @@
 
 package org.alfresco.rest.api.model.rules;
 
-import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
-import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.GUID;
 
 @Experimental
 public class Rule
@@ -55,6 +49,8 @@ public class Rule
     private boolean shared;
     private String errorScript;
     private List<RuleTrigger> triggers;
+    private CompositeCondition conditions;
+    private List<Action> actions;
 
     /**
      * Converts service POJO rule to REST model rule.
@@ -84,9 +80,17 @@ public class Rule
         {
             builder.triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()));
         }
-        if (ruleModel.getAction() != null && ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
+        if (ruleModel.getAction() != null)
         {
-            builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
+            builder.conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions()));
+            if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
+            {
+                builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
+            }
+            if (ruleModel.getAction() instanceof CompositeAction && ((CompositeAction) ruleModel.getAction()).getActions() != null)
+            {
+                builder.actions(((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList()));
+            }
         }
 
         return builder.create();
@@ -100,20 +104,12 @@ public class Rule
      */
     public org.alfresco.service.cmr.rule.Rule toServiceModel(Nodes nodes)
     {
-        org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
-        if (id != null)
-        {
-            NodeRef nodeRef = nodes.validateOrLookupNode(id, null);
-            ruleModel.setNodeRef(nodeRef);
-        }
+        final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
+        final NodeRef nodeRef = (id != null) ? nodes.validateOrLookupNode(id, null) : null;
+        ruleModel.setNodeRef(nodeRef);
         ruleModel.setTitle(name);
 
-        // TODO: Once we have actions working properly then this needs to be replaced.
-        Map<String, Serializable> parameters = Map.of(
-                SetPropertyValueActionExecuter.PARAM_PROPERTY, ContentModel.PROP_TITLE,
-                SetPropertyValueActionExecuter.PARAM_VALUE, "UPDATED:" + GUID.generate());
-        org.alfresco.service.cmr.action.Action action = new ActionImpl(null, GUID.generate(), SetPropertyValueActionExecuter.NAME, parameters);
-        ruleModel.setAction(action);
+        ruleModel.setAction(Action.toCompositeAction(actions));
 
         return ruleModel;
     }
@@ -199,9 +195,13 @@ public class Rule
         this.shared = shared;
     }
 
-    public List<RuleTrigger> getTriggers()
+    public List<String> getTriggers()
     {
-        return triggers;
+        if (triggers == null)
+        {
+            return null;
+        }
+        return triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList());
     }
 
     public void setTriggers(List<RuleTrigger> triggers)
@@ -209,16 +209,32 @@ public class Rule
         this.triggers = triggers;
     }
 
-    public List<Void> getActions()
+    public CompositeCondition getConditions()
     {
-        return Collections.emptyList();
+        return conditions;
+    }
+
+    public void setConditions(CompositeCondition conditions)
+    {
+        this.conditions = conditions;
+    }
+
+    public List<Action> getActions()
+    {
+        return actions;
+    }
+
+    public void setActions(List<Action> actions)
+    {
+        this.actions = actions;
     }
 
     @Override
     public String toString()
     {
         return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", enabled=" + enabled + ", cascade=" + cascade
-            + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + '}';
+            + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", conditions=" + conditions
+            + ", actions=" + actions + '}';
     }
 
     @Override
@@ -230,13 +246,14 @@ public class Rule
             return false;
         Rule rule = (Rule) o;
         return enabled == rule.enabled && cascade == rule.cascade && asynchronous == rule.asynchronous && shared == rule.shared && Objects.equals(id, rule.id) && Objects.equals(
-            name, rule.name) && Objects.equals(description, rule.description) && Objects.equals(errorScript, rule.errorScript) && Objects.equals(triggers, rule.triggers);
+            name, rule.name) && Objects.equals(description, rule.description) && Objects.equals(errorScript, rule.errorScript) && Objects.equals(triggers, rule.triggers)
+            && Objects.equals(conditions, rule.conditions) && Objects.equals(actions, rule.actions);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers);
+        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, conditions, actions);
     }
 
     public static Builder builder()
@@ -256,6 +273,8 @@ public class Rule
         private boolean shared;
         private String errorScript;
         private List<RuleTrigger> triggers;
+        private CompositeCondition conditions;
+        private List<Action> actions;
 
         public Builder id(String id)
         {
@@ -311,6 +330,18 @@ public class Rule
             return this;
         }
 
+        public Builder conditions(CompositeCondition conditions)
+        {
+            this.conditions = conditions;
+            return this;
+        }
+
+        public Builder actions(List<Action> actions)
+        {
+            this.actions = actions;
+            return this;
+        }
+
         public Rule create()
         {
             Rule rule = new Rule();
@@ -323,6 +354,8 @@ public class Rule
             rule.setShared(shared);
             rule.setErrorScript(errorScript);
             rule.setTriggers(triggers);
+            rule.setConditions(conditions);
+            rule.setActions(actions);
             return rule;
         }
     }

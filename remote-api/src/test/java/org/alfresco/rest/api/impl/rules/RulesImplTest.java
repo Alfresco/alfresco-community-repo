@@ -49,6 +49,7 @@ import java.util.List;
 import junit.framework.TestCase;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -470,10 +471,13 @@ public class RulesImplTest extends TestCase
         then(ruleServiceMock).should().saveRule(folderNodeRef, serviceRuleBody);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
 
+
         Rule expected = Rule.builder().id(RULE_ID)
                                       .enabled(true)
                                       .shared(true)
-                                      .triggers(emptyList()).create();
+                                      .triggers(emptyList())
+                                      .conditions(CompositeCondition.builder().inverted(false).create())
+                                      .create();
         assertThat(updatedRule).isEqualTo(expected);
     }
 

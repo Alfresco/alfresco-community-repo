@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
@@ -82,8 +83,7 @@ public class DeleteRulesTests extends RestTest
         final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         final List<RestRuleModel> createdRules = Stream.of("ruleA", "ruleB", "ruleC")
                 .map(ruleName -> {
-                    RestRuleModel ruleModel = new RestRuleModel();
-                    ruleModel.setName(ruleName);
+                    RestRuleModel ruleModel = createRuleModel(ruleName);
                     return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                             .createSingleRule(ruleModel);
                 })
@@ -187,8 +187,7 @@ public class DeleteRulesTests extends RestTest
         final UserModel privateUser = dataUser.createRandomTestUser();
         final SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        final RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("Private site rule");
+        final RestRuleModel ruleModel = createRuleModel("Private site rule");
         final RestRuleModel createdRule =
                 restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
                         .createSingleRule(ruleModel);
@@ -229,8 +228,7 @@ public class DeleteRulesTests extends RestTest
         final UserModel privateUser = dataUser.createRandomTestUser();
         final SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         final FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        final RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("Private site rule");
+        final RestRuleModel ruleModel = createRuleModel("Private site rule");
         final RestRuleModel createdRule =
                 restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
                         .createSingleRule(ruleModel);
@@ -250,8 +248,7 @@ public class DeleteRulesTests extends RestTest
     private RestRuleModel createRule(FolderModel ruleFolder)
     {
         STEP("Create a rule in the folder");
-        final RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("Test rule");
+        final RestRuleModel ruleModel = createRuleModel("Test rule");
         return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }
 }

@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
@@ -70,8 +71,7 @@ public class GetRulesTests extends RestTest
 
         STEP("Create rules in the folder");
         createdRules = Stream.of("ruleA", "ruleB").map(ruleName -> {
-            RestRuleModel ruleModel = new RestRuleModel();
-            ruleModel.setName(ruleName);
+            RestRuleModel ruleModel = createRuleModel(ruleName);
             return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());
         createdRuleA = createdRules.get(0);
@@ -200,8 +200,7 @@ public class GetRulesTests extends RestTest
         UserModel privateUser = dataUser.createRandomTestUser();
         SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("Private site rule");
+        RestRuleModel ruleModel = createRuleModel("Private site rule");
         restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Create a collaborator in the private site");

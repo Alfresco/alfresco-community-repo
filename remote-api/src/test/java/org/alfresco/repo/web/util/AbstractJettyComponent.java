@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.servlet.ServletContext;
@@ -44,7 +45,8 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.WebApplicationContextLoader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.http.UriCompliance;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.springframework.beans.BeanUtils;
@@ -136,6 +138,8 @@ public abstract class AbstractJettyComponent implements JettyComponent
 
 		    server.setHandler(webAppContext);
 
+//			httpConfiguration.setUriCompliance(UriCompliance.RFC3986);
+
 		    // for clean shutdown, add monitor thread 
 		    
 		    // from: http://ptrthomas.wordpress.com/2009/01/24/how-to-start-and-stop-jetty-revisited/
@@ -144,6 +148,8 @@ public abstract class AbstractJettyComponent implements JettyComponent
 		    monitor.start();
 		    
 		    configureWebAppContext(webAppContext);
+
+			ignoreAmbiguousLinks(server);
 
 		    server.start();
 
@@ -207,6 +213,21 @@ public abstract class AbstractJettyComponent implements JettyComponent
 	    // arbitrary temporary file location
 	    File tmp = new File(TempFileProvider.getSystemTempDir(), String.valueOf(System.currentTimeMillis()));
 	    webAppContext.setResourceBase(tmp.getAbsolutePath());		
+	}
+
+	/**
+	 * In newer jetty versions there is a stricter check for links e.g. "//" is not allowed, which clashes
+	 * with some of our tests, because even a NodeRef triggers it - "workspace://..."
+	 * Since Jetty is only used in tests it's alright to block this behaviour.
+	 *
+	 * @param server
+	 */
+	private void ignoreAmbiguousLinks(Server server) {
+		Arrays.stream(server.getConnectors())
+				.flatMap(c -> c.getConnectionFactories().stream())
+				.filter(cf -> cf instanceof HttpConnectionFactory)
+				.map(cf -> (HttpConnectionFactory) cf)
+				.forEach(hcf -> hcf.getHttpConfiguration().setUriCompliance(UriCompliance.RFC3986));
 	}
 
 	public void shutdown()

@@ -45,12 +45,12 @@ import org.springframework.beans.factory.InitializingBean;
 
 
 @RelationshipResource(name = "rule-set-links", entityResource = NodesEntityResource.class, title = "Linking to a rule set")
-public class NodesRuleSetLinksRelation implements InitializingBean, RelationshipResourceAction.Create<RuleSetLink>
+public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipResourceAction.Create<RuleSetLink>
 {
 
     private final Rules rules;
 
-    public NodesRuleSetLinksRelation(Rules rules)
+    public NodeRuleSetLinksRelation(Rules rules)
     {
         this.rules = rules;
     }

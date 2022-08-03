@@ -900,7 +900,7 @@
         </property>
     </bean>
 
-    <bean class="org.alfresco.rest.api.nodes.NodesRuleSetLinksRelation">
+    <bean class="org.alfresco.rest.api.nodes.NodeRuleSetLinksRelation">
         <constructor-arg name="rules" ref="Rules" />
     </bean>
 

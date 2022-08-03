@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.nodes;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.Rules;
@@ -35,6 +37,7 @@ import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.PropertyCheck;
@@ -42,7 +45,8 @@ import org.springframework.beans.factory.InitializingBean;
 
 
 @RelationshipResource(name = "rule-set-links", entityResource = NodesEntityResource.class, title = "Linking to a rule set")
-public class NodesRuleSetLinksRelation implements InitializingBean {
+public class NodesRuleSetLinksRelation implements InitializingBean, RelationshipResourceAction.Create<RuleSetLink>
+{
 
     private final Rules rules;
 
@@ -57,14 +61,18 @@ public class NodesRuleSetLinksRelation implements InitializingBean {
         PropertyCheck.mandatory(this, "rules", rules);
     }
 
-    @Operation("linkRuleSet")
-    @WebApiParam(name = "ruleSetLinkRequest", title = "",
-                description = "", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
+    @WebApiParam(name = "ruleSetLinkRequest", title = "Request body - rule set id",
+            description = "Request body with rule set id", kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     @WebApiDescription(title = "Link a rule set to a folder node",
             description = "Submits a request to link a rule set to folder",
             successStatus = HttpServletResponse.SC_CREATED)
-    public RuleSetLink linkRuleSet(String nodeId, RuleSetLink ruleSetLink, Parameters parameters, WithResponse response)
+    @Override
+    public List<RuleSetLink> create(String nodeId, List<RuleSetLink> ruleSetLinksBody, Parameters parameters)
     {
-        return rules.linkToRuleSet(nodeId, ruleSetLink.getId());
+        //TODO temporary solution
+        return List.of(rules.linkToRuleSet(nodeId, ruleSetLinksBody.get(0).getId()));
+//        return ruleSetLinksBody.stream()
+//                .map(r -> rules.linkToRuleSet(nodeId, r.getId()))
+//                .collect(Collectors.toList());
     }
 }

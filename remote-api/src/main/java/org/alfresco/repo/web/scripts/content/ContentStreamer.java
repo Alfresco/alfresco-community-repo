@@ -362,7 +362,7 @@ public class ContentStreamer implements ResourceLoaderAware
         setAttachment(req, res, attach, attachFileName);
     
         // establish mimetype
-        String mimetype = MimeTypeUtil.determineMimetype(reader,req,mimetypeService);
+        String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
         
         res.setHeader(HEADER_ACCEPT_RANGES, "bytes");
         try

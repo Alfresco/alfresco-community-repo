@@ -26,6 +26,7 @@
 package org.alfresco.repo.web.scripts.content;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,11 +69,17 @@ public class ContentGet extends StreamContent implements ServletContextAware
     private NamespaceService namespaceService;
     private ContentService contentService;
 
-    private List<String> nonAttachContentTypes;
+    private List<String> nonAttachContentTypes = Collections.emptyList();
 
+    /**
+     * @param nonAttachContentTypes List<String>
+     */
     public void setNonAttachContentTypes(List<String> nonAttachContentTypes)
     {
-        this.nonAttachContentTypes = nonAttachContentTypes;
+        if (nonAttachContentTypes != null && !nonAttachContentTypes.isEmpty())
+        {
+            this.nonAttachContentTypes = nonAttachContentTypes;
+        }
     }
 
     /**
@@ -151,16 +158,13 @@ public class ContentGet extends StreamContent implements ServletContextAware
         // determine attachment and force download for specific mimetypes - see PRODSEC-5862
         boolean attach = Boolean.valueOf(req.getParameter("a"));
         ContentReader reader = contentService.getReader(nodeRef, propertyQName);
-        String mimetype = MimeTypeUtil.determineMimetype(reader,req,mimetypeService);
+        String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
 
         if (!attach)
         {
-            if ((nonAttachContentTypes != null) && (!(nonAttachContentTypes.contains(mimetype))))
+            if (nonAttachContentTypes == null || !nonAttachContentTypes.contains(mimetype))
             {
                 attach = true;
-            }
-            else
-            {
                 logger.warn("Ignored a=false for " + nodeRef.getId() + " since " + mimetype + " is not in the whitelist for non-attach content types");
             }
         }

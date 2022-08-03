@@ -79,7 +79,7 @@ public class ContentInfo extends StreamContent
         delegate.setAttachment(req, res, attach, attachFileName);
 
         // establish mimetype
-        String mimetype = MimeTypeUtil.determineMimetype(reader,req,mimetypeService);
+        String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
 
         // set mimetype for the content and the character encoding + length for the stream
         res.setContentType(mimetype);

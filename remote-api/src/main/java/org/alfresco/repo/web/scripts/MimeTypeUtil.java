@@ -32,12 +32,24 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 public class MimeTypeUtil
 {
+
+    /**
+     * Get the file mimetype from the file ContentReader, and if its null then set the mimetype to binary by default
+     * and try to get the correct one from file extension
+     *
+     *
+     * @param reader            reader of the file in the request
+     * @param req               request relating to the file
+     * @param mimetypeService   MimetypeService
+     *
+     * @return  mimetype of the file as a string
+     */
     public static String determineMimetype(ContentReader reader, WebScriptRequest req, MimetypeService mimetypeService)
     {
         String mimetype = reader.getMimetype();
-        String extensionPath = req.getExtensionPath();
         if (mimetype == null || mimetype.length() == 0)
         {
+            String extensionPath = req.getExtensionPath();
             mimetype = MimetypeMap.MIMETYPE_BINARY;
             int extIndex = extensionPath.lastIndexOf('.');
             if (extIndex != -1)

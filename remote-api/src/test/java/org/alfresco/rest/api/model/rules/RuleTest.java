@@ -28,6 +28,7 @@ package org.alfresco.rest.api.model.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.repo.action.ActionConditionImpl;
@@ -39,7 +40,6 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 @Experimental
@@ -50,7 +50,7 @@ public class RuleTest
     private static final String RULE_DESCRIPTION = "rule description";
     private static final boolean RULE_ENABLED = true;
     private static final boolean RULE_CASCADE = true;
-    private static final boolean RULE_ASYNC = false;
+    private static final boolean RULE_ASYNC = true;
     private static final boolean RULE_SHARED = true;
     private static final String ERROR_SCRIPT = "error-script-ref";
 
@@ -111,6 +111,7 @@ public class RuleTest
             .shared(RULE_SHARED)
             .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
             .errorScript(ERROR_SCRIPT)
+            .conditions(CompositeCondition.from(Collections.emptyList()))
             .create();
     }
 }

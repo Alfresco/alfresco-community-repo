@@ -27,7 +27,9 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -73,14 +75,12 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("ruleName");
+        RestRuleModel ruleModel = createRuleModel("ruleName");
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
-
         rule.assertThat().field("id").isNotNull()
             .assertThat().field("name").is("ruleName");
     }
@@ -133,8 +133,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void duplicateRuleNameIsAcceptable()
     {
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("duplicateRuleName");
+        RestRuleModel ruleModel = createRuleModel("duplicateRuleName");
 
         STEP("Create two identical rules");
         RestRuleModel ruleA = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
@@ -183,6 +182,21 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
     }
 
+    /** Check that a user consumer permission for the folder cannot create a rule in it. */
+    public void failToCreateRuleAsSiteConsumer()
+    {
+        STEP("Create a consumer and check they cannot create a rule in the public folder");
+        UserModel consumer = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(consumer, site, SiteConsumer);
+        RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setName("ruleName");
+
+        restClient.authenticateUser(consumer).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
+    }
+
     /** Check we can't create a rule under a document node. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void tryToCreateRuleUnderDocument()
@@ -205,12 +219,7 @@ public class CreateRulesTests extends RestTest
     {
         STEP("Create a list of rules in one POST request");
         List<String> ruleNames = List.of("ruleA", "ruleB", "ruleC");
-        List<RestRuleModel> ruleModels = ruleNames.stream().map(ruleName ->
-        {
-            RestRuleModel ruleModel = new RestRuleModel();
-            ruleModel.setName(ruleName);
-            return ruleModel;
-        }).collect(toList());
+        List<RestRuleModel> ruleModels = ruleNames.stream().map(RulesTestsUtils::createRuleModel).collect(toList());
 
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                                    .createListOfRules(ruleModels);
@@ -229,12 +238,10 @@ public class CreateRulesTests extends RestTest
     public void createRulesWithOneError()
     {
         STEP("Try to create a three rules but the middle one has an error.");
-        RestRuleModel ruleA = new RestRuleModel();
-        ruleA.setName("ruleA");
+        RestRuleModel ruleA = createRuleModel("ruleA");
         RestRuleModel ruleB = new RestRuleModel();
         // Don't set a name for Rule B.
-        RestRuleModel ruleC = new RestRuleModel();
-        ruleC.setName("ruleC");
+        RestRuleModel ruleC = createRuleModel("ruleC");
         List<RestRuleModel> ruleModels = List.of(ruleA, ruleB, ruleC);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createListOfRules(ruleModels);

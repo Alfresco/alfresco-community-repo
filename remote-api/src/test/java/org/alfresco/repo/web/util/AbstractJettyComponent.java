@@ -138,8 +138,6 @@ public abstract class AbstractJettyComponent implements JettyComponent
 
 		    server.setHandler(webAppContext);
 
-//			httpConfiguration.setUriCompliance(UriCompliance.RFC3986);
-
 		    // for clean shutdown, add monitor thread 
 		    
 		    // from: http://ptrthomas.wordpress.com/2009/01/24/how-to-start-and-stop-jetty-revisited/

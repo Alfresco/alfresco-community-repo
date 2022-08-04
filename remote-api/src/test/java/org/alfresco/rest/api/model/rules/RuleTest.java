@@ -28,6 +28,7 @@ package org.alfresco.rest.api.model.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.repo.action.ActionConditionImpl;
@@ -110,6 +111,7 @@ public class RuleTest
             .shared(RULE_SHARED)
             .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
             .errorScript(ERROR_SCRIPT)
+            .conditions(CompositeCondition.from(Collections.emptyList()))
             .create();
     }
 }

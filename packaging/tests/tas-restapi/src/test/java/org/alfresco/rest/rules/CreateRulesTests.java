@@ -190,7 +190,6 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
     }
 
-
     /** Check that a siteManager can create a rule in a private folder. */
     public void siteManagerCanCreateRule()
     {

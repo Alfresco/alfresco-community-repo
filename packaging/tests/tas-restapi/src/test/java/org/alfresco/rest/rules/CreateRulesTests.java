@@ -27,8 +27,9 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.constants.UserRole.*;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -44,6 +45,7 @@ import java.util.stream.IntStream;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -161,24 +163,41 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
     }
 
-    /** Check that a user without write permission for the folder cannot create a rule in it. */
-    public void requireWritePermissionToCreateRule()
+    /** Check that a Collaborator cannot create a rule in a private folder. */
+    public void siteCollaboratorCannotCreateRule()
     {
-        STEP("Create a user and use them to create a private site containing a folder");
-        UserModel privateUser = dataUser.createRandomTestUser();
-        SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
-        FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-
-        STEP("Create a collaborator and check they cannot create a rule in the private folder");
-        UserModel collaborator = dataUser.createRandomTestUser();
-        dataUser.addUserToSite(collaborator, privateSite, SiteCollaborator);
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("ruleName");
-
-        restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        testRolePermissionsWith(SiteCollaborator);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
+    }
+
+    /** Check that a Contributor cannot create a rule in a private folder. */
+    public void siteContributorCannotCreateRule()
+    {
+        testRolePermissionsWith(SiteContributor);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
+    }
+
+    /** Check that a Consumer cannot create a rule in a private folder. */
+    public void siteConsumerCannotCreateRule()
+    {
+        testRolePermissionsWith(SiteConsumer);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
+    }
+
+
+    /** Check that a siteManager can create a rule in a private folder. */
+    public void siteManagerCanCreateRule()
+    {
+        testRolePermissionsWith(SiteManager)
+                .assertThat().field("id").isNotNull()
+                .assertThat().field("name").is("testRule");
+        restClient.assertStatusCodeIs(CREATED);
     }
 
     /** Check we can't create a rule under a document node. */
@@ -232,5 +251,19 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
+    }
+
+    public RestRuleModel testRolePermissionsWith(UserRole userRole)
+    {
+        STEP("Create a user and use them to create a private site containing a folder");
+        SiteModel privateSite = dataSite.usingUser(user).createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingUser(user).usingSite(privateSite).createFolder();
+
+        STEP(String.format("Add a user with '%s' role in the private site's folder", userRole.toString()));
+        UserModel userWithRole = dataUser.createRandomTestUser();
+        dataUser.addUserToSite(userWithRole, privateSite, userRole);
+        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createActionModel()));
+
+        return restClient.authenticateUser(userWithRole).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }
 }

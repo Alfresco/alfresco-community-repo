@@ -92,9 +92,9 @@ public class GetRuleSetsTests extends RestTest
                                                          .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
+        ruleSets.assertThat().entriesListCountIs(1);
         ruleSets.getEntries().get(0).onModel()
                 .assertThat().field("id").isNotNull();
-        ruleSets.assertThat().entriesListCountIs(1);
     }
 
     /** Check we get a 404 if trying to load rule sets for a folder that doesn't exist. */
@@ -115,6 +115,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Get the rule sets for the folder and find the rule set id");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
                                                          .getListOfRuleSets();
+        ruleSets.assertThat().entriesListCountIs(1);
         String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
 
         STEP("Get the rule set using its rule set id");

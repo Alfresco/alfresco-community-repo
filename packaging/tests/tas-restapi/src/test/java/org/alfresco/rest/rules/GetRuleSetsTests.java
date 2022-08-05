@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -62,8 +63,7 @@ public class GetRuleSetsTests extends RestTest
         ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Create a rule in the folder.");
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("ruleName");
+        RestRuleModel ruleModel = createRuleModel("ruleName");
         rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
     }
@@ -146,6 +146,16 @@ public class GetRuleSetsTests extends RestTest
         FolderModel nonExistentFolder = FolderModel.getRandomFolderModel();
         nonExistentFolder.setNodeRef("fake-id");
         restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistentFolder).getDefaultRuleSet();
+        restClient.assertStatusCodeIs(NOT_FOUND);
+    }
+
+    /** Check we get 404 for a non-existing rule set id. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getRuleSetByNonExistingId()
+    {
+        STEP("Get the rule set using fake rule set id");
+        String ruleSetId = "fake-rule-set-id";
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).getRuleSet(ruleSetId);
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 }

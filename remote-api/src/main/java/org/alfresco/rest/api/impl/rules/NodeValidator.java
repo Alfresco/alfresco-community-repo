@@ -53,16 +53,6 @@ public class NodeValidator
     private RuleService ruleService;
     private PermissionService permissionService;
 
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setRuntimeRuleService(RuntimeRuleService runtimeRuleService)
-    {
-        this.runtimeRuleService = runtimeRuleService;
-    }
-
     /**
      * Validates if folder node exists and the user has permission to use it.
      *

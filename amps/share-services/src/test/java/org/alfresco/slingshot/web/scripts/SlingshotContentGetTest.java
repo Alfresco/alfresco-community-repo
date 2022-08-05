@@ -219,39 +219,39 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
         NodeRef companyHome = repositoryHelper.getCompanyHome();
 
         NodeRef rootFolder = createNode(companyHome, "rootFolder", ContentModel.TYPE_FOLDER);
-        NodeRef testhtml = createNodeWithTextContent(rootFolder,"testhtml", ContentModel.TYPE_CONTENT, "testhtml content", MimetypeMap.MIMETYPE_HTML);
-        NodeRef testpdf = createNodeWithTextContent(rootFolder,"testpdf", ContentModel.TYPE_CONTENT, "testpdf content" , MimetypeMap.MIMETYPE_PDF);
+        NodeRef testhtml = createNodeWithTextContent(rootFolder, "testhtml", ContentModel.TYPE_CONTENT, "testhtml content", MimetypeMap.MIMETYPE_HTML);
+        NodeRef testpdf = createNodeWithTextContent(rootFolder, "testpdf", ContentModel.TYPE_CONTENT, "testpdf content", MimetypeMap.MIMETYPE_PDF);
 
         String uri = URL_CONTENT_DOWNLOAD + testhtml.getId() + "?a=false";
         GetRequest req = new GetRequest(uri);
-        Response res = sendRequest(req,200);
-        assertEquals("attachment",res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_HTML+";charset=UTF-8",res.getContentType());
+        Response res = sendRequest(req, 200);
+        assertEquals("attachment", res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
 
         uri = URL_CONTENT_DOWNLOAD + testhtml.getId();
         res = sendRequest(new GetRequest(uri), 200);
-        assertEquals("attachment",res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_HTML+";charset=UTF-8",res.getContentType());
+        assertEquals("attachment", res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
 
         uri = URL_CONTENT_DOWNLOAD + testhtml.getId() + "?a=true";
         res = sendRequest(new GetRequest(uri), 200);
-        assertEquals("attachment",res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_HTML+";charset=UTF-8",res.getContentType());
+        assertEquals("attachment", res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
 
         uri = URL_CONTENT_DOWNLOAD + testpdf.getId() + "?a=false";
         res = sendRequest(new GetRequest(uri), 200);
         assertNull(res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_PDF+";charset=UTF-8",res.getContentType());
+        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
 
         uri = URL_CONTENT_DOWNLOAD + testpdf.getId();
         res = sendRequest(new GetRequest(uri), 200);
         assertNull(res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_PDF+";charset=UTF-8",res.getContentType());
+        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
 
         uri = URL_CONTENT_DOWNLOAD + testpdf.getId() + "?a=true";
         res = sendRequest(new GetRequest(uri), 200);
-        assertEquals("attachment",res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_PDF+";charset=UTF-8",res.getContentType());
+        assertEquals("attachment", res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
 
         nodeService.deleteNode(rootFolder);
     }

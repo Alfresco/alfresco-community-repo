@@ -26,13 +26,37 @@
 
 package org.alfresco.rest.requests;
 
+import javax.json.JsonArrayBuilder;
+import java.io.File;
+import java.io.IOException;
+
 import io.restassured.http.ContentType;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestResponse;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.exception.JsonToModelConversionException;
-import org.alfresco.rest.model.*;
+import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
+import org.alfresco.rest.model.RestCommentModel;
+import org.alfresco.rest.model.RestCommentModelsCollection;
+import org.alfresco.rest.model.RestNodeAssocTargetModel;
+import org.alfresco.rest.model.RestNodeAssociationModel;
+import org.alfresco.rest.model.RestNodeAssociationModelCollection;
+import org.alfresco.rest.model.RestNodeBodyModel;
+import org.alfresco.rest.model.RestNodeBodyMoveCopyModel;
+import org.alfresco.rest.model.RestNodeChildAssocModelCollection;
+import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.RestNodeModelsCollection;
+import org.alfresco.rest.model.RestRatingModel;
+import org.alfresco.rest.model.RestRatingModelsCollection;
+import org.alfresco.rest.model.RestRenditionInfoModel;
+import org.alfresco.rest.model.RestRenditionInfoModelCollection;
+import org.alfresco.rest.model.RestRuleSetModel;
+import org.alfresco.rest.model.RestRuleSetModelsCollection;
+import org.alfresco.rest.model.RestTagModel;
+import org.alfresco.rest.model.RestTagModelsCollection;
+import org.alfresco.rest.model.RestVersionModel;
+import org.alfresco.rest.model.RestVersionModelsCollection;
 import org.alfresco.rest.model.body.RestNodeLockBodyModel;
 import org.alfresco.rest.model.builder.NodesBuilder;
 import org.alfresco.utility.Utility;
@@ -41,16 +65,15 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.testng.reporters.Files;
 
-import javax.json.JsonArrayBuilder;
-import java.io.File;
-import java.io.IOException;
-
 /**
  * Declares all Rest API under the /nodes path
  *
  */
 public class Node extends ModelRequest<Node>
 {
+    private static final String RULE_SETS_URI = "nodes/{nodeId}/rule-sets";
+    private static final String RULE_SET_BY_ID = RULE_SETS_URI + "/{ruleSetId}";
+
     private RepoTestModel repoModel;
 
     public Node(RestWrapper restWrapper)
@@ -995,7 +1018,8 @@ public class Node extends ModelRequest<Node>
      */
     public RestRuleSetModelsCollection getListOfRuleSets()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/rule-sets", repoModel.getNodeRef());
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SETS_URI + "?{parameters}",
+                repoModel.getNodeRef(), restWrapper.getParameters());
         return restWrapper.processModels(RestRuleSetModelsCollection.class, request);
     }
 
@@ -1007,7 +1031,8 @@ public class Node extends ModelRequest<Node>
      */
     public RestRuleSetModel getRuleSet(String ruleSetId)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/rule-sets/{ruleSetId}", repoModel.getNodeRef(), ruleSetId);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SET_BY_ID + "?{parameters}",
+                repoModel.getNodeRef(), ruleSetId, restWrapper.getParameters());
         return restWrapper.processModel(RestRuleSetModel.class, request);
     }
 
@@ -1018,7 +1043,8 @@ public class Node extends ModelRequest<Node>
      */
     public RestRuleSetModel getDefaultRuleSet()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/rule-sets/{ruleSetId}", repoModel.getNodeRef(), "-default-");
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SET_BY_ID + "?{parameters}",
+                repoModel.getNodeRef(), "-default-", restWrapper.getParameters());
         return restWrapper.processModel(RestRuleSetModel.class, request);
     }
 }

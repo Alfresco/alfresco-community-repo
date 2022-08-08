@@ -64,6 +64,8 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
      */
     @JsonProperty (required = true)
     private String id;
+    /** The node id of the folder that owns this rule set */
+    private String owningFolder;
 
     public String getId()
     {
@@ -73,5 +75,15 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
     public void setId(String id)
     {
         this.id = id;
+    }
+
+    public String getOwningFolder()
+    {
+        return owningFolder;
+    }
+
+    public void setOwningFolder(String owningFolder)
+    {
+        this.owningFolder = owningFolder;
     }
 }

@@ -126,7 +126,7 @@ public class GetRuleSetsTests extends RestTest
         ruleSet.assertThat().field("id").is(ruleSetId);
     }
 
-    /** Check we can get a rule set by its id. */
+    /** Check we can get a rule set using the "-default-" synonym. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void getDefaultRuleSetById()
     {

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -43,6 +43,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.sync.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.rest.framework.resource.content.CacheDirective;
@@ -361,18 +362,7 @@ public class ContentStreamer implements ResourceLoaderAware
         setAttachment(req, res, attach, attachFileName);
     
         // establish mimetype
-        String mimetype = reader.getMimetype();
-        String extensionPath = req.getExtensionPath();
-        if (mimetype == null || mimetype.length() == 0)
-        {
-            mimetype = MimetypeMap.MIMETYPE_BINARY;
-            int extIndex = extensionPath.lastIndexOf('.');
-            if (extIndex != -1)
-            {
-                String ext = extensionPath.substring(extIndex + 1);
-                mimetype = mimetypeService.getMimetype(ext);
-            }
-        }
+        String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
         
         res.setHeader(HEADER_ACCEPT_RANGES, "bytes");
         try

@@ -73,6 +73,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest {
     private static final String CATEGORY_ADMIN = "catAdmin" + generateTestPrefix(FileAsRecordTests.class);
     private static final String FOLDER_MANAGER = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
     private static final String FOLDER_ADMIN = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
+
     @Autowired
     private DataSite dataSite;
     @Autowired

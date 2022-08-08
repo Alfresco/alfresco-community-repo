@@ -120,7 +120,6 @@ public class FileVersionAsRecordTests extends BaseRMRestTest {
 
         AtomicReference<RecordFolderCollection> apiChildren = new AtomicReference<>();
 
-
         STEP("Create a document with the user without RM role");
         FileModel inplaceRecord = dataContent.usingSite(testSite).usingUser(rmManager)
             .createContent(new FileModel("declareAndFileToIntoUnfiledRecordFolder",

@@ -31,9 +31,9 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
-import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.RulesAPI;
@@ -44,11 +44,10 @@ import org.alfresco.utility.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
-import java.util.UUID;
-
 import static java.util.Arrays.asList;
+import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
 import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -64,7 +63,6 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
     private final String RULE_NAME = TEST_PREFIX + "rule unfiled";
     private String unfiledRecordsNodeRef;
     private UserModel testUser;
-    private UserModel RmAdminUser;
     private SiteModel testSite;
     private FolderModel testFolder;
     private RecordCategory Category;
@@ -86,28 +84,20 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
     public void preConditions() {
         STEP("Create RM Site");
         createRMSiteIfNotExists();
-
-        STEP("Create RM Admin user");
-        rmRolesAndActionsAPI.createUserAndAssignToRole(getAdminUser().getUsername(), getAdminUser().getPassword(), RM_ADMIN,
-            getAdminUser().getPassword(),
-            "Administrator");
-
-        RmAdminUser = new UserModel(RM_ADMIN,getAdminUser().getPassword());
-
-        STEP("Create collab_user user");
-        testUser = getDataUser().createRandomTestUser();
-        testSite = dataSite.usingAdmin().createPublicRandomSite();
-
-        // invite collab_user to Collaboration site with Contributor role
-        getDataUser().addUserToSite(testUser, testSite, UserRole.SiteContributor);
-
-        testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
     }
 
-
+    /**
+     * Given that a user is the owner of a document
+     * And that user has been deleted
+     * When admin tries to declare the document as a record
+     * Then the document becomes an inplace record
+     */
     @Test
     @AlfrescoTest(jira="RM-2584")
     public void DeclareRecordOwnerDeleted() throws Exception {
+
+        createTestPrecondition();
+
         // Upload document in a folder in a collaboration site
         FileModel uploadedDoc = dataContent.usingSite(testSite)
             .usingUser(testUser)
@@ -118,13 +108,20 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
         dataUser.deleteUser(testUser);
 
         // declare uploadedDocument as record
-        Record uploadedRecord = getRestAPIFactory().getFilesAPI(getDataUser().getAdminUser()).declareAsRecord(uploadedDoc.getNodeRefWithoutVersion());
+        getRestAPIFactory().getFilesAPI(getDataUser().getAdminUser()).declareAsRecord(uploadedDoc.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         // assert that the document is now a record
         assertTrue(hasRecordAspect(uploadedDoc));
     }
 
+    /**
+     * Given that a user is the owner of a document
+     * And that user declare the document as a record
+     * When admin files the record to a category that has a disposition schedule applied on records and a cut off step
+     * And admin completes the record so the pending record action is now Cut off
+     * Then user is still able to see the in place record in original share site location
+     */
     @Test
     @AlfrescoTest(jira="MNT-18558")
     public void inPlaceRecordVisibilityAfterFilingToCategoryWithCutOffStep() throws Exception {
@@ -137,7 +134,7 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
         dispositionScheduleService.addCutOffAfterPeriodStep(RECORDS_CATEGORY, "day|2", CREATED_DATE);
 
         //create a folder in category
-        RecordCategoryChild FOLDER = createFolder(getAdminUser(),Category.getId(),RECORD_FOLDER_ONE);
+        createFolder(getAdminUser(),Category.getId(),RECORD_FOLDER_ONE);
 
         // create a File to record folder rule applied on Unfiled Records container
         fileToRuleAppliedOnUnfiledRecords();
@@ -146,30 +143,21 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
         UserModel testUser = createSiteManager();
 
         // upload a new document as the user and declare the document as record
-        String fileName = generateText();
         FileModel uploadedDoc = dataContent.usingSite(privateSite)
             .usingUser(testUser)
-            .usingResource(testFolder)
             .createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         Record uploadedRecord = getRestAPIFactory().getFilesAPI(getDataUser().getAdminUser()).declareAsRecord(uploadedDoc.getNodeRefWithoutVersion());
         assertStatusCode(CREATED);
 
         //Complete the record as admin to be sure that pending action is now Cut off
-        String inPlaceRecordName = recordsAPI.getRecordFullName(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), RECORD_FOLDER_ONE,
-            fileName);
         recordsAPI.completeRecord(getDataUser().usingAdmin().getAdminUser().getUsername(),
-            getDataUser().usingAdmin().getAdminUser().getPassword(), inPlaceRecordName);
+            getDataUser().usingAdmin().getAdminUser().getPassword(), uploadedRecord.getName());
 
         // As test user navigate to collaboration site documents library and check that the record is still visible
-        ContentModel documentLibrary = getDocumentLibrary(testUser,privateSite);
-
-
     }
 
     private void createTestPrecondition(String categoryName) {
-        createRMSiteIfNotExists();
 
         // create "rm admin" user if it does not exist and assign it to RM Administrator role
         rmRolesAndActionsAPI.createUserAndAssignToRole(
@@ -182,10 +170,24 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
         Category = createRootCategory(categoryName,"Title");
 
         privateSite = dataSite.usingAdmin().createPrivateRandomSite();
+
+        UnfiledContainer unfiledContainer = getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS);
+
+        unfiledRecordsNodeRef = NODE_PREFIX + unfiledContainer.getId();
     }
 
-    private void fileToRuleAppliedOnUnfiledRecords()
-    {
+    private void createTestPrecondition() {
+        STEP("Create collab_user user");
+        testUser = getDataUser().createRandomTestUser();
+        testSite = dataSite.usingAdmin().createPublicRandomSite();
+
+        // invite collab_user to Collaboration site with Contributor role
+        getDataUser().addUserToSite(testUser, testSite, UserRole.SiteContributor);
+
+        testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
+    }
+
+    private void fileToRuleAppliedOnUnfiledRecords() {
         unfiledRecordsRuleTeardown();
 
         // create a rule
@@ -201,21 +203,14 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
             getDataUser().usingAdmin().getAdminUser().getPassword(), unfiledRecordsNodeRef, ruleDefinition);
     }
 
-    private void unfiledRecordsRuleTeardown()
-    {
+    private void unfiledRecordsRuleTeardown() {
         rulesAPI.deleteAllRulesOnContainer(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), unfiledRecordsNodeRef);
     }
 
-
     public UserModel createSiteManager() {
         UserModel siteManager = getDataUser().createRandomTestUser();
         getDataUser().addUserToSite(siteManager, privateSite, UserRole.SiteManager);
-        return testUser;
-    }
-
-    protected String generateText()
-    {
-        return UUID.randomUUID().toString();
+        return siteManager;
     }
 }

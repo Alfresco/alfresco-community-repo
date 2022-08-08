@@ -40,6 +40,7 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -194,13 +195,13 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
 
         NodeRef rootFolder = createNode(companyHome, "rootFolder", ContentModel.TYPE_FOLDER);
 
-        NodeRef doc1 = createNodeWithTextContent(rootFolder, "doc1", ContentModel.TYPE_CONTENT, "doc1 file content");
+        NodeRef doc1 = createNodeWithTextContent(rootFolder, "doc1", ContentModel.TYPE_CONTENT, "doc1 file content", MimetypeMap.MIMETYPE_TEXT_PLAIN);
 
         NodeRef folderX = createNode(rootFolder, "X", ContentModel.TYPE_FOLDER);
         NodeRef folderY = createNode(folderX, "Y", ContentModel.TYPE_FOLDER);
         NodeRef folderZ = createNode(folderY, "Z", ContentModel.TYPE_FOLDER);
 
-        NodeRef doc2 = createNodeWithTextContent(folderZ, "doc2", ContentModel.TYPE_CONTENT, "doc2 file content");
+        NodeRef doc2 = createNodeWithTextContent(folderZ, "doc2", ContentModel.TYPE_CONTENT, "doc2 file content", MimetypeMap.MIMETYPE_TEXT_PLAIN);
 
         // uri with relative path at the end
         String uri = URL_CONTENT_DOWNLOAD + doc1.getId() + "/X/Y/Z/doc2";
@@ -212,7 +213,50 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
         nodeService.deleteNode(rootFolder);
     }
 
-    public NodeRef createNodeWithTextContent(NodeRef parentNode, String nodeCmName, QName nodeType, String content)
+    public void testForcedAttachment() throws Exception
+    {
+        Repository repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+
+        NodeRef rootFolder = createNode(companyHome, "rootFolder", ContentModel.TYPE_FOLDER);
+        NodeRef testhtml = createNodeWithTextContent(rootFolder, "testhtml", ContentModel.TYPE_CONTENT, "testhtml content", MimetypeMap.MIMETYPE_HTML);
+        NodeRef testpdf = createNodeWithTextContent(rootFolder, "testpdf", ContentModel.TYPE_CONTENT, "testpdf content", MimetypeMap.MIMETYPE_PDF);
+
+        String uri = URL_CONTENT_DOWNLOAD + testhtml.getId() + "?a=false";
+        GetRequest req = new GetRequest(uri);
+        Response res = sendRequest(req, 200);
+        assertEquals("attachment", res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
+
+        uri = URL_CONTENT_DOWNLOAD + testhtml.getId();
+        res = sendRequest(new GetRequest(uri), 200);
+        assertEquals("attachment", res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
+
+        uri = URL_CONTENT_DOWNLOAD + testhtml.getId() + "?a=true";
+        res = sendRequest(new GetRequest(uri), 200);
+        assertEquals("attachment", res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
+
+        uri = URL_CONTENT_DOWNLOAD + testpdf.getId() + "?a=false";
+        res = sendRequest(new GetRequest(uri), 200);
+        assertNull(res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
+
+        uri = URL_CONTENT_DOWNLOAD + testpdf.getId();
+        res = sendRequest(new GetRequest(uri), 200);
+        assertNull(res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
+
+        uri = URL_CONTENT_DOWNLOAD + testpdf.getId() + "?a=true";
+        res = sendRequest(new GetRequest(uri), 200);
+        assertEquals("attachment", res.getHeader("Content-Disposition"));
+        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
+
+        nodeService.deleteNode(rootFolder);
+    }
+
+    public NodeRef createNodeWithTextContent(NodeRef parentNode, String nodeCmName, QName nodeType, String content, String mimetype)
     {
         NodeRef nodeRef = createNode(parentNode, nodeCmName, nodeType);
 
@@ -220,7 +264,7 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
         if (content != null)
         {
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.setMimetype(mimetype);
             writer.setEncoding("UTF-8");
             writer.putContent(content);
         }

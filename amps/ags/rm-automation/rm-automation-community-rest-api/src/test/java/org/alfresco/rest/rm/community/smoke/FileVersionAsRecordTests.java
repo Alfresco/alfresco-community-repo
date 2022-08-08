@@ -73,6 +73,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest {
     private static final String CATEGORY_ADMIN = "catAdmin" + generateTestPrefix(FileAsRecordTests.class);
     private static final String FOLDER_MANAGER = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
     private static final String FOLDER_ADMIN = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
+
     @Autowired
     private DataSite dataSite;
     @Autowired
@@ -118,7 +119,6 @@ public class FileVersionAsRecordTests extends BaseRMRestTest {
     {
 
         AtomicReference<RecordFolderCollection> apiChildren = new AtomicReference<>();
-
 
         STEP("Create a document with the user without RM role");
         FileModel inplaceRecord = dataContent.usingSite(testSite).usingUser(rmManager)

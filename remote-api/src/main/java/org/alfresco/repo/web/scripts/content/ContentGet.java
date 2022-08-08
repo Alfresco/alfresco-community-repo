@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,14 +26,18 @@
 package org.alfresco.repo.web.scripts.content;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.web.scripts.MimeTypeUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -64,6 +68,19 @@ public class ContentGet extends StreamContent implements ServletContextAware
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private ContentService contentService;
+
+    private List<String> nonAttachContentTypes = Collections.emptyList();
+
+    /**
+     * @param nonAttachContentTypes List<String>
+     */
+    public void setNonAttachContentTypes(List<String> nonAttachContentTypes)
+    {
+        if (nonAttachContentTypes != null && !nonAttachContentTypes.isEmpty())
+        {
+            this.nonAttachContentTypes = nonAttachContentTypes;
+        }
+    }
 
     /**
      * @param servletContext ServletContext
@@ -121,9 +138,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
         {
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find " + reference.toString());
         }
-        
-        // determine attachment
-        boolean attach = Boolean.valueOf(req.getParameter("a"));
+
         
         // render content
         QName propertyQName = ContentModel.PROP_CONTENT;
@@ -138,6 +153,19 @@ public class ContentGet extends StreamContent implements ServletContextAware
             if (propertyName.length() > 0)
             {
                 propertyQName = QName.createQName(propertyName, namespaceService);
+            }
+        }
+        // determine attachment and force download for specific mimetypes - see PRODSEC-5862
+        boolean attach = Boolean.valueOf(req.getParameter("a"));
+        ContentReader reader = contentService.getReader(nodeRef, propertyQName);
+        String mimetype = MimeTypeUtil.determineMimetype(reader, req, mimetypeService);
+
+        if (!attach)
+        {
+            if (nonAttachContentTypes == null || !nonAttachContentTypes.contains(mimetype))
+            {
+                attach = true;
+                logger.warn("Ignored a=false for " + nodeRef.getId() + " since " + mimetype + " is not in the whitelist for non-attach content types");
             }
         }
 

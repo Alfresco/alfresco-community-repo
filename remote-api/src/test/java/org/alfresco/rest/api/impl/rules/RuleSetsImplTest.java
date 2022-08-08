@@ -40,7 +40,9 @@ import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.junit.Before;
@@ -65,9 +67,13 @@ public class RuleSetsImplTest extends TestCase
     @InjectMocks
     private RuleSetsImpl ruleSets;
     @Mock
+    private NodeService nodeServiceMock;
+    @Mock
     private NodeValidator nodeValidatorMock;
     @Mock
     private RuleService ruleServiceMock;
+    @Mock
+    private ChildAssociationRef ruleSetAssociationMock;
 
     @Before
     @Override
@@ -80,6 +86,9 @@ public class RuleSetsImplTest extends TestCase
         given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
 
         given(ruleServiceMock.getRuleSetNode(FOLDER_NODE)).willReturn(RULE_SET_NODE);
+
+        given(ruleSetAssociationMock.getParentRef()).willReturn(FOLDER_NODE);
+        given(nodeServiceMock.getPrimaryParent(RULE_SET_NODE)).willReturn(ruleSetAssociationMock);
     }
 
     @Test
@@ -129,5 +138,15 @@ public class RuleSetsImplTest extends TestCase
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
 
         assertEquals(RuleSet.of(RULE_SET_ID), actual);
+    }
+
+    @Test
+    public void testLoadRuleSet()
+    {
+        // Call the method under test.
+        RuleSet actual = ruleSets.loadRuleSet(RULE_SET_NODE, List.of("owningFolder"));
+
+        RuleSet expected = RuleSet.builder().id(RULE_SET_ID).owningFolder(FOLDER_NODE).create();
+        assertEquals(expected, actual);
     }
 }

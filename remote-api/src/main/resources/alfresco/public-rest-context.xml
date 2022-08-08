@@ -861,6 +861,7 @@
     </bean>
 
     <bean id="ruleSets" class="org.alfresco.rest.api.impl.rules.RuleSetsImpl">
+        <property name="nodeService" ref="NodeService" />
         <property name="validator" ref="nodeValidator" />
         <property name="ruleService" ref="RuleService" />
     </bean>

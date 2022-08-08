@@ -53,6 +53,7 @@ public class GetRuleSetsTests extends RestTest
     private SiteModel site;
     private FolderModel ruleFolder;
     private RestRuleModel rule;
+    private String ruleSetId;
 
     @BeforeClass (alwaysRun = true)
     public void dataPreparation()
@@ -66,6 +67,12 @@ public class GetRuleSetsTests extends RestTest
         RestRuleModel ruleModel = createRuleModel("ruleName");
         rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
+
+        STEP("Get the rule sets for the folder and find the rule set id");
+        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+                                                         .getListOfRuleSets();
+        ruleSets.assertThat().entriesListCountIs(1);
+        ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
     }
 
     /** Check we can get an empty list of rule sets. */
@@ -108,16 +115,27 @@ public class GetRuleSetsTests extends RestTest
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
+    /** Check we can get the id of the folder that owns a list of rule sets. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetsAndOwningFolders()
+    {
+        STEP("Get the rule sets and owning folders");
+        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+                                                 .usingNode(ruleFolder)
+                                                 .usingParams("include=owningFolder")
+                                                 .getListOfRuleSets();
+
+        restClient.assertStatusCodeIs(OK);
+        ruleSets.getEntries().get(0).onModel()
+                .assertThat().field("owningFolder").is(ruleFolder.getNodeRef())
+                .assertThat().field("id").is(ruleSetId);
+        ruleSets.assertThat().entriesListCountIs(1);
+    }
+
     /** Check we can get a rule set by its id. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void getRuleSetById()
     {
-        STEP("Get the rule sets for the folder and find the rule set id");
-        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
-                                                         .getListOfRuleSets();
-        ruleSets.assertThat().entriesListCountIs(1);
-        String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
-
         STEP("Get the rule set using its rule set id");
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
                                              .getRuleSet(ruleSetId);
@@ -150,12 +168,27 @@ public class GetRuleSetsTests extends RestTest
     }
 
     /** Check we get 404 for a non-existing rule set id. */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void getRuleSetByNonExistingId()
     {
         STEP("Get the rule set using fake rule set id");
-        String ruleSetId = "fake-rule-set-id";
-        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).getRuleSet(ruleSetId);
+        String fakeRuleSetId = "fake-rule-set-id";
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).getRuleSet(fakeRuleSetId);
         restClient.assertStatusCodeIs(NOT_FOUND);
+    }
+
+    /** Check we can get the id of the folder that owns a rule set. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetAndOwningFolder()
+    {
+        STEP("Get the rule set and owning folder");
+        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI()
+                                             .usingNode(ruleFolder)
+                                             .usingParams("include=owningFolder")
+                                             .getRuleSet(ruleSetId);
+
+        restClient.assertStatusCodeIs(OK);
+        ruleSet.assertThat().field("owningFolder").is(ruleFolder.getNodeRef())
+               .assertThat().field("id").is(ruleSetId);
     }
 }

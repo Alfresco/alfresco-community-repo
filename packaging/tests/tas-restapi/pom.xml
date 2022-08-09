@@ -29,11 +29,8 @@
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <tas.utility.version>3.0.49</tas.utility.version>
-        <rest-assured.version>3.3.0</rest-assured.version>
+        <rest-assured.version>5.1.1</rest-assured.version>
         <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
-        <json-path.version>3.3.0</json-path.version>
-        <xml-path.version>3.3.0</xml-path.version>
-        <json-schema-validator.version>3.3.0</json-schema-validator.version>
         <jackson-databind.version>2.13.3</jackson-databind.version>
         <maven-release.version>2.5.3</maven-release.version>
         <org.glassfish.version>1.1.4</org.glassfish.version>
@@ -264,7 +261,7 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>json-path</artifactId>
-            <version>${json-path.version}</version>
+            <version>${rest-assured.version}</version>
             <exclusions>
             	<exclusion>
             		<artifactId>commons-lang3</artifactId>
@@ -276,7 +273,7 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>xml-path</artifactId>
-            <version>${xml-path.version}</version>
+            <version>${rest-assured.version}</version>
             <exclusions>
             	<exclusion>
             		<artifactId>commons-lang3</artifactId>
@@ -288,7 +285,7 @@
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <version>${json-schema-validator.version}</version>
+            <version>${rest-assured.version}</version>
         </dependency>
 
         <dependency>

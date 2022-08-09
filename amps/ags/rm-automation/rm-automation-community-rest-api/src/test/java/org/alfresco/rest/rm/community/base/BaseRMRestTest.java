@@ -125,6 +125,8 @@ public class BaseRMRestTest extends RestTest
     @Getter(value = PROTECTED)
     private SearchAPI searchApi;
 
+    protected static final String iso8601_DateFormat="yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+
     /**
      * Asserts the given status code
      *
@@ -960,16 +962,24 @@ public class BaseRMRestTest extends RestTest
             return false;
         }
     }
-
-    protected String getPreviousDate() {
+    /**
+     * Helper method to get the Previous Date in the YYYY-MM-ddTHH:mm:ss.SSSXXX format
+     * @param previousDays number of previous days while calculating the date as output
+     * @return previousDate as String in the ISO 8601 Date Format
+     */
+    protected String getIso8601Date(int previousDays) {
         Date date = new Date(System.currentTimeMillis());
-        Date previousDate = new Date(date.getTime() - 1);
+        Date previousDate = new Date(date.getTime() - previousDays);
         // Conversion
-        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");;
+        SimpleDateFormat sdf= new SimpleDateFormat(iso8601_DateFormat);;
         sdf.setTimeZone(TimeZone.getDefault());
         return sdf.format(previousDate);
     }
-
+    /**
+     * Helper method to provide the Edited Disposition Date Json
+     * The Edited Disposition Date is modified to previous date so that CUTOFF & DESTROY Steps will be enabled
+     * @return JsonObject with the format {"name":"editDispositionActionAsOfDate","params":{"asOfDate":{"iso8601":"Previous Date"}}}
+     */
     protected JSONObject editDispositionDateJson() {
         JSONObject requestParams = new JSONObject();
 
@@ -979,8 +989,7 @@ public class BaseRMRestTest extends RestTest
 
         JSONObject asOfDate = new JSONObject();
         params.put("asOfDate",asOfDate);
-        asOfDate.put("iso8601",getPreviousDate());
+        asOfDate.put("iso8601",getIso8601Date(1));
         return requestParams;
     }
-
 }

@@ -235,8 +235,8 @@ public interface RuleService
      * @param rule Rule
      */
     @Auditable(parameters = {"nodeRef", "rule"})
-    public void saveRule(NodeRef nodeRef, Rule rule);
-    
+    public Rule saveRule(NodeRef nodeRef, Rule rule);
+
     /**
      * 
      * @param nodeRef NodeRef
@@ -362,4 +362,14 @@ public interface RuleService
     @Auditable(parameters = {"ruleNodeRef", "ruleSetNodeRef"})
     @Experimental
     boolean isRuleAssociatedWithRuleSet(final NodeRef ruleNodeRef, final NodeRef ruleSetNodeRef);
+
+    /**
+     * Check if others folders are linked to rule set.
+     *
+     * @param ruleSetNodeRef - node reference of a rule set
+     * @return true if others folders are linked to rule set
+     */
+    @Auditable(parameters = {"ruleSetNodeRef"})
+    @Experimental
+    boolean isRuleSetShared(final NodeRef ruleSetNodeRef);
 }

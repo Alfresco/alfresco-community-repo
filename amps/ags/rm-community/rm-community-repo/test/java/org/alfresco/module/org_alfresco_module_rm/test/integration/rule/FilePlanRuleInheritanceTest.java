@@ -82,13 +82,7 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
             public void given()
             {
                 filePlan = createFilePlan();
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
+                rule = createRuleThatAppliesToChildren();
             }
 
             public void when()
@@ -127,13 +121,7 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
             public void given()
             {
                 filePlan = createFilePlan();
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
+                rule = createRuleThatAppliesToChildren();
             }
 
             public void when()
@@ -171,13 +159,7 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
             public void given()
             {
                 filePlan = createFilePlan();
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
+                rule = createRuleThatAppliesToChildren();
             }
 
             public void when()
@@ -215,13 +197,7 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
             public void given()
             {
                 filePlan = createFilePlan();
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
+                rule = createRuleThatAppliesToChildren();
             }
 
             public void when()
@@ -261,13 +237,7 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
             {
                 filePlan = createFilePlan();
                 recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                
-                // create a rule that applies to childre
-                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
-                rule = new Rule();
-                rule.setRuleType("inbound");
-                rule.setAction(completeRecordAction);
-                rule.applyToChildren(true);
+                rule = createRuleThatAppliesToChildren();
             }
 
             public void when()
@@ -285,5 +255,16 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
                 assertEquals(1, rules.size());
             }
         }); 
+    }
+
+    private Rule createRuleThatAppliesToChildren()
+    {
+        Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);
+        Rule rule = new Rule();
+        rule.setRuleType("inbound");
+        rule.setTitle("Rule name");
+        rule.setAction(completeRecordAction);
+        rule.applyToChildren(true);
+        return rule;
     }
 }

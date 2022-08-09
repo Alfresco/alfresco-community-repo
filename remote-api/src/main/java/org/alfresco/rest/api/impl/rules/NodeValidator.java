@@ -23,95 +23,62 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.rest.api.impl.rules;
 
-package org.alfresco.rest.api.impl;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.cmr.security.PermissionService.CHANGE_PERMISSIONS;
+
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.Rules;
-import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.ListPage;
-import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+/** Responsible for validating nodes when working with rules. */
 @Experimental
-public class RulesImpl implements Rules
+public class NodeValidator
 {
     private static final String RULE_SET_EXPECTED_TYPE_NAME = "rule set";
 
     private Nodes nodes;
-
+    private RuleService ruleService;
     private PermissionService permissionService;
 
-    private RuleService ruleService;
-
-    @Override
-    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
-    {
-        final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
-        validateRuleSetNode(ruleSetId, folderNodeRef);
-
-        final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
-            .map(Rule::from)
-            .collect(Collectors.toList());
-
-        return ListPage.of(rules, paging);
-    }
-
-    @Override
-    public Rule getRuleById(final String folderNodeId, final String ruleSetId, final String ruleId)
-    {
-        final NodeRef folderNodeRef = validateFolderNode(folderNodeId);
-        final NodeRef ruleSetNodeRef = validateRuleSetNode(ruleSetId, folderNodeRef);
-        final NodeRef ruleNodeRef = validateRuleNode(ruleId, ruleSetNodeRef);
-
-        return Rule.from(ruleService.getRule(ruleNodeRef));
-    }
-
-    public void setNodes(Nodes nodes)
-    {
-        this.nodes = nodes;
-    }
-
-    public void setPermissionService(PermissionService permissionService)
-    {
-        this.permissionService = permissionService;
-    }
-
-    public void setRuleService(RuleService ruleService)
-    {
-        this.ruleService = ruleService;
-    }
-
     /**
-     * Validates if folder node exists and user have permission to read from it.
+     * Validates if folder node exists and the user has permission to use it.
      *
      * @param folderNodeId - folder node ID
+     * @param requireChangePermission - Whether to require change permission or just read permission.
      * @return folder node reference
      * @throws InvalidArgumentException if node is not of an expected type
-     * @throws PermissionDeniedException if user doesn't have right to read from folder
+     * @throws PermissionDeniedException if the user doesn't have the appropriate permission for the folder.
      */
-    private NodeRef validateFolderNode(final String folderNodeId)
+    public NodeRef validateFolderNode(final String folderNodeId, boolean requireChangePermission)
     {
         final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
-        if (permissionService.hasReadPermission(nodeRef) != AccessStatus.ALLOWED) {
-            throw new PermissionDeniedException("Cannot read from this node!");
+        if (requireChangePermission)
+        {
+            if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
+            {
+                throw new PermissionDeniedException("Insufficient permissions to manage rules.");
+            }
         }
-
+        else
+        {
+            if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
+            {
+                throw new PermissionDeniedException("Cannot read from this node!");
+            }
+        }
         verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 
         return nodeRef;
@@ -125,20 +92,28 @@ public class RulesImpl implements Rules
      * @return rule set node reference
      * @throws InvalidArgumentException in case of not matching associated folder node
      */
-    private NodeRef validateRuleSetNode(final String ruleSetId, final NodeRef associatedFolderNodeRef)
+    public NodeRef validateRuleSetNode(final String ruleSetId, final NodeRef associatedFolderNodeRef)
     {
         if (RuleSet.isDefaultId(ruleSetId))
         {
-            return ruleService.getRuleSetNode(associatedFolderNodeRef);
+            final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(associatedFolderNodeRef);
+            if (ruleSetNodeRef == null)
+            {
+                //folder doesn't have a -default- rule set
+                throw new RelationshipResourceNotFoundException(associatedFolderNodeRef.getId(), ruleSetId);
+            }
+            return ruleSetNodeRef;
         }
 
         final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
-        if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef)) {
+        if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef))
+        {
             throw new InvalidArgumentException("Rule set is not associated with folder node!");
         }
 
         return ruleSetNodeRef;
     }
+
 
     /**
      * Validates if rule node exists and associated rule set node matches.
@@ -148,7 +123,7 @@ public class RulesImpl implements Rules
      * @return rule node reference
      * @throws InvalidArgumentException in case of not matching associated rule set node
      */
-    private NodeRef validateRuleNode(final String ruleId, final NodeRef associatedRuleSetNodeRef)
+    public NodeRef validateRuleNode(final String ruleId, final NodeRef associatedRuleSetNodeRef)
     {
         final NodeRef ruleNodeRef = validateNode(ruleId, RuleModel.TYPE_RULE, null);
         if (associatedRuleSetNodeRef != null && !ruleService.isRuleAssociatedWithRuleSet(ruleNodeRef, associatedRuleSetNodeRef))
@@ -167,11 +142,46 @@ public class RulesImpl implements Rules
         return nodeRef;
     }
 
-    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName) {
+    private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName)
+    {
         final Set<QName> expectedTypes = Set.of(expectedType);
-        if (!nodes.nodeMatches(nodeRef, expectedTypes, null)) {
-            final String expectedTypeLocalName = (expectedTypeName != null)? expectedTypeName : expectedType.getLocalName();
+        if (!nodes.nodeMatches(nodeRef, expectedTypes, null))
+        {
+            final String expectedTypeLocalName = (expectedTypeName != null) ? expectedTypeName : expectedType.getLocalName();
             throw new InvalidArgumentException(String.format("NodeId of a %s is expected!", expectedTypeLocalName));
         }
+    }
+
+    public boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
+    {
+        if (ruleSetNodeRef == null && folderNodeRef != null)
+        {
+            final NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNodeRef);
+            return ruleSetNode != null && ruleService.isRuleSetShared(ruleSetNode);
+        }
+        else
+        {
+            return isRuleSetNotNullAndShared(ruleSetNodeRef);
+        }
+    }
+
+    public boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef)
+    {
+        return ruleSetNodeRef != null && ruleService.isRuleSetShared(ruleSetNodeRef);
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
+
+    public void setNodes(Nodes nodes)
+    {
+        this.nodes = nodes;
     }
 }

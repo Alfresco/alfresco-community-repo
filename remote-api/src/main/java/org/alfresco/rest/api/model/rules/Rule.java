@@ -30,12 +30,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
 
 @Experimental
 public class Rule
@@ -108,8 +110,21 @@ public class Rule
         final NodeRef nodeRef = (id != null) ? nodes.validateOrLookupNode(id, null) : null;
         ruleModel.setNodeRef(nodeRef);
         ruleModel.setTitle(name);
-
+        ruleModel.setDescription(description);
+        ruleModel.setRuleDisabled(!enabled);
+        ruleModel.applyToChildren(cascade);
+        ruleModel.setExecuteAsynchronously(asynchronous);
+        if (triggers != null)
+        {
+            ruleModel.setRuleTypes(triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList()));
+        }
         ruleModel.setAction(Action.toCompositeAction(actions));
+        if (errorScript != null)
+        {
+            final org.alfresco.service.cmr.action.Action compensatingAction = new ActionImpl(null, GUID.generate(), ScriptActionExecuter.NAME);
+            compensatingAction.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, errorScript);
+            ruleModel.getAction().setCompensatingAction(compensatingAction);
+        }
 
         return ruleModel;
     }

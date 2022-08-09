@@ -27,8 +27,17 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ASYNC_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_DESCRIPTION_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ERROR_SCRIPT_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_SHARED_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.ruleTriggersDefault;
 import static org.alfresco.utility.constants.UserRole.*;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
@@ -76,14 +85,22 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
-        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().field("id").isNotNull()
-            .assertThat().field("name").is("ruleName");
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("description").is(RULE_DESCRIPTION_DEFAULT)
+            .assertThat().field("enabled").is(RULE_ENABLED_DEFAULT)
+            .assertThat().field("cascade").is(RULE_CASCADE_DEFAULT)
+            .assertThat().field("asynchronous").is(RULE_ASYNC_DEFAULT)
+            .assertThat().field("shared").is(RULE_SHARED_DEFAULT)
+            .assertThat().field("triggers").is(ruleTriggersDefault)
+            .assertThat().field("errorScript").is(RULE_ERROR_SCRIPT_DEFAULT)
+            .assertThat().fieldsCount();
     }
 
     /** Check creating a rule in a non-existent folder returns an error. */

@@ -33,6 +33,27 @@ import org.alfresco.rest.model.RestRuleModel;
 
 public class RulesTestsUtils
 {
+    static final String RULE_NAME_DEFAULT = "ruleName";
+    static final String RULE_DESCRIPTION_DEFAULT = "rule description";
+    static final boolean RULE_ENABLED_DEFAULT = true;
+    static final boolean RULE_CASCADE_DEFAULT = true;
+    static final boolean RULE_ASYNC_DEFAULT = true;
+    static final boolean RULE_SHARED_DEFAULT = false;
+    static final String RULE_ERROR_SCRIPT_DEFAULT = "error-script";
+    static final List<String> ruleTriggersDefault = List.of("inbound", "update", "outbound");
+
+    public static RestRuleModel createRuleModelWithDefaultValues() {
+        RestRuleModel ruleModel = createRuleModel(RULE_NAME_DEFAULT);
+        ruleModel.setDescription(RULE_DESCRIPTION_DEFAULT);
+        ruleModel.setEnabled(RULE_ENABLED_DEFAULT);
+        ruleModel.setCascade(RULE_CASCADE_DEFAULT);
+        ruleModel.setAsynchronous(RULE_ASYNC_DEFAULT);
+        ruleModel.setShared(RULE_SHARED_DEFAULT);
+        ruleModel.setTriggers(ruleTriggersDefault);
+        ruleModel.setErrorScript(RULE_ERROR_SCRIPT_DEFAULT);
+
+        return ruleModel;
+    }
 
     public static RestRuleModel createRuleModel(String name) {
         return createRuleModel(name, List.of(createActionModel()));

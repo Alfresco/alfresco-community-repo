@@ -89,4 +89,14 @@ public class NodeRulesRelationTest extends TestCase
         then(rulesMock).should().getRuleById(eq(FOLDER_NODE_ID), eq(RULE_SET_ID), eq(RULE_ID));
         then(rulesMock).shouldHaveNoMoreInteractions();
     }
+
+    @Test
+    public void testDeleteById() {
+        final Parameters parameters = ParamsExtender.valueOf(null, FOLDER_NODE_ID, RULE_SET_ID, RULE_ID);
+        // when
+        nodeRulesRelation.delete(FOLDER_NODE_ID, RULE_SET_ID, parameters);
+
+        then(rulesMock).should().deleteRuleById(eq(FOLDER_NODE_ID), eq(RULE_SET_ID), eq(RULE_ID));
+        then(rulesMock).shouldHaveNoMoreInteractions();
+    }
 }

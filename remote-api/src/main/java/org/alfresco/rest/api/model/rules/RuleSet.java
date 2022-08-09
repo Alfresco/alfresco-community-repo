@@ -26,29 +26,24 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import java.util.Objects;
+
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 @Experimental
 public class RuleSet
 {
-    private static final String DEFAULT_ID = "-default-";
+    public static final String DEFAULT_ID = "-default-";
 
     private String id;
+    private NodeRef owningFolder;
 
     public static RuleSet of(String id)
     {
-        final RuleSet ruleSet = new RuleSet();
-        ruleSet.id = id;
-
-        return ruleSet;
-    }
-
-    public boolean isNotDefaultId() {
-        return isNotDefaultId(this.id);
-    }
-
-    public boolean isDefaultId() {
-        return isDefaultId(this.id);
+        return builder()
+            .id(id)
+            .create();
     }
 
     public static boolean isNotDefaultId(final String id) {
@@ -69,9 +64,68 @@ public class RuleSet
         this.id = id;
     }
 
+    public NodeRef getOwningFolder()
+    {
+        return owningFolder;
+    }
+
+    public void setOwningFolder(NodeRef owningFolder)
+    {
+        this.owningFolder = owningFolder;
+    }
+
     @Override
     public String toString()
     {
         return "RuleSet{" + "id='" + id + '\'' + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RuleSet ruleSet = (RuleSet) o;
+        return Objects.equals(id, ruleSet.id)
+                && Objects.equals(owningFolder, ruleSet.owningFolder);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, owningFolder);
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static class Builder
+    {
+        private String id;
+        private NodeRef owningFolder;
+
+        public Builder id(String id)
+        {
+            this.id = id;
+            return this;
+        }
+
+        public Builder owningFolder(NodeRef owningFolder)
+        {
+            this.owningFolder = owningFolder;
+            return this;
+        }
+
+        public RuleSet create()
+        {
+            final RuleSet ruleSet = new RuleSet();
+            ruleSet.setId(id);
+            ruleSet.setOwningFolder(owningFolder);
+            return ruleSet;
+        }
     }
 }

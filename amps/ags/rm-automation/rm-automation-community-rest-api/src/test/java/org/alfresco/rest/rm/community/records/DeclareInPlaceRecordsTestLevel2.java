@@ -31,9 +31,11 @@ import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;
 import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
+import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
 import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainer;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildCollection;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.rest.v0.RulesAPI;
@@ -42,10 +44,12 @@ import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import static java.util.Arrays.asList;
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
+import static org.alfresco.rest.core.v0.BaseAPI.RM_SITE_ID;
 import static org.alfresco.rest.rm.community.base.TestData.DEFAULT_PASSWORD;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
@@ -66,12 +70,13 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
     private SiteModel testSite;
     private FolderModel testFolder;
     private RecordCategory Category;
+    private RecordCategoryChild recordFolder;
+    private UnfiledContainer unfiledContainer;
     private SiteModel privateSite;
     @Autowired
     private DispositionScheduleService dispositionScheduleService;
     @Autowired
     private RulesAPI rulesAPI;
-
     /**
      * data prep services
      */
@@ -114,7 +119,6 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
         // assert that the document is now a record
         assertTrue(hasRecordAspect(uploadedDoc));
     }
-
     /**
      * Given that a user is the owner of a document
      * And that user declare the document as a record
@@ -134,7 +138,7 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
         dispositionScheduleService.addCutOffAfterPeriodStep(RECORDS_CATEGORY, "day|2", CREATED_DATE);
 
         //create a folder in category
-        createFolder(getAdminUser(),Category.getId(),RECORD_FOLDER_ONE);
+        recordFolder = createFolder(getAdminUser(),Category.getId(),RECORD_FOLDER_ONE);
 
         // create a File to record folder rule applied on Unfiled Records container
         fileToRuleAppliedOnUnfiledRecords();
@@ -155,8 +159,8 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
             getDataUser().usingAdmin().getAdminUser().getPassword(), uploadedRecord.getName());
 
         // As test user navigate to collaboration site documents library and check that the record is still visible
+        dataContent.usingAdmin().usingSite(privateSite).assertContentExist();
     }
-
     private void createTestPrecondition(String categoryName) {
 
         // create "rm admin" user if it does not exist and assign it to RM Administrator role
@@ -171,11 +175,10 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
 
         privateSite = dataSite.usingAdmin().createPrivateRandomSite();
 
-        UnfiledContainer unfiledContainer = getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS);
+        unfiledContainer = getRestAPIFactory().getUnfiledContainersAPI().getUnfiledContainer(UNFILED_RECORDS_CONTAINER_ALIAS);
 
         unfiledRecordsNodeRef = NODE_PREFIX + unfiledContainer.getId();
     }
-
     private void createTestPrecondition() {
         STEP("Create collab_user user");
         testUser = getDataUser().createRandomTestUser();
@@ -186,7 +189,6 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
 
         testFolder = dataContent.usingSite(testSite).usingUser(testUser).createFolder();
     }
-
     private void fileToRuleAppliedOnUnfiledRecords() {
         unfiledRecordsRuleTeardown();
 
@@ -202,15 +204,40 @@ public class DeclareInPlaceRecordsTestLevel2 extends BaseRMRestTest {
         rulesAPI.createRule(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), unfiledRecordsNodeRef, ruleDefinition);
     }
-
     private void unfiledRecordsRuleTeardown() {
         rulesAPI.deleteAllRulesOnContainer(getDataUser().usingAdmin().getAdminUser().getUsername(),
             getDataUser().usingAdmin().getAdminUser().getPassword(), unfiledRecordsNodeRef);
     }
-
     public UserModel createSiteManager() {
         UserModel siteManager = getDataUser().createRandomTestUser();
         getDataUser().addUserToSite(siteManager, privateSite, UserRole.SiteManager);
         return siteManager;
+    }
+    @AfterClass
+    public void cleanupCategory() {
+        unfiledRecordsRuleTeardown();
+        rmRolesAndActionsAPI.deleteAllItemsInContainer(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), RM_SITE_ID, RECORD_FOLDER_ONE);
+        rmRolesAndActionsAPI.deleteAllItemsInContainer(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), RM_SITE_ID, Category.getName());
+        deleteRecordFolder(recordFolder.getId());
+        deleteRecordCategory(Category.getId());
+        dataSite.usingAdmin().deleteSite(privateSite);
+        dataSite.usingAdmin().deleteSite(testSite);
+
+        UnfiledContainerChildCollection unfiledContainerChildCollection = getRestAPIFactory()
+            .getUnfiledContainersAPI().getUnfiledContainerChildren(unfiledContainer.getId());
+
+        unfiledContainerChildCollection.getEntries().forEach(unfiledChild ->
+        {
+            if (unfiledChild.getEntry().getIsRecord())
+            {
+                getRestAPIFactory().getRecordsAPI().deleteRecord(unfiledChild.getEntry().getId());
+            }
+            else
+            {
+                getRestAPIFactory().getUnfiledRecordFoldersAPI().deleteUnfiledRecordFolder(unfiledChild.getEntry().getId());
+            }
+        });
     }
 }

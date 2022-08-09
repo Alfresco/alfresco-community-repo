@@ -287,7 +287,7 @@ public class DeleteRecordTests extends BaseRMRestTest
      * And the original file is declared as record
      * And the record becomes part of a disposition schedule with a destroy step
      * When the record is destroyed
-     * Then it is still possible to view the content of the copy
+     * Then it is still possible to view the content of the  copy
      * </pre>
      */
     @Test (description = "Destroying record doesn't delete the content for the associated copy")

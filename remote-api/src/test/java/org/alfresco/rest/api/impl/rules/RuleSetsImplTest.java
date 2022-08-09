@@ -40,7 +40,9 @@ import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.junit.Before;
@@ -61,13 +63,18 @@ public class RuleSetsImplTest extends TestCase
     private static final NodeRef FOLDER_NODE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, FOLDER_ID);
     private static final NodeRef RULE_SET_NODE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_SET_ID);
     private static final Paging PAGING = Paging.DEFAULT;
+    private static final List<String> INCLUDES = List.of("dummy-includes");
 
     @InjectMocks
     private RuleSetsImpl ruleSets;
     @Mock
+    private RuleSetLoader ruleSetLoaderMock;
+    @Mock
     private NodeValidator nodeValidatorMock;
     @Mock
     private RuleService ruleServiceMock;
+    @Mock
+    private RuleSet ruleSetMock;
 
     @Before
     @Override
@@ -80,13 +87,14 @@ public class RuleSetsImplTest extends TestCase
         given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
 
         given(ruleServiceMock.getRuleSetNode(FOLDER_NODE)).willReturn(RULE_SET_NODE);
+        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, INCLUDES)).willReturn(ruleSetMock);
     }
 
     @Test
     public void testGetRuleSets()
     {
         // Call the method under test.
-        CollectionWithPagingInfo<RuleSet> actual = ruleSets.getRuleSets(FOLDER_ID, null, PAGING);
+        CollectionWithPagingInfo<RuleSet> actual = ruleSets.getRuleSets(FOLDER_ID, INCLUDES, PAGING);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
@@ -94,7 +102,7 @@ public class RuleSetsImplTest extends TestCase
         then(ruleServiceMock).should().getRuleSetNode(FOLDER_NODE);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
 
-        Collection<RuleSet> expected = List.of(RuleSet.of(RULE_SET_ID));
+        Collection<RuleSet> expected = List.of(ruleSetMock);
         assertEquals(expected, actual.getCollection());
         assertEquals(PAGING, actual.getPaging());
     }
@@ -106,7 +114,7 @@ public class RuleSetsImplTest extends TestCase
         given(ruleServiceMock.getRuleSetNode(FOLDER_NODE)).willReturn(null);
 
         // Call the method under test.
-        CollectionWithPagingInfo<RuleSet> actual = ruleSets.getRuleSets(FOLDER_ID, null, PAGING);
+        CollectionWithPagingInfo<RuleSet> actual = ruleSets.getRuleSets(FOLDER_ID, INCLUDES, PAGING);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
@@ -122,12 +130,12 @@ public class RuleSetsImplTest extends TestCase
     public void testGetRuleSetById()
     {
         // Call the method under test.
-        RuleSet actual = ruleSets.getRuleSetById(FOLDER_ID, RULE_SET_ID, null);
+        RuleSet actual = ruleSets.getRuleSetById(FOLDER_ID, RULE_SET_ID, INCLUDES);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
         then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
 
-        assertEquals(RuleSet.of(RULE_SET_ID), actual);
+        assertEquals(ruleSetMock, actual);
     }
 }

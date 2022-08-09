@@ -29,6 +29,7 @@ package org.alfresco.rest.api.model.rules;
 import java.util.Objects;
 
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 @Experimental
 public class RuleSet
@@ -36,6 +37,7 @@ public class RuleSet
     public static final String DEFAULT_ID = "-default-";
 
     private String id;
+    private NodeRef owningFolder;
 
     public static RuleSet of(String id)
     {
@@ -62,6 +64,16 @@ public class RuleSet
         this.id = id;
     }
 
+    public NodeRef getOwningFolder()
+    {
+        return owningFolder;
+    }
+
+    public void setOwningFolder(NodeRef owningFolder)
+    {
+        this.owningFolder = owningFolder;
+    }
+
     @Override
     public String toString()
     {
@@ -76,13 +88,14 @@ public class RuleSet
         if (o == null || getClass() != o.getClass())
             return false;
         RuleSet ruleSet = (RuleSet) o;
-        return Objects.equals(id, ruleSet.id);
+        return Objects.equals(id, ruleSet.id)
+                && Objects.equals(owningFolder, ruleSet.owningFolder);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id);
+        return Objects.hash(id, owningFolder);
     }
 
     public static Builder builder()
@@ -93,6 +106,7 @@ public class RuleSet
     public static class Builder
     {
         private String id;
+        private NodeRef owningFolder;
 
         public Builder id(String id)
         {
@@ -100,10 +114,17 @@ public class RuleSet
             return this;
         }
 
+        public Builder owningFolder(NodeRef owningFolder)
+        {
+            this.owningFolder = owningFolder;
+            return this;
+        }
+
         public RuleSet create()
         {
             final RuleSet ruleSet = new RuleSet();
             ruleSet.setId(id);
+            ruleSet.setOwningFolder(owningFolder);
             return ruleSet;
         }
     }

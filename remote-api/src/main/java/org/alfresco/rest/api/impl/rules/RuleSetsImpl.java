@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.rule.RuleService;
 @Experimental
 public class RuleSetsImpl implements RuleSets
 {
+    private RuleSetLoader ruleSetLoader;
     private RuleService ruleService;
     private NodeValidator validator;
 
@@ -53,8 +54,7 @@ public class RuleSetsImpl implements RuleSets
 
         NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNode);
         List<RuleSet> ruleSets = Optional.ofNullable(ruleSetNode)
-                                         .map(NodeRef::getId)
-                                         .map(RuleSet::of).stream().collect(toList());
+                                         .map(nodeRef -> ruleSetLoader.loadRuleSet(nodeRef, includes)).stream().collect(toList());
 
         return ListPage.of(ruleSets, paging);
     }
@@ -65,7 +65,12 @@ public class RuleSetsImpl implements RuleSets
         NodeRef folderNode = validator.validateFolderNode(folderNodeId, false);
         NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNode);
 
-        return RuleSet.of(ruleSetNode.getId());
+        return ruleSetLoader.loadRuleSet(ruleSetNode, includes);
+    }
+
+    public void setRuleSetLoader(RuleSetLoader ruleSetLoader)
+    {
+        this.ruleSetLoader = ruleSetLoader;
     }
 
     public void setValidator(NodeValidator validator)

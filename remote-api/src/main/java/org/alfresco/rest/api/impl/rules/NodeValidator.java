@@ -37,12 +37,14 @@ import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 
 /** Responsible for validating nodes when working with rules. */
+@Experimental
 public class NodeValidator
 {
     private static final String RULE_SET_EXPECTED_TYPE_NAME = "rule set";

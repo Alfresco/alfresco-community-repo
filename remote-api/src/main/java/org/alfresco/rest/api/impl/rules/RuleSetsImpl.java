@@ -38,13 +38,12 @@ import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 
 @Experimental
 public class RuleSetsImpl implements RuleSets
 {
-    private NodeService nodeService;
+    private RuleSetLoader ruleSetLoader;
     private RuleService ruleService;
     private NodeValidator validator;
 
@@ -55,7 +54,7 @@ public class RuleSetsImpl implements RuleSets
 
         NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNode);
         List<RuleSet> ruleSets = Optional.ofNullable(ruleSetNode)
-                                         .map(nodeRef -> loadRuleSet(nodeRef, includes)).stream().collect(toList());
+                                         .map(nodeRef -> ruleSetLoader.loadRuleSet(nodeRef, includes)).stream().collect(toList());
 
         return ListPage.of(ruleSets, paging);
     }
@@ -66,32 +65,12 @@ public class RuleSetsImpl implements RuleSets
         NodeRef folderNode = validator.validateFolderNode(folderNodeId, false);
         NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNode);
 
-        return loadRuleSet(ruleSetNode, includes);
+        return ruleSetLoader.loadRuleSet(ruleSetNode, includes);
     }
 
-    /**
-     * Load a rule set for the given node ref.
-     *
-     * @param ruleSetNodeRef The rule set node.
-     * @param includes A list of fields to include.
-     * @return The rule set object.
-     */
-    protected RuleSet loadRuleSet(NodeRef ruleSetNodeRef, List<String> includes)
+    public void setRuleSetLoader(RuleSetLoader ruleSetLoader)
     {
-        String ruleSetId = ruleSetNodeRef.getId();
-        RuleSet ruleSet = RuleSet.of(ruleSetId);
-
-        if (includes != null && includes.contains("owningFolder"))
-        {
-            NodeRef parentRef = nodeService.getPrimaryParent(ruleSetNodeRef).getParentRef();
-            ruleSet.setOwningFolder(parentRef);
-        }
-        return ruleSet;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
+        this.ruleSetLoader = ruleSetLoader;
     }
 
     public void setValidator(NodeValidator validator)

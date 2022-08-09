@@ -66,6 +66,8 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
     private String id;
     /** The node id of the folder that owns this rule set */
     private String owningFolder;
+    /** The reason why the rule set is included for the folder. */
+    private String inclusionType;
 
     public String getId()
     {
@@ -85,5 +87,15 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
     public void setOwningFolder(String owningFolder)
     {
         this.owningFolder = owningFolder;
+    }
+
+    public String getInclusionType()
+    {
+        return inclusionType;
+    }
+
+    public void setInclusionType(String inclusionType)
+    {
+        this.inclusionType = inclusionType;
     }
 }

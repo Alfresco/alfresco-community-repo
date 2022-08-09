@@ -25,6 +25,9 @@
  */
 package org.alfresco.rest.api.impl.rules;
 
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.OWNING_FOLDER;
+import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
@@ -73,7 +76,7 @@ public class RuleSetLoaderTest extends TestCase
     public void testLoadRuleSet_noIncludes()
     {
         // Call the method under test.
-        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, null);
+        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, null);
 
         RuleSet expected = RuleSet.builder().id(RULE_SET_ID).create();
         assertEquals(expected, actual);
@@ -83,9 +86,19 @@ public class RuleSetLoaderTest extends TestCase
     public void testLoadRuleSet_includeOwningFolder()
     {
         // Call the method under test.
-        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, List.of("owningFolder"));
+        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, List.of(OWNING_FOLDER));
 
         RuleSet expected = RuleSet.builder().id(RULE_SET_ID).owningFolder(FOLDER_NODE).create();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testLoadRuleSet_includeInclusionType()
+    {
+        // Call the method under test.
+        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, List.of(INCLUSION_TYPE));
+
+        RuleSet expected = RuleSet.builder().id(RULE_SET_ID).inclusionType(OWNED).create();
         assertEquals(expected, actual);
     }
 }

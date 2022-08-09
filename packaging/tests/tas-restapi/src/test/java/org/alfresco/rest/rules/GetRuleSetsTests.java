@@ -132,6 +132,23 @@ public class GetRuleSetsTests extends RestTest
         ruleSets.assertThat().entriesListCountIs(1);
     }
 
+    /** Check we can get the reason that a rule set is included in the list. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetsAndInclusionType()
+    {
+        STEP("Get the rule sets and inclusion type");
+        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+                                                         .usingNode(ruleFolder)
+                                                         .usingParams("include=inclusionType")
+                                                         .getListOfRuleSets();
+
+        restClient.assertStatusCodeIs(OK);
+        ruleSets.getEntries().get(0).onModel()
+                .assertThat().field("inclusionType").is("owned")
+                .assertThat().field("id").is(ruleSetId);
+        ruleSets.assertThat().entriesListCountIs(1);
+    }
+
     /** Check we can get a rule set by its id. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void getRuleSetById()

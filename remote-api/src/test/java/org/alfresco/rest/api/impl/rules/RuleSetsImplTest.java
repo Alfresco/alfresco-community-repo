@@ -87,7 +87,7 @@ public class RuleSetsImplTest extends TestCase
         given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
 
         given(ruleServiceMock.getRuleSetNode(FOLDER_NODE)).willReturn(RULE_SET_NODE);
-        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, INCLUDES)).willReturn(ruleSetMock);
+        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, INCLUDES)).willReturn(ruleSetMock);
     }
 
     @Test

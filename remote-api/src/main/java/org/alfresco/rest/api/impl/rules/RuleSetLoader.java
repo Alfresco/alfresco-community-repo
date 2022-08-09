@@ -25,10 +25,16 @@
  */
 package org.alfresco.rest.api.impl.rules;
 
+import static org.alfresco.rest.api.model.rules.InclusionType.INHERITED;
+import static org.alfresco.rest.api.model.rules.InclusionType.LINKED;
+import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
+
 import java.util.List;
 
+import org.alfresco.rest.api.model.rules.InclusionType;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 
@@ -36,6 +42,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 @Experimental
 public class RuleSetLoader
 {
+    protected static final String OWNING_FOLDER = "owningFolder";
+    protected static final String INCLUSION_TYPE = "inclusionType";
     private NodeService nodeService;
 
     /**
@@ -45,15 +53,32 @@ public class RuleSetLoader
      * @param includes A list of fields to include.
      * @return The rule set object.
      */
-    protected RuleSet loadRuleSet(NodeRef ruleSetNodeRef, List<String> includes)
+    protected RuleSet loadRuleSet(NodeRef ruleSetNodeRef, NodeRef folderNodeRef, List<String> includes)
     {
         String ruleSetId = ruleSetNodeRef.getId();
         RuleSet ruleSet = RuleSet.of(ruleSetId);
 
-        if (includes != null && includes.contains("owningFolder"))
+        if (includes != null)
         {
             NodeRef parentRef = nodeService.getPrimaryParent(ruleSetNodeRef).getParentRef();
-            ruleSet.setOwningFolder(parentRef);
+            if (includes.contains(OWNING_FOLDER))
+            {
+                ruleSet.setOwningFolder(parentRef);
+            }
+            if (includes.contains(INCLUSION_TYPE))
+            {
+                if (parentRef.equals(folderNodeRef))
+                {
+                    ruleSet.setInclusionType(OWNED);
+                }
+                else
+                {
+                    boolean linked = nodeService.getParentAssocs(ruleSetNodeRef)
+                                           .stream().map(ChildAssociationRef::getParentRef)
+                                           .anyMatch(folderNodeRef::equals);
+                    ruleSet.setInclusionType(linked ? LINKED : INHERITED);
+                }
+            }
         }
         return ruleSet;
     }

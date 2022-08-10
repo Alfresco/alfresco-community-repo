@@ -219,7 +219,15 @@ public class Rule
         return triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList());
     }
 
-    public void setTriggers(List<RuleTrigger> triggers)
+    public void setTriggers(List<String> triggers)
+    {
+        if (triggers != null)
+        {
+            this.triggers = triggers.stream().map(RuleTrigger::of).collect(Collectors.toList());
+        }
+    }
+
+    public void setRuleTriggers(List<RuleTrigger> triggers)
     {
         this.triggers = triggers;
     }
@@ -368,7 +376,7 @@ public class Rule
             rule.setAsynchronous(asynchronous);
             rule.setShared(shared);
             rule.setErrorScript(errorScript);
-            rule.setTriggers(triggers);
+            rule.setRuleTriggers(triggers);
             rule.setConditions(conditions);
             rule.setActions(actions);
             return rule;

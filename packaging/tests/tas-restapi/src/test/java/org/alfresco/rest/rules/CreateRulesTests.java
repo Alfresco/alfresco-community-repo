@@ -27,18 +27,15 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ASYNC_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_DESCRIPTION_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ERROR_SCRIPT_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_SHARED_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.createActionModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.assertThat;
+import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultName;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
-import static org.alfresco.rest.rules.RulesTestsUtils.ruleTriggersDefault;
-import static org.alfresco.utility.constants.UserRole.*;
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.constants.UserRole.SiteConsumer;
+import static org.alfresco.utility.constants.UserRole.SiteContributor;
+import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -86,21 +83,15 @@ public class CreateRulesTests extends RestTest
     public void createRule()
     {
         RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        UserModel admin = dataUser.getAdminUser();
 
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        rule.assertThat().field("id").isNotNull()
-            .assertThat().field("name").is(RULE_NAME_DEFAULT)
-            .assertThat().field("description").is(RULE_DESCRIPTION_DEFAULT)
-            .assertThat().field("enabled").is(RULE_ENABLED_DEFAULT)
-            .assertThat().field("cascade").is(RULE_CASCADE_DEFAULT)
-            .assertThat().field("asynchronous").is(RULE_ASYNC_DEFAULT)
-            .assertThat().field("shared").is(RULE_SHARED_DEFAULT)
-            .assertThat().field("triggers").is(ruleTriggersDefault)
-            .assertThat().field("errorScript").is(RULE_ERROR_SCRIPT_DEFAULT)
-            .assertThat().fieldsCount();
+        assertThat(rule)
+            .field("id").isNotNull()
+            .fields("name", "description", "enabled", "cascade", "asynchronous", "shared", "triggers", "errorScript").areEqualToDefaultValues();
     }
 
     /** Check creating a rule in a non-existent folder returns an error. */
@@ -269,7 +260,61 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
     }
 
-    public RestRuleModel testRolePermissionsWith(UserRole userRole)
+    /** Check we can create a rule without description. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithoutDescription()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        ruleModel.setDescription(null);
+        UserModel admin = dataUser.getAdminUser();
+
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        assertThat(rule)
+            .field("id").isNotNull()
+            .field("name").isEqualToDefaultValue()
+            .field("description").isNull();
+    }
+
+    /** Check we can create a rule without triggers. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithoutTriggers()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        ruleModel.setTriggers(null);
+        UserModel admin = dataUser.getAdminUser();
+
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        assertThat(rule)
+            .field("id").isNotNull()
+            .field("name").isEqualToDefaultValue()
+            .field("triggers").isNull();
+    }
+
+    /** Check we can create a rule without error script. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithoutErrorScript()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        ruleModel.setErrorScript(null);
+        UserModel admin = dataUser.getAdminUser();
+
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        assertThat(rule)
+            .field("id").isNotNull()
+            .field("name").isEqualToDefaultValue()
+            .field("errorScript").isNull();
+    }
+
+    private RestRuleModel testRolePermissionsWith(UserRole userRole)
     {
         STEP("Create a user and use them to create a private site containing a folder");
         SiteModel privateSite = dataSite.usingUser(user).createPrivateRandomSite();
@@ -278,7 +323,7 @@ public class CreateRulesTests extends RestTest
         STEP(String.format("Add a user with '%s' role in the private site's folder", userRole.toString()));
         UserModel userWithRole = dataUser.createRandomTestUser();
         dataUser.addUserToSite(userWithRole, privateSite, userRole);
-        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createActionModel()));
+        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createDefaultActionModel()));
 
         return restClient.authenticateUser(userWithRole).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }

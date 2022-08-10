@@ -25,6 +25,9 @@
  */
 package org.alfresco.rest.requests;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.alfresco.rest.core.RestWrapper;
 
 public abstract class ModelRequest<Request>
@@ -43,10 +46,26 @@ public abstract class ModelRequest<Request>
         return (Request) this;
     }
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Use "include=path" in the URL query.
+     * <p>
+     * Nb. Replaces any existing parameters.
+     */
     public Request includePath()
     {
-        restWrapper.withParams("include=path");
+        return include("path");
+    }
+
+    /**
+     * Specify fields to include in the response.
+     * <p>
+     * Nb. Replaces any existing parameters.
+     */
+    @SuppressWarnings ("unchecked")
+    public Request include(String... includes)
+    {
+        String includeString = Arrays.stream(includes).collect(Collectors.joining(","));
+        restWrapper.withParams("include=" + includeString);
         return (Request) this;
     }
 }

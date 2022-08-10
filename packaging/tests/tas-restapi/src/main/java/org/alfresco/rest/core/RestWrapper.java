@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.xml.parsers.DocumentBuilder;
@@ -906,26 +907,17 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     }
 
     /**
-     * Send key=value parameters
-     * All of them will be automatically passed to url.
-     * Example: "maxItems=10000"
-     * 
-     * @param parameters
-     * @return
+     * Send key=value parameters.
+     * <p>
+     * Note that this will replace any existing parameters.
+     *
+     * @param parameters A list of URL query parameters - e.g. "maxItems=10000"
+     * @return The RestWrapper
      */
     public RestWrapper withParams(String... parameters)
     {
-        StringBuilder paramsUrl = new StringBuilder();
-        String delimiter = (parameters.length > 1 ? "&" : "");
-
-        for (int i = 0; i < parameters.length; i++)
-        {
-            paramsUrl.append(parameters[i]);
-            if (i < parameters.length - 1)
-                paramsUrl.append(delimiter);
-        }
-
-        setParameters(paramsUrl.toString());
+        String paramsStr = Arrays.stream(parameters).collect(Collectors.joining("&"));
+        setParameters(paramsStr);
         return this;
     }
 

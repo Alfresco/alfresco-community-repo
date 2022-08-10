@@ -850,9 +850,43 @@
         </property>
     </bean>
 
-    <bean id="rules" class="org.alfresco.rest.api.impl.RulesImpl">
+    <bean id="nodeValidator" class="org.alfresco.rest.api.impl.rules.NodeValidator">
         <property name="nodes" ref="Nodes" />
-        <property name="permissionService" ref="PermissionService"/>
+        <property name="permissionService" ref="PermissionService" />
+        <property name="ruleService" ref="RuleService" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeRulesRelation">
+        <property name="rules" ref="Rules" />
+    </bean>
+
+    <bean id="ruleSetLoader" class="org.alfresco.rest.api.impl.rules.RuleSetLoader">
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="ruleSets" class="org.alfresco.rest.api.impl.rules.RuleSetsImpl">
+        <property name="ruleSetLoader" ref="ruleSetLoader" />
+        <property name="validator" ref="nodeValidator" />
+        <property name="ruleService" ref="RuleService" />
+    </bean>
+
+    <bean id="RuleSets" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces" value="org.alfresco.rest.api.RuleSets" />
+        <property name="target" ref="ruleSets" />
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeRuleSetsRelation">
+        <property name="ruleSets" ref="RuleSets" />
+    </bean>
+
+    <bean id="rules" class="org.alfresco.rest.api.impl.rules.RulesImpl">
+        <property name="nodes" ref="Nodes" />
+        <property name="validator" ref="nodeValidator"/>
         <property name="ruleService" ref="RuleService" />
     </bean>
 
@@ -864,10 +898,6 @@
                 <idref bean="legacyExceptionInterceptor" />
             </list>
         </property>
-    </bean>
-
-    <bean class="org.alfresco.rest.api.nodes.NodeRulesRelation">
-        <property name="rules" ref="Rules" />
     </bean>
 
     <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">

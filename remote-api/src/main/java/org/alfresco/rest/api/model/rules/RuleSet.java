@@ -27,8 +27,11 @@
 package org.alfresco.rest.api.model.rules;
 
 import java.util.Objects;
+import java.util.StringJoiner;
 
+import org.alfresco.rest.api.People;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 @Experimental
 public class RuleSet
@@ -36,20 +39,14 @@ public class RuleSet
     public static final String DEFAULT_ID = "-default-";
 
     private String id;
+    private NodeRef owningFolder;
+    private InclusionType inclusionType;
 
     public static RuleSet of(String id)
     {
         return builder()
             .id(id)
             .create();
-    }
-
-    public boolean isNotDefaultId() {
-        return isNotDefaultId(this.id);
-    }
-
-    public boolean isDefaultId() {
-        return isDefaultId(this.id);
     }
 
     public static boolean isNotDefaultId(final String id) {
@@ -70,10 +67,36 @@ public class RuleSet
         this.id = id;
     }
 
+    public NodeRef getOwningFolder()
+    {
+        return owningFolder;
+    }
+
+    public void setOwningFolder(NodeRef owningFolder)
+    {
+        this.owningFolder = owningFolder;
+    }
+
+    public InclusionType getInclusionType()
+    {
+        return inclusionType;
+    }
+
+    public void setInclusionType(InclusionType inclusionType)
+    {
+        this.inclusionType = inclusionType;
+    }
+
     @Override
     public String toString()
     {
-        return "RuleSet{" + "id='" + id + '\'' + '}';
+        return "RuleSet{"
+                + new StringJoiner(", ")
+                    .add("id='" + id + "'")
+                    .add("owningFolder='" + owningFolder + "'")
+                    .add("inclusionType='" + inclusionType + "'")
+                    .toString()
+                + '}';
     }
 
     @Override
@@ -84,13 +107,15 @@ public class RuleSet
         if (o == null || getClass() != o.getClass())
             return false;
         RuleSet ruleSet = (RuleSet) o;
-        return Objects.equals(id, ruleSet.id);
+        return Objects.equals(id, ruleSet.id)
+                && Objects.equals(owningFolder, ruleSet.owningFolder)
+                && inclusionType == ruleSet.inclusionType;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id);
+        return Objects.hash(id, owningFolder, inclusionType);
     }
 
     public static Builder builder()
@@ -101,6 +126,8 @@ public class RuleSet
     public static class Builder
     {
         private String id;
+        private NodeRef owningFolder;
+        private InclusionType inclusionType;
 
         public Builder id(String id)
         {
@@ -108,10 +135,24 @@ public class RuleSet
             return this;
         }
 
+        public Builder owningFolder(NodeRef owningFolder)
+        {
+            this.owningFolder = owningFolder;
+            return this;
+        }
+
+        public Builder inclusionType(InclusionType inclusionType)
+        {
+            this.inclusionType = inclusionType;
+            return this;
+        }
+
         public RuleSet create()
         {
             final RuleSet ruleSet = new RuleSet();
             ruleSet.setId(id);
+            ruleSet.setOwningFolder(owningFolder);
+            ruleSet.setInclusionType(inclusionType);
             return ruleSet;
         }
     }

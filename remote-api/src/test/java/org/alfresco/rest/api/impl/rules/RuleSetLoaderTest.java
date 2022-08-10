@@ -27,19 +27,20 @@ package org.alfresco.rest.api.impl.rules;
 
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.OWNING_FOLDER;
+import static org.alfresco.rest.api.model.rules.InclusionType.INHERITED;
+import static org.alfresco.rest.api.model.rules.InclusionType.LINKED;
 import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
 
 import junit.framework.TestCase;
 import org.alfresco.rest.api.model.rules.RuleSet;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,8 +55,11 @@ public class RuleSetLoaderTest extends TestCase
 {
     private static final String FOLDER_ID = "dummy-folder-id";
     private static final String RULE_SET_ID = "dummy-rule-set-id";
-    private static final NodeRef FOLDER_NODE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, FOLDER_ID);
-    private static final NodeRef RULE_SET_NODE = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_SET_ID);
+    private static final NodeRef FOLDER_NODE = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, FOLDER_ID);
+    private static final NodeRef RULE_SET_NODE = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, RULE_SET_ID);
+    private static final String LINKING_FOLDER_ID = "linking-folder";
+    private static final NodeRef LINKING_FOLDER = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, LINKING_FOLDER_ID);
+    private static final NodeRef INHERITING_FOLDER = new NodeRef("inheriting://folder/");
 
     @InjectMocks
     private RuleSetLoader ruleSetLoader;
@@ -63,6 +67,8 @@ public class RuleSetLoaderTest extends TestCase
     private NodeService nodeServiceMock;
     @Mock
     private ChildAssociationRef ruleSetAssociationMock;
+    @Mock
+    private ChildAssociationRef linkAssociationMock;
 
     @Before
     @Override
@@ -70,6 +76,9 @@ public class RuleSetLoaderTest extends TestCase
     {
         given(ruleSetAssociationMock.getParentRef()).willReturn(FOLDER_NODE);
         given(nodeServiceMock.getPrimaryParent(RULE_SET_NODE)).willReturn(ruleSetAssociationMock);
+
+        given(linkAssociationMock.getParentRef()).willReturn(LINKING_FOLDER);
+        given(nodeServiceMock.getParentAssocs(RULE_SET_NODE)).willReturn(List.of(ruleSetAssociationMock, linkAssociationMock));
     }
 
     @Test
@@ -99,6 +108,26 @@ public class RuleSetLoaderTest extends TestCase
         RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, List.of(INCLUSION_TYPE));
 
         RuleSet expected = RuleSet.builder().id(RULE_SET_ID).inclusionType(OWNED).create();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testLoadRuleSet_linkedInclusionType()
+    {
+        // Call the method under test.
+        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, LINKING_FOLDER, List.of(INCLUSION_TYPE));
+
+        RuleSet expected = RuleSet.builder().id(RULE_SET_ID).inclusionType(LINKED).create();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testLoadRuleSet_inheritedInclusionType()
+    {
+        // Call the method under test.
+        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, INHERITING_FOLDER, List.of(INCLUSION_TYPE));
+
+        RuleSet expected = RuleSet.builder().id(RULE_SET_ID).inclusionType(INHERITED).create();
         assertEquals(expected, actual);
     }
 }

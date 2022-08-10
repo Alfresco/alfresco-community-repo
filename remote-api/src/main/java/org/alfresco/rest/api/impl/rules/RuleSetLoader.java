@@ -31,7 +31,6 @@ import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
 
 import java.util.List;
 
-import org.alfresco.rest.api.model.rules.InclusionType;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -67,6 +66,7 @@ public class RuleSetLoader
             }
             if (includes.contains(INCLUSION_TYPE))
             {
+                // In the case that a rule set applies to the given folder for multiple reasons then priority is given to owned, then linked, then inherited.
                 if (parentRef.equals(folderNodeRef))
                 {
                     ruleSet.setInclusionType(OWNED);

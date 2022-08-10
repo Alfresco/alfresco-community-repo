@@ -26,7 +26,9 @@
 
 package org.alfresco.rest.api.impl.rules;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.alfresco.rest.api.Nodes;
@@ -50,6 +52,7 @@ public class RulesImpl implements Rules
     private Nodes nodes;
     private RuleService ruleService;
     private NodeValidator validator;
+    private ActionParameterConverter actionParameterConverter;
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
@@ -83,10 +86,18 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = (RuleSet.isNotDefaultId(ruleSetId)) ? validator.validateRuleSetNode(ruleSetId, folderNodeRef) : null;
 
         return rules.stream()
-                    .map(rule -> rule.toServiceModel(nodes))
+                    .map(rule -> mapToServiceModel(rule, nodes))
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
                     .map(rule -> Rule.from(rule, validator.isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef)))
                     .collect(Collectors.toList());
+    }
+
+    private org.alfresco.service.cmr.rule.Rule mapToServiceModel(Rule rule, Nodes nodes)
+    {
+        rule.getActions().forEach(action -> actionParameterConverter.convertParameters(action.getParams(), action.getActionDefinitionId()));
+        org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes);
+
+        return serviceModelRule;
     }
 
     @Override
@@ -125,5 +136,10 @@ public class RulesImpl implements Rules
     public void setValidator(NodeValidator validator)
     {
         this.validator = validator;
+    }
+
+    public void setActionParameterConverter(ActionParameterConverter actionParameterConverter)
+    {
+        this.actionParameterConverter = actionParameterConverter;
     }
 }

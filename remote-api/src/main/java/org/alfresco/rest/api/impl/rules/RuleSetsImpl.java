@@ -54,7 +54,8 @@ public class RuleSetsImpl implements RuleSets
 
         NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNode);
         List<RuleSet> ruleSets = Optional.ofNullable(ruleSetNode)
-                                         .map(nodeRef -> ruleSetLoader.loadRuleSet(nodeRef, includes)).stream().collect(toList());
+                                         .map(nodeRef -> ruleSetLoader.loadRuleSet(nodeRef, folderNode, includes))
+                                                                      .stream().collect(toList());
 
         return ListPage.of(ruleSets, paging);
     }
@@ -65,7 +66,7 @@ public class RuleSetsImpl implements RuleSets
         NodeRef folderNode = validator.validateFolderNode(folderNodeId, false);
         NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNode);
 
-        return ruleSetLoader.loadRuleSet(ruleSetNode, includes);
+        return ruleSetLoader.loadRuleSet(ruleSetNode, folderNode, includes);
     }
 
     public void setRuleSetLoader(RuleSetLoader ruleSetLoader)

@@ -27,7 +27,9 @@
 package org.alfresco.rest.api.model.rules;
 
 import java.util.Objects;
+import java.util.StringJoiner;
 
+import org.alfresco.rest.api.People;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -38,6 +40,7 @@ public class RuleSet
 
     private String id;
     private NodeRef owningFolder;
+    private InclusionType inclusionType;
 
     public static RuleSet of(String id)
     {
@@ -74,10 +77,26 @@ public class RuleSet
         this.owningFolder = owningFolder;
     }
 
+    public InclusionType getInclusionType()
+    {
+        return inclusionType;
+    }
+
+    public void setInclusionType(InclusionType inclusionType)
+    {
+        this.inclusionType = inclusionType;
+    }
+
     @Override
     public String toString()
     {
-        return "RuleSet{" + "id='" + id + '\'' + '}';
+        return "RuleSet{"
+                + new StringJoiner(", ")
+                    .add("id='" + id + "'")
+                    .add("owningFolder='" + owningFolder + "'")
+                    .add("inclusionType='" + inclusionType + "'")
+                    .toString()
+                + '}';
     }
 
     @Override
@@ -89,13 +108,14 @@ public class RuleSet
             return false;
         RuleSet ruleSet = (RuleSet) o;
         return Objects.equals(id, ruleSet.id)
-                && Objects.equals(owningFolder, ruleSet.owningFolder);
+                && Objects.equals(owningFolder, ruleSet.owningFolder)
+                && inclusionType == ruleSet.inclusionType;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, owningFolder);
+        return Objects.hash(id, owningFolder, inclusionType);
     }
 
     public static Builder builder()
@@ -107,6 +127,7 @@ public class RuleSet
     {
         private String id;
         private NodeRef owningFolder;
+        private InclusionType inclusionType;
 
         public Builder id(String id)
         {
@@ -120,11 +141,18 @@ public class RuleSet
             return this;
         }
 
+        public Builder inclusionType(InclusionType inclusionType)
+        {
+            this.inclusionType = inclusionType;
+            return this;
+        }
+
         public RuleSet create()
         {
             final RuleSet ruleSet = new RuleSet();
             ruleSet.setId(id);
             ruleSet.setOwningFolder(owningFolder);
+            ruleSet.setInclusionType(inclusionType);
             return ruleSet;
         }
     }

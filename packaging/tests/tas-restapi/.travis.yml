@@ -2,7 +2,7 @@ dist: focal
 sudo: required
 language: java
 jdk:
-  - openjdk11
+  - openjdk17
 
 cache:
   directories:

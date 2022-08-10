@@ -33,20 +33,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import junit.framework.TestCase;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.rule.RuleModel;
+import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.api.model.rules.RuleSetLink;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -55,7 +61,9 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.junit.Before;
@@ -72,9 +80,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class RulesImplTest extends TestCase
 {
     private static final String FOLDER_NODE_ID = "dummy-folder-node-id";
+    private static final String LINK_TO_NODE_ID = "dummy-link-to-folder-id";
     private static final String RULE_SET_ID = "dummy-rule-set-id";
     private static final String RULE_ID = "dummy-rule-id";
     private static final NodeRef folderNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, FOLDER_NODE_ID);
+    private static final NodeRef linkToNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, LINK_TO_NODE_ID);
     private static final NodeRef ruleSetNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_SET_ID);
     private static final NodeRef ruleNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_ID);
     private static final Paging paging = Paging.DEFAULT;
@@ -82,6 +92,15 @@ public class RulesImplTest extends TestCase
 
     @Mock
     private Nodes nodesMock;
+
+    @Mock
+    private NodeService nodeServiceMock;
+
+    @Mock
+    private RuntimeRuleService runtimeRuleServiceMock;
+
+    @Mock
+    private ChildAssociationRef assocRef;
 
     @Mock
     private NodeValidator nodeValidatorMock;
@@ -97,9 +116,68 @@ public class RulesImplTest extends TestCase
     public void setUp() throws Exception
     {
         MockitoAnnotations.openMocks(this);
+        given(nodeServiceMock.exists(any(NodeRef.class))).willReturn(true);
         given(nodeValidatorMock.validateFolderNode(any(), anyBoolean())).willReturn(folderNodeRef);
         given(nodeValidatorMock.validateRuleSetNode(any(), any())).willReturn(ruleSetNodeRef);
         given(nodeValidatorMock.validateRuleNode(any(), any())).willReturn(ruleNodeRef);
+    }
+
+    @Test
+    public void testLinkingToRuleSet()
+    {
+        NodeRef childNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "dummy-child-id");
+        setNodeRefsForLinking();
+
+        given(ruleServiceMock.hasRules(any(NodeRef.class))).willReturn(true, false);
+        given(runtimeRuleServiceMock.getSavedRuleFolderAssoc(any(NodeRef.class))).willReturn(assocRef);
+        given(assocRef.getChildRef()).willReturn(childNodeRef);
+
+        //when
+        assertEquals(rules.linkToRuleSet(FOLDER_NODE_ID,LINK_TO_NODE_ID).getId(), childNodeRef.getId());
+
+        then(nodeServiceMock).should().exists(folderNodeRef);
+        then(ruleServiceMock).should().hasRules(linkToNodeRef);
+        then(ruleServiceMock).should().hasRules(folderNodeRef);
+        then(runtimeRuleServiceMock).should().getSavedRuleFolderAssoc(linkToNodeRef);
+        then(runtimeRuleServiceMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().addChild(folderNodeRef, childNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testLinkToRuleSet_targetFolderHasNoRules()
+    {
+        setNodeRefsForLinking();
+        given(ruleServiceMock.hasRules(linkToNodeRef)).willReturn(false);
+
+        //when
+        assertThatExceptionOfType(AlfrescoRuntimeException.class).isThrownBy(
+                () -> rules.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID)
+        );
+
+        then(nodeServiceMock).should().exists(folderNodeRef);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().hasRules(linkToNodeRef);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(runtimeRuleServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testLinkToRuleSet_folderShouldntHavePreExistingRules()
+    {
+        setNodeRefsForLinking();
+        given(ruleServiceMock.hasRules(any(NodeRef.class))).willReturn(true, true);
+
+        //when
+        assertThatExceptionOfType(AlfrescoRuntimeException.class).isThrownBy(
+                () -> rules.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID));
+
+        then(nodeServiceMock).should().exists(folderNodeRef);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().hasRules(linkToNodeRef);
+        then(ruleServiceMock).should().hasRules(folderNodeRef);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(runtimeRuleServiceMock).shouldHaveNoInteractions();
     }
 
     @Test
@@ -611,4 +689,11 @@ public class RulesImplTest extends TestCase
             new RelationshipResourceNotFoundException(RULE_ID, "fake-relationship-id")
         );
     }
+
+    private void setNodeRefsForLinking()
+    {
+        given(nodeValidatorMock.validateFolderNode(eq(LINK_TO_NODE_ID), anyBoolean())).willReturn(linkToNodeRef);
+        given(nodeValidatorMock.validateFolderNode(eq(FOLDER_NODE_ID), anyBoolean())).willReturn(folderNodeRef);
+    }
+
 }

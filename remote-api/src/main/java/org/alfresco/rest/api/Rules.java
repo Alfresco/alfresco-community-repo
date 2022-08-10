@@ -100,5 +100,5 @@ public interface Rules
      * Link a rule set to a folder
      *
      */
-    RuleSetLink linkToRuleSet(String actionedUponNodeId, String linkedFromNodeId);
+    RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId);
 }

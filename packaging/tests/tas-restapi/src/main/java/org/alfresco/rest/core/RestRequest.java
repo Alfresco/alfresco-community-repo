@@ -27,16 +27,20 @@ package org.alfresco.rest.core;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import org.springframework.http.HttpMethod;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import io.restassured.RestAssured;
+import org.springframework.http.HttpMethod;
 
 /**
  * @author Paul Brodner
  */
 public class RestRequest
 {
-    private String body = "";
+    private static final String TOKEN_REGEX = "\\{.*?}";
+    private String body;
     private HttpMethod httpMethod;
     private String path;
     private Object[] pathParams;
@@ -44,10 +48,7 @@ public class RestRequest
 
     private RestRequest(HttpMethod httpMethod, String path, String... pathParams)
     {
-        setHttpMethod(httpMethod);
-        setPath(path);
-        setPathParams(pathParams);
-        STEP(toString());
+        this(httpMethod, "", path, pathParams);
     }
 
     private RestRequest(HttpMethod httpMethod, String body, String path, String... pathParams)
@@ -114,6 +115,7 @@ public class RestRequest
     public void setPath(String path)
     {
         this.path = path;
+        addQueryParamsIfNeeded();
     }
 
     public Object[] getPathParams()
@@ -124,6 +126,32 @@ public class RestRequest
     public void setPathParams(Object[] pathParams)
     {
         this.pathParams = pathParams;
+        addQueryParamsIfNeeded();
+    }
+
+    /**
+     * Add query parameters to the path if needed.
+     * <p>
+     * e.g. For a path of "api/{fruit}" and params ["apple", "size=10", "colour=red"] then this will
+     * update the path to be "api/{fruit}?{param0}&{param1}" so that the tokens will be populated by
+     * RestAssured to make "api/apple?size=10&colour=red".
+     */
+    private void addQueryParamsIfNeeded()
+    {
+        // Don't do anything if the path or path params haven't been set yet.
+        if (path == null || path.length() == 0 || pathParams == null)
+        {
+            return;
+        }
+        int groupCount = (int) Pattern.compile(TOKEN_REGEX).matcher(path).results().count();
+        if (pathParams.length > groupCount)
+        {
+            // Add the remaining parameters to the URL query.
+            String queryParams = IntStream.range(0, pathParams.length - groupCount)
+                                          .mapToObj(index -> "{parameter" + index + "}")
+                                          .collect(Collectors.joining("&"));
+            path += (path.contains("?") ? "&" : "?") + queryParams;
+        }
     }
 
     public String getContentType()
@@ -144,7 +172,7 @@ public class RestRequest
                     .append(getHttpMethod())
                     .append(" ")
                     .append(RestAssured.baseURI)
-                    .append(":")
+                    .append("://")
                     .append(RestAssured.port)
                     .append("/")
                     .append(RestAssured.basePath)
@@ -153,7 +181,7 @@ public class RestRequest
         String getPathFormatted = getPath();
         if(getPath().contains("{"))
         {
-            getPathFormatted = getPath().replaceAll("\\{.*?}", "%s");
+            getPathFormatted = getPath().replaceAll(TOKEN_REGEX, "%s");
             getPathFormatted = String.format(getPathFormatted, getPathParams());
         }
         sb.append(getPathFormatted);

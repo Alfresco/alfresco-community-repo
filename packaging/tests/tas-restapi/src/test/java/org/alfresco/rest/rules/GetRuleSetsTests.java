@@ -122,7 +122,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Get the rule sets and owning folders");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
                                                  .usingNode(ruleFolder)
-                                                 .usingParams("include=owningFolder")
+                                                 .include("owningFolder")
                                                  .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
@@ -139,7 +139,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Get the rule sets and inclusion type");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
                                                          .usingNode(ruleFolder)
-                                                         .usingParams("include=inclusionType")
+                                                         .include("inclusionType")
                                                          .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
@@ -201,7 +201,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Get the rule set and owning folder");
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI()
                                              .usingNode(ruleFolder)
-                                             .usingParams("include=owningFolder")
+                                             .include("owningFolder")
                                              .getRuleSet(ruleSetId);
 
         restClient.assertStatusCodeIs(OK);

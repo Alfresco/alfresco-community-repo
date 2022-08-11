@@ -108,7 +108,7 @@ public class RuleTest
             .enabled(RULE_ENABLED)
             .cascade(RULE_CASCADE)
             .asynchronous(RULE_ASYNC)
-            .shared(RULE_SHARED)
+            .isShared(RULE_SHARED)
             .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
             .errorScript(ERROR_SCRIPT)
             .conditions(CompositeCondition.from(Collections.emptyList()))

@@ -430,7 +430,7 @@ public class RulesImplTest extends TestCase
 
         Rule expected = Rule.builder().id(RULE_ID)
                                       .enabled(true)
-                                      .shared(true)
+                                      .isShared(true)
                                       .triggers(emptyList())
                                       .conditions(CompositeCondition.builder().inverted(false).create())
                                       .create();

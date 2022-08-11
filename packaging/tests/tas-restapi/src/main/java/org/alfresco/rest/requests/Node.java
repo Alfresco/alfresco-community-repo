@@ -1018,7 +1018,7 @@ public class Node extends ModelRequest<Node>
      */
     public RestRuleSetModelsCollection getListOfRuleSets()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SETS_URI + "?{parameters}",
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SETS_URI,
                 repoModel.getNodeRef(), restWrapper.getParameters());
         return restWrapper.processModels(RestRuleSetModelsCollection.class, request);
     }
@@ -1031,7 +1031,7 @@ public class Node extends ModelRequest<Node>
      */
     public RestRuleSetModel getRuleSet(String ruleSetId)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SET_BY_ID + "?{parameters}",
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SET_BY_ID,
                 repoModel.getNodeRef(), ruleSetId, restWrapper.getParameters());
         return restWrapper.processModel(RestRuleSetModel.class, request);
     }
@@ -1043,7 +1043,7 @@ public class Node extends ModelRequest<Node>
      */
     public RestRuleSetModel getDefaultRuleSet()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SET_BY_ID + "?{parameters}",
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SET_BY_ID,
                 repoModel.getNodeRef(), "-default-", restWrapper.getParameters());
         return restWrapper.processModel(RestRuleSetModel.class, request);
     }

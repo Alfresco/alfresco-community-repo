@@ -54,7 +54,6 @@ public class Sync extends ModelRequest<RestPrivateAPI>
     RestSyncNodeSubscriptionModel subscription;
     String requestSyncURL = "subscribers/{deviceSubscriptionId}/subscriptions/{nodeSubscriptionId}/sync";
     String syncSetURL = requestSyncURL + "/{syncId}";
-    String params = "?{parameters}";
 
     public Sync(RestSyncNodeSubscriptionModel subscription, RestWrapper restWrapper)
     {
@@ -82,7 +81,7 @@ public class Sync extends ModelRequest<RestPrivateAPI>
 
         String postBody = JsonBodyGenerator.defineJSON().add("changes", array.build()).add("clientVersion", clientVersion).build().toString();
 
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, requestSyncURL + params, this.subscriber, nodeSubscriptionModel.getId(),
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, requestSyncURL, this.subscriber, nodeSubscriptionModel.getId(),
                 restWrapper.getParameters());
 
         // This step is necessary for this request. Without it, empty json response is returned
@@ -94,7 +93,7 @@ public class Sync extends ModelRequest<RestPrivateAPI>
 
     public RestWrapper endSync(RestSyncNodeSubscriptionModel nodeSubscriptionModel, RestSyncSetRequestModel sync)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, syncSetURL + params, this.subscriber, nodeSubscriptionModel.getId(),
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, syncSetURL, this.subscriber, nodeSubscriptionModel.getId(),
                 sync.getSyncId(), restWrapper.getParameters());
 
         restWrapper.processEmptyModel(request);
@@ -111,7 +110,7 @@ public class Sync extends ModelRequest<RestPrivateAPI>
      */
     public RestSyncSetGetModel getSync(RestSyncNodeSubscriptionModel nodeSubscriptionModel, RestSyncSetRequestModel sync)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, syncSetURL + params, this.subscriber, nodeSubscriptionModel.getId(), sync.getSyncId(),
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, syncSetURL, this.subscriber, nodeSubscriptionModel.getId(), sync.getSyncId(),
                 restWrapper.getParameters());
 
         RestSyncSetGetModel model = restWrapper.processModelWithoutEntryObject(RestSyncSetGetModel.class, request);

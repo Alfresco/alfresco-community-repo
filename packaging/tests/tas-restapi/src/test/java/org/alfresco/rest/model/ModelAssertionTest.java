@@ -25,20 +25,21 @@
  */
 package org.alfresco.rest.model;
 
-import com.google.common.collect.ImmutableMap;
+import static com.google.common.collect.Sets.newHashSet;
+
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.rest.model.RestPersonModel;
-import org.junit.Ignore;
 import org.testng.annotations.Test;
-
-import static com.google.common.collect.Sets.newHashSet;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 public class ModelAssertionTest {
 

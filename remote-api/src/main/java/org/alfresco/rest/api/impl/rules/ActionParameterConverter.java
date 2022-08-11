@@ -76,7 +76,7 @@ public class ActionParameterConverter
             }
             if (paramDef != null)
             {
-                QName typeQName = paramDef.getType();
+                final QName typeQName = paramDef.getType();
                 params.replace(param.getKey(), convertValue(typeQName, param.getValue()));
             } else
             {

@@ -27,7 +27,7 @@
 package org.alfresco.rest.api.nodes;
 
 import junit.framework.TestCase;
-import org.alfresco.rest.api.Rules;
+import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSetLink;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.junit.Assert;
@@ -48,7 +48,7 @@ public class NodeRuleSetsRelationTest extends TestCase
     private static final String LINK_TO_NODE_ID = "dummy-link-to-node-id";
 
     @Mock
-    private Rules rules;
+    private RuleSets ruleSets;
 
     @Mock
     private Parameters parameters;
@@ -63,14 +63,13 @@ public class NodeRuleSetsRelationTest extends TestCase
         RuleSetLink expectedRuleSetLink = new RuleSetLink();
         List<RuleSetLink> expectedRuleResult = List.of(expectedRuleSetLink);
 
+        when(ruleSets.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID)).thenReturn(expectedRuleSetLink);
 
-        when(rules.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID)).thenReturn(expectedRuleSetLink);
-
-        requestBody.setId(LINK_TO_NODE_ID);
-        expectedRuleResult.get(0).setId("dummy-ruleset-id");
+        requestBody.setLinkToNodeId(LINK_TO_NODE_ID);
+        expectedRuleResult.get(0).setLinkToNodeId("dummy-ruleset-id");
 
         List<RuleSetLink> actual = nodeRuleSetLinksRelation.create(FOLDER_NODE_ID,List.of(requestBody), parameters);
-        Assert.assertEquals(expectedRuleResult.get(0).getId(), actual.get(0).getId());
+        Assert.assertEquals(expectedRuleResult.get(0).getLinkToNodeId(), actual.get(0).getLinkToNodeId());
     }
 
 

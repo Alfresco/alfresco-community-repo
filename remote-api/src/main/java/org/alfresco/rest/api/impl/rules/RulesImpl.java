@@ -53,10 +53,8 @@ public class RulesImpl implements Rules
     private static final Logger LOGGER = LoggerFactory.getLogger(RulesImpl.class);
 
     private Nodes nodes;
-    private NodeService nodeService;
     private RuleService ruleService;
     private NodeValidator validator;
-    private RuntimeRuleService runtimeRuleService;
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
@@ -119,39 +117,6 @@ public class RulesImpl implements Rules
         ruleService.removeRule(folderNodeRef, rule);
     }
 
-    @Override
-    public RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId) {
-
-        RuleSetLink ruleSetLink = new RuleSetLink();
-        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,false);
-        final NodeRef linkToNodeRef = validator.validateFolderNode(linkToNodeId, false);
-
-        if(nodeService.exists(folderNodeRef))
-        {
-            //The target node should have pre-existing rules to link to
-            if(!ruleService.hasRules(linkToNodeRef))
-            {
-                throw new AlfrescoRuntimeException("The target node has no rules to link.");
-            }
-
-            //The folder shouldn't have any pre-existing rules
-            if((!ruleService.hasRules(folderNodeRef)))
-            {
-                // Create the destination folder as a secondary child of the first
-                NodeRef ruleSetNodeRef = runtimeRuleService.getSavedRuleFolderAssoc(linkToNodeRef).getChildRef();
-                // The required aspect will automatically be added to the node
-                nodeService.addChild(folderNodeRef, ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
-                ruleSetLink.setId(ruleSetNodeRef.getId());
-            }
-            else
-            {
-                throw new AlfrescoRuntimeException("Unable to link to a ruleset because the folder has pre-existing rules.");
-            }
-
-        }
-        return ruleSetLink;
-    }
-
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
@@ -160,16 +125,6 @@ public class RulesImpl implements Rules
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
-    }
-
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setRuntimeRuleService(RuntimeRuleService runtimeRuleService)
-    {
-        this.runtimeRuleService = runtimeRuleService;
     }
 
     public void setValidator(NodeValidator validator)

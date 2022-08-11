@@ -27,13 +27,13 @@
 package org.alfresco.rest.api.model.rules;
 
 public class RuleSetLink {
-    private String id;
+    private String linkToNodeId;
 
-    public void setId(String id) {
-        this.id = id;
+    public void setLinkToNodeId(String linkToNodeId) {
+        this.linkToNodeId = linkToNodeId;
     }
 
-    public String getId() {
-        return id;
+    public String getLinkToNodeId() {
+        return linkToNodeId;
     }
 }

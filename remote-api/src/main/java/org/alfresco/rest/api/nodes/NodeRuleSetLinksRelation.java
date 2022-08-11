@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.rest.api.Rules;
+import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSetLink;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
@@ -46,12 +46,12 @@ import org.springframework.beans.factory.InitializingBean;
 public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipResourceAction.Create<RuleSetLink>
 {
 
-    private final Rules rules;
+    private final RuleSets ruleSets;
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        PropertyCheck.mandatory(this, "rules", rules);
+        PropertyCheck.mandatory(this, "ruleSets", ruleSets);
     }
 
     @WebApiParam(name = "ruleSetLinkRequest", title = "Request body - rule set id",
@@ -63,12 +63,12 @@ public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipR
     public List<RuleSetLink> create(String nodeId, List<RuleSetLink> ruleSetLinksBody, Parameters parameters)
     {
         return ruleSetLinksBody.stream()
-                .map(r -> rules.linkToRuleSet(nodeId, r.getId()))
+                .map(r -> ruleSets.linkToRuleSet(nodeId, r.getLinkToNodeId()))
                 .collect(Collectors.toList());
     }
 
-    public NodeRuleSetLinksRelation(Rules rules)
+    public NodeRuleSetLinksRelation(RuleSets ruleSets)
     {
-        this.rules = rules;
+        this.ruleSets = ruleSets;
     }
 }

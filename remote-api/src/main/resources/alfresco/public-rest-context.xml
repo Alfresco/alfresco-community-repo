@@ -890,11 +890,16 @@
         <constructor-arg name="namespaceService" ref="NamespaceService"/>
     </bean>
 
+    <bean id="actionPermissionValidator" class="org.alfresco.rest.api.impl.rules.ActionPermissionValidator">
+        <constructor-arg name="runtimeActionService" ref="actionService"/>
+    </bean>
+
     <bean id="rules" class="org.alfresco.rest.api.impl.rules.RulesImpl">
         <property name="nodes" ref="Nodes" />
         <property name="validator" ref="nodeValidator"/>
         <property name="ruleService" ref="RuleService" />
         <property name="actionParameterConverter" ref="actionParameterConverter"/>
+        <property name="actionPermissionValidator" ref="actionPermissionValidator"/>
     </bean>
 
     <bean id="Rules" class="org.springframework.aop.framework.ProxyFactoryBean">

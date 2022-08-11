@@ -60,7 +60,6 @@ public class ActionParameterConverter
 
     void convertParameters(Map<String, Serializable> params, String name)
     {
-        // Get the action or condition definition
         final ParameterizedItemDefinition definition = actionService.getActionDefinition(name);
 
         if (definition == null)

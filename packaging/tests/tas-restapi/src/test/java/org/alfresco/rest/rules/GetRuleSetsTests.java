@@ -33,7 +33,6 @@ import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
-import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
 import org.alfresco.utility.model.FolderModel;

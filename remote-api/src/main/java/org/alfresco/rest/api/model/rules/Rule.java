@@ -58,7 +58,7 @@ public class Rule
      * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
      * @return {@link Rule} REST model
      */
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final boolean shared)
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel)
     {
         if (ruleModel == null)
         {
@@ -70,8 +70,7 @@ public class Rule
             .description(ruleModel.getDescription())
             .enabled(!ruleModel.getRuleDisabled())
             .cascade(ruleModel.isAppliedToChildren())
-            .asynchronous(ruleModel.getExecuteAsynchronously())
-            .isShared(shared);
+            .asynchronous(ruleModel.getExecuteAsynchronously());
 
         if (ruleModel.getNodeRef() != null) {
             builder.id(ruleModel.getNodeRef().getId());

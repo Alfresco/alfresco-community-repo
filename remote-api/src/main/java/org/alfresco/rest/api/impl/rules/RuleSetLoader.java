@@ -52,7 +52,7 @@ public class RuleSetLoader
      * @param includes A list of fields to include.
      * @return The rule set object.
      */
-    protected RuleSet loadRuleSet(NodeRef ruleSetNodeRef, NodeRef folderNodeRef, List<String> includes)
+    public RuleSet loadRuleSet(NodeRef ruleSetNodeRef, NodeRef folderNodeRef, List<String> includes)
     {
         String ruleSetId = ruleSetNodeRef.getId();
         RuleSet ruleSet = RuleSet.of(ruleSetId);

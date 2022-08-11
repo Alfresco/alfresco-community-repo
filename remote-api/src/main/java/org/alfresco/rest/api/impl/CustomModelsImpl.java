@@ -713,6 +713,7 @@ public class CustomModelsImpl implements CustomModels
         try
         {
             NodeRef nodeRef = customModelService.createDownloadNode(modelName, withForm);
+            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, modelName + DownloadsImpl.DEFAULT_ARCHIVE_EXTENSION);
             return new CustomModelDownload(nodeRef);
         }
         catch (Exception ex)

@@ -83,9 +83,9 @@ public class CreateRulesTests extends RestTest
     public void createRule()
     {
         RestRuleModel ruleModel = createRuleModelWithDefaultValues();
-        UserModel admin = dataUser.getAdminUser();
+        ruleModel.setDescription("other desc");
 
-        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);

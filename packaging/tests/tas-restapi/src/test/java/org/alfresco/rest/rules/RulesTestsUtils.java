@@ -27,13 +27,15 @@ package org.alfresco.rest.rules;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
 
 public class RulesTestsUtils
 {
-    static final String FIELD_ID = "id";
     static final String FIELD_NAME = "name";
     static final String FIELD_DESCRIPTION = "description";
     static final String FIELD_ENABLED = "enabled";
@@ -51,9 +53,14 @@ public class RulesTestsUtils
     static final String RULE_ERROR_SCRIPT_DEFAULT = "error-script";
     static final List<String> ruleTriggersDefault = List.of("inbound", "update", "outbound");
 
+    /**
+     * Create a rule model filled with default values.
+     *
+     * @return The created rule model.
+     */
     public static RestRuleModel createRuleModelWithDefaultValues()
     {
-        RestRuleModel ruleModel = createRuleModel(RULE_NAME_DEFAULT);
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
         ruleModel.setDescription(RULE_DESCRIPTION_DEFAULT);
         ruleModel.setEnabled(RULE_ENABLED_DEFAULT);
         ruleModel.setCascade(RULE_CASCADE_DEFAULT);
@@ -103,6 +110,16 @@ public class RulesTestsUtils
         return restActionModel;
     }
 
+    /**
+     * Assertion helper designed to work with default values. Assertions can be done comparing to provided expected values or default values, e.g.:
+     * {@code assertThat(rule)
+     *      .field("field1").isEqualTo("value")
+     *      .field("field2").isEqualToDefaultValue()
+     *      .fields("field3", "field4").areEqualToDefaultValue();}
+     *
+     * @param rule {@link RestRuleModel} object to assert
+     * @return assertion helper
+     */
     public static RuleModelAssertion assertThat(RestRuleModel rule)
     {
         return new RuleModelAssertion(rule);
@@ -124,36 +141,36 @@ public class RulesTestsUtils
 
         public FieldsAssertion fields(String... fields)
         {
-            return new FieldsAssertion(List.of(fields), this);
+            return new FieldsAssertion(Stream.of(fields).collect(Collectors.toSet()), this);
         }
 
         public static class FieldAssertion
         {
             private final String field;
-            private final RuleModelAssertion parent;
+            private final RuleModelAssertion assertionParent;
 
-            public FieldAssertion(String field, RuleModelAssertion parent)
+            public FieldAssertion(String field, RuleModelAssertion assertionParent)
             {
                 this.field = field;
-                this.parent = parent;
+                this.assertionParent = assertionParent;
             }
 
             public RuleModelAssertion isNull()
             {
-                parent.rule.assertThat().field(field).isNull();
-                return parent;
+                assertionParent.rule.assertThat().field(field).isNull();
+                return assertionParent;
             }
 
             public RuleModelAssertion isNotNull()
             {
-                parent.rule.assertThat().field(field).isNotNull();
-                return parent;
+                assertionParent.rule.assertThat().field(field).isNotNull();
+                return assertionParent;
             }
 
             public RuleModelAssertion isEqualTo(Object expected)
             {
-                parent.rule.assertThat().field(field).is(expected);
-                return parent;
+                assertionParent.rule.assertThat().field(field).is(expected);
+                return assertionParent;
             }
 
             public RuleModelAssertion isEqualToDefaultValue()
@@ -161,94 +178,94 @@ public class RulesTestsUtils
                 switch (field)
                 {
                 case FIELD_NAME:
-                    parent.rule.assertThat().field(field).is(RULE_NAME_DEFAULT);
+                    assertionParent.rule.assertThat().field(field).is(RULE_NAME_DEFAULT);
                     break;
                 case FIELD_DESCRIPTION:
-                    parent.rule.assertThat().field(field).is(RULE_DESCRIPTION_DEFAULT);
+                    assertionParent.rule.assertThat().field(field).is(RULE_DESCRIPTION_DEFAULT);
                     break;
                 case FIELD_ENABLED:
-                    parent.rule.assertThat().field(field).is(RULE_ENABLED_DEFAULT);
+                    assertionParent.rule.assertThat().field(field).is(RULE_ENABLED_DEFAULT);
                     break;
                 case FIELD_CASCADE:
-                    parent.rule.assertThat().field(field).is(RULE_CASCADE_DEFAULT);
+                    assertionParent.rule.assertThat().field(field).is(RULE_CASCADE_DEFAULT);
                     break;
                 case FIELD_ASYNC:
-                    parent.rule.assertThat().field(field).is(RULE_ASYNC_DEFAULT);
+                    assertionParent.rule.assertThat().field(field).is(RULE_ASYNC_DEFAULT);
                     break;
                 case FIELD_SHARED:
-                    parent.rule.assertThat().field(field).is(RULE_SHARED_DEFAULT);
+                    assertionParent.rule.assertThat().field(field).is(RULE_SHARED_DEFAULT);
                     break;
                 case FIELD_TRIGGERS:
-                    parent.rule.assertThat().field(field).is(ruleTriggersDefault);
+                    assertionParent.rule.assertThat().field(field).is(ruleTriggersDefault);
                     break;
                 case FIELD_ERROR_SCRIPT:
-                    parent.rule.assertThat().field(field).is(RULE_ERROR_SCRIPT_DEFAULT);
+                    assertionParent.rule.assertThat().field(field).is(RULE_ERROR_SCRIPT_DEFAULT);
                     break;
                 default:
                     throw new UnsupportedOperationException("Field: " + field + " doesn't have specified default value!");
                 }
-                return parent;
+                return assertionParent;
             }
         }
 
         public static class FieldsAssertion
         {
-            private final List<String> fields;
-            private final RuleModelAssertion parent;
+            private final Set<String> fields;
+            private final RuleModelAssertion assertionParent;
 
-            private FieldsAssertion(List<String> fields, RuleModelAssertion parent)
+            private FieldsAssertion(Set<String> fields, RuleModelAssertion assertionParent)
             {
                 this.fields = fields;
-                this.parent = parent;
+                this.assertionParent = assertionParent;
             }
 
             public RuleModelAssertion areEqualToDefaultValues()
             {
                 if (fields.contains(FIELD_NAME))
                 {
-                    parent.rule.assertThat().field(FIELD_NAME).is(RULE_NAME_DEFAULT);
+                    assertionParent.rule.assertThat().field(FIELD_NAME).is(RULE_NAME_DEFAULT);
                     fields.remove(FIELD_NAME);
                 }
                 if (fields.contains(FIELD_DESCRIPTION))
                 {
-                    parent.rule.assertThat().field(FIELD_DESCRIPTION).is(RULE_DESCRIPTION_DEFAULT);
+                    assertionParent.rule.assertThat().field(FIELD_DESCRIPTION).is(RULE_DESCRIPTION_DEFAULT);
                     fields.remove(FIELD_DESCRIPTION);
                 }
                 if (fields.contains(FIELD_ENABLED))
                 {
-                    parent.rule.assertThat().field(FIELD_ENABLED).is(RULE_ENABLED_DEFAULT);
+                    assertionParent.rule.assertThat().field(FIELD_ENABLED).is(RULE_ENABLED_DEFAULT);
                     fields.remove(FIELD_ENABLED);
                 }
                 if (fields.contains(FIELD_CASCADE))
                 {
-                    parent.rule.assertThat().field(FIELD_CASCADE).is(RULE_CASCADE_DEFAULT);
+                    assertionParent.rule.assertThat().field(FIELD_CASCADE).is(RULE_CASCADE_DEFAULT);
                     fields.remove(FIELD_CASCADE);
                 }
                 if (fields.contains(FIELD_ASYNC))
                 {
-                    parent.rule.assertThat().field(FIELD_ASYNC).is(RULE_ASYNC_DEFAULT);
+                    assertionParent.rule.assertThat().field(FIELD_ASYNC).is(RULE_ASYNC_DEFAULT);
                     fields.remove(FIELD_ASYNC);
                 }
                 if (fields.contains(FIELD_SHARED))
                 {
-                    parent.rule.assertThat().field(FIELD_SHARED).is(RULE_SHARED_DEFAULT);
+                    assertionParent.rule.assertThat().field(FIELD_SHARED).is(RULE_SHARED_DEFAULT);
                     fields.remove(FIELD_SHARED);
                 }
                 if (fields.contains(FIELD_TRIGGERS))
                 {
-                    parent.rule.assertThat().field(FIELD_TRIGGERS).is(ruleTriggersDefault);
+                    assertionParent.rule.assertThat().field(FIELD_TRIGGERS).is(ruleTriggersDefault);
                     fields.remove(FIELD_TRIGGERS);
                 }
                 if (fields.contains(FIELD_ERROR_SCRIPT))
                 {
-                    parent.rule.assertThat().field(FIELD_ERROR_SCRIPT).is(RULE_ERROR_SCRIPT_DEFAULT);
+                    assertionParent.rule.assertThat().field(FIELD_ERROR_SCRIPT).is(RULE_ERROR_SCRIPT_DEFAULT);
                     fields.remove(FIELD_ERROR_SCRIPT);
                 }
                 if (!fields.isEmpty())
                 {
                     throw new UnsupportedOperationException("Fields: " + fields + " don't have specified default values!");
                 }
-                return parent;
+                return assertionParent;
             }
         }
     }

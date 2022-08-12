@@ -127,6 +127,7 @@ public class RuleTest
         assertThat(actualRuleModel)
             .isNotNull()
             .usingRecursiveComparison()
+            .ignoringFields("ruleTypes")
             .isEqualTo(expectedRuleModel);
     }
 

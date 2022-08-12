@@ -77,6 +77,7 @@ import org.alfresco.utility.dsl.DSLWrapper;
 import org.alfresco.utility.model.StatusModel;
 import org.alfresco.utility.model.TestModel;
 import org.alfresco.utility.model.UserModel;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.xml.serialize.OutputFormat;
@@ -620,7 +621,16 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
      */
     protected Response sendRequest(RestRequest restRequest)
     {
-        Response returnedResponse = null;
+        // If there are unused parameters then include them in the request.
+        String parameters = getParameters();
+        if (parameters != null && !parameters.isEmpty())
+        {
+            restRequest.setPathParams(ArrayUtils.addAll(restRequest.getPathParams(), parameters));
+        }
+
+        STEP(restRequest.toString());
+
+        Response returnedResponse;
         switch (restRequest.getHttpMethod())
         {
             case GET:
@@ -629,7 +639,6 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
             case DELETE:
                 returnedResponse = onRequest().delete(restRequest.getPath(), restRequest.getPathParams()).andReturn();
                 break;
-
             case HEAD:
                 returnedResponse = onRequest().head(restRequest.getPath(), restRequest.getPathParams()).andReturn();
                 break;
@@ -867,6 +876,8 @@ public class RestWrapper extends DSLWrapper<RestWrapper>
     }
 
     /**
+     * Get and clear the stored parameters.
+     *
      * @return parameters that you could pass on the request ?param=value
      */
     public String getParameters()

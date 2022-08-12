@@ -27,6 +27,7 @@ package org.alfresco.rest.core;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import java.util.MissingFormatArgumentException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -57,7 +58,8 @@ public class RestRequest
         setPath(path);
         setPathParams(pathParams);
         setBody(body);
-        STEP(toString());
+        // Validate that the supplied path and pathParams are compatible.
+        constructPath();
     }
 
     /**
@@ -164,6 +166,10 @@ public class RestRequest
         this.contentType = contentType;
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws MissingFormatArgumentException If there are not enough pathParams for the path.
+     */
     @Override
     public String toString()
     {
@@ -177,14 +183,8 @@ public class RestRequest
                     .append("/")
                     .append(RestAssured.basePath)
                     .append("/");
-        
-        String getPathFormatted = getPath();
-        if(getPath().contains("{"))
-        {
-            getPathFormatted = getPath().replaceAll(TOKEN_REGEX, "%s");
-            getPathFormatted = String.format(getPathFormatted, getPathParams());
-        }
-        sb.append(getPathFormatted);
+
+        sb.append(constructPath());
                 
         if(!getBody().isEmpty())
         {
@@ -195,5 +195,22 @@ public class RestRequest
         
         
         return sb.toString();
+    }
+
+    /**
+     * Populate the path with the pathParams.
+     *
+     * @return The path with tokens replaced with values.
+     * @throws MissingFormatArgumentException If there are not enough pathParams for the path.
+     */
+    private String constructPath()
+    {
+        String getPathFormatted = getPath();
+        if(getPath().contains("{"))
+        {
+            getPathFormatted = getPath().replaceAll(TOKEN_REGEX, "%s");
+            getPathFormatted = String.format(getPathFormatted, getPathParams());
+        }
+        return getPathFormatted;
     }
 }

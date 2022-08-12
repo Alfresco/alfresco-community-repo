@@ -33,6 +33,7 @@ import static org.testng.Assert.fail;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
@@ -42,16 +43,18 @@ import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.testng.annotations.Test;
 
 public class ModelAssertionTest {
+	private static final String DEFAULT_ID = "1234";
+	private static final String DEFAULT_NAME = "test";
 
 	@Test(groups = "unit")
 	public void iCanAssertExistingProperty() {
-		Person p = new Person();
+		Person p = new Person(DEFAULT_ID);
 		p.assertThat().field("id").is("1234");
 	}
 
 	@Test(groups = "unit")
 	public void iCanAssertExistingPropertyNegative() {
-		Person p = new Person();
+		Person p = new Person(DEFAULT_ID);
 		p.assertThat().field("id").isNot("12342");
 		RestPersonModel rp = new RestPersonModel();
 
@@ -67,7 +70,7 @@ public class ModelAssertionTest {
 
 	@Test(groups = "unit")
 	public void iCanTakeTheValueOfFieldsThatDoesntHaveGetters() {
-		Person p = new Person();
+		Person p = new Person(DEFAULT_ID, DEFAULT_NAME);
 
 		p.assertThat().field("name").is("test");
 
@@ -75,7 +78,7 @@ public class ModelAssertionTest {
 
 	@Test(groups = "unit")
 	public void iCanAssertStringIsEmpty() {
-		Person p = new Person();
+		Person p = new Person(DEFAULT_ID);
 
 		// Check no exception when field is empty.
 		p.assertThat().field("nickname").isEmpty();
@@ -90,7 +93,7 @@ public class ModelAssertionTest {
 
 	@Test(groups = "unit")
 	public void iCanAssertStringIsNotEmpty() {
-		Person p = new Person();
+		Person p = new Person(DEFAULT_ID);
 
 		// Check no exception when field is not empty.
 		p.assertThat().field("id").isNotEmpty();
@@ -170,10 +173,108 @@ public class ModelAssertionTest {
 		p.assertThat().field("age").isNotEmpty();
 	}
 
-	public class Person implements IRestModel<Person> {
-		private String id = "1234";
-		private String name = "test";
-		public String getName() { return name;}
+	@Test(groups = "unit")
+	public void testIsEqualTo_noDifferencesNonIgnoredFields()
+	{
+		Person person = new Person(DEFAULT_ID, DEFAULT_NAME);
+		Person otherPerson = new Person(DEFAULT_ID, DEFAULT_NAME);
+
+		person.assertThat().isEqualTo(otherPerson);
+	}
+
+	@Test(groups = "unit")
+	public void testIsEqualTo_differentNameIgnoreName()
+	{
+		Person person = new Person(DEFAULT_ID);
+		Person otherPerson = new Person(DEFAULT_ID, DEFAULT_NAME);
+
+		person.assertThat().isEqualTo(otherPerson, "name");
+	}
+
+	@Test(groups = "unit")
+	public void testIsEqualTo_differentIdAndNameIgnoreIdAndName()
+	{
+		Person person = new Person();
+		Person otherPerson = new Person(DEFAULT_ID, DEFAULT_NAME);
+
+		person.assertThat().isEqualTo(otherPerson, "id", "name");
+	}
+
+	@Test(groups = "unit")
+	public void testIsEqualTo_differentNameNonIgnoredFields()
+	{
+		Person person = new Person(DEFAULT_ID, DEFAULT_NAME);
+		Person otherPerson = new Person(DEFAULT_ID, "otherName");
+
+		try {
+			person.assertThat().isEqualTo(otherPerson);
+			fail("Expected exception to be raised.");
+		} catch (AssertionError e) {
+			assertTrue(e.getMessage().contains("are not equal"), "Expected exception to be about a not equal objects.");
+		}
+	}
+
+	@Test(groups = "unit")
+	public void testIsEqualTo_differentIdNonIgnoredFields()
+	{
+		Person person = new Person();
+		Person otherPerson = new Person(DEFAULT_ID);
+
+		try {
+			person.assertThat().isEqualTo(otherPerson);
+			fail("Expected exception to be raised.");
+		} catch (AssertionError e) {
+			assertTrue(e.getMessage().contains("are not equal"), "Expected exception to be about a not equal objects.");
+		}
+	}
+
+	@Test(groups = "unit")
+	public void testIsEqualTo_differentIdAndNameIgnoreName()
+	{
+		Person person = new Person();
+		Person otherPerson = new Person(DEFAULT_ID, DEFAULT_NAME);
+
+		try {
+			person.assertThat().isEqualTo(otherPerson, "name");
+			fail("Expected exception to be raised.");
+		} catch (AssertionError e) {
+			assertTrue(e.getMessage().contains("are not equal"), "Expected exception to be about a not equal objects.");
+		}
+	}
+
+	@Test(groups = "unit")
+	public void testIsEqualTo_differentNicknameIgnoreIdAndName()
+	{
+		Person person = new Person();
+		Person otherPerson = new Person();
+		otherPerson.setNickname("Shaggy");
+
+		try {
+			person.assertThat().isEqualTo(otherPerson, "id", "name");
+			fail("Expected exception to be raised.");
+		} catch (AssertionError e) {
+			assertTrue(e.getMessage().contains("are not equal"), "Expected exception to be about a not equal objects.");
+		}
+	}
+
+	@Test(groups = "unit")
+	public void testIsEqualTo_differentPreviousNamesIgnoreId()
+	{
+		Person person = new Person();
+		Person otherPerson = new Person();
+		otherPerson.setPreviousNames(List.of("Paul"));
+
+		try {
+			person.assertThat().isEqualTo(otherPerson, "id");
+			fail("Expected exception to be raised.");
+		} catch (AssertionError e) {
+			assertTrue(e.getMessage().contains("are not equal"), "Expected exception to be about a not equal objects.");
+		}
+	}
+
+	public static class Person implements IRestModel<Person> {
+		private String id;
+		private String name;
 		private String nickname = "";
 		private int age = 42;
 		private Set<String> legs = newHashSet("left", "right");
@@ -181,16 +282,44 @@ public class ModelAssertionTest {
 		private Map<String, String> clothing = ImmutableMap.of("head", "hat");
 		private Map<String, String> carrying = Collections.emptyMap();
 
+		public Person()
+		{
+		}
+
+		public Person(String id)
+		{
+			this.id = id;
+		}
+
+		public Person(String id, String name)
+		{
+			this.id = id;
+			this.name = name;
+		}
+
 		public String getId() {
 			return id;
 		}
 		public void setId(String id) {
 			this.id = id;
 		}
+		public String getName() { return name;}
+		public void setName(String name)
+		{
+			this.name = name;
+		}
 		public String getNickname() { return nickname; }
+		public void setNickname(String nickname)
+		{
+			this.nickname = nickname;
+		}
 		public int getAge() { return age; }
 		public Set<String> getLegs() { return legs; }
 		public List<String> getPreviousNames() { return previousNames; }
+		public void setPreviousNames(List<String> previousNames)
+		{
+			this.previousNames = previousNames;
+		}
 		public Map<String, String> getClothing() { return clothing; }
 		public Map<String, String> getCarrying() { return carrying; }
 
@@ -209,6 +338,30 @@ public class ModelAssertionTest {
 			// TODO Auto-generated method stub
 			return null;
 		}
-	}
 
+		@Override
+		public String toString()
+		{
+			return "Person{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", nickname='" + nickname + '\'' + ", age=" + age + ", legs=" + legs + ", previousNames="
+				+ previousNames + ", clothing=" + clothing + ", carrying=" + carrying + '}';
+		}
+
+		@Override
+		public boolean equals(Object o)
+		{
+			if (this == o)
+				return true;
+			if (o == null || getClass() != o.getClass())
+				return false;
+			Person person = (Person) o;
+			return age == person.age && Objects.equals(id, person.id) && Objects.equals(name, person.name) && Objects.equals(nickname, person.nickname) && Objects.equals(
+				legs, person.legs) && Objects.equals(previousNames, person.previousNames) && Objects.equals(clothing, person.clothing) && Objects.equals(carrying, person.carrying);
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hash(id, name, nickname, age, legs, previousNames, clothing, carrying);
+		}
+	}
 }

@@ -33,13 +33,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
+import io.restassured.path.json.JsonPath;
 import org.alfresco.utility.exception.TestConfigurationException;
 import org.alfresco.utility.model.TestModel;
 import org.testng.Assert;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.path.json.JsonPath;
 
 /**
  * Assertion on Rest Model
@@ -57,7 +59,7 @@ public class ModelAssertion<T>
             Assert.fail(String.format("Field {%s} was not found in returned response.",fieldNameToBeRetuned));
         }
     }
-    private Object model;
+    private final Object model;
 
     public ModelAssertion(Object model)
     {
@@ -66,10 +68,11 @@ public class ModelAssertion<T>
 
     /**
      * Use this DSL for asserting particular fields of your model if your model
-     * is like this (basic POJO) public class Person extends
-     * ModelAssertion<Person> { private String id = "1234"; you can use assert
-     * the id of this person as:
-     * Person p = new Person(); p.assertField("id").is("1234")
+     * is like this (basic POJO)
+     * public class Person extends ModelAssertion<Person>
+     *     { private String id = "1234"; }
+     * you can use assert the id of this person as:
+     * Person p = new Person(); p.assertThat().field("id").is("1234")
      *
      * @param fieldName
      * @return
@@ -121,6 +124,24 @@ public class ModelAssertion<T>
     }
 
     /**
+     * Use this method for asserting whole model with different model object. Method allows to ignore particular fields during the comparison.
+     *
+     * WARNING: For proper work model should implement {@code toString()} and {@code equals()} methods.
+     *
+     * @param expected - expected model.
+     * @param ignoreFields - fields which should be ignored during assertion.
+     * @return model.
+     */
+    @SuppressWarnings("unchecked")
+    public T isEqualTo(T expected, String... ignoreFields)
+    {
+        T modelCopy = createCopyIgnoringFields((T) model, ignoreFields);
+        T expectedCopy = createCopyIgnoringFields(expected, ignoreFields);
+        Assert.assertEquals(modelCopy, expectedCopy, String.format("Compared objects of type: %s are not equal!", model.getClass()));
+        return (T) model;
+    }
+
+    /**
      * Get all fields declared from all classes hierarchy
      *
      * @param fields
@@ -142,6 +163,18 @@ public class ModelAssertion<T>
         }
 
         return fields;
+    }
+
+    @SuppressWarnings("unchecked")
+    private T createCopyIgnoringFields(T model, String... ignoreFields)
+    {
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.fromJson(gson.toJson(model), JsonObject.class);
+        for (String ignoreField : ignoreFields)
+        {
+            jsonObject.remove(ignoreField);
+        }
+        return gson.fromJson(gson.toJson(jsonObject), (Class<? extends T>) model.getClass());
     }
 
     /**

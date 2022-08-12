@@ -26,6 +26,7 @@
 package org.alfresco.rest.model;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.ModelAssertion;
@@ -120,6 +121,31 @@ public class RestCompositeConditionDefinitionModel extends TestModel implements 
     public void setSimpleConditions(List<RestSimpleConditionDefinitionModel> simpleConditions)
     {
         this.simpleConditions = simpleConditions;
-    }				
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RestCompositeConditionDefinitionModel{" + "inverted=" + inverted + ", booleanMode='" + booleanMode + '\'' + ", compositeConditions=" + compositeConditions
+            + ", simpleConditions=" + simpleConditions + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RestCompositeConditionDefinitionModel that = (RestCompositeConditionDefinitionModel) o;
+        return inverted == that.inverted && Objects.equals(booleanMode, that.booleanMode) && Objects.equals(compositeConditions, that.compositeConditions) && Objects.equals(
+            simpleConditions, that.simpleConditions);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(inverted, booleanMode, compositeConditions, simpleConditions);
+    }
 }
  

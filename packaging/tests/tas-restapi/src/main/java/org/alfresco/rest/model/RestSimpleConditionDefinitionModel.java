@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.model;
 
-import java.util.List;
+import java.util.Objects;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.ModelAssertion;
@@ -128,6 +128,29 @@ Where a property is multivalued then the condition is true if it is satisfied by
     public void setParameter(String parameter)
     {
         this.parameter = parameter;
-    }				
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RestSimpleConditionDefinitionModel{" + "field='" + field + '\'' + ", comparator='" + comparator + '\'' + ", parameter='" + parameter + '\'' + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RestSimpleConditionDefinitionModel that = (RestSimpleConditionDefinitionModel) o;
+        return Objects.equals(field, that.field) && Objects.equals(comparator, that.comparator) && Objects.equals(parameter, that.parameter);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(field, comparator, parameter);
+    }
 }
  

@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.model;
 
-import java.util.List;
+import java.util.Objects;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.ModelAssertion;
@@ -85,6 +85,29 @@ public class RestActionBodyExecTemplateModel extends TestModel implements IRestM
     public void setParams(Object params)
     {
         this.params = params;
-    }				
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RestActionBodyExecTemplateModel{" + "actionDefinitionId='" + actionDefinitionId + '\'' + ", params=" + params + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RestActionBodyExecTemplateModel that = (RestActionBodyExecTemplateModel) o;
+        return Objects.equals(actionDefinitionId, that.actionDefinitionId) && Objects.equals(params, that.params);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(actionDefinitionId, params);
+    }
 }
  

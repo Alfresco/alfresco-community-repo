@@ -26,6 +26,7 @@
 package org.alfresco.rest.model;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.ModelAssertion;
@@ -236,6 +237,33 @@ If the field is omitted then the rule will apply to all nodes.
     public void setActions(List<RestActionBodyExecTemplateModel> actions)
     {
         this.actions = actions;
-    }				
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RestRuleModel{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", enabled=" + enabled + ", cascade=" + cascade
+            + ", asynchronous=" + asynchronous + ", errorScript='" + errorScript + '\'' + ", isShared=" + isShared + ", triggers=" + triggers + ", conditions=" + conditions
+            + ", actions=" + actions + '}';
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        RestRuleModel ruleModel = (RestRuleModel) o;
+        return enabled == ruleModel.enabled && cascade == ruleModel.cascade && asynchronous == ruleModel.asynchronous && Objects.equals(id, ruleModel.id) && name.equals(
+            ruleModel.name) && Objects.equals(description, ruleModel.description) && Objects.equals(errorScript, ruleModel.errorScript) && Objects.equals(
+            isShared, ruleModel.isShared) && Objects.equals(triggers, ruleModel.triggers) && Objects.equals(conditions, ruleModel.conditions) && actions.equals(ruleModel.actions);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(id, name, description, enabled, cascade, asynchronous, errorScript, isShared, triggers, conditions, actions);
+    }
 }
  

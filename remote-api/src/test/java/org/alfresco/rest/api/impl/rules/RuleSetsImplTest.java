@@ -94,7 +94,6 @@ public class RuleSetsImplTest extends TestCase
     public void setUp()
     {
         MockitoAnnotations.openMocks(this);
-        given(nodeServiceMock.exists(any(NodeRef.class))).willReturn(true);
         given(nodeValidatorMock.validateFolderNode(eq(LINK_TO_NODE_ID), anyBoolean())).willReturn(linkToNodeRef);
         given(nodeValidatorMock.validateFolderNode(eq(FOLDER_NODE_ID), anyBoolean())).willReturn(folderNodeRef);
         given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, folderNodeRef)).willReturn(ruleSetNodeRef);
@@ -164,7 +163,6 @@ public class RuleSetsImplTest extends TestCase
         //when
         assertEquals(ruleSets.linkToRuleSet(FOLDER_NODE_ID,LINK_TO_NODE_ID).getLinkToNodeId(), childNodeRef.getId());
 
-        then(nodeServiceMock).should().exists(folderNodeRef);
         then(ruleServiceMock).should().hasRules(linkToNodeRef);
         then(ruleServiceMock).should().hasRules(folderNodeRef);
         then(runtimeRuleServiceMock).should().getSavedRuleFolderAssoc(linkToNodeRef);
@@ -183,7 +181,6 @@ public class RuleSetsImplTest extends TestCase
                 () -> ruleSets.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID)
         );
 
-        then(nodeServiceMock).should().exists(folderNodeRef);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().hasRules(linkToNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
@@ -199,7 +196,6 @@ public class RuleSetsImplTest extends TestCase
         assertThatExceptionOfType(AlfrescoRuntimeException.class).isThrownBy(
                 () -> ruleSets.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID));
 
-        then(nodeServiceMock).should().exists(folderNodeRef);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().hasRules(linkToNodeRef);
         then(ruleServiceMock).should().hasRules(folderNodeRef);

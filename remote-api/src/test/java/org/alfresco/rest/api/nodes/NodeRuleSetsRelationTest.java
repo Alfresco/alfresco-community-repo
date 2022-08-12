@@ -59,17 +59,16 @@ public class NodeRuleSetsRelationTest extends TestCase
     @Test
     public void shouldProperlyCreateLink()
     {
-        RuleSetLink requestBody = new RuleSetLink();
         RuleSetLink expectedRuleSetLink = new RuleSetLink();
         List<RuleSetLink> expectedRuleResult = List.of(expectedRuleSetLink);
 
+        RuleSetLink requestBody = new RuleSetLink();
+        requestBody.setLinkToNodeId(LINK_TO_NODE_ID);
+
         when(ruleSets.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID)).thenReturn(expectedRuleSetLink);
 
-        requestBody.setLinkToNodeId(LINK_TO_NODE_ID);
-        expectedRuleResult.get(0).setLinkToNodeId("dummy-ruleset-id");
-
         List<RuleSetLink> actual = nodeRuleSetLinksRelation.create(FOLDER_NODE_ID,List.of(requestBody), parameters);
-        Assert.assertEquals(expectedRuleResult.get(0).getLinkToNodeId(), actual.get(0).getLinkToNodeId());
+        Assert.assertEquals(expectedRuleResult, actual);
     }
 
 

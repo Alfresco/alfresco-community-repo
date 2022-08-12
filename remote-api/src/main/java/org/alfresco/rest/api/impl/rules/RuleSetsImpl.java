@@ -79,30 +79,28 @@ public class RuleSetsImpl implements RuleSets
     @Override
     public RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId)
     {
-        RuleSetLink ruleSetLink = new RuleSetLink();
+
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,false);
         final NodeRef linkToNodeRef = validator.validateFolderNode(linkToNodeId, false);
 
-        if(nodeService.exists(folderNodeRef))
-        {
-            //The target node should have pre-existing rules to link to
-            if(!ruleService.hasRules(linkToNodeRef))
-            {
-                throw new AlfrescoRuntimeException("The target node has no rules to link.");
-            }
-
-            //The folder shouldn't have any pre-existing rules
-            if(ruleService.hasRules(folderNodeRef))
-            {
-                throw new AlfrescoRuntimeException("Unable to link to a ruleset because the folder has pre-existing rules.");
-            }
-
-            // Create the destination folder as a secondary child of the first
-            NodeRef ruleSetNodeRef = runtimeRuleService.getSavedRuleFolderAssoc(linkToNodeRef).getChildRef();
-            // The required aspect will automatically be added to the node
-            nodeService.addChild(folderNodeRef, ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
-            ruleSetLink.setLinkToNodeId(ruleSetNodeRef.getId());
+        //The target node should have pre-existing rules to link to
+        if (!ruleService.hasRules(linkToNodeRef)) {
+            throw new AlfrescoRuntimeException("The target node has no rules to link.");
         }
+
+        //The folder shouldn't have any pre-existing rules
+        if (ruleService.hasRules(folderNodeRef)) {
+            throw new AlfrescoRuntimeException("Unable to link to a ruleset because the folder has pre-existing rules.");
+        }
+
+        // Create the destination folder as a secondary child of the first
+        NodeRef ruleSetNodeRef = runtimeRuleService.getSavedRuleFolderAssoc(linkToNodeRef).getChildRef();
+        // The required aspect will automatically be added to the node
+        nodeService.addChild(folderNodeRef, ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
+
+        RuleSetLink ruleSetLink = new RuleSetLink();
+        ruleSetLink.setLinkToNodeId(ruleSetNodeRef.getId());
+
         return ruleSetLink;
     }
 

@@ -50,7 +50,7 @@ public class Rule
     private boolean asynchronous;
     private boolean shared;
     private String errorScript;
-    private List<RuleTrigger> triggers;
+    private List<RuleTrigger> triggers = List.of(RuleTrigger.INBOUND);
     private CompositeCondition conditions;
     private List<Action> actions;
 
@@ -295,7 +295,7 @@ public class Rule
         private boolean asynchronous;
         private boolean shared;
         private String errorScript;
-        private List<RuleTrigger> triggers;
+        private List<RuleTrigger> triggers = List.of(RuleTrigger.INBOUND);
         private CompositeCondition conditions;
         private List<Action> actions;
 

@@ -27,7 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.assertThat;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultName;
@@ -66,6 +66,7 @@ import org.testng.annotations.Test;
 @Test(groups = {TestGroup.RULES})
 public class CreateRulesTests extends RestTest
 {
+    private static final String IGNORE_ID = "id";
     private UserModel user;
     private SiteModel site;
     private FolderModel ruleFolder;
@@ -82,16 +83,14 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
-        ruleModel.setDescription("other desc");
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .createSingleRule(ruleModel);
+                                       .createSingleRule(expectedRuleModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        assertThat(rule)
-            .field("id").isNotNull()
-            .fields("name", "description", "enabled", "cascade", "asynchronous", "shared", "triggers", "errorScript").areEqualToDefaultValues();
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID)
+            .assertThat().field("id").isNotNull();
     }
 
     /** Check creating a rule in a non-existent folder returns an error. */
@@ -265,35 +264,31 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithoutDescription()
     {
         RestRuleModel ruleModel = createRuleModelWithDefaultName();
-        ruleModel.setDescription(null);
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        assertThat(rule)
-            .field("id").isNotNull()
-            .field("name").isEqualToDefaultValue()
-            .field("description").isNull();
+        rule.assertThat().field("id").isNotNull()
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("description").isNull();
     }
 
-    /** Check we can create a rule without triggers. */
+    /** Check we can create a rule without specifying triggers but with the default "inbound" value. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithoutTriggers()
     {
         RestRuleModel ruleModel = createRuleModelWithDefaultName();
-        ruleModel.setTriggers(null);
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        assertThat(rule)
-            .field("id").isNotNull()
-            .field("name").isEqualToDefaultValue()
-            .field("triggers").isNull();
+        rule.assertThat().field("id").isNotNull()
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("triggers").is("inbound");
     }
 
     /** Check we can create a rule without error script. */
@@ -301,17 +296,32 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithoutErrorScript()
     {
         RestRuleModel ruleModel = createRuleModelWithDefaultName();
-        ruleModel.setErrorScript(null);
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
-        assertThat(rule)
-            .field("id").isNotNull()
-            .field("name").isEqualToDefaultValue()
-            .field("errorScript").isNull();
+        rule.assertThat().field("id").isNotNull()
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("errorScript").isNull();
+    }
+
+    /** Check we can create a rule with irrelevant isShared flag, and it doesn't have impact to the process. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithSharedFlag()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        ruleModel.setIsShared(true);
+        UserModel admin = dataUser.getAdminUser();
+
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().field("id").isNotNull()
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("isShared").is(false);
     }
 
     private RestRuleModel testRolePermissionsWith(UserRole userRole)

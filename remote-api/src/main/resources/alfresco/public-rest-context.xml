@@ -880,6 +880,11 @@
         </property>
     </bean>
 
+    <bean id="ruleLoader" class="org.alfresco.rest.api.impl.rules.RuleLoader">
+        <property name="ruleService" ref="RuleService" />
+        <property name="nodeValidator" ref="nodeValidator" />
+    </bean>
+
     <bean class="org.alfresco.rest.api.nodes.NodeRuleSetsRelation">
         <property name="ruleSets" ref="RuleSets" />
     </bean>
@@ -888,6 +893,7 @@
         <property name="nodes" ref="Nodes" />
         <property name="validator" ref="nodeValidator"/>
         <property name="ruleService" ref="RuleService" />
+        <property name="ruleLoader" ref="ruleLoader" />
     </bean>
 
     <bean id="Rules" class="org.springframework.aop.framework.ProxyFactoryBean">

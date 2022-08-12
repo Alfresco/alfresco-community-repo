@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.impl.rules;
 
+import static org.alfresco.repo.web.scripts.rule.AbstractRuleWebScript.CANNOT_CREATE_RULE;
 import static org.alfresco.service.cmr.rule.RuleType.OUTBOUND;
 
 import java.util.List;
@@ -34,14 +35,14 @@ import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.rule.Rule;
-import org.springframework.extensions.webscripts.WebScriptException;
 
+@Experimental
 public class ActionPermissionValidator
 {
-    private static final String CANNOT_CREATE_RULE = "cannot.create.rule.checkout.outbound";
-
     private final RuntimeActionService runtimeActionService;
 
     public ActionPermissionValidator(RuntimeActionService runtimeActionService)
@@ -73,7 +74,7 @@ public class ActionPermissionValidator
             {
                 if (action.getActionDefinitionName().equalsIgnoreCase(CheckOutActionExecuter.NAME))
                 {
-                    throw new WebScriptException(CANNOT_CREATE_RULE);
+                    throw new InvalidArgumentException(CANNOT_CREATE_RULE);
                 }
             }
         }

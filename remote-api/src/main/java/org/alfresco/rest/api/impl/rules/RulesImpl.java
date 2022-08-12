@@ -85,13 +85,13 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = (RuleSet.isNotDefaultId(ruleSetId)) ? validator.validateRuleSetNode(ruleSetId, folderNodeRef) : null;
 
         return rules.stream()
-                    .map(rule -> mapToServiceModel(rule, nodes))
+                    .map(this::mapToServiceModelAndValidateActions)
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
                     .map(rule -> Rule.from(rule, validator.isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef)))
                     .collect(Collectors.toList());
     }
 
-    private org.alfresco.service.cmr.rule.Rule mapToServiceModel(Rule rule, Nodes nodes)
+    private org.alfresco.service.cmr.rule.Rule mapToServiceModelAndValidateActions(Rule rule)
     {
         rule.getActions().forEach(action -> actionParameterConverter.convertParameters(action.getParams(), action.getActionDefinitionId()));
         org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes);

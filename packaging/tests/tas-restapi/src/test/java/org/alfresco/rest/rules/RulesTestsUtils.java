@@ -62,7 +62,7 @@ public class RulesTestsUtils
     {
         RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
         restActionModel.setActionDefinitionId("add-features");
-        restActionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
+        restActionModel.setParams(Map.of("aspect-name", "cm:audio"));
         return restActionModel;
     }
 }

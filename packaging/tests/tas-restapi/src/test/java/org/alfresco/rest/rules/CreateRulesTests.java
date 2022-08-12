@@ -329,7 +329,6 @@ public class CreateRulesTests extends RestTest
             .assertThat().field("isShared").is(false);
     }
 
-    private RestRuleModel testRolePermissionsWith(UserRole userRole)
     /** Check we can create a rule. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRuleAndIncludeFieldsInResponse()

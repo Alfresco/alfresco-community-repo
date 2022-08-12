@@ -91,7 +91,11 @@ public class GetRulesTests extends RestTest
         assertTrue("Expected no rules to be present.", rules.isEmpty());
     }
 
-    /** Check we can get all the rules for a folder. */
+    /**
+     * Check we can get all the rules for a folder.
+     * <p>
+     * Also check that the isShared field is not returned when not requested.
+     */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void getRulesList()
     {
@@ -144,7 +148,11 @@ public class GetRulesTests extends RestTest
                      .assertThat().field("isShared").isNotNull());
     }
 
-    /** Check we can get a rule by its id. */
+    /**
+     * Check we can get a rule by its id.
+     * <p>
+     * Also check that the isShared field is not returned when not requested.
+     */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void getSingleRule()
     {

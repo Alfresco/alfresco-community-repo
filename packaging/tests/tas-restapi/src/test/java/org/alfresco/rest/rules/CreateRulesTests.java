@@ -72,7 +72,11 @@ public class CreateRulesTests extends RestTest
         ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
     }
 
-    /** Check we can create a rule. */
+    /**
+     * Check we can create a rule.
+     * <p>
+     * Also check that the isShared field is not returned when not requested.
+     */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {

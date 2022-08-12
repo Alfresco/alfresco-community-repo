@@ -64,7 +64,11 @@ public class UpdateRulesTests extends RestTest
         ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
     }
 
-    /** Check we can update a rule. */
+    /**
+     * Check we can update a rule.
+     * <p>
+     * Also check that the isShared field is not returned when not requested.
+     */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRule()
     {

@@ -98,12 +98,10 @@ public class RestRuleModel extends TestModel implements IRestModel<RestRuleModel
     */	        
 
     private String errorScript;	    
-    /**
-    Whether the rule has been shared with more than one folder
-    */	        
+    /** True if the rule set is linked to, or if the rule is inheritable and the rule set is inherited by a folder with inheriting enabled. */
+    @JsonProperty
+    private Boolean isShared;
 
-    @JsonProperty(required = true)    
-    private boolean shared;	    
     /**
     The set of triggers that cause the rule to be activated.
 * inbound - The rule should be activated when an item enters the folder
@@ -200,14 +198,14 @@ If the field is omitted then the rule will apply to all nodes.
         this.errorScript = errorScript;
     }				
 
-    public boolean getShared()
+    public Boolean getIsShared()
     {
-        return this.shared;
+        return this.isShared;
     }
 
-    public void setShared(boolean shared)
+    public void setIsShared(Boolean shared)
     {
-        this.shared = shared;
+        this.isShared = shared;
     }				
 
     public List<String> getTriggers()

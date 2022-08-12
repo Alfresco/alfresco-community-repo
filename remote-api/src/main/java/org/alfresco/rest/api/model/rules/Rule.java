@@ -46,7 +46,7 @@ public class Rule
     private boolean enabled;
     private boolean cascade;
     private boolean asynchronous;
-    private boolean shared;
+    private Boolean isShared;
     private String errorScript;
     private List<RuleTrigger> triggers;
     private CompositeCondition conditions;
@@ -58,7 +58,7 @@ public class Rule
      * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
      * @return {@link Rule} REST model
      */
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final boolean shared)
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel)
     {
         if (ruleModel == null)
         {
@@ -70,8 +70,7 @@ public class Rule
             .description(ruleModel.getDescription())
             .enabled(!ruleModel.getRuleDisabled())
             .cascade(ruleModel.isAppliedToChildren())
-            .asynchronous(ruleModel.getExecuteAsynchronously())
-            .shared(shared);
+            .asynchronous(ruleModel.getExecuteAsynchronously());
 
         if (ruleModel.getNodeRef() != null) {
             builder.id(ruleModel.getNodeRef().getId());
@@ -185,14 +184,14 @@ public class Rule
         this.errorScript = errorScript;
     }
 
-    public boolean isShared()
+    public Boolean isIsShared()
     {
-        return shared;
+        return isShared;
     }
 
-    public void setShared(boolean shared)
+    public void setIsShared(Boolean shared)
     {
-        this.shared = shared;
+        this.isShared = shared;
     }
 
     public List<String> getTriggers()
@@ -233,7 +232,7 @@ public class Rule
     public String toString()
     {
         return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", enabled=" + enabled + ", cascade=" + cascade
-            + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", conditions=" + conditions
+            + ", asynchronous=" + asynchronous + ", isShared=" + isShared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", conditions=" + conditions
             + ", actions=" + actions + '}';
     }
 
@@ -245,15 +244,23 @@ public class Rule
         if (o == null || getClass() != o.getClass())
             return false;
         Rule rule = (Rule) o;
-        return enabled == rule.enabled && cascade == rule.cascade && asynchronous == rule.asynchronous && shared == rule.shared && Objects.equals(id, rule.id) && Objects.equals(
-            name, rule.name) && Objects.equals(description, rule.description) && Objects.equals(errorScript, rule.errorScript) && Objects.equals(triggers, rule.triggers)
-            && Objects.equals(conditions, rule.conditions) && Objects.equals(actions, rule.actions);
+        return enabled == rule.enabled
+                && cascade == rule.cascade
+                && asynchronous == rule.asynchronous
+                && Objects.equals(isShared, rule.isShared)
+                && Objects.equals(id, rule.id)
+                && Objects.equals(name, rule.name)
+                && Objects.equals(description, rule.description)
+                && Objects.equals(errorScript, rule.errorScript)
+                && Objects.equals(triggers, rule.triggers)
+                && Objects.equals(conditions, rule.conditions)
+                && Objects.equals(actions, rule.actions);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, conditions, actions);
+        return Objects.hash(id, name, description, enabled, cascade, asynchronous, isShared, errorScript, triggers, conditions, actions);
     }
 
     public static Builder builder()
@@ -270,7 +277,7 @@ public class Rule
         private boolean enabled;
         private boolean cascade;
         private boolean asynchronous;
-        private boolean shared;
+        private Boolean isShared;
         private String errorScript;
         private List<RuleTrigger> triggers;
         private CompositeCondition conditions;
@@ -312,9 +319,9 @@ public class Rule
             return this;
         }
 
-        public Builder shared(boolean shared)
+        public Builder isShared(Boolean isShared)
         {
-            this.shared = shared;
+            this.isShared = isShared;
             return this;
         }
 
@@ -351,7 +358,7 @@ public class Rule
             rule.setEnabled(enabled);
             rule.setCascade(cascade);
             rule.setAsynchronous(asynchronous);
-            rule.setShared(shared);
+            rule.setIsShared(isShared);
             rule.setErrorScript(errorScript);
             rule.setTriggers(triggers);
             rule.setConditions(conditions);

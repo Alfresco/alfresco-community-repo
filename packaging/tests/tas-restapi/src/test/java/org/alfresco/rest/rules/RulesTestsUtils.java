@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
+import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
 
 public class RulesTestsUtils
@@ -97,5 +98,13 @@ public class RulesTestsUtils
         restActionModel.setActionDefinitionId("add-features");
         restActionModel.setParams(Map.of("aspect-name", "{http://www.alfresco.org/model/audio/1.0}audio", "actionContext", "rule"));
         return restActionModel;
+    }
+
+    public static RestCompositeConditionDefinitionModel createEmptyConditionModel()
+    {
+        RestCompositeConditionDefinitionModel conditions = new RestCompositeConditionDefinitionModel();
+        conditions.setInverted(false);
+        conditions.setBooleanMode("and");
+        return conditions;
     }
 }

@@ -63,7 +63,7 @@ public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipR
     public List<RuleSetLink> create(String nodeId, List<RuleSetLink> ruleSetLinksBody, Parameters parameters)
     {
         return ruleSetLinksBody.stream()
-                .map(r -> ruleSets.linkToRuleSet(nodeId, r.getLinkToNodeId()))
+                .map(r -> ruleSets.linkToRuleSet(nodeId, r.getId()))
                 .collect(Collectors.toList());
     }
 

@@ -27,27 +27,13 @@ package org.alfresco.rest.model;
 
 import java.util.List;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestVersionModel extends TestModel implements IRestModel<RestVersionModel>
 {
-
-    @Override
-    public ModelAssertion<RestVersionModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<RestVersionModel> assertThat()
-    {
-        return new ModelAssertion<RestVersionModel>(this);
-    }
-
     @JsonProperty(value = "entry")
     RestVersionModel model;
 

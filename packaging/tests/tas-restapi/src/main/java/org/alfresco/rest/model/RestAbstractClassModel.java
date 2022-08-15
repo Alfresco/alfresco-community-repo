@@ -25,12 +25,12 @@
  */
 package org.alfresco.rest.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestAbstractClassModel extends TestModel implements IRestModel<RestAbstractClassModel>
 {
@@ -163,21 +163,5 @@ public class RestAbstractClassModel extends TestModel implements IRestModel<Rest
     public void setModelInfo(RestClassModel modelInfo)
     {
         this.modelInfo = modelInfo;
-    }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestAbstractClassModel> assertThat()
-    {
-      return new ModelAssertion<RestAbstractClassModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestAbstractClassModel> and()
-    {
-      return assertThat();
     }
 }

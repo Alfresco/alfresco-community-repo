@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestFavoriteSiteModel extends TestModel implements IRestModel<RestFavoriteSiteModel>
 {
@@ -52,16 +51,4 @@ public class RestFavoriteSiteModel extends TestModel implements IRestModel<RestF
     {
         this.id = id;
     }
-    
-    @Override
-    public ModelAssertion<RestFavoriteSiteModel> and() 
-    {     
-        return assertThat();
-    }    
-    
-    @Override
-    public ModelAssertion<RestFavoriteSiteModel> assertThat() 
-    {     
-      return new ModelAssertion<RestFavoriteSiteModel>(this);
-    }    
-}    
+}

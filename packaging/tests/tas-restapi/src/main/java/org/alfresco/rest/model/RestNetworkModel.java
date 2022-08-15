@@ -27,12 +27,11 @@ package org.alfresco.rest.model;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.UserModel;
 import org.testng.Assert;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Created by Cristina Axinte on 9/26/2016.
@@ -89,20 +88,4 @@ public class RestNetworkModel extends RestPersonNetworkModel implements IRestMod
 
         return this;
     }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestNetworkModel> and() 
-    {
-      return assertThat();
-    }
-   
-    @Override
-    public ModelAssertion<RestNetworkModel> assertThat() 
-    {
-      return new ModelAssertion<RestNetworkModel>(this);
-    }
-}    
+}

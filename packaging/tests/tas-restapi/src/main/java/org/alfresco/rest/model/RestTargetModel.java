@@ -25,12 +25,11 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class RestTargetModel extends TestModel implements IRestModel<RestTargetModel>
@@ -106,20 +105,4 @@ public class RestTargetModel extends TestModel implements IRestModel<RestTargetM
     {
         this.file = file;
     }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestTargetModel> assertThat() 
-    {
-      return new ModelAssertion<RestTargetModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestTargetModel> and() 
-    {
-      return assertThat();
-    }
-}    
+}

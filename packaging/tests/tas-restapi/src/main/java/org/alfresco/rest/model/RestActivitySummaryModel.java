@@ -25,12 +25,11 @@
  */
 package org.alfresco.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.TestModel;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * 
@@ -142,14 +141,4 @@ public class RestActivitySummaryModel extends TestModel implements IRestModel<Re
     {
         this.objectId = objectId;
     }
-    
-    @Override
-    public ModelAssertion<RestActivitySummaryModel> and() {
-        return assertThat();
-    }   
-    
-    @Override
-    public ModelAssertion<RestActivitySummaryModel> assertThat() {
-        return new ModelAssertion<RestActivitySummaryModel>(this);
-    }   
 }

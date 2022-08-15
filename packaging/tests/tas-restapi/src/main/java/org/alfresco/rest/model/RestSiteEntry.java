@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * 
@@ -91,22 +90,6 @@ public class RestSiteEntry extends TestModel implements IRestModel<RestSiteEntry
 
     public void setId(String id) {
       this.id = id;
-    }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestSiteEntry> assertThat() 
-    {
-      return new ModelAssertion<RestSiteEntry>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestSiteEntry> and() 
-    {
-      return assertThat();
     }
 
     @Override

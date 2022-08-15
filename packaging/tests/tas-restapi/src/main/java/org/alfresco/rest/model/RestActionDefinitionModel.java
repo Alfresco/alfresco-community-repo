@@ -26,10 +26,11 @@
 package org.alfresco.rest.model;
 
 import java.util.List;
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestActionDefinitionModel extends TestModel implements IRestModel<RestActionDefinitionModel>
 {
@@ -123,18 +124,6 @@ public class RestActionDefinitionModel extends TestModel implements IRestModel<R
     public void setParameterDefinitions(List<RestParameterDefinitionModel> parameterDefinitions)
     {
         this.parameterDefinitions = parameterDefinitions;
-    }
-
-    @Override
-    public ModelAssertion<RestActionDefinitionModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<RestActionDefinitionModel> assertThat()
-    {
-        return new ModelAssertion<RestActionDefinitionModel>(this);
     }
 
     @Override

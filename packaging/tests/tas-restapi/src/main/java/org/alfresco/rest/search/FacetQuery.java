@@ -49,7 +49,7 @@ import org.alfresco.utility.model.TestModel;
  * Pojo to represent facet query.
  *         {"query": "content.size:[o TO 102400]", "label": "small"},
  **/
-public class FacetQuery extends TestModel //implements IRestModel<FacetQuery>
+public class FacetQuery extends TestModel
 {
     
     private String  query;
@@ -93,22 +93,4 @@ public class FacetQuery extends TestModel //implements IRestModel<FacetQuery>
     {
         this.group = group;
     }
-    
-   /* @Override
-    public ModelAssertion<FacetQuery> and()
-    {
-        return assertThat();
-    }
-    @Override
-    public ModelAssertion<FacetQuery> assertThat()
-    {
-        return new ModelAssertion<FacetQuery>(this);
-    }
-    @Override
-    public FacetQuery onModel()
-    {
-        return null;
-    }*/
-
-    
 }

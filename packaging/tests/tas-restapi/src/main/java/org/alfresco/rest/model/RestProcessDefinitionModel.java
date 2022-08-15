@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Handles single Process Definition Entry JSON response
@@ -168,19 +167,6 @@ public class RestProcessDefinitionModel extends TestModel implements IRestModel<
     public void setVersion(int version)
     {
         this.version = version;
-    }
- 
-    
-    @Override
-    public ModelAssertion<RestProcessDefinitionModel> and() 
-    {      
-      return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<RestProcessDefinitionModel> assertThat() 
-    {      
-      return new ModelAssertion<RestProcessDefinitionModel>(this);
     }
 }
 

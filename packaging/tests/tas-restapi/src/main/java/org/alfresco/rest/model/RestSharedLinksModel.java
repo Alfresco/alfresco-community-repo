@@ -27,11 +27,10 @@ package org.alfresco.rest.model;
 
 import java.util.List;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Generated from 'Alfresco Core REST API' swagger file
@@ -59,18 +58,6 @@ public class RestSharedLinksModel extends TestModel implements IRestModel<RestSh
     public RestSharedLinksModel onModel()
     {
         return model;
-    }
-
-    @Override
-    public ModelAssertion<RestSharedLinksModel> assertThat()
-    {
-        return new ModelAssertion<RestSharedLinksModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestSharedLinksModel> and()
-    {
-        return assertThat();
     }
 
     @JsonProperty(required = true)

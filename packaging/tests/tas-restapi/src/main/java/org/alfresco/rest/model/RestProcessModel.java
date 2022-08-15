@@ -25,12 +25,11 @@
  */
 package org.alfresco.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.IModelAssertion;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.ProcessModel;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Handles single Process Entry JSON response
@@ -124,22 +123,6 @@ public class RestProcessModel extends ProcessModel implements IRestModel<RestPro
     public void setStartedAt(String startedAt)
     {
         this.startedAt = startedAt;
-    }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestProcessModel> assertThat() 
-    {
-      return new ModelAssertion<RestProcessModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestProcessModel> and() 
-    {
-      return assertThat();
     }
 
     public String getDurationInMs()

@@ -28,13 +28,12 @@ package org.alfresco.rest.search;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.rest.model.RestByUserModel;
 import org.alfresco.rest.model.RestContentModel;
 import org.alfresco.utility.model.TestModel;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Object that represent search response entry.
  * @author Michael Suzuki
@@ -120,18 +119,6 @@ public class SearchNodeModel extends TestModel implements IRestModel<SearchNodeM
     public void setSearch(SearchScoreModel search)
     {
         this.search = search;
-    }
-
-    @Override
-    public ModelAssertion<SearchNodeModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<SearchNodeModel> assertThat()
-    {
-        return new ModelAssertion<SearchNodeModel>(this);
     }
 
     @Override

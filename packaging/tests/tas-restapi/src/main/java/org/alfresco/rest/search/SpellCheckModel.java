@@ -46,7 +46,6 @@ package org.alfresco.rest.search;
 import java.util.List;
 
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
 /**
  * Object that represents the spell check model response.
@@ -78,18 +77,6 @@ public class SpellCheckModel extends TestModel implements IRestModel<SpellCheckM
     public void setSuggestions(List<String> suggestions)
     {
         this.suggestions = suggestions;
-    }
-
-    @Override
-    public ModelAssertion<SpellCheckModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<SpellCheckModel> assertThat()
-    {
-        return new ModelAssertion<SpellCheckModel>(this);
     }
 
     @Override

@@ -28,36 +28,17 @@ package org.alfresco.rest.model;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
 import org.alfresco.rest.core.assertion.IModelAssertion;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Person Model implementation
  */
 public class RestPersonModel extends TestModel implements IModelAssertion<RestPersonModel>, IRestModel<RestPersonModel>
 {
-    /**
-     * DSL for assertion on this rest model
-     * 
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestPersonModel> assertThat()
-    {
-        return new ModelAssertion<RestPersonModel>(this);
-    }
-   
-
-    @Override
-    public ModelAssertion<RestPersonModel> and()
-    {
-        return assertThat();
-    }
-    
     @JsonProperty(value = "entry")
     RestPersonModel personModel;
     

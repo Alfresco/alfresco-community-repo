@@ -25,12 +25,12 @@
  */
 package org.alfresco.rest.search;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Hacked together by 'gethin' on '2017-03-23 10:59' from 'Alfresco Search REST API' swagger file
@@ -38,18 +38,6 @@ import java.util.List;
  */
 public class RestRequestFilterQueryModel extends TestModel implements IRestModel<RestRequestFilterQueryModel>
 {
-    @Override
-    public ModelAssertion<RestRequestFilterQueryModel> assertThat()
-    {
-        return new ModelAssertion<RestRequestFilterQueryModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestRequestFilterQueryModel> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty(value = "entry")
     RestRequestFilterQueryModel model;
 

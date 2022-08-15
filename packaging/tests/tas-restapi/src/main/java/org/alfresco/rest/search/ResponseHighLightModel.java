@@ -46,7 +46,6 @@ package org.alfresco.rest.search;
 import java.util.List;
 
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
 /**
  * Pojo which represents the search response that includes the highlighting info. 
@@ -74,16 +73,6 @@ public class ResponseHighLightModel extends TestModel implements IRestModel<Resp
     public void setSnippets(List<Object> snippets)
     {
         this.snippets = snippets;
-    }
-    @Override
-    public ModelAssertion<ResponseHighLightModel> and()
-    {
-        return assertThat();
-    }
-    @Override
-    public ModelAssertion<ResponseHighLightModel> assertThat()
-    {
-        return new ModelAssertion<ResponseHighLightModel>(this);
     }
     @Override
     public ResponseHighLightModel onModel()

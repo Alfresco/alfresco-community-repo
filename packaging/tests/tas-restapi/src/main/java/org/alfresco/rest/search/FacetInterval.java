@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.search;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import java.util.List;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Represents a facet interval.
@@ -86,17 +85,5 @@ public class FacetInterval extends TestModel implements IRestModel<FacetInterval
     public FacetInterval onModel()
     {
         return null;
-    }
-
-    @Override
-    public ModelAssertion<FacetInterval> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<FacetInterval> assertThat()
-    {
-       return new ModelAssertion<FacetInterval>(this);
     }
 }

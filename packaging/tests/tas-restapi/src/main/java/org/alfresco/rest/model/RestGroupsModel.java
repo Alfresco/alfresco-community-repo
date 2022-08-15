@@ -27,11 +27,10 @@ package org.alfresco.rest.model;
 
 import java.util.ArrayList;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsModel>
 {
@@ -49,19 +48,6 @@ public class RestGroupsModel extends TestModel implements IRestModel<RestGroupsM
 
     @JsonProperty(value = "entry")
     RestGroupsModel model;
-
-
-    @Override
-    public ModelAssertion<RestGroupsModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<RestGroupsModel> assertThat()
-    {
-        return new ModelAssertion<RestGroupsModel>(this);
-    }
 
     @Override
     public RestGroupsModel onModel()

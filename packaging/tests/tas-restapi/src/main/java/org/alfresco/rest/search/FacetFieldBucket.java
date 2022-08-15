@@ -44,7 +44,6 @@
 package org.alfresco.rest.search;
 
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -103,23 +102,9 @@ public class FacetFieldBucket extends TestModel implements IRestModel<FacetField
     }
 
     @Override
-    public ModelAssertion<FacetFieldBucket> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<FacetFieldBucket> assertThat()
-    {
-        return new ModelAssertion<FacetFieldBucket>(this);
-    }
-
-    @Override
     public FacetFieldBucket onModel()
     {
         // TODO Auto-generated method stub
         return null;
     }
-
-
 }

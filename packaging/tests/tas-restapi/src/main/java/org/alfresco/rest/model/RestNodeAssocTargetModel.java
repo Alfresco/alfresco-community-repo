@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestNodeAssocTargetModel extends TestModel implements IRestModel<RestNodeAssocTargetModel>
 {
@@ -77,17 +76,4 @@ public class RestNodeAssocTargetModel extends TestModel implements IRestModel<Re
     {
         this.assocType = assocType;
     }
-
-    @Override
-    public ModelAssertion<RestNodeAssocTargetModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<RestNodeAssocTargetModel> assertThat()
-    {
-        return new ModelAssertion<RestNodeAssocTargetModel>(this);
-    }
-
 }

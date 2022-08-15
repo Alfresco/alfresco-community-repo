@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestPersonFavoritesModel extends TestModel implements IRestModel<RestPersonFavoritesModel>
 {
@@ -87,17 +86,4 @@ public class RestPersonFavoritesModel extends TestModel implements IRestModel<Re
     {
         this.createdAt = createdAt;
     }
-
-    @Override
-    public ModelAssertion<RestPersonFavoritesModel> assertThat() 
-    {      
-      return new ModelAssertion<>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestPersonFavoritesModel> and() 
-    {      
-      return assertThat();
-    }
-
-}    
+}

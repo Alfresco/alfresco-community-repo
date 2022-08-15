@@ -25,12 +25,11 @@
  */
 package org.alfresco.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
 import org.testng.Assert;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RestSiteMembershipRequestModel extends TestModel implements IRestModel<RestSiteMembershipRequestModel>
 {
@@ -104,21 +103,4 @@ public class RestSiteMembershipRequestModel extends TestModel implements IRestMo
         Assert.assertEquals(getMessage(), message, "Site membership request message is not correct");
         return this;
     }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestSiteMembershipRequestModel> assertThat() 
-    {
-      return new ModelAssertion<RestSiteMembershipRequestModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestSiteMembershipRequestModel> and() 
-    {
-      return assertThat();
-    }
-    
-}    
+}

@@ -25,26 +25,13 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestDiscoveryModel extends TestModel implements IRestModel<RestDiscoveryModel>
 {
-    @Override
-    public ModelAssertion<RestDiscoveryModel> assertThat()
-    {
-        return new ModelAssertion<RestDiscoveryModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestDiscoveryModel> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty(value = "entry")
     RestDiscoveryModel model;
 

@@ -27,26 +27,13 @@ package org.alfresco.rest.model;
 
 import java.util.Map;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestAuditEntryModel extends TestModel implements IRestModel<RestAuditEntryModel>
 {
-    @Override
-    public ModelAssertion<RestAuditEntryModel> assertThat()
-    {
-        return new ModelAssertion<RestAuditEntryModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestAuditEntryModel> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty(value = "entry")
     RestAuditEntryModel model;
 

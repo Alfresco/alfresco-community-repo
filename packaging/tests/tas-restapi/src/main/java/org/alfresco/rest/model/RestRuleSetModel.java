@@ -28,7 +28,6 @@ package org.alfresco.rest.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -38,18 +37,6 @@ import org.alfresco.utility.model.TestModel;
  */
 public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSetModel>
 {
-    @Override
-    public ModelAssertion<RestRuleSetModel> assertThat()
-    {
-        return new ModelAssertion<>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestRuleSetModel> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty (value = "entry")
     RestRuleSetModel model;
 

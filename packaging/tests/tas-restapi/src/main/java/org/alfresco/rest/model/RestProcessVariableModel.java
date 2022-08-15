@@ -25,12 +25,11 @@
  */
 package org.alfresco.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.TestModel;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RestProcessVariableModel extends TestModel implements IRestModel<RestProcessVariableModel>
 {  
@@ -93,18 +92,4 @@ public class RestProcessVariableModel extends TestModel implements IRestModel<Re
     public static RestProcessVariableModel getRandomProcessVariableModel(String variableType){
         return new RestProcessVariableModel(RandomData.getRandomName("name"), RandomData.getRandomName("value"), variableType);    
     }
-    
-    
-    @Override
-    public ModelAssertion<RestProcessVariableModel> assertThat() 
-    {      
-      return new ModelAssertion<RestProcessVariableModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestProcessVariableModel> and() 
-    {      
-      return assertThat();
-    }
-    
-}    
+}

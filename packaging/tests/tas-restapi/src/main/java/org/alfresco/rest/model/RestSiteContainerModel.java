@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestSiteContainerModel extends TestModel implements IRestModel<RestSiteContainerModel>
 {
@@ -64,21 +63,4 @@ public class RestSiteContainerModel extends TestModel implements IRestModel<Rest
     {
         this.folderId = folderId;
     }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestSiteContainerModel> assertThat() 
-    {
-      return new ModelAssertion<RestSiteContainerModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestSiteContainerModel> and() 
-    {
-      return assertThat();
-    }
-    
-}    
+}

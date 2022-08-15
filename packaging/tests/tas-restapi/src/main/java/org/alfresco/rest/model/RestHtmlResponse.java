@@ -27,12 +27,10 @@ package org.alfresco.rest.model;
 
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.Utility;
-import org.testng.Assert;
-
 import io.restassured.http.Headers;
 import io.restassured.response.ResponseBody;
+import org.alfresco.utility.Utility;
+import org.testng.Assert;
 
 /**
  * Created by Claudia Agache on 10/13/2016.
@@ -68,21 +66,6 @@ public class RestHtmlResponse
         Assert.assertFalse(body.toString().isEmpty(), "Body should not be empty.");
     }
 
-    /**
-     * DSL for assertion on this rest model
-     * 
-     * @return
-     */
-    public ModelAssertion<RestHtmlResponse> assertThat()
-    {
-        return new ModelAssertion<RestHtmlResponse>(this);
-    }
-
-    public ModelAssertion<RestHtmlResponse> and()
-    {
-        return assertThat();
-    }
-    
     /**
      * Assetion that a html element with specific html path has the specified value
      * 

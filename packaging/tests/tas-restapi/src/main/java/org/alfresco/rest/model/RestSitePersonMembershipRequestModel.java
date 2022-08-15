@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestSitePersonMembershipRequestModel extends TestModel implements IRestModel<RestSitePersonMembershipRequestModel>
 {
@@ -109,21 +108,5 @@ public class RestSitePersonMembershipRequestModel extends TestModel implements I
     public void setModifiedAt(String modifiedAt)
     {
         this.modifiedAt = modifiedAt;
-    }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestSitePersonMembershipRequestModel> assertThat() 
-    {
-      return new ModelAssertion<RestSitePersonMembershipRequestModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestSitePersonMembershipRequestModel> and() 
-    {
-      return assertThat();
     }
 }

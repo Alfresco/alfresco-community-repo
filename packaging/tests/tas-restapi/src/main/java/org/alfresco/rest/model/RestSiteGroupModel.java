@@ -25,14 +25,14 @@
  */
 package org.alfresco.rest.model;
 
+import static org.alfresco.utility.report.log.Step.STEP;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.TestModel;
 import org.testng.Assert;
-
-import static org.alfresco.utility.report.log.Step.STEP;
 
 public class RestSiteGroupModel extends TestModel implements IRestModel<RestSiteGroupModel>
 {
@@ -83,21 +83,5 @@ public class RestSiteGroupModel extends TestModel implements IRestModel<RestSite
         STEP(String.format("REST API: Assert that site group role is '%s'", role));
         Assert.assertEquals(getRole(), role, "Site group role is not as expected.");
         return this;
-    }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestSiteGroupModel> assertThat()
-    {
-      return new ModelAssertion<RestSiteGroupModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestSiteGroupModel> and()
-    {
-      return assertThat();
     }
 }

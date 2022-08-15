@@ -31,5 +31,9 @@ public interface IModelsCollectionAssertion<ModelCollection> {
 
   public ModelsCollectionAssertion assertThat();
 
-  public ModelCollection when();
+  @SuppressWarnings("unchecked")
+  default ModelCollection when()
+  {
+    return (ModelCollection) this;
+  }
 }

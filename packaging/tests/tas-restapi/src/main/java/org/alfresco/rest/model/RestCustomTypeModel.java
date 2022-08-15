@@ -25,13 +25,13 @@
  */
 package org.alfresco.rest.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.CustomAspectPropertiesModel;
 import org.alfresco.utility.model.TestModel;
-
-import java.util.List;
 
 /**
  * @author Bogdan Bocancea
@@ -78,18 +78,6 @@ public class RestCustomTypeModel extends TestModel implements IRestModel<RestCus
     public RestCustomTypeModel onModel()
     {
         return model;
-    }
-
-    @Override
-    public ModelAssertion<RestCustomTypeModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<RestCustomTypeModel> assertThat()
-    {
-        return new ModelAssertion<RestCustomTypeModel>(this);
     }
 
     public String getName()

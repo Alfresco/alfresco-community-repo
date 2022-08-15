@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Generated from 'Alfresco Authentication REST API' swagger file
@@ -37,18 +36,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class RestTicketBodyModel extends TestModel implements IRestModel<RestTicketBodyModel>
 {
-    @Override
-    public ModelAssertion<RestTicketBodyModel> assertThat()
-    {
-        return new ModelAssertion<RestTicketBodyModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestTicketBodyModel> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty(value = "entry")
     RestTicketBodyModel model;
 

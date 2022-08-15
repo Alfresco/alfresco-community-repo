@@ -32,11 +32,10 @@
 
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Base Path {@linkplain /alfresco/api/-default-/private/alfresco/versions/1}
@@ -74,18 +73,6 @@ public class RestSyncNodeSubscriptionModel extends TestModel implements IRestMod
     public RestSyncNodeSubscriptionModel onModel()
     {
         return model;
-    }
-
-    @Override
-    public ModelAssertion<RestSyncNodeSubscriptionModel> assertThat()
-    {
-        return new ModelAssertion<RestSyncNodeSubscriptionModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestSyncNodeSubscriptionModel> and()
-    {
-        return assertThat();
     }
 
     @JsonProperty(required = true)

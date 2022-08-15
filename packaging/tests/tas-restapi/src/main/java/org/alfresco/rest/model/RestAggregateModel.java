@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestAggregateModel extends TestModel implements IRestModel<RestAggregateModel>
 {
@@ -65,16 +64,4 @@ public class RestAggregateModel extends TestModel implements IRestModel<RestAggr
     {
         this.average = average;
     }
-    
-    @Override
-    public ModelAssertion<RestAggregateModel> and() 
-    {      
-      return assertThat();
-    }   
-    
-    @Override
-    public ModelAssertion<RestAggregateModel> assertThat() 
-    {      
-      return new ModelAssertion<RestAggregateModel>(this);
-    }   
 }

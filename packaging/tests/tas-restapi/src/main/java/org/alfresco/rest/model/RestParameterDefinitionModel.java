@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestParameterDefinitionModel extends TestModel implements IRestModel<RestParameterDefinitionModel>
 {
@@ -112,18 +111,6 @@ public class RestParameterDefinitionModel extends TestModel implements IRestMode
 
     @JsonProperty(value = "entry")
     RestParameterDefinitionModel parameterDefinitionModel;
-
-    @Override
-    public ModelAssertion<RestParameterDefinitionModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<RestParameterDefinitionModel> assertThat()
-    {
-        return new ModelAssertion<RestParameterDefinitionModel>(this);
-    }
 
     @Override
     public RestParameterDefinitionModel onModel()

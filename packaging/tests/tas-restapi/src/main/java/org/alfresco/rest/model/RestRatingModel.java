@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestRatingModel extends TestModel implements IRestModel<RestRatingModel>
 {
@@ -88,16 +87,4 @@ public class RestRatingModel extends TestModel implements IRestModel<RestRatingM
     {
         this.myRating = myRating;
     }
-
-    @Override
-    public ModelAssertion<RestRatingModel> assertThat() 
-    {      
-      return new ModelAssertion<>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestRatingModel> and() 
-    {      
-      return assertThat();
-    }
-}    
+}

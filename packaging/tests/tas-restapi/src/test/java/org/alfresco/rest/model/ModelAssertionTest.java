@@ -39,7 +39,6 @@ import java.util.Set;
 import com.google.common.collect.ImmutableMap;
 
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.testng.annotations.Test;
 
 public class ModelAssertionTest {
@@ -322,16 +321,6 @@ public class ModelAssertionTest {
 		}
 		public Map<String, String> getClothing() { return clothing; }
 		public Map<String, String> getCarrying() { return carrying; }
-
-		@Override
-		public ModelAssertion<Person> and() {
-			return new ModelAssertion<Person>(this);
-		}
-
-		@Override
-		public ModelAssertion<Person> assertThat() {
-			return new ModelAssertion<Person>(this);
-		}
 
 		@Override
 		public Person onModel() {

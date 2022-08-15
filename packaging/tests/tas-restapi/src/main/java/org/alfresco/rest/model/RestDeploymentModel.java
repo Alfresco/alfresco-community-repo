@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Handles single Deployment Entry JSON response
@@ -108,16 +107,4 @@ public class RestDeploymentModel extends TestModel implements IRestModel<RestDep
     {
         this.deployedAt = deployedAt;
     }
-
-    @Override
-    public ModelAssertion<RestDeploymentModel> and() 
-    {      
-        return assertThat();
-    }  
-    
-    @Override
-    public ModelAssertion<RestDeploymentModel> assertThat() 
-    {      
-      return new ModelAssertion<>(this);
-    }   
-}    
+}

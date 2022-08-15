@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /*
  * Handles responses for GET /downloads/{downloadId} and POST /downloads rest calls
@@ -48,18 +47,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class RestDownloadsModel extends TestModel implements IRestModel<RestDownloadsModel>
 {
-    @Override
-    public ModelAssertion<RestDownloadsModel> assertThat()
-    {
-        return new ModelAssertion<RestDownloadsModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestDownloadsModel> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty(value = "entry")
     RestDownloadsModel model;
 

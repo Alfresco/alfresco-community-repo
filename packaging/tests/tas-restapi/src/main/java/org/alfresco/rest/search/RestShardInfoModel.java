@@ -48,7 +48,6 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -61,24 +60,6 @@ public class RestShardInfoModel extends TestModel implements IRestModel<RestShar
     /** Model */
     @JsonProperty(value = "entry")
     RestShardInfoModel model;
-
-    /**
-     * @see org.alfresco.rest.core.assertion.IModelAssertion#and()
-     */
-    @Override
-    public ModelAssertion<RestShardInfoModel> and()
-    {
-        return assertThat();
-    }
-
-    /**
-     * @see org.alfresco.rest.core.assertion.IModelAssertion#assertThat()
-     */
-    @Override
-    public ModelAssertion<RestShardInfoModel> assertThat()
-    {
-        return new ModelAssertion<RestShardInfoModel>(this);
-    }
 
     /**
      * @see org.alfresco.rest.core.IRestModel#onModel()

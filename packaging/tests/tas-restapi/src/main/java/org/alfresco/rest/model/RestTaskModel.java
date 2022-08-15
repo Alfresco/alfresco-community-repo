@@ -25,12 +25,11 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TaskModel;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TaskModel;
 
 /**
  * Handles single Task JSON response
@@ -183,22 +182,6 @@ public class RestTaskModel extends TaskModel implements IRestModel<RestTaskModel
     public void setState(String state)
     {
         this.state = state;
-    }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestTaskModel> assertThat() 
-    {
-      return new ModelAssertion<RestTaskModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestTaskModel> and() 
-    {
-      return assertThat();
     }
 
     public Integer getPriorityTask()

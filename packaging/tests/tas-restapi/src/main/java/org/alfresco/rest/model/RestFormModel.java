@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Handles single representation of a Start Form Model
@@ -133,20 +132,4 @@ public class RestFormModel extends TestModel implements IRestModel<RestFormModel
     {
         this.required = required;
     }
-
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestFormModel> and()
-    {
-        return assertThat();
-    }
-    
-    @Override
-    public ModelAssertion<RestFormModel> assertThat()
-    {
-      return new ModelAssertion<RestFormModel>(this);
-    }
-}    
+}

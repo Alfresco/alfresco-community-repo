@@ -45,11 +45,10 @@ package org.alfresco.rest.search;
 
 import java.util.List;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 /**
  * Object that represents the search score.
  * @author Michael Suzuki
@@ -71,18 +70,6 @@ public class SearchScoreModel extends TestModel implements IRestModel<SearchScor
     public void setScore(float score)
     {
         this.score = score;
-    }
-
-    @Override
-    public ModelAssertion<SearchScoreModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<SearchScoreModel> assertThat()
-    {
-        return new ModelAssertion<SearchScoreModel>(this);
     }
 
     @Override

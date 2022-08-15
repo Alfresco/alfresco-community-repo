@@ -26,7 +26,6 @@
 package org.alfresco.rest.model;
 
 import org.alfresco.rest.core.assertion.IModelAssertion;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
 
 /**
@@ -107,16 +106,4 @@ public class RestPaginationModel extends TestModel implements IModelAssertion<Re
     {
         this.maxItems = maxItems;
     }
-
-    @Override
-    public ModelAssertion<RestPaginationModel> assertThat()
-    {
-      return new ModelAssertion<>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestPaginationModel> and()
-    {
-      return assertThat();
-    }
-}    
+}

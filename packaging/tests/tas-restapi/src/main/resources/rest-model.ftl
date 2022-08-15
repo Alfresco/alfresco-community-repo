@@ -3,7 +3,6 @@ package org.alfresco.rest.model;
 import java.util.List;
 
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.model.TestModel;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,18 +14,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class ${name} extends TestModel implements IRestModel<${name}>
 {
-    @Override
-    public ModelAssertion<${name}> assertThat()
-    {
-        return new ModelAssertion<${name}>(this);
-    }
-
-    @Override
-    public ModelAssertion<${name}> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty(value = "entry")
     ${name} model;
 

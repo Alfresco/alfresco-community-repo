@@ -27,11 +27,10 @@ package org.alfresco.rest.model;
 
 import java.util.List;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Generated from 'Alfresco Core REST API' swagger file
@@ -39,18 +38,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 public class RestNodeModel extends TestModel implements IRestModel<RestNodeModel>
 {
-    @Override
-    public ModelAssertion<RestNodeModel> assertThat()
-    {
-        return new ModelAssertion<RestNodeModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestNodeModel> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty(value = "entry")
     RestNodeModel model;
 

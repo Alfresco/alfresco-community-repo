@@ -27,29 +27,16 @@ package org.alfresco.rest.model;
 
 import java.util.List;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Created by Andrei Forascu on 30/08/2017.
  */
 public class RestNodeAssociationModel extends TestModel implements IRestModel<RestNodeAssociationModel>
 {
-    @Override
-    public ModelAssertion<RestNodeAssociationModel> assertThat()
-    {
-        return new ModelAssertion<RestNodeAssociationModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestNodeAssociationModel> and()
-    {
-        return assertThat();
-    }
-
     @JsonProperty(value = "entry")
     RestNodeAssociationModel model;
 

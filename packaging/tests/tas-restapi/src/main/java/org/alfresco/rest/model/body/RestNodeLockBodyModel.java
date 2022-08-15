@@ -25,29 +25,16 @@
  */
 package org.alfresco.rest.model.body;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 public class RestNodeLockBodyModel extends TestModel implements IRestModel<RestNodeLockBodyModel>
 {
     
     @JsonProperty(value = "entry")
     RestNodeLockBodyModel model;
-
-    @Override
-    public ModelAssertion<RestNodeLockBodyModel> and()
-    {
-        return new ModelAssertion<RestNodeLockBodyModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestNodeLockBodyModel> assertThat()
-    {
-        return assertThat();
-    }
 
     @Override
     public RestNodeLockBodyModel onModel()

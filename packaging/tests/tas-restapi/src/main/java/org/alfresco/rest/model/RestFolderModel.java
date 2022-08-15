@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * Handles single Folder JSON responses
@@ -216,17 +215,5 @@ public class RestFolderModel extends TestModel implements IRestModel<RestFolderM
     public void setPath(RestPathModel path)
     {
         this.path = path;
-    }
-
-    @Override
-    public ModelAssertion<RestFolderModel> and()
-    {
-        return assertThat();
-    }
-
-    @Override
-    public ModelAssertion<RestFolderModel> assertThat()
-    {
-        return new ModelAssertion<RestFolderModel>(this);
     }
 }

@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.TestModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.TestModel;
 
 /**
  * @author cmocanu 
@@ -37,18 +36,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *         {@linkplain /alfresco/api/-default-/public/alfresco/versions/1}
  */
 
-public class RestRenditionInfoModel extends TestModel implements IRestModel<RestRenditionInfoModel> {
-
-	@Override
-	public ModelAssertion<RestRenditionInfoModel> and() {
-		return assertThat();
-	}
-
-	@Override
-	public ModelAssertion<RestRenditionInfoModel> assertThat() {
-		return new ModelAssertion<RestRenditionInfoModel>(this);
-	}
-
+public class RestRenditionInfoModel extends TestModel implements IRestModel<RestRenditionInfoModel>
+{
 	@JsonProperty(value = "entry")
 	RestRenditionInfoModel model;
 

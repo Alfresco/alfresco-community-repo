@@ -25,11 +25,10 @@
  */
 package org.alfresco.rest.model;
 
-import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
-import org.alfresco.utility.model.SiteModel;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import org.alfresco.rest.core.IRestModel;
+import org.alfresco.utility.model.SiteModel;
 
 /**
  * Handles single Site JSON responses
@@ -73,21 +72,5 @@ public class RestSiteModel extends SiteModel implements IRestModel<RestSiteModel
     public void setRole(String role)
     {
         this.role = role;        
-    }
-    
-    /**
-     * DSL for assertion on this rest model
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestSiteModel> assertThat() 
-    {
-      return new ModelAssertion<RestSiteModel>(this);
-    }
-    
-    @Override
-    public ModelAssertion<RestSiteModel> and() 
-    {
-      return assertThat();
     }
 }

@@ -25,12 +25,11 @@
  */
 package org.alfresco.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.alfresco.rest.core.IRestModel;
-import org.alfresco.rest.core.assertion.ModelAssertion;
 import org.alfresco.utility.data.RandomData;
 import org.alfresco.utility.model.TestModel;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Handles a single Variable JSON response
@@ -109,23 +108,6 @@ public class RestVariableModel extends TestModel implements IRestModel<RestVaria
     public static RestVariableModel getRandomTaskVariableModel(String scope, String type)
     {
         return new RestVariableModel(scope, RandomData.getRandomName("name"), type, RandomData.getRandomName("value"));
-    }
-
-    /**
-     * DSL for assertion on this rest model
-     * 
-     * @return
-     */
-    @Override
-    public ModelAssertion<RestVariableModel> assertThat()
-    {
-        return new ModelAssertion<RestVariableModel>(this);
-    }
-
-    @Override
-    public ModelAssertion<RestVariableModel> and()
-    {
-        return assertThat();
     }
 
     @Override

@@ -255,9 +255,10 @@ If the field is omitted then the rule will apply to all nodes.
         if (o == null || getClass() != o.getClass())
             return false;
         RestRuleModel ruleModel = (RestRuleModel) o;
-        return enabled == ruleModel.enabled && cascade == ruleModel.cascade && asynchronous == ruleModel.asynchronous && Objects.equals(id, ruleModel.id) && name.equals(
-            ruleModel.name) && Objects.equals(description, ruleModel.description) && Objects.equals(errorScript, ruleModel.errorScript) && Objects.equals(
-            isShared, ruleModel.isShared) && Objects.equals(triggers, ruleModel.triggers) && Objects.equals(conditions, ruleModel.conditions) && actions.equals(ruleModel.actions);
+        return enabled == ruleModel.enabled && cascade == ruleModel.cascade && asynchronous == ruleModel.asynchronous && Objects.equals(id, ruleModel.id) && Objects.equals(
+            name, ruleModel.name) && Objects.equals(description, ruleModel.description) && Objects.equals(errorScript, ruleModel.errorScript) && Objects.equals(
+            isShared, ruleModel.isShared) && Objects.equals(triggers, ruleModel.triggers) && Objects.equals(conditions, ruleModel.conditions) && Objects.equals(
+            actions, ruleModel.actions);
     }
 
     @Override

@@ -26,18 +26,21 @@
 
 package org.alfresco.rest.api.model.rules;
 
-public class RuleSetLink {
+public class RuleSetLink
+{
 
     /**
      * This id is referring to the node id of the linked-to-folder which contains the ruleset(s)
      */
     private String id;
 
-    public void setId(String id) {
+    public void setId(String id)
+    {
         this.id = id;
     }
 
-    public String getId() {
+    public String getId()
+    {
         return id;
     }
 }

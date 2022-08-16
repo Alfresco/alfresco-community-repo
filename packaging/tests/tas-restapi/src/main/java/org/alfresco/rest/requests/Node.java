@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.requests;
 
+import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
+
 import javax.json.JsonArrayBuilder;
 import java.io.File;
 import java.io.IOException;
@@ -78,19 +80,19 @@ public class Node extends ModelRequest<Node>
 
     public Node(RestWrapper restWrapper)
     {
-      super(restWrapper);
+        super(restWrapper);
     }
 
     public Node(RepoTestModel repoModel, RestWrapper restWrapper)
     {
-      super(restWrapper);
-      this.repoModel = repoModel; 
-      Utility.checkObjectIsInitialized(this.repoModel.getNodeRef(), "repoModel.getNodeRef()");
+        super(restWrapper);
+        this.repoModel = repoModel;
+        Utility.checkObjectIsInitialized(this.repoModel.getNodeRef(), "repoModel.getNodeRef()");
     }
-    
+
     /**
      * Retrieve details for a specific node using GET call on "nodes/{nodeId}"
-     * 
+     *
      * @param nodeId
      * @return
      * @throws JsonToModelConversionException
@@ -103,7 +105,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Retrieve comments for a specific node using GET call on "nodes/{nodeId}/comments"
-     * 
+     *
      * @param nodeId
      * @return
      * @throws JsonToModelConversionException
@@ -116,7 +118,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Publish one new comment on a specific node using POST call on "nodes/{nodeId}/comments"
-     * 
+     *
      * @param node
      * @param commentContent
      * @return
@@ -138,7 +140,7 @@ public class Node extends ModelRequest<Node>
     public RestCommentModelsCollection addComments(String... comments)
     {
         JsonArrayBuilder array = JsonBodyGenerator.defineJSONArray();
-        for(String comment: comments)
+        for (String comment : comments)
         {
             array.add(JsonBodyGenerator.defineJSON().add("content", comment));
         }
@@ -149,7 +151,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Update a comment for a specific node using PUT call on nodes/{nodeId}/comments/{commentId}
-     * 
+     *
      * @param nodeId
      * @param commentId
      * @param commentContent
@@ -167,7 +169,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Delete a comment for a specific node using DELETE call on nodes/{nodeId}/comments/{commentId}
-     * 
+     *
      * @param nodeId
      * @param commentId
      * @return
@@ -181,101 +183,99 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Like a document using POST call on "nodes/{nodeId}/ratings"
-     * 
+     *
      * @return
      */
     public RestRatingModel likeDocument()
     {
-      String postBody = JsonBodyGenerator.likeRating(true);
-      RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/ratings", repoModel.getNodeRef());
-      return restWrapper.processModel(RestRatingModel.class, request);
+        String postBody = JsonBodyGenerator.likeRating(true);
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/ratings", repoModel.getNodeRef());
+        return restWrapper.processModel(RestRatingModel.class, request);
     }
 
     public RestRatingModel dislikeDocument()
     {
-      String postBody = JsonBodyGenerator.likeRating(false);
-      RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/ratings", repoModel.getNodeRef());
-      return restWrapper.processModel(RestRatingModel.class, request);
+        String postBody = JsonBodyGenerator.likeRating(false);
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/ratings", repoModel.getNodeRef());
+        return restWrapper.processModel(RestRatingModel.class, request);
     }
 
     /**
      * POST call on "nodes/{nodeId}/ratings" using an invalid rating body
-     * 
+     *
      * @return
      */
     public RestRatingModel addInvalidRating(String jsonBody)
     {
-      RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, jsonBody, "nodes/{nodeId}/ratings", repoModel.getNodeRef());
-      return restWrapper.processModel(RestRatingModel.class, request);
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, jsonBody, "nodes/{nodeId}/ratings", repoModel.getNodeRef());
+        return restWrapper.processModel(RestRatingModel.class, request);
     }
-    
 
-    
     /**
      * Add five star rate to a document using POST call on "nodes/{nodeId}/ratings"
-     * 
+     *
      * @param stars
      * @return
      */
     public RestRatingModel rateStarsToDocument(int stars)
     {
-      String postBody = JsonBodyGenerator.fiveStarRating(stars);
-      RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/ratings", repoModel.getNodeRef());
-      return restWrapper.processModel(RestRatingModel.class, request);
+        String postBody = JsonBodyGenerator.fiveStarRating(stars);
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/ratings", repoModel.getNodeRef());
+        return restWrapper.processModel(RestRatingModel.class, request);
     }
 
     /**
      * Retrieve node ratings using GET call on "nodes/{nodeId}/ratings"
-     * 
+     *
      * @return
      */
     public RestRatingModelsCollection getRatings()
     {
-      RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/ratings?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
-      return restWrapper.processModels(RestRatingModelsCollection.class, request);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/ratings?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        return restWrapper.processModels(RestRatingModelsCollection.class, request);
     }
-    
+
     /**
      * Delete like rating using DELETE call on "nodes/{nodeId}/ratings/{ratingId}"
-     * 
+     *
      * @return
      */
     public void deleteLikeRating()
     {
-      RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/ratings/{ratingId}", repoModel.getNodeRef(), "likes");
-      restWrapper.processEmptyModel(request);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/ratings/{ratingId}", repoModel.getNodeRef(), "likes");
+        restWrapper.processEmptyModel(request);
     }
 
     /**
      * Try to delete invalid rating using DELETE call on "nodes/{nodeId}/ratings/{ratingId}"
-     * 
+     *
      * @return
      */
     public void deleteInvalidRating(String rating)
     {
-      RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/ratings/{ratingId}", repoModel.getNodeRef(), rating);
-      restWrapper.processEmptyModel(request);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/ratings/{ratingId}", repoModel.getNodeRef(), rating);
+        restWrapper.processEmptyModel(request);
     }
-    
+
     /**
      * 
      * Get like rating of a document using GET call on "nodes/{nodeId}/ratings/{ratingId}"
      */
     public RestRatingModel getLikeRating()
     {
-      RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/ratings/{ratingId}?{parameters}", repoModel.getNodeRef(), "likes", restWrapper.getParameters());
-      return restWrapper.processModel(RestRatingModel.class, request);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/ratings/{ratingId}?{parameters}", repoModel.getNodeRef(), "likes", restWrapper.getParameters());
+        return restWrapper.processModel(RestRatingModel.class, request);
     }
 
     /**
      * Delete fivestar rating using DELETE call on "nodes/{nodeId}/ratings/{ratingId}"
-     * 
+     *
      * @return
      */
     public void deleteFiveStarRating()
     {
-      RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/ratings/{ratingId}", repoModel.getNodeRef(), "fiveStar");
-      restWrapper.processEmptyModel(request);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/ratings/{ratingId}", repoModel.getNodeRef(), "fiveStar");
+        restWrapper.processEmptyModel(request);
     }
 
     /**
@@ -285,8 +285,8 @@ public class Node extends ModelRequest<Node>
      */
     public RestRatingModel getFiveStarRating()
     {
-      RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/ratings/{ratingId}?{parameters}", repoModel.getNodeRef(), "fiveStar", restWrapper.getParameters());
-      return restWrapper.processModel(RestRatingModel.class, request);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/ratings/{ratingId}?{parameters}", repoModel.getNodeRef(), "fiveStar", restWrapper.getParameters());
+        return restWrapper.processModel(RestRatingModel.class, request);
     }
 
     /**
@@ -313,17 +313,17 @@ public class Node extends ModelRequest<Node>
     public RestTagModelsCollection addTags(String... tags)
     {
         String postBody = "[";
-        for(String tag: tags)
+        for (String tag : tags)
         {
             postBody += JsonBodyGenerator.keyValueJson("tag", tag) + ",";
         }
-        postBody = postBody.substring(0, postBody.length()-1) + "]";
+        postBody = postBody.substring(0, postBody.length() - 1) + "]";
 
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/tags", repoModel.getNodeRef());
         return restWrapper.processModels(RestTagModelsCollection.class, request);
     }
 
-    
+
     /**
      * Deletes a tag for a specific content node using DELETE call on nodes/{nodeId}/tags/{tagId}
      *
@@ -340,7 +340,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Get node tags using GET call on 'nodes/{nodeId}/tags'
-     * 
+     *
      * @param tag
      * @return
      */
@@ -352,33 +352,33 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Create new nodes using POST call on 'nodes/{nodeId}/children
-     * 
+     *
      * @param node
      * @return
-     */    
+     */
     public RestNodeModel createNode(RestNodeBodyModel node)
-    {        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, node.toJson(), "nodes/{nodeId}/children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());       
-        return restWrapper.processModel(RestNodeModel.class, request);        
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, node.toJson(), "nodes/{nodeId}/children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        return restWrapper.processModel(RestNodeModel.class, request);
     }
 
     /**
      * Create new nodes using POST call on 'nodes/{nodeId}/children
      * 
      * You need to specify first the multipart call {@link RestWrapper#usingMultipartFile(java.io.File)}
-     * 
+     *
      * <code>usingMultipartFile(new File("your-local-file.txt")).withCoreAPI().usingNode(ContentModel.my()).createNode();</code>
      * @return
      */
     public RestNodeModel createNode()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.POST,  "nodes/{nodeId}/children", repoModel.getNodeRef());       
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.POST, "nodes/{nodeId}/children", repoModel.getNodeRef());
         return restWrapper.processModel(RestNodeModel.class, request);
     }
 
     /**
      * Retrieve content for a specific node using GET call on "nodes/{nodeId}/content"
-     * 
+     *
      * @return
      */
     public RestResponse getNodeContent()
@@ -389,7 +389,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Retrieve content for a specific node using GET call on "nodes/{nodeId}/content"
-     * 
+     *
      * @return
      * @param nodeId
      */
@@ -401,14 +401,14 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Create node rendition using POST call on '/nodes/{nodeId}/renditions'
-     * 
+     *
      * @param renditionId id of rendition to be created
      * @return
      */
     public void createNodeRendition(String renditionId)
     {
         String postBody = JsonBodyGenerator.keyValueJson("id", renditionId);
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/renditions", repoModel.getNodeRef());       
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/renditions", repoModel.getNodeRef());
         restWrapper.processEmptyModel(request);
     }
 
@@ -423,8 +423,8 @@ public class Node extends ModelRequest<Node>
     {
         String postBody = JsonBodyGenerator.keyValueJson("id", renditionId);
         RestRequest request = RestRequest
-                    .requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/versions/{versionId}/renditions",
-                                repoModel.getNodeRef(), versionId);
+                .requestWithBody(HttpMethod.POST, postBody, "nodes/{nodeId}/versions/{versionId}/renditions",
+                        repoModel.getNodeRef(), versionId);
         restWrapper.processEmptyModel(request);
     }
 
@@ -448,13 +448,13 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Get  node rendition using GET call on '/nodes/{nodeId}/renditions/{renditionId}
-     * 
+     *
      * @param renditionId id of rendition to be retrieved
      * @return
-     */   
+     */
     public RestRenditionInfoModel getNodeRendition(String renditionId)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET,  "nodes/{nodeId}/renditions/{renditionId}", repoModel.getNodeRef(), renditionId);       
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/renditions/{renditionId}", repoModel.getNodeRef(), renditionId);
         return restWrapper.processModel(RestRenditionInfoModel.class, request);
     }
 
@@ -468,20 +468,20 @@ public class Node extends ModelRequest<Node>
     public RestRenditionInfoModel getNodeVersionRendition(String renditionId, String versionId)
     {
         RestRequest request = RestRequest
-                    .simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}",
-                                repoModel.getNodeRef(), versionId, renditionId);
+                .simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}",
+                        repoModel.getNodeRef(), versionId, renditionId);
         return restWrapper.processModel(RestRenditionInfoModel.class, request);
     }
 
     /**
      * Get node rendition using GET call on 'nodes/{nodeId}/renditions/{renditionId} Please note that it retries to get
      * the renditions response several times because on the alfresco server the rendition can take a while to be created.
-     * 
+     *
      * @return
      */
     public RestRenditionInfoModel getNodeRenditionUntilIsCreated(String renditionId)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/renditions/{renditionId}",repoModel.getNodeRef(), renditionId);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/renditions/{renditionId}", repoModel.getNodeRef(), renditionId);
         RestRenditionInfoModel renditions = restWrapper.processModel(RestRenditionInfoModel.class, request);
         int retry = 0;
         if (Integer.valueOf(restWrapper.getStatusCode()).equals(HttpStatus.OK.value()))
@@ -504,7 +504,7 @@ public class Node extends ModelRequest<Node>
      */
     public RestRenditionInfoModel getNodeVersionRenditionUntilIsCreated(String renditionId, String versionId)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}",repoModel.getNodeRef(), versionId, renditionId);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}", repoModel.getNodeRef(), versionId, renditionId);
         RestRenditionInfoModel renditions = restWrapper.processModel(RestRenditionInfoModel.class, request);
         int retry = 0;
         if (Integer.valueOf(restWrapper.getStatusCode()).equals(HttpStatus.OK.value()))
@@ -518,13 +518,13 @@ public class Node extends ModelRequest<Node>
         }
         return renditions;
     }
-    
+
     /**
      * Get node rendition content using GET call on
      * 'nodes/{nodeId}/renditions/{renditionId}/content Please note that it
      * retries to get the renditions response several times because on the
      * alfresco server the rendition can take a while to be created.
-     * 
+     *
      * @return
      */
     public RestResponse getNodeRenditionContentUntilIsCreated(String renditionId)
@@ -555,7 +555,7 @@ public class Node extends ModelRequest<Node>
     public RestResponse getNodeVersionRenditionContentUntilIsCreated(String renditionId, String versionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content", repoModel.getNodeRef(),
-                    versionId, renditionId);
+                versionId, renditionId);
         RestResponse response = restWrapper.process(request);
         int retry = 0;
         while (Integer.valueOf(response.getStatusCode()).equals(HttpStatus.NOT_FOUND.value()) && retry < Utility.retryCountSeconds)
@@ -590,7 +590,7 @@ public class Node extends ModelRequest<Node>
     public RestResponse getNodeVersionRenditionContent(String renditionId, String versionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions/{renditionId}/content", repoModel.getNodeRef(),
-                    versionId, renditionId);
+                versionId, renditionId);
         return restWrapper.process(request);
     }
 
@@ -614,7 +614,7 @@ public class Node extends ModelRequest<Node>
     public RestRenditionInfoModelCollection getNodeVersionRenditionsInfo(String versionId)
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/versions/{versionId}/renditions?{parameters}", repoModel.getNodeRef(),
-                    versionId, restWrapper.getParameters());
+                versionId, restWrapper.getParameters());
         return restWrapper.processModels(RestRenditionInfoModelCollection.class, request);
     }
 
@@ -632,18 +632,18 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Get a node's children using GET call 'nodes/{nodeId}/children
-     * 
+     *
      * @return a collection of nodes
      */
     public RestNodeModelsCollection listChildren()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET,  "nodes/{nodeId}/children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
         return restWrapper.processModels(RestNodeModelsCollection.class, request);
     }
 
     /**
      * Move a node to a target folder
-     * 
+     *
      * @param moveBody a {@link RestNodeBodyMoveCopyModel} containing at least the target parent id
      * @return the moved node's new information
      */
@@ -669,7 +669,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Lock a specific node using POST call on "nodes/{nodeId}/lock"
-     * 
+     *
      * @return
      */
     public RestNodeModel lockNode(RestNodeLockBodyModel lockBody)
@@ -680,7 +680,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Unlock a specific node using POST call on "nodes/{nodeId}/unlock"
-     * 
+     *
      * @return
      */
     public RestNodeModel unlockNode()
@@ -699,7 +699,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Update a specific node using PUT call on "nodes/{nodeId}"
-     * 
+     *
      * @param putBody
      * @return
      */
@@ -709,10 +709,10 @@ public class Node extends ModelRequest<Node>
         request.setContentType("UTF-8");
         return restWrapper.processModel(RestNodeModel.class, request);
     }
-    
+
     /**
      * Retrieve targets for a specific node using GET call on "nodes/{nodeId}/targets
-     * 
+     *
      * @return
      */
     public RestNodeAssociationModelCollection getNodeTargets()
@@ -723,20 +723,20 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Create new target nodes using POST call on '/nodes/{nodeId}/targets'
-     * 
+     *
      * @param target
      * @return
      */
     public RestNodeAssocTargetModel createTargetForNode(RestNodeAssocTargetModel target)
-    {        
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, target.toJson(), "nodes/{nodeId}/targets?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());       
-        return restWrapper.processModel(RestNodeAssocTargetModel.class, request);        
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, target.toJson(), "nodes/{nodeId}/targets?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        return restWrapper.processModel(RestNodeAssocTargetModel.class, request);
     }
 
     /**
      * Delete a target for a specific node using DELETE call on
      * nodes/{nodeId}/targets/{targetId}
-     * 
+     *
      * @param target
      */
     public void deleteTarget(RestNodeAssocTargetModel target)
@@ -748,7 +748,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Get sources for a specific node using GET call on GET /nodes/{nodeId}/sources
-     * 
+     *
      * @return
      */
     public RestNodeAssociationModelCollection getNodeSources()
@@ -759,7 +759,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Updates the content of the node with identifier nodeId using PUT call "/nodes/{nodeId}/content"
-     * 
+     *
      * @param nodeContent
      * @return
      */
@@ -782,7 +782,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Copies the node nodeId to the parent folder node targetParentId using POST call "nodes/{nodeId}/copy"
-     * 
+     *
      * @param postBody
      * @return
      */
@@ -792,32 +792,32 @@ public class Node extends ModelRequest<Node>
         return restWrapper.processModel(RestNodeModel.class, request);
     }
 
-     /** 
+    /**
      * Get a node's parents using GET call 'nodes/{nodeId}/parents
-     * 
+     *
      * @return a collection of nodes
      */
     public RestNodeAssociationModelCollection getParents()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET,  "nodes/{nodeId}/parents?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/parents?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
         return restWrapper.processModels(RestNodeAssociationModelCollection.class, request);
     }
 
     /**
      * Get a node's secondary children using GET call 'nodes/{nodeId}/secondary-children
-     * 
+     *
      * @return a collection of nodes
      */
     public RestNodeAssociationModelCollection getSecondaryChildren()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET,  "nodes/{nodeId}/secondary-children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/secondary-children?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
         return restWrapper.processModels(RestNodeAssociationModelCollection.class, request);
     }
 
     /**
      * Create secondary children association using POST call 'nodes/{nodeId}/secondary-children
      * Use a list of secondary children nodes
-     * 
+     *
      * @return a collection of nodes
      */
     public RestNodeChildAssocModelCollection createSecondaryChildren(String secondaryChildren)
@@ -828,7 +828,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Delete secondary children using DELETE call 'nodes/{nodeId}/secondary-children/{childId}
-     * 
+     *
      * @return a collection of nodes
      */
     public void deleteSecondaryChild(RestNodeAssociationModel child)
@@ -839,7 +839,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Gets the version history as an ordered list for the specified nodeId using GET call 'nodes/{nodeId}/versions
-     * 
+     *
      * @return
      */
     public RestVersionModelsCollection listVersionHistory()
@@ -850,7 +850,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Delete the version identified by versionId for nodeId using DELETE call 'nodes/{nodeId}versions/{versionId}
-     * 
+     *
      * @param versionId
      */
     public void deleteNodeVersion(String versionId)
@@ -861,7 +861,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Gets the version information versionId for node nodeId using GET call 'nodes/{nodeId}/versions/{versionId}
-     * 
+     *
      * @param versionId
      * @return
      */
@@ -873,7 +873,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Gets the content for versionId of node nodeId using GET call 'nodes/{nodeId}/versions/{versionId}/content
-     * 
+     *
      * @param versionId
      * @return
      */
@@ -885,7 +885,7 @@ public class Node extends ModelRequest<Node>
 
     /**
      * Revert the version identified by versionId and nodeId to the node using POST call 'nodes/{nodeId}/versions/{versionId}/revert
-     * 
+     *
      * @param versionId
      * @param postBody
      * @return
@@ -922,9 +922,9 @@ public class Node extends ModelRequest<Node>
 
     public RestActionDefinitionModelsCollection getActionDefinitions()
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET,  "nodes/{nodeId}/action-definitions?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "nodes/{nodeId}/action-definitions?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
         return restWrapper.processModels(RestActionDefinitionModelsCollection.class, request);
-        
+
     }
 
     /**
@@ -987,8 +987,8 @@ public class Node extends ModelRequest<Node>
     public ContentStorageInformation usingStorageInfo(String contentPropName)
     {
         return new ContentStorageInformation(restWrapper)
-            .withNodeId(repoModel.getNodeRef())
-            .withContentPropName(contentPropName);
+                .withNodeId(repoModel.getNodeRef())
+                .withContentPropName(contentPropName);
     }
 
     public ContentStorageInformation usingVersionStorageInfo(String contentPropName, String versionId)
@@ -1046,5 +1046,17 @@ public class Node extends ModelRequest<Node>
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SET_BY_ID,
                 repoModel.getNodeRef(), "-default-");
         return restWrapper.processModel(RestRuleSetModel.class, request);
+    }
+
+    public RuleSettings usingRuleSetting(String ruleSettingKey)
+    {
+        return new RuleSettings(restWrapper)
+                .withNodeId(repoModel.getNodeRef())
+                .withRuleSettingKey(ruleSettingKey);
+    }
+
+    public RuleSettings usingIsInheritanceEnabledRuleSetting()
+    {
+        return usingRuleSetting(IS_INHERITANCE_ENABLED);
     }
 }

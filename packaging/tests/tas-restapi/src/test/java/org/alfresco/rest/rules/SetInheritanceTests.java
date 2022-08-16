@@ -25,8 +25,12 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.RestTest;
@@ -44,15 +48,15 @@ import org.testng.annotations.Test;
 @Test (groups = { TestGroup.RULES })
 public class SetInheritanceTests extends RestTest
 {
-    private UserModel user;
+    private UserModel siteOwner;
     private SiteModel site;
 
     @BeforeClass (alwaysRun = true)
     public void dataPreparation()
     {
         STEP("Create a user, site and folder.");
-        user = dataUser.createRandomTestUser();
-        site = dataSite.usingUser(user).createPublicRandomSite();
+        siteOwner = dataUser.createRandomTestUser();
+        site = dataSite.usingUser(siteOwner).createPrivateRandomSite();
     }
 
     /** Check we can get the -isInheritanceEnabled- rule setting for the folder. */
@@ -60,10 +64,10 @@ public class SetInheritanceTests extends RestTest
     public void getIsInherited()
     {
         STEP("Create a folder for the test.");
-        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        FolderModel folder = dataContent.usingUser(siteOwner).usingSite(site).createFolder();
 
         STEP("Get the -isInheritanceEnabled- rule settings for the folder.");
-        RestRuleSettingsModel ruleSettingsModel = restClient.authenticateUser(user)
+        RestRuleSettingsModel ruleSettingsModel = restClient.authenticateUser(siteOwner)
                                                             .withCoreAPI()
                                                             .usingResource(folder)
                                                             .usingIsInheritanceEnabledRuleSetting()
@@ -71,8 +75,60 @@ public class SetInheritanceTests extends RestTest
 
         restClient.assertStatusCodeIs(OK);
         RestRuleSettingsModel expected = new RestRuleSettingsModel();
+        expected.setKey(IS_INHERITANCE_ENABLED);
         expected.setValue(true);
         ruleSettingsModel.assertThat().isEqualTo(expected);
+    }
+
+    /** Check we get an error when trying to get settings from a non-existent folder. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getIsInheritedFromNonExistentFolder()
+    {
+        STEP("Try to get the -isInheritanceEnabled- rule settings for a fake folder.");
+        FolderModel nonExistentFolder = FolderModel.getRandomFolderModel();
+        nonExistentFolder.setNodeRef("fake-id");
+        restClient.authenticateUser(siteOwner)
+                  .withCoreAPI()
+                  .usingResource(nonExistentFolder)
+                  .usingIsInheritanceEnabledRuleSetting()
+                  .retrieveSetting();
+
+        restClient.assertLastError().statusCodeIs(NOT_FOUND)
+                  .containsSummary("The entity with id: fake-id was not found");
+    }
+
+    /** Check we get an error when trying to retrieve a non-existent setting. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getNonExistentSetting()
+    {
+        STEP("Create a folder for the test.");
+        FolderModel folder = dataContent.usingUser(siteOwner).usingSite(site).createFolder();
+
+        STEP("Try to get a fake setting from the folder.");
+        restClient.authenticateUser(siteOwner).withCoreAPI().usingResource(folder).usingRuleSetting("-fakeRuleSetting-")
+                  .retrieveSetting();
+
+        restClient.assertLastError().statusCodeIs(NOT_FOUND)
+                  .containsSummary("Unrecognised rule setting key -fakeRuleSetting-");
+    }
+
+    /** Check a user without permission for the folder cannot get the -isInheritanceEnabled- rule setting. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getIsInheritedWithoutPermission()
+    {
+        STEP("Create a folder and a user without permission to access it.");
+        FolderModel folder = dataContent.usingUser(siteOwner).usingSite(site).createFolder();
+        UserModel noPermissionUser = dataUser.createRandomTestUser();
+
+        STEP("Try to get the -isInheritanceEnabled- setting without permission.");
+        restClient.authenticateUser(noPermissionUser)
+                  .withCoreAPI()
+                  .usingResource(folder)
+                  .usingIsInheritanceEnabledRuleSetting()
+                  .retrieveSetting();
+
+        restClient.assertLastError().statusCodeIs(FORBIDDEN)
+                  .containsSummary("Cannot read from this node");
     }
 
     /** Check we can change the -isInheritanceEnabled- rule setting for the folder. */
@@ -80,13 +136,13 @@ public class SetInheritanceTests extends RestTest
     public void updateIsInherited()
     {
         STEP("Create a folder for the test.");
-        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        FolderModel folder = dataContent.usingUser(siteOwner).usingSite(site).createFolder();
 
         STEP("Set -isInheritanceEnabled- to false.");
         RestRuleSettingsModel updateBody = new RestRuleSettingsModel();
         updateBody.setValue(false);
 
-        RestRuleSettingsModel ruleSettingsModel = restClient.authenticateUser(user)
+        RestRuleSettingsModel ruleSettingsModel = restClient.authenticateUser(siteOwner)
                                               .withCoreAPI()
                                               .usingResource(folder)
                                               .usingIsInheritanceEnabledRuleSetting()
@@ -94,6 +150,7 @@ public class SetInheritanceTests extends RestTest
 
         restClient.assertStatusCodeIs(OK);
         RestRuleSettingsModel expected = new RestRuleSettingsModel();
+        expected.setKey(IS_INHERITANCE_ENABLED);
         expected.setValue(false);
         ruleSettingsModel.assertThat().isEqualTo(expected);
     }
@@ -103,16 +160,73 @@ public class SetInheritanceTests extends RestTest
     public void updateInheritedWithBadValue()
     {
         STEP("Create a folder for the test.");
-        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        FolderModel folder = dataContent.usingUser(siteOwner).usingSite(site).createFolder();
 
         STEP("Try to set -isInheritanceEnabled- to \"banana\".");
         RestRuleSettingsModel updateBody = new RestRuleSettingsModel();
         updateBody.setValue("banana");
 
-        restClient.authenticateUser(user).withCoreAPI().usingResource(folder).usingIsInheritanceEnabledRuleSetting()
+        restClient.authenticateUser(siteOwner).withCoreAPI().usingResource(folder).usingIsInheritanceEnabledRuleSetting()
                   .updateSetting(updateBody);
 
         restClient.assertLastError().statusCodeIs(BAD_REQUEST)
-                                    .containsSummary("Only boolean values are supported for this key");
+                  .containsSummary("Rule setting " + IS_INHERITANCE_ENABLED + " requires a boolean value.");
+    }
+
+    /** Check we get an error when the folder is not found. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void updateInheritedWithNonExistentFolder()
+    {
+        STEP("Try to set -isInheritanceEnabled- against a fake folder.");
+        FolderModel nonExistentFolder = FolderModel.getRandomFolderModel();
+        nonExistentFolder.setNodeRef("fake-id");
+
+        RestRuleSettingsModel updateBody = new RestRuleSettingsModel();
+        updateBody.setValue(true);
+
+        restClient.authenticateUser(siteOwner).withCoreAPI().usingResource(nonExistentFolder).usingIsInheritanceEnabledRuleSetting()
+                  .updateSetting(updateBody);
+
+        restClient.assertLastError().statusCodeIs(NOT_FOUND)
+                  .containsSummary("The entity with id: fake-id was not found");
+    }
+
+    /** Check we get an error when trying to set a non-existent setting. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void updateNonExistentSetting()
+    {
+        STEP("Create a folder for the test.");
+        FolderModel folder = dataContent.usingUser(siteOwner).usingSite(site).createFolder();
+
+        STEP("Try to set a fake setting on the folder.");
+        RestRuleSettingsModel updateBody = new RestRuleSettingsModel();
+        updateBody.setValue(true);
+
+        restClient.authenticateUser(siteOwner).withCoreAPI().usingResource(folder).usingRuleSetting("-fakeRuleSetting-")
+                  .updateSetting(updateBody);
+
+        restClient.assertLastError().statusCodeIs(NOT_FOUND)
+                  .containsSummary("Unrecognised rule setting key -fakeRuleSetting-");
+    }
+
+    /** Check a user without manage permission cannot update the -isInheritanceEnabled- rule setting. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void updateIsInheritedWithoutPermission()
+    {
+        STEP("Create a folder and a collaborator.");
+        FolderModel folder = dataContent.usingUser(siteOwner).usingSite(site).createFolder();
+        UserModel collaborator = dataUser.createRandomTestUser();
+        collaborator.setUserRole(SiteCollaborator);
+        restClient.authenticateUser(siteOwner).withCoreAPI().usingSite(site).addPerson(collaborator);
+
+        STEP("Try to update the -isInheritanceEnabled- setting without permission.");
+        RestRuleSettingsModel updateBody = new RestRuleSettingsModel();
+        updateBody.setValue(true);
+
+        restClient.authenticateUser(collaborator).withCoreAPI().usingResource(folder).usingIsInheritanceEnabledRuleSetting()
+                  .updateSetting(updateBody);
+
+        restClient.assertLastError().statusCodeIs(FORBIDDEN)
+                  .containsSummary("Insufficient permissions to manage rules");
     }
 }

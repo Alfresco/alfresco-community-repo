@@ -28,6 +28,7 @@ package org.alfresco.rest.framework.tests.core;
 import static org.mockito.Mockito.mock;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
@@ -71,5 +72,10 @@ public class ParamsExtender extends Params
     public static Params valueOf(Paging paging, String entityId, String relationshipId, String relationship2Id)
     {
         return new ParamsExtender(entityId, relationshipId, relationship2Id, null, null, null, new Params.RecognizedParams(null, paging, null, null, null, null, null, null, false));
+    }
+
+    public static Params valueOf(Paging paging, String entityId, String relationshipId, String relationship2Id, List<String> include)
+    {
+        return new ParamsExtender(entityId, relationshipId, relationship2Id, null, null, null, new Params.RecognizedParams(null, paging, null, null, include, null, null, null, false));
     }
 }

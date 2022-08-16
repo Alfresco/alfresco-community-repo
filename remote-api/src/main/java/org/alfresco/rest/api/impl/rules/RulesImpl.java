@@ -50,47 +50,53 @@ public class RulesImpl implements Rules
     private Nodes nodes;
     private RuleService ruleService;
     private NodeValidator validator;
+    private RuleLoader ruleLoader;
 
     @Override
-    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
+    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId,
+                                                   final String ruleSetId,
+                                                   final List<String> includes,
+                                                   final Paging paging)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
-        final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        validator.validateRuleSetNode(ruleSetId, folderNodeRef);
 
-        final boolean isShared = validator.isRuleSetNotNullAndShared(ruleSetNodeRef);
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
-            .map(ruleModel -> Rule.from(ruleModel, isShared))
+            .map(ruleModel -> ruleLoader.loadRule(ruleModel, includes))
             .collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
     }
 
     @Override
-    public Rule getRuleById(final String folderNodeId, final String ruleSetId, final String ruleId)
+    public Rule getRuleById(final String folderNodeId, final String ruleSetId, final String ruleId, final List<String> includes)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
         final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validator.validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return Rule.from(ruleService.getRule(ruleNodeRef), validator.isRuleSetNotNullAndShared(ruleSetNodeRef));
+        return ruleLoader.loadRule(ruleService.getRule(ruleNodeRef), includes);
     }
 
     @Override
-    public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
+    public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules, final List<String> includes)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, true);
         // Don't validate the ruleset node if -default- is passed since we may need to create it.
-        final NodeRef ruleSetNodeRef = (RuleSet.isNotDefaultId(ruleSetId)) ? validator.validateRuleSetNode(ruleSetId, folderNodeRef) : null;
+        if (RuleSet.isNotDefaultId(ruleSetId))
+        {
+            validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        }
 
         return rules.stream()
                     .map(rule -> rule.toServiceModel(nodes))
                     .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(rule -> Rule.from(rule, validator.isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef)))
+                    .map(rule -> ruleLoader.loadRule(rule, includes))
                     .collect(Collectors.toList());
     }
 
     @Override
-    public Rule updateRuleById(String folderNodeId, String ruleSetId, String ruleId, Rule rule)
+    public Rule updateRuleById(String folderNodeId, String ruleSetId, String ruleId, Rule rule, List<String> includes)
     {
         LOGGER.debug("Updating rule in folder {}, rule set {}, rule {} to {}", folderNodeId, ruleSetId, ruleId, rule);
 
@@ -98,8 +104,7 @@ public class RulesImpl implements Rules
         NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
         validator.validateRuleNode(ruleId, ruleSetNodeRef);
 
-        boolean shared = validator.isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef);
-        return Rule.from(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)), shared);
+        return ruleLoader.loadRule(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)), includes);
     }
 
     @Override
@@ -125,5 +130,10 @@ public class RulesImpl implements Rules
     public void setValidator(NodeValidator validator)
     {
         this.validator = validator;
+    }
+
+    public void setRuleLoader(RuleLoader ruleLoader)
+    {
+        this.ruleLoader = ruleLoader;
     }
 }

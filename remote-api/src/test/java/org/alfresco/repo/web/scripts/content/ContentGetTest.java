@@ -66,17 +66,13 @@ public class ContentGetTest extends BaseWebScriptTest
     {
         super.setUp();
 
-        this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationService = (MutableAuthenticationService) getServer().getApplicationContext()
+                .getBean("AuthenticationService");
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
         this.contentService = (ContentService) getServer().getApplicationContext().getBean("ContentService");
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         createUser(USER_ONE);
-
-        Repository repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
-        NodeRef companyHome = repositoryHelper.getCompanyHome();
-
-        rootFolder = createNode(companyHome, "rootFolder", ContentModel.TYPE_FOLDER);
     }
 
     private void createUser(String userName)
@@ -121,13 +117,18 @@ public class ContentGetTest extends BaseWebScriptTest
      */
     public void testRelativePath() throws Exception
     {
-        NodeRef doc1 = createNodeWithTextContent(rootFolder, "doc1", ContentModel.TYPE_CONTENT, "doc1 file content", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        Repository repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+
+        rootFolder = createNode(companyHome, "rootFolder", ContentModel.TYPE_FOLDER);
+
+        NodeRef doc1 = createNodeWithTextContent(rootFolder, "doc1", ContentModel.TYPE_CONTENT, "doc1 file content");
 
         NodeRef folderX = createNode(rootFolder, "X", ContentModel.TYPE_FOLDER);
         NodeRef folderY = createNode(folderX, "Y", ContentModel.TYPE_FOLDER);
         NodeRef folderZ = createNode(folderY, "Z", ContentModel.TYPE_FOLDER);
 
-        NodeRef doc2 = createNodeWithTextContent(folderZ, "doc2", ContentModel.TYPE_CONTENT, "doc2 file content", MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        NodeRef doc2 = createNodeWithTextContent(folderZ, "doc2", ContentModel.TYPE_CONTENT, "doc2 file content");
 
         // uri with relative path at the end
         String uri = URL_CONTENT_DOWNLOAD + doc1.getId() + "/X/Y/Z/doc2";
@@ -137,46 +138,7 @@ public class ContentGetTest extends BaseWebScriptTest
         Assert.assertEquals("doc2 file content", resp.getContentAsString());
     }
 
-
-
-    public void testForcedAttachment() throws Exception
-    {
-        NodeRef testhtml = createNodeWithTextContent(rootFolder, "testhtml", ContentModel.TYPE_CONTENT, "testhtml content", MimetypeMap.MIMETYPE_HTML);
-        NodeRef testpdf = createNodeWithTextContent(rootFolder, "testpdf", ContentModel.TYPE_CONTENT, "testpdf content", MimetypeMap.MIMETYPE_PDF);
-
-        String uri = URL_CONTENT_DOWNLOAD + testhtml.getId() + "?a=false";
-        GetRequest req = new GetRequest(uri);
-        Response res = sendRequest(req, 200);
-        assertEquals("attachment", res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
-
-        uri = URL_CONTENT_DOWNLOAD + testhtml.getId();
-        res = sendRequest(new GetRequest(uri), 200);
-        assertEquals("attachment", res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
-
-        uri = URL_CONTENT_DOWNLOAD + testhtml.getId() + "?a=true";
-        res = sendRequest(new GetRequest(uri), 200);
-        assertEquals("attachment", res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_HTML + ";charset=UTF-8", res.getContentType());
-
-        uri = URL_CONTENT_DOWNLOAD + testpdf.getId() + "?a=false";
-        res = sendRequest(new GetRequest(uri), 200);
-        assertNull(res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
-
-        uri = URL_CONTENT_DOWNLOAD + testpdf.getId();
-        res = sendRequest(new GetRequest(uri), 200);
-        assertNull(res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
-
-        uri = URL_CONTENT_DOWNLOAD + testpdf.getId() + "?a=true";
-        res = sendRequest(new GetRequest(uri), 200);
-        assertEquals("attachment", res.getHeader("Content-Disposition"));
-        assertEquals(MimetypeMap.MIMETYPE_PDF + ";charset=UTF-8", res.getContentType());
-    }
-
-    public NodeRef createNodeWithTextContent(NodeRef parentNode, String nodeCmName, QName nodeType, String content, String mimetype)
+    public NodeRef createNodeWithTextContent(NodeRef parentNode, String nodeCmName, QName nodeType, String content)
     {
         NodeRef nodeRef = createNode(parentNode, nodeCmName, nodeType);
 
@@ -184,7 +146,7 @@ public class ContentGetTest extends BaseWebScriptTest
         if (content != null)
         {
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-            writer.setMimetype(mimetype);
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             writer.setEncoding("UTF-8");
             writer.putContent(content);
         }

@@ -38,10 +38,10 @@ import java.util.Collection;
 import java.util.List;
 
 import junit.framework.TestCase;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
@@ -177,7 +177,7 @@ public class RuleSetsImplTest extends TestCase
         given(ruleServiceMock.hasRules(LINK_TO_NODE_REF)).willReturn(false);
 
         //when
-        assertThatExceptionOfType(AlfrescoRuntimeException.class).isThrownBy(
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
                 () -> ruleSets.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID)
         );
 
@@ -193,7 +193,7 @@ public class RuleSetsImplTest extends TestCase
         given(ruleServiceMock.hasRules(any(NodeRef.class))).willReturn(true, true);
 
         //when
-        assertThatExceptionOfType(AlfrescoRuntimeException.class).isThrownBy(
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
                 () -> ruleSets.linkToRuleSet(FOLDER_NODE_ID, LINK_TO_NODE_ID));
 
         then(nodeServiceMock).shouldHaveNoMoreInteractions();

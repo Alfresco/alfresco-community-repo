@@ -28,11 +28,10 @@ package org.alfresco.rest.api.impl.rules;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
@@ -63,10 +62,9 @@ public class ActionParameterConverter
         this.namespaceService = namespaceService;
     }
 
-    void convertParameters(Map<String, Serializable> params, String name)
-    {
+    Map<String, Serializable> getConvertedParams(Map<String, Serializable> params, String name) {
+        final Map<String, Serializable> parameters = new HashMap<>(params.size());
         final ParameterizedItemDefinition definition = actionService.getActionDefinition(name);
-
         if (definition == null)
         {
             throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{name});
@@ -82,12 +80,13 @@ public class ActionParameterConverter
             if (paramDef != null)
             {
                 final QName typeQName = paramDef.getType();
-                params.replace(param.getKey(), convertValue(typeQName, param.getValue()));
+                parameters.put(param.getKey(), convertValue(typeQName, param.getValue()));
             } else
             {
-                params.replace(param.getKey(), param.getValue().toString());
+                parameters.put(param.getKey(), param.getValue().toString());
             }
         }
+        return parameters;
     }
 
     private Serializable convertValue(QName typeQName, Object propertyValue) throws JSONException

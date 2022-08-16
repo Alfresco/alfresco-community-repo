@@ -97,7 +97,7 @@ public class ActionParameterConverterTest
         given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
 
         //when
-        objectUnderTest.convertParameters(params, name);
+        final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
         then(actionService).shouldHaveNoMoreInteractions();
@@ -108,7 +108,7 @@ public class ActionParameterConverterTest
         then(namespaceService).should().getNamespaceURI(any());
         then(namespaceService).shouldHaveNoMoreInteractions();
 
-        final Serializable convertedParam = params.get(aspectNameKey);
+        final Serializable convertedParam = convertedParams.get(aspectNameKey);
         assertThat(convertedParam instanceof QName).isTrue();
         assertThat(((QName) convertedParam).getLocalName()).isEqualTo(VERSIONABLE);
         assertThat(((QName) convertedParam).getPrefixString()).isEqualTo(VERSIONABLE_ASPECT);
@@ -137,7 +137,7 @@ public class ActionParameterConverterTest
         given(dataTypeDefinition.getJavaClassName()).willReturn(Boolean.class.getName(), NodeRef.class.getName());
 
         //when
-        objectUnderTest.convertParameters(params, name);
+        final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
 
         then(actionService).should().getActionDefinition(name);
         then(actionService).shouldHaveNoMoreInteractions();
@@ -149,11 +149,11 @@ public class ActionParameterConverterTest
         then(dictionaryService).shouldHaveNoMoreInteractions();
         then(namespaceService).shouldHaveNoInteractions();
 
-        final Serializable convertedCopyParam = params.get(destinationFolderKey);
+        final Serializable convertedCopyParam = convertedParams.get(destinationFolderKey);
         assertThat(convertedCopyParam instanceof NodeRef).isTrue();
         assertThat(((NodeRef) convertedCopyParam).getStoreRef()).isEqualTo(STORE_REF);
         assertThat(((NodeRef) convertedCopyParam).getId()).isEqualTo(DUMMY_FOLDER_NODE_ID);
-        final Serializable convertedDeepCopyParam = params.get(deepCopyKey);
+        final Serializable convertedDeepCopyParam = convertedParams.get(deepCopyKey);
         assertThat(convertedDeepCopyParam instanceof Boolean).isTrue();
         assertThat(((Boolean) convertedDeepCopyParam)).isTrue();
     }

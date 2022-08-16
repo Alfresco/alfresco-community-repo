@@ -37,6 +37,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.slf4j.Logger;
@@ -64,8 +65,8 @@ public class RulesImpl implements Rules
         validator.validateRuleSetNode(ruleSetId, folderNodeRef);
 
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
-            .map(ruleModel -> ruleLoader.loadRule(ruleModel, includes))
-            .collect(Collectors.toList());
+                .map(ruleModel -> ruleLoader.loadRule(ruleModel, includes))
+                .collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
     }
@@ -91,10 +92,10 @@ public class RulesImpl implements Rules
         }
 
         return rules.stream()
-                    .map(this::mapToServiceModelAndValidateActions)
-                    .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(rule -> ruleLoader.loadRule(rule, includes))
-                    .collect(Collectors.toList());
+                .map(this::mapToServiceModelAndValidateActions)
+                .map(rule -> ruleService.saveRule(folderNodeRef, rule))
+                .map(rule -> ruleLoader.loadRule(rule, includes))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -121,8 +122,10 @@ public class RulesImpl implements Rules
 
     private org.alfresco.service.cmr.rule.Rule mapToServiceModelAndValidateActions(Rule rule)
     {
-        rule.getActions().forEach(action -> actionParameterConverter.convertParameters(action.getParams(), action.getActionDefinitionId()));
-        org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes);
+        final org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes);
+        final CompositeAction compositeAction = (CompositeAction) serviceModelRule.getAction();
+        compositeAction.getActions().forEach(action -> action.setParameterValues(
+                actionParameterConverter.getConvertedParams(action.getParameterValues(), action.getActionDefinitionName())));
 
         return actionPermissionValidator.validateRulePermissions(serviceModelRule);
     }

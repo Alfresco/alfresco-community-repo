@@ -91,7 +91,11 @@ public class GetRulesTests extends RestTest
         assertTrue("Expected no rules to be present.", rules.isEmpty());
     }
 
-    /** Check we can get all the rules for a folder. */
+    /**
+     * Check we can get all the rules for a folder.
+     * <p>
+     * Also check that the isShared field is not returned when not requested.
+     */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void getRulesList()
     {
@@ -102,8 +106,9 @@ public class GetRulesTests extends RestTest
         rules.assertThat().entriesListCountIs(createdRules.size());
         IntStream.range(0, createdRules.size()).forEach(i ->
                 rules.getEntries().get(i).onModel()
-                         .assertThat().field("id").is(createdRules.get(i).getId())
-                         .assertThat().field("name").is(createdRules.get(i).getName()));
+                     .assertThat().field("id").is(createdRules.get(i).getId())
+                     .assertThat().field("name").is(createdRules.get(i).getName())
+                     .assertThat().field("isShared").isNull());
     }
 
     /** Check we get a 404 if trying to load rules for a folder that doesn't exist. */
@@ -128,7 +133,26 @@ public class GetRulesTests extends RestTest
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
-    /** Check we can get a rule by its id. */
+    /** Check we can get all the rules for a folder along with the extra "include" fields. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getRulesListWithIncludedFields()
+    {
+        STEP("Get the rules that apply to the folder");
+        RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                                                   .include("isShared")
+                                                   .getListOfRules();
+
+        rules.assertThat().entriesListCountIs(createdRules.size());
+        IntStream.range(0, createdRules.size()).forEach(i ->
+                rules.getEntries().get(i).onModel()
+                     .assertThat().field("isShared").isNotNull());
+    }
+
+    /**
+     * Check we can get a rule by its id.
+     * <p>
+     * Also check that the isShared field is not returned when not requested.
+     */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void getSingleRule()
     {
@@ -138,7 +162,8 @@ public class GetRulesTests extends RestTest
         restClient.assertStatusCodeIs(OK);
 
         rule.assertThat().field("id").is(createdRuleA.getId())
-            .assertThat().field("name").is(createdRuleA.getName());
+            .assertThat().field("name").is(createdRuleA.getName())
+            .assertThat().field("isShared").isNull();
     }
 
     /** Check we get a 404 if trying to load a rule from a folder that doesn't exist. */
@@ -172,6 +197,18 @@ public class GetRulesTests extends RestTest
         STEP("Try to load a rule for a wrong but existing folder.");
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(createdRuleA.getId());
         restClient.assertStatusCodeIs(NOT_FOUND);
+    }
+
+    /** Check we can get a rule by its id along with any included fields. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getSingleRuleWithIncludedFields()
+    {
+        STEP("Load a particular rule");
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                                       .include("isShared")
+                                       .getSingleRule(createdRuleA.getId());
+
+        rule.assertThat().field("isShared").isNotNull();
     }
 
     /** Check that a user without read permission cannot view the folder rules. */

@@ -51,7 +51,6 @@ public class RuleTest
     private static final boolean RULE_ENABLED = true;
     private static final boolean RULE_CASCADE = true;
     private static final boolean RULE_ASYNC = true;
-    private static final boolean RULE_SHARED = true;
     private static final String ERROR_SCRIPT = "error-script-ref";
 
     @Test
@@ -61,7 +60,7 @@ public class RuleTest
         final Rule expectedRule = createRuleWithDefaultValues();
 
         // when
-        final Rule actualRule = Rule.from(ruleModel, RULE_SHARED);
+        final Rule actualRule = Rule.from(ruleModel);
 
         assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
@@ -74,7 +73,7 @@ public class RuleTest
         final Rule expectedRule = Rule.builder().enabled(true).create();
 
         // when
-        final Rule actualRule = Rule.from(ruleModel, false);
+        final Rule actualRule = Rule.from(ruleModel);
 
         assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
@@ -108,7 +107,6 @@ public class RuleTest
             .enabled(RULE_ENABLED)
             .cascade(RULE_CASCADE)
             .asynchronous(RULE_ASYNC)
-            .shared(RULE_SHARED)
             .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
             .errorScript(ERROR_SCRIPT)
             .conditions(CompositeCondition.from(Collections.emptyList()))

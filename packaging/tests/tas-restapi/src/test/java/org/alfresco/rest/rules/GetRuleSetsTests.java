@@ -33,7 +33,6 @@ import static org.springframework.http.HttpStatus.OK;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
-import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
 import org.alfresco.utility.model.FolderModel;
@@ -122,12 +121,29 @@ public class GetRuleSetsTests extends RestTest
         STEP("Get the rule sets and owning folders");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
                                                  .usingNode(ruleFolder)
-                                                 .usingParams("include=owningFolder")
+                                                 .include("owningFolder")
                                                  .getListOfRuleSets();
 
         restClient.assertStatusCodeIs(OK);
         ruleSets.getEntries().get(0).onModel()
                 .assertThat().field("owningFolder").is(ruleFolder.getNodeRef())
+                .assertThat().field("id").is(ruleSetId);
+        ruleSets.assertThat().entriesListCountIs(1);
+    }
+
+    /** Check we can get the reason that a rule set is included in the list. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetsAndInclusionType()
+    {
+        STEP("Get the rule sets and inclusion type");
+        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+                                                         .usingNode(ruleFolder)
+                                                         .include("inclusionType")
+                                                         .getListOfRuleSets();
+
+        restClient.assertStatusCodeIs(OK);
+        ruleSets.getEntries().get(0).onModel()
+                .assertThat().field("inclusionType").is("owned")
                 .assertThat().field("id").is(ruleSetId);
         ruleSets.assertThat().entriesListCountIs(1);
     }
@@ -184,7 +200,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Get the rule set and owning folder");
         RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI()
                                              .usingNode(ruleFolder)
-                                             .usingParams("include=owningFolder")
+                                             .include("owningFolder")
                                              .getRuleSet(ruleSetId);
 
         restClient.assertStatusCodeIs(OK);

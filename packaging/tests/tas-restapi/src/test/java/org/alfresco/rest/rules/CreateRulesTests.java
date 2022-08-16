@@ -72,7 +72,11 @@ public class CreateRulesTests extends RestTest
         ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
     }
 
-    /** Check we can create a rule. */
+    /**
+     * Check we can create a rule.
+     * <p>
+     * Also check that the isShared field is not returned when not requested.
+     */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
@@ -83,7 +87,8 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().field("id").isNotNull()
-            .assertThat().field("name").is("ruleName");
+            .assertThat().field("name").is("ruleName")
+            .assertThat().field("isShared").isNull();
     }
 
     /** Check creating a rule in a non-existent folder returns an error. */
@@ -249,6 +254,20 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
+    }
+
+    /** Check we can create a rule. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void createRuleAndIncludeFieldsInResponse()
+    {
+        RestRuleModel ruleModel = createRuleModel("ruleName");
+
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                                       .include("isShared")
+                                       .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().field("isShared").isNotNull();
     }
 
     public RestRuleModel testRolePermissionsWith(UserRole userRole)

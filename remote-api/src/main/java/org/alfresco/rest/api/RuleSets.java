@@ -27,8 +27,8 @@ package org.alfresco.rest.api;
 
 import java.util.List;
 
-import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.api.model.rules.RuleSetLink;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
@@ -58,4 +58,9 @@ public interface RuleSets
      * @return {@link RuleSet} definition
      */
     RuleSet getRuleSetById(String folderNodeId, String ruleSetId, List<String> includes);
+
+    /**
+     * Link a rule set to a folder
+     */
+    RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId);
 }

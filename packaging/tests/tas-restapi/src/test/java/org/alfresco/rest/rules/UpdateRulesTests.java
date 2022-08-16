@@ -64,7 +64,11 @@ public class UpdateRulesTests extends RestTest
         ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
     }
 
-    /** Check we can update a rule. */
+    /**
+     * Check we can update a rule.
+     * <p>
+     * Also check that the isShared field is not returned when not requested.
+     */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRule()
     {
@@ -77,7 +81,8 @@ public class UpdateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(OK);
         updatedRule.assertThat().field("id").is(rule.getId())
-                   .assertThat().field("name").is("Updated rule name");
+                   .assertThat().field("name").is("Updated rule name")
+                   .assertThat().field("isShared").isNull();
     }
 
     /** Check we get a 404 if trying to update a rule in a folder that doesn't exist. */
@@ -177,6 +182,21 @@ public class UpdateRulesTests extends RestTest
                                               .updateRule(rule.getId(), updatedRuleModel);
 
         updatedRule.assertThat().field("id").is(rule.getId());
+    }
+
+    /** Check we can update a rule and get the included fields. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithIncludedFields()
+    {
+        RestRuleModel rule = createAndSaveRule("Rule name");
+
+        STEP("Try to update the rule.");
+        RestRuleModel updatedRuleModel = createRuleModel("Updated rule name");
+        RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                                              .include("isShared")
+                                              .updateRule(rule.getId(), updatedRuleModel);
+
+        updatedRule.assertThat().field("isShared").isNotNull();
     }
 
     private RestRuleModel createAndSaveRule(String name)

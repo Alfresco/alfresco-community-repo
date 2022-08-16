@@ -58,15 +58,11 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ActionParameterConverterTest
 {
-    private static final String NAMESPACE_URI = "http://www.alfresco.org/model/dictionary/1.0";
     private static final String VERSIONABLE = "versionable";
-    private static final String CM_PREFIX = "cm";
-    private static final String COLON = ":";
-    private static final String VERSIONABLE_PREFIX = CM_PREFIX + COLON + VERSIONABLE;
+    private static final String VERSIONABLE_ASPECT = NamespaceService.CONTENT_MODEL_PREFIX + QName.NAMESPACE_PREFIX + VERSIONABLE;
     private static final StoreRef STORE_REF = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
     private static final String DUMMY_FOLDER_NODE_ID = "dummy-folder-node";
-    private static final String SLASH = "/";
-    private static final String DUMMY_FOLDER_NODE_REF = STORE_REF + SLASH + DUMMY_FOLDER_NODE_ID;
+    private static final String DUMMY_FOLDER_NODE_REF = STORE_REF + "/" + DUMMY_FOLDER_NODE_ID;
 
     @Mock
     private DictionaryService dictionaryService;
@@ -91,14 +87,14 @@ public class ActionParameterConverterTest
         final String name = AddFeaturesActionExecuter.NAME;
         final String aspectNameKey = AddFeaturesActionExecuter.PARAM_ASPECT_NAME;
         final Map<String, Serializable> params = new HashMap<>(1);
-        params.put(aspectNameKey, VERSIONABLE_PREFIX);
+        params.put(aspectNameKey, VERSIONABLE_ASPECT);
 
         given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
         given(actionDefinition.getParameterDefintion(aspectNameKey)).willReturn(actionDefinitionParam);
         final QName qname = DataTypeDefinition.QNAME;
         given(actionDefinitionParam.getType()).willReturn(qname);
         given(dictionaryService.getDataType(qname)).willReturn(dataTypeDefinition);
-        given(namespaceService.getNamespaceURI(any())).willReturn(NAMESPACE_URI);
+        given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
 
         //when
         objectUnderTest.convertParameters(params, name);
@@ -115,8 +111,8 @@ public class ActionParameterConverterTest
         final Serializable convertedParam = params.get(aspectNameKey);
         assertThat(convertedParam instanceof QName).isTrue();
         assertThat(((QName) convertedParam).getLocalName()).isEqualTo(VERSIONABLE);
-        assertThat(((QName) convertedParam).getPrefixString()).isEqualTo(VERSIONABLE_PREFIX);
-        assertThat(((QName) convertedParam).getNamespaceURI()).isEqualTo(NAMESPACE_URI);
+        assertThat(((QName) convertedParam).getPrefixString()).isEqualTo(VERSIONABLE_ASPECT);
+        assertThat(((QName) convertedParam).getNamespaceURI()).isEqualTo(NamespaceService.DICTIONARY_MODEL_1_0_URI);
     }
 
     @Test

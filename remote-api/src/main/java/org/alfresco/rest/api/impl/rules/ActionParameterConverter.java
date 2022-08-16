@@ -34,6 +34,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -68,7 +69,7 @@ public class ActionParameterConverter
 
         if (definition == null)
         {
-            throw new AlfrescoRuntimeException("Could not find definition for action/condition " + name);
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{name});
         }
 
         for (Map.Entry<String, Serializable> param : params.entrySet())
@@ -76,7 +77,7 @@ public class ActionParameterConverter
             final ParameterDefinition paramDef = definition.getParameterDefintion(param.getKey());
             if (paramDef == null && !definition.getAdhocPropertiesAllowed())
             {
-                throw new InvalidArgumentException("Invalid parameter " + param.getKey() + " for action " + name);
+                throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new String[]{param.getKey(), name});
             }
             if (paramDef != null)
             {
@@ -96,7 +97,7 @@ public class ActionParameterConverter
         final DataTypeDefinition typeDef = dictionaryService.getDataType(typeQName);
         if (typeDef == null)
         {
-            throw new AlfrescoRuntimeException("Action property type definition " + typeQName.toPrefixString() + " is unknown.");
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{typeQName.toPrefixString()});
         }
 
         if (propertyValue instanceof JSONArray)

@@ -33,19 +33,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.IntStream;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 import junit.framework.TestCase;
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -65,7 +66,6 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
@@ -82,7 +82,7 @@ public class RulesImplTest extends TestCase
     private static final List<String> INCLUDE = emptyList();
     private static final String ACTION_DEFINITION_NAME = "actionDefinitionName";
     private static final Map<String, Serializable> DUMMY_PARAMS = Map.of("dummy-key", "dummy-value");
-    private static final Action ACTION = new ActionImpl(folderNodeRef, "actionId", ACTION_DEFINITION_NAME, DUMMY_PARAMS);
+    private static final Action ACTION = new ActionImpl(FOLDER_NODE_REF, "actionId", ACTION_DEFINITION_NAME, DUMMY_PARAMS);
 
     @Mock
     private Nodes nodesMock;
@@ -132,9 +132,9 @@ public class RulesImplTest extends TestCase
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
                 .isNotNull()
-            .extracting(CollectionWithPagingInfo::getCollection)
+                .extracting(CollectionWithPagingInfo::getCollection)
                 .isNotNull()
-            .extracting(Collection::size)
+                .extracting(Collection::size)
                 .isEqualTo(1);
         assertThat(rulesPage.getCollection().stream().findFirst().get()).isEqualTo(ruleMock);
     }
@@ -150,11 +150,11 @@ public class RulesImplTest extends TestCase
         then(ruleServiceMock).should().getRules(FOLDER_NODE_REF);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
-            .isNotNull()
-            .extracting(CollectionWithPagingInfo::getCollection)
-            .isNotNull()
-            .extracting(Collection::isEmpty)
-            .isEqualTo(true);
+                .isNotNull()
+                .extracting(CollectionWithPagingInfo::getCollection)
+                .isNotNull()
+                .extracting(Collection::isEmpty)
+                .isEqualTo(true);
     }
 
     @Test
@@ -167,7 +167,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING));
+                    () -> rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
             then(nodeValidatorMock).shouldHaveNoMoreInteractions();
@@ -186,7 +186,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING));
+                    () -> rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
             then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
@@ -221,7 +221,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.getRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE));
+                    () -> rules.getRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
             then(nodeValidatorMock).shouldHaveNoMoreInteractions();
@@ -240,7 +240,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.getRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE));
+                    () -> rules.getRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
             then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
@@ -261,7 +261,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.getRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE));
+                    () -> rules.getRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
             then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
@@ -271,7 +271,9 @@ public class RulesImplTest extends TestCase
         }
     }
 
-    /** Create a single rule. */
+    /**
+     * Create a single rule.
+     */
     @Test
     public void testCreateRules()
     {
@@ -282,8 +284,9 @@ public class RulesImplTest extends TestCase
         ruleAction.setParams(DUMMY_PARAMS);
         given(ruleMock.getActions()).willReturn(List.of(ruleAction));
         given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(arg -> arg.getArguments()[1]);
-        given(serviceRuleMock.getNodeRef()).willReturn(RULE_NODE_REF);
-        given(serviceRuleMock.getAction()).willReturn(ACTION);
+//        given(serviceRuleMock.getNodeRef()).willReturn(RULE_NODE_REF);
+//        given(serviceRuleMock.getAction()).willReturn(ACTION);
+        given(ruleLoaderMock.loadRule(serviceRuleMock, INCLUDE)).willReturn(ruleMock);
         given(actionPermissionValidatorMock.validateRulePermissions(any())).willAnswer(arg -> arg.getArguments()[0]);
 
         // when
@@ -291,20 +294,20 @@ public class RulesImplTest extends TestCase
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
         then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
-        then(nodeValidatorMock).should().isRuleSetNotNullAndShared(RULE_SET_NODE_REF, FOLDER_NODE_REF);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
-        then(nodeValidatorMock).should().isRuleSetNotNullAndShared(RULE_SET_NODE_REF, FOLDER_NODE_REF);
         then(actionParameterConverterMock).should().convertParameters(DUMMY_PARAMS, ACTION_DEFINITION_NAME);
         then(actionParameterConverterMock).shouldHaveNoMoreInteractions();
         then(actionPermissionValidatorMock).should().validateRulePermissions(serviceRuleMock);
         then(actionPermissionValidatorMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, ruleMock.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
-        List<Rule> expected = List.of(Rule.from(serviceRuleMock, false));
+        List<Rule> expected = List.of(ruleMock);
         assertThat(actual).isEqualTo(expected);
     }
 
-    /** Check that when passing the default rule set then we don't perform any validation around the rule set node. */
+    /**
+     * Check that when passing the default rule set then we don't perform any validation around the rule set node.
+     */
     @Test
     public void testCreateRules_defaultRuleSet()
     {
@@ -315,15 +318,13 @@ public class RulesImplTest extends TestCase
         ruleAction.setParams(DUMMY_PARAMS);
         given(ruleMock.getActions()).willReturn(List.of(ruleAction));
         given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(arg -> arg.getArguments()[1]);
-        given(serviceRuleMock.getNodeRef()).willReturn(RULE_NODE_REF);
-        given(serviceRuleMock.getAction()).willReturn(ACTION);
+        given(ruleLoaderMock.loadRule(serviceRuleMock, INCLUDE)).willReturn(ruleMock);
         given(actionPermissionValidatorMock.validateRulePermissions(any())).willAnswer(arg -> arg.getArguments()[0]);
 
         // when
         List<Rule> actual = rules.createRules(FOLDER_NODE_REF.getId(), DEFAULT_ID, ruleList, INCLUDE);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
-        then(nodeValidatorMock).should().isRuleSetNotNullAndShared(null, FOLDER_NODE_REF);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
         then(actionParameterConverterMock).should().convertParameters(DUMMY_PARAMS, ACTION_DEFINITION_NAME);
         then(actionParameterConverterMock).shouldHaveNoMoreInteractions();
@@ -331,7 +332,7 @@ public class RulesImplTest extends TestCase
         then(actionPermissionValidatorMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, ruleMock.toServiceModel(nodesMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
-        List<Rule> expected = List.of(Rule.from(serviceRuleMock, false));
+        List<Rule> expected = List.of(ruleMock);
         assertThat(actual).isEqualTo(expected);
     }
 
@@ -347,7 +348,9 @@ public class RulesImplTest extends TestCase
         assertThat(actual).isEqualTo(emptyList());
     }
 
-    /** Create three rules in a single call and check they are all passed to the RuleService. */
+    /**
+     * Create three rules in a single call and check they are all passed to the RuleService.
+     */
     @Test
     public void testCreateRules_createMultipleRules()
     {
@@ -363,21 +366,17 @@ public class RulesImplTest extends TestCase
             org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
             given(ruleBody.toServiceModel(nodesMock)).willReturn(serviceRule);
             given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRule)).willAnswer(arg -> arg.getArguments()[1]);
-            NodeRef ruleNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, ruleId);
-            given(serviceRule.getNodeRef()).willReturn(ruleNodeRef);
-            given(serviceRule.getAction()).willReturn(ACTION);
-            Rule ruleMock = mock(Rule.class);
-            given(ruleLoaderMock.loadRule(serviceRule, INCLUDE)).willReturn(ruleMock);
-            expected.add(ruleMock);
+            Rule ruleMockInner = mock(Rule.class);
+            given(ruleLoaderMock.loadRule(serviceRule, INCLUDE)).willReturn(ruleMockInner);
+            expected.add(ruleMockInner);
             given(actionPermissionValidatorMock.validateRulePermissions(any())).willAnswer(arg -> arg.getArguments()[0]);
-        }
+        });
 
         // when
         List<Rule> actual = rules.createRules(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), ruleBodyList, INCLUDE);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
         then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
-        then(nodeValidatorMock).should(times(ruleBodyList.size())).isRuleSetNotNullAndShared(RULE_SET_NODE_REF, FOLDER_NODE_REF);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
         for (Rule ruleBody : ruleBodyList)
         {
@@ -401,7 +400,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.createRules(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), emptyList(), INCLUDE));
+                    () -> rules.createRules(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), emptyList(), INCLUDE));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
             then(nodeValidatorMock).shouldHaveNoMoreInteractions();
@@ -420,7 +419,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.createRules(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), emptyList(), INCLUDE));
+                    () -> rules.createRules(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), emptyList(), INCLUDE));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
             then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
@@ -429,7 +428,9 @@ public class RulesImplTest extends TestCase
         }
     }
 
-    /** Check that we can update a rule. */
+    /**
+     * Check that we can update a rule.
+     */
     @Test
     public void testUpdateRuleById()
     {
@@ -462,7 +463,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, mock(Rule.class), INCLUDE));
+                    () -> rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, mock(Rule.class), INCLUDE));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
             then(nodeValidatorMock).shouldHaveNoMoreInteractions();
@@ -481,7 +482,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, mock(Rule.class), INCLUDE));
+                    () -> rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, mock(Rule.class), INCLUDE));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
             then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
@@ -502,7 +503,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, mock(Rule.class), INCLUDE));
+                    () -> rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, mock(Rule.class), INCLUDE));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
             then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
@@ -513,7 +514,8 @@ public class RulesImplTest extends TestCase
     }
 
     @Test
-    public void testDeleteRuleById() {
+    public void testDeleteRuleById()
+    {
         //when
         rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID);
 
@@ -537,7 +539,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
+                    () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
             then(nodeValidatorMock).shouldHaveNoMoreInteractions();
@@ -556,7 +558,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
+                    () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
             then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
@@ -577,7 +579,7 @@ public class RulesImplTest extends TestCase
 
             // when
             assertThatExceptionOfType(exception.getClass()).isThrownBy(
-                () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
+                    () -> rules.deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID));
 
             then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
             then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
@@ -587,7 +589,8 @@ public class RulesImplTest extends TestCase
         }
     }
 
-    private static org.alfresco.service.cmr.rule.Rule createRule(final String id) {
+    private static org.alfresco.service.cmr.rule.Rule createRule(final String id)
+    {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, id);
         final org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
         rule.setNodeRef(nodeRef);
@@ -599,27 +602,27 @@ public class RulesImplTest extends TestCase
     private static List<Exception> folderValidationExceptions()
     {
         return List.of(
-            new EntityNotFoundException(FOLDER_NODE_ID),
-            new InvalidArgumentException(),
-            new PermissionDeniedException()
+                new EntityNotFoundException(FOLDER_NODE_ID),
+                new InvalidArgumentException(),
+                new PermissionDeniedException()
         );
     }
 
     private static List<Exception> ruleSetValidationExceptions()
     {
         return List.of(
-            new EntityNotFoundException(RULE_SET_ID),
-            new InvalidArgumentException(),
-            new RelationshipResourceNotFoundException(RULE_SET_ID, "fake-relationship-id")
+                new EntityNotFoundException(RULE_SET_ID),
+                new InvalidArgumentException(),
+                new RelationshipResourceNotFoundException(RULE_SET_ID, "fake-relationship-id")
         );
     }
 
     private static List<Exception> ruleValidationExceptions()
     {
         return List.of(
-            new EntityNotFoundException(RULE_ID),
-            new InvalidArgumentException(),
-            new RelationshipResourceNotFoundException(RULE_ID, "fake-relationship-id")
+                new EntityNotFoundException(RULE_ID),
+                new InvalidArgumentException(),
+                new RelationshipResourceNotFoundException(RULE_ID, "fake-relationship-id")
         );
     }
 }

@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -74,7 +76,7 @@ public class ActionParameterConverter
             final ParameterDefinition paramDef = definition.getParameterDefintion(param.getKey());
             if (paramDef == null && !definition.getAdhocPropertiesAllowed())
             {
-                throw new AlfrescoRuntimeException("Invalid parameter " + param.getKey() + " for action/condition " + name);
+                throw new InvalidArgumentException("Invalid parameter " + param.getKey() + " for action " + name);
             }
             if (paramDef != null)
             {

@@ -84,7 +84,10 @@
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>15.0.2</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
-        <dependency.camel.version>3.18.1</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies (can cause dependency conflicts)-->
+        <dependency.camel.version>3.18.1</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies -->
+        <dependency.netty.version>4.1.73.Final</dependency.netty.version> <!-- must be in sync with camels transitive dependencies -->
+        <dependency.netty.qpid.version>4.1.72.Final</dependency.netty.qpid.version> <!-- must be in sync with camels transitive dependencies -->
+        <dependency.netty-tcnative.version>2.0.53.Final</dependency.netty-tcnative.version> <!-- must be in sync with camels transitive dependencies -->
         <dependency.activemq.version>5.17.1</dependency.activemq.version>
         <dependency.apache-compress.version>1.21</dependency.apache-compress.version>
         <dependency.apache.taglibs.version>1.2.5</dependency.apache.taglibs.version>
@@ -827,11 +830,6 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty-tcnative-classes</artifactId>
-                <version>2.0.53.Final</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.camel</groupId>
                 <artifactId>camel-jackson</artifactId>
                 <version>${dependency.camel.version}</version>
@@ -856,6 +854,68 @@
                 <artifactId>camel-mock</artifactId>
                 <version>${dependency.camel.version}</version>
             </dependency>
+            <!-- Netty transitive and non-transitive dependencies of camel re/declared for depending projects usage, MUST BE IN SYNC WITH CAMEL! -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-resolver</artifactId>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport</artifactId>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-common</artifactId>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec</artifactId>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler</artifactId>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-handler-proxy</artifactId>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-buffer</artifactId>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-codec-http</artifactId>
+                <version>${dependency.netty.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-epoll</artifactId>
+                <version>${dependency.netty.qpid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-kqueue</artifactId>
+                <version>${dependency.netty.qpid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-transport-native-unix-common</artifactId>
+                <version>${dependency.netty.qpid.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative-classes</artifactId>
+                <version>${dependency.netty-tcnative.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.taglibs</groupId>
                 <artifactId>taglibs-standard-spec</artifactId>

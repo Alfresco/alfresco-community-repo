@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.transform.client.registry.AbstractTransformRegistry;
-import org.alfresco.transform.client.registry.SupportedTransform;
+import org.alfresco.transform.registry.AbstractTransformRegistry;
+import org.alfresco.transform.registry.SupportedTransform;
 import org.alfresco.util.testing.category.DebugTests;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

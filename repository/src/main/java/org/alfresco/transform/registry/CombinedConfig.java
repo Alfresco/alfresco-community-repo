@@ -23,15 +23,17 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.registry;
+package org.alfresco.transform.registry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.LocalPassThroughTransform;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.transform.client.model.config.TransformConfig;
-import org.alfresco.transform.client.model.config.Transformer;
+import org.alfresco.transform.registry.AbstractTransformRegistry;
+import org.alfresco.transform.registry.CombinedTransformConfig;
+import org.alfresco.transform.config.TransformConfig;
+import org.alfresco.transform.config.Transformer;
 import org.alfresco.util.ConfigFileFinder;
 import org.apache.commons.logging.Log;
 import org.apache.http.HttpEntity;
@@ -47,7 +49,7 @@ import java.io.StringReader;
 import java.util.Collections;
 import java.util.List;
 
-import static org.alfresco.transform.client.util.RequestParamMap.ENDPOINT_TRANSFORM_CONFIG_LATEST;
+import static org.alfresco.transform.common.RequestParamMap.ENDPOINT_TRANSFORM_CONFIG_LATEST;
 
 /**
  * This class reads multiple T-Engine config and local files and registers as if they were all

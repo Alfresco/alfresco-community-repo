@@ -23,9 +23,12 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.registry;
+package org.alfresco.transform.registry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.alfresco.transform.registry.AbstractTransformRegistry;
+import org.alfresco.transform.registry.SupportedTransform;
+import org.alfresco.transform.registry.TransformCache;
 import org.alfresco.util.ConfigScheduler;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.ShutdownIndicator;
@@ -38,7 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.alfresco.transform.client.registry.TransformRegistryHelper.retrieveTransformListBySize;
+import static org.alfresco.transform.registry.TransformRegistryHelper.retrieveTransformListBySize;
 
 /**
  * Used by clients to work out if a transformation is supported by the Transform Service.

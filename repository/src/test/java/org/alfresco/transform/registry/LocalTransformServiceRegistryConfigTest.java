@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.registry;
+package org.alfresco.transform.registry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.content.MimetypeMap;
@@ -32,12 +32,14 @@ import org.alfresco.repo.content.transform.LocalPipelineTransform;
 import org.alfresco.repo.content.transform.LocalTransformImpl;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
-import org.alfresco.transform.client.model.config.SupportedSourceAndTarget;
-import org.alfresco.transform.client.model.config.TransformConfig;
-import org.alfresco.transform.client.model.config.TransformOption;
-import org.alfresco.transform.client.model.config.TransformOptionGroup;
-import org.alfresco.transform.client.model.config.TransformOptionValue;
-import org.alfresco.transform.client.model.config.Transformer;
+import org.alfresco.transform.registry.SupportedTransform;
+import org.alfresco.transform.registry.TransformRegistryModelTest ;
+import org.alfresco.transform.config.SupportedSourceAndTarget;
+import org.alfresco.transform.config.TransformConfig;
+import org.alfresco.transform.config.TransformOption;
+import org.alfresco.transform.config.TransformOptionGroup;
+import org.alfresco.transform.config.TransformOptionValue;
+import org.alfresco.transform.config.Transformer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -72,7 +74,7 @@ import static org.junit.Assert.fail;
 /**
  * Testing LocalTransformServiceRegistry.
  */
-public class LocalTransformServiceRegistryConfigTest extends TransformRegistryTest
+public class LocalTransformServiceRegistryConfigTest extends TransformRegistryModelTest
 {
     public static final String HARD_CODED_VALUE = "hard coded value";
 

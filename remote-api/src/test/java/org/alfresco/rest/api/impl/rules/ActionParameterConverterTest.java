@@ -44,7 +44,10 @@ import org.alfresco.repo.action.executer.CheckOutActionExecuter;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
 import org.alfresco.repo.action.executer.LinkCategoryActionExecuter;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
+import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
+import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
+import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
@@ -72,6 +75,9 @@ public class ActionParameterConverterTest
     private static final String CONTAINS_ASPECT = NamespaceService.CONTENT_MODEL_PREFIX + QName.NAMESPACE_PREFIX + CONTAINS;
     private static final String CLASSIFIABLE = "generalclassifiable";
     private static final String CLASSIFIABLE_ASPECT = NamespaceService.CONTENT_MODEL_PREFIX + QName.NAMESPACE_PREFIX + CLASSIFIABLE;
+    private static final String IDENTIFIER = "identifier";
+    private static final String IDENTIFIER_ASPECT = NamespaceService.CONTENT_MODEL_PREFIX + QName.NAMESPACE_PREFIX + IDENTIFIER;
+
     private static final String DUMMY_FOLDER_NODE_ID = "dummy-folder-node";
     private static final String DUMMY_FOLDER_NODE_REF = STORE_REF_WORKSPACE_SPACESSTORE + "/" + DUMMY_FOLDER_NODE_ID;
     private static final String DUMMY_SCRIPT_NODE_ID = "dummy-script-ref";
@@ -386,5 +392,172 @@ public class ActionParameterConverterTest
         assertTrue(convertedDestinationParam instanceof NodeRef);
         assertEquals(STORE_REF_WORKSPACE_SPACESSTORE, ((NodeRef) convertedDestinationParam).getStoreRef());
         assertEquals(DUMMY_FOLDER_NODE_ID, ((NodeRef) convertedDestinationParam).getId());
+    }
+
+    @Test
+    public void testRemoveAspectConversion()
+    {
+        final String name = RemoveFeaturesActionExecuter.NAME;
+        final String aspectNameKey = RemoveFeaturesActionExecuter.PARAM_ASPECT_NAME;
+        final Map<String, Serializable> params = Map.of(aspectNameKey, VERSIONABLE_ASPECT);
+
+        given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
+        given(actionDefinition.getParameterDefintion(aspectNameKey)).willReturn(actionDefinitionParam1);
+        final QName qname = DataTypeDefinition.QNAME;
+        given(actionDefinitionParam1.getType()).willReturn(qname);
+        given(dictionaryService.getDataType(qname)).willReturn(dataTypeDefinition1);
+        given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
+
+        //when
+        final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
+
+        then(actionService).should().getActionDefinition(name);
+        then(actionService).shouldHaveNoMoreInteractions();
+        then(actionDefinition).should().getParameterDefintion(aspectNameKey);
+        then(actionDefinition).shouldHaveNoMoreInteractions();
+        then(dictionaryService).should().getDataType(qname);
+        then(dictionaryService).shouldHaveNoMoreInteractions();
+        then(namespaceService).should().getNamespaceURI(any());
+        then(namespaceService).shouldHaveNoMoreInteractions();
+
+        final Serializable convertedParam = convertedParams.get(aspectNameKey);
+        assertTrue(convertedParam instanceof QName);
+        assertEquals(VERSIONABLE, ((QName) convertedParam).getLocalName());
+        assertEquals(VERSIONABLE_ASPECT, ((QName) convertedParam).getPrefixString());
+        assertEquals(NamespaceService.DICTIONARY_MODEL_1_0_URI, ((QName) convertedParam).getNamespaceURI());
+    }
+
+    @Test
+    public void testAddWorkflowConversion()
+    {
+        final String name = SimpleWorkflowActionExecuter.NAME;
+        final String approveStepKey = SimpleWorkflowActionExecuter.PARAM_APPROVE_STEP;
+        final String approveFolderKey = SimpleWorkflowActionExecuter.PARAM_APPROVE_FOLDER;
+        final String approveMoveKey = SimpleWorkflowActionExecuter.PARAM_APPROVE_MOVE;
+        final String rejectStepKey = SimpleWorkflowActionExecuter.PARAM_REJECT_STEP;
+        final String rejectFolderKey = SimpleWorkflowActionExecuter.PARAM_REJECT_FOLDER;
+        final String rejectMoveKey = SimpleWorkflowActionExecuter.PARAM_REJECT_MOVE;
+        final String approve = "Approve";
+        final String reject = "Reject";
+        final Map<String, Serializable> params =
+                Map.of(approveStepKey, approve, approveFolderKey, DUMMY_FOLDER_NODE_REF, approveMoveKey, true,
+                        rejectStepKey, reject, rejectFolderKey, DUMMY_FOLDER_NODE_REF, rejectMoveKey, true);
+
+        given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
+        given(actionDefinition.getParameterDefintion(rejectStepKey)).willReturn(actionDefinitionParam1);
+        given(actionDefinition.getParameterDefintion(approveStepKey)).willReturn(actionDefinitionParam1);
+        final QName text = DataTypeDefinition.TEXT;
+        given(actionDefinitionParam1.getType()).willReturn(text, text);
+        given(actionDefinition.getParameterDefintion(rejectFolderKey)).willReturn(actionDefinitionParam2);
+        given(actionDefinition.getParameterDefintion(approveFolderKey)).willReturn(actionDefinitionParam2);
+        final QName nodeRef = DataTypeDefinition.NODE_REF;
+        given(actionDefinitionParam2.getType()).willReturn(nodeRef, nodeRef);
+        given(actionDefinition.getParameterDefintion(rejectMoveKey)).willReturn(actionDefinitionParam3);
+        given(actionDefinition.getParameterDefintion(approveMoveKey)).willReturn(actionDefinitionParam3);
+        final QName bool = DataTypeDefinition.BOOLEAN;
+        given(actionDefinitionParam3.getType()).willReturn(bool, bool);
+
+        given(dictionaryService.getDataType(nodeRef)).willReturn(dataTypeDefinition1);
+        given(dataTypeDefinition1.getJavaClassName()).willReturn(NodeRef.class.getName());
+        given(dictionaryService.getDataType(text)).willReturn(dataTypeDefinition2);
+        given(dataTypeDefinition2.getJavaClassName()).willReturn(String.class.getName());
+        given(dictionaryService.getDataType(bool)).willReturn(dataTypeDefinition3);
+        given(dataTypeDefinition3.getJavaClassName()).willReturn(Boolean.class.getName());
+
+        //when
+        final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
+
+        then(actionService).should().getActionDefinition(name);
+        then(actionService).shouldHaveNoMoreInteractions();
+        then(actionDefinition).should().getParameterDefintion(approveStepKey);
+        then(actionDefinition).should().getParameterDefintion(approveFolderKey);
+        then(actionDefinition).should().getParameterDefintion(approveMoveKey);
+        then(actionDefinition).should().getParameterDefintion(rejectStepKey);
+        then(actionDefinition).should().getParameterDefintion(rejectFolderKey);
+        then(actionDefinition).should().getParameterDefintion(rejectMoveKey);
+        then(actionDefinition).shouldHaveNoMoreInteractions();
+        then(dictionaryService).should(times(4)).getDataType(text);
+        then(dictionaryService).should(times(4)).getDataType(nodeRef);
+        then(dictionaryService).should(times(4)).getDataType(bool);
+        then(dictionaryService).shouldHaveNoMoreInteractions();
+        then(namespaceService).shouldHaveNoInteractions();
+
+        final Serializable convertedApproveStepParam = convertedParams.get(approveStepKey);
+        assertTrue(convertedApproveStepParam instanceof String);
+        assertEquals(approve, convertedApproveStepParam);
+        final Serializable convertedRejectStepParam = convertedParams.get(rejectStepKey);
+        assertTrue(convertedRejectStepParam instanceof String);
+        assertEquals(reject, convertedRejectStepParam);
+        final Serializable convertedApproveFolderParam = convertedParams.get(approveFolderKey);
+        assertTrue(convertedApproveFolderParam instanceof NodeRef);
+        assertEquals(STORE_REF_WORKSPACE_SPACESSTORE, ((NodeRef) convertedApproveFolderParam).getStoreRef());
+        assertEquals(DUMMY_FOLDER_NODE_ID, ((NodeRef) convertedApproveFolderParam).getId());
+        final Serializable convertedRejectFolderParam = convertedParams.get(rejectFolderKey);
+        assertTrue(convertedRejectFolderParam instanceof NodeRef);
+        assertEquals(STORE_REF_WORKSPACE_SPACESSTORE, ((NodeRef) convertedRejectFolderParam).getStoreRef());
+        assertEquals(DUMMY_FOLDER_NODE_ID, ((NodeRef) convertedRejectFolderParam).getId());
+        final Serializable convertedApproveMoveParam = convertedParams.get(approveMoveKey);
+        assertTrue(convertedApproveMoveParam instanceof Boolean);
+        assertTrue((Boolean) convertedApproveMoveParam);
+        final Serializable convertedRejectMoveParam = convertedParams.get(rejectMoveKey);
+        assertTrue(convertedRejectMoveParam instanceof Boolean);
+        assertTrue((Boolean) convertedRejectMoveParam);
+    }
+
+    @Test
+    public void testSetPropertyConversion()
+    {
+        final String name = SetPropertyValueActionExecuter.NAME;
+        final String propertyNameKey = SetPropertyValueActionExecuter.PARAM_PROPERTY;
+        final String propertyValueKey = SetPropertyValueActionExecuter.PARAM_VALUE;
+        final String propertyTypeKey = "prop_type";
+        final String dummy_key_value = "dummy_key_value";
+        final String propType = "d:text";
+        final Map<String, Serializable> params =
+                Map.of(propertyNameKey, IDENTIFIER_ASPECT, propertyValueKey, dummy_key_value, propertyTypeKey, propType);
+
+        given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
+        given(actionDefinition.getParameterDefintion(propertyNameKey)).willReturn(actionDefinitionParam1);
+        final QName qname = DataTypeDefinition.QNAME;
+        given(actionDefinitionParam1.getType()).willReturn(qname);
+        given(actionDefinition.getParameterDefintion(propertyValueKey)).willReturn(actionDefinitionParam2);
+        final QName any = DataTypeDefinition.ANY;
+        given(actionDefinitionParam2.getType()).willReturn(any);
+        given(actionDefinition.getParameterDefintion(propertyTypeKey)).willReturn(null);
+        given(actionDefinition.getAdhocPropertiesAllowed()).willReturn(true);
+
+        given(dictionaryService.getDataType(qname)).willReturn(dataTypeDefinition1);
+        given(dictionaryService.getDataType(any)).willReturn(dataTypeDefinition2);
+        given(dataTypeDefinition2.getJavaClassName()).willReturn(Object.class.getName());
+        given(namespaceService.getNamespaceURI(any())).willReturn(NamespaceService.DICTIONARY_MODEL_1_0_URI);
+
+        //when
+        final Map<String, Serializable> convertedParams = objectUnderTest.getConvertedParams(params, name);
+
+        then(actionService).should().getActionDefinition(name);
+        then(actionService).shouldHaveNoMoreInteractions();
+        then(actionDefinition).should().getParameterDefintion(propertyNameKey);
+        then(actionDefinition).should().getParameterDefintion(propertyValueKey);
+        then(actionDefinition).should().getParameterDefintion(propertyTypeKey);
+        then(actionDefinition).should().getAdhocPropertiesAllowed();
+        then(actionDefinition).shouldHaveNoMoreInteractions();
+        then(dictionaryService).should().getDataType(qname);
+        then(dictionaryService).should(times(2)).getDataType(any);
+        then(dictionaryService).shouldHaveNoMoreInteractions();
+        then(namespaceService).should().getNamespaceURI(any());
+        then(namespaceService).shouldHaveNoMoreInteractions();
+
+        final Serializable convertedPropNameParam = convertedParams.get(propertyNameKey);
+        assertTrue(convertedPropNameParam instanceof QName);
+        assertEquals(IDENTIFIER, ((QName) convertedPropNameParam).getLocalName());
+        assertEquals(IDENTIFIER_ASPECT, ((QName) convertedPropNameParam).getPrefixString());
+        assertEquals(NamespaceService.DICTIONARY_MODEL_1_0_URI, ((QName) convertedPropNameParam).getNamespaceURI());
+
+        final Serializable convertedPropValParam = convertedParams.get(propertyValueKey);
+        assertTrue(convertedPropValParam instanceof String);
+        assertEquals(dummy_key_value, convertedPropValParam);
+        final Serializable convertedPropTypeParam = convertedParams.get(propertyTypeKey);
+        assertTrue(convertedPropTypeParam instanceof String);
+        assertEquals(propType, convertedPropTypeParam);
     }
 }

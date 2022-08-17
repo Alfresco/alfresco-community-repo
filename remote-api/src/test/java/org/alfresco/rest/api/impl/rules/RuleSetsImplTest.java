@@ -180,7 +180,7 @@ public class RuleSetsImplTest extends TestCase
         //when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
                 () -> ruleSets.linkToRuleSet(FOLDER_ID, LINK_TO_NODE_ID)
-                                                                            );
+        );
 
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().hasRules(LINK_TO_NODE);

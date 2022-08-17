@@ -47,7 +47,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /** Unit tests for {@link RuleSettingsImpl}. */
@@ -69,8 +68,6 @@ public class RuleSettingsImplTest extends TestCase
     @Override
     public void setUp()
     {
-        MockitoAnnotations.openMocks(this);
-
         given(nodeValidatorMock.validateFolderNode(eq(FOLDER_ID), anyBoolean())).willReturn(FOLDER_NODE);
     }
 

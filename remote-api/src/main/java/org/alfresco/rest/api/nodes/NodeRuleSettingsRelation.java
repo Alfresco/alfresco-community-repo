@@ -66,8 +66,8 @@ public class NodeRuleSettingsRelation implements RelationshipResourceAction.Read
      * @return {@link RuleSetting} The current value of the setting.
      */
     @WebApiDescription (
-            title = "Get folder node rule",
-            description = "Returns a folder single rule definition for given node's, rule set's and rule's IDs",
+            title = "Get a folder node rule setting",
+            description = "Returns the specified rule setting for the given folder",
             successStatus = HttpServletResponse.SC_OK
     )
     @Override

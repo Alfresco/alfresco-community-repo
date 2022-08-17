@@ -249,6 +249,7 @@
       <property name="delegate" ref="webscript.content.streamer" />
       <property name="contentService" ref="contentService" />
       <property name="repository" ref="repositoryHelper" />
+      <property name="nonAttachContentTypes" value="#{T(java.util.Arrays).asList('${content.nonAttach.mimetypes}')}" />
    </bean>
    
    <!--  Content Info -->

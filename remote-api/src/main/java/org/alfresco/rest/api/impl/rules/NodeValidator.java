@@ -80,6 +80,28 @@ public class NodeValidator
      * @return rule set node reference
      * @throws InvalidArgumentException in case of not matching associated folder node
      */
+    public NodeRef validateRuleSetNode(final String ruleSetId, final NodeRef associatedFolderNodeRef)
+    {
+        if (RuleSet.isDefaultId(ruleSetId))
+        {
+            final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(associatedFolderNodeRef);
+            if (ruleSetNodeRef == null)
+            {
+                //folder doesn't have a -default- rule set
+                throw new RelationshipResourceNotFoundException(associatedFolderNodeRef.getId(), ruleSetId);
+            }
+            return ruleSetNodeRef;
+        }
+
+        final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
+        if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef))
+        {
+            throw new InvalidArgumentException("Rule set is not associated with folder node!");
+        }
+
+        return ruleSetNodeRef;
+    }
+
     public NodeRef validateRuleSetNode(String linkToNodeId, boolean requireChangePermission)
     {
         final Node ruleSetNode = nodes.getNode(linkToNodeId);

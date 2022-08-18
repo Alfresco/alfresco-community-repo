@@ -913,6 +913,25 @@
         <constructor-arg name="ruleSets" ref="RuleSets" />
     </bean>
 
+    <bean id="ruleSettings" class="org.alfresco.rest.api.impl.rules.RuleSettingsImpl">
+        <property name="validator" ref="nodeValidator" />
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="RuleSettings" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces" value="org.alfresco.rest.api.RuleSettings" />
+        <property name="target" ref="ruleSettings" />
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeRuleSettingsRelation">
+        <property name="ruleSettings" ref="RuleSettings" />
+    </bean>
+
     <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="supported">

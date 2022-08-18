@@ -33,6 +33,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -65,20 +66,7 @@ public class NodeValidator
     public NodeRef validateFolderNode(final String folderNodeId, boolean requireChangePermission)
     {
         final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
-        if (requireChangePermission)
-        {
-            if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
-            {
-                throw new PermissionDeniedException("Insufficient permissions to manage rules.");
-            }
-        }
-        else
-        {
-            if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
-            {
-                throw new PermissionDeniedException("Cannot read from this node!");
-            }
-        }
+        validateChangePermission(requireChangePermission, nodeRef);
         verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 
         return nodeRef;
@@ -92,26 +80,12 @@ public class NodeValidator
      * @return rule set node reference
      * @throws InvalidArgumentException in case of not matching associated folder node
      */
-    public NodeRef validateRuleSetNode(final String ruleSetId, final NodeRef associatedFolderNodeRef)
+    public NodeRef validateRuleSetNode(String linkToNodeId, boolean requireChangePermission)
     {
-        if (RuleSet.isDefaultId(ruleSetId))
-        {
-            final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(associatedFolderNodeRef);
-            if (ruleSetNodeRef == null)
-            {
-                //folder doesn't have a -default- rule set
-                throw new RelationshipResourceNotFoundException(associatedFolderNodeRef.getId(), ruleSetId);
-            }
-            return ruleSetNodeRef;
-        }
-
-        final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
-        if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef))
-        {
-            throw new InvalidArgumentException("Rule set is not associated with folder node!");
-        }
-
-        return ruleSetNodeRef;
+        final Node ruleSetNode = nodes.getNode(linkToNodeId);
+        final NodeRef parentNode = ruleSetNode.getParentId();
+        validateChangePermission(requireChangePermission, parentNode);
+        return parentNode;
     }
 
 
@@ -142,6 +116,24 @@ public class NodeValidator
         return nodeRef;
     }
 
+    private void validateChangePermission(boolean requireChangePermission, NodeRef nodeRef)
+    {
+        if (requireChangePermission)
+        {
+            if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
+            {
+                throw new PermissionDeniedException("Insufficient permissions to manage rules.");
+            }
+        }
+        else
+        {
+            if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
+            {
+                throw new PermissionDeniedException("Cannot read from this node!");
+            }
+        }
+    }
+
     private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName)
     {
         final Set<QName> expectedTypes = Set.of(expectedType);
@@ -149,6 +141,16 @@ public class NodeValidator
         {
             final String expectedTypeLocalName = (expectedTypeName != null) ? expectedTypeName : expectedType.getLocalName();
             throw new InvalidArgumentException(String.format("NodeId of a %s is expected!", expectedTypeLocalName));
+        }
+    }
+
+    public boolean isRuleSetNode(String nodeId) {
+        try
+        {
+            validateNode(nodeId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
+            return true;
+        } catch (InvalidArgumentException e) {
+            return false;
         }
     }
 

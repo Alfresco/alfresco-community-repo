@@ -39,7 +39,9 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -53,6 +55,7 @@ public class NodeValidator
     private Nodes nodes;
     private RuleService ruleService;
     private PermissionService permissionService;
+    private NodeService nodeService;
 
     /**
      * Validates if folder node exists and the user has permission to use it.
@@ -105,7 +108,8 @@ public class NodeValidator
     public NodeRef validateRuleSetNode(String linkToNodeId, boolean requireChangePermission)
     {
         final Node ruleSetNode = nodes.getNode(linkToNodeId);
-        final NodeRef parentNode = ruleSetNode.getParentId();
+        final ChildAssociationRef primaryParent = nodeService.getPrimaryParent(ruleSetNode.getNodeRef());
+        final NodeRef parentNode = primaryParent.getParentRef();
         validateChangePermission(requireChangePermission, parentNode);
         return parentNode;
     }
@@ -207,5 +211,10 @@ public class NodeValidator
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 }

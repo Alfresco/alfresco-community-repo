@@ -27,6 +27,8 @@
 package org.alfresco.rest.api.model.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,15 +36,18 @@ import java.util.List;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
+@RunWith(MockitoJUnitRunner.class)
 public class RuleTest
 {
     private static final String RULE_ID = "fake-rule-id";
@@ -51,6 +56,8 @@ public class RuleTest
     private static final boolean RULE_ENABLED = true;
     private static final boolean RULE_CASCADE = true;
     private static final boolean RULE_ASYNC = true;
+    private static final boolean RULE_SHARED = true;
+    private static final String ACTION_DEFINITION_NAME = "action-def-name";
     private static final String ERROR_SCRIPT = "error-script-ref";
 
     @Test
@@ -79,6 +86,51 @@ public class RuleTest
 
     }
 
+    @Test
+    public void testToServiceModel()
+    {
+        final Nodes nodesMock = mock(Nodes.class);
+        final Rule rule = createRuleWithDefaultValues();
+        rule.setActions(List.of(Action.builder().actionDefinitionId(ACTION_DEFINITION_NAME).create()));
+        final org.alfresco.service.cmr.rule.Rule expectedRuleModel = createRuleModel();
+        final org.alfresco.service.cmr.action.Action expectedCompensatingActionModel = createCompensatingActionModel();
+
+        // when
+        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock);
+
+        then(nodesMock).should().validateOrLookupNode(RULE_ID, null);
+        then(nodesMock).shouldHaveNoMoreInteractions();
+        assertThat(actualRuleModel)
+            .isNotNull()
+            .usingRecursiveComparison().ignoringFields("nodeRef", "action")
+            .isEqualTo(expectedRuleModel);
+        assertThat(actualRuleModel.getAction())
+            .isNotNull();
+        assertThat(actualRuleModel.getAction().getCompensatingAction())
+            .isNotNull()
+            .usingRecursiveComparison().ignoringFields("id")
+            .isEqualTo(expectedCompensatingActionModel);
+    }
+
+    @Test
+    public void testToServiceModel_withNullValues()
+    {
+        final Nodes nodesMock = mock(Nodes.class);
+        final Rule rule = new Rule();
+        final org.alfresco.service.cmr.rule.Rule expectedRuleModel = new org.alfresco.service.cmr.rule.Rule();
+        expectedRuleModel.setRuleDisabled(true);
+
+        // when
+        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock);
+
+        then(nodesMock).shouldHaveNoInteractions();
+        assertThat(actualRuleModel)
+            .isNotNull()
+            .usingRecursiveComparison()
+            .ignoringFields("ruleTypes")
+            .isEqualTo(expectedRuleModel);
+    }
+
     private static org.alfresco.service.cmr.rule.Rule createRuleModel() {
         final NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_ID);
         final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule(nodeRef);
@@ -88,15 +140,25 @@ public class RuleTest
         ruleModel.applyToChildren(RULE_CASCADE);
         ruleModel.setExecuteAsynchronously(RULE_ASYNC);
         ruleModel.setRuleTypes(List.of(RuleType.INBOUND, RuleType.UPDATE));
-        final Action compensatingAction = new ActionImpl(nodeRef, "compensatingActionId", "compensatingActionDefName");
-        compensatingAction.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, ERROR_SCRIPT);
-        final ActionCondition actionCondition = new ActionConditionImpl("actionConditionId", "actionConditionDefName");
-        final Action action = new ActionImpl(nodeRef, "actionId", "actionDefName");
-        action.setCompensatingAction(compensatingAction);
-        action.addActionCondition(actionCondition);
-        ruleModel.setAction(action);
+        ruleModel.setAction(createActionModel());
 
         return ruleModel;
+    }
+
+    private static org.alfresco.service.cmr.action.Action createActionModel() {
+        final ActionCondition actionCondition = new ActionConditionImpl("action-condition-id", "action-condition-def-name");
+        final org.alfresco.service.cmr.action.Action actionModel = new ActionImpl(null, "action-id", ACTION_DEFINITION_NAME);
+        actionModel.setCompensatingAction(createCompensatingActionModel());
+        actionModel.addActionCondition(actionCondition);
+
+        return actionModel;
+    }
+
+    private static org.alfresco.service.cmr.action.Action createCompensatingActionModel() {
+        final org.alfresco.service.cmr.action.Action compensatingActionModel = new ActionImpl(null, "compensating-action-id", ScriptActionExecuter.NAME);
+        compensatingActionModel.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, ERROR_SCRIPT);
+
+        return compensatingActionModel;
     }
 
     private static Rule createRuleWithDefaultValues() {

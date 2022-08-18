@@ -27,9 +27,16 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createActionModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createEmptyConditionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.utility.constants.UserRole.*;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultName;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
+import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
+import static org.alfresco.utility.constants.UserRole.SiteConsumer;
+import static org.alfresco.utility.constants.UserRole.SiteContributor;
+import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -60,6 +67,8 @@ import org.testng.annotations.Test;
 @Test(groups = {TestGroup.RULES})
 public class CreateRulesTests extends RestTest
 {
+    private static final String IGNORE_ID = "id";
+    private static final String IGNORE_IS_SHARED = "isShared";
     private UserModel user;
     private SiteModel site;
     private FolderModel ruleFolder;
@@ -80,14 +89,19 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
-        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        expectedRuleModel.setConditions(createEmptyConditionModel());
         restClient.assertStatusCodeIs(CREATED);
-        rule.assertThat().field("id").isNotNull()
-            .assertThat().field("name").is("ruleName")
+        // TODO fix actions mapping and remove it from ignored fields, actual issue - difference:
+        // actual:   actions=[RestActionBodyExecTemplateModel{actionDefinitionId='add-features', params={actionContext=rule, aspect-name={http://www.alfresco.org/model/audio/1.0}audio}}]
+        // expected: actions=[RestActionBodyExecTemplateModel{actionDefinitionId='set-property-value', params={aspect-name={http://www.alfresco.org/model/audio/1.0}audio, actionContext=rule}}]
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED, "actions")
+            .assertThat().field("id").isNotNull()
             .assertThat().field("isShared").isNull();
     }
 
@@ -256,6 +270,71 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Rule name is a mandatory parameter");
     }
 
+    /** Check we can create a rule without description. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithoutDescription()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        UserModel admin = dataUser.getAdminUser();
+
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().field("id").isNotNull()
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("description").isNull();
+    }
+
+    /** Check we can create a rule without specifying triggers but with the default "inbound" value. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithoutTriggers()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        UserModel admin = dataUser.getAdminUser();
+
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().field("id").isNotNull()
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("triggers").is(List.of("inbound"));
+    }
+
+    /** Check we can create a rule without error script. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithoutErrorScript()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        UserModel admin = dataUser.getAdminUser();
+
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().field("id").isNotNull()
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("errorScript").isNull();
+    }
+
+    /** Check we can create a rule with irrelevant isShared flag, and it doesn't have impact to the process. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleWithSharedFlag()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        ruleModel.setIsShared(true);
+        UserModel admin = dataUser.getAdminUser();
+
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().field("id").isNotNull()
+            .assertThat().field("name").is(RULE_NAME_DEFAULT)
+            .assertThat().field("isShared").isNull();
+    }
+
     /** Check we can create a rule. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRuleAndIncludeFieldsInResponse()
@@ -279,7 +358,7 @@ public class CreateRulesTests extends RestTest
         STEP(String.format("Add a user with '%s' role in the private site's folder", userRole.toString()));
         UserModel userWithRole = dataUser.createRandomTestUser();
         dataUser.addUserToSite(userWithRole, privateSite, userRole);
-        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createActionModel()));
+        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createDefaultActionModel()));
 
         return restClient.authenticateUser(userWithRole).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }

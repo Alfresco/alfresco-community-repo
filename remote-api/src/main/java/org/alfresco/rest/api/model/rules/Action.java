@@ -27,28 +27,16 @@
 package org.alfresco.rest.api.model.rules;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
-import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.ParameterDefinition;
-import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 @Experimental
 public class Action

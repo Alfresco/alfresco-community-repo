@@ -29,7 +29,6 @@ package org.alfresco.rest.api.model.rules;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-import org.alfresco.rest.api.People;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 

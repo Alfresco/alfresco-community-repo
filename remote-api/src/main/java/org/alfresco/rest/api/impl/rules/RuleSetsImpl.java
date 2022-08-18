@@ -70,8 +70,8 @@ public class RuleSetsImpl implements RuleSets
     @Override
     public RuleSet getRuleSetById(String folderNodeId, String ruleSetId, List<String> includes)
     {
-        NodeRef folderNode = validator.validateFolderNode(folderNodeId, false);
-        NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNode);
+        NodeRef folderNode = validator.validateFolderNode(folderNodeId, true);
+        NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, true);
 
         return ruleSetLoader.loadRuleSet(ruleSetNode, folderNode, includes);
     }
@@ -81,7 +81,10 @@ public class RuleSetsImpl implements RuleSets
     {
 
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
-        final NodeRef linkToNodeRef = validator.validateFolderNode(linkToNodeId, true);
+        final boolean isRuleSetNode = validator.isRuleSetNode(linkToNodeId);
+        final NodeRef linkToNodeRef = isRuleSetNode
+                ? validator.validateRuleSetNode(linkToNodeId, true)
+                : validator.validateFolderNode(linkToNodeId, true);
 
         //The target node should have pre-existing rules to link to
         if (!ruleService.hasRules(linkToNodeRef)) {

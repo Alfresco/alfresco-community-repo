@@ -25,42 +25,30 @@
  */
 package org.alfresco.rest.api;
 
-import java.util.List;
-
-import org.alfresco.rest.api.model.rules.RuleSet;
-import org.alfresco.rest.api.model.rules.RuleSetLink;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
+import org.alfresco.rest.api.model.rules.RuleSetting;
 import org.alfresco.service.Experimental;
 
 /**
- * Rule sets API.
+ * Rule settings API.
  */
 @Experimental
-public interface RuleSets
+public interface RuleSettings
 {
     /**
-     * Get rule sets for a folder.
+     * Get the rule setting with the given key.
      *
-     * @param folderNodeId Folder node ID
-     * @param paging {@link Paging} information
-     * @param includes List of fields to include in the rule set
-     * @return {@link CollectionWithPagingInfo} containing a list page of rule sets
+     * @param folderId Folder node ID
+     * @param ruleSettingKey Rule setting key
+     * @return {@link RuleSetting} The retrieved rule setting object.
      */
-    CollectionWithPagingInfo<RuleSet> getRuleSets(String folderNodeId, List<String> includes, Paging paging);
+    RuleSetting getRuleSetting(String folderId, String ruleSettingKey);
 
     /**
-     * Get the rule set with the given ID and check associations with the folder node.
+     * Set the rule setting against the specified folder.
      *
-     * @param folderNodeId Folder node ID
-     * @param ruleSetId Rule set ID
-     * @param includes List of fields to include in the rule set
-     * @return {@link RuleSet} definition
+     * @param folderId The folder to update.
+     * @param ruleSetting The new rule setting.
+     * @return The updated rule setting object.
      */
-    RuleSet getRuleSetById(String folderNodeId, String ruleSetId, List<String> includes);
-
-    /**
-     * Link a rule set to a folder
-     */
-    RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId);
+    RuleSetting setRuleSetting(String folderId, RuleSetting ruleSetting);
 }

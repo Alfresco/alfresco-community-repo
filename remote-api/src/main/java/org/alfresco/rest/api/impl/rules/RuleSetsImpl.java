@@ -70,8 +70,8 @@ public class RuleSetsImpl implements RuleSets
     @Override
     public RuleSet getRuleSetById(String folderNodeId, String ruleSetId, List<String> includes)
     {
-        NodeRef folderNode = validator.validateFolderNode(folderNodeId, true);
-        NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, true);
+        NodeRef folderNode = validator.validateFolderNode(folderNodeId, false);
+        NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNode);
 
         return ruleSetLoader.loadRuleSet(ruleSetNode, folderNode, includes);
     }

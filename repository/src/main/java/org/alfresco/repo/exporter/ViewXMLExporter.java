@@ -224,17 +224,18 @@ import org.xml.sax.helpers.AttributesImpl;
 
             // export of
             contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTOF_LOCALNAME, EXPORTOF_QNAME.toPrefixString(), EMPTY_ATTRIBUTES);
-            NodeRef[] exportList = context.getExportList();
-            int comma = 1;
-            for(int i=0;i < exportList.length; i++)
+
+
+            if( context.getExportMap() != null)
             {
-                NodeRef nodeRef = exportList[i]; 
-                String path = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
-                if (i == exportList.length - 1)
+                for (NodeRef[] listNodeRef : context.getExportMap().values())
                 {
-                    comma = 0;
+                    addCharactersToContentHandler(listNodeRef);
                 }
-                contentHandler.characters(ArrayUtils.addAll(path.toCharArray(), ",".toCharArray()), 0, path.length() + comma);
+            }
+            else
+            {
+                addCharactersToContentHandler(context.getExportList());
             }
             contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTOF_LOCALNAME, EXPORTOF_QNAME.toPrefixString());
             contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, METADATA_LOCALNAME, METADATA_QNAME.toPrefixString());
@@ -242,6 +243,23 @@ import org.xml.sax.helpers.AttributesImpl;
         catch (SAXException e)
         {
             throw new ExporterException("Failed to process export start event", e);
+        }
+    }
+
+    private void addCharactersToContentHandler(NodeRef[] exportList) throws SAXException
+    {
+        int comma = 1;
+        for (int i = 0; i < exportList.length; i++)
+        {
+            NodeRef nodeRef = exportList[i];
+            String path = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
+            if (i == exportList.length - 1)
+            {
+                comma = 0;
+
+            }
+            contentHandler.characters(ArrayUtils.addAll(path.toCharArray(), ",".toCharArray()), 0, path.length() + comma);
+
         }
     }
 

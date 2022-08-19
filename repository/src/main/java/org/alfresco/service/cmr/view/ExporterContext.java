@@ -26,6 +26,7 @@
 package org.alfresco.service.cmr.view;
 
 import java.util.Date;
+import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -73,6 +74,8 @@ public interface ExporterContext
      * @return NodeRef[]
      */
     public NodeRef[] getExportList();
+
+    public Map<Integer, NodeRef[]> getExportMap();
     
     /**
      * Gets list of parents for exporting nodes

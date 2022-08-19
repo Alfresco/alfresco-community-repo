@@ -77,6 +77,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -99,6 +100,8 @@ public class ExporterComponent
     private DescriptorService descriptorService;
     private AuthenticationService authenticationService;
     private PermissionService permissionService;
+
+    private String exportChunkSize;
     
 
     /** Indent Size */
@@ -177,6 +180,14 @@ public class ExporterComponent
     public void setExportSecondaryNodes(boolean exportSecondaryNodes) 
     {
         this.exportSecondaryNodes = exportSecondaryNodes;
+    }
+
+    /**
+     * @param exportChunkSize  the exportChunkSize
+     */
+    public void setExportChunkSize(String exportChunkSize)
+    {
+        this.exportChunkSize = exportChunkSize;
     }
     
     /* (non-Javadoc)
@@ -943,24 +954,27 @@ public class ExporterComponent
             try
             {
                 // Current strategy is to determine if node is a child of the root exported node
-                for (NodeRef exportRoot : context.getExportList())
+                for(NodeRef[] listNodeRef : context.getExportMap().values())
                 {
-                    if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
+                    for (NodeRef exportRoot : listNodeRef)
                     {
-                        // node to export is the root export node (and root is to be exported)
-                        isWithin = true;
-                    }
-                    else
-                    {
-                        // locate export root in primary parent path of node
-                        Path nodePath = nodeService.getPath(nodeRef);
-                        for (int i = nodePath.size() - 1; i >= 0; i--)
+                        if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
                         {
-                            Path.ChildAssocElement pathElement = (Path.ChildAssocElement) nodePath.get(i);
-                            if (pathElement.getRef().getChildRef().equals(exportRoot))
+                            // node to export is the root export node (and root is to be exported)
+                            isWithin = true;
+                        }
+                        else
+                        {
+                            // locate export root in primary parent path of node
+                            Path nodePath = nodeService.getPath(nodeRef);
+                            for (int i = nodePath.size() - 1; i >= 0; i--)
                             {
-                                isWithin = true;
-                                break;
+                                Path.ChildAssocElement pathElement = (Path.ChildAssocElement) nodePath.get(i);
+                                if (pathElement.getRef().getChildRef().equals(exportRoot))
+                                {
+                                    isWithin = true;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -986,7 +1000,10 @@ public class ExporterComponent
     private class ExporterContextImpl implements ExporterContext
     {
         private NodeRef[] exportList;
+        private Map<Integer,NodeRef[]> exportListMap;
         private NodeRef[] parentList;
+
+        private Map<Integer,NodeRef[]> parentListMap;
         private String exportedBy;
         private Date exportedDate;
         private String exporterVersion;
@@ -995,8 +1012,10 @@ public class ExporterComponent
         private Map<Integer, Set<NodeRef>> nodesWithAssociations = new HashMap<Integer, Set<NodeRef>>();
         
         private int index;
-        
-        
+        private int indexSubList;
+        private int chunkSize;
+
+
         /**
          * Construct
          * 
@@ -1005,7 +1024,17 @@ public class ExporterComponent
         public ExporterContextImpl(ExporterCrawlerParameters parameters)
         {
             index = 0;
-            
+            indexSubList = 0;
+
+
+            if(!NumberUtils.isParsable(exportChunkSize)){
+                chunkSize = 10;
+            }
+            else
+            {
+                chunkSize = Integer.getInteger(exportChunkSize);
+            }
+
             // get current user performing export
             String currentUserName = authenticationService.getCurrentUserName();
             exportedBy = (currentUserName == null) ? "unknown" : currentUserName;
@@ -1022,24 +1051,80 @@ public class ExporterComponent
                 NodeRef exportOf = getNodeRef(parameters.getExportFrom());
                 exportList[0] = exportOf;
             }
-            parentList = new NodeRef[exportList.length];
-            for (int i = 0; i < exportList.length; i++)
+            if(exportList.length > chunkSize)
             {
-                parentList[i] = getParent(exportList[i], parameters.isCrawlSelf());
+                exportListMap = splitArray(exportList);
+
+                parentListMap = new HashMap<>();
+                for(Map.Entry<Integer, NodeRef[]> exportEntrySet : exportListMap.entrySet())
+                {
+                    parentList= new NodeRef[exportEntrySet.getValue().length];
+                    for (int i = 0; i < exportEntrySet.getValue().length; i++)
+                    {
+                        parentList[i] = getParent(exportEntrySet.getValue()[i], parameters.isCrawlSelf());
+                    }
+                    parentListMap.put(exportEntrySet.getKey(), parentList);
+                }
             }
-            
+            else{
+                parentList = new NodeRef[exportList.length];
+                for (int i = 0; i < exportList.length; i++)
+                {
+                    parentList[i] = getParent(exportList[i], parameters.isCrawlSelf());
+                }
+            }
+
             // get exporter version
             exporterVersion = descriptorService.getServerDescriptor().getVersion();
+        }
+
+        public Map<Integer, NodeRef[]> splitArray(NodeRef[] arrayToSplit){
+            if(chunkSize <= 0){
+                return null;
+            }
+            int rest = arrayToSplit.length % chunkSize;
+            int chunks = arrayToSplit.length / chunkSize + (rest > 0 ? 1 : 0);
+            Map<Integer, NodeRef[]> arrays = new HashMap<>() ;
+            for(Integer i = 0; i < (rest > 0 ? chunks - 1 : chunks); i++){
+                arrays.put(i, Arrays.copyOfRange(arrayToSplit, i * chunkSize, i * chunkSize + chunkSize));
+            }
+            if(rest > 0){
+                arrays.put(chunks - 1, Arrays.copyOfRange(arrayToSplit, (chunks - 1) * chunkSize, (chunks - 1) * chunkSize + rest));
+            }
+            return arrays;
         }
         
         public boolean canRetrieve()
         {
-            return index < exportList.length;
+            if(exportListMap!=null)
+            {
+                if (exportListMap.containsKey(indexSubList))
+                {
+                    return index < exportListMap.get(indexSubList).length;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else {
+                return index < exportList.length;
+            }
         }
         
         public int setNextValue()
         {
-            return ++index;
+            if(exportListMap!=null && index==exportListMap.get(indexSubList).length-1){
+                resetContext();
+                if(indexSubList<=exportListMap.size())
+                {
+                    ++indexSubList;
+                }
+            }
+            else{
+                ++index;
+            }
+            return index;
         }
         
         public void resetContext()
@@ -1078,7 +1163,13 @@ public class ExporterComponent
         {
             if (canRetrieve())
             {
-                return exportList[index];
+                if(exportListMap!=null)
+                {
+                    return exportListMap.get(indexSubList)[index];
+                }
+                else {
+                    return exportList[index];
+                }
             }
             return null;
         }
@@ -1091,7 +1182,13 @@ public class ExporterComponent
         {
             if (canRetrieve())
             {
-                return parentList[index];
+                if(parentListMap!=null)
+                {
+                    return parentListMap.get(indexSubList)[index];
+                }
+                else {
+                    return parentList[index];
+                }
             }
             return null;
         }
@@ -1103,6 +1200,11 @@ public class ExporterComponent
         public NodeRef[] getExportList()
         {
             return exportList;
+        }
+
+        public Map<Integer, NodeRef[]> getExportMap()
+        {
+            return exportListMap;
         }
 
         /*

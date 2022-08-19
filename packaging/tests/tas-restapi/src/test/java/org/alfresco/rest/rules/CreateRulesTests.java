@@ -140,8 +140,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithEmptyName()
     {
-        RestRuleModel ruleModel = new RestRuleModel();
-        ruleModel.setName("");
+        RestRuleModel ruleModel = createRuleModel("");
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
@@ -260,7 +259,7 @@ public class CreateRulesTests extends RestTest
     {
         STEP("Try to create a three rules but the middle one has an error.");
         RestRuleModel ruleA = createRuleModel("ruleA");
-        RestRuleModel ruleB = new RestRuleModel();
+        RestRuleModel ruleB = createRuleModel("");
         // Don't set a name for Rule B.
         RestRuleModel ruleC = createRuleModel("ruleC");
         List<RestRuleModel> ruleModels = List.of(ruleA, ruleB, ruleC);

@@ -43,14 +43,18 @@ import static org.mockito.BDDMockito.then;
 import java.util.Set;
 
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -61,20 +65,32 @@ public class NodeValidatorTest
 {
 
     private static final String FOLDER_NODE_ID = "dummy-folder-node-id";
+    private static final String LINK_TO_NODE_ID = "dummy-link-to-node-id";
     private static final String RULE_SET_ID = "dummy-rule-set-id";
     private static final String RULE_ID = "dummy-rule-id";
+    private static final String PARENT_NODE_ID = "dummy-parent-node-id";
     private static final NodeRef folderNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, FOLDER_NODE_ID);
     private static final NodeRef ruleSetNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_SET_ID);
     private static final NodeRef ruleNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_ID);
+    private static final NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARENT_NODE_ID);
 
     @Mock
     private Nodes nodesMock;
+
+    @Mock
+    private Node ruleSetNodeMock;
 
     @Mock
     private PermissionService permissionServiceMock;
 
     @Mock
     private RuleService ruleServiceMock;
+
+    @Mock
+    private NodeService nodeServiceMock;
+
+    @Mock
+    private ChildAssociationRef primaryParentMock;
 
     @InjectMocks
     private NodeValidator nodeValidator;
@@ -180,6 +196,20 @@ public class NodeValidatorTest
         then(permissionServiceMock).shouldHaveNoInteractions();
 
         assertThat(nodeRef).isNotNull().isEqualTo(ruleSetNodeRef);
+    }
+
+    @Test
+    public void testValidateRuleSetNodeNoParentId()
+    {
+        given(nodesMock.getNode(any())).willReturn(ruleSetNodeMock);
+        given(nodeServiceMock.getPrimaryParent(any())).willReturn(primaryParentMock);
+        given(primaryParentMock.getParentRef()).willReturn(parentNodeRef);
+
+        //when
+        final NodeRef nodeRef = nodeValidator.validateRuleSetNode(LINK_TO_NODE_ID,true);
+
+        assertThat(nodeRef).isNotNull().isEqualTo(parentNodeRef);
+
     }
 
     @Test
@@ -327,6 +357,12 @@ public class NodeValidatorTest
 
         then(ruleServiceMock).should().isRuleAssociatedWithRuleSet(ruleNodeRef, ruleSetNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testIsRuleSetNode()
+    {
+        Assert.assertTrue(nodeValidator.isRuleSetNode(RULE_SET_ID));
     }
 
     @Test

@@ -73,7 +73,7 @@ public class DeleteNotExistsExecutor implements StatementExecutor
     private String sql;
     private int line;
     private File scriptFile;
-    private Properties globalProperties;
+    protected Properties globalProperties;
 
     protected boolean readOnly;
     protected int deleteBatchSize;

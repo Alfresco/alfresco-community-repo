@@ -955,9 +955,37 @@ public class ExporterComponent
             try
             {
                 // Current strategy is to determine if node is a child of the root exported node
-                for(NodeRef[] listNodeRef : context.getExportMap().values())
+                if (context.getExportMap() != null)
                 {
-                    for (NodeRef exportRoot : listNodeRef)
+                    for (NodeRef[] listNodeRef : context.getExportMap().values())
+                    {
+                        for (NodeRef exportRoot : listNodeRef)
+                        {
+                            if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
+                            {
+                                // node to export is the root export node (and root is to be exported)
+                                isWithin = true;
+                            }
+                            else
+                            {
+                                // locate export root in primary parent path of node
+                                Path nodePath = nodeService.getPath(nodeRef);
+                                for (int i = nodePath.size() - 1; i >= 0; i--)
+                                {
+                                    Path.ChildAssocElement pathElement = (Path.ChildAssocElement) nodePath.get(i);
+                                    if (pathElement.getRef().getChildRef().equals(exportRoot))
+                                    {
+                                        isWithin = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (NodeRef exportRoot : context.getExportList())
                     {
                         if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
                         {
@@ -972,12 +1000,14 @@ public class ExporterComponent
                             {
                                 Path.ChildAssocElement pathElement = (Path.ChildAssocElement) nodePath.get(i);
                                 if (pathElement.getRef().getChildRef().equals(exportRoot))
+
                                 {
                                     isWithin = true;
                                     break;
                                 }
                             }
                         }
+
                     }
                 }
             }

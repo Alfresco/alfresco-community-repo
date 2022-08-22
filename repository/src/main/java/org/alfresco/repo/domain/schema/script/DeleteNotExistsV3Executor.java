@@ -45,7 +45,6 @@ import org.alfresco.repo.domain.dialect.MySQLInnoDBDialect;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.checkerframework.checker.units.qual.min;
 
 /**
  * Same logic as DeleteNotExistsExecuter with the following changes:
@@ -70,10 +69,10 @@ import org.checkerframework.checker.units.qual.min;
 public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
 {
     private static Log logger = LogFactory.getLog(DeleteNotExistsV3Executor.class);
-    
+
     public static final String PROPERTY_PAUSE_AND_RECOBER_BATCHSIZE = "system.delete_not_exists.pauseAndRecoverBatchSize";
     public static final String PROPERTY_PAUSE_AND_RECOVER_TIME = "system.delete_not_exists.pauseAndRecoverTime";
-    
+
     private Dialect dialect;
     private final DataSource dataSource;
     private long pauseAndRecoverTime;
@@ -88,18 +87,19 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
         this.dialect = dialect;
         this.dataSource = dataSource;
     }
-    
+
     @Override
     public void execute() throws Exception
     {
         checkProperties();
-        
+
         String pauseAndRecoverBatchSizeString = globalProperties.getProperty(PROPERTY_PAUSE_AND_RECOBER_BATCHSIZE);
-        pauseAndRecoverBatchSize = pauseAndRecoverBatchSizeString == null ? 500000 : Long.parseLong(pauseAndRecoverBatchSizeString);
+        pauseAndRecoverBatchSize = pauseAndRecoverBatchSizeString == null ? 500000
+                : Long.parseLong(pauseAndRecoverBatchSizeString);
 
         String pauseAndRecoverTimeString = globalProperties.getProperty(PROPERTY_PAUSE_AND_RECOVER_TIME);
         pauseAndRecoverTime = pauseAndRecoverTimeString == null ? 300000 : Long.parseLong(pauseAndRecoverTimeString);
-        
+
         super.execute();
     }
 
@@ -164,7 +164,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                 deletePrepStmt = connection.prepareStatement(
                         createPreparedDeleteStatement(primaryTableName, primaryColumnName, deleteBatchSize, primaryWhereClause));
 
-                // Timeout is only checked at each bach start.
+                // Timeout is only checked at each batch start.
                 // It can be further refined by being verified at each primary row processing.
                 while (hasResults && !isTimeoutExceeded())
                 {
@@ -276,8 +276,8 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             minSecId = Collections.min(secondaryResults);
             maxSecId = Collections.max(secondaryResults);
 
-            // Remove all IDs in secondary tables from our potential Ids to delete list up to the max of secondary table
-            // values
+            // From our potentialIdsToDelete list, remote all non-eligible ids: any id that is in a secondary table or
+            // any ID past the last ID we were able to access in the secondary tables (maxSecId)
             Iterator<Long> it = potentialIdsToDelete.iterator();
             while (it.hasNext())
             {
@@ -288,6 +288,9 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                 }
             }
 
+            // The next starting primary ID for the next batch will either be the next last id evaluated from the
+            // primary table or, in case the secondary queries did not get that far, the last secondary table id
+            // evaluated (maxSecId)
             primaryId = primaryId < maxSecId ? primaryId : maxSecId;
         }
 
@@ -304,7 +307,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
         }
 
         // Do we need to pause?
-        if (processedCounter != 0 && (processedCounter % pauseAndRecoverBatchSize == 0))
+        if (processedCounter >= pauseAndRecoverBatchSize)
         {
             pauseAndRecover = true;
         }
@@ -313,7 +316,6 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
         return primaryId;
     }
 
-    // Delete from primary table in batches of {deleteBatchSize}
     private void deleteInBatches(Set<Long> potentialIdsToDelete, Set<Long> deleteIds, String primaryTableName,
             PreparedStatement deletePrepStmt) throws SQLException
     {
@@ -331,7 +333,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
     }
 
     /*
-     * Eager close of the secondary table result sets. Combine all into one
+     * Get a combined list of the ids present in all the secondary tables
      */
     private Set<Long> getSecondaryResults(PreparedStatement[] preparedStatements, Pair<String, String>[] tableColumn,
             Long minPotentialId, Long maxPotentialId) throws SQLException
@@ -365,8 +367,9 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                         }
                     }
 
-                    // Set the upper min value if this secondary results is complete (as in we have all up to the
-                    // maxPotentialId as we reached the batchSize)
+                    // Set the upper min value. If we have a {batchSize} number of results, it probably means we still
+                    // have more rows after. We need to gather the last ID processed, so on the next batch we can resume
+                    // from there. There is no point in gathering ids from other secondary tables after this value.
                     if (thisId > 0 && resultSize == batchSize)
                     {
                         minValue = (minValue != 0 && thisId > minValue) ? minValue : thisId;
@@ -388,6 +391,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             }
         }
 
+        // Return a combined list of the ids present in all the secondary tables
         return secondaryResultValues;
     }
 

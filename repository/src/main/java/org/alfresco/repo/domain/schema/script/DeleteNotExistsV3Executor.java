@@ -70,7 +70,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
 {
     private static Log logger = LogFactory.getLog(DeleteNotExistsV3Executor.class);
 
-    public static final String PROPERTY_PAUSE_AND_RECOBER_BATCHSIZE = "system.delete_not_exists.pauseAndRecoverBatchSize";
+    public static final String PROPERTY_PAUSE_AND_RECOVER_BATCHSIZE = "system.delete_not_exists.pauseAndRecoverBatchSize";
     public static final String PROPERTY_PAUSE_AND_RECOVER_TIME = "system.delete_not_exists.pauseAndRecoverTime";
 
     private Dialect dialect;
@@ -93,7 +93,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
     {
         checkProperties();
 
-        String pauseAndRecoverBatchSizeString = globalProperties.getProperty(PROPERTY_PAUSE_AND_RECOBER_BATCHSIZE);
+        String pauseAndRecoverBatchSizeString = globalProperties.getProperty(PROPERTY_PAUSE_AND_RECOVER_BATCHSIZE);
         pauseAndRecoverBatchSize = pauseAndRecoverBatchSizeString == null ? 500000
                 : Long.parseLong(pauseAndRecoverBatchSizeString);
 
@@ -395,6 +395,9 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
         return secondaryResultValues;
     }
 
+    /*
+     * Sleep for {pauseAndRecoverTime} before opening a new connection and continue to process new batches
+     */
     private void pauseAndRecoverJob(DataSource dataSource) throws SQLException
     {
         if (logger.isDebugEnabled())

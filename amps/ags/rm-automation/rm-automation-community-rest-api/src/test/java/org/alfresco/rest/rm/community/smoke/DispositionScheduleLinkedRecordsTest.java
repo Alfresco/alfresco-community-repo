@@ -43,9 +43,11 @@ import org.alfresco.rest.v0.service.DispositionScheduleService;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.model.RepoTestModel;
 import org.alfresco.utility.model.UserModel;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -58,6 +60,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.junit.Assert.assertTrue;
 
 public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @Autowired
@@ -97,6 +100,17 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             getDataUser().usingAdmin().getAdminUser().getPassword(),rmManager.getUsername(),
             UserRoles.ROLE_RM_MANAGER.roleId);
     }
+    /**
+     * Disposition Schedule on Record Folder with linked records test
+     * <p>
+     * Precondition:
+     * <p>
+     * Create rm_manager user that would have RM Managers role, rm_admin that would have RM Administrator role.
+     * Log in with admin user, create a category "manager sees me", give rm_manager read&file permission over it.
+     * Create a disposition schedule for it that would cut off folders after 1 day from created date. Copy the category.
+     * <p>
+     * <p/> TestRail Test C775<p/>
+     **/
     @Test
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
@@ -147,11 +161,12 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             getAdminUser().getPassword(),new JSONObject().put("name","cutoff"),CatFolder.getName());
 
         // Verify the Content
-//        Node electronicNode = getNode(elRecord.getId());
-//        assertTrue("The content of " + electronicRecord + " is not available",
-//            StringUtils.isEmpty(electronicNode.getNodeContent().toString()));
+        Node electronicNode = getNode(elRecord.getId());
+        assertTrue("The content of " + electronicRecord + " is available",
+            StringUtils.isEmpty(electronicNode.getNodeContent().getResponse().getBody().asString()));
 
         // verify the Properties
+        AssertJUnit.assertNull("The properties are present even after cutting off the record.", elRecord.getProperties().getTitle());
 
         // delete precondition
         deleteRecordCategory(Category1.getId());

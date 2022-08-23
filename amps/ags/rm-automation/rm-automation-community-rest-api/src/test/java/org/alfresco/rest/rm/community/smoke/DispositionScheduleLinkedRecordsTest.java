@@ -35,6 +35,7 @@ import org.alfresco.rest.rm.community.model.record.Record;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.v0.LinksAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordFoldersAPI;
@@ -62,6 +63,7 @@ import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSI
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @Autowired
@@ -248,4 +250,51 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         repoTestModel.setNodeRef(recordId);
         return getRestAPIFactory().getNodeAPI(repoTestModel);
     }
-}
+
+
+    @Test
+    @AlfrescoTest(jira = "RM-1622")
+    public void sameLevelDispositionScheduleTestPrecondition() throws Exception {
+        STEP("Create two record category");
+        RecordCategory catsameLevel1 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(categoryRecordsRM2526).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+        RecordCategory catsameLevel2 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(category2RecordsRM2526).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+
+        // create retention schedule applied on records
+        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), false);
+        // with retain immediately after record creation date and cut 1 day after record creation date
+        dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel1.getName());
+
+
+        // create retention schedule applied on records
+        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel2.getName(), false);
+        // with retain 1 day after record creation date and cut immediately after record creation date
+        dispositionScheduleService.addCutOffAfterPeriodStep(catsameLevel2.getName(), "day|1", CREATED_DATE);
+
+        // create folders in category
+        RecordCategoryChild folder1 = createRecordFolder(catsameLevel1.getId(), category1RM2526Folder);
+        RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);
+
+        // upload a record in the folder from the first category
+        createElectronicRecord(folder1.getId(), electronicRecordRM2526);
+    }
+
+
+    @Test (dependsOnMethods = { "addLongestPeriodTestsPrecondition",
+        "sameLevelDispositionScheduleTestPrecondition" })
+    public void deleteLongestPeriodTestPrecondition()
+    {
+        // Delete the RM site
+        getRestAPIFactory().getRMSiteAPI().deleteRMSite();
+
+        // Verify the status code
+        assertStatusCode(NO_CONTENT);
+    }
+
+
+
+
+    }

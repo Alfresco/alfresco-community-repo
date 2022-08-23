@@ -77,8 +77,8 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @Autowired
     private RecordFoldersAPI recordFoldersAPI;
     private final static  String TEST_PREFIX = generateTestPrefix(DispositionScheduleLinkedRecordsTest.class);
-    private RecordCategory Category1;
-    private RecordCategoryChild CopyCatFolder,CatFolder;
+    private RecordCategory Category1,catsameLevel1,catsameLevel2;
+    private RecordCategoryChild CopyCatFolder,folder1,CatFolder,folder2;
     private static final String categoryRM3077 = TEST_PREFIX + "RM-3077_manager_sees_me";
     private static final String copyCategoryRM3077 = "Copy_of_" + categoryRM3077;
     private static final String folderRM3077 = "RM-3077_folder_"+ categoryRM3077;
@@ -279,8 +279,13 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);
 
         // upload a record in the folder from the first category
-        createElectronicRecord(folder1.getId(), electronicRecordRM2526);
+        //createElectronicRecord(folder1.getId(), electronicRecordRM2526);
+        String nonElectronicRecord = TEST_PREFIX + "RM-5733 non-electronic record";
+        Record elRecord = createNonElectronicRecord(folder1.getId(), nonElectronicRecord);
+
     }
+
+
 
 
     @Test (dependsOnMethods = { "addLongestPeriodTestsPrecondition",

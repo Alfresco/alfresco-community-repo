@@ -89,6 +89,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     private static final String category2RM2526Folder = TEST_PREFIX + "RM-2526 category 2 folder";
     private static final String electronicRecordRM2526 = TEST_PREFIX + "RM-2526 electronic c1 record";
     private static final String electronic2RecordRM2526 = TEST_PREFIX + "RM-2526 electronic c2 record";
+    private final String electronicRecord = "RM-2937 electronic 2 record";
 
     private FilePlan filePlanModel;
     private UserModel rmAdmin, rmManager;
@@ -264,13 +265,13 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
                 RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
 
         // create retention schedule applied on records
-        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), false);
+        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), true);
         // with retain immediately after record creation date and cut 1 day after record creation date
         dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel1.getName());
 
 
         // create retention schedule applied on records
-        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel2.getName(), false);
+        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel2.getName(), true);
         // with retain 1 day after record creation date and cut immediately after record creation date
         dispositionScheduleService.addCutOffAfterPeriodStep(catsameLevel2.getName(), "day|1", CREATED_DATE);
 
@@ -279,7 +280,23 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);
 
         // upload a record in the folder from the first category
-        createElectronicRecord(folder1.getId(), electronicRecordRM2526);
+        //createElectronicRecord(folder1.getId(), electronicRecordRM2526);
+        Record elRecord = createElectronicRecord(folder1.getId(),electronicRecord);
+
+       /* // complete the record in first category
+        completeRecord(elRecord.getId());
+
+        // link it to the folder in second category through the details page
+        List<String> recordLists = new ArrayList<>();
+        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
+
+        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,category2RM2526Folder + "/" +
+                folder2, recordLists);*/
+
+
+
+
 
     }
 

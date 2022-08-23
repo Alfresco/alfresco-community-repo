@@ -397,7 +397,6 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
-                .assertThat().field("name").is(RULE_NAME_DEFAULT)
                 .assertThat().field("isShared").isNull();
     }
 }

@@ -1,0 +1,7 @@
+name: "prepare"
+description: "Prepare environment"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: ${{ github.action_path }}/prepare.sh

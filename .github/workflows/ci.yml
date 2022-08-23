@@ -1,0 +1,35 @@
+name: Alfresco Elasticsearch Connector CI
+
+on:
+  push:
+    branches:
+      - develops
+
+env:
+  # Both variables are required to be set before the release process starts.
+  # As the release is triggered by a commit message with "[release]" keyword on a release branch,
+  # setting these variables to new values can be done in the same commit and will indicate the release and the dev versions in it.
+  DEVELOPMENT_VERSION: "17.92-SNAPSHOT" # The version that will be set in pom files after the release (next dev version)
+  RELEASE_VERSION: "17.91" # The version of the release (tag).
+  GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
+  MAVEN_CLI_OPTS: "-B -e -fae -V -DinstallAtEnd=true -U -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn "
+  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/prepare
+
+  veracode:
+    runs-on: ubuntu-latest
+    needs:
+      - pre-commit
+    if: >
+      (github.ref_name == 'master' || contains(github.ref_name, 'release')) &&
+      ! contains(github.event.head_commit.message, '[skip build]')
+    steps:
+      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@1.10.0

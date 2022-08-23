@@ -69,7 +69,7 @@ public class NodeValidator
     public NodeRef validateFolderNode(final String folderNodeId, boolean requireChangePermission)
     {
         final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
-        validateChangePermission(requireChangePermission, nodeRef);
+        validatePermission(requireChangePermission, nodeRef);
         verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 
         return nodeRef;
@@ -110,7 +110,7 @@ public class NodeValidator
         final Node ruleSetNode = nodes.getNode(linkToNodeId);
         final ChildAssociationRef primaryParent = nodeService.getPrimaryParent(ruleSetNode.getNodeRef());
         final NodeRef parentNode = primaryParent.getParentRef();
-        validateChangePermission(requireChangePermission, parentNode);
+        validatePermission(requireChangePermission, parentNode);
         return parentNode;
     }
 
@@ -142,7 +142,7 @@ public class NodeValidator
         return nodeRef;
     }
 
-    private void validateChangePermission(boolean requireChangePermission, NodeRef nodeRef)
+    private void validatePermission(boolean requireChangePermission, NodeRef nodeRef)
     {
         if (requireChangePermission)
         {

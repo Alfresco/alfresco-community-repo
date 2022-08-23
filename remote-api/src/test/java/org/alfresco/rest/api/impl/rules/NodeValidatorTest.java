@@ -362,7 +362,8 @@ public class NodeValidatorTest
     @Test
     public void testIsRuleSetNode()
     {
-        Assert.assertTrue(nodeValidator.isRuleSetNode(RULE_SET_ID));
+        boolean actual = nodeValidator.isRuleSetNode(RULE_SET_ID);
+        Assert.assertTrue(actual);
     }
 
     @Test

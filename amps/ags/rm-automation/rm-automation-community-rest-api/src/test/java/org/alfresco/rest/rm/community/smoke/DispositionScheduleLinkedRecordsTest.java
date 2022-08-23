@@ -264,7 +264,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             .createRootRecordCategory(RecordCategory.builder().name(category2RecordsRM2526).build(),
                 RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
 
-        // create retention schedule applied on records for category 1
+       /* // create retention schedule applied on records for category 1
         dispositionScheduleService.createCategoryRetentionSchedule(categoryRecordsRM2526, true);
         // with retain immediately after record creation date and cut 1 day after record creation date
         dispositionScheduleService.addCutOffImmediatelyStep(categoryRecordsRM2526);
@@ -279,7 +279,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
 
         // create folders in category
         RecordCategoryChild folder1 = createRecordFolder(catsameLevel1.getId(), category1RM2526Folder);
-        RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);
+        RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);*/
 
         // upload a record in the folder from the first category
         //createElectronicRecord(folder1.getId(), electronicRecordRM2526);

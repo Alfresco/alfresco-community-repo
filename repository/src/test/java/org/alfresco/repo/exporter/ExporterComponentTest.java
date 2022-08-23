@@ -68,6 +68,8 @@ import org.alfresco.service.cmr.view.ExporterService;
 import org.alfresco.service.cmr.view.ImportPackageHandler;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
+
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -79,6 +81,7 @@ import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -153,7 +156,7 @@ public class ExporterComponentTest extends BaseSpringTest
         parameters.setExportFrom(location);
 //        parameters.setExcludeAspects(new QName[] { ContentModel.ASPECT_AUDITABLE });
 //        parameters.setExcludeChildAssocs(new QName[] { ContentModel.ASSOC_CONTAINS });
-        
+
         File acpFile = TempFileProvider.createTempFile("alf", ACPExportPackageHandler.ACP_EXTENSION);
         File dataFile = new File("test");
         File contentDir = new File("test");
@@ -162,6 +165,53 @@ public class ExporterComponentTest extends BaseSpringTest
         acpHandler.setExportAsFolders(true);
         exporterService.exportView(acpHandler, parameters, testProgress);
         output.close();
+    }
+
+    @Test
+    public void testExportWithChunkedList()
+            throws Exception
+    {
+        TestProgress testProgress = new TestProgress();
+        Location location = new Location(storeRef);
+
+        // now export
+        location.setPath("/system");
+        File tempFile = TempFileProvider.createTempFile("xmlexporttest", ".xml");
+        OutputStream output = new FileOutputStream(tempFile);
+        ExporterCrawlerParameters parameters = new ExporterCrawlerParameters();
+        parameters.setExportFrom(location);
+        //        parameters.setExcludeAspects(new QName[] { ContentModel.ASPECT_AUDITABLE });
+        //        parameters.setExcludeChildAssocs(new QName[] { ContentModel.ASSOC_CONTAINS });
+
+        File acpFile = TempFileProvider.createTempFile("alf", ACPExportPackageHandler.ACP_EXTENSION);
+        File dataFile = new File("test");
+        File contentDir = new File("test");
+        ACPExportPackageHandler acpHandler = new ACPExportPackageHandler(new FileOutputStream(acpFile), dataFile, contentDir, null);
+        acpHandler.setNodeService(nodeService);
+        acpHandler.setExportAsFolders(true);
+        NodeRef nodeRef = (location == null) ? null : location.getNodeRef();
+        if (nodeRef == null)
+        {
+            // If a specific node has not been provided, default to the root
+            nodeRef = nodeService.getRootNode(location.getStoreRef());
+        }
+        NodeRef[] childRefs = new NodeRef[20];
+        for (int i = 0; i < 20; i++)
+        {
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(ContentModel.PROP_NAME, this.getClass() + "_testFile"+i);
+            childRefs[i] = nodeService.createNode(nodeRef, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS, ContentModel.TYPE_CONTENT, props).getChildRef();
+        }
+        parameters.getExportFrom().setNodeRefs(childRefs);
+
+        exporterService.setExportChunkSize("3");
+        exporterService.exportView(acpHandler, parameters, testProgress);
+        output.close();
+        parameters.getExportFrom().setNodeRefs(null);
+        for (int i = 0; i < 20; i++)
+        {
+            nodeService.deleteNode(childRefs[i]);
+        }
     }
 
     /**

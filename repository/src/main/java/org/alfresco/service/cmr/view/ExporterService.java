@@ -28,8 +28,6 @@ package org.alfresco.service.cmr.view;
 import java.io.OutputStream;
 
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
-
 
 /**
  * Exporter Service
@@ -75,5 +73,6 @@ public interface ExporterService
      */
     @Auditable(parameters = {"exporter", "parameters", "progress"})
     public void exportView(Exporter exporter, ExporterCrawlerParameters parameters, Exporter progress);
-    
+
+    public void setExportChunkSize(String exportChunkSize);
 }

@@ -961,25 +961,7 @@ public class ExporterComponent
                     {
                         for (NodeRef exportRoot : listNodeRef)
                         {
-                            if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
-                            {
-                                // node to export is the root export node (and root is to be exported)
-                                isWithin = true;
-                            }
-                            else
-                            {
-                                // locate export root in primary parent path of node
-                                Path nodePath = nodeService.getPath(nodeRef);
-                                for (int i = nodePath.size() - 1; i >= 0; i--)
-                                {
-                                    Path.ChildAssocElement pathElement = (Path.ChildAssocElement) nodePath.get(i);
-                                    if (pathElement.getRef().getChildRef().equals(exportRoot))
-                                    {
-                                        isWithin = true;
-                                        break;
-                                    }
-                                }
-                            }
+                            isWithin = checkIsWithin(nodeRef, exportRoot, parameters);
                         }
                     }
                 }
@@ -987,27 +969,7 @@ public class ExporterComponent
                 {
                     for (NodeRef exportRoot : context.getExportList())
                     {
-                        if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
-                        {
-                            // node to export is the root export node (and root is to be exported)
-                            isWithin = true;
-                        }
-                        else
-                        {
-                            // locate export root in primary parent path of node
-                            Path nodePath = nodeService.getPath(nodeRef);
-                            for (int i = nodePath.size() - 1; i >= 0; i--)
-                            {
-                                Path.ChildAssocElement pathElement = (Path.ChildAssocElement) nodePath.get(i);
-                                if (pathElement.getRef().getChildRef().equals(exportRoot))
-
-                                {
-                                    isWithin = true;
-                                    break;
-                                }
-                            }
-                        }
-
+                        isWithin = checkIsWithin(nodeRef, exportRoot, parameters);
                     }
                 }
             }
@@ -1022,6 +984,28 @@ public class ExporterComponent
 
             return isWithin;
         }
+    }
+
+    private boolean checkIsWithin(NodeRef nodeRef, NodeRef exportRoot, ExporterCrawlerParameters parameters){
+        if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
+        {
+            // node to export is the root export node (and root is to be exported)
+            return true;
+        }
+        else
+        {
+            // locate export root in primary parent path of node
+            Path nodePath = nodeService.getPath(nodeRef);
+            for (int i = nodePath.size() - 1; i >= 0; i--)
+            {
+                Path.ChildAssocElement pathElement = (Path.ChildAssocElement) nodePath.get(i);
+                if (pathElement.getRef().getChildRef().equals(exportRoot))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
 
@@ -1063,7 +1047,7 @@ public class ExporterComponent
             }
             else
             {
-                chunkSize = Integer.getInteger(exportChunkSize);
+                chunkSize = Integer.parseInt(exportChunkSize);
             }
 
             // get current user performing export

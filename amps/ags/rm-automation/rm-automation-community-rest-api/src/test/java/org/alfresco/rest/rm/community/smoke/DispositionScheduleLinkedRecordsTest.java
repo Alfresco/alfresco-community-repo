@@ -57,7 +57,8 @@ import java.util.List;
 
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_REF_WORKSPACE_SPACES_STORE;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
-import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.CREATED_DATE;
+import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.*;
+import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
@@ -80,6 +81,13 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     private static final String copyCategoryRM3077 = "Copy_of_" + categoryRM3077;
     private static final String folderRM3077 = "RM-3077_folder_"+ categoryRM3077;
     private static final String copyFolderRM3077 = "Copy_of_" + folderRM3077;
+    private static final String categoryRecordsRM2526 = TEST_PREFIX + "RM-2526 category records immediately";
+    private static final String category2RecordsRM2526 = TEST_PREFIX + "RM-2526 category 2 records 1 day";
+    private static final String category1RM2526Folder = TEST_PREFIX + "RM-2526 category 1 folder";
+    private static final String category2RM2526Folder = TEST_PREFIX + "RM-2526 category 2 folder";
+    private static final String electronicRecordRM2526 = TEST_PREFIX + "RM-2526 electronic c1 record";
+    private static final String electronic2RecordRM2526 = TEST_PREFIX + "RM-2526 electronic c2 record";
+
     private FilePlan filePlanModel;
     private UserModel rmAdmin, rmManager;
     @BeforeClass(alwaysRun = true)
@@ -172,6 +180,48 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         deleteRecordCategory(Category1.getId());
         deleteRecordCategory(CopyCategoryId);
     }
+    /**
+     * Adds the precondition for dispositionScheduleLinkedRecordToHigherPeriod and dispositionScheduleLinkedRecordToLowerPeriod tests
+     * <p> Create rm admin and rm manager, create two categories that rm manager has read & file permission over
+     * <p> Both categories having a disposition schedule record based
+     * <p> First category with cut off immediately and destroy 1 day after cut off, second with cut off 1 day after record filling and destroy step 1 immediately
+     * <p> Creates folders and records in each category
+     */
+    @Test
+    public void addLongestPeriodTestsPrecondition()
+    {
+        // create categories
+        RecordCategory catLongestPeriod1 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(categoryRecordsRM2526).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+        RecordCategory catLongestPeriod2 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+            .createRootRecordCategory(RecordCategory.builder().name(category2RecordsRM2526).build(),
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+
+        // give read and file permission over the categories created to the manager
+        getRestAPIFactory().getRMUserAPI(rmAdmin).addUserPermission(catLongestPeriod1.getId(), rmManager, PERMISSION_FILING);
+        getRestAPIFactory().getRMUserAPI(rmAdmin).addUserPermission(catLongestPeriod2.getId(), rmManager, PERMISSION_FILING);
+
+        // create as rmManager the disposition schedule for the first category
+        dispositionScheduleService.createCategoryRetentionSchedule(rmManager, categoryRecordsRM2526, true);
+        // add cut off immediately step, add destroy step 1 day after cut off
+        dispositionScheduleService.addCutOffImmediatelyStep(categoryRecordsRM2526);
+        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(categoryRecordsRM2526, "day|1", CUT_OFF_DATE);
+
+        // create as rmManager the disposition schedule for the second category
+        dispositionScheduleService.createCategoryRetentionSchedule(rmManager, category2RecordsRM2526, true);
+        // add cut off 1 day from record filling date step, add destroy immediately step
+        dispositionScheduleService.addCutOffAfterPeriodStep(category2RecordsRM2526, "day|1", DATE_FILED);
+        dispositionScheduleService.addDestroyWithGhostingImmediatelyAfterCutOff(category2RecordsRM2526);
+
+        // create folders in categories with rm manager
+        RecordCategoryChild folder1 = createRecordFolder(catLongestPeriod1.getId(),category1RM2526Folder);
+        RecordCategoryChild folder2 = createRecordFolder(catLongestPeriod2.getId(),category2RM2526Folder);
+
+        // upload a record in each folder
+        createElectronicRecord(folder1.getId(),electronicRecordRM2526);
+        createElectronicRecord(folder2.getId(),electronic2RecordRM2526);
+    }
     private String copyCategory(UserModel user, String categoryId, String copyName) {
         RepoTestModel repoTestModel = new RepoTestModel() {};
         repoTestModel.setNodeRef(categoryId);
@@ -184,7 +234,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         try
         {
             restNodeModel = getRestAPIFactory().getNodeAPI(user, repoTestModel).copy(copyDestinationInfo);
-
         }
         catch (Exception e)
         {

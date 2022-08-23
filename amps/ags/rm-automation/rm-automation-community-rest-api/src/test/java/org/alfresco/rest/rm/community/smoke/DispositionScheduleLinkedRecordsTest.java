@@ -283,7 +283,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
 
         // upload a record in the folder from the first category
         //createElectronicRecord(folder1.getId(), electronicRecordRM2526);
-        Record elRecord = createElectronicRecord(folder1.getId(),electronicRecord);
+       // Record elRecord = createElectronicRecord(folder1.getId(),electronicRecord);
 
        /* // complete the record in first category
         completeRecord(elRecord.getId());

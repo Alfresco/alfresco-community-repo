@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.rules;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -97,6 +99,24 @@ public class RulesTestsUtils
         RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
         restActionModel.setActionDefinitionId("add-features");
         restActionModel.setParams(Map.of("aspect-name", "cm:audio"));
+        return restActionModel;
+    }
+
+    public static List<RestActionBodyExecTemplateModel> addActionContextParams(List<RestActionBodyExecTemplateModel> inputActions)
+    {
+        inputActions.forEach(inputAction -> {
+            final Map<String, Serializable> params = new HashMap<>((Map<String, Serializable>) inputAction.getParams());
+            params.put("actionContext", "rule");
+            inputAction.setParams(params);
+        });
+        return inputActions;
+    }
+
+    public static RestActionBodyExecTemplateModel createCustomActionModel(String actionDefinitionId, Map<String, Serializable> params)
+    {
+        RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
+        restActionModel.setActionDefinitionId(actionDefinitionId);
+        restActionModel.setParams(params);
         return restActionModel;
     }
 

@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.action.ParameterizedItemDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -62,7 +63,8 @@ public class ActionParameterConverter
         this.namespaceService = namespaceService;
     }
 
-    Map<String, Serializable> getConvertedParams(Map<String, Serializable> params, String name) {
+    Map<String, Serializable> getConvertedParams(Map<String, Serializable> params, String name)
+    {
         final Map<String, Serializable> parameters = new HashMap<>(params.size());
         final ParameterizedItemDefinition definition = actionService.getActionDefinition(name);
         if (definition == null)
@@ -87,6 +89,21 @@ public class ActionParameterConverter
             }
         }
         return parameters;
+    }
+
+    public Serializable convertParamFromServiceModel(Serializable param)
+    {
+        if (param instanceof QName)
+        {
+            return ((QName) param).toPrefixString(namespaceService);
+        }
+        else if (param instanceof NodeRef) {
+            return param.toString();
+        }
+        else
+        {
+            return param;
+        }
     }
 
     private Serializable convertValue(QName typeQName, Object propertyValue) throws JSONException

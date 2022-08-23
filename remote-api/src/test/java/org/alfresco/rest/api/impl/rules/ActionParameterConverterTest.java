@@ -36,6 +36,7 @@ import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
@@ -559,5 +560,41 @@ public class ActionParameterConverterTest
         final Serializable convertedPropTypeParam = convertedParams.get(propertyTypeKey);
         assertTrue(convertedPropTypeParam instanceof String);
         assertEquals(propType, convertedPropTypeParam);
+    }
+
+    @Test
+    public void testQnameServiceModelParamConversion() {
+        given(namespaceService.getPrefixes(any())).willReturn(List.of("cm"));
+        final String qname = "{cm-dummy-prefix}audio";
+        final Serializable qnameParam = QName.createQName(qname);
+
+        //when
+        final Serializable convertedParam = objectUnderTest.convertParamFromServiceModel(qnameParam);
+
+        then(namespaceService).should().getPrefixes(any());
+        then(namespaceService).shouldHaveNoMoreInteractions();
+        assertEquals("cm:audio", convertedParam);
+    }
+
+    @Test
+    public void testNodeRefServiceModelParamConversion() {
+        final Serializable nodeRefParam = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, "dummy-id");
+
+        //when
+        final Serializable convertedParam = objectUnderTest.convertParamFromServiceModel(nodeRefParam);
+
+        then(namespaceService).shouldHaveNoInteractions();
+        assertEquals("workspace://SpacesStore/dummy-id", convertedParam);
+    }
+
+    @Test
+    public void testOtherServiceModelParamConversion() {
+        //given
+        final Serializable dummyStringParam = "dummy-param";
+        //when
+        final Serializable convertedParam = objectUnderTest.convertParamFromServiceModel(dummyStringParam);
+
+        then(namespaceService).shouldHaveNoInteractions();
+        assertEquals(dummyStringParam, convertedParam);
     }
 }

@@ -264,16 +264,18 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             .createRootRecordCategory(RecordCategory.builder().name(category2RecordsRM2526).build(),
                 RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
 
-        // create retention schedule applied on records
-        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), true);
+        // create retention schedule applied on records for category 1
+        dispositionScheduleService.createCategoryRetentionSchedule(categoryRecordsRM2526, true);
         // with retain immediately after record creation date and cut 1 day after record creation date
-        dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel1.getName());
+        dispositionScheduleService.addCutOffImmediatelyStep(categoryRecordsRM2526);
+        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(categoryRecordsRM2526, "day|1", CUT_OFF_DATE);
 
 
-        // create retention schedule applied on records
-        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel2.getName(), true);
-        // with retain 1 day after record creation date and cut immediately after record creation date
-        dispositionScheduleService.addCutOffAfterPeriodStep(catsameLevel2.getName(), "day|1", CREATED_DATE);
+        // create retention schedule applied on records for category 1
+        dispositionScheduleService.createCategoryRetentionSchedule(category2RecordsRM2526, true);
+        // with retain immediately after record creation date and cut 1 day after record creation date
+        dispositionScheduleService.addCutOffImmediatelyStep(category2RecordsRM2526);
+        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(category2RecordsRM2526, "day|1", CUT_OFF_DATE);
 
         // create folders in category
         RecordCategoryChild folder1 = createRecordFolder(catsameLevel1.getId(), category1RM2526Folder);

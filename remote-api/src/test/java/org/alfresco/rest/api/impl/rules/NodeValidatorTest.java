@@ -39,9 +39,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.reset;
 
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -362,8 +364,23 @@ public class NodeValidatorTest
     @Test
     public void testIsRuleSetNode()
     {
+        //resetting mock to bypass setup method
+        resetNodesMock();
+
         boolean actual = nodeValidator.isRuleSetNode(RULE_SET_ID);
         Assert.assertTrue(actual);
+    }
+
+
+    @Test
+    public void testIsNotRuleSetNode()
+    {
+        //resetting mock to bypass setup method
+        resetNodesMock();
+
+        //using an id that doesn't belong to a ruleset node
+        boolean actual = nodeValidator.isRuleSetNode(FOLDER_NODE_ID);
+        Assert.assertFalse(actual);
     }
 
     @Test
@@ -412,5 +429,13 @@ public class NodeValidatorTest
 
         then(ruleServiceMock).should().isRuleSetShared(ruleSetNodeRef);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    private void resetNodesMock() {
+        reset(nodesMock);
+        given(nodesMock.validateOrLookupNode(eq(FOLDER_NODE_ID), any())).willReturn(folderNodeRef);
+        given(nodesMock.validateNode(RULE_SET_ID)).willReturn(ruleSetNodeRef);
+        given(nodesMock.validateNode(RULE_ID)).willReturn(ruleNodeRef);
+        given(nodesMock.nodeMatches(ruleSetNodeRef, Set.of(ContentModel.TYPE_SYSTEM_FOLDER), null)).willReturn(true);
     }
 }

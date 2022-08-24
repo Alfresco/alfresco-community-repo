@@ -61,6 +61,8 @@ public class GetRulesTests extends RestTest
     private FolderModel ruleFolder;
     private List<RestRuleModel> createdRules;
     private RestRuleModel createdRuleA;
+    private static final String IGNORE_ID = "id";
+    private static final String IGNORE_IS_SHARED = "isShared";
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
@@ -179,21 +181,23 @@ public class GetRulesTests extends RestTest
     public void getRulesOtherFieldsModified()
     {
         STEP("Create a rule with all other fields default values modified");
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = createRuleModelWithModifiedValues();
         ruleModel.setTriggers(List.of("update"));
         UserModel admin = dataUser.getAdminUser();
-        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
-        restClient.assertStatusCodeIs(CREATED);
+        RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
+        expectedRuleModel.setActions(List.of(createDefaultActionModel()));
+        expectedRuleModel.setTriggers(List.of("update"));
+        expectedRuleModel.setConditions(createEmptyConditionModel());
 
-        rule.assertThat().field("description").is("rule description")
-                .assertThat().field("enabled").is(true)
-                .assertThat().field("cascade").is(true)
-                .assertThat().field("errorScript").is("error-script")
-                .assertThat().field("shared").isNull()
-                .assertThat().field("asynchronous").is(true)
-                .assertThat().field("triggers").is("[update]");
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
+                .assertThat().field("id").isNotNull()
+                .assertThat().field("isShared").isNull();
+
     }
 
     /** Check we can get rule's "other" fields */
@@ -201,20 +205,23 @@ public class GetRulesTests extends RestTest
     public void getRulesDefaultFields()
     {
         STEP("Create a rule with all other fields default values");
-        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
-        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
+
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        expectedRuleModel.setActions(List.of(createDefaultActionModel()));
+        expectedRuleModel.setTriggers(List.of("inbound"));
+        expectedRuleModel.setConditions(createEmptyConditionModel());
 
         restClient.assertStatusCodeIs(CREATED);
 
-        rule.assertThat().field("description").isNull()
-                .assertThat().field("enabled").is(false)
-                .assertThat().field("cascade").is(false)
-                .assertThat().field("asynchronous").is(false)
-                .assertThat().field("errorScript").isNull()
-                .assertThat().field("shared").isNull()
-                .assertThat().field("triggers").is("[inbound]");
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
+                .assertThat().field("id").isNotNull()
+                .assertThat().field("isShared").isNull();
     }
 
     /** Check we get a 404 if trying to load a rule from a folder that doesn't exist. */

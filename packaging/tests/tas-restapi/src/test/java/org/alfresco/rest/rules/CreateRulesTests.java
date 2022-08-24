@@ -31,8 +31,8 @@ import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createEmptyConditionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultName;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
@@ -89,12 +89,12 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = createRuleModelWithModifiedValues();
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
         expectedRuleModel.setConditions(createEmptyConditionModel());
         restClient.assertStatusCodeIs(CREATED);
         // TODO fix actions mapping and remove it from ignored fields, actual issue - difference:
@@ -274,7 +274,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithoutDescription()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -290,7 +290,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithoutTriggers()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -306,7 +306,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithoutErrorScript()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -322,7 +322,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithSharedFlag()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         ruleModel.setIsShared(true);
         UserModel admin = dataUser.getAdminUser();
 

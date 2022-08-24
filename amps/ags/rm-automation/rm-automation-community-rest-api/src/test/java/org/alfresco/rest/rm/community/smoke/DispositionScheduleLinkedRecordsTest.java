@@ -61,6 +61,7 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.*;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
@@ -257,12 +258,16 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @AlfrescoTest(jira = "RM-1622")
     public void sameLevelDispositionScheduleTestPrecondition() throws Exception {
         STEP("Create two record category");
-        RecordCategory catsameLevel1 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
+        catsameLevel1 = createRootCategory(getRandomName("Title"));
+        catsameLevel2 = createRootCategory(getRandomName("Title"));
+
+
+       /* RecordCategory catsameLevel1 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
             .createRootRecordCategory(RecordCategory.builder().name(categoryRecordsRM2526).build(),
                 RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
         RecordCategory catsameLevel2 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
             .createRootRecordCategory(RecordCategory.builder().name(category2RecordsRM2526).build(),
-                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
+                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);*/
 
         // create retention schedule applied on records for category 1
         dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), true);

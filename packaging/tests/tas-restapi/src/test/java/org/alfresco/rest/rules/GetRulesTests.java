@@ -27,13 +27,14 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.*;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.CREATED;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -133,7 +134,7 @@ public class GetRulesTests extends RestTest
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
-    /** Check we can get all the rules for a folder along with the extra "include" fields. */
+    /** Check we can get all the rules for a folder along with the extra "include" and "other" fields. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void getRulesListWithIncludedFields()
     {
@@ -145,7 +146,14 @@ public class GetRulesTests extends RestTest
         rules.assertThat().entriesListCountIs(createdRules.size());
         IntStream.range(0, createdRules.size()).forEach(i ->
                 rules.getEntries().get(i).onModel()
-                     .assertThat().field("isShared").isNotNull());
+                     .assertThat().field("isShared").isNotNull()
+                        .assertThat().field("description").isNull()
+                        .assertThat().field("enabled").is(false)
+                        .assertThat().field("cascade").is(false)
+                        .assertThat().field("asynchronous").is(false)
+                        .assertThat().field("errorScript").isNull()
+                        .assertThat().field("shared").isNull()
+                        .assertThat().field("triggers").is("[inbound]"));
     }
 
     /**
@@ -164,6 +172,49 @@ public class GetRulesTests extends RestTest
         rule.assertThat().field("id").is(createdRuleA.getId())
             .assertThat().field("name").is(createdRuleA.getName())
             .assertThat().field("isShared").isNull();
+    }
+
+    /** Check we can get rule's other fields */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getRulesOtherFieldsModified()
+    {
+        STEP("Create a rule with all other fields default values modified");
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setTriggers(List.of("update"));
+        UserModel admin = dataUser.getAdminUser();
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+
+        rule.assertThat().field("description").is("rule description")
+                .assertThat().field("enabled").is(true)
+                .assertThat().field("cascade").is(true)
+                .assertThat().field("errorScript").is("error-script")
+                .assertThat().field("shared").isNull()
+                .assertThat().field("asynchronous").is(true)
+                .assertThat().field("triggers").is("[update]");
+    }
+
+    /** Check we can get rule's "other" fields */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getRulesDefaultFields()
+    {
+        STEP("Create a rule with all other fields default values");
+        RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        UserModel admin = dataUser.getAdminUser();
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+
+        rule.assertThat().field("description").isNull()
+                .assertThat().field("enabled").is(false)
+                .assertThat().field("cascade").is(false)
+                .assertThat().field("asynchronous").is(false)
+                .assertThat().field("errorScript").isNull()
+                .assertThat().field("shared").isNull()
+                .assertThat().field("triggers").is("[inbound]");
     }
 
     /** Check we get a 404 if trying to load a rule from a folder that doesn't exist. */

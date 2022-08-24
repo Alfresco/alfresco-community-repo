@@ -4,21 +4,21 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * This file is part of the Alfresco software. 
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
- *
+ * 
  * Alfresco is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * 
  * Alfresco is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
@@ -57,7 +57,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Exporter that exports Repository information to XML (Alfresco Repository View Schema)
- *
+ * 
  * @author David Caruana
  */
 /*package*/ class ViewXMLExporter
@@ -94,7 +94,7 @@ import org.xml.sax.helpers.AttributesImpl;
     private static QName VALUE_QNAME;
     private static QName PROPERTIES_QNAME;
     private static QName ASPECTS_QNAME;
-    private static QName ASSOCIATIONS_QNAME;
+    private static QName ASSOCIATIONS_QNAME; 
     private static QName CHILDNAME_QNAME;
     private static QName DATATYPE_QNAME;
     private static QName ISNULL_QNAME;
@@ -115,26 +115,26 @@ import org.xml.sax.helpers.AttributesImpl;
     private static QName LOCALE_QNAME;
     private static QName MLVALUE_QNAME;
     private static final AttributesImpl EMPTY_ATTRIBUTES = new AttributesImpl();
-
+    
     // Service dependencies
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private SearchService searchService;
     private DictionaryService dictionaryService;
     private PermissionService permissionService;
-
+    
     // View context
     private ContentHandler contentHandler;
     private ExporterContext context;
-
+    
     // Configuration
     private ReferenceType referenceType;
-
-
+    
+    
 
     /**
      * Construct
-     *
+     * 
      * @param namespaceService  namespace service
      * @param nodeService  node service
      * @param contentHandler  content handler
@@ -148,7 +148,7 @@ import org.xml.sax.helpers.AttributesImpl;
         this.dictionaryService = dictionaryService;
         this.permissionService = permissionService;
         this.contentHandler = contentHandler;
-
+        
         VIEW_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, VIEW_LOCALNAME, namespaceService);
         VALUE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, namespaceService);
         VALUES_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUES_LOCALNAME, namespaceService);
@@ -176,19 +176,19 @@ import org.xml.sax.helpers.AttributesImpl;
         MLVALUE_QNAME = QName.createQName(NamespaceService.REPOSITORY_VIEW_PREFIX, MLVALUE_LOCALNAME, namespaceService);
 
     }
-
-
+    
+    
     /**
      * Set Reference Type to export with
-     *
+     * 
      * @param referenceType  reference type to export
      */
     public void setReferenceType(ReferenceType referenceType)
     {
         this.referenceType = referenceType;
     }
-
-
+    
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#start()
      */
@@ -216,7 +216,7 @@ import org.xml.sax.helpers.AttributesImpl;
             String date = DefaultTypeConverter.INSTANCE.convert(String.class, context.getExportedDate());
             contentHandler.characters(date.toCharArray(), 0, date.length());
             contentHandler.endElement(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTEDDATE_LOCALNAME, EXPORTEDDATE_QNAME.toPrefixString());
-
+            
             // exporter version
             contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, EXPORTERVERSION_LOCALNAME, EXPORTERVERSION_QNAME.toPrefixString(), EMPTY_ATTRIBUTES);
             contentHandler.characters(context.getExporterVersion().toCharArray(), 0, context.getExporterVersion().length());
@@ -228,7 +228,7 @@ import org.xml.sax.helpers.AttributesImpl;
             int comma = 1;
             for(int i=0;i < exportList.length; i++)
             {
-                NodeRef nodeRef = exportList[i];
+                NodeRef nodeRef = exportList[i]; 
                 String path = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
                 if (i == exportList.length - 1)
                 {
@@ -282,7 +282,7 @@ import org.xml.sax.helpers.AttributesImpl;
     {
         try
         {
-            AttributesImpl attrs = new AttributesImpl();
+            AttributesImpl attrs = new AttributesImpl(); 
 
             Path path = nodeService.getPath(nodeRef);
             if (path.size() > 1)
@@ -292,7 +292,7 @@ import org.xml.sax.helpers.AttributesImpl;
                 QName childQName = pathElement.getRef().getQName();
                 attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, CHILDNAME_LOCALNAME, CHILDNAME_QNAME.toPrefixString(), null, toPrefixString(childQName));
             }
-
+            
             QName type = nodeService.getType(nodeRef);
             contentHandler.startElement(type.getNamespaceURI(), type.getLocalName(), toPrefixString(type), attrs);
         }
@@ -302,7 +302,7 @@ import org.xml.sax.helpers.AttributesImpl;
         }
     }
 
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#endNode(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -386,7 +386,7 @@ import org.xml.sax.helpers.AttributesImpl;
     {
         try
         {
-            AttributesImpl attrs = new AttributesImpl();
+            AttributesImpl attrs = new AttributesImpl(); 
             boolean inherit = permissionService.getInheritParentPermissions(nodeRef);
             if (!inherit)
             {
@@ -408,7 +408,7 @@ import org.xml.sax.helpers.AttributesImpl;
         try
         {
             // output access control entry
-            AttributesImpl attrs = new AttributesImpl();
+            AttributesImpl attrs = new AttributesImpl(); 
             attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, ACCESS_LOCALNAME, ACCESS_QNAME.toPrefixString(), null, permission.getAccessStatus().toString());
             contentHandler.startElement(ACE_QNAME.getNamespaceURI(), ACE_QNAME.getLocalName(), toPrefixString(ACE_QNAME), attrs);
 
@@ -423,7 +423,7 @@ import org.xml.sax.helpers.AttributesImpl;
             String strPermission = permission.getPermission();
             contentHandler.characters(strPermission.toCharArray(), 0, strPermission.length());
             contentHandler.endElement(PERMISSION_QNAME.getNamespaceURI(), PERMISSION_QNAME.getLocalName(), toPrefixString(PERMISSION_QNAME));
-
+            
             // end access control entry
             contentHandler.endElement(ACE_QNAME.getNamespaceURI(), ACE_QNAME.getLocalName(), toPrefixString(ACE_QNAME));
         }
@@ -447,7 +447,7 @@ import org.xml.sax.helpers.AttributesImpl;
             throw new ExporterException("Failed to process end ACL event - node ref " + nodeRef.toString());
         }
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#startProperties(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -541,7 +541,7 @@ import org.xml.sax.helpers.AttributesImpl;
             throw new ExporterException("Failed to process end collection event - nodeRef " + nodeRef + "; property " + toPrefixString(property), e);
         }
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#value(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, java.io.Serializable)
      */
@@ -585,7 +585,7 @@ import org.xml.sax.helpers.AttributesImpl;
                     value = (nodeRefPath == null) ? null : nodeRefPath.toPrefixString(namespaceService);
                 }
             }
-
+            
             // output value wrapper if value is null or property data type is ANY or value is part of collection
             if (value == null || valueDataType != null || index != -1)
             {
@@ -604,15 +604,15 @@ import org.xml.sax.helpers.AttributesImpl;
                 	contentHandler.startElement(NamespaceService.REPOSITORY_VIEW_PREFIX, VALUE_LOCALNAME, toPrefixString(VALUE_QNAME), attrs);
                 }
             }
-
+            
             // output value
             String strValue = (String)DefaultTypeConverter.INSTANCE.convert(String.class, value);
             if (strValue != null)
             {
-                for (int i = 0; i < strValue.length(); i++)
+                for (int i = 0; i < strValue.length(); i++) 
                 {
                     char[] temp = new char[]{strValue.charAt(i)};
-                    contentHandler.characters(temp, 0, 1);
+                    contentHandler.characters(temp, 0, 1); 
                 }
             }
 
@@ -636,7 +636,7 @@ import org.xml.sax.helpers.AttributesImpl;
     {
         // TODO: Base64 encode content and send out via Content Handler
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#startAssoc(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -712,10 +712,10 @@ import org.xml.sax.helpers.AttributesImpl;
             }
 
             // output reference
-            AttributesImpl attrs = new AttributesImpl();
+            AttributesImpl attrs = new AttributesImpl(); 
             if (referenceFormat.equals(ReferenceType.PATHREF))
             {
-                Path path = createPath(context.getExportParent(), context.getExportParent(), nodeRef);
+                Path path = createPath(context.getExportParent(), context.getExportParent(), nodeRef);            
                 attrs.addAttribute(NamespaceService.REPOSITORY_VIEW_1_0_URI, PATHREF_LOCALNAME, PATHREF_QNAME.toPrefixString(), null, path.toPrefixString(namespaceService));
             }
             else
@@ -787,7 +787,7 @@ import org.xml.sax.helpers.AttributesImpl;
     public void warning(String warning)
     {
     }
-
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.Exporter#end()
      */
@@ -817,11 +817,11 @@ import org.xml.sax.helpers.AttributesImpl;
 
     /**
      * Return relative path between from and to references within export root
-     *
+     * 
      * @param fromRef  from reference
      * @param toRef  to reference
      * @return  path
-     */
+     */    
     private Path createPath(NodeRef rootRef, NodeRef fromRef, NodeRef toRef)
     {
         // Check that item exists first
@@ -830,14 +830,14 @@ import org.xml.sax.helpers.AttributesImpl;
             // return null path
             return null;
         }
-
+        
         // Check whether item is the root node of the store
         // If so, always return absolute path
         if (toRef.equals(nodeService.getRootNode(toRef.getStoreRef())))
         {
             return nodeService.getPath(toRef);
         }
-
+        
         // construct relative path
         Path rootPath = createIndexedPath(rootRef, nodeService.getPath(rootRef));
         Path fromPath = createIndexedPath(fromRef, nodeService.getPath(fromRef));
@@ -893,14 +893,14 @@ import org.xml.sax.helpers.AttributesImpl;
                             {
                                 relativePath.append(toPath.subPath(j, toPath.size() - 1));
                             }
-
+                            
                             break;
                         }
                     }
                 }
             }
 
-
+            
             if (relativePath == null)
             {
                 // default to absolute path
@@ -912,14 +912,14 @@ import org.xml.sax.helpers.AttributesImpl;
             String msg = "Failed to determine relative path: root path=" + rootPath + "; from path=" + fromPath + "; to path=" + toPath;
             throw new ExporterException(msg, e);
         }
-
+        
         return relativePath;
     }
 
 
     /**
      * Helper to convert a path into an indexed path which uniquely identifies a node
-     *
+     * 
      * @param nodeRef NodeRef
      * @param path Path
      * @return Path
@@ -952,7 +952,7 @@ import org.xml.sax.helpers.AttributesImpl;
                 }
             }
         }
-
+        
         return path;
     }
 }

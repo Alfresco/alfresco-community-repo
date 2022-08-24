@@ -504,10 +504,11 @@ public class ContentStreamer implements ResourceLoaderAware
         try
         {
             return Rfc5987Util.encode(attachFileName);
-        } catch (UnsupportedEncodingException e)
+        }
+        catch (UnsupportedEncodingException e)
         {
             if (logger.isInfoEnabled())
-                logger.info(e.getMessage() + " Changing encoder.");
+                logger.info(e.getMessage() + " Changing encoder from Rfc5987Util to java.net.URLEncoder.");
 
             return URLEncoder.encode(attachFileName, StandardCharsets.UTF_8);
         }

@@ -270,21 +270,22 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         // create retention schedule applied on records for category 1
         dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), true);
         // with retain immediately after record creation date and cut 1 day after record creation date
-        dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel1.getName());
+        dispositionScheduleService.addCutOffAfterPeriodStep(catsameLevel1.getName(), "day|1", CREATED_DATE);
+
        /* dispositionScheduleService.addCutOffImmediatelyStep(categoryRecordsRM2526);
         dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(categoryRecordsRM2526, "day|1", CUT_OFF_DATE);
 */
 
-       /* // create retention schedule applied on records for category 1
-        dispositionScheduleService.createCategoryRetentionSchedule(category2RecordsRM2526, true);
+        // create retention schedule applied on records for category 2
+        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel2.getName(), true);
         // with retain immediately after record creation date and cut 1 day after record creation date
-        dispositionScheduleService.addCutOffImmediatelyStep(category2RecordsRM2526);
+        dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel2.getName());
         dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(category2RecordsRM2526, "day|1", CUT_OFF_DATE);
 
-        // create folders in category
+        /*// create folders in category
         RecordCategoryChild folder1 = createRecordFolder(catsameLevel1.getId(), category1RM2526Folder);
-        RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);*/
-
+        RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);
+*/
         // upload a record in the folder from the first category
         //createElectronicRecord(folder1.getId(), electronicRecordRM2526);
        // Record elRecord = createElectronicRecord(folder1.getId(),electronicRecord);

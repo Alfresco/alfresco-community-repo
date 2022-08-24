@@ -96,7 +96,7 @@ public class RulesTestsUtils
     {
         RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
         restActionModel.setActionDefinitionId("set-property-value");
-        restActionModel.setParams(Map.of("aspect-name", "cm:audio"));
+        restActionModel.setParams(Map.of("aspect-name", "cm:audio", "actionContext", "rule"));
         return restActionModel;
     }
 

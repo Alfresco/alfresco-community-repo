@@ -265,8 +265,9 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
                 RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
 
         // create retention schedule applied on records for category 1
-        dispositionScheduleService.createCategoryRetentionSchedule(categoryRecordsRM2526, true);
+        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), true);
         // with retain immediately after record creation date and cut 1 day after record creation date
+        dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel1.getName());
        /* dispositionScheduleService.addCutOffImmediatelyStep(categoryRecordsRM2526);
         dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(categoryRecordsRM2526, "day|1", CUT_OFF_DATE);
 */

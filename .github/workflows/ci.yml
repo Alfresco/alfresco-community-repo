@@ -1,4 +1,4 @@
-name: Alfresco Elasticsearch Connector CI
+name: Alfresco Community Repo CI
 
 on: push
 
@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Clean cache"
-        run: bash scripts/travis/cleanup_cache.sh
+        run: bash ./scripts/travis/cleanup_cache.sh
       - name: "Prepare environment"
-        run: bash scripts/travis/prepare.sh
+        run: bash ./scripts/travis/prepare.sh
 
   veracode:
     runs-on: ubuntu-latest

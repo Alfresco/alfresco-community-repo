@@ -260,8 +260,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         STEP("Create two record category");
         catsameLevel1 = createRootCategory(getRandomName("Title"));
         catsameLevel2 = createRootCategory(getRandomName("Title"));
-
-
        /* RecordCategory catsameLevel1 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
             .createRootRecordCategory(RecordCategory.builder().name(categoryRecordsRM2526).build(),
                 RecordCategory.DEFAULT_FILE_PLAN_ALIAS);

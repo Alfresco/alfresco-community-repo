@@ -91,6 +91,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     private static final String electronicRecordRM2526 = TEST_PREFIX + "RM-2526 electronic c1 record";
     private static final String electronic2RecordRM2526 = TEST_PREFIX + "RM-2526 electronic c2 record";
     private final String electronicRecord = "RM-2937 electronic 2 record";
+    private final String folder = TEST_PREFIX + "RM-2937 folder ghosting";
 
     private FilePlan filePlanModel;
     private UserModel rmAdmin, rmManager;
@@ -260,21 +261,10 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         STEP("Create two record category");
         catsameLevel1 = createRootCategory(getRandomName("Title"));
         catsameLevel2 = createRootCategory(getRandomName("Title"));
-       /* RecordCategory catsameLevel1 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
-            .createRootRecordCategory(RecordCategory.builder().name(categoryRecordsRM2526).build(),
-                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);
-        RecordCategory catsameLevel2 = getRestAPIFactory().getFilePlansAPI(rmAdmin)
-            .createRootRecordCategory(RecordCategory.builder().name(category2RecordsRM2526).build(),
-                RecordCategory.DEFAULT_FILE_PLAN_ALIAS);*/
 
         // create retention schedule applied on records for category 1
         dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), true);
-        // with retain immediately after record creation date and cut 1 day after record creation date
         dispositionScheduleService.addCutOffAfterPeriodStep(catsameLevel1.getName(), "day|1", CREATED_DATE);
-
-       /* dispositionScheduleService.addCutOffImmediatelyStep(categoryRecordsRM2526);
-        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(categoryRecordsRM2526, "day|1", CUT_OFF_DATE);
-*/
 
         // create retention schedule applied on records for category 2
         dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel2.getName(), true);
@@ -282,8 +272,10 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel2.getName());
         dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(category2RecordsRM2526, "day|1", CUT_OFF_DATE);
 
-        /*// create folders in category
-        RecordCategoryChild folder1 = createRecordFolder(catsameLevel1.getId(), category1RM2526Folder);
+        // create folders in category
+         RecordCategoryChild folder1 = createFolder(getAdminUser(),catsameLevel1.getId(),folder);
+        RecordCategoryChild folder2 = createFolder(getAdminUser(),catsameLevel2.getId(),folder);
+        /*RecordCategoryChild folder1 = createRecordFolder(catsameLevel1.getId(), category1RM2526Folder);
         RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);
 */
         // upload a record in the folder from the first category

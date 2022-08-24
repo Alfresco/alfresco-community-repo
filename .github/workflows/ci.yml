@@ -33,6 +33,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.12.0
+        with:
+          srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
 
   AllUnitTestsSuite:
     runs-on: ubuntu-latest
@@ -40,5 +42,5 @@ jobs:
       - prepare
     steps:
       - uses: actions/checkout@v3
-      - uses: mvn --settings settings.xml --file pom.xml -B test -pl core,data-model -am -DfailIfNoTests=false
-      - uses: mvn --settings settings.xml --file pom.xml -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
+      run: mvn --settings settings.xml --file pom.xml -B test -pl core,data-model -am -DfailIfNoTests=false
+      run: mvn --settings settings.xml --file pom.xml -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false

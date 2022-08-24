@@ -17,6 +17,7 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: "Clean cache"
         run: bash ./scripts/travis/cleanup_cache.sh
       - name: "Prepare environment"
@@ -30,4 +31,5 @@ jobs:
       (github.ref_name == 'master' || contains(github.ref_name, 'release')) &&
       ! contains(github.event.head_commit.message, '[skip build]')
     steps:
+      - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@1.12.0

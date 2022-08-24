@@ -3722,6 +3722,50 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     }
 
     /**
+     * Tests download of file/content name.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
+     */
+    @Test
+    public void testDownloadFileContentName() throws Exception
+    {
+        setRequestContext(user1);
+
+        //
+        // Test plain text
+        //
+
+        String fileName = "Test Download (1).txt";
+        File file = getResourceFile(fileName);
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                                                            .setFileData(new FileData(fileName, file));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload text content
+        HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        String contentNodeId = document.getId();
+
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        // Download text content - by default with Content-Disposition header
+        response = getSingle(NodesEntityResource.class, contentNodeId + "/content", null, 200);
+
+        String textContent = response.getResponse();
+        assertEquals("The quick brown fox jumps over the lazy dog", textContent);
+        Map<String, String> responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals("attachment; filename=\"Test Download (1).txt\"; filename*=UTF-8''Test%20Download%20%281%29.txt", responseHeaders.get("Content-Disposition"));
+
+    }
+
+    /**
      * Tests download of file/content using backed temp file for streaming.
      * <p>
      * GET:

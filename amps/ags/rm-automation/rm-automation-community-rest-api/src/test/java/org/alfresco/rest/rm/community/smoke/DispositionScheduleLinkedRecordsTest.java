@@ -67,9 +67,11 @@ import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanCo
 import static org.alfresco.rest.rm.community.model.recordcategory.RetentionPeriodProperty.*;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
+import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.NO_CONTENT;
 
 public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @Autowired
@@ -83,12 +85,15 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     @Autowired
     private RecordFoldersAPI recordFoldersAPI;
     private final static  String TEST_PREFIX = generateTestPrefix(DispositionScheduleLinkedRecordsTest.class);
-    private RecordCategory Category1;
-    private RecordCategoryChild CopyCatFolder,CatFolder;
+    private RecordCategory Category1,catsameLevel1,catsameLevel2;
+    private RecordCategoryChild CopyCatFolder,folder1,CatFolder,folder2;
     private static final String categoryRM3077 = TEST_PREFIX + "RM-3077_manager_sees_me";
     private static final String copyCategoryRM3077 = "Copy_of_" + categoryRM3077;
     private static final String folderRM3077 = "RM-3077_folder_"+ categoryRM3077;
     private static final String copyFolderRM3077 = "Copy_of_" + folderRM3077;
+    private final String electronicRecord = "RM-2937 electronic 2 record";
+    private final String folder = TEST_PREFIX + "RM-2937 folder ghosting";
+
     private static final String categoryRecordsRM2526 = TEST_PREFIX + "RM-2526_category_records_immediately";
     private static final String category2RecordsRM2526 = TEST_PREFIX + "RM-2526_category_2_records_1_day";
     private static final String category1RM2526Folder = TEST_PREFIX + "RM-2526_category_1_folder";
@@ -404,4 +409,62 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
             .toString();
 
     }
-}
+
+    @Test
+    @AlfrescoTest(jira = "RM-1622")
+    public void sameLevelDispositionScheduleTestPrecondition() throws Exception {
+        STEP("Create two record category");
+        catsameLevel1 = createRootCategory(getRandomName("Title"));
+        catsameLevel2 = createRootCategory(getRandomName("Title"));
+
+        // create retention schedule applied on records for category 1
+        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel1.getName(), true);
+        dispositionScheduleService.addCutOffAfterPeriodStep(catsameLevel1.getName(), "day|1", CREATED_DATE);
+
+        // create retention schedule applied on records for category 2
+        dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel2.getName(), true);
+        // with retain immediately after record creation date and cut 1 day after record creation date
+        dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel2.getName());
+        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(category2RecordsRM2526, "day|1", CUT_OFF_DATE);
+
+        // create folders in category
+         RecordCategoryChild folder1 = createFolder(getAdminUser(),catsameLevel1.getId(),folder);
+        RecordCategoryChild folder2 = createFolder(getAdminUser(),catsameLevel2.getId(),folder);
+        /*RecordCategoryChild folder1 = createRecordFolder(catsameLevel1.getId(), category1RM2526Folder);
+        RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);
+*/
+        // upload a record in the folder from the first category
+        //createElectronicRecord(folder1.getId(), electronicRecordRM2526);
+       // Record elRecord = createElectronicRecord(folder1.getId(),electronicRecord);
+
+       /* // complete the record in first category
+        completeRecord(elRecord.getId());
+
+        // link it to the folder in second category through the details page
+        List<String> recordLists = new ArrayList<>();
+        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
+
+        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,category2RM2526Folder + "/" +
+                folder2, recordLists);*/
+
+
+
+
+
+    }
+
+
+    @Test (dependsOnMethods = { "addLongestPeriodTestsPrecondition",
+        "sameLevelDispositionScheduleTestPrecondition" })
+    public void deleteLongestPeriodTestPrecondition()
+    {
+        // Delete the RM site
+        getRestAPIFactory().getRMSiteAPI().deleteRMSite();
+
+        // Verify the status code
+        assertStatusCode(NO_CONTENT);
+    }
+
+
+    }

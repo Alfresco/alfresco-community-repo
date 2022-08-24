@@ -11,6 +11,10 @@ env:
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
   MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
   MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+  TRANSFORMERS_TAG: ${{ mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout }}
+  TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
+  TAS_ENVIRONMENT: ./packaging/tests/environment
+  LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
   JAVA_VERSION: "17"
 
 jobs:
@@ -27,9 +31,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
-    if: >
-      (github.ref_name == 'master' || contains(github.ref_name, 'release')) &&
-      ! contains(github.event.head_commit.message, '[skip build]')
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@1.12.0

@@ -1110,7 +1110,7 @@ public class ExporterComponent
         
         public boolean canRetrieve()
         {
-            if(exportListMap!=null)
+            if(exportListMap != null)
             {
                 if (exportListMap.containsKey(indexSubList))
                 {
@@ -1128,9 +1128,9 @@ public class ExporterComponent
         
         public int setNextValue()
         {
-            if(exportListMap!=null && index==exportListMap.get(indexSubList).length-1){
+            if(exportListMap != null && (index == exportListMap.get(indexSubList).length-1)){
                 resetContext();
-                if(indexSubList<=exportListMap.size())
+                if(indexSubList <= exportListMap.size())
                 {
                     ++indexSubList;
                 }

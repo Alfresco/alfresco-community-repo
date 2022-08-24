@@ -20,9 +20,6 @@ before_cache: bash scripts/travis/cleanup_cache.sh
 branches:
   only:
     - master
-    - /release\/.*/
-    - /feature\/.*/
-    - /fix\/.*/
 
 env:
   global:

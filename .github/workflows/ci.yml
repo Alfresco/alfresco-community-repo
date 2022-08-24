@@ -9,7 +9,7 @@ env:
   DEVELOPMENT_VERSION: "17.92-SNAPSHOT" # The version that will be set in pom files after the release (next dev version)
   RELEASE_VERSION: "17.91" # The version of the release (tag).
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
-    MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+  MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
   MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
   JAVA_VERSION: "17"
 
@@ -20,12 +20,12 @@ jobs:
       - name: "Clean cache"
         run: bash scripts/travis/cleanup_cache.sh
       - name: "Prepare environment"
-      - uses: ./.github/actions/prepare
+        run: bash scripts/travis/prepare.sh
 
   veracode:
     runs-on: ubuntu-latest
     needs:
-      - pre-commit
+      - prepare
     if: >
       (github.ref_name == 'master' || contains(github.ref_name, 'release')) &&
       ! contains(github.event.head_commit.message, '[skip build]')

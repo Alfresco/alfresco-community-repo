@@ -33,6 +33,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@v1.12.0
+        with:
+          srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
 
   AllUnitTestsSuite:
     runs-on: ubuntu-latest

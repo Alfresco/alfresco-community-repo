@@ -25,9 +25,6 @@ jobs:
         run: bash ./scripts/travis/cleanup_cache.sh
       - name: "Prepare environment"
         run: bash ./scripts/travis/prepare.sh
-      - name: "Get Transformers tag"
-        run: |
-          echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
 
   veracode:
     runs-on: ubuntu-latest
@@ -79,6 +76,9 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
           cache: "maven"
+      - name: "Get Transformers tag"
+        run: |
+          echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "docker build 1"
         run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
       - name: "docker build 2"

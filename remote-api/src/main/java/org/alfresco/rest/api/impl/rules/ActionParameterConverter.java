@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -98,7 +99,7 @@ public class ActionParameterConverter
             return ((QName) param).toPrefixString(namespaceService);
         }
         else if (param instanceof NodeRef) {
-            return param.toString();
+            return ((NodeRef) param).getId();
         }
         else
         {
@@ -134,12 +135,18 @@ public class ActionParameterConverter
                 list.add(convertValue(typeQName, ((JSONArray) propertyValue).get(i)));
             }
             value = (Serializable) list;
-        } else
+        }
+        else
         {
             if (typeQName.equals(DataTypeDefinition.QNAME) && typeQName.toString().contains(":"))
             {
                 value = QName.createQName(propertyValue.toString(), namespaceService);
-            } else
+            }
+            else if (typeQName.isMatch(DataTypeDefinition.NODE_REF))
+            {
+                value = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, propertyValue.toString());
+            }
+            else
             {
                 value = (Serializable) DefaultTypeConverter.INSTANCE.convert(dictionaryService.getDataType(typeQName), propertyValue);
             }

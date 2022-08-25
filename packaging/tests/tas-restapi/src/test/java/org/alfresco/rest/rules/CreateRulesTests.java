@@ -374,13 +374,13 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithActions()
     {
         final Map<String, Serializable> copyParams =
-                Map.of("destination-folder", "workspace://SpacesStore/dummy-folder-node", "deep-copy", true);
+                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
         final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
         final Map<String, Serializable> checkOutParams =
-                Map.of("destination-folder", "workspace://SpacesStore/dummy-folder-node", "assoc-name", "cm:checkout", "assoc-type",
+                Map.of("destination-folder", "dummy-folder-node", "assoc-name", "cm:checkout", "assoc-type",
                         "cm:contains");
         final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
-        final Map<String, Serializable> scriptParams = Map.of("script-ref", "workspace://SpacesStore/dummy-script-node-id");
+        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
         final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
         final RestRuleModel ruleModel = createRuleModelWithDefaultName();
         ruleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));

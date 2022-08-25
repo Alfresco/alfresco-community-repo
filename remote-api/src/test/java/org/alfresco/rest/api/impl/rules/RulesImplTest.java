@@ -125,6 +125,7 @@ public class RulesImplTest extends TestCase
     @Test
     public void testGetRules()
     {
+        given(ruleLoaderMock.loadRule(ruleModel, emptyList())).willReturn(ruleMock);
         // when
         final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);
 
@@ -133,6 +134,8 @@ public class RulesImplTest extends TestCase
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().getRules(FOLDER_NODE_REF);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleLoaderMock).should().loadRule(ruleModel, emptyList());
+        then(ruleLoaderMock).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
                 .isNotNull()
                 .extracting(CollectionWithPagingInfo::getCollection)
@@ -428,22 +431,25 @@ public class RulesImplTest extends TestCase
     @Test
     public void testUpdateRuleById()
     {
-        Rule ruleBody = mock(Rule.class);
-        org.alfresco.service.cmr.rule.Rule serviceRuleBody = mock(org.alfresco.service.cmr.rule.Rule.class);
-        given(ruleBody.toServiceModel(nodesMock)).willReturn(serviceRuleBody);
-        org.alfresco.service.cmr.rule.Rule serviceRule = mock(org.alfresco.service.cmr.rule.Rule.class);
-        given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleBody)).willReturn(serviceRule);
-        given(ruleLoaderMock.loadRule(serviceRule, INCLUDE)).willReturn(ruleMock);
+        given(ruleMock.toServiceModel(nodesMock)).willReturn(serviceRuleMock);
+        given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(a -> a.getArguments()[1]);
+        given(serviceRuleMock.getAction()).willReturn(compositeAction);
+        given(ruleLoaderMock.loadRule(serviceRuleMock, INCLUDE)).willReturn(ruleMock);
+        given(actionPermissionValidatorMock.validateRulePermissions(any())).willAnswer(arg -> arg.getArguments()[0]);
 
         // when
-        Rule updatedRule = rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, ruleBody, INCLUDE);
+        Rule updatedRule = rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, ruleMock, INCLUDE);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
         then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
         then(nodeValidatorMock).should().validateRuleNode(RULE_ID, RULE_SET_NODE_REF);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
-        then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, serviceRuleBody);
+        then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, serviceRuleMock);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(actionParameterConverterMock).should().getConvertedParams(DUMMY_PARAMS, ACTION_DEFINITION_NAME);
+        then(actionParameterConverterMock).shouldHaveNoMoreInteractions();
+        then(actionPermissionValidatorMock).should().validateRulePermissions(serviceRuleMock);
+        then(actionPermissionValidatorMock).shouldHaveNoMoreInteractions();
         assertThat(updatedRule).isEqualTo(ruleMock);
     }
 

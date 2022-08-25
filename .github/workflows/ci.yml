@@ -9,7 +9,6 @@ env:
   DEVELOPMENT_VERSION: "17.92-SNAPSHOT" # The version that will be set in pom files after the release (next dev version)
   RELEASE_VERSION: "17.91" # The version of the release (tag).
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
-  TRANSFORMERS_TAG: 0
   MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
   MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
@@ -27,8 +26,7 @@ jobs:
       - name: "Prepare environment"
         run: bash ./scripts/travis/prepare.sh
       - name: "Get Transformers tag"
-        run: |
-          echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)"
+        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
 
   veracode:
     runs-on: ubuntu-latest
@@ -85,6 +83,6 @@ jobs:
       - name: "docker build 2"
         run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
       - name: "docker build 3"
-        run: docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:${TRANSFORMERS_TAG}
+        run: docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:${{ env.TRANSFORMERS_TAG }}
       - name: "Run tests"
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco

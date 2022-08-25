@@ -425,7 +425,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         dispositionScheduleService.createCategoryRetentionSchedule(catsameLevel2.getName(), true);
         // with retain immediately after record creation date and cut 1 day after record creation date
         dispositionScheduleService.addCutOffImmediatelyStep(catsameLevel2.getName());
-        dispositionScheduleService.addDestroyWithoutGhostingAfterPeriodStep(category2RecordsRM2526, "day|1", CUT_OFF_DATE);
 
         // create folders in category
          RecordCategoryChild folder1 = createFolder(getAdminUser(),catsameLevel1.getId(),folder);
@@ -437,20 +436,14 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
        // complete the record in first category
         completeRecord(elRecord.getId());
 
-       /*// link it to the folder in second category through the details page
+      /* // link it to the folder in second category through the details page
         List<String> recordLists = new ArrayList<>();
         recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
 
         linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
-            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,folder2 + "/" +
+            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,catsameLevel2 + "/" +
                 folder2, recordLists);
-
-        recordLists.clear();
-        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
-        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
-            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,secondCategoryRM3060 + "/" +
-                secondFolderRM3060, recordLists);
-        */
+*/
 
 
     }

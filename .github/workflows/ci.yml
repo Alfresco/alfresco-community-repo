@@ -26,7 +26,8 @@ jobs:
       - name: "Prepare environment"
         run: bash ./scripts/travis/prepare.sh
       - name: "Get Transformers tag"
-        run: echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+        run: |
+          echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
 
   veracode:
     runs-on: ubuntu-latest

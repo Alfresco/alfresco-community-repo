@@ -380,8 +380,6 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         // with retain immediately after record creation date and cut 1 day after record creation date
         dispositionScheduleService.addCutOffAfterPeriodStep(firstCategoryRM3060, "day|1", DATE_FILED);
 
-        // make a copy of the category created
-        //String categorySecondId = copyCategory(getAdminUser(), recordCategory.getId(), secondCategoryRM3060);
 
         // create a folder on the category firstCategoryRM3060 with a complete electronic record
         RecordCategoryChild firstFolderRecordCategoryChild = createRecordFolder(catsameLevel1.getId(),firstFolderRM3060);
@@ -407,7 +405,8 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
                 secondFolderRM3060, recordLists);
 
     }
-    @Test (dependsOnMethods = {"sameLevelDispositionScheduleTestPrecondition" })
+
+    @Test (dependsOnMethods = {"sameLevelDispositionScheduleStepsPeriodsCalculation" })
     public void deleteLongestPeriodTestPrecondition() {
         // Delete the RM site
         getRestAPIFactory().getRMSiteAPI().deleteRMSite();

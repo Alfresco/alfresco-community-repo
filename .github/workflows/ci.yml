@@ -55,6 +55,6 @@ jobs:
           distribution: "temurin"
           cache: "maven"
       - name: "test"
-        run: mvn --settings settings.xml --file pom.xml -B test -pl core,data-model -am -DfailIfNoTests=false
+        run: mvn --settings travis.settings.xml --file pom.xml -B test -pl core,data-model -am -DfailIfNoTests=false
       - name: "test2"
-        run: mvn --settings settings.xml --file pom.xml -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
+        run: mvn --settings travis.settings.xml --file pom.xml -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false

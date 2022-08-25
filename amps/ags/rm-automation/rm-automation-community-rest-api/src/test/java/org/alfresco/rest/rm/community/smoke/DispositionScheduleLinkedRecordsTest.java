@@ -437,7 +437,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
        // complete the record in first category
         completeRecord(elRecord.getId());
 
-       // link it to the folder in second category through the details page
+       /*// link it to the folder in second category through the details page
         List<String> recordLists = new ArrayList<>();
         recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
 
@@ -450,8 +450,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
             getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,secondCategoryRM3060 + "/" +
                 secondFolderRM3060, recordLists);
-
-
+        */
 
 
     }

@@ -430,17 +430,14 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         // create folders in category
          RecordCategoryChild folder1 = createFolder(getAdminUser(),catsameLevel1.getId(),folder);
         RecordCategoryChild folder2 = createFolder(getAdminUser(),catsameLevel2.getId(),folder);
-        /*RecordCategoryChild folder1 = createRecordFolder(catsameLevel1.getId(), category1RM2526Folder);
-        RecordCategoryChild folder2 = createRecordFolder(catsameLevel2.getId(), category2RM2526Folder);
-*/
-        // upload a record in the folder from the first category
-        //createElectronicRecord(folder1.getId(), electronicRecordRM2526);
-       // Record elRecord = createElectronicRecord(folder1.getId(),electronicRecord);
 
-       /* // complete the record in first category
+        // upload a record in the folder from the first category
+        Record elRecord = createElectronicRecord(folder1.getId(),electronicRecord);
+
+       // complete the record in first category
         completeRecord(elRecord.getId());
 
-        // link it to the folder in second category through the details page
+       /* // link it to the folder in second category through the details page
         List<String> recordLists = new ArrayList<>();
         recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
 

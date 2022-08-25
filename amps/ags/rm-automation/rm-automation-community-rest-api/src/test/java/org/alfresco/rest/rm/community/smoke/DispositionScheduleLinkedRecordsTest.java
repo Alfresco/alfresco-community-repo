@@ -412,7 +412,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
 
     @Test
     @AlfrescoTest(jira = "RM-1622")
-    public void sameLevelDispositionScheduleTestPrecondition() throws Exception {
+    public void sameLevelDispositionScheduleStepsPeriodsCalculation() throws Exception {
         STEP("Create two record category");
         catsameLevel1 = createRootCategory(getRandomName("Title"));
         catsameLevel2 = createRootCategory(getRandomName("Title"));
@@ -436,21 +436,12 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
        // complete the record in first category
         completeRecord(elRecord.getId());
 
-      /* // link it to the folder in second category through the details page
-        List<String> recordLists = new ArrayList<>();
-        recordLists.add(NODE_REF_WORKSPACE_SPACES_STORE + elRecord.getId());
-
-        linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
-            getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,catsameLevel2 + "/" +
-                folder2, recordLists);
-*/
-
 
     }
 
 
     @Test (dependsOnMethods = { "addLongestPeriodTestsPrecondition",
-        "sameLevelDispositionScheduleTestPrecondition" })
+        "sameLevelDispositionScheduleStepsPeriodsCalculation" })
     public void deleteLongestPeriodTestPrecondition()
     {
         // Delete the RM site

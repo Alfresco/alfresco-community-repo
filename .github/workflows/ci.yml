@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v3
       - run: mkdir -p $HOME/.m2
       - run: cp .travis.settings.xml $HOME/.m2
-        uses: Alfresco/alfresco-build-tools/.github/actions/veracode@master
+      - uses: Alfresco/alfresco-build-tools/.github/actions/veracode@master
         with:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
 

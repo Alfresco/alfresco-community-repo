@@ -26,15 +26,20 @@
 
 package org.alfresco.rest.api.impl.rules;
 
+import static org.alfresco.service.cmr.rule.RuleType.INBOUND;
+import static org.alfresco.service.cmr.rule.RuleType.OUTBOUND;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.BDDMockito.then;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.RuntimeActionService;
+import org.alfresco.repo.action.executer.CheckOutActionExecuter;
+import org.alfresco.repo.action.executer.CopyActionExecuter;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -59,15 +64,20 @@ public class ActionPermissionValidatorTest extends TestCase
     private ActionPermissionValidator objectUnderTest;
 
     @Test
-    public void testPositiveRulePermissionValidation() {
+    public void testPositiveRulePermissionValidation()
+    {
         //given
-        final CompositeActionImpl compositeAction = new CompositeActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "composite-id");
-        final Action action1 = new ActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "id-1", "actionDef-1");
+        final CompositeActionImpl compositeAction =
+                new CompositeActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "composite-id");
+        final Action action1 = new ActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "id-1",
+                CopyActionExecuter.NAME);
         compositeAction.addAction(action1);
-        final Action action2 = new ActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "id-2", "actionDef-2");
+        final Action action2 = new ActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "id-2",
+                CheckOutActionExecuter.NAME);
         compositeAction.addAction(action2);
         final Rule inputRule = new Rule();
         inputRule.setAction(compositeAction);
+        inputRule.setRuleTypes(List.of(INBOUND));
 
         //when
         final Rule validatedRule = objectUnderTest.validateRulePermissions(inputRule);
@@ -80,5 +90,28 @@ public class ActionPermissionValidatorTest extends TestCase
                 .forEach(action -> Assertions.assertThat(action.getParameterValue("actionContext")).isEqualTo("rule"));
     }
 
-    //TODO: when Rule mappings are done - we need to add negative test(s) here
+    @Test
+    public void testNegativeRulePermissionValidation()
+    {
+        //given
+        final CompositeActionImpl compositeAction =
+                new CompositeActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "composite-id");
+        final Action action1 = new ActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "id-1",
+                CopyActionExecuter.NAME);
+        compositeAction.addAction(action1);
+        final Action action2 = new ActionImpl(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, DUMMY_NODE_ID), "id-2",
+                CheckOutActionExecuter.NAME);
+        compositeAction.addAction(action2);
+        final Rule inputRule = new Rule();
+        inputRule.setAction(compositeAction);
+        inputRule.setRuleTypes(List.of(OUTBOUND));
+
+        //when
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validateRulePermissions(inputRule));
+
+        then(runtimeActionService).should().verifyActionAccessRestrictions(action1);
+        then(runtimeActionService).should().verifyActionAccessRestrictions(action2);
+        then(runtimeActionService).shouldHaveNoMoreInteractions();
+    }
+
 }

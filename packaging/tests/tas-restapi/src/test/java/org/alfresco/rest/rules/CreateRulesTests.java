@@ -31,8 +31,8 @@ import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createEmptyConditionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultName;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
@@ -94,15 +94,13 @@ public class CreateRulesTests extends RestTest
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
         expectedRuleModel.setConditions(createEmptyConditionModel());
         restClient.assertStatusCodeIs(CREATED);
-        // TODO fix actions mapping and remove it from ignored fields, actual issue - difference:
-        // actual:   actions=[RestActionBodyExecTemplateModel{actionDefinitionId='add-features', params={actionContext=rule, aspect-name={http://www.alfresco.org/model/audio/1.0}audio}}]
-        // expected: actions=[RestActionBodyExecTemplateModel{actionDefinitionId='set-property-value', params={aspect-name={http://www.alfresco.org/model/audio/1.0}audio, actionContext=rule}}]
-        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED, "actions")
-            .assertThat().field("id").isNotNull()
-            .assertThat().field("isShared").isNull();
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
+                .assertThat().field("id").isNotNull()
+                .assertThat().field("isShared").isNull();
     }
 
     /** Check creating a rule in a non-existent folder returns an error. */
@@ -361,5 +359,38 @@ public class CreateRulesTests extends RestTest
         RestRuleModel ruleModel = createRuleModel("testRule", List.of(createDefaultActionModel()));
 
         return restClient.authenticateUser(userWithRole).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+    }
+
+    /**
+     * Check we can create a rule with several actions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithActions()
+    {
+        final Map<String, Serializable> copyParams =
+                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
+        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
+        final Map<String, Serializable> checkOutParams =
+                Map.of("destination-folder", "dummy-folder-node", "assoc-name", "cm:checkout", "assoc-type",
+                        "cm:contains");
+        final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
+        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
+        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
+        final RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        ruleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
+
+        final UserModel admin = dataUser.getAdminUser();
+
+        final RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        final RestRuleModel expectedRuleModel = createRuleModelWithDefaultName();
+        expectedRuleModel.setActions(addActionContextParams(Arrays.asList(copyAction, checkOutAction, scriptAction)));
+        expectedRuleModel.setConditions(createEmptyConditionModel());
+        expectedRuleModel.setTriggers(List.of("inbound"));
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
+                .assertThat().field("isShared").isNull();
     }
 }

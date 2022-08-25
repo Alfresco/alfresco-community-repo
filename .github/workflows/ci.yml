@@ -30,6 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      (github.ref_name == 'master' || contains(github.ref_name, 'release')) &&
+      ! contains(github.event.head_commit.message, '[skip build]')
     steps:
       - uses: actions/checkout@v3
       - run: mkdir -p $HOME/.m2
@@ -90,3 +93,37 @@ jobs:
         run: docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:${{ env.TRANSFORMERS_TAG }}
       - name: "Run tests"
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+
+  Repository-AppContext05TestSuite:
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Login to Quay.io"
+      - uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+      - name: "Set up Java"
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+          cache: "maven"
+      - name: "docker build 1"
+        run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
+      - name: "docker build 2"
+        run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
+      - name: "make folder"
+        run: mkdir -p "${HOME}/tmp"
+      - name: "copy file"
+        run: cp repository/src/test/resources/realms/alfresco-realm.json "${HOME}/tmp"
+      - name: "set HOST_IP"
+        run: |
+          echo "HOST_IP=$(hostname  -I | cut -f1 -d' ')" >> $GITHUB_ENV
+      - name: "docker build 3"
+        run: docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json alfresco/alfresco-identity-service:1.2
+      - name: "Run tests"
+        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext05TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${{ env.HOST_IP} }:8999/auth"

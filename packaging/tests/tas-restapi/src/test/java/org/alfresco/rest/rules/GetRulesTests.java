@@ -189,7 +189,7 @@ public class GetRulesTests extends RestTest
                 .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
-        expectedRuleModel.setActions(List.of(createDefaultActionModel()));
+        expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
         expectedRuleModel.setTriggers(List.of("update"));
         expectedRuleModel.setConditions(createEmptyConditionModel());
 
@@ -212,7 +212,7 @@ public class GetRulesTests extends RestTest
                 .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
-        expectedRuleModel.setActions(List.of(createDefaultActionModel()));
+        expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
         expectedRuleModel.setTriggers(List.of("inbound"));
         expectedRuleModel.setConditions(createEmptyConditionModel());
 

@@ -27,12 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createEmptyConditionModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultName;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.*;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
@@ -46,10 +41,14 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
+import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.constants.UserRole;
@@ -376,7 +375,7 @@ public class CreateRulesTests extends RestTest
         final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
         final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
         final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
-        final RestRuleModel ruleModel = createRuleModelWithDefaultName();
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         ruleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
 
         final UserModel admin = dataUser.getAdminUser();
@@ -384,7 +383,7 @@ public class CreateRulesTests extends RestTest
         final RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
-        final RestRuleModel expectedRuleModel = createRuleModelWithDefaultName();
+        final RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setActions(addActionContextParams(Arrays.asList(copyAction, checkOutAction, scriptAction)));
         expectedRuleModel.setConditions(createEmptyConditionModel());
         expectedRuleModel.setTriggers(List.of("inbound"));

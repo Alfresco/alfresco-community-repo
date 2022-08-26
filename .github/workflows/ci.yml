@@ -161,7 +161,7 @@ jobs:
         run: ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Run tests"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --settings .travis.settings.xml --file pom.xml -B verify -f packaging/tests/tas-restapi/pom.xml -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
+        run: mvn --settings .travis.settings.xml --file  packaging/tests/tas-restapi/pom.xml -B verify -f -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
 
   AGS-Unit-And_Integration-Tests-01-PostgreSQL:
     runs-on: ubuntu-latest
@@ -188,4 +188,4 @@ jobs:
         run: bash ./scripts/travis/build.sh
       - name: "verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --settings .travis.settings.xml --file pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 -f amps/ags/pom.xml ${{ env.LOG_WARN }}
+        run: mvn --settings .travis.settings.xml --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 -f ${{ env.LOG_WARN }}

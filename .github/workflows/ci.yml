@@ -192,8 +192,6 @@ jobs:
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh
-        with:
-          REQUIRES_INSTALLED_ARTIFACTS: true
       - name: "verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --settings .travis.settings.xml --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 ${{ env.LOG_WARN }}

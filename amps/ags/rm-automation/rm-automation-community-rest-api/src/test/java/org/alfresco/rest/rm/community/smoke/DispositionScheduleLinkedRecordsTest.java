@@ -395,6 +395,9 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
 
         // create a folder on the category secondCategoryRM3060 with a non electronic record
         RecordCategoryChild secondFolderRecordCategoryChild = createRecordFolder(catsameLevel2.getId(),secondFolderRM3060);
+        String elRecordNameNodeRefs = recordsAPI.getRecordNodeRef(getDataUser().usingAdmin().getAdminUser().getUsername(),
+            getDataUser().usingAdmin().getAdminUser().getPassword(), elRecordFullName, "/" + firstCategoryRM3060 + "/" + firstFolderRM3060);
+
 
         // link it to the folder in second category through the details page
         List<String> recordLists = new ArrayList<>();
@@ -403,6 +406,11 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
         linksAPI.linkRecord(getDataUser().getAdminUser().getUsername(),
             getDataUser().getAdminUser().getPassword(), HttpStatus.SC_OK,secondCategoryRM3060 + "/" +
                 secondFolderRM3060, recordLists);
+
+        // edit disposition date
+        recordFoldersAPI.postRecordAction(getAdminUser().getUsername(),
+            getAdminUser().getPassword(),editDispositionDateJson(),elRecordNameNodeRefs);
+
 
     }
 

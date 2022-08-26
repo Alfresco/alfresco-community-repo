@@ -150,7 +150,7 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: env REQUIRES_LOCAL_IMAGES=true bash scripts/travis/build.sh
       - name: "env1"
-        run: ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
+        run: ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
       - name: "env2"
         run: ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Run tests"

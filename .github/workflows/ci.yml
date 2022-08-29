@@ -202,7 +202,7 @@ jobs:
         run: bash ./scripts/travis/init.sh
       - name: "Set REQUIRES_LOCAL_IMAGES"
         run: |
-          echo "REQUIRES_LOCAL_IMAGES=true" >> $GITHUB_ENV
+          echo "REQUIRES_INSTALLED_ARTIFACTS=true" >> $GITHUB_ENV
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh
@@ -235,7 +235,7 @@ jobs:
         run: bash ./scripts/travis/init.sh
       - name: "Set REQUIRES_LOCAL_IMAGES"
         run: |
-          echo "REQUIRES_LOCAL_IMAGES=true" >> $GITHUB_ENV
+          echo "REQUIRES_INSTALLED_ARTIFACTS=true" >> $GITHUB_ENV
       - name: "Get Transformers tag"
         run: |
           echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -307,7 +307,7 @@ jobs:
         run: bash ./scripts/travis/init.sh
       - name: "Set REQUIRES_LOCAL_IMAGES"
         run: |
-          echo "REQUIRES_LOCAL_IMAGES=true" >> $GITHUB_ENV
+          echo "REQUIRES_INSTALLED_ARTIFACTS=true" >> $GITHUB_ENV
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh

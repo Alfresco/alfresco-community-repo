@@ -96,7 +96,7 @@ jobs:
       - name: "docker build 3"
         run: docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:${{ env.TRANSFORMERS_TAG }}
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn --settings .travis.settings.xml --file repository/pom.xml -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   Repository-AppContext05TestSuite:
     runs-on: ubuntu-latest
@@ -130,7 +130,7 @@ jobs:
       - name: "docker build 3"
         run: docker run -d -e KEYCLOAK_USER=admin -e KEYCLOAK_PASSWORD=admin -e DB_VENDOR=h2 -p 8999:8080 -e KEYCLOAK_IMPORT=/tmp/alfresco-realm.json -v $HOME/tmp/alfresco-realm.json:/tmp/alfresco-realm.json alfresco/alfresco-identity-service:1.2
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext05TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${{ env.HOST_IP }}:8999/auth"
+        run: mvn --settings .travis.settings.xml --file repository/pom.xml -B test -pl repository -am -Dtest=AppContext05TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${{ env.HOST_IP }}:8999/auth"
 
   Repository-SearchTestSuite:
     runs-on: ubuntu-latest
@@ -155,7 +155,7 @@ jobs:
       - name: "docker build 2"
         run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=SearchTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
+        run: mvn --settings .travis.settings.xml --file repository/pom.xml -B test -pl repository -am -Dtest=SearchTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
 
   Repository-MariaDB10-2-18-tests:
     runs-on: ubuntu-latest
@@ -180,7 +180,7 @@ jobs:
       - name: "docker build 2"
         run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
+        run: mvn --settings .travis.settings.xml --file repository/pom.xml -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 
   Remote-api-AppContext01TestSuite:
     runs-on: ubuntu-latest
@@ -205,7 +205,7 @@ jobs:
       - name: "docker build 2"
         run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn --settings .travis.settings.xml --file remote-api/pom.xml -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   REST-API-TAS-tests-part1:
     runs-on: ubuntu-latest

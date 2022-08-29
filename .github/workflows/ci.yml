@@ -303,10 +303,10 @@ jobs:
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --settings .travis.settings.xml -B test -pl :alfresco-governance-services-automation-community-rest-api -am -DfailIfNoTests=false -Dskip.automationtests=false -Pags
       - run: bash amps/ags/travis/scripts/getLogs.sh
-      - run: mkdir -p deploy_dir/community/${{ github.run_number }}/${{ jobs.AGS-Community-Rest-API-Tests.name }}
-      - run: mv "alfresco.log" "deploy_dir/community/${{ github.run_number }}/${{ jobs.AGS-Community-Rest-API-Tests.name }}"
-      - run: mv "solr.log" "deploy_dir/community/${{ github.run_number }}/${{ jobs.AGS-Community-Rest-API-Tests.name }}"
-      - run: mv "./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports" "deploy_dir/community/${{ github.run_number }}/${{ jobs.AGS-Community-Rest-API-Tests.name }}"
+      - run: mkdir -p deploy_dir/community/${{ github.run_number }}/${{ AGS-Community-Rest-API-Tests }}
+      - run: mv "alfresco.log" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
+      - run: mv "solr.log" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
+      - run: mv "./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
       - name: "Configure AWS credentials"
         uses: aws-actions/configure-aws-credentials@v1
         with:

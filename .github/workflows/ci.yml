@@ -249,7 +249,7 @@ jobs:
       - name: "docker build 3"
         run: docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:${{ env.TRANSFORMERS_TAG }}
       - name: "Run tests"
-        run: mvn --settings .travis.settings.xml --file pom.xml mvn -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+        run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   REST-API-TAS-tests-part1:
     runs-on: ubuntu-latest

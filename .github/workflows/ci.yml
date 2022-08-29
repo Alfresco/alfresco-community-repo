@@ -184,6 +184,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -200,9 +202,6 @@ jobs:
           cache: "maven"
       - name: "init"
         run: bash ./scripts/travis/init.sh
-      - name: "Set REQUIRES_LOCAL_IMAGES"
-        run: |
-          echo "REQUIRES_INSTALLED_ARTIFACTS=true" >> $GITHUB_ENV
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh
@@ -217,6 +216,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -233,9 +234,6 @@ jobs:
           cache: "maven"
       - name: "init"
         run: bash ./scripts/travis/init.sh
-      - name: "Set REQUIRES_LOCAL_IMAGES"
-        run: |
-          echo "REQUIRES_INSTALLED_ARTIFACTS=true" >> $GITHUB_ENV
       - name: "Get Transformers tag"
         run: |
           echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -255,6 +253,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -271,9 +271,6 @@ jobs:
           cache: "maven"
       - name: "init"
         run: bash ./scripts/travis/init.sh
-      - name: "Set REQUIRES_LOCAL_IMAGES"
-        run: |
-          echo "REQUIRES_LOCAL_IMAGES=true" >> $GITHUB_ENV
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh
@@ -289,6 +286,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    env:
+      REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -305,9 +304,6 @@ jobs:
           cache: "maven"
       - name: "init"
         run: bash ./scripts/travis/init.sh
-      - name: "Set REQUIRES_LOCAL_IMAGES"
-        run: |
-          echo "REQUIRES_INSTALLED_ARTIFACTS=true" >> $GITHUB_ENV
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh

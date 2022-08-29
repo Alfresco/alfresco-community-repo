@@ -198,12 +198,58 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
           cache: "maven"
+      - name: "init"
+        run: bash ./scripts/travis/init.sh
+      - name: "Set REQUIRES_LOCAL_IMAGES"
+        run: |
+          echo "REQUIRES_LOCAL_IMAGES=true" >> $GITHUB_ENV
+      - name: "build"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: bash ./scripts/travis/build.sh
       - name: "docker build 1"
         run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
       - name: "docker build 2"
         run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
       - name: "Run tests"
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
+
+  Remote-api-AppContext02TestSuite:
+    runs-on: ubuntu-latest
+    needs:
+      - prepare
+    steps:
+      - uses: actions/checkout@v3
+      - name: "Login to Quay.io"
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+      - name: "Set up Java"
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "temurin"
+          cache: "maven"
+      - name: "init"
+        run: bash ./scripts/travis/init.sh
+      - name: "Set REQUIRES_LOCAL_IMAGES"
+        run: |
+          echo "REQUIRES_LOCAL_IMAGES=true" >> $GITHUB_ENV
+      - name: "Get Transformers tag"
+        run: |
+          echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: "build"
+        timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
+        run: bash ./scripts/travis/build.sh
+      - name: "docker build 1"
+        run: docker run -d -p 5433:5432 -e POSTGRES_PASSWORD=alfresco -e POSTGRES_USER=alfresco -e POSTGRES_DB=alfresco postgres:14.4 postgres -c 'max_connections=300'
+      - name: "docker build 2"
+        run: docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.17.1-jre11-rockylinux8
+      - name: "docker build 3"
+        run: docker run -d -p 8090:8090 -e JAVA_OPTS=" -Xms256m -Xmx256m" alfresco/alfresco-transform-core-aio:${{ env.TRANSFORMERS_TAG }}
+      - name: "Run tests"
+        run: mvn --settings .travis.settings.xml --file pom.xml mvn -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   REST-API-TAS-tests-part1:
     runs-on: ubuntu-latest

@@ -141,7 +141,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
 
         STEP("Open the record search page and search by the items created");
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 JSONObject searchResult = (searchAPI
                     .rmSearch(getDataUser().usingAdmin().getAdminUser().getUsername(),
                         getDataUser().usingAdmin().getAdminUser().getPassword(),
@@ -172,7 +172,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
 
         STEP("Change the search filter to return only record folders and record categories");
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 JSONObject searchResult = (searchAPI
                     .rmSearch(getDataUser().usingAdmin().getAdminUser().getUsername(),
                         getDataUser().usingAdmin().getAdminUser().getPassword(),
@@ -210,7 +210,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
     @Test (priority = 2)
     public void nonRMUserSearchResults() {
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
                         nonRmSiteUser.get().getPassword(),
@@ -223,7 +223,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
                         nonRmSiteUser.get().getPassword(),
@@ -236,7 +236,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
                         nonRmSiteUser.get().getPassword(),
@@ -249,7 +249,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = searchAPI
                     .searchForDocumentsAsUser(nonRmSiteUser.get().getUsername(),
                         nonRmSiteUser.get().getPassword(),
@@ -274,7 +274,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_user_search.get(), PERMISSION_FILE_RECORDS);
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
                         rm_user_search.get().getPassword(),
@@ -287,7 +287,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
                         rm_user_search.get().getPassword(),
@@ -300,7 +300,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
                         rm_user_search.get().getPassword(),
@@ -313,7 +313,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = searchAPI
                     .searchForDocumentsAsUser(rm_user_search.get().getUsername(),
                         rm_user_search.get().getPassword(),
@@ -337,7 +337,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryAll.getId(), rm_manager.get(), PERMISSION_READ_RECORDS);
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_manager.get().getUsername(),
                         rm_manager.get().getPassword(),
@@ -350,7 +350,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_manager.get().getUsername(),
                         rm_manager.get().getPassword(),
@@ -363,7 +363,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_manager.get().getUsername(),
                         rm_manager.get().getPassword(),
@@ -376,7 +376,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = searchAPI
                     .searchForDocumentsAsUser(rm_manager.get().getUsername(),
                         rm_manager.get().getPassword(),
@@ -398,7 +398,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
     @Test(priority = 5)
     public void rmAdminSearchResults() {
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
                         rm_admin_search.get().getPassword(),
@@ -411,7 +411,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
                         rm_admin_search.get().getPassword(),
@@ -424,7 +424,7 @@ public class SearchRecordsTests extends BaseRMRestTest {
         }
 
         try {
-            Utility.sleep(1000, 80000, () -> {
+            Utility.sleep(1000, 40000, () -> {
                 List<String> stringList = (searchAPI
                     .searchForDocumentsAsUser(rm_admin_search.get().getUsername(),
                         rm_admin_search.get().getPassword(),

@@ -305,16 +305,22 @@ jobs:
       - run: bash amps/ags/travis/scripts/getLogs.sh
         if: ${{ always() }}
       - run: mkdir -p deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests
+        if: ${{ always() }}
       - run: mv "alfresco.log" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
+        if: ${{ always() }}
       - run: mv "solr.log" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
+        if: ${{ always() }}
       - run: mv "./amps/ags/rm-automation/rm-automation-community-rest-api/target/reports" "deploy_dir/community/${{ github.run_number }}/AGS-Community-Rest-API-Tests"
+        if: ${{ always() }}
       - name: "Configure AWS credentials"
+        if: ${{ always() }}
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: "Upload build artifacts to Amazon S3"
+        if: ${{ always() }}
         run: aws s3 cp --recursive ./deploy_dir s3://ags-travis-artifacts
 
   Push-to-Nexus:

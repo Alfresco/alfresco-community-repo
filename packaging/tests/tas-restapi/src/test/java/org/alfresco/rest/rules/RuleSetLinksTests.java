@@ -252,7 +252,7 @@ public class RuleSetLinksTests extends RestTest
         request.setId(fileContent.getNodeRef());
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
 
-        STEP("Assert link result is 404");
+        STEP("Assert link result is 400");
         restClient.assertStatusCodeIs(BAD_REQUEST)
                 .assertLastError().containsSummary("NodeId of a folder is expected!");
     }

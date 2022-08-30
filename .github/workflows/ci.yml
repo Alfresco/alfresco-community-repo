@@ -254,7 +254,7 @@ jobs:
     needs:
       - prepare
     env:
-      REQUIRES_INSTALLED_ARTIFACTS: true
+      REQUIRES_LOCAL_IMAGES: true
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"

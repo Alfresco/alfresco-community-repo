@@ -34,6 +34,7 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.rest.model.RestRuleSetLinkModel;
+import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -99,6 +100,15 @@ public class RuleSetLinksTests extends RestTest
                 .getListOfRules();
         rules.assertThat().entriesListCountIs(1);
         rules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
+
+        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+                .usingNode(folder)
+                .include("inclusionType")
+                .getListOfRuleSets();
+        ruleSets.assertThat().entriesListCountIs(1);
+        final RestRuleSetModel expectedRuleSet = new RestRuleSetModel();
+        expectedRuleSet.setInclusionType("linked");
+        ruleSets.getEntries().get(0).onModel().assertThat().isEqualTo(expectedRuleSet, "id", "owningFolder", "model");
     }
 
     /** Check we can link to a rule set. */
@@ -126,6 +136,15 @@ public class RuleSetLinksTests extends RestTest
                 .getListOfRules();
         rules.assertThat().entriesListCountIs(1);
         rules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
+
+        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+                .usingNode(folder)
+                .include("inclusionType")
+                .getListOfRuleSets();
+        ruleSets.assertThat().entriesListCountIs(1);
+        final RestRuleSetModel expectedRuleSet = new RestRuleSetModel();
+        expectedRuleSet.setInclusionType("linked");
+        ruleSets.getEntries().get(0).onModel().assertThat().isEqualTo(expectedRuleSet, "id", "owningFolder", "model");
     }
 
 

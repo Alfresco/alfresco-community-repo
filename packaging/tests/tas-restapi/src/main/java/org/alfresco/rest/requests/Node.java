@@ -53,6 +53,7 @@ import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.rest.model.RestRatingModelsCollection;
 import org.alfresco.rest.model.RestRenditionInfoModel;
 import org.alfresco.rest.model.RestRenditionInfoModelCollection;
+import org.alfresco.rest.model.RestRuleSetLinkModel;
 import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
 import org.alfresco.rest.model.RestTagModel;
@@ -1058,5 +1059,11 @@ public class Node extends ModelRequest<Node>
     public RuleSettings usingIsInheritanceEnabledRuleSetting()
     {
         return usingRuleSetting(IS_INHERITANCE_ENABLED);
+    }
+
+    public RestRuleSetLinkModel createRuleLink(RestRuleSetLinkModel body)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, body.toJson(), "nodes/{nodeId}/rule-set-links", repoModel.getNodeRef());
+        return restWrapper.processModel(RestRuleSetLinkModel.class, request);
     }
 }

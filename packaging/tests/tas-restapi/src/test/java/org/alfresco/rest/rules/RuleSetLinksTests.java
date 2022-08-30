@@ -94,21 +94,23 @@ public class RuleSetLinksTests extends RestTest
         ruleLink.assertThat().isEqualTo(expectedLink);
 
         STEP("Check if folder returns same rules");
-        final RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI()
+        final RestRuleModelsCollection linkedRules = restClient.authenticateUser(user).withCoreAPI()
                 .usingNode(folder)
                 .usingDefaultRuleSet()
                 .getListOfRules();
-        rules.assertThat().entriesListCountIs(1);
-        rules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
+        linkedRules.assertThat().entriesListCountIs(1);
+        linkedRules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
 
-        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+        STEP("Check if folder returns rule set with linked inclusionType");
+        final RestRuleSetModelsCollection linkedRuleSets = restClient.authenticateUser(user).withCoreAPI()
                 .usingNode(folder)
                 .include("inclusionType")
                 .getListOfRuleSets();
-        ruleSets.assertThat().entriesListCountIs(1);
+        linkedRuleSets.assertThat().entriesListCountIs(1);
         final RestRuleSetModel expectedRuleSet = new RestRuleSetModel();
         expectedRuleSet.setInclusionType("linked");
-        ruleSets.getEntries().get(0).onModel().assertThat().isEqualTo(expectedRuleSet, "id", "owningFolder", "model");
+        linkedRuleSets.getEntries()
+                .get(0).onModel().assertThat().isEqualTo(expectedRuleSet, "id", "owningFolder", "model");
     }
 
     /** Check we can link to a rule set. */
@@ -130,21 +132,23 @@ public class RuleSetLinksTests extends RestTest
         ruleLink.assertThat().isEqualTo(expectedLink);
 
         STEP("Check if folder returns same rules");
-        final RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI()
+        final RestRuleModelsCollection linkedRules = restClient.authenticateUser(user).withCoreAPI()
                 .usingNode(folder)
                 .usingDefaultRuleSet()
                 .getListOfRules();
-        rules.assertThat().entriesListCountIs(1);
-        rules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
+        linkedRules.assertThat().entriesListCountIs(1);
+        linkedRules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
 
-        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+        STEP("Check if folder returns rule set with linked inclusionType");
+        final RestRuleSetModelsCollection likedRuleSets = restClient.authenticateUser(user).withCoreAPI()
                 .usingNode(folder)
                 .include("inclusionType")
                 .getListOfRuleSets();
-        ruleSets.assertThat().entriesListCountIs(1);
+        likedRuleSets.assertThat().entriesListCountIs(1);
         final RestRuleSetModel expectedRuleSet = new RestRuleSetModel();
         expectedRuleSet.setInclusionType("linked");
-        ruleSets.getEntries().get(0).onModel().assertThat().isEqualTo(expectedRuleSet, "id", "owningFolder", "model");
+        likedRuleSets.getEntries()
+                .get(0).onModel().assertThat().isEqualTo(expectedRuleSet, "id", "owningFolder", "model");
     }
 
 

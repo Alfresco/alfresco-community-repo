@@ -108,9 +108,10 @@ public class RuleSetLinksTests extends RestTest
                 .getListOfRuleSets();
         linkedRuleSets.assertThat().entriesListCountIs(1);
         final RestRuleSetModel expectedRuleSet = new RestRuleSetModel();
+        expectedRuleSet.setId(ruleSetId);
         expectedRuleSet.setInclusionType("linked");
         linkedRuleSets.getEntries()
-                .get(0).onModel().assertThat().isEqualTo(expectedRuleSet, "id", "owningFolder", "model");
+                .get(0).onModel().assertThat().isEqualTo(expectedRuleSet);
     }
 
     /** Check we can link to a rule set. */
@@ -146,9 +147,10 @@ public class RuleSetLinksTests extends RestTest
                 .getListOfRuleSets();
         likedRuleSets.assertThat().entriesListCountIs(1);
         final RestRuleSetModel expectedRuleSet = new RestRuleSetModel();
+        expectedRuleSet.setId(ruleSetId);
         expectedRuleSet.setInclusionType("linked");
         likedRuleSets.getEntries()
-                .get(0).onModel().assertThat().isEqualTo(expectedRuleSet, "id", "owningFolder", "model");
+                .get(0).onModel().assertThat().isEqualTo(expectedRuleSet);
     }
 
 

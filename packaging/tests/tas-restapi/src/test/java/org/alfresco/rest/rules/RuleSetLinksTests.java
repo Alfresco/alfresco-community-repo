@@ -43,7 +43,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 /**
- * Tests for /nodes/{nodeId}/rule-sets and /nodes/{nodeId}/rule-set-links.
+ * Tests for /nodes/{nodeId}/rule-set-links.
  */
 @Test (groups = { TestGroup.RULES })
 public class RuleSetLinksTests extends RestTest
@@ -86,11 +86,19 @@ public class RuleSetLinksTests extends RestTest
         request.setId(ruleFolder.getNodeRef());
         final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
 
+        STEP("Assert link result");
         restClient.assertStatusCodeIs(CREATED);
-        ruleLink.assertThat().field("id").contains(ruleSetId);
+        final RestRuleSetLinkModel expectedLink = new RestRuleSetLinkModel();
+        expectedLink.setId(ruleSetId);
+        ruleLink.assertThat().isEqualTo(expectedLink);
 
-        final RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getListOfRules();
+        STEP("Check if folder returns same rules");
+        final RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI()
+                .usingNode(folder)
+                .usingDefaultRuleSet()
+                .getListOfRules();
         rules.assertThat().entriesListCountIs(1);
+        rules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
     }
 
     /** Check we can link to a rule set. */
@@ -105,11 +113,19 @@ public class RuleSetLinksTests extends RestTest
         request.setId(ruleSetId);
         final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
 
+        STEP("Assert link result");
         restClient.assertStatusCodeIs(CREATED);
-        ruleLink.assertThat().field("id").contains(ruleSetId);
+        final RestRuleSetLinkModel expectedLink = new RestRuleSetLinkModel();
+        expectedLink.setId(ruleSetId);
+        ruleLink.assertThat().isEqualTo(expectedLink);
 
-        final RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getListOfRules();
+        STEP("Check if folder returns same rules");
+        final RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI()
+                .usingNode(folder)
+                .usingDefaultRuleSet()
+                .getListOfRules();
         rules.assertThat().entriesListCountIs(1);
+        rules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
     }
 
 
@@ -125,6 +141,7 @@ public class RuleSetLinksTests extends RestTest
         request.setId("dummy-rule-set-id");
         restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
 
+        STEP("Assert link result is 404");
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 

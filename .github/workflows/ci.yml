@@ -6,9 +6,6 @@ on:
     branches:
       - feature/**
       - fix/**
-    branches-ignore:
-      - master
-      - release/**
   workflow_call:
 
 env:

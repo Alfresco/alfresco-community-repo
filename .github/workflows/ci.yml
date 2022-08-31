@@ -386,11 +386,7 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
-      - name: "Setup Maven Action"
-        uses: s4u/setup-maven-action@v1.5.0
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          maven-version: 3.5.4
+          cache: "maven"
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh

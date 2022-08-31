@@ -21,7 +21,7 @@ if [[ -n ${REQUIRES_INSTALLED_ARTIFACTS} ]] || [[ -n ${REQUIRES_LOCAL_IMAGES} ]]
   fi
 
   if [[ "${REQUIRES_INSTALLED_ARTIFACTS}" == "true" ]]; then
-    PHASE="install"
+    PHASE="clean install"
   else
     PHASE="package"
   fi

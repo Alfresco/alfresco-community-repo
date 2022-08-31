@@ -3,6 +3,9 @@ name: Alfresco Community Repo CI
 on:
   pull_request:
   push:
+    branches:
+      - feature/**
+      - fix/**
     branches-ignore:
       - master
       - release/**
@@ -27,6 +30,9 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    if: >
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - name: "Clean cache"
@@ -39,8 +45,10 @@ jobs:
     needs:
       - prepare
     if: >
-      (github.ref_name == 'master' || contains(github.ref_name, 'release')) &&
-      ! contains(github.event.head_commit.message, '[skip build]')
+      (github.ref_name == 'master' || contains(github.ref_name, '[release]') || github.event_name == 'pull_request') &&
+      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - run: mkdir -p $HOME/.m2
@@ -53,6 +61,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -76,6 +88,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -90,7 +106,7 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "temurin"
           cache: "maven"
-      - name: "Get Transformers tag"
+      - name: "Set Transformers tag"
         run: |
           echo "TRANSFORMERS_TAG=$(mvn help:evaluate -Dexpression=dependency.alfresco-transform-core.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: "docker build 1"
@@ -106,6 +122,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -140,6 +160,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -165,6 +189,12 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ((github.ref_name == 'master' || contains(github.ref_name, '[release]' )) &&
+      ! contains(github.event.head_commit.message, '[skip db]')) ||
+      contains(github.event.head_commit.message, '[db]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     steps:
       - uses: actions/checkout@v3
       - name: "Login to Quay.io"
@@ -190,6 +220,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
@@ -222,6 +256,10 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ! contains(github.event.head_commit.message, '[skip repo]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:
@@ -259,6 +297,12 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ((github.ref_name == 'master' || contains(github.ref_name, '[release]' || github.event_name == 'pull_request' )) &&
+      ! contains(github.event.head_commit.message, '[skip tas]')) ||
+      contains(github.event.head_commit.message, '[tas]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     env:
       REQUIRES_LOCAL_IMAGES: true
     steps:
@@ -292,6 +336,12 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - prepare
+    if: >
+      ((github.ref_name == 'master' || contains(github.ref_name, '[release]') || github.event_name == 'pull_request' ) &&
+      ! contains(github.event.head_commit.message, '[skip ags]')) ||
+      contains(github.event.head_commit.message, '[ags]') &&
+      ! contains(github.event.head_commit.message, '[skip tests]') &&
+      ! contains(github.event.head_commit.message, '[force]')
     env:
       REQUIRES_INSTALLED_ARTIFACTS: true
     steps:

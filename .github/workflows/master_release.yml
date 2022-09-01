@@ -14,6 +14,7 @@ jobs:
     uses: ./.github/workflows/ci.yml
     secrets: inherit
   Push-to-Nexus:
+    name: "Push to Nexus"
     runs-on: ubuntu-latest
     if: |
       always() &&
@@ -52,6 +53,7 @@ jobs:
           GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
           GIT_PASSWORD: ${{ secrets.BOT_GITHUB_PASSWORD }}
   Update-downstream:
+    name: "Update alfresco-enterprise-repo"
     runs-on: ubuntu-latest
     if: |
       always() &&

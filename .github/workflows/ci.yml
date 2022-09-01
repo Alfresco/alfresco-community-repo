@@ -15,10 +15,6 @@ env:
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
   MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
   MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
-  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
   TAS_ENVIRONMENT: ./packaging/tests/environment
   LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
@@ -26,6 +22,7 @@ env:
 
 jobs:
   prepare:
+    name: "Prepare"
     runs-on: ubuntu-latest
     if: >
       ! contains(github.event.head_commit.message, '[skip tests]') &&
@@ -38,6 +35,7 @@ jobs:
         run: bash ./scripts/travis/prepare.sh
 
   veracode:
+    name: "Source Clear Scan (SCA)"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -55,6 +53,7 @@ jobs:
           srcclr-api-token: ${{ secrets.SRCCLR_API_TOKEN }}
 
   AllUnitTestsSuite:
+    name: "Core, Data-Model, Repository - AllUnitTestsSuite - Build and test"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -82,6 +81,7 @@ jobs:
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl "repository,mmt" -am "-Dtest=AllUnitTestsSuite,AllMmtUnitTestSuite" -DfailIfNoTests=false
 
   Repository-AppContext01TestSuite:
+    name: "Repository - AppContext01TestSuite"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -116,6 +116,7 @@ jobs:
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext01TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   Repository-AppContext05TestSuite:
+    name: "Repository - AppContext05TestSuite"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -154,6 +155,7 @@ jobs:
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AppContext05TestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco "-Didentity-service.auth-server-url=http://${{ env.HOST_IP }}:8999/auth"
 
   Repository-SearchTestSuite:
+    name: "Repository - SearchTestSuite"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -183,6 +185,7 @@ jobs:
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=SearchTestSuite -DfailIfNoTests=false -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco -Dindex.subsystem.name=solr6
 
   Repository-MariaDB10-2-18-tests:
+    name: "Repository - MariaDB 10.2.18 tests"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -214,6 +217,7 @@ jobs:
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl repository -am -Dtest=AllDBTestsTestSuite -DfailIfNoTests=false -Ddb.name=alfresco -Ddb.url=jdbc:mariadb://localhost:3307/alfresco?useUnicode=yes\&characterEncoding=UTF-8 -Ddb.username=alfresco -Ddb.password=alfresco -Ddb.driver=org.mariadb.jdbc.Driver
 
   Remote-api-AppContext01TestSuite:
+    name: "Remote-api - AppContext01TestSuite"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -250,6 +254,7 @@ jobs:
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl remote-api -Dtest=AppContext01TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   Remote-api-AppContext02TestSuite:
+    name: "Remote-api - AppContext02TestSuite"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -291,6 +296,7 @@ jobs:
         run: mvn --settings .travis.settings.xml --file pom.xml -B test -pl remote-api -Dtest=AppContext02TestSuite -Ddb.driver=org.postgresql.Driver -Ddb.name=alfresco -Ddb.url=jdbc:postgresql://localhost:5433/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 
   REST-API-TAS-tests-part1:
+    name: "REST API TAS tests part1"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -321,15 +327,16 @@ jobs:
       - name: "build"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: bash ./scripts/travis/build.sh
-      - name: "env1"
-        run: ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
-      - name: "env2"
-        run: ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+      - name: "Set up the environment"
+        run: |
+          ${{ env.TAS_SCRIPTS }}/start-compose.sh ${{ env.TAS_ENVIRONMENT }}/docker-compose-minimal+transforms.yml
+          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
       - name: "Run tests"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --settings .travis.settings.xml --file  packaging/tests/tas-restapi/pom.xml -B verify -Pall-tas-tests,run-restapi-part1 -Denvironment=default -DrunBugs=false
 
   AGS-Unit-And_Integration-Tests-01-PostgreSQL:
+    name: "AGS Unit & Integration Tests 01 (PostgreSQL)"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -362,9 +369,10 @@ jobs:
         run: bash ./scripts/travis/build.sh
       - name: "verify"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
-        run: mvn --settings .travis.settings.xml --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 ${LOG_WARN}
+        run: mvn --settings .travis.settings.xml --file amps/ags/pom.xml -B verify -Dmaven.javadoc.skip=true -Dmaven.source.skip=true -Pags -Pstart-postgres -PagsAllTestSuitePt1 ${{ env.LOG_WARN }}
 
   AGS-Community-Rest-API-Tests:
+    name: "AGS Community Rest API Tests"
     runs-on: ubuntu-latest
     needs:
       - prepare
@@ -398,10 +406,10 @@ jobs:
         run: bash ./scripts/travis/build.sh
         env:
           REQUIRES_LOCAL_IMAGES: true
-      - name: "env1"
-        run: ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
-      - name: "env2"
-        run: ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
+      - name: "Set up the environment"
+        run: |
+          ${{ env.TAS_SCRIPTS }}/start-compose.sh ./amps/ags/rm-community/rm-community-repo/docker-compose.yml
+          ${{ env.TAS_SCRIPTS }}/wait-for-alfresco-start.sh "http://localhost:8080/alfresco"
       - name: "test"
         timeout-minutes: ${{ fromJSON(env.GITHUB_ACTIONS_DEPLOY_TIMEOUT) }}
         run: mvn --settings .travis.settings.xml -B test -pl :alfresco-governance-services-automation-community-rest-api -am -DfailIfNoTests=false -Dskip.automationtests=false -Pags

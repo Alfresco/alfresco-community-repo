@@ -9,16 +9,17 @@ on:
   workflow_call:
 
 env:
-  # Both variables are required to be set before the release process starts.
-  # As the release is triggered by a commit message with "[release]" keyword on a release branch,
-  # setting these variables to new values can be done in the same commit and will indicate the release and the dev versions in it.
+  DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   GITHUB_ACTIONS_DEPLOY_TIMEOUT: 60
+  JAVA_VERSION: "17"
+  LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
   MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
   MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
-  TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
+  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   TAS_ENVIRONMENT: ./packaging/tests/environment
-  LOG_WARN: "-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
-  JAVA_VERSION: "17"
+  TAS_SCRIPTS: ../alfresco-community-repo/packaging/tests/scripts
 
 jobs:
   prepare:

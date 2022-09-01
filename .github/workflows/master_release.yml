@@ -10,7 +10,7 @@ on:
       - release/**
 
 jobs:
-  run-ci:
+  Run-CI:
     uses: ./.github/workflows/ci.yml
     secrets: inherit
   Push-to-Nexus:
@@ -18,9 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       always() &&
-      (needs.run-ci.result == 'skipped' || needs.run-ci.result == 'success') &&
-      (github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
-      github.event_name != 'pull_request' &&
+      (needs.Run-CI.result == 'skipped' || needs.Run-CI.result == 'success') &&
       ! contains(github.event.head_commit.message, '[no release]')
     needs:
       - AGS-Community-Rest-API-Tests
@@ -52,14 +50,13 @@ jobs:
           BUILD_NUMBER: ${{ github.run_number }}
           GIT_USERNAME: ${{ secrets.BOT_GITHUB_USERNAME }}
           GIT_PASSWORD: ${{ secrets.BOT_GITHUB_PASSWORD }}
+
   Update-downstream:
     name: "Update alfresco-enterprise-repo"
     runs-on: ubuntu-latest
     if: |
       always() &&
-      (needs.run-ci.result == 'skipped' || needs.run-ci.result == 'success') &&
-      (github.ref_name == 'master' || contains(github.ref_name, 'release/')) &&
-      github.event_name != 'pull_request' &&
+      (needs.Run-CI.result == 'skipped' || needs.Run-CI.result == 'success') &&
       ! contains(github.event.head_commit.message, '[no downstream]')
     needs:
       - AGS-Community-Rest-API-Tests

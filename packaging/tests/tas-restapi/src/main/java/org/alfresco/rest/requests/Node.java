@@ -30,6 +30,7 @@ import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
 
 import javax.json.JsonArrayBuilder;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import io.restassured.http.ContentType;
@@ -769,7 +770,7 @@ public class Node extends ModelRequest<Node>
         try
         {
             restWrapper.usingContentType(ContentType.BINARY);
-            String body = Files.readFile(nodeContent);
+            String body = Files.readFile(new FileInputStream(nodeContent));
             RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, body, "nodes/{nodeId}/content?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
             request.setContentType("UTF-8");
             restWrapper.usingContentType(ContentType.JSON);

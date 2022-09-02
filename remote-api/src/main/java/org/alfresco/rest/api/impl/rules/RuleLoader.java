@@ -31,6 +31,7 @@ import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.namespace.NamespaceService;
 
 /** Responsible for creating {@link Rule} objects. */
 @Experimental
@@ -39,10 +40,11 @@ public class RuleLoader
     public static final String IS_SHARED = "isShared";
     private RuleService ruleService;
     private NodeValidator nodeValidator;
+    private NamespaceService namespaceService;
 
     public Rule loadRule(org.alfresco.service.cmr.rule.Rule ruleModel, List<String> includes)
     {
-        Rule rule = Rule.from(ruleModel);
+        Rule rule = Rule.from(ruleModel, namespaceService);
         if (includes != null && includes.contains(IS_SHARED))
         {
             NodeRef ruleSet = ruleService.getRuleSetNode(ruleModel.getNodeRef());
@@ -60,5 +62,10 @@ public class RuleLoader
     public void setNodeValidator(NodeValidator nodeValidator)
     {
         this.nodeValidator = nodeValidator;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 }

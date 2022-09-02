@@ -65,7 +65,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
 
     /**
      * List folder rules for given folder node's and rule set's IDs as a page.
-     *
+     * <p>
      * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules
      *
      * @param folderNodeId - entity resource context for this relationship
@@ -87,7 +87,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
 
     /**
      * Get single folder rule for given node's, rule set's and rule's IDs.
-     *
+     * <p>
      * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
      *
      * @param folderNodeId - entity resource context for this relationship
@@ -158,7 +158,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
 
     /**
      * Delete single folder rule for given node's, rule set's and rule's IDs.
-     *
+     * <p>
      * - DELETE /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
      *
      * @param folderNodeId - entity resource context for this relationship

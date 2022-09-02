@@ -37,6 +37,7 @@ import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.GUID;
 
 @Experimental
@@ -60,7 +61,7 @@ public class Rule
      * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
      * @return {@link Rule} REST model
      */
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel)
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final NamespaceService namespaceService)
     {
         if (ruleModel == null)
         {
@@ -83,7 +84,7 @@ public class Rule
         }
         if (ruleModel.getAction() != null)
         {
-            builder.conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions()));
+            builder.conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions(), namespaceService));
             if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
             {
                 builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
@@ -103,7 +104,7 @@ public class Rule
      * @param nodes The nodes API.
      * @return The rule service POJO.
      */
-    public org.alfresco.service.cmr.rule.Rule toServiceModel(Nodes nodes)
+    public org.alfresco.service.cmr.rule.Rule toServiceModel(final Nodes nodes, final NamespaceService namespaceService)
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
         final NodeRef nodeRef = (id != null) ? nodes.validateOrLookupNode(id, null) : null;
@@ -123,6 +124,10 @@ public class Rule
             final org.alfresco.service.cmr.action.Action compensatingAction = new ActionImpl(null, GUID.generate(), ScriptActionExecuter.NAME);
             compensatingAction.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, errorScript);
             ruleModel.getAction().setCompensatingAction(compensatingAction);
+        }
+        if (conditions != null)
+        {
+            conditions.toServiceModels(nodes, namespaceService).forEach(condition -> ruleModel.getAction().addActionCondition(condition));
         }
 
         return ruleModel;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package org.alfresco.rest.rm.community.records;
+package org.alfresco.rest.rm.community.records.priorities;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.core.v0.BaseAPI;

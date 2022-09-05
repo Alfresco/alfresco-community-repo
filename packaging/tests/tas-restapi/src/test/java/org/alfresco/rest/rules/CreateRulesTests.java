@@ -406,7 +406,7 @@ public class CreateRulesTests extends RestTest
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
         expectedRuleModel.setConditions(createVariousConditions());
         restClient.assertStatusCodeIs(CREATED);
@@ -425,7 +425,7 @@ public class CreateRulesTests extends RestTest
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED);

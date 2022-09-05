@@ -441,7 +441,7 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithConditions_invalidCategory()
     {
         STEP("Try to create a rule with non existing category in conditions.");
-        String fakeCategoryId = "bdba5f9f-fa42-4ab2-803b-349bcfd06fd1";
+        String fakeCategoryId = "bdba5f9f-fake-id22-803b-349bcfd06fd1";
         RestCompositeConditionDefinitionModel conditions = createCompositeCondition(List.of(
             createCompositeCondition(!INVERTED, List.of(
                 createSimpleCondition("category", "equals", fakeCategoryId)

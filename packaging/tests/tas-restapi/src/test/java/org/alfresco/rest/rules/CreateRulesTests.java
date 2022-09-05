@@ -409,6 +409,7 @@ public class CreateRulesTests extends RestTest
         RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
         expectedRuleModel.setConditions(createVariousConditions());
+        expectedRuleModel.setTriggers(List.of("inbound"));
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED);
     }
@@ -417,7 +418,7 @@ public class CreateRulesTests extends RestTest
      * Check we can create a rule with empty list as conditions
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void createRuleWithConditions_emptyList()
+    public void createRuleWithConditions_emptyConditionList()
     {
         RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         ruleModel.setConditions(createCompositeCondition(null));
@@ -427,6 +428,8 @@ public class CreateRulesTests extends RestTest
 
         RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
+        expectedRuleModel.setConditions(createCompositeCondition(null));
+        expectedRuleModel.setTriggers(List.of("inbound"));
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED);
     }

@@ -34,7 +34,6 @@ import java.util.Objects;
 
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
-import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
@@ -75,7 +74,7 @@ public class Action
      */
     public org.alfresco.service.cmr.action.Action toServiceModel(final NodeRef nodeRef)
     {
-        return new ActionImpl(nodeRef, GUID.generate(), SetPropertyValueActionExecuter.NAME, params);
+        return new ActionImpl(nodeRef, GUID.generate(), this.actionDefinitionId, params);
     }
 
     /**

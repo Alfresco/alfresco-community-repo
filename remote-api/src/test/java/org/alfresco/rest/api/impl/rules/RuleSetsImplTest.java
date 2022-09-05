@@ -97,6 +97,7 @@ public class RuleSetsImplTest extends TestCase
         MockitoAnnotations.openMocks(this);
 
         given(nodeValidatorMock.validateFolderNode(eq(LINK_TO_NODE_ID), anyBoolean())).willReturn(LINK_TO_NODE);
+        given(nodeValidatorMock.validateRuleSetNode(LINK_TO_NODE_ID,true)).willReturn(LINK_TO_NODE);
         given(nodeValidatorMock.validateFolderNode(eq(FOLDER_ID), anyBoolean())).willReturn(FOLDER_NODE);
         given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
 
@@ -190,7 +191,7 @@ public class RuleSetsImplTest extends TestCase
     }
 
     @Test
-    public void testLinkingToRuleSet()
+    public void testLinkToFolderRuleSet()
     {
         NodeRef childNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "dummy-child-id");
 
@@ -199,7 +200,7 @@ public class RuleSetsImplTest extends TestCase
         given(assocRef.getChildRef()).willReturn(childNodeRef);
 
         //when
-        assertEquals(ruleSets.linkToRuleSet(FOLDER_ID,LINK_TO_NODE_ID).getId(), childNodeRef.getId());
+        String actual = ruleSets.linkToRuleSet(FOLDER_ID,LINK_TO_NODE_ID).getId();
 
         then(ruleServiceMock).should().hasRules(LINK_TO_NODE);
         then(ruleServiceMock).should().hasRules(FOLDER_NODE);
@@ -207,6 +208,35 @@ public class RuleSetsImplTest extends TestCase
         then(runtimeRuleServiceMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).should().addChild(FOLDER_NODE, childNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
+
+        assertEquals(childNodeRef.getId(),actual);
+    }
+
+    @Test
+    public void testLinkToRuleSet()
+    {
+        NodeRef childNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "dummy-child-id");
+
+        given(nodeValidatorMock.isRuleSetNode(any())).willReturn(true);
+        given(ruleServiceMock.hasRules(any(NodeRef.class))).willReturn(true, false);
+        given(runtimeRuleServiceMock.getSavedRuleFolderAssoc(any(NodeRef.class))).willReturn(assocRef);
+        given(assocRef.getChildRef()).willReturn(childNodeRef);
+
+        //when
+        String actual = ruleSets.linkToRuleSet(FOLDER_ID,LINK_TO_NODE_ID).getId();
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID,true);
+        then(nodeValidatorMock).should().isRuleSetNode(LINK_TO_NODE_ID);
+        then(nodeValidatorMock).should().validateRuleSetNode(LINK_TO_NODE_ID,true);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().hasRules(LINK_TO_NODE);
+        then(ruleServiceMock).should().hasRules(FOLDER_NODE);
+        then(runtimeRuleServiceMock).should().getSavedRuleFolderAssoc(LINK_TO_NODE);
+        then(runtimeRuleServiceMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().addChild(FOLDER_NODE, childNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+
+        assertEquals(childNodeRef.getId(),actual);
     }
 
     @Test

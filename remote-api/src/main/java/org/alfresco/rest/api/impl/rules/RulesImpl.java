@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.impl.rules;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.alfresco.rest.api.Nodes;
@@ -37,6 +38,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.slf4j.Logger;
@@ -51,6 +53,8 @@ public class RulesImpl implements Rules
     private RuleService ruleService;
     private NodeValidator validator;
     private RuleLoader ruleLoader;
+    private ActionParameterConverter actionParameterConverter;
+    private ActionPermissionValidator actionPermissionValidator;
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId,
@@ -62,8 +66,8 @@ public class RulesImpl implements Rules
         validator.validateRuleSetNode(ruleSetId, folderNodeRef);
 
         final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
-            .map(ruleModel -> ruleLoader.loadRule(ruleModel, includes))
-            .collect(Collectors.toList());
+                .map(ruleModel -> loadRuleAndConvertActionParams(ruleModel, includes))
+                .collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
     }
@@ -75,7 +79,7 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validator.validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return ruleLoader.loadRule(ruleService.getRule(ruleNodeRef), includes);
+        return loadRuleAndConvertActionParams(ruleService.getRule(ruleNodeRef), includes);
     }
 
     @Override
@@ -89,10 +93,10 @@ public class RulesImpl implements Rules
         }
 
         return rules.stream()
-                    .map(rule -> rule.toServiceModel(nodes))
-                    .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(rule -> ruleLoader.loadRule(rule, includes))
-                    .collect(Collectors.toList());
+                .map(this::mapToServiceModelAndValidateActions)
+                .map(rule -> ruleService.saveRule(folderNodeRef, rule))
+                .map(rule -> loadRuleAndConvertActionParams(rule, includes))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -104,7 +108,7 @@ public class RulesImpl implements Rules
         NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
         validator.validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return ruleLoader.loadRule(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)), includes);
+        return ruleLoader.loadRule(ruleService.saveRule(folderNodeRef, mapToServiceModelAndValidateActions(rule)), includes);
     }
 
     @Override
@@ -115,6 +119,30 @@ public class RulesImpl implements Rules
         final NodeRef ruleNodeRef = validator.validateRuleNode(ruleId, ruleSetNodeRef);
         final org.alfresco.service.cmr.rule.Rule rule = ruleService.getRule(ruleNodeRef);
         ruleService.removeRule(folderNodeRef, rule);
+    }
+
+    private org.alfresco.service.cmr.rule.Rule mapToServiceModelAndValidateActions(Rule rule)
+    {
+        final org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes);
+        final CompositeAction compositeAction = (CompositeAction) serviceModelRule.getAction();
+        compositeAction.getActions().forEach(action -> action.setParameterValues(
+                actionParameterConverter.getConvertedParams(action.getParameterValues(), action.getActionDefinitionName())));
+
+        return actionPermissionValidator.validateRulePermissions(serviceModelRule);
+    }
+
+    private Rule loadRuleAndConvertActionParams(org.alfresco.service.cmr.rule.Rule ruleModel, List<String> includes)
+    {
+
+        final Rule rule = ruleLoader.loadRule(ruleModel, includes);
+        rule.getActions()
+                .forEach(a -> a.setParams(a.getParams().entrySet()
+                                .stream()
+                                .collect(Collectors
+                                        .toMap(Map.Entry::getKey, e -> actionParameterConverter.convertParamFromServiceModel(e.getValue())))
+                        )
+                );
+        return rule;
     }
 
     public void setNodes(Nodes nodes)
@@ -135,5 +163,15 @@ public class RulesImpl implements Rules
     public void setRuleLoader(RuleLoader ruleLoader)
     {
         this.ruleLoader = ruleLoader;
+    }
+
+    public void setActionParameterConverter(ActionParameterConverter actionParameterConverter)
+    {
+        this.actionParameterConverter = actionParameterConverter;
+    }
+
+    public void setActionPermissionValidator(ActionPermissionValidator actionPermissionValidator)
+    {
+        this.actionPermissionValidator = actionPermissionValidator;
     }
 }

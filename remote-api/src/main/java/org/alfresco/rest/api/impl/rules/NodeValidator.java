@@ -33,12 +33,15 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -52,6 +55,7 @@ public class NodeValidator
     private Nodes nodes;
     private RuleService ruleService;
     private PermissionService permissionService;
+    private NodeService nodeService;
 
     /**
      * Validates if folder node exists and the user has permission to use it.
@@ -65,20 +69,7 @@ public class NodeValidator
     public NodeRef validateFolderNode(final String folderNodeId, boolean requireChangePermission)
     {
         final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
-        if (requireChangePermission)
-        {
-            if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
-            {
-                throw new PermissionDeniedException("Insufficient permissions to manage rules.");
-            }
-        }
-        else
-        {
-            if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
-            {
-                throw new PermissionDeniedException("Cannot read from this node!");
-            }
-        }
+        validatePermission(requireChangePermission, nodeRef);
         verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 
         return nodeRef;
@@ -114,6 +105,15 @@ public class NodeValidator
         return ruleSetNodeRef;
     }
 
+    public NodeRef validateRuleSetNode(String linkToNodeId, boolean requireChangePermission)
+    {
+        final Node ruleSetNode = nodes.getNode(linkToNodeId);
+        final ChildAssociationRef primaryParent = nodeService.getPrimaryParent(ruleSetNode.getNodeRef());
+        final NodeRef parentNode = primaryParent.getParentRef();
+        validatePermission(requireChangePermission, parentNode);
+        return parentNode;
+    }
+
 
     /**
      * Validates if rule node exists and associated rule set node matches.
@@ -142,6 +142,24 @@ public class NodeValidator
         return nodeRef;
     }
 
+    private void validatePermission(boolean requireChangePermission, NodeRef nodeRef)
+    {
+        if (requireChangePermission)
+        {
+            if (permissionService.hasPermission(nodeRef, CHANGE_PERMISSIONS) != ALLOWED)
+            {
+                throw new PermissionDeniedException("Insufficient permissions to manage rules.");
+            }
+        }
+        else
+        {
+            if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
+            {
+                throw new PermissionDeniedException("Cannot read from this node!");
+            }
+        }
+    }
+
     private void verifyNodeType(final NodeRef nodeRef, final QName expectedType, final String expectedTypeName)
     {
         final Set<QName> expectedTypes = Set.of(expectedType);
@@ -149,6 +167,16 @@ public class NodeValidator
         {
             final String expectedTypeLocalName = (expectedTypeName != null) ? expectedTypeName : expectedType.getLocalName();
             throw new InvalidArgumentException(String.format("NodeId of a %s is expected!", expectedTypeLocalName));
+        }
+    }
+
+    public boolean isRuleSetNode(String nodeId) {
+        try
+        {
+            validateNode(nodeId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
+            return true;
+        } catch (InvalidArgumentException e) {
+            return false;
         }
     }
 
@@ -183,5 +211,10 @@ public class NodeValidator
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
+    }
+
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 }

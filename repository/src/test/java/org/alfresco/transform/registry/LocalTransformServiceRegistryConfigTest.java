@@ -32,8 +32,6 @@ import org.alfresco.repo.content.transform.LocalPipelineTransform;
 import org.alfresco.repo.content.transform.LocalTransformImpl;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
-import org.alfresco.transform.registry.SupportedTransform;
-import org.alfresco.transform.registry.TransformRegistryModelTest ;
 import org.alfresco.transform.config.SupportedSourceAndTarget;
 import org.alfresco.transform.config.TransformConfig;
 import org.alfresco.transform.config.TransformOption;

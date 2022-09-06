@@ -25,7 +25,6 @@
  */
 package org.alfresco;
 
-import org.alfresco.transform.registry.LocalTransformServiceRegistryConfigTest;
 import org.alfresco.util.testing.category.DBTests;
 import org.alfresco.util.testing.category.NonBuildTests;
 import org.junit.experimental.categories.Categories;
@@ -51,7 +50,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.event2.RepoEvent2ITSuite.class,
 
     // Requires running transformers
-    LocalTransformServiceRegistryConfigTest.class,
+    org.alfresco.transform.registry.LocalTransformServiceRegistryConfigTest.class,
     org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
     org.alfresco.repo.rendition2.LocalTransformServiceRegistryIntegrationTest.class,
     org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,

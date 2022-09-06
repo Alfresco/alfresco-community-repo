@@ -30,8 +30,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.LocalPassThroughTransform;
 import org.alfresco.service.cmr.repository.MimetypeService;
-import org.alfresco.transform.registry.AbstractTransformRegistry;
-import org.alfresco.transform.registry.CombinedTransformConfig;
 import org.alfresco.transform.config.TransformConfig;
 import org.alfresco.transform.config.Transformer;
 import org.alfresco.util.ConfigFileFinder;

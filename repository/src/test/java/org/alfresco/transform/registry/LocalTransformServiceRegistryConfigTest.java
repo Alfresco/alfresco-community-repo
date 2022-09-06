@@ -391,6 +391,23 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
         combinedConfig.register((TransformServiceRegistryImpl)registry);
     }
 
+    // The super class uses org.junit.jupiter:junit-jupiter-engine:5.8.2
+    // This cannot be used in the Alfresco repo as other tests in this class fail as they expect junit 4
+    @Override
+    protected void assertSupported(String sourceMimetype, long sourceSizeInBytes, String targetMimetype,
+                                   Map<String, String> actualOptions, String renditionName, String unsupportedMsg)
+    {
+        boolean supported = registry.isSupported(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+        if (unsupportedMsg != null && !unsupportedMsg.isEmpty())
+        {
+            assertFalse(supported);
+        }
+        else
+        {
+            assertTrue(supported);
+        }
+    }
+
     @Test
     public void testJsonConfig() throws IOException
     {

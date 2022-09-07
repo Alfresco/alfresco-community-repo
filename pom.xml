@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>17.92-SNAPSHOT</version>
+    <version>17.103-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -45,14 +45,14 @@
 
         <dependency.alfresco-hb-data-sender.version>1.0.12</dependency.alfresco-hb-data-sender.version>
         <dependency.alfresco-trashcan-cleaner.version>2.4.1</dependency.alfresco-trashcan-cleaner.version>
-        <dependency.alfresco-jlan.version>7.1</dependency.alfresco-jlan.version>
+        <dependency.alfresco-jlan.version>7.2</dependency.alfresco-jlan.version>
         <dependency.alfresco-server-root.version>6.0.1</dependency.alfresco-server-root.version>
         <dependency.alfresco-messaging-repo.version>1.2.20</dependency.alfresco-messaging-repo.version>
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-service.version>1.5.3</dependency.alfresco-transform-service.version>
-        <dependency.alfresco-transform-core.version>2.6.0</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>1.5.4-A3</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>2.7.0-A1</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.4</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.16</dependency.acs-event-model.version>
 
@@ -82,7 +82,7 @@
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
-        <dependency.keycloak.version>15.0.2</dependency.keycloak.version>
+        <dependency.keycloak.version>18.0.0</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
         <dependency.camel.version>3.15.0</dependency.camel.version> <!-- when bumping this version, please keep track/sync with included netty.io dependencies (can cause dependency conflicts)-->
         <dependency.activemq.version>5.17.1</dependency.activemq.version>
@@ -120,7 +120,7 @@
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.49</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.1.1</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.114</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.115</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.32</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.9</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.7</dependency.tas-webdav.version>

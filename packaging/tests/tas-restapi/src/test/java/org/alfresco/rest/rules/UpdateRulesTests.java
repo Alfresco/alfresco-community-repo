@@ -161,8 +161,7 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule to have no name.");
-        RestRuleModel updatedRuleModel = new RestRuleModel();
-        updatedRuleModel.setName("");
+        RestRuleModel updatedRuleModel = createRuleModel("");
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(BAD_REQUEST)

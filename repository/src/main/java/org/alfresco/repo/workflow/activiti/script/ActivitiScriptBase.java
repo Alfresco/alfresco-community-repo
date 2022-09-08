@@ -28,16 +28,21 @@ package org.alfresco.repo.workflow.activiti.script;
 
 import java.util.Map;
 
+import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.VariableScope;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.el.Expression;
+import org.activiti.engine.impl.persistence.entity.DeploymentEntity;
+import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
+import org.activiti.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -102,6 +107,9 @@ public class ActivitiScriptBase
     {
         // Execute the script using the appropriate processor
         Object scriptResult = null;
+
+        setSecure(model);
+
         if (scriptProcessorName != null)
         {
             scriptResult = getServiceRegistry().getScriptService().executeScriptString(scriptProcessorName, theScript, model);
@@ -140,6 +148,35 @@ public class ActivitiScriptBase
             return registry;
         }
         throw new IllegalStateException("No ProcessEngineCOnfiguration found in active context");
+    }
+
+    /**
+     * Adds the secure flag to the supplied model map based on current {@link DeploymentEntity}
+     *
+     * @param model
+     *            the model where secure flag will be injected
+     */
+    private void setSecure(Map<String, Object> model)
+    {
+        DeploymentEntity de = null;
+
+        try
+        {
+            de = Context.getExecutionContext().getDeployment();
+        }
+        catch (Exception e)
+        {
+            // No action required
+        }
+
+        // If workflow is deployed at app server the deployment entity name is filled in with filename
+        // If workflow is deployed in repo (e.g., data dictionary) the name is null
+        boolean isSecureDeploy = de != null && de.getName() != null;
+
+        if (model != null)
+        {
+            model.put(ScriptProcessor.SECURE, isSecureDeploy);
+        }
     }
 
     /**

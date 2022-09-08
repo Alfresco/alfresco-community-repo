@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -434,7 +435,56 @@ public class RhinoScriptTest extends TestCase
         });
 
     }
-    
+
+    // MNT-21638
+    public void testSecureScriptString()
+    {
+        boolean executed = executeSecureScriptString(TESTSCRIPT2, false);
+        assertFalse("Script shouldn't have been executed (secure = false)", executed);
+
+        executed = executeSecureScriptString(TESTSCRIPT2, null);
+        assertFalse("Script shouldn't have been executed (secure = null)", executed);
+
+        executed = executeSecureScriptString(TESTSCRIPT2, true);
+        assertTrue("Script should have been executed (secure = true)", executed);
+    }
+
+    private boolean executeSecureScriptString(String script, Boolean secure)
+    {
+        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
+        {
+            public Boolean execute() throws Exception
+            {
+                StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "rhino_" + System.currentTimeMillis());
+                NodeRef root = nodeService.getRootNode(store);
+                BaseNodeServiceTest.buildNodeGraph(nodeService, root);
+
+                try
+                {
+                    Map<String, Object> model = new HashMap<String, Object>();
+                    model.put("out", System.out);
+
+                    ScriptNode rootNode = new ScriptNode(root, serviceRegistry, null);
+                    model.put("root", rootNode);
+
+                    if (secure != null)
+                    {
+                        model.put(ScriptProcessor.SECURE, secure);
+                    }
+
+                    // test executing a script directly as string
+                    scriptService.executeScriptString("javascript", script, model);
+                }
+                catch (Exception e)
+                {
+                    return false;
+                }
+
+                return true;
+            }
+        });
+    }
+
     private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";
     private static final String TESTSCRIPT_CLASSPATH2 = "org/alfresco/repo/jscript/test_script2.js";
     private static final String TESTSCRIPT_CLASSPATH3 = "org/alfresco/repo/jscript/test_script3.js";
@@ -453,7 +503,12 @@ public class RhinoScriptTest extends TestCase
             "logger.log(\"child by name path: \" + childByNameNode.name);\r\n" +
             "var xpathResults = root.childrenByXPath(\"/*\");\r\n" +
             "logger.log(\"children of root from xpath: \" + xpathResults.length);\r\n";
-    
+
+    private static final String TESTSCRIPT2 = "var exec = new org.alfresco.util.exec.RuntimeExec();\r\n"
+            + "exec.setCommand([\"/bin/ls\"]);\r\n"
+            + "var res = exec.execute();\r\n"
+            + "java.lang.System.err.println(res.getStdOut());\r\n";
+
     private static final String BASIC_JAVA = 
             "var list = com.google.common.collect.Lists.newArrayList();\n" + 
             "root.nodeRef.getClass().forName(\"java.lang.ProcessBuilder\")";

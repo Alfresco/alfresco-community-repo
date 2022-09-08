@@ -36,7 +36,9 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  */
 public interface ScriptProcessor extends Processor
-{    
+{
+    public static final String SECURE = "secure";
+
     /**
      * Execute script
      * 

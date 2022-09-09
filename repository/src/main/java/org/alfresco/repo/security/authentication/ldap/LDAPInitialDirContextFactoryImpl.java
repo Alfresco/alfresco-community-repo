@@ -85,11 +85,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     private String trustStoreType;
     private String trustStorePassPhrase;
 
-    private JobLockService jobLockService;
-    private final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "LDAPInitialDirContextFactoryImpl");
-    private final long LOCK_TTL = 1000 * 60 * 5;
-    private final long LOCK_RETRY_WAIT = 0;
-    private final int LOCK_RETRY_COUNT = 0;
+    private boolean initialChecksEnabled = true;
 
     private final String ANONYMOUS_CHECK = "anonymous_check";
     private final String SIMPLE_DN_CHECK = "simple_dn_check";
@@ -494,34 +490,21 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     {
         logger.debug("after Properties Set");
 
-        String lockToken = null;
-
-        try
+        if (initialChecksEnabled)
         {
-            lockToken = this.jobLockService.getLock(LOCK_QNAME, LOCK_TTL, LOCK_RETRY_WAIT, LOCK_RETRY_COUNT);
-
             checkAnonymousBind();
             checkSimpleDnAndPassword();
             checkDnAndPassword();
             checkPrincipal();
         }
-        catch (LockAcquisitionException e)
+        else
         {
-            // Don't proceed with the LDAP checks if it is already running on another node
-            logger.warn("LDAP initial dir context checks are already running on another thread. Tests aborted.");
-        }
-        finally
-        {
-            if (lockToken != null)
-            {
-                jobLockService.releaseLock(lockToken, LOCK_QNAME);
-            }
-
+            logger.info("LDAP checks are disabled");
         }
     }
 
     /**
-     * 1) Check Anonymous bind
+     * Check Anonymous bind
      */
     private void checkAnonymousBind()
     {
@@ -539,6 +522,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
         if (!isCached(ANONYMOUS_CHECK, env))
         {
+            logger.debug("Starting check: Anonymous bind");
+
             try
             {
                 new InitialDirContext(env);
@@ -559,7 +544,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     }
 
     /**
-     * 2) Simple DN and password
+     * Check simple DN and password
      */
     private void checkSimpleDnAndPassword()
     {
@@ -577,6 +562,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
         if (!isCached(SIMPLE_DN_CHECK, env))
         {
+            logger.debug("Starting check: Simple DN and Password");
+
             try
             {
                 new InitialDirContext(env);
@@ -600,7 +587,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     }
 
     /**
-     * 3) DN and Password
+     * Check DN and Password
      */
     private void checkDnAndPassword()
     {
@@ -618,6 +605,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
         if (!isCached(DN_CHECK, env))
         {
+            logger.debug("Starting check: DN and Password");
+
             try
             {
                 new InitialDirContext(env);
@@ -640,7 +629,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     }
 
     /**
-     * 4) Check more if we have a real principal we expect to work
+     * Check more if we have a real principal we expect to work
      */
     private void checkPrincipal()
     {
@@ -664,6 +653,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
             if (!isCached(PRINCIPAL_CHECK, env))
             {
+                logger.debug("Starting check: Principal");
+
                 try
                 {
                     new InitialDirContext(env);
@@ -769,16 +760,6 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         return ks;
     }
 
-    public void setJobLockService(JobLockService jobLockService)
-    {
-        this.jobLockService = jobLockService;
-    }
-
-    public void setLdapInitialDirContextCache(SimpleCache<String, Set<Map<String, String>>> cache)
-    {
-        this.ldapInitialDirContextCache = cache;
-    }
-
     private void addToCache(String key, Map<String, String> value)
     {
         Set<Map<String, String>> envs = ldapInitialDirContextCache.get(key);
@@ -787,8 +768,8 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         {
             envs = Collections.synchronizedSet(new HashSet<Map<String, String>>(11));
         }
-
-        if (envs != null && !envs.contains(value))
+        
+        if (!envs.contains(value))
         {
             envs.add(value);
         }
@@ -827,7 +808,19 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
                 isCached = true;
             }
         }
+        
+        logger.debug("LDAP check: " + key + " / isCached: " + (isCached ? "yes" : "no"));
 
         return isCached;
+    }
+
+    public void setLdapInitialDirContextCache(SimpleCache<String, Set<Map<String, String>>> cache)
+    {
+        this.ldapInitialDirContextCache = cache;
+    }
+
+    public void setInitialChecksEnabled(boolean initialChecksEnabled)
+    {
+        this.initialChecksEnabled = initialChecksEnabled;
     }
 }

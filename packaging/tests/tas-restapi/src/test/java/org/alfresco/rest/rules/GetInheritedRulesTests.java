@@ -73,7 +73,7 @@ public class GetInheritedRulesTests extends RestTest
         STEP("Get the rules in the default rule set for the child folder");
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(child).usingDefaultRuleSet().getListOfRules();
         rules.assertThat().entriesListContains("id", childRule.getId())
-             .and().entriesListCountIs(3);
+             .and().entriesListCountIs(1);
 
         STEP("Get the rules in the inherited rule set for the child folder");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(child).include("inclusionType").getListOfRuleSets();

@@ -1573,6 +1573,12 @@ public class RuleServiceImpl
     }
 
     @Override
+    public NodeRef getOwningNodeRef(NodeRef ruleSet)
+    {
+        return nodeService.getPrimaryParent(ruleSet).getParentRef();
+    }
+
+    @Override
     public NodeRef getOwningNodeRef(final Action action)
     {
         // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607

@@ -311,7 +311,17 @@ public interface RuleService
      */
     @Auditable(parameters = {"action"})
     public NodeRef getOwningNodeRef(Action action);
-    
+
+    /**
+     * Returns the owning node reference for a rule.
+     *
+     * @param ruleSet The rule set node.
+     * @return the owning node reference
+     */
+    @Auditable (parameters = { "rule" })
+    @Experimental
+    NodeRef getOwningNodeRef(NodeRef ruleSet);
+
     /**
      * Indicates whether the passed rule node reference is linked to another
      * rule node.

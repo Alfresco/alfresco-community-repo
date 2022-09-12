@@ -27,10 +27,17 @@ package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.testng.Assert.assertEquals;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
+import org.alfresco.rest.model.RestRuleSetLinkModel;
+import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -83,5 +90,53 @@ public class GetInheritedRulesTests extends RestTest
         RestRuleModelsCollection inheritedRules = restClient.authenticateUser(user).withCoreAPI().usingNode(child).usingRuleSet(inheritedRuleSetId).getListOfRules();
         inheritedRules.assertThat().entriesListContains("id", parentRule.getId())
                       .and().entriesListCountIs(1);
+    }
+
+    /**
+     * Check that we only get each rule once with linking and inheritance, and the order is correct.
+     * <p>
+     * The folder structure for this test is as follows:
+     * <pre>
+     *      A --[links]-> DRuleSet
+     *      +-B --[owns]-> BRuleSet
+     *        +-C --[owns]-> CRuleSet
+     *          +-D --[owns]--> DRuleSet
+     * </pre>
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void rulesReturnedAreUnique()
+    {
+        STEP("Create four folders with rules");
+        FolderModel folderA = dataContent.usingUser(user).usingSite(site).createFolder();
+        FolderModel folderB = dataContent.usingUser(user).usingResource(folderA).createFolder();
+        FolderModel folderC = dataContent.usingUser(user).usingResource(folderB).createFolder();
+        FolderModel folderD = dataContent.usingUser(user).usingResource(folderC).createFolder();
+        RestRuleModel ruleB = restClient.authenticateUser(user).withCoreAPI().usingNode(folderB).usingDefaultRuleSet().createSingleRule(createRuleModelWithModifiedValues());
+        RestRuleModel ruleC = restClient.authenticateUser(user).withCoreAPI().usingNode(folderC).usingDefaultRuleSet().createSingleRule(createRuleModelWithModifiedValues());
+        RestRuleModel ruleD = restClient.authenticateUser(user).withCoreAPI().usingNode(folderD).usingDefaultRuleSet().createSingleRule(createRuleModelWithModifiedValues());
+        STEP("Link folderA to ruleSetD");
+        RestRuleSetLinkModel linkModel = new RestRuleSetLinkModel();
+        linkModel.setId(folderD.getNodeRef());
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folderA).createRuleLink(linkModel);
+
+        STEP("Get the rule sets for the folderD");
+        List<RestRuleSetModel> ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(folderD).getListOfRuleSets().getEntries();
+
+        STEP("Check the rules for each rule set are as expected");
+        List<RestRuleModel> expectedRuleIds = List.of(ruleD, ruleB, ruleC);
+        IntStream.range(0, 2).forEach(index -> {
+            String ruleSetId = ruleSets.get(index).onModel().getId();
+            List<RestRuleModel> rules = restClient.authenticateUser(user)
+                                                  .withCoreAPI()
+                                                  .usingNode(folderD)
+                                                  .usingRuleSet(ruleSetId)
+                                                  .getListOfRules()
+                                                  .getEntries()
+                                                  .stream()
+                                                  .map(RestRuleModel::onModel)
+                                                  .collect(Collectors.toList());
+            assertEquals(rules, List.of(expectedRuleIds.get(index)), "Unexpected rules found for rule set " + ruleSetId);
+        });
+        assertEquals(ruleSets.size(), 3, "Expected three unique rule sets to be returned but got " + ruleSets);
     }
 }

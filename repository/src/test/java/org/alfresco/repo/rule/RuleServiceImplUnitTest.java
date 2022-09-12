@@ -254,6 +254,8 @@ public class RuleServiceImplUnitTest
         boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
 
         then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).should().hasAspect(FOLDER_NODE, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(FOLDER_NODE);
         then(runtimeNodeService).shouldHaveNoMoreInteractions();
         then(nodeService).shouldHaveNoInteractions();
         assertThat(associated).isTrue();
@@ -268,6 +270,8 @@ public class RuleServiceImplUnitTest
         boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
 
         then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).should().hasAspect(FOLDER_NODE, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(FOLDER_NODE);
         then(runtimeNodeService).shouldHaveNoMoreInteractions();
         then(nodeService).shouldHaveNoInteractions();
         assertThat(associated).isFalse();
@@ -283,9 +287,43 @@ public class RuleServiceImplUnitTest
         boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
 
         then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).should().hasAspect(FOLDER_NODE, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(FOLDER_NODE);
         then(runtimeNodeService).shouldHaveNoMoreInteractions();
         then(nodeService).shouldHaveNoInteractions();
         assertThat(associated).isFalse();
+    }
+
+    /**
+     * Check that a rule set is associated with the folder in the following case:
+     * <pre>
+     *     parent --[link]-> rule set <-[owned]-- owningFolder
+     *     +- child
+     * </pre>
+     */
+    @Test
+    public void testIsRuleSetAssociatedWithFolder_inheritedLinkedAssociation()
+    {
+        // The rule is owned by one node.
+        NodeRef owningFolder = new NodeRef("owning://node/");
+        // The rule is linked to by the parent node.
+        NodeRef parent = new NodeRef("parent://node/");
+        List<ChildAssociationRef> ruleAssociations = List.of(createAssociation(owningFolder, RULE_SET_NODE), createAssociation(parent, RULE_SET_NODE));
+        given(runtimeNodeService.getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER)).willReturn(ruleAssociations);
+        // The parent and the child both supply rule sets.
+        given(runtimeNodeService.getParentAssocs(FOLDER_NODE)).willReturn(List.of(createAssociation(parent, FOLDER_NODE)));
+
+        // when
+        boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).should().hasAspect(FOLDER_NODE, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(FOLDER_NODE);
+        then(runtimeNodeService).should().hasAspect(parent, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(parent);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(associated).isTrue();
     }
 
     @Test

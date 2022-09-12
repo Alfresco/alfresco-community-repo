@@ -353,7 +353,7 @@ public interface RuleService
     NodeRef getRuleSetNode(final NodeRef folderNodeRef);
 
     /**
-     * Check if rule set's associated parent matches folder node.
+     * Check if rule set is associated (owned/linked/inherited) with the given folder node.
      *
      * @param ruleSetNodeRef - node reference of a rule set
      * @param folderNodeRef - node reference of a folder

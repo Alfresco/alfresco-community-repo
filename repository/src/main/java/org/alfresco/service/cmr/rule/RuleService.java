@@ -318,7 +318,7 @@ public interface RuleService
      * @param ruleSet The rule set node.
      * @return the owning node reference
      */
-    @Auditable (parameters = { "rule" })
+    @Auditable (parameters = { "ruleSet" })
     @Experimental
     NodeRef getOwningNodeRef(NodeRef ruleSet);
 

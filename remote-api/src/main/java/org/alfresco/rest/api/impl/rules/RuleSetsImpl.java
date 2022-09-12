@@ -64,6 +64,7 @@ public class RuleSetsImpl implements RuleSets
                                             .map(ruleService::getRuleSetNode)
                                             .filter(Objects::nonNull)
                                             .map(nodeRef -> ruleSetLoader.loadRuleSet(nodeRef, folderNode, includes))
+                                            .distinct()
                                             .collect(toList());
 
         return ListPage.of(ruleSets, paging);

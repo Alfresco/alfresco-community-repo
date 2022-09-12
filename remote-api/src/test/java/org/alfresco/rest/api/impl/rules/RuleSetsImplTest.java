@@ -177,6 +177,30 @@ public class RuleSetsImplTest extends TestCase
         assertEquals(PAGING, actual.getPaging());
     }
 
+    /** When getting rule sets then only the first instance of each rule set should be included (ancestor first). */
+    @Test
+    public void testGetDuplicateRuleSets()
+    {
+        // Simulate a grandparent, parent and child with the grandparent linking to the child's rule set.
+        NodeRef grandparentNode = new NodeRef("grandparent://node/");
+        given(ruleServiceMock.getRuleSetNode(grandparentNode)).willReturn(RULE_SET_NODE);
+        NodeRef parentNode = new NodeRef("parent://node/");
+        RuleSet parentRuleSet = mock(RuleSet.class);
+        NodeRef parentRuleSetNode = new NodeRef("parent://rule-set/");
+        given(ruleServiceMock.getRuleSetNode(parentNode)).willReturn(parentRuleSetNode);
+        given(ruleSetLoaderMock.loadRuleSet(parentRuleSetNode, FOLDER_NODE, INCLUDES)).willReturn(parentRuleSet);
+        // These should be returned with the highest in hierarchy first.
+        given(ruleServiceMock.getNodesSupplyingRuleSets(FOLDER_NODE)).willReturn(List.of(grandparentNode, parentNode, FOLDER_NODE));
+
+        // Call the method under test.
+        CollectionWithPagingInfo<RuleSet> actual = ruleSets.getRuleSets(FOLDER_ID, INCLUDES, PAGING);
+
+        // The grandparent's linked rule set should be first and only appear once.
+        Collection<RuleSet> expected = List.of(ruleSetMock, parentRuleSet);
+        assertEquals(expected, actual.getCollection());
+        assertEquals(PAGING, actual.getPaging());
+    }
+
     @Test
     public void testGetRuleSetById()
     {

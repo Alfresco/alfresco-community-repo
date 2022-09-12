@@ -123,7 +123,7 @@
          <ref bean="ldapInitialDirContextCache" />
       </property>
       <property name="initialChecksEnabled">
-         <value>${ldap.initial.checks.enabled}</value>
+         <value>${ldap.authentication.initial.checks.enabled}</value>
       </property>
       <property name="trustStorePath">
          <value>${ldap.authentication.truststore.path}</value>

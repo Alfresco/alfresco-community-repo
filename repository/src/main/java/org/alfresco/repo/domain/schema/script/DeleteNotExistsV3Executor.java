@@ -243,7 +243,6 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             PreparedStatement deletePrepStmt, Set<Long> deleteIds, String primaryTableName, String primaryColumnName,
             Pair<String, String>[] tableColumn) throws SQLException
     {
-        int rowsProcessed = 0;
         Long primaryId = null;
         Long minSecId = 0L;
         Long maxSecId = 0L;
@@ -267,7 +266,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
 
         Long minPotentialId = Collections.min(potentialIdsToDelete);
         Long maxPotentialId = Collections.max(potentialIdsToDelete);
-        rowsProcessed = potentialIdsToDelete.size();
+        int rowsProcessed = potentialIdsToDelete.size();
         processedCounter = processedCounter + rowsProcessed;
 
         // Get a combined list of the ids present in the secondary tables

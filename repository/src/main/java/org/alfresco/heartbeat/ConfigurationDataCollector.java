@@ -51,7 +51,7 @@ import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.traitextender.SpringExtensionBundle;
 import org.alfresco.util.PropertyCheck;
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -89,7 +89,7 @@ import javax.sql.DataSource;
  *          </li>
  *          <li><b>db:</b> Database configuration
  *              <ul>
- *                  <li>maxConnections: int - The maximum number of active connections. {@link BasicDataSource#getMaxActive()}</li>
+ *                  <li>maxConnections: int - The maximum number of active connections. {@link BasicDataSource#getMaxTotal()}</li>
  *              </ul>
  *          </li>
  *          <li><b>authentication</b>: Authentication configuration.
@@ -326,7 +326,7 @@ public class ConfigurationDataCollector extends HBBaseDataCollector implements I
         if (dataSource instanceof BasicDataSource)
         {
             Map<String, Object> db = new HashMap<>();
-            db.put("maxConnections", ((BasicDataSource) dataSource).getMaxActive());
+            db.put("maxConnections", ((BasicDataSource) dataSource).getMaxTotal());
             configurationValues.put("db", db);
         }
 

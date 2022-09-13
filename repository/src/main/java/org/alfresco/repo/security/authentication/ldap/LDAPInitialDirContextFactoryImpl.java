@@ -57,6 +57,7 @@ import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AlfrescoSSLSocketFactory;
 import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -71,8 +72,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 {
     private static final Log logger = LogFactory.getLog(LDAPInitialDirContextFactoryImpl.class);
 
-    private static Set<Map<String, String>> checkedEnvs = Collections.synchronizedSet(new HashSet<Map<String, String>>(
-            11));
+    private SimpleCache<String, Set<Map<String, String>>> ldapInitialDirContextCache;
 
     private Map<String, String> defaultEnvironment = Collections.<String, String> emptyMap();
     private Map<String, String> authenticatedEnvironment = Collections.<String, String> emptyMap();
@@ -80,6 +80,13 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     private String trustStorePath;
     private String trustStoreType;
     private String trustStorePassPhrase;
+
+    private boolean initialChecksEnabled = true;
+
+    private final String ANONYMOUS_CHECK = "anonymous_check";
+    private final String SIMPLE_DN_CHECK = "simple_dn_check";
+    private final String DN_CHECK = "dn_check";
+    private final String PRINCIPAL_CHECK = "principal_check";
 
     public String getTrustStorePath()
     {
@@ -478,141 +485,183 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     public void afterPropertiesSet() throws Exception
     {
         logger.debug("after Properties Set");
-        // Check Anonymous bind
 
+        if (initialChecksEnabled)
+        {
+            checkAnonymousBind();
+            checkSimpleDnAndPassword();
+            checkDnAndPassword();
+            checkPrincipal();
+        }
+        else
+        {
+            logger.info("LDAP checks are disabled");
+        }
+    }
+
+    /**
+     * Check Anonymous bind
+     */
+    private void checkAnonymousBind()
+    {
         Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
         env.putAll(authenticatedEnvironment);
         env.remove(Context.SECURITY_PRINCIPAL);
         env.remove(Context.SECURITY_CREDENTIALS);
+
         if (isSSLSocketFactoryRequired())
         {
             KeyStore trustStore = initTrustStore();
             AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
             env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
         }
-        try
+
+        if (!isCached(ANONYMOUS_CHECK, env))
         {
-            new InitialDirContext(env);
+            logger.debug("Starting check: Anonymous bind");
 
-            logger.warn("LDAP server supports anonymous bind " + env.get(Context.PROVIDER_URL));
+            try
+            {
+                new InitialDirContext(env);
+
+                logger.warn("LDAP server supports anonymous bind " + env.get(Context.PROVIDER_URL));
+            }
+            catch (javax.naming.AuthenticationException | AuthenticationNotSupportedException e)
+            {
+                // do nothing
+            }
+            catch (NamingException nx)
+            {
+                logger.error("Unable to connect to LDAP Server; check LDAP configuration", nx);
+            }
+
+            addToCache(ANONYMOUS_CHECK, env);
         }
-        catch (javax.naming.AuthenticationException ax)
-        {
+    }
 
-        }
-        catch (AuthenticationNotSupportedException e)
-        {
-
-        }
-        catch (NamingException nx)
-        {
-            logger.error("Unable to connect to LDAP Server; check LDAP configuration", nx);
-            return;
-        }
-
-        // Simple DN and password
-
-        env = new Hashtable<String, String>(authenticatedEnvironment.size());
+    /**
+     * Check simple DN and password
+     */
+    private void checkSimpleDnAndPassword()
+    {
+        Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
         env.putAll(authenticatedEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, "daftAsABrush");
         env.put(Context.SECURITY_CREDENTIALS, "daftAsABrush");
+
         if (isSSLSocketFactoryRequired())
         {
             KeyStore trustStore = initTrustStore();
             AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
             env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
         }
-        try
-        {
 
-            new InitialDirContext(env);
-
-            throw new AuthenticationException(
-                    "The ldap server at "
-                            + env.get(Context.PROVIDER_URL)
-                            + " falls back to use anonymous bind if invalid security credentials are presented. This is not supported.");
-        }
-        catch (javax.naming.AuthenticationException ax)
+        if (!isCached(SIMPLE_DN_CHECK, env))
         {
-            logger.info("LDAP server does not fall back to anonymous bind for a string uid and password at " + env.get(Context.PROVIDER_URL));
-        }
-        catch (AuthenticationNotSupportedException e)
-        {
-            logger.info("LDAP server does not fall back to anonymous bind for a string uid and password at " + env.get(Context.PROVIDER_URL)); 
-        }
-        catch (NamingException nx)
-        {
-            logger.info("LDAP server does not support simple string user ids and invalid credentials at "+ env.get(Context.PROVIDER_URL));
-        }
+            logger.debug("Starting check: Simple DN and Password");
 
-        // DN and password
+            try
+            {
+                new InitialDirContext(env);
 
-        env = new Hashtable<String, String>(authenticatedEnvironment.size());
+                throw new AuthenticationException("The ldap server at " + env.get(Context.PROVIDER_URL)
+                        + " falls back to use anonymous bind if invalid security credentials are presented. This is not supported.");
+            }
+            catch (javax.naming.AuthenticationException | AuthenticationNotSupportedException e)
+            {
+                logger.info("LDAP server does not fall back to anonymous bind for a string uid and password at "
+                        + env.get(Context.PROVIDER_URL));
+            }
+            catch (NamingException nx)
+            {
+                logger.info("LDAP server does not support simple string user ids and invalid credentials at "
+                        + env.get(Context.PROVIDER_URL));
+            }
+
+            addToCache(SIMPLE_DN_CHECK, env);
+        }
+    }
+
+    /**
+     * Check DN and Password
+     */
+    private void checkDnAndPassword()
+    {
+        Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
         env.putAll(authenticatedEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, "cn=daftAsABrush,dc=woof");
         env.put(Context.SECURITY_CREDENTIALS, "daftAsABrush");
+
         if (isSSLSocketFactoryRequired())
         {
             KeyStore trustStore = initTrustStore();
             AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
             env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
         }
-        try
-        {
 
-            new InitialDirContext(env);
-
-            throw new AuthenticationException(
-                    "The ldap server at "
-                            + env.get(Context.PROVIDER_URL)
-                            + " falls back to use anonymous bind if invalid security credentials are presented. This is not supported.");
-        }
-        catch (javax.naming.AuthenticationException ax)
+        if (!isCached(DN_CHECK, env))
         {
-            logger.info("LDAP server does not fall back to anonymous bind for a simple dn and password at " + env.get(Context.PROVIDER_URL));
-        }
-        catch (AuthenticationNotSupportedException e)
-        {
-            logger.info("LDAP server does not fall back to anonymous bind for a simple dn and password at " + env.get(Context.PROVIDER_URL));
-        }
-        catch (NamingException nx)
-        {
-            logger.info("LDAP server does not support simple DN and invalid password at "+ env.get(Context.PROVIDER_URL));
-        }
+            logger.debug("Starting check: DN and Password");
 
-        // Check more if we have a real principal we expect to work
+            try
+            {
+                new InitialDirContext(env);
 
+                throw new AuthenticationException("The ldap server at " + env.get(Context.PROVIDER_URL)
+                        + " falls back to use anonymous bind if invalid security credentials are presented. This is not supported.");
+            }
+            catch (javax.naming.AuthenticationException | AuthenticationNotSupportedException e)
+            {
+                logger.info("LDAP server does not fall back to anonymous bind for a simple dn and password at "
+                        + env.get(Context.PROVIDER_URL));
+            }
+            catch (NamingException nx)
+            {
+                logger.info("LDAP server does not support simple DN and invalid password at " + env.get(Context.PROVIDER_URL));
+            }
+
+            addToCache(DN_CHECK, env);
+        }
+    }
+
+    /**
+     * Check more if we have a real principal we expect to work
+     */
+    private void checkPrincipal()
+    {
         String principal = defaultEnvironment.get(Context.SECURITY_PRINCIPAL);
+
         if (principal != null)
         {
             // Correct principal invalid password
 
-            env = new Hashtable<String, String>(authenticatedEnvironment.size());
+            Hashtable<String, String> env = new Hashtable<String, String>(authenticatedEnvironment.size());
             env.putAll(authenticatedEnvironment);
             env.put(Context.SECURITY_PRINCIPAL, principal);
             env.put(Context.SECURITY_CREDENTIALS, "sdasdasdasdasd123123123");
+
             if (isSSLSocketFactoryRequired())
             {
                 KeyStore trustStore = initTrustStore();
                 AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
                 env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
             }
-            if (!checkedEnvs.contains(env))
+
+            if (!isCached(PRINCIPAL_CHECK, env))
             {
+                logger.debug("Starting check: Principal");
 
                 try
                 {
-    
                     new InitialDirContext(env);
-    
-                    throw new AuthenticationException(
-                            "The ldap server at "
-                                    + env.get(Context.PROVIDER_URL)
-                                    + " falls back to use anonymous bind for a known principal if  invalid security credentials are presented. This is not supported.");
+
+                    throw new AuthenticationException("The ldap server at " + env.get(Context.PROVIDER_URL)
+                            + " falls back to use anonymous bind for a known principal if  invalid security credentials are presented. This is not supported.");
                 }
                 catch (javax.naming.AuthenticationException ax)
                 {
-                    logger.info("LDAP server does not fall back to anonymous bind for known principal and invalid credentials at " + env.get(Context.PROVIDER_URL));
+                    logger.info("LDAP server does not fall back to anonymous bind for known principal and invalid credentials at "
+                            + env.get(Context.PROVIDER_URL));
                 }
                 catch (AuthenticationNotSupportedException e)
                 {
@@ -622,9 +671,10 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
                 {
                     // already done
                 }
-                // Record this environment as checked so that we don't check it again on further restarts / other subsystem
-                // instances
-                checkedEnvs.add(env);
+
+                // Record this environment as checked so that we don't check it again on further restarts / other
+                // subsystem instances
+                addToCache(PRINCIPAL_CHECK, env);
             }
         }
     }
@@ -704,5 +754,69 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             throw new AlfrescoRuntimeException("The certificates cannot be loaded from truststore.", ce);
         }
         return ks;
+    }
+
+    private void addToCache(String key, Map<String, String> value)
+    {
+        Set<Map<String, String>> envs = ldapInitialDirContextCache.get(key);
+
+        if (envs == null)
+        {
+            envs = Collections.synchronizedSet(new HashSet<Map<String, String>>(11));
+        }
+        
+        if (!envs.contains(value))
+        {
+            envs.add(value);
+        }
+
+        if (!ldapInitialDirContextCache.contains(key))
+        {
+            ldapInitialDirContextCache.put(key, envs);
+        }
+    }
+
+    private void removeFromCache(String key, Map<String, String> value)
+    {
+        if (ldapInitialDirContextCache != null && ldapInitialDirContextCache.contains(key))
+        {
+            Set<Map<String, String>> envs = ldapInitialDirContextCache.get(key);
+            if (envs != null && envs.contains(value))
+            {
+                envs.remove(value);
+                if (envs.isEmpty())
+                {
+                    ldapInitialDirContextCache.remove(key);
+                }
+            }
+        }
+    }
+
+    private boolean isCached(String key, Map<String, String> value)
+    {
+        boolean isCached = false;
+
+        if (ldapInitialDirContextCache != null && ldapInitialDirContextCache.contains(key))
+        {
+            Set<Map<String, String>> envs = ldapInitialDirContextCache.get(key);
+            if (envs != null && envs.contains(value))
+            {
+                isCached = true;
+            }
+        }
+        
+        logger.debug("LDAP check: " + key + " / isCached: " + (isCached ? "yes" : "no"));
+
+        return isCached;
+    }
+
+    public void setLdapInitialDirContextCache(SimpleCache<String, Set<Map<String, String>>> cache)
+    {
+        this.ldapInitialDirContextCache = cache;
+    }
+
+    public void setInitialChecksEnabled(boolean initialChecksEnabled)
+    {
+        this.initialChecksEnabled = initialChecksEnabled;
     }
 }

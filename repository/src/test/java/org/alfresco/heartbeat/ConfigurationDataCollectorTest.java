@@ -57,7 +57,7 @@ import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.traitextender.SpringExtensionBundle;
-import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.Before;
 import org.junit.Test;
 

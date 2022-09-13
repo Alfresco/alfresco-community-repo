@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -102,19 +102,11 @@ public abstract class AbstractSiteActivityTest
     // AppToolId for site membership activities
     private static String appToolId = "siteService"; // refer to SiteService
     
-    private static boolean membersAddedUpdated = false;
-    private static boolean membersRemoved = false;
-    private static boolean controlsCreated = false;
-    
-    public AbstractSiteActivityTest()
-    {
-    }
-    
     @Before
     public void setUp() throws Exception
     {
         applicationContext = ApplicationContextHelper.getApplicationContext();
-        String testid = ""+System.currentTimeMillis();
+        String testid = "" + System.currentTimeMillis();
         
         // Let's shut down the scheduler so that we aren't competing with the scheduled versions of the post lookup and
         // feed generator jobs
@@ -189,10 +181,6 @@ public abstract class AbstractSiteActivityTest
         deleteSite(site1); 
         deleteSite(site2);
         deleteSite(site3);
-        
-        membersAddedUpdated  = false;
-        membersRemoved = false;
-        controlsCreated = false;
     }
     
     protected void createSite(String siteId, boolean isPublic) throws Exception
@@ -332,51 +320,39 @@ public abstract class AbstractSiteActivityTest
         }
         assertEquals(expectedCount, activityService.getUserFeedEntries(userId, siteId, excludeThisUser, excludeOtherUsers, null, null).size());
     }
-    
-    @Test
-    public void testUserFeedControls() throws Exception
+
+    public void configureFeedControls() throws Exception
     {
-        if (! controlsCreated)
-        {
-            // user 1 opts out of all activities for site 1
-            login(user1, USER_PW);
-            addFeedControl(site1, null);
-            
-            // user 2 opts out of site membership activities (across all sites)
-            login(user2, USER_PW);
-            addFeedControl(null, appToolId);
-            
-            // user 3 opts out of site membership activities for site 1 only
-            login(user3, USER_PW);
-            addFeedControl(site1, appToolId);
-                 
-            // TODO add more here, once we have more appToolIds
-            
-            controlsCreated = true;
-        }
+        // user 1 opts out of all activities for site 1
+        login(user1, USER_PW);
+        addFeedControl(site1, null);
+
+        // user 2 opts out of site membership activities (across all sites)
+        login(user2, USER_PW);
+        addFeedControl(null, appToolId);
+
+        // user 3 opts out of site membership activities for site 1 only
+        login(user3, USER_PW);
+        addFeedControl(site1, appToolId);
+
+        // TODO add more here, once we have more appToolIds
     }
-    
-    @Test
-    public void testAddAndUpdateMemberships() throws Exception
+
+    public void addAndUpdateMemberships() throws Exception
     {
-        if (! membersAddedUpdated)
-        {
-            login(ADMIN_USER, ADMIN_PW);
-           
-            addAndUpdateMemberships(site1, true);  // public site, include all users
-            addAndUpdateMemberships(site2, true);  // private site, include all users
-            addAndUpdateMemberships(site3, false); // private site, do not include user 4
-            
-            generateFeed();
-            
-            membersAddedUpdated = true;
-        }
+        login(ADMIN_USER, ADMIN_PW);
+
+        addAndUpdateMemberships(site1, true);  // public site, include all users
+        addAndUpdateMemberships(site2, true);  // private site, include all users
+        addAndUpdateMemberships(site3, false); // private site, do not include user 4
+
+        generateFeed();
     }
     
     @Test
     public void testGetSiteFeedsAfterAddAndUpdateMemberships() throws Exception
     {
-        testAddAndUpdateMemberships();
+        addAndUpdateMemberships();
         
         login(ADMIN_USER, ADMIN_PW);
         
@@ -400,14 +376,9 @@ public abstract class AbstractSiteActivityTest
             // ignore
         }
     }
-    
-    @Test
-    public void testRemoveMemberships() throws Exception
+
+    public void removeMemberships() throws Exception
     {
-        if (! membersRemoved)
-        {
-            testAddAndUpdateMemberships();
-            
             login(ADMIN_USER, ADMIN_PW);
             
             removeMemberships(site1, true);
@@ -415,9 +386,6 @@ public abstract class AbstractSiteActivityTest
             removeMemberships(site3, false);
             
             generateFeed();
-            
-            membersRemoved = true;
-        }
     }
     
     protected void addAndUpdateMemberships(String siteId, boolean includeUser4) throws Exception
@@ -456,8 +424,8 @@ public abstract class AbstractSiteActivityTest
     @Test
     public void testGetSiteFeedsAfterRemoveMemberships() throws Exception
     {
-        testAddAndUpdateMemberships();
-        testRemoveMemberships();
+        addAndUpdateMemberships();
+        removeMemberships();
         
         login(ADMIN_USER, ADMIN_PW);
         
@@ -493,11 +461,11 @@ public abstract class AbstractSiteActivityTest
     }
     
     @Test
-    public void testGetUserFeedsAfter() throws Exception
+    public void testGetUserFeedsAfterApplyingFeedControls() throws Exception
     {
-        testUserFeedControls();
-        testAddAndUpdateMemberships();
-        testRemoveMemberships();
+        configureFeedControls();
+        addAndUpdateMemberships();
+        removeMemberships();
         
         // as admin
         
@@ -506,22 +474,23 @@ public abstract class AbstractSiteActivityTest
         // site 1, with 4 users, each with 1 join, 1 role change = 4x2 = 8
         // site 2, with 4 users, each with 1 join, 1 role change = 4x2 = 8
         // site 3, with 3 users, each with 1 join, 1 role change = 3x2 = 6
+        // Every user is removed from sites so in its feed it sees the removal for each site
         
-        // user 1 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 2 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 3 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 4 belongs to 2 sites = (2x8) = 16
-        
-        getUserFeed(user1, true, 14);  // 14 = (22 - 8) due to feed control - exclude site 1
+        // user 1 belongs to 3 sites and is removed from 3 sites  = (2x8)+(1x6)+3 = 25
+        // user 2 belongs to 3 sites and is removed from 3 sites = (2x8)+(1x6)+3 = 25
+        // user 3 belongs to 3 sites and is removed from 3 sites = (2x8)+(1x6)+3 = 25
+        // user 4 belongs to 2 sites and is removed from 3 sites = (2x8)+2 = 18
+
+        getUserFeed(user1, true, 16);  // 16 = (25 - 9) due to feed control - exclude site 1 (4 joins, 4 changes, 1 removal)
         getUserFeed(user2, true, 0);   // 0 = due to feed control - exclude site membership activities (across all sites)
-        getUserFeed(user3, true, 14);  // 14 = (22 - 8) due to feed control - exclude site membership activities for site 1
-        getUserFeed(user4, true, 16);  // 16 = no feed control
+        getUserFeed(user3, true, 16);  // 16 = (25 - 9) due to feed control - exclude site membership activities for site 1
+        getUserFeed(user4, true, 18);  // 18 = no feed control
         
         // as user1
         
         login(user1, USER_PW);
         
-        getUserFeed(user1, false, 14);
+        getUserFeed(user1, false, 16);
         
         // as user2
         
@@ -529,7 +498,7 @@ public abstract class AbstractSiteActivityTest
         
         try
         {
-            getUserFeed(user1, true, 14);
+            getUserFeed(user1, true, 16);
             
             fail("User feed should only be accessible to user or an admin");
         }
@@ -543,12 +512,12 @@ public abstract class AbstractSiteActivityTest
         login(user1, USER_PW);
         
         getUserFeed(null, site1, false, false, false, 0);
-        getUserFeed(null, site2, false, false, false, 8);
-        getUserFeed(null, site3, false, false, false, 6);
+        getUserFeed(null, site2, false, false, false, 9);
+        getUserFeed(null, site3, false, false, false, 7);
         
-        getUserFeed(null, null, false, false, false, 14); // no filter
+        getUserFeed(null, null, false, false, false, 16); // no filter
         getUserFeed(null, null, false, true, false, 12);  // exclude any from user1
-        getUserFeed(null, null, false, false, true, 2);   // exclude all except user1
+        getUserFeed(null, null, false, false, true, 4);   // exclude all except user1
         getUserFeed(null, null, false, true, true, 0);    // exclude all (NOOP)
         
         // TODO - add more (eg. other non-admin user activities)

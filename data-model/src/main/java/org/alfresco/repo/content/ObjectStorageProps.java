@@ -26,8 +26,6 @@
 
 package org.alfresco.repo.content;
 
-import org.alfresco.service.Experimental;
-
 /**
  * Enumeration with "header" values for Alfresco derived Storage Properties
  * Values of this enum should be used when adding Alfresco derived key-value pairs in Storage Properties map.
@@ -35,7 +33,6 @@ import org.alfresco.service.Experimental;
  *
  * @author mpichura
  */
-@Experimental
 public enum ObjectStorageProps {
     /**
      * Object's content is archived and not immediately accessible.

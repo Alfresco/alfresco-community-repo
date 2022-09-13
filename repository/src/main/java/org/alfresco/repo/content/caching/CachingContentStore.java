@@ -37,7 +37,6 @@ import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.content.filestore.SpoofedTextContentReader;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -387,7 +386,6 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public Map<String, String> getStorageProperties(final String contentUrl)
     {
         return backingStore.getStorageProperties(contentUrl);
@@ -397,7 +395,6 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public boolean requestSendContentToArchive(String contentUrl, Map<String, Serializable> archiveParams)
     {
         return backingStore.requestSendContentToArchive(contentUrl, archiveParams);
@@ -407,7 +404,6 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public boolean requestRestoreContentFromArchive(String contentUrl, Map<String, Serializable> restoreParams)
     {
         return backingStore.requestRestoreContentFromArchive(contentUrl, restoreParams);

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.rendition2;
 
+import org.alfresco.transform.client.model.config.CoreFunction;
 import org.alfresco.transform.client.registry.TransformServiceRegistry;
 
 import java.util.Map;
@@ -77,5 +78,11 @@ public class SwitchingTransformServiceRegistry implements TransformServiceRegist
             name = secondary.findTransformerName(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
         }
         return name;
+    }
+
+    @Override
+    public boolean isSupported(CoreFunction function, String transformerName)
+    {
+        return primary.isSupported(function, transformerName) && secondary.isSupported(function, transformerName);
     }
 }

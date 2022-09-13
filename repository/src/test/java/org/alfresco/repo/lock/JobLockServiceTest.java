@@ -29,7 +29,6 @@ import static java.time.Duration.of;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
-import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.AssertionFailedError;
@@ -44,6 +43,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.TestHelper;
 import org.alfresco.util.testing.category.DBTests;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -549,22 +549,22 @@ public class JobLockServiceTest extends TestCase
             
             if (callback == null) throw new IllegalStateException();
 
-            waitForAssertion(of(100, MILLIS), () -> {
+            TestHelper.waitForMethodToFinish(of(100, MILLIS), () -> {
                 assertEquals(false,callback.released);
                 assertEquals(0,callback.getIsActiveCount());
-            });
+            }, AssertionFailedError.class);
 
-            waitForAssertion(of(1, SECONDS), () -> {
+            TestHelper.waitForMethodToFinish(of(1, SECONDS), () -> {
                 assertEquals(false, callback.released);
                 assertEquals(1, callback.getIsActiveCount());
-            });
+            }, AssertionFailedError.class);
 
             callback.isActive = false;
 
-            waitForAssertion(of(2, SECONDS), () -> {
+            TestHelper.waitForMethodToFinish(of(2, SECONDS), () -> {
                 assertEquals(true, callback.released);
                 assertEquals(2, callback.getIsActiveCount());
-            });
+            }, AssertionFailedError.class);
         }
         catch (IllegalArgumentException e)
         {            
@@ -620,43 +620,6 @@ public class JobLockServiceTest extends TestCase
 
             Logger.getLogger("org.alfresco.repo.lock").setLevel(saveLogLevel);
         }
-    }
-
-    private static void waitForAssertion(Duration timeout, Runnable assertion)
-    {
-        logger.debug("Waiting for assertion to succeed.");
-        final long lastStep = 10;
-        final long delayMillis = timeout.toMillis() > lastStep ? timeout.toMillis() / lastStep : 1;
-
-        for (int s = 0; s <= lastStep; s++)
-        {
-            try
-            {
-                assertion.run();
-                logger.debug("Assertion succeeded.");
-                return;
-            }
-            catch (AssertionFailedError e)
-            {
-                if (s == lastStep)
-                {
-                    logger.debug("Assertion failed. No more waiting.");
-                    throw e;
-                }
-                logger.debug("Assertion failed. Waiting until it succeeds.", e);
-            }
-            try
-            {
-                Thread.sleep(delayMillis);
-            }
-            catch (InterruptedException e)
-            {
-                Thread.currentThread().interrupt();
-                fail("Thread has been interrupted.");
-            }
-        }
-
-        throw new IllegalStateException("Unexpected.");
     }
     
     private class TestCallback implements JobLockRefreshCallback

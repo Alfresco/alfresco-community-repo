@@ -110,6 +110,8 @@ public class TransactionCleanupTest
 		this.nodesCache = (SimpleCache<Serializable, Serializable>) ctx.getBean("node.nodesSharedCache");
         this.worker = (DeletedNodeCleanupWorker)ctx.getBean("nodeCleanup.deletedNodeCleanup");
         this.worker.setMinPurgeAgeDays(0);
+        this.worker.setAlgorithm("V1");
+
 
     	this.helper = transactionService.getRetryingTransactionHelper();
         authenticationService.authenticate("admin", "admin".toCharArray());

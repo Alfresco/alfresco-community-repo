@@ -40,7 +40,6 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.UnsupportedContentUrlException;
 import org.alfresco.repo.content.caching.CachingContentStore;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -403,7 +402,6 @@ public class AggregatingContentStore extends AbstractContentStore
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public Map<String, String> getStorageProperties(String contentUrl)
     {
         checkPrimaryStore();
@@ -457,7 +455,6 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * {@inheritDoc}
      */
-    @Experimental
     @Override
     public boolean requestSendContentToArchive(final String contentUrl, Map<String, Serializable> archiveParams)
     {
@@ -467,7 +464,6 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * {@inheritDoc}
      */
-    @Experimental
     @Override
     public boolean requestRestoreContentFromArchive(final String contentUrl, final Map<String, Serializable> restoreParams)
     {

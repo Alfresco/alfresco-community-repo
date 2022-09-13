@@ -46,7 +46,6 @@ import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -668,7 +667,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
      * {@inheritDoc}
      */
     @Override
-    @Experimental
     public Map<String, String> getStorageProperties(NodeRef nodeRef, QName propertyQName)
     {
         final ContentData contentData = getContentDataOrThrowError(nodeRef, propertyQName);

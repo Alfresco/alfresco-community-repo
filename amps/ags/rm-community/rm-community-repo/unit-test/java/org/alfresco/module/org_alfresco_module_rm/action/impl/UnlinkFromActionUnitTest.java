@@ -28,7 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2019 - 2021 Alfresco Software Limited
+ * Copyright (C) 2019 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -36,6 +36,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.transform.client.model.config.CoreFunction;
 import org.alfresco.transform.client.model.config.TransformOptionGroup;
 import org.alfresco.transform.client.registry.CombinedConfig;
 import org.alfresco.transform.client.model.config.TransformOption;
@@ -472,5 +473,18 @@ public class LocalTransformServiceRegistry extends TransformServiceRegistryImpl 
             localTransform = localTransforms.get(name);
         }
         return localTransform;
+    }
+
+    /**
+     * Returns {@code true} if the {@code function} is supported by the transform. Not all transforms are
+     * able to support all functionality, as newer features may have been introduced into the core t-engine code since
+     * it was released.
+     * @param function to be checked.
+     * @param transform the local transform.
+     * @return {@code true} is supported, {@code false} otherwise.
+     */
+    public boolean isSupported(CoreFunction function, LocalTransform transform)
+    {
+        return isSupported(function, transform.getName());
     }
 }

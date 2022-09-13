@@ -43,19 +43,16 @@ import org.junit.runner.RunWith;
 @ClassnameFilters({
 
     // The following packages are run by Pt1. IF YOU CHANGE THIS LIST ALSO CHANGE IT IN AllTestSuitePt3.
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.action\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.capabilities\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.security\\..*Test",
     "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.service\\..*Test",
-    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.webscript\\..*Test",
-    // There appears to be some common setup taking place in the first 2 packages, which is why all legacy tests are
-    // together even though they take a little longer to run that way.
+    "org\\.alfresco\\.module\\.org_alfresco_module_rm\\.test\\.legacy\\.jscript\\..*Test",
 
     // Exclude all UnitTests
     "!.*UnitTest",
 
     // Put the test classes you want to exclude here
+    "!.*DispositionServiceImplTest",
+    "!.*FilePlanPermissionServiceImplTest",
+    // above 2 tests from service package require setup from FileReportActionTest so they've been moved to part 4
     "!.*DataLoadSystemTest",
     "!.*RM2072Test",
     "!.*RM2190Test",

@@ -30,7 +30,7 @@
     	<property name="initialSize">
     		<value>0</value>
     	</property>
-    	<property name="maxActive">
+    	<property name="maxTotal">
     		<value>1</value>
     	</property>
     	<property name="maxIdle">

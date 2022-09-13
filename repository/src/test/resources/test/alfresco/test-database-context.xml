@@ -6,7 +6,7 @@
    <import resource="classpath:test/alfresco/test-context.xml" />
 
    <!-- Datasource bean -->
-   <bean id="testDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+   <bean id="testDataSource" class="org.apache.commons.dbcp2.BasicDataSource"
       destroy-method="close">
       <property name="driverClassName">
          <value>${db.driver}</value>
@@ -23,7 +23,7 @@
       <property name="initialSize">
          <value>${db.pool.initial}</value>
       </property>
-      <property name="maxActive">
+      <property name="maxTotal">
          <value>${db.pool.max}</value>
       </property>
       <property name="minIdle">
@@ -38,7 +38,7 @@
       <property name="defaultTransactionIsolation">
          <value>${db.txn.isolation}</value>
       </property>
-      <property name="maxWait">
+      <property name="maxWaitMillis">
          <value>${db.pool.wait.max}</value>
       </property>
       <property name="validationQuery">
@@ -59,7 +59,7 @@
       <property name="testWhileIdle">
          <value>${db.pool.evict.validate}</value>
       </property>
-      <property name="removeAbandoned">
+      <property name="removeAbandonedOnBorrow">
          <value>${db.pool.abandoned.detect}</value>
       </property>
       <property name="removeAbandonedTimeout">

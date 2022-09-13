@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -321,7 +321,7 @@ public class LockServiceImpl implements LockService,
     public void lock(NodeRef nodeRef, LockType lockType)
     {
         // Lock with no expiration
-        lock(nodeRef, lockType, 0);
+        lock(nodeRef, lockType, TIMEOUT_INFINITY);
     }
 
     /**
@@ -371,16 +371,8 @@ public class LockServiceImpl implements LockService,
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime, String additionalInfo)
     {
         invokeBeforeLock(nodeRef, lockType);
-        if (lifetime.equals(Lifetime.EPHEMERAL) && (timeToExpire > MAX_EPHEMERAL_LOCK_SECONDS))
-        {
-            throw new IllegalArgumentException("Attempt to create ephemeral lock for " +
-                    timeToExpire + " seconds - exceeds maximum allowed time.");
-        }
-        if (lifetime.equals(Lifetime.EPHEMERAL) && (timeToExpire > ephemeralExpiryThreshold))
-        {
-            lifetime = Lifetime.PERSISTENT;
-        }
-         
+        validateTimeToExpire(timeToExpire, lifetime);
+        lifetime = switchLifetimeMode(timeToExpire, lifetime);
         
         nodeRef = tenantService.getName(nodeRef);
         
@@ -442,6 +434,22 @@ public class LockServiceImpl implements LockService,
             }
         }
     }
+
+    private void validateTimeToExpire(int timeToExpire, Lifetime lifetime) {
+        if (lifetime.equals(Lifetime.EPHEMERAL) && (timeToExpire > MAX_EPHEMERAL_LOCK_SECONDS))
+        {
+            throw new IllegalArgumentException("Attempt to create ephemeral lock for " +
+                    timeToExpire + " seconds - exceeds maximum allowed time.");
+        }
+    }
+
+    private Lifetime switchLifetimeMode(int timeToExpire, Lifetime lifetime) {
+        if (lifetime.equals(Lifetime.EPHEMERAL) && (timeToExpire > ephemeralExpiryThreshold))
+        {
+            return Lifetime.PERSISTENT;
+        }
+        return lifetime;
+    }
     
     private void persistLockProps(NodeRef nodeRef, LockType lockType, Lifetime lifetime, String userName, Date expiryDate, String additionalInfo)
     {  
@@ -468,16 +476,16 @@ public class LockServiceImpl implements LockService,
      */
     private Date makeExpiryDate(int timeToExpire)
     {
-        // Set the expiry date
-        Date expiryDate = null;
-        if (timeToExpire > 0)
-        {
-            expiryDate = new Date();
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(expiryDate);
-            calendar.add(Calendar.SECOND, timeToExpire);
-            expiryDate = calendar.getTime();
+        boolean permanent = timeToExpire <= TIMEOUT_INFINITY;
+        if (permanent) {
+            return null;
         }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.SECOND, timeToExpire);
+        Date expiryDate = calendar.getTime();
+
         return expiryDate;
     }
 

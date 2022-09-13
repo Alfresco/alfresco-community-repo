@@ -26,7 +26,6 @@
 
 package org.alfresco.repo.content;
 
-import org.alfresco.service.Experimental;
 
 /**
  * Enumeration with values for archive-restore parameter keys.
@@ -35,7 +34,6 @@ import org.alfresco.service.Experimental;
  *
  * @author mpichura
  */
-@Experimental
 public enum ContentRestoreParams
 {
     /**

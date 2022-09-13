@@ -81,12 +81,15 @@
         <property name="transactionService" ref="transactionService" />
         <property name="contentService" ref="contentService" />
         <property name="renditionService2" ref="renditionService2" />
+        <property name="directAccessUrlEnabled" value="${local.transform.directAccessUrl.enabled}"/>
     </bean>
 
     <bean id="synchronousTransformClient" parent="localSynchronousTransformClient" />
 
     <bean id="localSynchronousTransformClient" class="org.alfresco.repo.rendition2.LocalSynchronousTransformClient">
         <property name="localTransformServiceRegistry" ref="localTransformServiceRegistry" />
+        <property name="contentService" ref="contentService" />
+        <property name="directAccessUrlEnabled" value="${local.transform.directAccessUrl.enabled}"/>
     </bean>
 
     <!-- Deprecated bean that converts transform properties to the deprecated TransformationOptions format -->

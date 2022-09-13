@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -111,6 +111,14 @@ public interface RenditionService2
      */
     @NotAuditable
     ChildAssociationRef getRenditionByName(NodeRef sourceNodeRef, String renditionName);
+
+    /**
+     * This method clears source nodeRef rendition content and content hash code using supplied rendition name.
+     *
+     * @param renditionNode the rendition node
+     */
+    @NotAuditable
+    void clearRenditionContentDataInTransaction(NodeRef renditionNode);
 
     /**
      * Indicates if renditions are enabled. Set using the {@code system.thumbnail.generate} value.

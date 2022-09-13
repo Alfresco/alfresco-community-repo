@@ -38,7 +38,6 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Download;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
-import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.download.DownloadService;
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.module.ModuleService;
@@ -214,8 +213,7 @@ public class DownloadsImpl implements Downloads
      * @param checkLimit The maximum number of nodes to check, set to -1 for no limit
      * @see #checkArchiveStatus(NodeRef[], int, Set)
      */
-    @Experimental
-    protected void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit) 
+    protected void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit)
     {
         if (canCheckArchived()) 
         {
@@ -234,7 +232,6 @@ public class DownloadsImpl implements Downloads
      * @param checkLimit The maximum number of nodes to check, set to -1 for no limit
      * @param cache Tracks nodes that we have already checked, if null an empty cache will be created
      */
-    @Experimental
     private void checkArchiveStatus(NodeRef[] nodeRefs, int checkLimit, Set<NodeRef> cache)
     {
         // Create the cache for recursive calls.
@@ -291,8 +288,7 @@ public class DownloadsImpl implements Downloads
         }
     }
 
-    @Experimental
-    protected boolean canCheckArchived() 
+    protected boolean canCheckArchived()
     {
         return Arrays.stream(CLOUD_CONNECTOR_MODULES).anyMatch(m-> moduleService.getModule(m) != null);
     }

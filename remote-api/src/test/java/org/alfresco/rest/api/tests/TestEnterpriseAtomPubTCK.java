@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -27,19 +27,13 @@ package org.alfresco.rest.api.tests;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.OpenCMISClientContext;
 import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
-import org.alfresco.repo.dictionary.DictionaryDAO;
-import org.alfresco.repo.dictionary.M2Aspect;
-import org.alfresco.repo.dictionary.M2Model;
-import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -47,10 +41,8 @@ import org.alfresco.repo.web.util.JettyComponent;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.testing.category.LuceneTests;
 import org.alfresco.util.testing.category.RedundantTests;
@@ -58,13 +50,11 @@ import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
 import org.apache.chemistry.opencmis.tck.impl.TestParameters;
-import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.query.QuerySmokeTest;
-import org.apache.chemistry.opencmis.tck.tests.types.TypesTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.versioning.CheckedOutTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersionDeleteTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
@@ -123,13 +113,12 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
         overrideVersionableAspectProperties(jetty.getApplicationContext());
 	}
 
-// Commented out: See https://issues.alfresco.com/jira/browse/MNT-11123?focusedCommentId=339130&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-339130
-//    @Test
-//    public void testCMISTCKBasics() throws Exception
-//    {
-//        BasicsTestGroup basicsTestGroup = new BasicsTestGroup();
-//        JUnitHelper.run(basicsTestGroup);
-//    }
+    @Test
+    public void testCMISTCKBasics() throws Exception
+    {
+        AlfrescoCMISBasicsTestGroup basicsTestGroup = new AlfrescoCMISBasicsTestGroup();
+        JUnitHelper.run(basicsTestGroup);
+    }
     
     @Test
     public void testCMISTCKCRUD() throws Exception

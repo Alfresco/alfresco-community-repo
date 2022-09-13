@@ -8,7 +8,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-governance-services-community-repo-parent</artifactId>
-      <version>14.77-SNAPSHOT</version>
+      <version>17.109-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -217,6 +217,7 @@
                            <fileset dir="${project.build.outputDirectory}/alfresco" />
                         </move>
                         <copy file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
+                        <copy file="${project.build.directory}/generated-sources/license/THIRD-PARTY.txt" todir="${project.build.directory}/${project.build.finalName}/licenses/${artifactId}" />
                      </target>
                   </configuration>
                </execution>
@@ -360,6 +361,12 @@
                <integrationTestSuite>**/AllTestSuitePt3.class</integrationTestSuite>
            </properties>
        </profile>
+       <profile>
+           <id>agsAllTestSuitePt4</id>
+           <properties>
+               <integrationTestSuite>**/AllTestSuitePt4.class</integrationTestSuite>
+           </properties>
+       </profile>
 
       <profile>
          <id>use-mysql</id>
@@ -427,7 +434,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}</name>
+                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre11-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>
@@ -498,7 +505,7 @@
                            </run>
                         </image>
                         <image>
-                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}</name>
+                           <name>alfresco/alfresco-activemq:${dependency.activemq.version}-jre11-rockylinux8</name>
                            <run>
                               <ports>
                                  <port>${activemq.port1}:${activemq.port1}</port>

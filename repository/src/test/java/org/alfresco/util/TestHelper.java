@@ -29,7 +29,12 @@ package org.alfresco.util;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.function.Supplier;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A helper class to create a concise test.
@@ -39,6 +44,8 @@ import java.util.function.Supplier;
  */
 public class TestHelper
 {
+    private static final Log logger = LogFactory.getLog(TestHelper.class);
+
     /**
      * Checks the thrown exception is the expected exception.
      *
@@ -93,5 +100,60 @@ public class TestHelper
         } while (retryCount < maxRetry);
 
         return t;
+    }
+
+    /**
+     * Waits for <b>{@code method}</b> to succeed until <b>({@code timeout})</b>.
+     * <p>
+     * If the method failed to succeed because of previous step of test is not finished yet,
+     * it waits and re-executes the given method again.
+     * This will continue until the method do not fail or the <b>{@code timeout}</b> has been reached.
+     *
+     * @param timeout               max time of wait.
+     * @param method                the method that is called for retry.
+     * @param expectedExceptions    array of excepted exception.
+     * @throws Exception            after failing to finish given method with success.
+     */
+    @SafeVarargs
+    public static void waitForMethodToFinish(
+            Duration timeout,
+            Runnable method,
+            Class<? extends Throwable> ... expectedExceptions)
+    {
+        logger.debug("Waiting for method to succeed.");
+        final long lastStep = 10;
+        final long delayMillis = timeout.toMillis() > lastStep ? timeout.toMillis() / lastStep : 1;
+
+        for (int step = 0; step <= lastStep; step++)
+        {
+            try
+            {
+                method.run();
+                logger.debug("Method succeeded.");
+                return;
+            } catch (Throwable e)
+            {
+                if(Arrays.stream(expectedExceptions).noneMatch(expEx -> expEx.isInstance(e)))
+                {
+                    throw e;
+                }
+                if (step == lastStep)
+                {
+                    logger.debug("Method failed - no more waiting.");
+                    throw e;
+                }
+                logger.debug("Method failed. Waiting until it succeeds.", e);
+            }
+            try
+            {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+                fail("Thread has been interrupted.");
+            }
+        }
+
+        throw new IllegalStateException("Unexpected.");
     }
 }

@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.rules;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createActionModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
@@ -161,8 +161,7 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule to have no name.");
-        RestRuleModel updatedRuleModel = new RestRuleModel();
-        updatedRuleModel.setName("");
+        RestRuleModel updatedRuleModel = createRuleModel("");
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(BAD_REQUEST)
@@ -201,7 +200,7 @@ public class UpdateRulesTests extends RestTest
 
     private RestRuleModel createAndSaveRule(String name)
     {
-        return createAndSaveRule(name, List.of(createActionModel()));
+        return createAndSaveRule(name, List.of(createDefaultActionModel()));
     }
 
     /**

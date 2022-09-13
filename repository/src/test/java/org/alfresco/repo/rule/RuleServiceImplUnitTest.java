@@ -25,7 +25,12 @@
  */
 package org.alfresco.repo.rule;
 
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
+import static org.alfresco.model.ContentModel.ASSOC_MEMBER;
+import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
 import static org.alfresco.repo.rule.RuleModel.ASSOC_ACTION;
 import static org.alfresco.repo.rule.RuleModel.ASSOC_RULE_FOLDER;
 import static org.alfresco.repo.rule.RuleModel.TYPE_RULE;
@@ -33,6 +38,7 @@ import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -47,8 +53,13 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
@@ -61,6 +72,7 @@ import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.collections.MapUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -242,6 +254,8 @@ public class RuleServiceImplUnitTest
         boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
 
         then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).should().hasAspect(FOLDER_NODE, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(FOLDER_NODE);
         then(runtimeNodeService).shouldHaveNoMoreInteractions();
         then(nodeService).shouldHaveNoInteractions();
         assertThat(associated).isTrue();
@@ -256,6 +270,8 @@ public class RuleServiceImplUnitTest
         boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
 
         then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).should().hasAspect(FOLDER_NODE, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(FOLDER_NODE);
         then(runtimeNodeService).shouldHaveNoMoreInteractions();
         then(nodeService).shouldHaveNoInteractions();
         assertThat(associated).isFalse();
@@ -271,9 +287,43 @@ public class RuleServiceImplUnitTest
         boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
 
         then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).should().hasAspect(FOLDER_NODE, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(FOLDER_NODE);
         then(runtimeNodeService).shouldHaveNoMoreInteractions();
         then(nodeService).shouldHaveNoInteractions();
         assertThat(associated).isFalse();
+    }
+
+    /**
+     * Check that a rule set is associated with the folder in the following case:
+     * <pre>
+     *     parent --[link]-> rule set <-[owned]-- owningFolder
+     *     +- child
+     * </pre>
+     */
+    @Test
+    public void testIsRuleSetAssociatedWithFolder_inheritedLinkedAssociation()
+    {
+        // The rule is owned by one node.
+        NodeRef owningFolder = new NodeRef("owning://node/");
+        // The rule is linked to by the parent node.
+        NodeRef parent = new NodeRef("parent://node/");
+        List<ChildAssociationRef> ruleAssociations = List.of(createAssociation(owningFolder, RULE_SET_NODE), createAssociation(parent, RULE_SET_NODE));
+        given(runtimeNodeService.getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER)).willReturn(ruleAssociations);
+        // The parent and the child both supply rule sets.
+        given(runtimeNodeService.getParentAssocs(FOLDER_NODE)).willReturn(List.of(createAssociation(parent, FOLDER_NODE)));
+
+        // when
+        boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
+
+        then(runtimeNodeService).should().getParentAssocs(RULE_SET_NODE, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        then(runtimeNodeService).should().hasAspect(FOLDER_NODE, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(FOLDER_NODE);
+        then(runtimeNodeService).should().hasAspect(parent, ASPECT_IGNORE_INHERITED_RULES);
+        then(runtimeNodeService).should().getParentAssocs(parent);
+        then(runtimeNodeService).shouldHaveNoMoreInteractions();
+        then(nodeService).shouldHaveNoInteractions();
+        assertThat(associated).isTrue();
     }
 
     @Test
@@ -355,5 +405,175 @@ public class RuleServiceImplUnitTest
     private static ChildAssociationRef createAssociation(final NodeRef parentRef, final NodeRef childRef, final boolean isPrimary)
     {
         return new ChildAssociationRef(null, parentRef, null, childRef, isPrimary, 1);
+    }
+
+    /** Check that a straight chain of nodes is traversed correctly. */
+    @Test
+    public void testGetNodesSupplyingRuleSets_chain()
+    {
+        Map<String, NodeRef> nodes = createParentChildHierarchy("A,B", "B,C", "C,D", "D,E");
+
+        List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("E"));
+
+        Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
+        String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
+
+        assertEquals("A,B,C,D,E", nodeNames);
+    }
+
+    /** Check that ordered parents are returned in the correct order. */
+    @Test
+    public void testGetNodesSupplyingRuleSets_multipleParents()
+    {
+        Map<String, NodeRef> nodes = createParentChildHierarchy("A,E", "B,E", "C,E", "D,E");
+
+        List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("E"));
+
+        Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
+        String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
+
+        assertEquals("A,B,C,D,E", nodeNames);
+    }
+
+    /** Check that the ASPECT_IGNORE_INHERITED_RULES aspect breaks the chain. */
+    @Test
+    public void testGetNodesSupplyingRuleSets_brokenChain()
+    {
+        Map<String, NodeRef> nodes = createParentChildHierarchy("A,B", "B,C", "C,D", "D,E");
+        given(runtimeNodeService.hasAspect(nodes.get("C"), ASPECT_IGNORE_INHERITED_RULES)).willReturn(true);
+
+        List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("E"));
+
+        Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
+        String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
+
+        assertEquals("C,D,E", nodeNames);
+    }
+
+    /** Check that the user group hierarchy is not traversed. */
+    @Test
+    public void testGetNodesSupplyingRuleSets_userGroupHierarchy()
+    {
+        Map<String, NodeRef> nodes = createParentChildHierarchy("A,B", "B,C", "C,D", "D,E");
+        // Replace the B,C association with a user group membership association.
+        ChildAssociationRef memberAssoc = new ChildAssociationRef(ASSOC_MEMBER, nodes.get("B"), ContentModel.TYPE_FOLDER, nodes.get("C"));
+        given(runtimeNodeService.getParentAssocs(nodes.get("C"))).willReturn(List.of(memberAssoc));
+
+        List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("E"));
+
+        Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
+        String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
+
+        assertEquals("C,D,E", nodeNames);
+    }
+
+    /** Check that a cycle doesn't cause a problem. */
+    @Test
+    public void testGetNodesSupplyingRuleSets_infiniteCycle()
+    {
+        Map<String, NodeRef> nodes = createParentChildHierarchy("A,B", "B,C", "C,A");
+
+        List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("C"));
+
+        Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
+        String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
+
+        assertEquals("A,B,C", nodeNames);
+    }
+
+    /** Check that a diamond of nodes is traversed correctly. */
+    @Test
+    public void testGetNodesSupplyingRuleSets_diamond()
+    {
+        Map<String, NodeRef> nodes = createParentChildHierarchy("A,B", "A,C", "B,D", "C,D");
+
+        List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("D"));
+
+        Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
+        String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
+
+        assertEquals("A,B,C,D", nodeNames);
+    }
+
+    /**
+     * Check that hierarchy of nodes is traversed correctly. Parent-child associations are created in alphabetical order.
+     * <pre>
+     *     A
+     *    /|\
+     *   B C D
+     *   | |\|
+     *   E | F
+     *    \|/
+     *     G
+     * </pre>
+     */
+    @Test
+    public void testGetNodesSupplyingRuleSets_alphabetical()
+    {
+        Map<String, NodeRef> nodes = createParentChildHierarchy("A,B", "A,C", "A,D", "B,E", "C,F", "C,G", "D,F", "E,G", "F,G");
+
+        List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("G"));
+
+        Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
+        String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
+
+        assertEquals("A,C,B,E,D,F,G", nodeNames);
+    }
+
+    /**
+     * Check that hierarchy of nodes is traversed correctly. Parent-child associations are created in reverse alphabetical order.
+     * <pre>
+     *     A
+     *    /|\
+     *   B C D
+     *   | |\|
+     *   E | F
+     *    \|/
+     *     G
+     * </pre>
+     */
+    @Test
+    public void testGetNodesSupplyingRuleSets_reversedAssociationOrder()
+    {
+        Map<String, NodeRef> nodes = createParentChildHierarchy("F,G", "E,G", "D,F", "C,G", "C,F", "B,E", "A,D", "A,C", "A,B");
+
+        List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("G"));
+
+        Map<NodeRef, String> invertedMap = MapUtils.invertMap(nodes);
+        String nodeNames = actual.stream().map(invertedMap::get).collect(joining(","));
+
+        assertEquals("A,D,C,F,B,E,G", nodeNames);
+    }
+
+    /**
+     * Create a mock hierarchy of nodes using the supplied parent child associations.
+     *
+     * @param parentChildAssociations A list of strings of the form "Parent,Child". Associations will be created in this order.
+     * @return A map from the node name to the new NodeRef object.
+     */
+    private Map<String, NodeRef> createParentChildHierarchy(String... parentChildAssociations)
+    {
+        // Find all the node names mentioned.
+        Set<String> nodeNames = new HashSet<>();
+        List.of(parentChildAssociations).forEach(parentChildAssociation -> {
+            String[] parentChildPair = parentChildAssociation.split(",");
+            nodeNames.addAll(List.of(parentChildPair));
+        });
+        // Create the NodeRefs.
+        Map<String, NodeRef> nodeRefMap = nodeNames.stream().collect(
+                Collectors.toMap(nodeName -> nodeName, nodeName -> new NodeRef("node://" + nodeName + "/")));
+        // Mock the associations.
+        nodeNames.forEach(nodeName -> {
+            NodeRef nodeRef = nodeRefMap.get(nodeName);
+            List<ChildAssociationRef> parentAssocs = List.of(parentChildAssociations)
+                                                         .stream()
+                                                         .filter(assoc -> assoc.endsWith(nodeName))
+                                                         .map(assoc -> assoc.split(",")[0])
+                                                         .map(nodeRefMap::get)
+                                                         .map(parentRef -> new ChildAssociationRef(ASSOC_CONTAINS, parentRef, ContentModel.TYPE_FOLDER, nodeRef))
+                                                         .collect(toList());
+            given(runtimeNodeService.getParentAssocs(nodeRef)).willReturn(parentAssocs);
+        });
+        return nodeRefMap;
     }
 }

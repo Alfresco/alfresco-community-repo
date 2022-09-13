@@ -30,12 +30,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.GUID;
 
 @Experimental
 public class Rule
@@ -48,7 +51,7 @@ public class Rule
     private boolean asynchronous;
     private Boolean isShared;
     private String errorScript;
-    private List<RuleTrigger> triggers;
+    private List<RuleTrigger> triggers = List.of(RuleTrigger.INBOUND);
     private CompositeCondition conditions;
     private List<Action> actions;
 
@@ -58,7 +61,7 @@ public class Rule
      * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
      * @return {@link Rule} REST model
      */
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel)
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final NamespaceService namespaceService)
     {
         if (ruleModel == null)
         {
@@ -81,7 +84,7 @@ public class Rule
         }
         if (ruleModel.getAction() != null)
         {
-            builder.conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions()));
+            builder.conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions(), namespaceService));
             if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
             {
                 builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
@@ -101,14 +104,31 @@ public class Rule
      * @param nodes The nodes API.
      * @return The rule service POJO.
      */
-    public org.alfresco.service.cmr.rule.Rule toServiceModel(Nodes nodes)
+    public org.alfresco.service.cmr.rule.Rule toServiceModel(final Nodes nodes, final NamespaceService namespaceService)
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
         final NodeRef nodeRef = (id != null) ? nodes.validateOrLookupNode(id, null) : null;
         ruleModel.setNodeRef(nodeRef);
         ruleModel.setTitle(name);
-
+        ruleModel.setDescription(description);
+        ruleModel.setRuleDisabled(!enabled);
+        ruleModel.applyToChildren(cascade);
+        ruleModel.setExecuteAsynchronously(asynchronous);
+        if (triggers != null)
+        {
+            ruleModel.setRuleTypes(triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList()));
+        }
         ruleModel.setAction(Action.toCompositeAction(actions));
+        if (errorScript != null)
+        {
+            final org.alfresco.service.cmr.action.Action compensatingAction = new ActionImpl(null, GUID.generate(), ScriptActionExecuter.NAME);
+            compensatingAction.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, errorScript);
+            ruleModel.getAction().setCompensatingAction(compensatingAction);
+        }
+        if (conditions != null)
+        {
+            conditions.toServiceModels(nodes, namespaceService).forEach(condition -> ruleModel.getAction().addActionCondition(condition));
+        }
 
         return ruleModel;
     }
@@ -203,7 +223,15 @@ public class Rule
         return triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList());
     }
 
-    public void setTriggers(List<RuleTrigger> triggers)
+    public void setTriggers(List<String> triggers)
+    {
+        if (triggers != null)
+        {
+            this.triggers = triggers.stream().map(RuleTrigger::of).collect(Collectors.toList());
+        }
+    }
+
+    public void setRuleTriggers(List<RuleTrigger> triggers)
     {
         this.triggers = triggers;
     }
@@ -279,7 +307,7 @@ public class Rule
         private boolean asynchronous;
         private Boolean isShared;
         private String errorScript;
-        private List<RuleTrigger> triggers;
+        private List<RuleTrigger> triggers = List.of(RuleTrigger.INBOUND);
         private CompositeCondition conditions;
         private List<Action> actions;
 
@@ -360,7 +388,7 @@ public class Rule
             rule.setAsynchronous(asynchronous);
             rule.setIsShared(isShared);
             rule.setErrorScript(errorScript);
-            rule.setTriggers(triggers);
+            rule.setRuleTriggers(triggers);
             rule.setConditions(conditions);
             rule.setActions(actions);
             return rule;

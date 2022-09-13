@@ -27,13 +27,14 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.*;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.CREATED;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -60,6 +61,8 @@ public class GetRulesTests extends RestTest
     private FolderModel ruleFolder;
     private List<RestRuleModel> createdRules;
     private RestRuleModel createdRuleA;
+    private static final String IGNORE_ID = "id";
+    private static final String IGNORE_IS_SHARED = "isShared";
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
@@ -133,7 +136,7 @@ public class GetRulesTests extends RestTest
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
-    /** Check we can get all the rules for a folder along with the extra "include" fields. */
+    /** Check we can get all the rules for a folder along with the extra "include" and "other" fields. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void getRulesListWithIncludedFields()
     {
@@ -145,7 +148,14 @@ public class GetRulesTests extends RestTest
         rules.assertThat().entriesListCountIs(createdRules.size());
         IntStream.range(0, createdRules.size()).forEach(i ->
                 rules.getEntries().get(i).onModel()
-                     .assertThat().field("isShared").isNotNull());
+                     .assertThat().field("isShared").isNotNull()
+                        .assertThat().field("description").isNull()
+                        .assertThat().field("enabled").is(false)
+                        .assertThat().field("cascade").is(false)
+                        .assertThat().field("asynchronous").is(false)
+                        .assertThat().field("errorScript").isNull()
+                        .assertThat().field("shared").isNull()
+                        .assertThat().field("triggers").is("[inbound]"));
     }
 
     /**
@@ -164,6 +174,54 @@ public class GetRulesTests extends RestTest
         rule.assertThat().field("id").is(createdRuleA.getId())
             .assertThat().field("name").is(createdRuleA.getName())
             .assertThat().field("isShared").isNull();
+    }
+
+    /** Check we can get rule's other fields */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getRulesOtherFieldsModified()
+    {
+        STEP("Create a rule with all other fields default values modified");
+        RestRuleModel ruleModel = createRuleModelWithModifiedValues();
+        ruleModel.setTriggers(List.of("update"));
+        UserModel admin = dataUser.getAdminUser();
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
+        expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
+        expectedRuleModel.setTriggers(List.of("update"));
+        expectedRuleModel.setConditions(createEmptyConditionModel());
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
+                .assertThat().field("id").isNotNull()
+                .assertThat().field("isShared").isNull();
+
+    }
+
+    /** Check we can get rule's "other" fields */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void getRulesDefaultFields()
+    {
+        STEP("Create a rule with all other fields default values");
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        UserModel admin = dataUser.getAdminUser();
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
+        expectedRuleModel.setTriggers(List.of("inbound"));
+        expectedRuleModel.setConditions(createEmptyConditionModel());
+
+        restClient.assertStatusCodeIs(CREATED);
+
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
+                .assertThat().field("id").isNotNull()
+                .assertThat().field("isShared").isNull();
     }
 
     /** Check we get a 404 if trying to load a rule from a folder that doesn't exist. */

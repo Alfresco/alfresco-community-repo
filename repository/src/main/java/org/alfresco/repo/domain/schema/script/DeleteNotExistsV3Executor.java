@@ -154,6 +154,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             if (hasResults)
             {
 
+                //Prepared statements for secondary tables for the next batch
                 secondaryPrepStmts = new PreparedStatement[tableColumn.length];
                 for (int i = 1; i < tableColumn.length; i++)
                 {
@@ -175,6 +176,8 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                             primaryTableName, primaryColumnName, tableColumn);
                     connection.commit();
 
+                    // If we have no more results (next primaryId is null) or job is marked for pause and recover, do
+                    // not start the next batch
                     if (primaryId == null || pauseAndRecover)
                     {
                         break;
@@ -184,6 +187,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                     primaryPrepStmt.setLong(1, primaryId + 1);
                     primaryPrepStmt.setLong(2, tableUpperLimits[0]);
 
+                    //Query the primary table for the next batch
                     hasResults = primaryPrepStmt.execute();
                 }
 
@@ -247,7 +251,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
         Long minSecId = 0L;
         Long maxSecId = 0L;
 
-        // Get the potential IDS to delete from the primary table
+        // Set all rows retrieved from the primary table as our potential ids to delete
         Set<Long> potentialIdsToDelete = new HashSet<Long>();
         try (ResultSet resultSet = primaryPrepStmt.getResultSet())
         {
@@ -277,7 +281,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             minSecId = Collections.min(secondaryResults);
             maxSecId = Collections.max(secondaryResults);
 
-            // From our potentialIdsToDelete list, remote all non-eligible ids: any id that is in a secondary table or
+            // From our potentialIdsToDelete list, remove all non-eligible ids: any id that is in a secondary table or
             // any ID past the last ID we were able to access in the secondary tables (maxSecId)
             Iterator<Long> it = potentialIdsToDelete.iterator();
             while (it.hasNext())
@@ -295,6 +299,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             primaryId = primaryId < maxSecId ? primaryId : maxSecId;
         }
 
+        // Delete the ids that are eligble from the primary table
         if (potentialIdsToDelete.size() > 0)
         {
             deleteInBatches(potentialIdsToDelete, deleteIds, primaryTableName, deletePrepStmt);
@@ -307,7 +312,8 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                     + deletedCount);
         }
 
-        // Do we need to pause?
+        // If the total rows processed from all batches so far is greater that the defined pauseAndRecoverBatchSize,
+        // mark the job to pause and recover after completing this batch
         if (processedCounter >= pauseAndRecoverBatchSize)
         {
             pauseAndRecover = true;

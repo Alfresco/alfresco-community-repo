@@ -47,7 +47,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Same logic as DeleteNotExistsExecuter with the following changes:
+ * Same logic as DeleteNotExistsExecutor with the following changes:
  * <p/>
  * - filters the queries by unique values
  * <p/>
@@ -56,7 +56,7 @@ import org.apache.commons.logging.LogFactory;
  * - we store all the ids in memory and process them from there - the secondary ids are stored in a unique list without
  * duplicate values.
  * <p/>
- * - we only cross 2 sets (the potencial ids to delete from the primary table with the set of all secondary ids in that
+ * - we only cross 2 sets (the potential ids to delete from the primary table with the set of all secondary ids in that
  * range) removing all elements from the second set from the first set
  * <p/>
  * - every {pauseAndRecoverBatchSize} rows deleted we close all prepared statements and close the connection and sleep

@@ -26,6 +26,7 @@
 package org.alfresco.repo.rule;
 
 import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
+import static org.alfresco.repo.rule.RuleModel.ASSOC_RULE_FOLDER;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,6 +36,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.Sets;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
@@ -257,7 +261,7 @@ public class RuleServiceImpl
         policyComponent.bindAssociationBehaviour(
                 NodeServicePolicies.OnCreateChildAssociationPolicy.QNAME,
                 RuleModel.ASPECT_RULES,
-                RuleModel.ASSOC_RULE_FOLDER,
+                ASSOC_RULE_FOLDER,
                 new JavaBehaviour(this, "onCreateChildAssociation"));
         policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnAddAspectPolicy.QNAME,
@@ -349,8 +353,8 @@ public class RuleServiceImpl
         
         List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(
                 nodeRef,
-                RuleModel.ASSOC_RULE_FOLDER,
-                RuleModel.ASSOC_RULE_FOLDER);
+                ASSOC_RULE_FOLDER,
+                ASSOC_RULE_FOLDER);
         if (assocs.size() > 1)
         {
             throw new ActionServiceException("There is more than one rule folder, which is invalid.");
@@ -1569,6 +1573,12 @@ public class RuleServiceImpl
     }
 
     @Override
+    public NodeRef getOwningNodeRef(NodeRef ruleSet)
+    {
+        return nodeService.getPrimaryParent(ruleSet).getParentRef();
+    }
+
+    @Override
     public NodeRef getOwningNodeRef(final Action action)
     {
         // Run from system user: https://issues.alfresco.com/jira/browse/ALF-607
@@ -1660,7 +1670,7 @@ public class RuleServiceImpl
     @Experimental
     public NodeRef getRuleSetNode(final NodeRef folderNodeRef)
     {
-        return runtimeNodeService.getChildAssocs(folderNodeRef, RuleModel.ASSOC_RULE_FOLDER, RuleModel.ASSOC_RULE_FOLDER).stream()
+        return runtimeNodeService.getChildAssocs(folderNodeRef, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER).stream()
             .map(ChildAssociationRef::getChildRef)
             .findFirst()
             .orElse(null);
@@ -1670,7 +1680,10 @@ public class RuleServiceImpl
     @Experimental
     public boolean isRuleSetAssociatedWithFolder(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
     {
-        return isChildOf(ruleSetNodeRef, RuleModel.ASSOC_RULE_FOLDER, folderNodeRef);
+        List<ChildAssociationRef> associations = runtimeNodeService.getParentAssocs(ruleSetNodeRef, ASSOC_RULE_FOLDER, ASSOC_RULE_FOLDER);
+        Set<NodeRef> associatedFolders = associations.stream().map(ChildAssociationRef::getParentRef).collect(Collectors.toSet());
+        Set<NodeRef> supplyingFolders = new HashSet<>(getNodesSupplyingRuleSets(folderNodeRef));
+        return !Sets.intersection(associatedFolders, supplyingFolders).isEmpty();
     }
 
     @Override

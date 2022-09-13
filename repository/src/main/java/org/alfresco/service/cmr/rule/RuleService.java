@@ -311,7 +311,17 @@ public interface RuleService
      */
     @Auditable(parameters = {"action"})
     public NodeRef getOwningNodeRef(Action action);
-    
+
+    /**
+     * Returns the owning node reference for a rule.
+     *
+     * @param ruleSet The rule set node.
+     * @return the owning node reference
+     */
+    @Auditable (parameters = { "ruleSet" })
+    @Experimental
+    NodeRef getOwningNodeRef(NodeRef ruleSet);
+
     /**
      * Indicates whether the passed rule node reference is linked to another
      * rule node.
@@ -353,7 +363,7 @@ public interface RuleService
     NodeRef getRuleSetNode(final NodeRef folderNodeRef);
 
     /**
-     * Check if rule set's associated parent matches folder node.
+     * Check if rule set is associated (owned/linked/inherited) with the given folder node.
      *
      * @param ruleSetNodeRef - node reference of a rule set
      * @param folderNodeRef - node reference of a folder

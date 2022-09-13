@@ -63,9 +63,10 @@ public class RulesImpl implements Rules
                                                    final Paging paging)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
-        validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        NodeRef owningFolder = ruleService.getOwningNodeRef(ruleSetNode);
 
-        final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
+        final List<Rule> rules = ruleService.getRules(owningFolder, false).stream()
                 .map(ruleModel -> loadRuleAndConvertActionParams(ruleModel, includes))
                 .collect(Collectors.toList());
 

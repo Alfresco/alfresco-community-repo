@@ -115,7 +115,8 @@ public class RulesImplTest extends TestCase
         given(nodeValidatorMock.validateRuleNode(any(), any())).willReturn(RULE_NODE_REF);
 
         given(ruleServiceMock.getRule(RULE_NODE_REF)).willReturn(ruleModel);
-        given(ruleServiceMock.getRules(FOLDER_NODE_REF)).willReturn(List.of(ruleModel));
+        given(ruleServiceMock.getRules(FOLDER_NODE_REF, false)).willReturn(List.of(ruleModel));
+        given(ruleServiceMock.getOwningNodeRef(RULE_SET_NODE_REF)).willReturn(FOLDER_NODE_REF);
 
         given(ruleLoaderMock.loadRule(ruleModel, INCLUDE)).willReturn(ruleMock);
 
@@ -126,13 +127,15 @@ public class RulesImplTest extends TestCase
     public void testGetRules()
     {
         given(ruleLoaderMock.loadRule(ruleModel, emptyList())).willReturn(ruleMock);
+
         // when
         final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
         then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
-        then(ruleServiceMock).should().getRules(FOLDER_NODE_REF);
+        then(ruleServiceMock).should().getOwningNodeRef(RULE_SET_NODE_REF);
+        then(ruleServiceMock).should().getRules(FOLDER_NODE_REF, false);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         then(ruleLoaderMock).should().loadRule(ruleModel, emptyList());
         then(ruleLoaderMock).shouldHaveNoMoreInteractions();
@@ -148,12 +151,13 @@ public class RulesImplTest extends TestCase
     @Test
     public void testGetRules_emptyResult()
     {
-        given(ruleServiceMock.getRules(any())).willReturn(emptyList());
+        given(ruleServiceMock.getRules(FOLDER_NODE_REF, false)).willReturn(emptyList());
 
         // when
         final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);
 
-        then(ruleServiceMock).should().getRules(FOLDER_NODE_REF);
+        then(ruleServiceMock).should().getOwningNodeRef(RULE_SET_NODE_REF);
+        then(ruleServiceMock).should().getRules(FOLDER_NODE_REF, false);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
                 .isNotNull()

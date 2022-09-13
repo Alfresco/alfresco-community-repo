@@ -72,6 +72,8 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
 
     public static final String PROPERTY_PAUSE_AND_RECOVER_BATCHSIZE = "system.delete_not_exists.pauseAndRecoverBatchSize";
     public static final String PROPERTY_PAUSE_AND_RECOVER_TIME = "system.delete_not_exists.pauseAndRecoverTime";
+    public static final long DEFAULT_PAUSE_AND_RECOVER_BATCHSIZE = 500000;
+    public static final long DEFAULT_PAUSE_AND_RECOVER_TIME = 300000;
 
     private Dialect dialect;
     private final DataSource dataSource;
@@ -94,11 +96,11 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
         checkProperties();
 
         String pauseAndRecoverBatchSizeString = globalProperties.getProperty(PROPERTY_PAUSE_AND_RECOVER_BATCHSIZE);
-        pauseAndRecoverBatchSize = pauseAndRecoverBatchSizeString == null ? 500000
+        pauseAndRecoverBatchSize = pauseAndRecoverBatchSizeString == null ? DEFAULT_PAUSE_AND_RECOVER_BATCHSIZE
                 : Long.parseLong(pauseAndRecoverBatchSizeString);
 
         String pauseAndRecoverTimeString = globalProperties.getProperty(PROPERTY_PAUSE_AND_RECOVER_TIME);
-        pauseAndRecoverTime = pauseAndRecoverTimeString == null ? 300000 : Long.parseLong(pauseAndRecoverTimeString);
+        pauseAndRecoverTime = pauseAndRecoverTimeString == null ? DEFAULT_PAUSE_AND_RECOVER_TIME : Long.parseLong(pauseAndRecoverTimeString);
 
         super.execute();
     }

@@ -25,17 +25,26 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
+import org.alfresco.rest.model.RestRuleSetLinkModel;
 import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
 import org.alfresco.rest.model.RestRuleSettingsModel;
+import org.alfresco.rest.requests.coreAPI.RestCoreAPI;
+import org.alfresco.utility.constants.UserRole;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -247,5 +256,80 @@ public class GetRuleSetsTests extends RestTest
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("owningFolder").is(ruleFolder.getNodeRef())
                .assertThat().field("id").is(ruleSetId);
+    }
+
+    /**
+     * Check we can find out the id of any folders that inherit a rule set.
+     * <p>
+     * The test checks several different situations:
+     * <pre>
+     *   folder --[owns]-> rule set
+     *   +- publicFolder --[inherits]-> rule set (user has access)
+     *   +- privateFolder --[inherits]-> rule set (user does not have access)
+     *      +- publicGrandchild --[inherits]-> rule set (user has access again)
+     *   +- nonInheritingFolder (inheritance should be prevented)
+     *      +- linkingFolder --[links]-> rule set (not inherited)
+     *         +- descendantFolder --[inherits]-> rule set (inherited via link)
+     * </pre>
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetAndInheritedBy()
+    {
+        STEP("Create a site owned by admin and add user as a contributor");
+        SiteModel siteModel = dataSite.usingAdmin().createPrivateRandomSite();
+        dataUser.addUserToSite(user, siteModel, UserRole.SiteContributor);
+
+        STEP("Create the folder structure");
+        FolderModel folder = dataContent.usingUser(user).usingSite(siteModel).createFolder();
+        FolderModel publicFolder = dataContent.usingUser(user).usingResource(folder).createFolder();
+        FolderModel privateFolder = dataContent.usingAdmin().usingResource(folder).createFolder();
+        dataContent.usingAdmin().usingResource(privateFolder).setInheritPermissions(false);
+        // Create the grandchild with user and use admin to move it under the private folder.
+        FolderModel publicGrandchild = dataContent.usingUser(user).usingSite(siteModel).createFolder();
+        coreAPIForAdmin().usingActions().executeAction("move", publicGrandchild, ImmutableMap.of("destination-folder", "workspace://SpacesStore/" + privateFolder.getNodeRef()));
+        // Create the non-inheriting folder.
+        FolderModel nonInheritingFolder = dataContent.usingUser(user).usingResource(folder).createFolder();
+        RestRuleSettingsModel nonInheriting = new RestRuleSettingsModel();
+        nonInheriting.setKey(IS_INHERITANCE_ENABLED);
+        nonInheriting.setValue(false);
+        coreAPIForUser().usingNode(nonInheritingFolder).usingIsInheritanceEnabledRuleSetting().updateSetting(nonInheriting);
+        // Create a child that will link to the rule and a child of that to inherit via the link.
+        FolderModel linkingFolder = dataContent.usingUser(user).usingResource(nonInheritingFolder).createFolder();
+        FolderModel descendantFolder = dataContent.usingUser(user).usingResource(linkingFolder).createFolder();
+
+        STEP("Create an inheritable rule in the folder and get the rule set id.");
+        RestRuleModel ruleModel = createRuleModelWithModifiedValues();
+        coreAPIForUser().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        RestRuleSetModelsCollection ruleSets = coreAPIForUser().usingNode(folder).getListOfRuleSets();
+        String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
+
+        STEP("Create the link to the rule from the linking folder");
+        RestRuleSetLinkModel ruleSetLink = new RestRuleSetLinkModel();
+        ruleSetLink.setId(folder.getNodeRef());
+        coreAPIForUser().usingNode(linkingFolder).createRuleLink(ruleSetLink);
+
+        STEP("Get the rule set and inheriting folders");
+        RestRuleSetModel ruleSet = coreAPIForUser().usingNode(folder)
+                                                   .include("inheritedBy")
+                                                   .getRuleSet(ruleSetId);
+
+        restClient.assertStatusCodeIs(OK);
+        List<String> expectedInheritors = List.of(publicFolder.getNodeRef(), descendantFolder.getNodeRef(), publicGrandchild.getNodeRef());
+        ruleSet.assertThat().field("inheritedBy").is(expectedInheritors)
+               .assertThat().field("id").is(ruleSetId);
+
+        ruleSet = coreAPIForAdmin().usingNode(folder)
+                                                   .include("inheritedBy")
+                                                   .getRuleSet(ruleSetId);
+    }
+
+    private RestCoreAPI coreAPIForUser()
+    {
+        return restClient.authenticateUser(user).withCoreAPI();
+    }
+
+    private RestCoreAPI coreAPIForAdmin()
+    {
+        return restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI();
     }
 }

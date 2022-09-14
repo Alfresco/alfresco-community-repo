@@ -242,19 +242,21 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
     protected int getExpectedTransformsForTestJsonPipeline()
     {
 // imagemagick
-//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/jpeg"},
-//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/png"},
-//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+//        {"sourceMediaType": "image/png", "targetMediaType": "image/jpeg"},
+//        {"sourceMediaType": "image/png", "targetMediaType": "image/gif"},
+//        {"sourceMediaType": "image/png", "targetMediaType": "image/png"},
+//        {"sourceMediaType": "image/png", "targetMediaType": "image/tiff"}
 // pdfrendere
 //        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
 // libreoffice
 //         {"sourceMediaType": "application/vnd.ms-outlook", "targetMediaType": "application/pdf"}
+//         {"sourceMediaType": "application/msword",         "targetMediaType": "application/pdf" },
 // officeToImageViaPdf
 //        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
 //        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
 //        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
 //        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
-        return 3 + 1 + 1 + 4;   // 9
+        return 4 + 1 + 2 + 4;   // 11
     }
 
     /**
@@ -819,7 +821,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryMo
     public void testPipelineAndFailover()
     {
         retrieveLocalTransformList("alfresco/local-transform-service-config-pipeline-and-failover-test.json");
-        registry.assertErrorLogged("Transformer .* cannot have pipeline and failover sections.*pipeline-and-failover.*");
+        registry.assertErrorLogged("Transformer .* cannot have both pipeline and failover sections.*pipeline-and-failover.*");
     }
 
     @Test

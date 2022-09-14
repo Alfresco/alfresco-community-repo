@@ -41,6 +41,7 @@ import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +56,7 @@ public class RulesImpl implements Rules
     private RuleLoader ruleLoader;
     private ActionParameterConverter actionParameterConverter;
     private ActionPermissionValidator actionPermissionValidator;
+    private NamespaceService namespaceService;
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId,
@@ -63,9 +65,10 @@ public class RulesImpl implements Rules
                                                    final Paging paging)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
-        validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        NodeRef owningFolder = ruleService.getOwningNodeRef(ruleSetNode);
 
-        final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
+        final List<Rule> rules = ruleService.getRules(owningFolder, false).stream()
                 .map(ruleModel -> loadRuleAndConvertActionParams(ruleModel, includes))
                 .collect(Collectors.toList());
 
@@ -123,7 +126,7 @@ public class RulesImpl implements Rules
 
     private org.alfresco.service.cmr.rule.Rule mapToServiceModelAndValidateActions(Rule rule)
     {
-        final org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes);
+        final org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes, namespaceService);
         final CompositeAction compositeAction = (CompositeAction) serviceModelRule.getAction();
         compositeAction.getActions().forEach(action -> action.setParameterValues(
                 actionParameterConverter.getConvertedParams(action.getParameterValues(), action.getActionDefinitionName())));
@@ -133,7 +136,6 @@ public class RulesImpl implements Rules
 
     private Rule loadRuleAndConvertActionParams(org.alfresco.service.cmr.rule.Rule ruleModel, List<String> includes)
     {
-
         final Rule rule = ruleLoader.loadRule(ruleModel, includes);
         rule.getActions()
                 .forEach(a -> a.setParams(a.getParams().entrySet()
@@ -173,5 +175,10 @@ public class RulesImpl implements Rules
     public void setActionPermissionValidator(ActionPermissionValidator actionPermissionValidator)
     {
         this.actionPermissionValidator = actionPermissionValidator;
+    }
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 }

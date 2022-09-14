@@ -180,6 +180,12 @@ public class NodeValidator
         }
     }
 
+    /**
+     * Verifies if rule set node or folder node's default rule set is shared
+     * @param ruleSetNodeRef
+     * @param folderNodeRef
+     * @return
+     */
     public boolean isRuleSetNotNullAndShared(final NodeRef ruleSetNodeRef, final NodeRef folderNodeRef)
     {
         if (ruleSetNodeRef == null && folderNodeRef != null)

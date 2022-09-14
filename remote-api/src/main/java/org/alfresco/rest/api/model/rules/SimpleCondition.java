@@ -26,27 +26,41 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluator;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.evaluator.HasAspectEvaluator;
-import org.alfresco.repo.action.evaluator.HasChildEvaluator;
 import org.alfresco.repo.action.evaluator.HasTagEvaluator;
-import org.alfresco.repo.action.evaluator.HasVersionHistoryEvaluator;
 import org.alfresco.repo.action.evaluator.InCategoryEvaluator;
 import org.alfresco.repo.action.evaluator.IsSubTypeEvaluator;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
+import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
+import org.alfresco.repo.action.evaluator.compare.ContentPropertyName;
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
 public class SimpleCondition
 {
-    private static final String COMPARATOR_EQUALS = "equals";
+    private static final String CATEGORY_INVALID_MSG = "Category in condition is invalid";
+    public static final String PARAM_CATEGORY = "category";
+    public static final String PARAM_MIMETYPE = "mimetype";
 
     private String field;
     private String comparator;
@@ -58,7 +72,7 @@ public class SimpleCondition
      * @param actionConditions - list of {@link ActionCondition} service POJOs
      * @return list of {@link SimpleCondition} REST models
      */
-    public static List<SimpleCondition> listOf(final List<ActionCondition> actionConditions)
+    public static List<SimpleCondition> listOf(final List<ActionCondition> actionConditions, final NamespaceService namespaceService)
     {
         if (CollectionUtils.isEmpty(actionConditions))
         {
@@ -66,7 +80,7 @@ public class SimpleCondition
         }
 
         return actionConditions.stream()
-            .map(SimpleCondition::from)
+            .map(actionCondition -> from(actionCondition, namespaceService))
             .filter(Objects::nonNull)
             .collect(Collectors.toList());
     }
@@ -77,7 +91,7 @@ public class SimpleCondition
      * @param actionCondition - {@link ActionCondition} service POJO
      * @return {@link SimpleCondition} REST model
      */
-    public static SimpleCondition from(final ActionCondition actionCondition)
+    public static SimpleCondition from(final ActionCondition actionCondition, final NamespaceService namespaceService)
     {
         if (actionCondition == null || actionCondition.getActionConditionDefinitionName() == null || actionCondition.getParameterValues() == null)
         {
@@ -87,25 +101,84 @@ public class SimpleCondition
         switch (actionCondition.getActionConditionDefinitionName())
         {
         case ComparePropertyValueEvaluator.NAME:
-            return createComparePropertyValueCondition(actionCondition);
+            return createComparePropertyValueCondition(actionCondition, namespaceService);
         case CompareMimeTypeEvaluator.NAME:
             return createCompareMimeTypeCondition(actionCondition);
         case HasAspectEvaluator.NAME:
-            return createHasAspectCondition(actionCondition);
-        case HasChildEvaluator.NAME:
-            return createHasChildCondition(actionCondition);
+            return createHasAspectCondition(actionCondition, namespaceService);
         case HasTagEvaluator.NAME:
             return createHasTagCondition(actionCondition);
-        case HasVersionHistoryEvaluator.NAME:
-            return createHasVersionHistoryCondition(actionCondition);
         case InCategoryEvaluator.NAME:
             return createInCategoryCondition(actionCondition);
         case IsSubTypeEvaluator.NAME:
-            return createIsSubtypeCondition(actionCondition);
+            return createIsSubtypeCondition(actionCondition, namespaceService);
         case NoConditionEvaluator.NAME:
         default:
             return null;
         }
+    }
+
+    public ActionCondition toServiceModel(final boolean inverted, final Nodes nodes, final NamespaceService namespaceService)
+    {
+        if (field == null)
+        {
+            return null;
+        }
+
+        Map<String, Serializable> parameterValues = new HashMap<>();
+        String conditionDefinitionId;
+
+        switch (field)
+        {
+        case HasAspectEvaluator.PARAM_ASPECT:
+            conditionDefinitionId = HasAspectEvaluator.NAME;
+            parameterValues.put(HasAspectEvaluator.PARAM_ASPECT, QName.createQName(parameter, namespaceService));
+            break;
+        case HasTagEvaluator.PARAM_TAG:
+            conditionDefinitionId = HasTagEvaluator.NAME;
+            parameterValues.put(HasTagEvaluator.PARAM_TAG, parameter);
+            break;
+        case PARAM_CATEGORY:
+            conditionDefinitionId = InCategoryEvaluator.NAME;
+            parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_ASPECT, ContentModel.ASPECT_GEN_CLASSIFIABLE);
+            try
+            {
+                parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, nodes.validateOrLookupNode(parameter, null));
+            } catch (EntityNotFoundException e) {
+                throw new InvalidArgumentException(CATEGORY_INVALID_MSG);
+            }
+            break;
+        case IsSubTypeEvaluator.PARAM_TYPE:
+            conditionDefinitionId = IsSubTypeEvaluator.NAME;
+            parameterValues.put(IsSubTypeEvaluator.PARAM_TYPE, QName.createQName(parameter, namespaceService));
+            break;
+        case PARAM_MIMETYPE:
+            conditionDefinitionId = CompareMimeTypeEvaluator.NAME;
+            parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.TYPE_CONTENT);
+            parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
+            break;
+        default:
+            conditionDefinitionId = ComparePropertyValueEvaluator.NAME;
+            try
+            {
+                // if size or encoding create content property evaluator
+                ContentPropertyName.valueOf(field.toUpperCase());
+                parameterValues.put(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY, field.toUpperCase());
+                parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.TYPE_CONTENT);
+            }
+            catch (IllegalArgumentException ignore)
+            {
+                // else create common property evaluator
+                parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, QName.createQName(field, namespaceService));
+            }
+            parameterValues.put(ComparePropertyValueEvaluator.PARAM_OPERATION, comparator.toUpperCase());
+            parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
+            break;
+        }
+
+        final ActionCondition actionCondition = new ActionConditionImpl(UUID.randomUUID().toString(), conditionDefinitionId, parameterValues);
+        actionCondition.setInvertCondition(inverted);
+        return actionCondition;
     }
 
     public String getField()
@@ -161,13 +234,14 @@ public class SimpleCondition
         return Objects.hash(field, comparator, parameter);
     }
 
-    private static SimpleCondition createComparePropertyValueCondition(final ActionCondition actionCondition) {
+    private static SimpleCondition createComparePropertyValueCondition(final ActionCondition actionCondition, final NamespaceService namespaceService)
+    {
         final SimpleCondition.Builder builder = builder();
         if (actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY) != null)
         {
             builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY).toString().toLowerCase());
         } else {
-            builder.field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase());
+            builder.field(((QName) actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY)).toPrefixString(namespaceService));
         }
         return builder
             .comparator(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString().toLowerCase())
@@ -175,65 +249,48 @@ public class SimpleCondition
             .create();
     }
 
-    private static SimpleCondition createCompareMimeTypeCondition(final ActionCondition actionCondition) {
+    private static SimpleCondition createCompareMimeTypeCondition(final ActionCondition actionCondition)
+    {
         return builder()
-            .field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase())
-            .comparator(COMPARATOR_EQUALS)
+            .field(PARAM_MIMETYPE)
+            .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
             .parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString())
             .create();
     }
 
-    private static SimpleCondition createHasAspectCondition(final ActionCondition actionCondition) {
+    private static SimpleCondition createHasAspectCondition(final ActionCondition actionCondition, final NamespaceService namespaceService)
+    {
         return builder()
             .field(HasAspectEvaluator.PARAM_ASPECT)
-            .comparator(COMPARATOR_EQUALS)
-            .parameter(actionCondition.getParameterValues().get(HasAspectEvaluator.PARAM_ASPECT).toString())
+            .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
+            .parameter(((QName) actionCondition.getParameterValues().get(HasAspectEvaluator.PARAM_ASPECT)).toPrefixString(namespaceService))
             .create();
     }
 
-    private static SimpleCondition createHasChildCondition(final ActionCondition actionCondition) {
-        final SimpleCondition.Builder builder = builder();
-        if (actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE) != null)
-        {
-            builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_TYPE).toString().toLowerCase());
-        } else {
-            builder.field(actionCondition.getParameterValues().get(HasChildEvaluator.PARAM_ASSOC_NAME).toString().toLowerCase());
-        }
-        return builder
-            .comparator(COMPARATOR_EQUALS)
-            .parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString())
-            .create();
-    }
-
-    private static SimpleCondition createHasTagCondition(final ActionCondition actionCondition) {
+    private static SimpleCondition createHasTagCondition(final ActionCondition actionCondition)
+    {
         return builder()
             .field(HasTagEvaluator.PARAM_TAG)
-            .comparator(COMPARATOR_EQUALS)
+            .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
             .parameter(actionCondition.getParameterValues().get(HasTagEvaluator.PARAM_TAG).toString())
             .create();
     }
 
-    private static SimpleCondition createHasVersionHistoryCondition(final ActionCondition actionCondition) {
+    private static SimpleCondition createInCategoryCondition(final ActionCondition actionCondition)
+    {
         return builder()
-            .field(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_PROPERTY).toString().toLowerCase())
-            .comparator(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_OPERATION).toString().toLowerCase())
-            .parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString())
+            .field(PARAM_CATEGORY)
+            .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
+            .parameter(((NodeRef) actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_VALUE)).getId())
             .create();
     }
 
-    private static SimpleCondition createInCategoryCondition(final ActionCondition actionCondition) {
-        return builder()
-            .field(actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_ASPECT).toString().toLowerCase())
-            .comparator(COMPARATOR_EQUALS)
-            .parameter(actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_VALUE).toString())
-            .create();
-    }
-
-    private static SimpleCondition createIsSubtypeCondition(final ActionCondition actionCondition) {
+    private static SimpleCondition createIsSubtypeCondition(final ActionCondition actionCondition, final NamespaceService namespaceService)
+    {
         return builder()
             .field(IsSubTypeEvaluator.PARAM_TYPE)
-            .comparator(COMPARATOR_EQUALS)
-            .parameter(actionCondition.getParameterValues().get(IsSubTypeEvaluator.PARAM_TYPE).toString())
+            .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
+            .parameter(((QName) actionCondition.getParameterValues().get(IsSubTypeEvaluator.PARAM_TYPE)).toPrefixString(namespaceService))
             .create();
     }
 

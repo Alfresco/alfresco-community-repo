@@ -234,7 +234,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Assert link result is 400");
         restClient.assertStatusCodeIs(BAD_REQUEST)
                 .assertLastError().containsSummary(
-                "Unable to link to a ruleset because the folder has pre-existing rules or is already linked to a ruleset.");
+                "Unable to link to a rule set because the folder has pre-existing rules or is already linked to a rule set.");
     }
 
     /**

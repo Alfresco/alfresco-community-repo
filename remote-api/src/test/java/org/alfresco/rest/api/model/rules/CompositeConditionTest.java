@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.model.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -39,11 +40,17 @@ import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.namespace.NamespaceService;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
+@RunWith(MockitoJUnitRunner.class)
 public class CompositeConditionTest
 {
+
+    private final NamespaceService namespaceService = mock(NamespaceService.class);
 
     @Test
     public void testFrom()
@@ -64,7 +71,7 @@ public class CompositeConditionTest
         ));
 
         // when
-        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, namespaceService);
 
         assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }
@@ -76,7 +83,7 @@ public class CompositeConditionTest
         final CompositeCondition expectedCompositeCondition = CompositeCondition.builder().create();
 
         // when
-        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, namespaceService);
 
         assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }
@@ -85,7 +92,7 @@ public class CompositeConditionTest
     public void testFromNullValue()
     {
         // when
-        final CompositeCondition actualCompositeCondition = CompositeCondition.from(null);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(null, namespaceService);
 
         assertThat(actualCompositeCondition).isNull();
     }
@@ -98,7 +105,7 @@ public class CompositeConditionTest
         final CompositeCondition expectedCompositeCondition = CompositeCondition.builder().create();
 
         // when
-        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, namespaceService);
 
         assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }

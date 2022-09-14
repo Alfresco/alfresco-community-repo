@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.model.rules;
 
+import static org.alfresco.repo.action.access.ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +62,9 @@ public class Action
         final Action.Builder builder = builder().actionDefinitionId(actionModel.getActionDefinitionName());
         if (actionModel.getParameterValues() != null)
         {
-            builder.params(new HashMap<>(actionModel.getParameterValues()));
+            Map<String, Serializable> params = new HashMap<>(actionModel.getParameterValues());
+            params.remove(ACTION_CONTEXT_PARAM_NAME);
+            builder.params(params);
         }
 
         return builder.create();

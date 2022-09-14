@@ -32,12 +32,16 @@ import java.util.stream.Collectors;
 
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Rules;
+import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.api.model.rules.SimpleCondition;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -56,7 +60,7 @@ public class RulesImpl implements Rules
     private RuleLoader ruleLoader;
     private ActionParameterConverter actionParameterConverter;
     private ActionPermissionValidator actionPermissionValidator;
-    private NamespaceService namespaceService;
+    private RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper;
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId,
@@ -177,8 +181,9 @@ public class RulesImpl implements Rules
         this.actionPermissionValidator = actionPermissionValidator;
     }
 
-    public void setNamespaceService(NamespaceService namespaceService)
+    public void setSimpleConditionMapper(
+            RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
     {
-        this.namespaceService = namespaceService;
+        this.simpleConditionMapper = simpleConditionMapper;
     }
 }

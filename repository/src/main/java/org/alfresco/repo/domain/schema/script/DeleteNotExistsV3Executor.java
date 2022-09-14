@@ -31,7 +31,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -100,7 +99,8 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                 : Long.parseLong(pauseAndRecoverBatchSizeString);
 
         String pauseAndRecoverTimeString = globalProperties.getProperty(PROPERTY_PAUSE_AND_RECOVER_TIME);
-        pauseAndRecoverTime = pauseAndRecoverTimeString == null ? DEFAULT_PAUSE_AND_RECOVER_TIME : Long.parseLong(pauseAndRecoverTimeString);
+        pauseAndRecoverTime = pauseAndRecoverTimeString == null ? DEFAULT_PAUSE_AND_RECOVER_TIME
+                : Long.parseLong(pauseAndRecoverTimeString);
 
         super.execute();
     }
@@ -154,7 +154,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             if (hasResults)
             {
 
-                //Prepared statements for secondary tables for the next batch
+                // Prepared statements for secondary tables for the next batch
                 secondaryPrepStmts = new PreparedStatement[tableColumn.length];
                 for (int i = 1; i < tableColumn.length; i++)
                 {
@@ -187,7 +187,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                     primaryPrepStmt.setLong(1, primaryId + 1);
                     primaryPrepStmt.setLong(2, tableUpperLimits[0]);
 
-                    //Query the primary table for the next batch
+                    // Query the primary table for the next batch
                     hasResults = primaryPrepStmt.execute();
                 }
 
@@ -253,12 +253,17 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
 
         // Set all rows retrieved from the primary table as our potential ids to delete
         Set<Long> potentialIdsToDelete = new HashSet<Long>();
+        Long minPotentialId = 0L;
+        Long maxPotentialId = 0L;
         try (ResultSet resultSet = primaryPrepStmt.getResultSet())
         {
             while (resultSet.next())
             {
                 primaryId = resultSet.getLong(primaryColumnName);
                 potentialIdsToDelete.add(primaryId);
+
+                minPotentialId = (minPotentialId == 0L || primaryId < minPotentialId) ? primaryId : minPotentialId;
+                maxPotentialId = primaryId > maxPotentialId ? primaryId : maxPotentialId;
             }
         }
 
@@ -268,18 +273,19 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             return primaryId;
         }
 
-        Long minPotentialId = Collections.min(potentialIdsToDelete);
-        Long maxPotentialId = Collections.max(potentialIdsToDelete);
-        int rowsProcessed = potentialIdsToDelete.size();
-        processedCounter = processedCounter + rowsProcessed;
+        int rowsInBatch = potentialIdsToDelete.size();
+        processedCounter = processedCounter + rowsInBatch;
 
         // Get a combined list of the ids present in the secondary tables
-        Set<Long> secondaryResults = getSecondaryResults(secondaryPrepStmts, tableColumn, minPotentialId, maxPotentialId);
+        SecondaryResultsInfo secondaryResultsInfo = getSecondaryResults(secondaryPrepStmts, tableColumn, minPotentialId,
+                maxPotentialId);
 
-        if (secondaryResults.size() > 0)
+        Set<Long> secondaryResults = secondaryResultsInfo.getValues();
+
+        if (secondaryResultsInfo.getSize() > 0)
         {
-            minSecId = Collections.min(secondaryResults);
-            maxSecId = Collections.max(secondaryResults);
+            minSecId = secondaryResultsInfo.getMinValue();
+            maxSecId = secondaryResultsInfo.getMaxValue();
 
             // From our potentialIdsToDelete list, remove all non-eligible ids: any id that is in a secondary table or
             // any ID past the last ID we were able to access in the secondary tables (maxSecId)
@@ -305,11 +311,11 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
             deleteInBatches(potentialIdsToDelete, deleteIds, primaryTableName, deletePrepStmt);
         }
 
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            logger.debug("RowsProcessed " + rowsProcessed + " from primary table " + primaryTableName + ". Primary: ["
-                    + minPotentialId + "," + maxPotentialId + "] Secondary: [" + minSecId + "," + maxSecId + "] Total Deleted: "
-                    + deletedCount);
+            logger.trace("Rows processed " + rowsInBatch + " from primary table " + primaryTableName + ". Primary: ["
+                    + minPotentialId + "," + maxPotentialId + "] Secondary rows processed: " + secondaryResultsInfo.getSize()
+                    + " [" + minSecId + "," + maxSecId + "] Total Deleted: " + deletedCount);
         }
 
         // If the total rows processed from all batches so far is greater that the defined pauseAndRecoverBatchSize,
@@ -342,19 +348,19 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
     /*
      * Get a combined list of the ids present in all the secondary tables
      */
-    private Set<Long> getSecondaryResults(PreparedStatement[] preparedStatements, Pair<String, String>[] tableColumn,
+    private SecondaryResultsInfo getSecondaryResults(PreparedStatement[] preparedStatements, Pair<String, String>[] tableColumn,
             Long minPotentialId, Long maxPotentialId) throws SQLException
     {
         Set<Long> secondaryResultValues = new HashSet<Long>();
-        long minValue = 0L;
+        Long lowestUpperValue = 0L;
         for (int i = 1; i < preparedStatements.length; i++)
         {
+            String columnId = tableColumn[i].getSecond();
             PreparedStatement secStmt = preparedStatements[i];
             secStmt.setLong(1, minPotentialId);
             secStmt.setLong(2, maxPotentialId);
 
-            String columnId = tableColumn[i].getSecond();
-
+            // Execute the query on each secondary table
             boolean secHasResults = secStmt.execute();
             if (secHasResults)
             {
@@ -362,6 +368,7 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                 {
                     Long thisId = 0L;
                     Long resultSize = 0L;
+                    Long upperValue = 0L;
                     while (secResultSet.next())
                     {
                         resultSize++;
@@ -372,34 +379,84 @@ public class DeleteNotExistsV3Executor extends DeleteNotExistsExecutor
                         {
                             secondaryResultValues.add(thisId);
                         }
+
+                        upperValue = thisId > upperValue ? thisId : upperValue;
                     }
 
-                    // Set the upper min value. If we have a {batchSize} number of results, it probably means we still
-                    // have more rows after. We need to gather the last ID processed, so on the next batch we can resume
-                    // from there. There is no point in gathering ids from other secondary tables after this value.
-                    if (thisId > 0 && resultSize == batchSize)
+                    // Set the upper min value. We need to gather the last ID processed, so on the next batch on the
+                    // primary table we can resume from there. We only need to do this if the number of results of the
+                    // secondary table matches the batch size (if not, it means that there aren't more results up to
+                    // maxPotentialId). Example on why this is needed: Primary table batch has 100k results from id's 1
+                    // to 250000. Secondary table on that interval returns 100k results from id 3 to 210000. Next batch
+                    // needs to start on id 210001
+                    if (upperValue > 0 && resultSize == batchSize)
                     {
-                        minValue = (minValue != 0 && thisId > minValue) ? minValue : thisId;
+                        lowestUpperValue = (lowestUpperValue == 0L || upperValue < lowestUpperValue) ? upperValue
+                                : lowestUpperValue;
                     }
                 }
             }
         }
 
-        // Remove all values after the lower upper value of a sec table
-        if (minValue > 0)
+        // If lowestUpperValue is still 0 (because a secondary table never had more or the same number of results as the
+        // primary table), the next id should be the last max id evaluated from the primary table (maxPotentialId)
+        lowestUpperValue = lowestUpperValue == 0 ? maxPotentialId : lowestUpperValue;
+
+        // Remove all values after the lower upper value of a secondary table
+        long minSecId = 0L;
+        Iterator<Long> it = secondaryResultValues.iterator();
+        while (it.hasNext())
         {
-            Iterator<Long> it = secondaryResultValues.iterator();
-            while (it.hasNext())
+            long secondaryId = it.next();
+            if (secondaryId > lowestUpperValue)
             {
-                if (it.next() > minValue)
-                {
-                    it.remove();
-                }
+                it.remove();
+            }
+            else
+            {
+                minSecId = (minSecId == 0L || secondaryId < minSecId) ? secondaryId : minSecId;
             }
         }
 
         // Return a combined list of the ids present in all the secondary tables
-        return secondaryResultValues;
+        return new SecondaryResultsInfo(secondaryResultValues, minSecId, lowestUpperValue);
+    }
+
+    private class SecondaryResultsInfo
+    {
+        Set<Long> values;
+        long minValue;
+        long maxValue;
+        long size;
+
+        public SecondaryResultsInfo(Set<Long> values, long minValue, long maxValue)
+        {
+            super();
+            this.values = values;
+            this.minValue = minValue;
+            this.maxValue = maxValue;
+            this.size = values.size();
+        }
+
+        public Set<Long> getValues()
+        {
+            return values;
+        }
+
+        public long getMinValue()
+        {
+            return minValue;
+        }
+
+        public long getMaxValue()
+        {
+            return maxValue;
+        }
+
+        public long getSize()
+        {
+            return size;
+        }
     }
 
     /*

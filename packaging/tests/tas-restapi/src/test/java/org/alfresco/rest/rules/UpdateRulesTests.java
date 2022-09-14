@@ -218,7 +218,9 @@ public class UpdateRulesTests extends RestTest
                                               .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
-        updatedRule.assertThat().field("name").is("Updated rule name");
+        updatedRule.assertThat().field("name").is("Updated rule name")
+                   .assertThat().field("actions.actionDefinitionId").is(List.of("copy"))
+                   .assertThat().field("actions.params").is(List.of(ImmutableMap.of("destination-folder", destination.getNodeRef())));
     }
 
     private RestRuleModel createAndSaveRule(String name)

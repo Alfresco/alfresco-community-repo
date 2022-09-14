@@ -35,6 +35,7 @@ import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
+import org.alfresco.rest.model.RestRuleSettingsModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
@@ -51,6 +52,8 @@ public class GetRuleSetsTests extends RestTest
     private UserModel user;
     private SiteModel site;
     private FolderModel ruleFolder;
+    private FolderModel inheritingChildFolder;
+    private FolderModel notInheritingChildFolder;
     private RestRuleModel rule;
     private String ruleSetId;
 
@@ -61,6 +64,14 @@ public class GetRuleSetsTests extends RestTest
         user = dataUser.createRandomTestUser();
         site = dataSite.usingUser(user).createPublicRandomSite();
         ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Create two children of the folder - one that inherits rules and one that doesn't");
+        inheritingChildFolder = dataContent.usingUser(user).usingResource(ruleFolder).createFolder();
+        notInheritingChildFolder = dataContent.usingUser(user).usingResource(ruleFolder).createFolder();
+        RestRuleSettingsModel doesntInherit = new RestRuleSettingsModel();
+        doesntInherit.setValue(false);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(notInheritingChildFolder)
+                  .usingIsInheritanceEnabledRuleSetting().updateSetting(doesntInherit);
 
         STEP("Create a rule in the folder.");
         RestRuleModel ruleModel = createRuleModel("ruleName");
@@ -133,7 +144,7 @@ public class GetRuleSetsTests extends RestTest
 
     /** Check we can get the reason that a rule set is included in the list. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
-    public void getRuleSetsAndInclusionType()
+    public void getRuleSetsAndOwnedInclusionType()
     {
         STEP("Get the rule sets and inclusion type");
         RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
@@ -146,6 +157,36 @@ public class GetRuleSetsTests extends RestTest
                 .assertThat().field("inclusionType").is("owned")
                 .assertThat().field("id").is(ruleSetId);
         ruleSets.assertThat().entriesListCountIs(1);
+    }
+
+    /** Check we can tell that a rule set has been inherited. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetsAndInheritedInclusionType()
+    {
+        STEP("Get the rule sets and inclusion type");
+        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+                                                         .usingNode(inheritingChildFolder)
+                                                         .include("inclusionType")
+                                                         .getListOfRuleSets();
+
+        restClient.assertStatusCodeIs(OK);
+        ruleSets.getEntries().get(0).onModel()
+                .assertThat().field("inclusionType").is("inherited")
+                .assertThat().field("id").is(ruleSetId);
+        ruleSets.assertThat().entriesListCountIs(1);
+    }
+
+    /** Check that a rule set is not inherited if inheriting is disabled. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetsWithoutInheriting()
+    {
+        STEP("Get the rule sets and inclusion type");
+        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI()
+                                                         .usingNode(notInheritingChildFolder)
+                                                         .getListOfRuleSets();
+
+        restClient.assertStatusCodeIs(OK);
+        ruleSets.assertThat().entriesListCountIs(0);
     }
 
     /** Check we can get a rule set by its id. */

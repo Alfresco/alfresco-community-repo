@@ -42,6 +42,7 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.namespace.NamespaceService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -60,6 +61,8 @@ public class RuleTest
     private static final String ACTION_DEFINITION_NAME = "action-def-name";
     private static final String ERROR_SCRIPT = "error-script-ref";
 
+    private final NamespaceService namespaceService = mock(NamespaceService.class);
+
     @Test
     public void testFrom()
     {
@@ -67,7 +70,7 @@ public class RuleTest
         final Rule expectedRule = createRuleWithDefaultValues();
 
         // when
-        final Rule actualRule = Rule.from(ruleModel);
+        final Rule actualRule = Rule.from(ruleModel, namespaceService);
 
         assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
@@ -80,7 +83,7 @@ public class RuleTest
         final Rule expectedRule = Rule.builder().enabled(true).create();
 
         // when
-        final Rule actualRule = Rule.from(ruleModel);
+        final Rule actualRule = Rule.from(ruleModel, namespaceService);
 
         assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
@@ -96,7 +99,7 @@ public class RuleTest
         final org.alfresco.service.cmr.action.Action expectedCompensatingActionModel = createCompensatingActionModel();
 
         // when
-        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock);
+        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock, namespaceService);
 
         then(nodesMock).should().validateOrLookupNode(RULE_ID, null);
         then(nodesMock).shouldHaveNoMoreInteractions();
@@ -121,7 +124,7 @@ public class RuleTest
         expectedRuleModel.setRuleDisabled(true);
 
         // when
-        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock);
+        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock, namespaceService);
 
         then(nodesMock).shouldHaveNoInteractions();
         assertThat(actualRuleModel)
@@ -129,6 +132,20 @@ public class RuleTest
             .usingRecursiveComparison()
             .ignoringFields("ruleTypes")
             .isEqualTo(expectedRuleModel);
+    }
+
+    private Rule createRuleWithDefaultValues() {
+        return Rule.builder()
+            .id(RULE_ID)
+            .name(RULE_NAME)
+            .description(RULE_DESCRIPTION)
+            .enabled(RULE_ENABLED)
+            .cascade(RULE_CASCADE)
+            .asynchronous(RULE_ASYNC)
+            .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
+            .errorScript(ERROR_SCRIPT)
+            .conditions(CompositeCondition.from(Collections.emptyList(), namespaceService))
+            .create();
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRuleModel() {
@@ -159,19 +176,5 @@ public class RuleTest
         compensatingActionModel.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, ERROR_SCRIPT);
 
         return compensatingActionModel;
-    }
-
-    private static Rule createRuleWithDefaultValues() {
-        return Rule.builder()
-            .id(RULE_ID)
-            .name(RULE_NAME)
-            .description(RULE_DESCRIPTION)
-            .enabled(RULE_ENABLED)
-            .cascade(RULE_CASCADE)
-            .asynchronous(RULE_ASYNC)
-            .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
-            .errorScript(ERROR_SCRIPT)
-            .conditions(CompositeCondition.from(Collections.emptyList()))
-            .create();
     }
 }

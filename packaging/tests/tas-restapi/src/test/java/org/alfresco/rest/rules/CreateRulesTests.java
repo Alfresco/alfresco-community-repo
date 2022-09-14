@@ -49,6 +49,7 @@ import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
+import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.constants.UserRole;
@@ -94,7 +95,6 @@ public class CreateRulesTests extends RestTest
                                        .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
-        expectedRuleModel.setActions(addActionContextParams(expectedRuleModel.getActions()));
         expectedRuleModel.setConditions(createEmptyConditionModel());
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
@@ -384,12 +384,72 @@ public class CreateRulesTests extends RestTest
                 .createSingleRule(ruleModel);
 
         final RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
-        expectedRuleModel.setActions(addActionContextParams(Arrays.asList(copyAction, checkOutAction, scriptAction)));
+        expectedRuleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
         expectedRuleModel.setConditions(createEmptyConditionModel());
         expectedRuleModel.setTriggers(List.of("inbound"));
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
                 .assertThat().field("isShared").isNull();
+    }
+
+    /**
+     * Check we can create a rule with multiple conditions
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithConditions()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setConditions(createVariousConditions());
+
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        expectedRuleModel.setConditions(createVariousConditions());
+        expectedRuleModel.setTriggers(List.of("inbound"));
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED);
+    }
+
+    /**
+     * Check we can create a rule with empty list as conditions
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithConditions_emptyConditionList()
+    {
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setConditions(createCompositeCondition(null));
+
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+            .createSingleRule(ruleModel);
+
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        expectedRuleModel.setConditions(createCompositeCondition(null));
+        expectedRuleModel.setTriggers(List.of("inbound"));
+        restClient.assertStatusCodeIs(CREATED);
+        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED);
+    }
+
+    /**
+     * Check we can NOT create a rule when category ID in condition is invalid, HTTP status code 400 is expected
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithConditions_invalidCategory()
+    {
+        STEP("Try to create a rule with non existing category in conditions.");
+        String fakeCategoryId = "bdba5f9f-fake-id22-803b-349bcfd06fd1";
+        RestCompositeConditionDefinitionModel conditions = createCompositeCondition(List.of(
+            createCompositeCondition(!INVERTED, List.of(
+                createSimpleCondition("category", "equals", fakeCategoryId)
+            ))
+        ));
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Category in condition is invalid");
     }
 }

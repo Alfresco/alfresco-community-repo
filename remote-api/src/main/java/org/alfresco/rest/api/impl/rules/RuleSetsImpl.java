@@ -29,7 +29,7 @@ package org.alfresco.rest.api.impl.rules;
 import static java.util.stream.Collectors.toList;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.rule.RuntimeRuleService;
@@ -59,10 +59,13 @@ public class RuleSetsImpl implements RuleSets
     {
         NodeRef folderNode = validator.validateFolderNode(folderNodeId, false);
 
-        NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNode);
-        List<RuleSet> ruleSets = Optional.ofNullable(ruleSetNode)
-                                         .map(nodeRef -> ruleSetLoader.loadRuleSet(nodeRef, folderNode, includes))
-                                                                      .stream().collect(toList());
+        List<RuleSet> ruleSets = ruleService.getNodesSupplyingRuleSets(folderNode)
+                                            .stream()
+                                            .map(ruleService::getRuleSetNode)
+                                            .filter(Objects::nonNull)
+                                            .map(nodeRef -> ruleSetLoader.loadRuleSet(nodeRef, folderNode, includes))
+                                            .distinct()
+                                            .collect(toList());
 
         return ListPage.of(ruleSets, paging);
     }
@@ -93,7 +96,7 @@ public class RuleSetsImpl implements RuleSets
 
         //The folder shouldn't have any pre-existing rules
         if (ruleService.hasRules(folderNodeRef)) {
-            throw new InvalidArgumentException("Unable to link to a ruleset because the folder has pre-existing rules or is already linked to a ruleset.");
+            throw new InvalidArgumentException("Unable to link to a rule set because the folder has pre-existing rules or is already linked to a rule set.");
         }
 
         // Create the destination folder as a secondary child of the first

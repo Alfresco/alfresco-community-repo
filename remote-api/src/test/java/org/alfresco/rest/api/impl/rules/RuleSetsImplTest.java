@@ -33,6 +33,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 
 import java.util.Collection;
 import java.util.List;
@@ -101,6 +102,8 @@ public class RuleSetsImplTest extends TestCase
         given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
 
         given(ruleServiceMock.getRuleSetNode(FOLDER_NODE)).willReturn(RULE_SET_NODE);
+        given(ruleServiceMock.getNodesSupplyingRuleSets(FOLDER_NODE)).willReturn(List.of(FOLDER_NODE));
+
         given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, INCLUDES)).willReturn(ruleSetMock);
     }
 
@@ -113,6 +116,7 @@ public class RuleSetsImplTest extends TestCase
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
 
+        then(ruleServiceMock).should().getNodesSupplyingRuleSets(FOLDER_NODE);
         then(ruleServiceMock).should().getRuleSetNode(FOLDER_NODE);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
 
@@ -133,10 +137,67 @@ public class RuleSetsImplTest extends TestCase
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
 
+        then(ruleServiceMock).should().getNodesSupplyingRuleSets(FOLDER_NODE);
         then(ruleServiceMock).should().getRuleSetNode(FOLDER_NODE);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
 
         assertEquals(emptyList(), actual.getCollection());
+        assertEquals(PAGING, actual.getPaging());
+    }
+
+    /** Check that a folder with a parent and grandparent can inherit rule sets from the grandparent, even if the parent has no rules. */
+    @Test
+    public void testGetInheritedRuleSets()
+    {
+        // Simulate a parent node without a rule set.
+        NodeRef parentNode = new NodeRef("parent://node/");
+        // Simulate a grandparent node providing a rule set.
+        NodeRef grandparentNode = new NodeRef("grandparent://node/");
+        RuleSet grandparentRuleSet = mock(RuleSet.class);
+        NodeRef grandparentRuleSetNode = new NodeRef("grandparent://rule-set/");
+        given(ruleServiceMock.getRuleSetNode(grandparentNode)).willReturn(grandparentRuleSetNode);
+        given(ruleSetLoaderMock.loadRuleSet(grandparentRuleSetNode, FOLDER_NODE, INCLUDES)).willReturn(grandparentRuleSet);
+        // These should be returned with the highest in hierarchy first.
+        given(ruleServiceMock.getNodesSupplyingRuleSets(FOLDER_NODE)).willReturn(List.of(grandparentNode, parentNode, FOLDER_NODE));
+
+        // Call the method under test.
+        CollectionWithPagingInfo<RuleSet> actual = ruleSets.getRuleSets(FOLDER_ID, INCLUDES, PAGING);
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+
+        then(ruleServiceMock).should().getNodesSupplyingRuleSets(FOLDER_NODE);
+        then(ruleServiceMock).should().getRuleSetNode(grandparentNode);
+        then(ruleServiceMock).should().getRuleSetNode(parentNode);
+        then(ruleServiceMock).should().getRuleSetNode(FOLDER_NODE);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+
+        Collection<RuleSet> expected = List.of(grandparentRuleSet, ruleSetMock);
+        assertEquals(expected, actual.getCollection());
+        assertEquals(PAGING, actual.getPaging());
+    }
+
+    /** When getting rule sets then only the first instance of each rule set should be included (ancestor first). */
+    @Test
+    public void testGetDuplicateRuleSets()
+    {
+        // Simulate a grandparent, parent and child with the grandparent linking to the child's rule set.
+        NodeRef grandparentNode = new NodeRef("grandparent://node/");
+        given(ruleServiceMock.getRuleSetNode(grandparentNode)).willReturn(RULE_SET_NODE);
+        NodeRef parentNode = new NodeRef("parent://node/");
+        RuleSet parentRuleSet = mock(RuleSet.class);
+        NodeRef parentRuleSetNode = new NodeRef("parent://rule-set/");
+        given(ruleServiceMock.getRuleSetNode(parentNode)).willReturn(parentRuleSetNode);
+        given(ruleSetLoaderMock.loadRuleSet(parentRuleSetNode, FOLDER_NODE, INCLUDES)).willReturn(parentRuleSet);
+        // These should be returned with the highest in hierarchy first.
+        given(ruleServiceMock.getNodesSupplyingRuleSets(FOLDER_NODE)).willReturn(List.of(grandparentNode, parentNode, FOLDER_NODE));
+
+        // Call the method under test.
+        CollectionWithPagingInfo<RuleSet> actual = ruleSets.getRuleSets(FOLDER_ID, INCLUDES, PAGING);
+
+        // The grandparent's linked rule set should be first and only appear once.
+        Collection<RuleSet> expected = List.of(ruleSetMock, parentRuleSet);
+        assertEquals(expected, actual.getCollection());
         assertEquals(PAGING, actual.getPaging());
     }
 

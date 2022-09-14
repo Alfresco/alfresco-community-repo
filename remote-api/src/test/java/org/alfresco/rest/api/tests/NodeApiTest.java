@@ -106,6 +106,7 @@ import org.apache.commons.collections.map.MultiValueMap;
 import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -3611,6 +3612,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
      */
     @Test
+    @Ignore("ACS-3531 Frequent intermittent failure")
     public void testDownloadFileContent() throws Exception
     {
         setRequestContext(user1);

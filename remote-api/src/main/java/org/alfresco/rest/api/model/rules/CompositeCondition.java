@@ -32,8 +32,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.namespace.NamespaceService;
 import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
@@ -50,7 +52,7 @@ public class CompositeCondition
      * @param actionConditions - list of {@link ActionCondition} service POJOs
      * @return {@link CompositeCondition} REST model
      */
-    public static CompositeCondition from(final List<ActionCondition> actionConditions)
+    public static CompositeCondition from(final List<ActionCondition> actionConditions, final NamespaceService namespaceService)
     {
         if (actionConditions == null)
         {
@@ -62,7 +64,7 @@ public class CompositeCondition
         // group action conditions by inversion flag
         actionConditions.stream().filter(Objects::nonNull).collect(Collectors.groupingBy(ActionCondition::getInvertCondition))
             // map action condition sub lists
-            .forEach((inverted, actionConditionsPart) -> Optional.ofNullable(CompositeCondition.ofActionConditions(actionConditionsPart, inverted, ConditionOperator.AND))
+            .forEach((inverted, actionConditionsPart) -> Optional.ofNullable(CompositeCondition.ofActionConditions(actionConditionsPart, namespaceService, inverted, ConditionOperator.AND))
                 // if composite condition present add to final list
                 .ifPresent(compositeCondition -> conditions.compositeConditions.add(compositeCondition)));
 
@@ -73,14 +75,14 @@ public class CompositeCondition
         return conditions;
     }
 
-    private static CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions, final boolean inverted, final ConditionOperator conditionOperator)
+    private static CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions, final NamespaceService namespaceService, final boolean inverted, final ConditionOperator conditionOperator)
     {
         if (actionConditions == null)
         {
             return null;
         }
 
-        return ofSimpleConditions(SimpleCondition.listOf(actionConditions), inverted, conditionOperator);
+        return ofSimpleConditions(SimpleCondition.listOf(actionConditions, namespaceService), inverted, conditionOperator);
     }
 
     /**
@@ -112,6 +114,21 @@ public class CompositeCondition
             .create();
     }
 
+    public List<ActionCondition> toServiceModels(final Nodes nodes, final NamespaceService namespaceService)
+    {
+        final List<ActionCondition> actionConditions = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(simpleConditions))
+        {
+            simpleConditions.forEach(simpleCondition -> actionConditions.add(simpleCondition.toServiceModel(inverted, nodes, namespaceService)));
+        }
+        if (CollectionUtils.isNotEmpty(compositeConditions))
+        {
+            compositeConditions.forEach(compositeCondition -> actionConditions.addAll(compositeCondition.toServiceModels(nodes, namespaceService)));
+        }
+
+        return actionConditions;
+    }
+
     public boolean isInverted()
     {
         return inverted;
@@ -129,6 +146,14 @@ public class CompositeCondition
             return null;
         }
         return booleanMode.name().toLowerCase();
+    }
+
+    public void setBooleanMode(String booleanMode)
+    {
+        if (booleanMode != null)
+        {
+            this.booleanMode = ConditionOperator.valueOf(booleanMode.toUpperCase());
+        }
     }
 
     public void setBooleanMode(ConditionOperator booleanMode)

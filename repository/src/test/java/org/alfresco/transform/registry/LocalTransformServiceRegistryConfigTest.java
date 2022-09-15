@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,7 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.transform.client.registry;
+package org.alfresco.transform.registry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.repo.content.MimetypeMap;
@@ -32,12 +32,12 @@ import org.alfresco.repo.content.transform.LocalPipelineTransform;
 import org.alfresco.repo.content.transform.LocalTransformImpl;
 import org.alfresco.repo.content.transform.LocalTransformServiceRegistry;
 import org.alfresco.repo.content.transform.TransformerDebug;
-import org.alfresco.transform.client.model.config.SupportedSourceAndTarget;
-import org.alfresco.transform.client.model.config.TransformConfig;
-import org.alfresco.transform.client.model.config.TransformOption;
-import org.alfresco.transform.client.model.config.TransformOptionGroup;
-import org.alfresco.transform.client.model.config.TransformOptionValue;
-import org.alfresco.transform.client.model.config.Transformer;
+import org.alfresco.transform.config.SupportedSourceAndTarget;
+import org.alfresco.transform.config.TransformConfig;
+import org.alfresco.transform.config.TransformOption;
+import org.alfresco.transform.config.TransformOptionGroup;
+import org.alfresco.transform.config.TransformOptionValue;
+import org.alfresco.transform.config.Transformer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
@@ -72,7 +72,7 @@ import static org.junit.Assert.fail;
 /**
  * Testing LocalTransformServiceRegistry.
  */
-public class LocalTransformServiceRegistryConfigTest extends TransformRegistryTest
+public class LocalTransformServiceRegistryConfigTest extends TransformRegistryModelTest
 {
     public static final String HARD_CODED_VALUE = "hard coded value";
 
@@ -242,19 +242,21 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryTe
     protected int getExpectedTransformsForTestJsonPipeline()
     {
 // imagemagick
-//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/jpeg"},
-//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/png"},
-//        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+//        {"sourceMediaType": "image/png", "targetMediaType": "image/jpeg"},
+//        {"sourceMediaType": "image/png", "targetMediaType": "image/gif"},
+//        {"sourceMediaType": "image/png", "targetMediaType": "image/png"},
+//        {"sourceMediaType": "image/png", "targetMediaType": "image/tiff"}
 // pdfrendere
 //        {"sourceMediaType": "application/pdf", "targetMediaType": "image/png" }
 // libreoffice
 //         {"sourceMediaType": "application/vnd.ms-outlook", "targetMediaType": "application/pdf"}
+//         {"sourceMediaType": "application/msword",         "targetMediaType": "application/pdf" },
 // officeToImageViaPdf
 //        {"sourceMediaType": "application/msword",  "targetMediaType": "image/gif" },
 //        {"sourceMediaType": "application/msword",  "targetMediaType": "image/jpeg"},
 //        {"sourceMediaType": "application/msword",  "targetMediaType": "image/png" },
 //        {"sourceMediaType": "application/msword",  "targetMediaType": "image/tiff"}
-        return 3 + 1 + 1 + 4;   // 9
+        return 4 + 1 + 2 + 4;   // 11
     }
 
     /**
@@ -389,6 +391,23 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryTe
         CombinedConfig combinedConfig = new CombinedConfig(log, registry);
         combinedConfig.addLocalConfig(path);
         combinedConfig.register((TransformServiceRegistryImpl)registry);
+    }
+
+    // The super class uses org.junit.jupiter:junit-jupiter-engine:5.8.2
+    // This cannot be used in the Alfresco repo as other tests in this class fail as they expect junit 4
+    @Override
+    protected void assertSupported(String sourceMimetype, long sourceSizeInBytes, String targetMimetype,
+                                   Map<String, String> actualOptions, String renditionName, String unsupportedMsg)
+    {
+        boolean supported = registry.isSupported(sourceMimetype, sourceSizeInBytes, targetMimetype, actualOptions, renditionName);
+        if (unsupportedMsg != null && !unsupportedMsg.isEmpty())
+        {
+            assertFalse(supported);
+        }
+        else
+        {
+            assertTrue(supported);
+        }
     }
 
     @Test
@@ -802,7 +821,7 @@ public class LocalTransformServiceRegistryConfigTest extends TransformRegistryTe
     public void testPipelineAndFailover()
     {
         retrieveLocalTransformList("alfresco/local-transform-service-config-pipeline-and-failover-test.json");
-        registry.assertErrorLogged("Transformer .* cannot have pipeline and failover sections.*pipeline-and-failover.*");
+        registry.assertErrorLogged("Transformer .* cannot have both pipeline and failover sections.*pipeline-and-failover.*");
     }
 
     @Test

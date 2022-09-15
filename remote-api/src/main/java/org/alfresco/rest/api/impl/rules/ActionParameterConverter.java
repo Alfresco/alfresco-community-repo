@@ -48,6 +48,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 @Experimental
 public class ActionParameterConverter
@@ -67,9 +68,15 @@ public class ActionParameterConverter
     Map<String, Serializable> getConvertedParams(Map<String, Serializable> params, String name)
     {
         final Map<String, Serializable> parameters = new HashMap<>(params.size());
-        final ParameterizedItemDefinition definition = actionService.getActionDefinition(name);
-        if (definition == null)
+        final ParameterizedItemDefinition definition;
+        try
         {
+            definition = actionService.getActionDefinition(name);
+            if (definition == null)
+            {
+                throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{name});
+            }
+        } catch (NoSuchBeanDefinitionException e) {
             throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{name});
         }
 

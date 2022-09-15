@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.model;
 
+import java.util.List;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -57,6 +58,8 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
     private String owningFolder;
     /** The reason why the rule set is included for the folder. */
     private String inclusionType;
+    /** A list of node ids for folders that inherit this rule set. */
+    private List<String> inheritedBy;
 
     public String getId()
     {
@@ -88,19 +91,31 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
         this.inclusionType = inclusionType;
     }
 
+    public List<String> getInheritedBy()
+    {
+        return inheritedBy;
+    }
+
+    public void setInheritedBy(List<String> inheritedBy)
+    {
+        this.inheritedBy = inheritedBy;
+    }
+
     @Override
     public boolean equals(Object o)
     {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RestRuleSetModel that = (RestRuleSetModel) o;
-        return Objects.equals(id, that.id) && Objects.equals(owningFolder, that.owningFolder) &&
-                Objects.equals(inclusionType, that.inclusionType);
+        return Objects.equals(id, that.id)
+                && Objects.equals(owningFolder, that.owningFolder)
+                && Objects.equals(inclusionType, that.inclusionType)
+                && Objects.equals(inheritedBy, that.inheritedBy);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, owningFolder, inclusionType);
+        return Objects.hash(id, owningFolder, inclusionType, inheritedBy);
     }
 }

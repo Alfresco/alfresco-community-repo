@@ -25,9 +25,15 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.alfresco.rest.rules.RulesTestsUtils.ID;
+import static org.alfresco.rest.rules.RulesTestsUtils.INBOUND;
+import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ASYNC_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -39,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
-
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
@@ -84,9 +89,9 @@ public class UpdateRulesTests extends RestTest
                                        .updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertStatusCodeIs(OK);
-        updatedRule.assertThat().field("id").is(rule.getId())
+        updatedRule.assertThat().field(ID).is(rule.getId())
                    .assertThat().field("name").is("Updated rule name")
-                   .assertThat().field("isShared").isNull();
+                   .assertThat().field(IS_SHARED).isNull();
     }
 
     /** Check we get a 404 if trying to update a rule in a folder that doesn't exist. */
@@ -184,7 +189,7 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                               .updateRule(rule.getId(), updatedRuleModel);
 
-        updatedRule.assertThat().field("id").is(rule.getId());
+        updatedRule.assertThat().field(ID).is(rule.getId());
     }
 
     /** Check we can update a rule and get the included fields. */
@@ -196,10 +201,10 @@ public class UpdateRulesTests extends RestTest
         STEP("Try to update the rule.");
         RestRuleModel updatedRuleModel = createRuleModel("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                              .include("isShared")
+                                              .include(IS_SHARED)
                                               .updateRule(rule.getId(), updatedRuleModel);
 
-        updatedRule.assertThat().field("isShared").isNotNull();
+        updatedRule.assertThat().field(IS_SHARED).isNotNull();
     }
 
     /**
@@ -213,7 +218,7 @@ public class UpdateRulesTests extends RestTest
         STEP("Try to update the rule - set no actions.");
         rule.setActions(null);
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include("isShared")
+                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
@@ -232,10 +237,10 @@ public class UpdateRulesTests extends RestTest
         final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
         final String actionDefinitionId = "invalid-definition-value";
         invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("dummy-key", "dummy-value"));;
+        invalidAction.setParams(Map.of("dummy-key", "dummy-value"));
         rule.setActions(List.of(invalidAction));
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include("isShared")
+                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(NOT_FOUND);
@@ -256,13 +261,38 @@ public class UpdateRulesTests extends RestTest
         STEP("Try to update the rule.");
         rule.setName("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                              .include("isShared")
+                                              .include(IS_SHARED)
                                               .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
         updatedRule.assertThat().field("name").is("Updated rule name")
                    .assertThat().field("actions.actionDefinitionId").is(List.of("copy"))
                    .assertThat().field("actions.params").is(List.of(ImmutableMap.of("destination-folder", destination.getNodeRef())));
+    }
+
+    /** Check we can use the POST response and update rule fields. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleFields()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule fields.");
+        rule.setName("Updated rule name");
+        rule.setTriggers(List.of(INBOUND));
+        final String updatedDescription = "Updated description";
+        rule.setDescription(updatedDescription);
+        rule.setEnabled(!RULE_ENABLED_DEFAULT);
+        rule.setCascade(!RULE_CASCADE_DEFAULT);
+        rule.setAsynchronous(!RULE_ASYNC_DEFAULT);
+        final String updatedErrorScript = "updated-error-script";
+        rule.setErrorScript(updatedErrorScript);
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+                .assertThat().field(ID).isNotNull();
     }
 
     private RestRuleModel createAndSaveRule(String name)
@@ -283,5 +313,18 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel ruleModel = createRuleModel(name, restActionModels);
         return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
+    }
+
+    /**
+     * Create a rule for folder and store it.
+     *
+     * @param ruleModel RuleModel used as create request
+     * @return The created rule.
+     */
+    private RestRuleModel createAndSaveRule(final RestRuleModel ruleModel)
+    {
+        STEP("Create a rule: " + ruleModel);
+        return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
     }
 }

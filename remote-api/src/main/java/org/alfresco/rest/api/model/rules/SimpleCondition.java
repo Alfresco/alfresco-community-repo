@@ -74,14 +74,14 @@ public class SimpleCondition
      * @return list of {@link SimpleCondition} REST models
      */
     public static List<SimpleCondition> listOf(final List<ActionCondition> actionConditions,
-                                               final RestModelMapper<SimpleCondition, ActionCondition> mapper)
+                                               final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
     {
         if (CollectionUtils.isEmpty(actionConditions))
         {
             return null;
         }
 
-        return mapper.toRestModels(actionConditions);
+        return simpleConditionMapper.toRestModels(actionConditions);
     }
 
     /**
@@ -91,14 +91,14 @@ public class SimpleCondition
      * @return {@link SimpleCondition} REST model
      */
     public static SimpleCondition from(final ActionCondition actionCondition,
-                                       final RestModelMapper<SimpleCondition, ActionCondition> mapper)
+                                       final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
     {
         if (actionCondition == null || actionCondition.getActionConditionDefinitionName() == null ||
                 actionCondition.getParameterValues() == null || actionCondition.getParameterValues().isEmpty())
         {
             return null;
         }
-        return mapper.toRestModel(actionCondition);
+        return simpleConditionMapper.toRestModel(actionCondition);
     }
 
     public ActionCondition toServiceModel(final boolean inverted, final RestModelMapper<SimpleCondition, ActionCondition> mapper)

@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -35,6 +36,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -198,6 +200,46 @@ public class UpdateRulesTests extends RestTest
                                               .updateRule(rule.getId(), updatedRuleModel);
 
         updatedRule.assertThat().field("isShared").isNotNull();
+    }
+
+    /**
+     * Check we get error when attempt to update a rule to one without any actions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleWithoutActionsShouldFail()
+    {
+        RestRuleModel rule = createAndSaveRule("Rule name");
+
+        STEP("Try to update the rule - set no actions.");
+        rule.setActions(null);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include("isShared")
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("A rule must have at least one action");
+    }
+
+    /**
+     * Check we get error when attempt to update a rule to one with invalid action.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleWithInvalidActionsShouldFail()
+    {
+        RestRuleModel rule = createAndSaveRule("Rule name");
+
+        STEP("Try to update the rule - set no actions.");
+        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        final String actionDefinitionId = "invalid-definition-value";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("dummy-key", "dummy-value"));;
+        rule.setActions(List.of(invalidAction));
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include("isShared")
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertLastError().containsSummary(actionDefinitionId);
     }
 
     /** Check we can use the POST response to create the new rule. */

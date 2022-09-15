@@ -29,6 +29,7 @@ package org.alfresco.rest.api.impl.rules;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -49,6 +50,7 @@ import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
@@ -551,6 +553,19 @@ public class ActionParameterConverterTest
         final Serializable convertedPropTypeParam = convertedParams.get(propertyTypeKey);
         assertTrue(convertedPropTypeParam instanceof String);
         assertEquals(propType, convertedPropTypeParam);
+    }
+
+    @Test
+    public void testInvalidActionDefinitionConversion() {
+        final String invalidName = "dummy-definition";
+        final Map<String, Serializable> params = Map.of("dummy-key", "dummy-value");
+        given(actionService.getActionDefinition(invalidName)).willReturn(null);
+        //when-then
+        assertThrows(NotFoundException.class, () ->objectUnderTest.getConvertedParams(params, invalidName));
+
+        given(actionService.getActionDefinition(invalidName)).willThrow(NotFoundException.class);
+        //when-then
+        assertThrows(NotFoundException.class, () ->objectUnderTest.getConvertedParams(params, invalidName));
     }
 
     @Test

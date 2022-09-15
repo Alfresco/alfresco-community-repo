@@ -34,6 +34,7 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -41,6 +42,7 @@ import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.service.namespace.NamespaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,7 @@ import org.slf4j.LoggerFactory;
 public class RulesImpl implements Rules
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(RulesImpl.class);
+    private static final String MUST_HAVE_AT_LEAST_ONE_ACTION = "A rule must have at least one action";
 
     private Nodes nodes;
     private RuleService ruleService;
@@ -126,6 +129,10 @@ public class RulesImpl implements Rules
 
     private org.alfresco.service.cmr.rule.Rule mapToServiceModelAndValidateActions(Rule rule)
     {
+        if (CollectionUtils.isEmpty(rule.getActions()))
+        {
+            throw new InvalidArgumentException(MUST_HAVE_AT_LEAST_ONE_ACTION);
+        }
         final org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes, namespaceService);
         final CompositeAction compositeAction = (CompositeAction) serviceModelRule.getAction();
         compositeAction.getActions().forEach(action -> action.setParameterValues(

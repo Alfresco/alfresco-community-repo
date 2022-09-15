@@ -36,6 +36,8 @@ import static org.springframework.http.HttpStatus.OK;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestRuleModel;
@@ -196,6 +198,29 @@ public class UpdateRulesTests extends RestTest
                                               .updateRule(rule.getId(), updatedRuleModel);
 
         updatedRule.assertThat().field("isShared").isNotNull();
+    }
+
+    /** Check we can use the POST response to create the new rule. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateCopyRuleWithResponseFromPOST()
+    {
+        FolderModel destination = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        RestActionBodyExecTemplateModel copyAction = new RestActionBodyExecTemplateModel();
+        copyAction.setActionDefinitionId("copy");
+        copyAction.setParams(ImmutableMap.of("destination-folder", destination.getNodeRef()));
+        RestRuleModel rule = createAndSaveRule("Rule name", List.of(copyAction));
+
+        STEP("Try to update the rule.");
+        rule.setName("Updated rule name");
+        RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                                              .include("isShared")
+                                              .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().field("name").is("Updated rule name")
+                   .assertThat().field("actions.actionDefinitionId").is(List.of("copy"))
+                   .assertThat().field("actions.params").is(List.of(ImmutableMap.of("destination-folder", destination.getNodeRef())));
     }
 
     private RestRuleModel createAndSaveRule(String name)

@@ -43,9 +43,14 @@ public class RulesTestsUtils
     static final boolean RULE_ASYNC_DEFAULT = true;
     static final boolean RULE_SHARED_DEFAULT = false;
     static final String RULE_ERROR_SCRIPT_DEFAULT = "error-script";
-    static final List<String> ruleTriggersDefault = List.of("inbound", "update", "outbound");
+    static final String INBOUND = "inbound";
+    static final String UPDATE = "update";
+    static final String OUTBOUND = "outbound";
+    static final List<String> RULE_TRIGGERS_DEFAULT = List.of(INBOUND, UPDATE, OUTBOUND);
     static final boolean INVERTED = true;
     static final String AND = "and";
+    static final String ID = "id";
+    static final String IS_SHARED = "isShared";
 
     /**
      * Create a rule model filled with default values.
@@ -60,7 +65,7 @@ public class RulesTestsUtils
         ruleModel.setCascade(RULE_CASCADE_DEFAULT);
         ruleModel.setAsynchronous(RULE_ASYNC_DEFAULT);
         ruleModel.setIsShared(RULE_SHARED_DEFAULT);
-        ruleModel.setTriggers(ruleTriggersDefault);
+        ruleModel.setTriggers(RULE_TRIGGERS_DEFAULT);
         ruleModel.setErrorScript(RULE_ERROR_SCRIPT_DEFAULT);
 
         return ruleModel;

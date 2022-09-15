@@ -394,6 +394,42 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
+     * Check we get error when attempt to create a rule without any actions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithoutActionsShouldFail()
+    {
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setActions(null);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("A rule must have at least one action");
+    }
+
+    /**
+     * Check we get error when attempt to create a rule with invalid action.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithInvalidActionsShouldFail()
+    {
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        final String actionDefinitionId = "invalid-definition-value";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("dummy-key", "dummy-value"));;
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertLastError().containsSummary(actionDefinitionId);
+    }
+
+    /**
      * Check we can create a rule with multiple conditions
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})

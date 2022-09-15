@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.transform.client.model.config.TransformOption;
+import org.alfresco.transform.config.TransformOption;
 import org.alfresco.util.TempFileProvider;
 
 import java.io.File;
@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.alfresco.transform.client.util.RequestParamMap.DIRECT_ACCESS_URL;
+import static org.alfresco.transform.common.RequestParamMap.DIRECT_ACCESS_URL;
 
 /**
  * Transformer that passes a document through a pipeline of transformations to arrive at an target mimetype.

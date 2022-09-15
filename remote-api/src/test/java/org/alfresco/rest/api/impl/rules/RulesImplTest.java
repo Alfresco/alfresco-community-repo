@@ -49,6 +49,7 @@ import junit.framework.TestCase;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.SimpleCondition;
@@ -105,6 +106,9 @@ public class RulesImplTest extends TestCase
     private org.alfresco.service.cmr.rule.Rule serviceRuleMock;
     @Mock
     private Rule ruleMock;
+    @Mock
+    private Action actionMock;
+
     private org.alfresco.service.cmr.rule.Rule ruleModel = createRule(RULE_ID);
     private CompositeAction compositeAction = new CompositeActionImpl(RULE_NODE_REF, "compositeActionId");
 
@@ -294,6 +298,7 @@ public class RulesImplTest extends TestCase
     {
         List<Rule> ruleList = List.of(ruleMock);
         given(ruleMock.toServiceModel(nodesMock, simpleConditionMapperMock)).willReturn(serviceRuleMock);
+        given(ruleMock.getActions()).willReturn(List.of(actionMock));
         given(serviceRuleMock.getAction()).willReturn(compositeAction);
         given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(arg -> arg.getArguments()[1]);
         given(ruleLoaderMock.loadRule(serviceRuleMock, INCLUDE)).willReturn(ruleMock);
@@ -323,6 +328,7 @@ public class RulesImplTest extends TestCase
     {
         List<Rule> ruleList = List.of(ruleMock);
         given(ruleMock.toServiceModel(nodesMock, simpleConditionMapperMock)).willReturn(serviceRuleMock);
+        given(ruleMock.getActions()).willReturn(List.of(actionMock));
         given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(arg -> arg.getArguments()[1]);
         given(ruleLoaderMock.loadRule(serviceRuleMock, INCLUDE)).willReturn(ruleMock);
         given(serviceRuleMock.getAction()).willReturn(compositeAction);
@@ -365,6 +371,7 @@ public class RulesImplTest extends TestCase
         List<Rule> expected = new ArrayList<>();
         IntStream.range(0, 3).forEach(i -> {
             Rule ruleBodyMock = mock(Rule.class);
+            given(ruleBodyMock.getActions()).willReturn(List.of(actionMock));
             ruleBodyList.add(ruleBodyMock);
             org.alfresco.service.cmr.rule.Rule serviceRuleMockInner = mock(org.alfresco.service.cmr.rule.Rule.class);
             given(ruleBodyMock.toServiceModel(nodesMock, simpleConditionMapperMock)).willReturn(serviceRuleMockInner);
@@ -435,12 +442,34 @@ public class RulesImplTest extends TestCase
     }
 
     /**
+     * Fail on create a rule without any actions.
+     */
+    @Test
+    public void testCreateRuleWithoutActionsShouldFail()
+    {
+        List<Rule> ruleList = List.of(ruleMock);
+        given(ruleMock.getActions()).willReturn(null);
+
+        // when
+        assertThatExceptionOfType(InvalidArgumentException.class)
+                .isThrownBy(() -> rules.createRules(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), ruleList, INCLUDE));
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+        then(actionParameterConverterMock).shouldHaveNoInteractions();
+        then(actionPermissionValidatorMock).shouldHaveNoInteractions();
+        then(ruleServiceMock).shouldHaveNoInteractions();
+    }
+
+    /**
      * Check that we can update a rule.
      */
     @Test
     public void testUpdateRuleById()
     {
         given(ruleMock.toServiceModel(nodesMock, simpleConditionMapperMock)).willReturn(serviceRuleMock);
+        given(ruleMock.getActions()).willReturn(List.of(actionMock));
         given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(a -> a.getArguments()[1]);
         given(serviceRuleMock.getAction()).willReturn(compositeAction);
         given(ruleLoaderMock.loadRule(serviceRuleMock, INCLUDE)).willReturn(ruleMock);
@@ -520,6 +549,28 @@ public class RulesImplTest extends TestCase
             then(nodeValidatorMock).shouldHaveNoMoreInteractions();
             then(ruleServiceMock).shouldHaveNoInteractions();
         }
+    }
+
+    /**
+     * Fail on update a rule without any actions.
+     */
+    @Test
+    public void testUpdateRuleWithoutActionShouldFail()
+    {
+        given(ruleMock.getActions()).willReturn(emptyList());
+
+        // when
+        assertThatExceptionOfType(InvalidArgumentException.class)
+                .isThrownBy(() -> rules.updateRuleById(FOLDER_NODE_REF.getId(), RULE_SET_NODE_REF.getId(), RULE_ID, ruleMock, INCLUDE));
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, true);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
+        then(nodeValidatorMock).should().validateRuleNode(RULE_ID, RULE_SET_NODE_REF);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+
+        then(ruleServiceMock).shouldHaveNoInteractions();
+        then(actionParameterConverterMock).shouldHaveNoInteractions();
+        then(actionPermissionValidatorMock).shouldHaveNoInteractions();
     }
 
     @Test

@@ -228,6 +228,18 @@ public interface RuleService
     List<NodeRef> getNodesSupplyingRuleSets(NodeRef nodeRef);
 
     /**
+     * Get a list of folders inheriting the specified rule set.
+     *
+     * @param ruleSet The rule set node.
+     * @param maxFoldersToReturn A limit on the number of folders to return (since otherwise this could traverse a very large proportion of
+     * the repository.
+     * @return The list of the specified
+     */
+    @Auditable (parameters = { "ruleSet", "maxFoldersToReturn" })
+    @Experimental
+    List<NodeRef> getFoldersInheritingRuleSet(NodeRef ruleSet, int maxFoldersToReturn);
+
+    /**
      * Get the rule given its node reference
      * 
      * @param nodeRef the node reference

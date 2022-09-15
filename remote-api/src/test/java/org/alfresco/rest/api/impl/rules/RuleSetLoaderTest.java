@@ -26,11 +26,14 @@
 package org.alfresco.rest.api.impl.rules;
 
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INHERITED_BY;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.OWNING_FOLDER;
 import static org.alfresco.rest.api.model.rules.InclusionType.INHERITED;
 import static org.alfresco.rest.api.model.rules.InclusionType.LINKED;
 import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 import java.util.List;
@@ -41,6 +44,7 @@ import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,6 +70,8 @@ public class RuleSetLoaderTest extends TestCase
     @Mock
     private NodeService nodeServiceMock;
     @Mock
+    private RuleService ruleServiceMock;
+    @Mock
     private ChildAssociationRef ruleSetAssociationMock;
     @Mock
     private ChildAssociationRef linkAssociationMock;
@@ -79,6 +85,8 @@ public class RuleSetLoaderTest extends TestCase
 
         given(linkAssociationMock.getParentRef()).willReturn(LINKING_FOLDER);
         given(nodeServiceMock.getParentAssocs(RULE_SET_NODE)).willReturn(List.of(ruleSetAssociationMock, linkAssociationMock));
+
+        given(ruleServiceMock.getFoldersInheritingRuleSet(eq(RULE_SET_NODE), anyInt())).willReturn(List.of(INHERITING_FOLDER));
     }
 
     @Test
@@ -128,6 +136,16 @@ public class RuleSetLoaderTest extends TestCase
         RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, INHERITING_FOLDER, List.of(INCLUSION_TYPE));
 
         RuleSet expected = RuleSet.builder().id(RULE_SET_ID).inclusionType(INHERITED).create();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testLoadRuleSet_inheritedBy()
+    {
+        // Call the method under test.
+        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, INHERITING_FOLDER, List.of(INHERITED_BY));
+
+        RuleSet expected = RuleSet.builder().id(RULE_SET_ID).inheritedBy(List.of(INHERITING_FOLDER)).create();
         assertEquals(expected, actual);
     }
 }

@@ -863,6 +863,7 @@
 
     <bean id="ruleSetLoader" class="org.alfresco.rest.api.impl.rules.RuleSetLoader">
         <property name="nodeService" ref="NodeService" />
+        <property name="ruleService" ref="RuleService" />
     </bean>
 
     <bean id="ruleSets" class="org.alfresco.rest.api.impl.rules.RuleSetsImpl">

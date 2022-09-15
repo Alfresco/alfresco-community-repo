@@ -25,14 +25,19 @@
  */
 package org.alfresco.repo.rule;
 
+import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
 import static org.alfresco.repo.rule.RuleModel.ASSOC_RULE_FOLDER;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+import static org.alfresco.service.namespace.RegexQNamePattern.MATCH_ALL;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -70,7 +75,6 @@ import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -520,7 +524,7 @@ public class RuleServiceImpl
             // https://issues.alfresco.com/browse/ETWOTWO-438
             
         if (!runtimeNodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) ||
-            permissionService.hasPermission(nodeRef, PermissionService.READ) != AccessStatus.ALLOWED)
+            permissionService.hasPermission(nodeRef, PermissionService.READ) != ALLOWED)
         {
             // Doesn't have the aspect or the user doesn't have access
             return Collections.emptyList();
@@ -538,7 +542,7 @@ public class RuleServiceImpl
         {
             // Get the rules for this node
             List<ChildAssociationRef> ruleChildAssocRefs = 
-                this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+                this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
             for (ChildAssociationRef ruleChildAssocRef : ruleChildAssocRefs)
             {
                 // Create the rule and add to the list
@@ -567,7 +571,7 @@ public class RuleServiceImpl
                 {
                     // Get the rules for this node
                     List<ChildAssociationRef> ruleChildAssocRefs = 
-                        this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+                        this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
                     
                     ruleCount = ruleChildAssocRefs.size();
                 }
@@ -645,6 +649,44 @@ public class RuleServiceImpl
             returnList.add(nodeRef);
         }
         return returnList;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    @Experimental
+    public List<NodeRef> getFoldersInheritingRuleSet(NodeRef ruleSet, int maxFoldersToReturn)
+    {
+        // Seed stack with all folders owning or linking to the rule set.
+        Deque<NodeRef> stack = new LinkedList<>();
+        for (ChildAssociationRef parentAssociation : runtimeNodeService.getParentAssocs(ruleSet))
+        {
+            stack.add(parentAssociation.getParentRef());
+        }
+        // Process child folders to find all that inherit the rules.
+        List<NodeRef> inheritors = new ArrayList<>();
+        while (!stack.isEmpty() && inheritors.size() < maxFoldersToReturn)
+        {
+            NodeRef folder = stack.pop();
+            runtimeNodeService.getChildAssocs(folder, ASSOC_CONTAINS, MATCH_ALL).stream().map(ChildAssociationRef::getChildRef).forEach(childNode -> {
+                QName childType = runtimeNodeService.getType(childNode);
+                if (dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER)
+                        && !runtimeNodeService.hasAspect(childNode, ASPECT_IGNORE_INHERITED_RULES))
+                {
+                    stack.add(childNode);
+                    // Only return nodes that the user has permission to view.
+                    if (permissionService.hasReadPermission(childNode) == ALLOWED)
+                    {
+                        inheritors.add(childNode);
+                        if (inheritors.size() == maxFoldersToReturn)
+                        {
+                            // Return once we've hit the limit.
+                            return;
+                        }
+                    }
+                }
+            });
+        }
+        return inheritors;
     }
 
     /**
@@ -798,7 +840,7 @@ public class RuleServiceImpl
     {
         checkForLinkedRules(nodeRef);
         
-        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) != AccessStatus.ALLOWED)
+        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) != ALLOWED)
         {
             throw new RuleServiceException("Insufficient permissions to save a rule.");
         }
@@ -823,7 +865,7 @@ public class RuleServiceImpl
                 // Create the action node
                 ruleNodeRef = this.nodeService.createNode(
                         getSavedRuleFolderRef(nodeRef),
-                        ContentModel.ASSOC_CONTAINS,
+                        ASSOC_CONTAINS,
                         QName.createQName(RuleModel.RULE_MODEL_URI, ASSOC_NAME_RULES_PREFIX + GUID.generate()),
                         RuleModel.TYPE_RULE).getChildRef();
 
@@ -866,7 +908,7 @@ public class RuleServiceImpl
         NodeRef ruleFolder = getSavedRuleFolderRef(nodeRef);
         if (ruleFolder != null)
         {
-            List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(ruleFolder, RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+            List<ChildAssociationRef> assocs = this.runtimeNodeService.getChildAssocs(ruleFolder, MATCH_ALL, ASSOC_NAME_RULES_REGEX);
             List<ChildAssociationRef> orderedAssocs = new ArrayList<ChildAssociationRef>(assocs.size());
             ChildAssociationRef movedAssoc = null;
             for (ChildAssociationRef assoc : assocs)
@@ -948,7 +990,7 @@ public class RuleServiceImpl
     {
         checkForLinkedRules(nodeRef);
         
-        if (permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+        if (permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == ALLOWED)
         {
             if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES))
             {
@@ -1011,7 +1053,7 @@ public class RuleServiceImpl
     {
         checkForLinkedRules(nodeRef);
         
-        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == AccessStatus.ALLOWED)
+        if (this.permissionService.hasPermission(nodeRef, PermissionService.CHANGE_PERMISSIONS) == ALLOWED)
         {
             if (this.nodeService.exists(nodeRef) == true && 
                 this.nodeService.hasAspect(nodeRef, RuleModel.ASPECT_RULES) == true)
@@ -1021,7 +1063,7 @@ public class RuleServiceImpl
                 {
                     List<ChildAssociationRef> ruleChildAssocs = this.nodeService.getChildAssocs(
                                                                                 folder, 
-                                                                                RegexQNamePattern.MATCH_ALL, ASSOC_NAME_RULES_REGEX);
+                                                                                MATCH_ALL, ASSOC_NAME_RULES_REGEX);
                     for (ChildAssociationRef ruleChildAssoc : ruleChildAssocs)
                     {
                         this.nodeService.removeChild(folder, ruleChildAssoc.getChildRef());
@@ -1371,7 +1413,7 @@ public class RuleServiceImpl
     {
         boolean result = true;
         if (this.nodeService.exists(actionedUponNodeRef)
-                && this.permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ).equals(AccessStatus.ALLOWED))
+                && this.permissionService.hasPermission(actionedUponNodeRef, PermissionService.READ).equals(ALLOWED))
         {
             NodeRef copiedFrom = copyService.getOriginal(actionedUponNodeRef);
             if (logger.isDebugEnabled() == true)

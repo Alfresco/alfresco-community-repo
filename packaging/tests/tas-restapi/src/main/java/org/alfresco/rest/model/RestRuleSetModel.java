@@ -60,6 +60,12 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
     private String inclusionType;
     /** A list of node ids for folders that inherit this rule set. */
     private List<String> inheritedBy;
+    /** A list of node ids for folders that link to this rule set. */
+    private List<String> linkedToBy;
+    /** Whether any folders inherit this rule set. */
+    private Boolean isInherited;
+    /** Whether any folders link to this rule set. */
+    private Boolean isLinkedTo;
 
     public String getId()
     {
@@ -101,6 +107,44 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
         this.inheritedBy = inheritedBy;
     }
 
+    public List<String> getLinkedToBy()
+    {
+        return linkedToBy;
+    }
+
+    public void setLinkedToBy(List<String> linkedToBy)
+    {
+        this.linkedToBy = linkedToBy;
+    }
+
+    public Boolean getInherited()
+    {
+        return isInherited;
+    }
+
+    public void setInherited(Boolean inherited)
+    {
+        isInherited = inherited;
+    }
+
+    public Boolean getLinkedTo()
+    {
+        return isLinkedTo;
+    }
+
+    public void setLinkedTo(Boolean linkedTo)
+    {
+        isLinkedTo = linkedTo;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "RestRuleSetModel{id='" + id + "', owningFolder='" + owningFolder + "', inclusionType='" + inclusionType
+                + "', inheritedBy=" + inheritedBy + ", linkedToBy=" + linkedToBy + ", isInherited=" + isInherited
+                + ", isLinkedTo=" + isLinkedTo + "}";
+    }
+
     @Override
     public boolean equals(Object o)
     {
@@ -110,12 +154,15 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
         return Objects.equals(id, that.id)
                 && Objects.equals(owningFolder, that.owningFolder)
                 && Objects.equals(inclusionType, that.inclusionType)
-                && Objects.equals(inheritedBy, that.inheritedBy);
+                && Objects.equals(inheritedBy, that.inheritedBy)
+                && Objects.equals(linkedToBy, that.linkedToBy)
+                && Objects.equals(isInherited, that.isInherited)
+                && Objects.equals(isLinkedTo, that.isLinkedTo);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, owningFolder, inclusionType, inheritedBy);
+        return Objects.hash(id, owningFolder, inclusionType, inheritedBy, linkedToBy, isInherited, isLinkedTo);
     }
 }

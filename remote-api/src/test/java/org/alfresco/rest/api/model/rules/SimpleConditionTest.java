@@ -73,40 +73,6 @@ public class SimpleConditionTest
     }
 
     @Test
-    public void testFromNullValue()
-    {
-        // when
-        final SimpleCondition actualSimpleCondition = SimpleCondition.from(null, simpleConditionMapperMock);
-
-        then(simpleConditionMapperMock).shouldHaveNoInteractions();
-        assertThat(actualSimpleCondition).isNull();
-    }
-
-    @Test
-    public void testFromActionConditionWithoutDefinitionName()
-    {
-        final ActionCondition actionCondition = new ActionConditionImpl("fake-id", null, Map.of(KEY, VALUE));
-
-        // when
-        final SimpleCondition actualSimpleCondition = SimpleCondition.from(actionCondition, simpleConditionMapperMock);
-
-        then(simpleConditionMapperMock).shouldHaveNoInteractions();
-        assertThat(actualSimpleCondition).isNull();
-    }
-
-    @Test
-    public void testFromActionConditionWithoutParameterValues()
-    {
-        final ActionCondition actionCondition = new ActionConditionImpl("fake-id", "fake-def-name", null);
-
-        // when
-        final SimpleCondition actualSimpleCondition = SimpleCondition.from(actionCondition, simpleConditionMapperMock);
-
-        then(simpleConditionMapperMock).shouldHaveNoInteractions();
-        assertThat(actualSimpleCondition).isNull();
-    }
-
-    @Test
     public void testListOf()
     {
         final List<ActionCondition> actionConditionsMock = mock(List.class);

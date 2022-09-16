@@ -951,21 +951,6 @@
         <constructor-arg name="nodes" ref="Nodes"/>
     </bean>
 
-
-    <bean id="RestModelMapper" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces" value="org.alfresco.rest.api.model.mapper.RestModelMapper"/>
-        <property name="target">
-            <list>
-                <ref bean="simpleConditionMapper"/>
-            </list>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref bean="legacyExceptionInterceptor" />
-            </list>
-        </property>
-    </bean>
-
     <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="supported">

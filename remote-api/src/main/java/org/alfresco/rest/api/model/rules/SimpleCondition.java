@@ -80,7 +80,6 @@ public class SimpleCondition
         {
             return null;
         }
-
         return simpleConditionMapper.toRestModels(actionConditions);
     }
 
@@ -93,11 +92,6 @@ public class SimpleCondition
     public static SimpleCondition from(final ActionCondition actionCondition,
                                        final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
     {
-        if (actionCondition == null || actionCondition.getActionConditionDefinitionName() == null ||
-                actionCondition.getParameterValues() == null || actionCondition.getParameterValues().isEmpty())
-        {
-            return null;
-        }
         return simpleConditionMapper.toRestModel(actionCondition);
     }
 

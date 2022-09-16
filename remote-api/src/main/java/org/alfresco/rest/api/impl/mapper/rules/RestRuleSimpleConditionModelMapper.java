@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.collections.MapUtils;
 
 @Experimental
 public class RestRuleSimpleConditionModelMapper implements RestModelMapper<SimpleCondition, ActionCondition>
@@ -68,7 +69,8 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
     @Override
     public SimpleCondition toRestModel(ActionCondition actionCondition)
     {
-        if (actionCondition == null || actionCondition.getActionConditionDefinitionName() == null || actionCondition.getParameterValues() == null)
+        if (actionCondition == null || actionCondition.getActionConditionDefinitionName() == null ||
+                MapUtils.isEmpty(actionCondition.getParameterValues()))
         {
             return null;
         }
@@ -153,9 +155,7 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
                 parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
                 break;
         }
-
-        final ActionCondition actionCondition = new ActionConditionImpl(UUID.randomUUID().toString(), conditionDefinitionId, parameterValues);
-        return actionCondition;
+        return new ActionConditionImpl(UUID.randomUUID().toString(), conditionDefinitionId, parameterValues);
     }
 
     private static SimpleCondition createComparePropertyValueCondition(final ActionCondition actionCondition, final NamespaceService namespaceService)

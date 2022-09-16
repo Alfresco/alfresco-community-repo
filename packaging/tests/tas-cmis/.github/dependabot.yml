@@ -1,0 +1,18 @@
+version: 2
+registries:
+  maven-repository-artifacts-alfresco-com-nexus-content-groups-int:
+    type: maven-repository
+    url: https://artifacts.alfresco.com/nexus/content/groups/internal
+    username: bamboo
+    password: "${{secrets.MAVEN_REPOSITORY_ARTIFACTS_ALFRESCO_COM_NEXUS_CONTENT_GROUPS_INT_PASSWORD}}"
+
+updates:
+- package-ecosystem: maven
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "22:00"
+    timezone: Africa/Abidjan
+  open-pull-requests-limit: 99
+  registries:
+  - maven-repository-artifacts-alfresco-com-nexus-content-groups-int

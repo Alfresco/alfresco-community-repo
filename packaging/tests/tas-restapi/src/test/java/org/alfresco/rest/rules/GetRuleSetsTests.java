@@ -27,6 +27,7 @@ package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
@@ -319,6 +320,43 @@ public class GetRuleSetsTests extends RestTest
         restClient.assertStatusCodeIs(OK);
         List<String> expectedInheritors = List.of(publicFolder.getNodeRef(), descendantFolder.getNodeRef(), publicGrandchild.getNodeRef());
         ruleSet.assertThat().field("inheritedBy").is(expectedInheritors)
+               .assertThat().field("id").is(ruleSetId);
+    }
+
+    /** Check we can get the folders that link to a rule set and that this respects permissions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetsAndLinkedToBy()
+    {
+        STEP("Create a site owned by admin and add user as a contributor");
+        SiteModel siteModel = dataSite.usingAdmin().createPrivateRandomSite();
+        dataUser.addUserToSite(user, siteModel, UserRole.SiteContributor);
+
+        STEP("Create the folder structure");
+        FolderModel ruleFolder = dataContent.usingUser(user).usingSite(siteModel).createFolder();
+        FolderModel publicFolder = dataContent.usingUser(user).usingSite(siteModel).createFolder();
+        FolderModel privateFolder = dataContent.usingAdmin().usingSite(siteModel).createFolder();
+        dataContent.usingAdmin().usingResource(privateFolder).setInheritPermissions(false);
+
+        STEP("Remove the user from  the site");
+        dataUser.removeUserFromSite(user, siteModel);
+
+        STEP("Create a rule in the folder and link to it from the other two.");
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        coreAPIForUser().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        RestRuleSetModelsCollection ruleSets = coreAPIForAdmin().usingNode(ruleFolder).getListOfRuleSets();
+        String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
+        RestRuleSetLinkModel ruleSetLink = new RestRuleSetLinkModel();
+        ruleSetLink.setId(ruleFolder.getNodeRef());
+        coreAPIForUser().usingNode(publicFolder).createRuleLink(ruleSetLink);
+        coreAPIForUser().usingNode(privateFolder).createRuleLink(ruleSetLink);
+
+        STEP("Get the rule set and linkedToBy field");
+        RestRuleSetModel ruleSet = coreAPIForUser().usingNode(ruleFolder)
+                                                   .include("linkedToBy")
+                                                   .getRuleSet(ruleSetId);
+
+        restClient.assertStatusCodeIs(OK);
+        ruleSet.assertThat().field("linkedToBy").is(List.of(publicFolder.getNodeRef()))
                .assertThat().field("id").is(ruleSetId);
     }
 

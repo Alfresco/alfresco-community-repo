@@ -36,6 +36,7 @@ import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
 
 /** Responsible for converting a NodeRef into a {@link RuleSet} object. */
 @Experimental
@@ -43,7 +44,10 @@ public class RuleSetLoader
 {
     protected static final String OWNING_FOLDER = "owningFolder";
     protected static final String INCLUSION_TYPE = "inclusionType";
+    protected static final String INHERITED_BY = "inheritedBy";
+    public static final int MAX_INHERITED_BY_SIZE = 100;
     private NodeService nodeService;
+    private RuleService ruleService;
 
     /**
      * Load a rule set for the given node ref.
@@ -79,12 +83,26 @@ public class RuleSetLoader
                     ruleSet.setInclusionType(linked ? LINKED : INHERITED);
                 }
             }
+            if (includes.contains(INHERITED_BY))
+            {
+                ruleSet.setInheritedBy(loadInheritedBy(ruleSetNodeRef));
+            }
         }
         return ruleSet;
+    }
+
+    private List<NodeRef> loadInheritedBy(NodeRef ruleSetNodeRef)
+    {
+        return ruleService.getFoldersInheritingRuleSet(ruleSetNodeRef, MAX_INHERITED_BY_SIZE);
     }
 
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
     }
 }

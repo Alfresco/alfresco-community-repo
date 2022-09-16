@@ -308,6 +308,9 @@ public class GetRuleSetsTests extends RestTest
         ruleSetLink.setId(folder.getNodeRef());
         coreAPIForUser().usingNode(linkingFolder).createRuleLink(ruleSetLink);
 
+        STEP("Remove the user from  the site");
+        dataUser.removeUserFromSite(user, siteModel);
+
         STEP("Get the rule set and inheriting folders");
         RestRuleSetModel ruleSet = coreAPIForUser().usingNode(folder)
                                                    .include("inheritedBy")
@@ -317,10 +320,6 @@ public class GetRuleSetsTests extends RestTest
         List<String> expectedInheritors = List.of(publicFolder.getNodeRef(), descendantFolder.getNodeRef(), publicGrandchild.getNodeRef());
         ruleSet.assertThat().field("inheritedBy").is(expectedInheritors)
                .assertThat().field("id").is(ruleSetId);
-
-        ruleSet = coreAPIForAdmin().usingNode(folder)
-                                                   .include("inheritedBy")
-                                                   .getRuleSet(ruleSetId);
     }
 
     private RestCoreAPI coreAPIForUser()

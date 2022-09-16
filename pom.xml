@@ -121,7 +121,7 @@
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.49</dependency.tas-utility.version>
+        <dependency.tas-utility.version>3.0.55</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.2.0</dependency.rest-assured.version>
         <dependency.tas-restapi.version>1.117</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.32</dependency.tas-cmis.version>

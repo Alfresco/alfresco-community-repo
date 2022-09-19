@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
+import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -63,7 +64,7 @@ public class RulesImpl implements Rules
     private RuleLoader ruleLoader;
     private ActionParameterConverter actionParameterConverter;
     private ActionPermissionValidator actionPermissionValidator;
-    private RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper;
+    private RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper;
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId,
@@ -137,7 +138,7 @@ public class RulesImpl implements Rules
         {
             throw new InvalidArgumentException(MUST_HAVE_AT_LEAST_ONE_ACTION);
         }
-        final org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes, simpleConditionMapper);
+        final org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes, compositeConditionMapper);
         final CompositeAction compositeAction = (CompositeAction) serviceModelRule.getAction();
         compositeAction.getActions().forEach(action -> action.setParameterValues(
                 actionParameterConverter.getConvertedParams(action.getParameterValues(), action.getActionDefinitionName())));
@@ -188,9 +189,9 @@ public class RulesImpl implements Rules
         this.actionPermissionValidator = actionPermissionValidator;
     }
 
-    public void setSimpleConditionMapper(
-            RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
+    public void setCompositeConditionMapper(
+            RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper)
     {
-        this.simpleConditionMapper = simpleConditionMapper;
+        this.compositeConditionMapper = compositeConditionMapper;
     }
 }

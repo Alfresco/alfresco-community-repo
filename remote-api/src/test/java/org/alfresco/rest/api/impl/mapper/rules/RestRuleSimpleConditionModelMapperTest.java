@@ -32,6 +32,7 @@ import static org.mockito.BDDMockito.given;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -156,7 +157,8 @@ public class RestRuleSimpleConditionModelMapperTest extends TestCase
     public void testToRestModelListOfNullActionConditions()
     {
         // when
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> objectUnderTest.toRestModels(null));
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> objectUnderTest.toRestModels(
+                (Collection<ActionCondition>) null));
     }
 
     @Test

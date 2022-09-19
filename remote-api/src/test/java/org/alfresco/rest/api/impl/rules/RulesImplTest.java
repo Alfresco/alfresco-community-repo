@@ -51,6 +51,7 @@ import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
+import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.SimpleCondition;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -91,7 +92,7 @@ public class RulesImplTest extends TestCase
     @Mock
     private Nodes nodesMock;
     @Mock
-    private RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapperMock;
+    private RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapperMock;
     @Mock
     private NodeValidator nodeValidatorMock;
     @Mock
@@ -297,7 +298,7 @@ public class RulesImplTest extends TestCase
     public void testCreateRules()
     {
         List<Rule> ruleList = List.of(ruleMock);
-        given(ruleMock.toServiceModel(nodesMock, simpleConditionMapperMock)).willReturn(serviceRuleMock);
+        given(ruleMock.toServiceModel(nodesMock, compositeConditionMapperMock)).willReturn(serviceRuleMock);
         given(ruleMock.getActions()).willReturn(List.of(actionMock));
         given(serviceRuleMock.getAction()).willReturn(compositeAction);
         given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(arg -> arg.getArguments()[1]);
@@ -314,7 +315,7 @@ public class RulesImplTest extends TestCase
         then(actionParameterConverterMock).shouldHaveNoMoreInteractions();
         then(actionPermissionValidatorMock).should().validateRulePermissions(serviceRuleMock);
         then(actionPermissionValidatorMock).shouldHaveNoMoreInteractions();
-        then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, ruleMock.toServiceModel(nodesMock, simpleConditionMapperMock));
+        then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, ruleMock.toServiceModel(nodesMock, compositeConditionMapperMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         List<Rule> expected = List.of(ruleMock);
         assertThat(actual).isEqualTo(expected);
@@ -327,7 +328,7 @@ public class RulesImplTest extends TestCase
     public void testCreateRules_defaultRuleSet()
     {
         List<Rule> ruleList = List.of(ruleMock);
-        given(ruleMock.toServiceModel(nodesMock, simpleConditionMapperMock)).willReturn(serviceRuleMock);
+        given(ruleMock.toServiceModel(nodesMock, compositeConditionMapperMock)).willReturn(serviceRuleMock);
         given(ruleMock.getActions()).willReturn(List.of(actionMock));
         given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(arg -> arg.getArguments()[1]);
         given(ruleLoaderMock.loadRule(serviceRuleMock, INCLUDE)).willReturn(ruleMock);
@@ -343,7 +344,7 @@ public class RulesImplTest extends TestCase
         then(actionParameterConverterMock).shouldHaveNoMoreInteractions();
         then(actionPermissionValidatorMock).should().validateRulePermissions(serviceRuleMock);
         then(actionPermissionValidatorMock).shouldHaveNoMoreInteractions();
-        then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, ruleMock.toServiceModel(nodesMock, simpleConditionMapperMock));
+        then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, ruleMock.toServiceModel(nodesMock, compositeConditionMapperMock));
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         List<Rule> expected = List.of(ruleMock);
         assertThat(actual).isEqualTo(expected);
@@ -374,7 +375,7 @@ public class RulesImplTest extends TestCase
             given(ruleBodyMock.getActions()).willReturn(List.of(actionMock));
             ruleBodyList.add(ruleBodyMock);
             org.alfresco.service.cmr.rule.Rule serviceRuleMockInner = mock(org.alfresco.service.cmr.rule.Rule.class);
-            given(ruleBodyMock.toServiceModel(nodesMock, simpleConditionMapperMock)).willReturn(serviceRuleMockInner);
+            given(ruleBodyMock.toServiceModel(nodesMock, compositeConditionMapperMock)).willReturn(serviceRuleMockInner);
             final CompositeAction compositeActionInner = new CompositeActionImpl(RULE_NODE_REF, "compositeActionInnerId");
             compositeActionInner.addAction(new ActionImpl(FOLDER_NODE_REF, "actionInnerId", ACTION_DEFINITION_NAME, DUMMY_PARAMS));
             given(serviceRuleMockInner.getAction()).willReturn(compositeActionInner);
@@ -393,8 +394,9 @@ public class RulesImplTest extends TestCase
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
         for (Rule ruleBody : ruleBodyList)
         {
-            then(actionPermissionValidatorMock).should().validateRulePermissions(ruleBody.toServiceModel(nodesMock, simpleConditionMapperMock));
-            then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, ruleBody.toServiceModel(nodesMock, simpleConditionMapperMock));
+            then(actionPermissionValidatorMock).should().validateRulePermissions(ruleBody.toServiceModel(nodesMock,
+                    compositeConditionMapperMock));
+            then(ruleServiceMock).should().saveRule(FOLDER_NODE_REF, ruleBody.toServiceModel(nodesMock, compositeConditionMapperMock));
         }
         then(actionParameterConverterMock).should(times(3)).getConvertedParams(DUMMY_PARAMS, ACTION_DEFINITION_NAME);
         then(actionParameterConverterMock).shouldHaveNoMoreInteractions();
@@ -468,7 +470,7 @@ public class RulesImplTest extends TestCase
     @Test
     public void testUpdateRuleById()
     {
-        given(ruleMock.toServiceModel(nodesMock, simpleConditionMapperMock)).willReturn(serviceRuleMock);
+        given(ruleMock.toServiceModel(nodesMock, compositeConditionMapperMock)).willReturn(serviceRuleMock);
         given(ruleMock.getActions()).willReturn(List.of(actionMock));
         given(ruleServiceMock.saveRule(FOLDER_NODE_REF, serviceRuleMock)).willAnswer(a -> a.getArguments()[1]);
         given(serviceRuleMock.getAction()).willReturn(compositeAction);

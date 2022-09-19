@@ -190,7 +190,6 @@ public class GetRulesTests extends RestTest
 
         RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
         expectedRuleModel.setTriggers(List.of("update"));
-        expectedRuleModel.setConditions(createEmptyConditionModel());
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
@@ -212,7 +211,6 @@ public class GetRulesTests extends RestTest
 
         RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setTriggers(List.of("inbound"));
-        expectedRuleModel.setConditions(createEmptyConditionModel());
 
         restClient.assertStatusCodeIs(CREATED);
 

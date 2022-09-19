@@ -293,11 +293,10 @@ public class UpdateRulesTests extends RestTest
         final String updatedErrorScript = "updated-error-script";
         rule.setErrorScript(updatedErrorScript);
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
-        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+        updatedRule.assertThat().isEqualTo(rule, ID)
                 .assertThat().field(ID).isNotNull();
     }
 
@@ -311,11 +310,10 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(createVariousConditions());
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
-        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+        updatedRule.assertThat().isEqualTo(rule, ID)
                 .assertThat().field(ID).isNotNull();
     }
 
@@ -329,11 +327,10 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(createCompositeCondition(null));
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
-        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+        updatedRule.assertThat().isEqualTo(rule, ID)
                 .assertThat().field(ID).isNotNull();
     }
 
@@ -351,11 +348,10 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(compositeCondition);
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
-        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+        updatedRule.assertThat().isEqualTo(rule, ID)
                 .assertThat().field(ID).isNotNull();
     }
 
@@ -371,17 +367,16 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(null);
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         //set expected object
         rule.setConditions(createCompositeCondition(null));
         restClient.assertStatusCodeIs(OK);
-        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+        updatedRule.assertThat().isEqualTo(rule, ID)
                 .assertThat().field(ID).isNotNull();
     }
 
-    /** Check we can use the POST response and update rule by removing all conditions. */
+    /** Check we get a 404 error when using the POST response and update rule by adding invalid condition. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleWithInvalidConditionAndFail()
     {

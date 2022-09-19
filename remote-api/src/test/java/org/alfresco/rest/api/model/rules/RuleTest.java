@@ -37,6 +37,8 @@ import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper;
+import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,7 +63,7 @@ public class RuleTest
     private static final String ACTION_DEFINITION_NAME = "action-def-name";
     private static final String ERROR_SCRIPT = "error-script-ref";
 
-    private final NamespaceService namespaceService = mock(NamespaceService.class);
+    private final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper = mock(RestRuleSimpleConditionModelMapper.class);
 
     @Test
     public void testFrom()
@@ -70,7 +72,7 @@ public class RuleTest
         final Rule expectedRule = createRuleWithDefaultValues();
 
         // when
-        final Rule actualRule = Rule.from(ruleModel, namespaceService);
+        final Rule actualRule = Rule.from(ruleModel, simpleConditionMapper);
 
         assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
@@ -83,7 +85,7 @@ public class RuleTest
         final Rule expectedRule = Rule.builder().enabled(true).create();
 
         // when
-        final Rule actualRule = Rule.from(ruleModel, namespaceService);
+        final Rule actualRule = Rule.from(ruleModel, simpleConditionMapper);
 
         assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
 
@@ -99,7 +101,7 @@ public class RuleTest
         final org.alfresco.service.cmr.action.Action expectedCompensatingActionModel = createCompensatingActionModel();
 
         // when
-        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock, namespaceService);
+        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock, simpleConditionMapper);
 
         then(nodesMock).should().validateOrLookupNode(RULE_ID, null);
         then(nodesMock).shouldHaveNoMoreInteractions();
@@ -124,7 +126,7 @@ public class RuleTest
         expectedRuleModel.setRuleDisabled(true);
 
         // when
-        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock, namespaceService);
+        final org.alfresco.service.cmr.rule.Rule actualRuleModel = rule.toServiceModel(nodesMock, simpleConditionMapper);
 
         then(nodesMock).shouldHaveNoInteractions();
         assertThat(actualRuleModel)
@@ -144,7 +146,7 @@ public class RuleTest
             .asynchronous(RULE_ASYNC)
             .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
             .errorScript(ERROR_SCRIPT)
-            .conditions(CompositeCondition.from(Collections.emptyList(), namespaceService))
+            .conditions(CompositeCondition.from(Collections.emptyList(), simpleConditionMapper))
             .create();
     }
 

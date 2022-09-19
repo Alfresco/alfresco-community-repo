@@ -32,10 +32,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
@@ -52,7 +51,7 @@ public class CompositeCondition
      * @param actionConditions - list of {@link ActionCondition} service POJOs
      * @return {@link CompositeCondition} REST model
      */
-    public static CompositeCondition from(final List<ActionCondition> actionConditions, final NamespaceService namespaceService)
+    public static CompositeCondition from(final List<ActionCondition> actionConditions, final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
     {
         if (actionConditions == null)
         {
@@ -64,7 +63,7 @@ public class CompositeCondition
         // group action conditions by inversion flag
         actionConditions.stream().filter(Objects::nonNull).collect(Collectors.groupingBy(ActionCondition::getInvertCondition))
             // map action condition sub lists
-            .forEach((inverted, actionConditionsPart) -> Optional.ofNullable(CompositeCondition.ofActionConditions(actionConditionsPart, namespaceService, inverted, ConditionOperator.AND))
+            .forEach((inverted, actionConditionsPart) -> Optional.ofNullable(CompositeCondition.ofActionConditions(actionConditionsPart, simpleConditionMapper, inverted, ConditionOperator.AND))
                 // if composite condition present add to final list
                 .ifPresent(compositeCondition -> conditions.compositeConditions.add(compositeCondition)));
 
@@ -75,14 +74,16 @@ public class CompositeCondition
         return conditions;
     }
 
-    private static CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions, final NamespaceService namespaceService, final boolean inverted, final ConditionOperator conditionOperator)
+    private static CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions,
+                                                         final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper,
+                                                         final boolean inverted, final ConditionOperator conditionOperator)
     {
         if (actionConditions == null)
         {
             return null;
         }
 
-        return ofSimpleConditions(SimpleCondition.listOf(actionConditions, namespaceService), inverted, conditionOperator);
+        return ofSimpleConditions(SimpleCondition.listOf(actionConditions, simpleConditionMapper), inverted, conditionOperator);
     }
 
     /**
@@ -114,16 +115,16 @@ public class CompositeCondition
             .create();
     }
 
-    public List<ActionCondition> toServiceModels(final Nodes nodes, final NamespaceService namespaceService)
+    public List<ActionCondition> toServiceModels(final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
     {
         final List<ActionCondition> actionConditions = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(simpleConditions))
         {
-            simpleConditions.forEach(simpleCondition -> actionConditions.add(simpleCondition.toServiceModel(inverted, nodes, namespaceService)));
+            simpleConditions.forEach(simpleCondition -> actionConditions.add(simpleCondition.toServiceModel(inverted, simpleConditionMapper)));
         }
         if (CollectionUtils.isNotEmpty(compositeConditions))
         {
-            compositeConditions.forEach(compositeCondition -> actionConditions.addAll(compositeCondition.toServiceModels(nodes, namespaceService)));
+            compositeConditions.forEach(compositeCondition -> actionConditions.addAll(compositeCondition.toServiceModels(simpleConditionMapper)));
         }
 
         return actionConditions;

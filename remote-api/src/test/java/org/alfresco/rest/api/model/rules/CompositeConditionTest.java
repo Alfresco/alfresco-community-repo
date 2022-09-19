@@ -38,11 +38,13 @@ import java.util.Map;
 
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
+import org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper;
+import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.namespace.NamespaceService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
@@ -50,28 +52,32 @@ import org.mockito.junit.MockitoJUnitRunner;
 public class CompositeConditionTest
 {
 
-    private final NamespaceService namespaceService = mock(NamespaceService.class);
+    private final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper = mock(RestRuleSimpleConditionModelMapper.class);
 
     @Test
     public void testFrom()
     {
         final List<ActionCondition> actionConditions = List.of(
-            createActionCondition("value1"),
-            createActionCondition("value2", true),
-            createActionCondition("value3")
+                createActionCondition("value1"),
+                createActionCondition("value3"),
+                createActionCondition("value2", true)
         );
-        final CompositeCondition expectedCompositeCondition = createCompositeCondition(List.of(
-            createCompositeCondition(false, List.of(
+        final List<SimpleCondition> simpleConditions = List.of(
                 createSimpleCondition("value1"),
-                createSimpleCondition("value3")
-            )),
-            createCompositeCondition(true, List.of(
+                createSimpleCondition("value3"),
                 createSimpleCondition("value2")
-            ))
+        );
+
+        final CompositeCondition expectedCompositeCondition = createCompositeCondition(List.of(
+            createCompositeCondition(false, simpleConditions.subList(0,2)),
+            createCompositeCondition(true, simpleConditions.subList(2,3))
         ));
 
+        Mockito.when(simpleConditionMapper.toRestModels(actionConditions.subList(0,2))).thenReturn(simpleConditions.subList(0,2));
+        Mockito.when(simpleConditionMapper.toRestModels(actionConditions.subList(2,3))).thenReturn(simpleConditions.subList(2,3));
+
         // when
-        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, namespaceService);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, simpleConditionMapper);
 
         assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }
@@ -83,7 +89,7 @@ public class CompositeConditionTest
         final CompositeCondition expectedCompositeCondition = CompositeCondition.builder().create();
 
         // when
-        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, namespaceService);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, simpleConditionMapper);
 
         assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }
@@ -92,7 +98,7 @@ public class CompositeConditionTest
     public void testFromNullValue()
     {
         // when
-        final CompositeCondition actualCompositeCondition = CompositeCondition.from(null, namespaceService);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(null, simpleConditionMapper);
 
         assertThat(actualCompositeCondition).isNull();
     }
@@ -105,7 +111,7 @@ public class CompositeConditionTest
         final CompositeCondition expectedCompositeCondition = CompositeCondition.builder().create();
 
         // when
-        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, namespaceService);
+        final CompositeCondition actualCompositeCondition = CompositeCondition.from(actionConditions, simpleConditionMapper);
 
         assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }

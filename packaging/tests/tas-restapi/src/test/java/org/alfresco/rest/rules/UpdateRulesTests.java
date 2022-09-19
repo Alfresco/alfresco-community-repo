@@ -27,13 +27,18 @@ package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INBOUND;
+import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ASYNC_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
+import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -47,6 +52,7 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
+import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -293,6 +299,107 @@ public class UpdateRulesTests extends RestTest
         restClient.assertStatusCodeIs(OK);
         updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
                 .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update rule by adding conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleAddConditions()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule and add conditions.");
+        rule.setConditions(createVariousConditions());
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update rule by adding null conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleAddNullConditions()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule and add null conditions.");
+        rule.setConditions(createCompositeCondition(null));
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update rule by modifying conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleModifyConditions()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule and modify conditions.");
+        final RestCompositeConditionDefinitionModel compositeCondition = createCompositeCondition(
+                List.of(createCompositeCondition(false, List.of(createSimpleCondition("tag", "equals", "sample_tag")))));
+        rule.setConditions(compositeCondition);
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update rule by removing all conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleRemoveAllConditions()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule and remove all conditions.");
+        rule.setConditions(null);
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        //set expected object
+        rule.setConditions(createCompositeCondition(null));
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update rule by removing all conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithInvalidConditionAndFail()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule with invalid condition.");
+        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("category", "equals", "fake-category-id")))));
+        rule.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Category in condition is invalid");
     }
 
     private RestRuleModel createAndSaveRule(String name)

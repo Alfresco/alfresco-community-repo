@@ -35,7 +35,6 @@ import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
 import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
@@ -43,6 +42,7 @@ import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -317,7 +317,7 @@ public class UpdateRulesTests extends RestTest
                 .assertThat().field(ID).isNotNull();
     }
 
-    /** Check we can use the POST response and update rule by adding null conditions. */
+    /** Check we can use the POST response and update a rule rule without any conditions by adding null conditions. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleAddNullConditions()
     {
@@ -376,9 +376,9 @@ public class UpdateRulesTests extends RestTest
                 .assertThat().field(ID).isNotNull();
     }
 
-    /** Check we get a 404 error when using the POST response and update rule by adding invalid condition. */
+    /** Check we get a 400 error when using the POST response and update rule by adding condition with invalid category. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
-    public void updateRuleWithInvalidConditionAndFail()
+    public void updateRuleWithInvalidCategoryInConditionAndFail()
     {
         final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
         ruleModelWithInitialValues.setConditions(createVariousConditions());
@@ -395,6 +395,69 @@ public class UpdateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Category in condition is invalid");
+    }
+
+    /** Check we get a 500 error when using the POST response and update rule by adding condition without comparator. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithConditionWithoutComparatorAndFail()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule with invalid condition.");
+        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", null, "65500")))));
+        rule.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        //TODO: in next iteration of mapper refactoring this error code will change to 400
+        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
+    }
+
+    /** Check we get a 500 error when using the POST response and update rule by adding condition without field. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithConditionWithoutFieldAndFail()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule with invalid condition.");
+        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition(null, "greater_than", "65500")))));
+        rule.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        //TODO: in next iteration of mapper refactoring this error code will change to 400
+        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
+    }
+
+    /** Check we get a 500 error when using the POST response and update rule by adding condition without parameter value. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithConditionWithoutParamValueAndFail()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule with invalid condition.");
+        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", "greater_than", null)))));
+        rule.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .include(IS_SHARED)
+                .updateRule(rule.getId(), rule);
+
+        //TODO: in next iteration of mapper refactoring this error code will change to 400
+        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
     }
 
     private RestRuleModel createAndSaveRule(String name)

@@ -419,6 +419,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     }
 
     @Test (dependsOnMethods = {"sameLevelDispositionScheduleStepsPeriodsCalculation" })
+    @Ignore
     public void deleteLongestPeriodTestPrecondition() {
         // Delete the RM site
         getRestAPIFactory().getRMSiteAPI().deleteRMSite();

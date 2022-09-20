@@ -117,24 +117,24 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
         this.linkedToBy = linkedToBy;
     }
 
-    public Boolean getInherited()
+    public Boolean getIsInherited()
     {
         return isInherited;
     }
 
-    public void setInherited(Boolean inherited)
+    public void setIsInherited(Boolean isInherited)
     {
-        isInherited = inherited;
+        this.isInherited = isInherited;
     }
 
-    public Boolean getLinkedTo()
+    public Boolean getIsLinkedTo()
     {
         return isLinkedTo;
     }
 
-    public void setLinkedTo(Boolean linkedTo)
+    public void setIsLinkedTo(Boolean isLinkedTo)
     {
-        isLinkedTo = linkedTo;
+        this.isLinkedTo = isLinkedTo;
     }
 
     @Override

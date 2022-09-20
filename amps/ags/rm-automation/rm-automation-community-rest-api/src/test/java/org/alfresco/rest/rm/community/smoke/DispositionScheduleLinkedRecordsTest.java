@@ -53,6 +53,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.AssertJUnit;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -134,6 +135,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * <p/> TestRail Test C775<p/>
      **/
     @Test
+    @Ignore
     @AlfrescoTest(jira = "RM-1622")
     public void dispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
         STEP("Create record category");
@@ -200,6 +202,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
      * When the record is linked to a folder with the same disposition schedule
      * */
     @Test
+    @Ignore
     @AlfrescoTest (jira = "RM-3060")
     public void sameDispositionScheduleLinkedRecords() throws UnsupportedEncodingException {
 
@@ -363,6 +366,7 @@ public class DispositionScheduleLinkedRecordsTest extends BaseRMRestTest {
     }
 
     @Test
+    @Ignore
     @AlfrescoTest(jira = "RM-1622")
     public void sameLevelDispositionScheduleStepsPeriodsCalculation() throws Exception {
 

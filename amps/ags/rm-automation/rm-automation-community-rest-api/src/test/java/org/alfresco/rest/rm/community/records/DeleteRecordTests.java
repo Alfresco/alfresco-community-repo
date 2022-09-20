@@ -75,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -291,6 +292,7 @@ public class DeleteRecordTests extends BaseRMRestTest
      * </pre>
      */
     @Test (description = "Destroying record doesn't delete the content for the associated copy")
+    @Ignore
     @AlfrescoTest (jira = "MNT-20145")
     public void destroyOfRecord()
     {

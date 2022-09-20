@@ -28,7 +28,7 @@
         <suiteXmlFile>src/main/resources/shared-resources/testCount.xml</suiteXmlFile>
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <tas.utility.version>3.0.55</tas.utility.version>
+        <tas.utility.version>3.0.56</tas.utility.version>
         <rest-assured.version>5.2.0</rest-assured.version>
         <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
         <jackson-databind.version>2.13.4</jackson-databind.version>
@@ -308,13 +308,6 @@
             <version>${org.glassfish.version}</version>
         </dependency>
 
-        <!-- needed for swagger parser bellow -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        
 		<!-- swagger parser -->
 		<dependency>
 			<groupId>io.swagger</groupId>

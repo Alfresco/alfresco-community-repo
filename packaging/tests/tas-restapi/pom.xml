@@ -28,7 +28,7 @@
         <suiteXmlFile>src/main/resources/shared-resources/testCount.xml</suiteXmlFile>
         <maven.build.sourceVersion>11</maven.build.sourceVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <tas.utility.version>3.0.54</tas.utility.version>
+        <tas.utility.version>3.0.55</tas.utility.version>
         <rest-assured.version>5.2.0</rest-assured.version>
         <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
         <jackson-databind.version>2.13.4</jackson-databind.version>

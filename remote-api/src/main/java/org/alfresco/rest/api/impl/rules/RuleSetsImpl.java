@@ -121,18 +121,15 @@ public class RuleSetsImpl implements RuleSets
             throw new InvalidArgumentException("The folder node is not linked to a rule set.");
         }
 
-        // Check that the actioned upon node has the rules aspect applied
+        // Check that the folder node has the rules aspect applied
         if (nodeService.hasAspect(folderNodeRef, RuleModel.ASPECT_RULES))
         {
-            // Get the rule node the actioned upon node is linked to
-            NodeRef linkedToNode = ruleService.getLinkedToRuleNode(folderNodeRef);
-            if (linkedToNode != null)
+            if (ruleSetNodeRef != null)
             {
+                //The following line also handles the deletion of the child folder that gets created during linking
                 nodeService.removeAspect(folderNodeRef, RuleModel.ASPECT_RULES);
             }
         }
-
-
     }
 
     public void setRuleSetLoader(RuleSetLoader ruleSetLoader)

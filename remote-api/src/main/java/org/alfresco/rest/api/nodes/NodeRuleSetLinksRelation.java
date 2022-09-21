@@ -72,7 +72,7 @@ public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipR
     /**
      * Remove link between a rule set and a folder rule for given rule set's and folder's node IDs.
      * <p>
-     * - DELETE /nodes/{folderNodeId}/linked-rule-sets/{rulesetId}
+     * - DELETE /nodes/{folderNodeId}/rule-set-links/{rulesetId}
      *
      * @param folderNodeId - folder node ID
      * @param ruleSetNodeId - rule set node ID (associated with folder node)

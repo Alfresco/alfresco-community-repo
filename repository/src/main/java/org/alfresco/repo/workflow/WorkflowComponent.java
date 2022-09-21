@@ -81,6 +81,7 @@ public interface WorkflowComponent
      * @param workflowDefinition  the content object containing the definition
      * @param mimetype (optional)  the mime type of the workflow definition
      * @param name (optional)  a name to represent the deployment
+     * @param fullAccess          true if category should be defined in order to consider the deployment secure
      * @return workflow deployment descriptor
      * @since 4.0
      */
@@ -102,7 +103,6 @@ public interface WorkflowComponent
      * Sets the deployment category if applicable to allow the workflow to have full access
      *
      * @param workflowDefinition  the definition to check
-     * @param fullAccess          true if category should be defined in order to consider the deployment secure
      */
     public void checkDeploymentCategory(InputStream workflowDefinition);
 

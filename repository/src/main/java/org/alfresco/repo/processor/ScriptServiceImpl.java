@@ -221,7 +221,8 @@ public class ScriptServiceImpl implements ScriptService
     
     /**
      * Execute script
-     * 
+     *
+     * @param processor the script processor that will be responsible for supplied script execution
      * @param location  the location of the script 
      * @param model     context model
      * @return Object   the result of the script
@@ -246,6 +247,7 @@ public class ScriptServiceImpl implements ScriptService
     /**
      * Execute script
      * 
+     * @param processor     the script processor that will be responsible for supplied script execution
      * @param scriptRef       the script node reference
      * @param contentProp   the content property of the script
      * @param model         the context model
@@ -270,7 +272,8 @@ public class ScriptServiceImpl implements ScriptService
     
     /** 
      * Execute script
-     * 
+     *
+     * @param processor the script processor that will be responsible for supplied script execution
      * @param location  the classpath string locating the script
      * @param model     the context model
      * @return Object   the result of the script
@@ -294,7 +297,8 @@ public class ScriptServiceImpl implements ScriptService
     
     /**
      * Execute script string
-     * 
+     *
+     * @param processor the script processor that will be responsible for supplied script execution
      * @param script    the script string
      * @param model     the context model
      * @param secure    the flag indicating if string script is considered secure (e.g., if it comes from classpath)

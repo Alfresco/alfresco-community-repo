@@ -48,6 +48,7 @@ public class RuleSetLoader
     protected static final String INHERITED_BY = "inheritedBy";
     protected static final String LINKED_TO_BY = "linkedToBy";
     protected static final String IS_INHERITED = "isInherited";
+    protected static final String IS_LINKED_TO = "isLinkedTo";
     private static final int MAX_INHERITED_BY_SIZE = 100;
     private NodeService nodeService;
     private RuleService ruleService;
@@ -98,6 +99,10 @@ public class RuleSetLoader
             {
                 ruleSet.setIsInherited(loadIsInherited(ruleSetNodeRef));
             }
+            if (includes.contains(IS_LINKED_TO))
+            {
+                ruleSet.setIsLinkedTo(loadIsLinkedTo(ruleSetNodeRef, parentRef));
+            }
         }
         return ruleSet;
     }
@@ -115,6 +120,23 @@ public class RuleSetLoader
     private boolean loadIsInherited(NodeRef ruleSetNodeRef)
     {
         return AuthenticationUtil.runAsSystem(() -> !ruleService.getFoldersInheritingRuleSet(ruleSetNodeRef, 1).isEmpty());
+    }
+
+    /**
+     * Check if any parents of the rule set node are not the owning folder.
+     *
+     * @param ruleSetNodeRef The rule set node.
+     * @param parentRef The owning folder.
+     * @return True if another folder links to the rule set.
+     */
+    private Boolean loadIsLinkedTo(NodeRef ruleSetNodeRef, NodeRef parentRef)
+    {
+        return AuthenticationUtil.runAsSystem(() ->
+            nodeService.getParentAssocs(ruleSetNodeRef)
+                       .stream()
+                       .map(ChildAssociationRef::getParentRef)
+                       .anyMatch(folder -> !folder.equals(parentRef))
+        );
     }
 
     public void setNodeService(NodeService nodeService)

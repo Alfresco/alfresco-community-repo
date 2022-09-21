@@ -86,6 +86,10 @@ public class RestRuleCompositeConditionModelMapper implements RestModelMapper<Co
     public List<ActionCondition> toServiceModels(final CompositeCondition compositeCondition)
     {
         final List<ActionCondition> actionConditions = new ArrayList<>();
+        if (compositeCondition == null)
+        {
+            return actionConditions;
+        }
         if (CollectionUtils.isNotEmpty(compositeCondition.getSimpleConditions()))
         {
             compositeCondition.getSimpleConditions()

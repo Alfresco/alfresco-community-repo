@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.rometools.utils.Strings;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluator;
@@ -57,6 +58,12 @@ import org.apache.commons.collections.MapUtils;
 @Experimental
 public class RestRuleSimpleConditionModelMapper implements RestModelMapper<SimpleCondition, ActionCondition>
 {
+    static final String CATEGORY_INVALID_MSG = "Category in condition is invalid";
+    static final String PARAM_CATEGORY = "category";
+    static final String PARAM_MIMETYPE = "mimetype";
+    static final String FIELD_NOT_NULL = "Field in condition must not be blank";
+    static final String PARAMETER_NOT_NULL = "Parameter in condition must not be blank";
+    static final String COMPARATOR_NOT_NULL = "Comparator in condition must not be blank";
     private final NamespaceService namespaceService;
     private final Nodes nodes;
 
@@ -99,14 +106,12 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
     public ActionCondition toServiceModel(SimpleCondition restModel)
     {
         final String field = restModel.getField();
-        if (field == null)
-        {
-            return null;
-        }
+        checkStringNotBlank(field, FIELD_NOT_NULL);
 
-        Map<String, Serializable> parameterValues = new HashMap<>();
+        final Map<String, Serializable> parameterValues = new HashMap<>();
         String conditionDefinitionId;
-        String parameter = restModel.getParameter();
+        final String parameter = restModel.getParameter();
+        checkStringNotBlank(parameter, PARAMETER_NOT_NULL);
 
         switch (field)
         {
@@ -118,21 +123,21 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
                 conditionDefinitionId = HasTagEvaluator.NAME;
                 parameterValues.put(HasTagEvaluator.PARAM_TAG, parameter);
                 break;
-            case SimpleCondition.PARAM_CATEGORY:
+            case PARAM_CATEGORY:
                 conditionDefinitionId = InCategoryEvaluator.NAME;
                 parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_ASPECT, ContentModel.ASPECT_GEN_CLASSIFIABLE);
                 try
                 {
                     parameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, nodes.validateOrLookupNode(parameter, null));
                 } catch (EntityNotFoundException e) {
-                    throw new InvalidArgumentException(SimpleCondition.CATEGORY_INVALID_MSG);
+                    throw new InvalidArgumentException(CATEGORY_INVALID_MSG);
                 }
                 break;
             case IsSubTypeEvaluator.PARAM_TYPE:
                 conditionDefinitionId = IsSubTypeEvaluator.NAME;
                 parameterValues.put(IsSubTypeEvaluator.PARAM_TYPE, QName.createQName(parameter, namespaceService));
                 break;
-            case SimpleCondition.PARAM_MIMETYPE:
+            case PARAM_MIMETYPE:
                 conditionDefinitionId = CompareMimeTypeEvaluator.NAME;
                 parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.TYPE_CONTENT);
                 parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
@@ -151,11 +156,19 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
                     // else create common property evaluator
                     parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, QName.createQName(field, namespaceService));
                 }
+                checkStringNotBlank(restModel.getComparator(), COMPARATOR_NOT_NULL);
                 parameterValues.put(ComparePropertyValueEvaluator.PARAM_OPERATION, restModel.getComparator().toUpperCase());
                 parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
                 break;
         }
         return new ActionConditionImpl(UUID.randomUUID().toString(), conditionDefinitionId, parameterValues);
+    }
+
+    private void checkStringNotBlank(final String string, final String message) {
+        if (Strings.isBlank(string))
+        {
+            throw new InvalidArgumentException(message);
+        }
     }
 
     private static SimpleCondition createComparePropertyValueCondition(final ActionCondition actionCondition, final NamespaceService namespaceService)
@@ -176,7 +189,7 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
     private static SimpleCondition createCompareMimeTypeCondition(final ActionCondition actionCondition)
     {
         return SimpleCondition.builder()
-                .field(SimpleCondition.PARAM_MIMETYPE)
+                .field(PARAM_MIMETYPE)
                 .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
                 .parameter(actionCondition.getParameterValues().get(ComparePropertyValueEvaluator.PARAM_VALUE).toString())
                 .create();
@@ -203,7 +216,7 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
     private static SimpleCondition createInCategoryCondition(final ActionCondition actionCondition)
     {
         return SimpleCondition.builder()
-                .field(SimpleCondition.PARAM_CATEGORY)
+                .field(PARAM_CATEGORY)
                 .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
                 .parameter(((NodeRef) actionCondition.getParameterValues().get(InCategoryEvaluator.PARAM_CATEGORY_VALUE)).getId())
                 .create();

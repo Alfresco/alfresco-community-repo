@@ -36,7 +36,6 @@ import org.alfresco.rest.api.impl.rules.RuleSetsImplTest;
 import org.alfresco.rest.api.model.rules.ActionTest;
 import org.alfresco.rest.api.impl.rules.RulesImplTest;
 import org.alfresco.rest.api.model.rules.RuleTest;
-import org.alfresco.rest.api.model.rules.SimpleConditionTest;
 import org.alfresco.rest.api.nodes.NodeRulesRelationTest;
 import org.alfresco.service.Experimental;
 import org.junit.runner.RunWith;
@@ -51,7 +50,6 @@ import org.junit.runners.Suite;
     NodeValidatorTest.class,
     RuleTest.class,
     ActionTest.class,
-    SimpleConditionTest.class,
     RuleLoaderTest.class,
     ActionParameterConverterTest.class,
     ActionPermissionValidatorTest.class,

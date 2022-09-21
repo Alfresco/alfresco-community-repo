@@ -324,7 +324,7 @@ public class UpdateRulesTests extends RestTest
         final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule and add null conditions.");
-        rule.setConditions(createCompositeCondition(null));
+        rule.setConditions(null);
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .updateRule(rule.getId(), rule);
@@ -369,8 +369,6 @@ public class UpdateRulesTests extends RestTest
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .updateRule(rule.getId(), rule);
 
-        //set expected object
-        rule.setConditions(createCompositeCondition(null));
         restClient.assertStatusCodeIs(OK);
         updatedRule.assertThat().isEqualTo(rule, ID)
                 .assertThat().field(ID).isNotNull();
@@ -397,7 +395,7 @@ public class UpdateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Category in condition is invalid");
     }
 
-    /** Check we get a 500 error when using the POST response and update rule by adding condition without comparator. */
+    /** Check we get a 400 error when using the POST response and update rule by adding condition without comparator when it is required. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleWithConditionWithoutComparatorAndFail()
     {
@@ -405,7 +403,7 @@ public class UpdateRulesTests extends RestTest
         ruleModelWithInitialValues.setConditions(createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
-        STEP("Try to update the rule with invalid condition.");
+        STEP("Try to update the rule with invalid condition (null comparator when required non-null).");
         final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
                 List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", null, "65500")))));
         rule.setConditions(conditions);
@@ -414,11 +412,11 @@ public class UpdateRulesTests extends RestTest
                 .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
-        //TODO: in next iteration of mapper refactoring this error code will change to 400
-        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Comparator in condition must not be blank");
     }
 
-    /** Check we get a 500 error when using the POST response and update rule by adding condition without field. */
+    /** Check we get a 400 error when using the POST response and update rule by adding condition without field. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleWithConditionWithoutFieldAndFail()
     {
@@ -426,7 +424,7 @@ public class UpdateRulesTests extends RestTest
         ruleModelWithInitialValues.setConditions(createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
-        STEP("Try to update the rule with invalid condition.");
+        STEP("Try to update the rule with invalid condition (null field).");
         final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
                 List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition(null, "greater_than", "65500")))));
         rule.setConditions(conditions);
@@ -435,11 +433,11 @@ public class UpdateRulesTests extends RestTest
                 .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
-        //TODO: in next iteration of mapper refactoring this error code will change to 400
-        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Field in condition must not be blank");
     }
 
-    /** Check we get a 500 error when using the POST response and update rule by adding condition without parameter value. */
+    /** Check we get a 400 error when using the POST response and update rule by adding condition without parameter value. */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleWithConditionWithoutParamValueAndFail()
     {
@@ -447,17 +445,17 @@ public class UpdateRulesTests extends RestTest
         ruleModelWithInitialValues.setConditions(createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
-        STEP("Try to update the rule with invalid condition.");
+        STEP("Try to update the rule with invalid condition (null parameter).");
         final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
-                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", "greater_than", null)))));
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", "greater_than", "")))));
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
-        //TODO: in next iteration of mapper refactoring this error code will change to 400
-        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Parameter in condition must not be blank");
     }
 
     private RestRuleModel createAndSaveRule(String name)

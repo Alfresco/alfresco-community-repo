@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.impl.mapper.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -35,8 +36,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
-import junit.framework.TestCase;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
@@ -49,16 +50,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
-public class RestRuleCompositeConditionModelMapperTest extends TestCase
+public class RestRuleCompositeConditionModelMapperTest
 {
 
     @Mock
-    private RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper;
+    private RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapperMock;
 
     @InjectMocks
     RestRuleCompositeConditionModelMapper objectUnderTest;
@@ -82,8 +82,8 @@ public class RestRuleCompositeConditionModelMapperTest extends TestCase
             createCompositeCondition(true, simpleConditions.subList(2,3))
         ));
 
-        Mockito.when(simpleConditionMapper.toRestModels(actionConditions.subList(0,2))).thenReturn(simpleConditions.subList(0,2));
-        Mockito.when(simpleConditionMapper.toRestModels(actionConditions.subList(2,3))).thenReturn(simpleConditions.subList(2,3));
+        when(simpleConditionMapperMock.toRestModels(actionConditions.subList(0,2))).thenReturn(simpleConditions.subList(0,2));
+        when(simpleConditionMapperMock.toRestModels(actionConditions.subList(2,3))).thenReturn(simpleConditions.subList(2,3));
 
         // when
         final CompositeCondition actualCompositeCondition = objectUnderTest.toRestModel(actionConditions);
@@ -92,7 +92,7 @@ public class RestRuleCompositeConditionModelMapperTest extends TestCase
     }
 
     @Test
-    public void testFromEmptyList()
+    public void testToRestModel_fromEmptyList()
     {
         final List<ActionCondition> actionConditions = Collections.emptyList();
 
@@ -103,7 +103,7 @@ public class RestRuleCompositeConditionModelMapperTest extends TestCase
     }
 
     @Test
-    public void testFromNullValue()
+    public void testToRestModel_fromNullValue()
     {
         // when
         final CompositeCondition actualCompositeCondition = objectUnderTest.toRestModel((Collection<ActionCondition>) null);
@@ -112,7 +112,7 @@ public class RestRuleCompositeConditionModelMapperTest extends TestCase
     }
 
     @Test
-    public void testFromListContainingNull()
+    public void testToRestModel_fromListContainingNull()
     {
         final List<ActionCondition> actionConditions = new ArrayList<>();
         actionConditions.add(null);
@@ -123,38 +123,75 @@ public class RestRuleCompositeConditionModelMapperTest extends TestCase
 
         assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
     }
-//
-//    @Test
-//    public void testOfSimpleConditions()
-//    {
-//        final List<SimpleCondition> simpleConditions = List.of(SimpleCondition.builder().field("field").comparator("comparator").parameter("param").create());
-//        final boolean inverted = true;
-//        final ConditionOperator conditionOperator = ConditionOperator.OR;
-//        final CompositeCondition expectedCondition = createCompositeCondition(inverted, conditionOperator, null, simpleConditions);
-//
-//        // when
-//        final CompositeCondition actualCompositeCondition = CompositeCondition.ofSimpleConditions(simpleConditions, inverted, conditionOperator);
-//
-//        assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCondition);
-//    }
-//
-//    @Test
-//    public void testOfEmptySimpleConditions()
-//    {
-//        // when
-//        final CompositeCondition actualCompositeCondition = CompositeCondition.ofSimpleConditions(Collections.emptyList(), false, ConditionOperator.AND);
-//
-//        assertThat(actualCompositeCondition).isNull();
-//    }
-//
-//    @Test
-//    public void testOfNullSimpleConditions()
-//    {
-//        // when
-//        final CompositeCondition actualCompositeCondition = CompositeCondition.ofSimpleConditions(null, false, ConditionOperator.AND);
-//
-//        assertThat(actualCompositeCondition).isNull();
-//    }
+
+    @Test
+    public void testToServiceModels() {
+        final List<SimpleCondition> simpleConditions = List.of(
+                createSimpleCondition("value1"),
+                createSimpleCondition("value3"),
+                createSimpleCondition("value2")
+        );
+        final CompositeCondition compositeCondition = createCompositeCondition(List.of(
+                createCompositeCondition(false, simpleConditions.subList(0,2)),
+                createCompositeCondition(true, simpleConditions.subList(2,3))
+        ));
+        final List<ActionCondition> actionConditions = List.of(
+                createActionCondition("value1"),
+                createActionCondition("value3"),
+                createActionCondition("value2", true)
+        );
+
+        IntStream.rangeClosed(0, 2)
+                .forEach(i -> when(simpleConditionMapperMock.toServiceModel(simpleConditions.get(i))).thenReturn(actionConditions.get(i)));
+
+        final List<ActionCondition> actualActionConditions = objectUnderTest.toServiceModels(compositeCondition);
+        assertThat(actualActionConditions).isEqualTo(actionConditions);
+    }
+
+    @Test
+    public void testToServiceModels_simpleNonInvertedConditionsOnly() {
+        final List<SimpleCondition> simpleConditions = List.of(
+                createSimpleCondition("value1"),
+                createSimpleCondition("value2"),
+                createSimpleCondition("value3")
+        );
+        final CompositeCondition compositeCondition = createCompositeCondition(false, simpleConditions);
+        final List<ActionCondition> actionConditions = List.of(
+                createActionCondition("value1"),
+                createActionCondition("value2"),
+                createActionCondition("value3")
+        );
+
+        IntStream.rangeClosed(0, 2)
+                .forEach(i -> when(simpleConditionMapperMock.toServiceModel(simpleConditions.get(i))).thenReturn(actionConditions.get(i)));
+
+        final List<ActionCondition> actualActionConditions = objectUnderTest.toServiceModels(compositeCondition);
+        assertThat(actualActionConditions).isEqualTo(actionConditions);
+    }
+
+    @Test
+    public void testToServiceModels_nullSimpleConditions() {
+        final CompositeCondition compositeCondition = createCompositeCondition(false, null);
+
+        final List<ActionCondition> actualActionConditions = objectUnderTest.toServiceModels(compositeCondition);
+        assertThat(actualActionConditions).isNotNull().isEmpty();
+    }
+
+    @Test
+    public void testToServiceModels_emptyCompositeCondition() {
+        final CompositeCondition compositeCondition = CompositeCondition.builder().create();
+
+        final List<ActionCondition> actualActionConditions = objectUnderTest.toServiceModels(compositeCondition);
+        assertThat(actualActionConditions).isNotNull().isEmpty();
+    }
+
+    @Test
+    public void testToServiceModels_nullCompositeCondition() {
+        final CompositeCondition compositeCondition = null;
+
+        final List<ActionCondition> actualActionConditions = objectUnderTest.toServiceModels(compositeCondition);
+        assertThat(actualActionConditions).isNotNull().isEmpty();
+    }
 
     private static ActionCondition createActionCondition(final String value)
     {

@@ -61,6 +61,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -207,7 +208,8 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * record folder
      * And the document is not declared as a version record
      */
-    @Test (dataProvider = "invalidDestinationPaths")
+    @Test (dataProvider = "invalidDestinationPaths", groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
+    @Ignore
     public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Declare document as record version with an invalid location parameter value");

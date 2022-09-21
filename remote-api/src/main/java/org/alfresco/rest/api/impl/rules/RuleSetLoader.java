@@ -30,7 +30,6 @@ import static org.alfresco.rest.api.model.rules.InclusionType.LINKED;
 import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.rules.RuleSet;
@@ -49,6 +48,7 @@ public class RuleSetLoader
     protected static final String INHERITED_BY = "inheritedBy";
     protected static final String LINKED_TO_BY = "linkedToBy";
     protected static final String IS_INHERITED = "isInherited";
+    protected static final String IS_LINKED_TO = "isLinkedTo";
     private static final int MAX_INHERITED_BY_SIZE = 100;
     private NodeService nodeService;
     private RuleService ruleService;
@@ -93,16 +93,15 @@ public class RuleSetLoader
             }
             if (includes.contains(LINKED_TO_BY))
             {
-                List<NodeRef> linkedToBy = nodeService.getParentAssocs(ruleSetNodeRef)
-                                                      .stream()
-                                                      .map(ChildAssociationRef::getParentRef)
-                                                      .filter(folder -> !folder.equals(parentRef))
-                                                      .collect(Collectors.toList());
-                ruleSet.setLinkedToBy(linkedToBy);
+                ruleSet.setLinkedToBy(loadLinkedToBy(ruleSetNodeRef));
             }
             if (includes.contains(IS_INHERITED))
             {
                 ruleSet.setIsInherited(loadIsInherited(ruleSetNodeRef));
+            }
+            if (includes.contains(IS_LINKED_TO))
+            {
+                ruleSet.setIsLinkedTo(loadIsLinkedTo(ruleSetNodeRef, parentRef));
             }
         }
         return ruleSet;
@@ -113,9 +112,31 @@ public class RuleSetLoader
         return ruleService.getFoldersInheritingRuleSet(ruleSetNodeRef, MAX_INHERITED_BY_SIZE);
     }
 
+    private List<NodeRef> loadLinkedToBy(NodeRef ruleSetNodeRef)
+    {
+        return ruleService.getFoldersLinkingToRuleSet(ruleSetNodeRef);
+    }
+
     private boolean loadIsInherited(NodeRef ruleSetNodeRef)
     {
         return AuthenticationUtil.runAsSystem(() -> !ruleService.getFoldersInheritingRuleSet(ruleSetNodeRef, 1).isEmpty());
+    }
+
+    /**
+     * Check if any parents of the rule set node are not the owning folder.
+     *
+     * @param ruleSetNodeRef The rule set node.
+     * @param parentRef The owning folder.
+     * @return True if another folder links to the rule set.
+     */
+    private Boolean loadIsLinkedTo(NodeRef ruleSetNodeRef, NodeRef parentRef)
+    {
+        return AuthenticationUtil.runAsSystem(() ->
+            nodeService.getParentAssocs(ruleSetNodeRef)
+                       .stream()
+                       .map(ChildAssociationRef::getParentRef)
+                       .anyMatch(folder -> !folder.equals(parentRef))
+        );
     }
 
     public void setNodeService(NodeService nodeService)

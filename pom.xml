@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>17.124-SNAPSHOT</version>
+    <version>17.126-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -80,7 +80,7 @@
         <dependency.tika.version>2.4.1</dependency.tika.version>
         <dependency.spring-security.version>5.7.3</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
-        <dependency.poi.version>5.2.3</dependency.poi.version>
+        <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
         <dependency.keycloak.version>18.0.0</dependency.keycloak.version>
         <dependency.jboss.logging.version>3.5.0.Final</dependency.jboss.logging.version>
@@ -121,9 +121,9 @@
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.49</dependency.tas-utility.version>
+        <dependency.tas-utility.version>3.0.56</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.2.0</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.119</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.122</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.32</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.9</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.7</dependency.tas-webdav.version>

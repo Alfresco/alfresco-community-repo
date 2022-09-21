@@ -30,7 +30,6 @@ import static org.alfresco.rest.api.model.rules.InclusionType.LINKED;
 import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.rules.RuleSet;
@@ -93,12 +92,7 @@ public class RuleSetLoader
             }
             if (includes.contains(LINKED_TO_BY))
             {
-                List<NodeRef> linkedToBy = nodeService.getParentAssocs(ruleSetNodeRef)
-                                                      .stream()
-                                                      .map(ChildAssociationRef::getParentRef)
-                                                      .filter(folder -> !folder.equals(parentRef))
-                                                      .collect(Collectors.toList());
-                ruleSet.setLinkedToBy(linkedToBy);
+                ruleSet.setLinkedToBy(loadLinkedToBy(ruleSetNodeRef));
             }
             if (includes.contains(IS_INHERITED))
             {
@@ -111,6 +105,11 @@ public class RuleSetLoader
     private List<NodeRef> loadInheritedBy(NodeRef ruleSetNodeRef)
     {
         return ruleService.getFoldersInheritingRuleSet(ruleSetNodeRef, MAX_INHERITED_BY_SIZE);
+    }
+
+    private List<NodeRef> loadLinkedToBy(NodeRef ruleSetNodeRef)
+    {
+        return ruleService.getFoldersLinkingToRuleSet(ruleSetNodeRef);
     }
 
     private boolean loadIsInherited(NodeRef ruleSetNodeRef)

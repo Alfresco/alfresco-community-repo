@@ -354,7 +354,7 @@ public class GetRuleSetsTests extends RestTest
         RestRuleSetLinkModel ruleSetLink = new RestRuleSetLinkModel();
         ruleSetLink.setId(ruleFolder.getNodeRef());
         coreAPIForUser().usingNode(publicFolder).createRuleLink(ruleSetLink);
-        coreAPIForUser().usingNode(privateFolder).createRuleLink(ruleSetLink);
+        coreAPIForAdmin().usingNode(privateFolder).createRuleLink(ruleSetLink);
 
         STEP("Get the rule set and linkedToBy field");
         RestRuleSetModel ruleSet = coreAPIForUser().usingNode(ruleFolder)

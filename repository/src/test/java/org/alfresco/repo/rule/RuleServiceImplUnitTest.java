@@ -714,4 +714,46 @@ public class RuleServiceImplUnitTest
 
         assertEquals("Unexpected list of inheriting folders.", List.of(child), actual);
     }
+
+    /** Check that a linked folder can be retrieved from a rule set node. */
+    @Test
+    public void testGetFoldersLinkingToRuleSet()
+    {
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        NodeRef owningFolder = new NodeRef("owning://folder/");
+        ChildAssociationRef owningAssocMock = mock(ChildAssociationRef.class);
+        given(owningAssocMock.getParentRef()).willReturn(owningFolder);
+        given(nodeService.getPrimaryParent(ruleSetNode)).willReturn(owningAssocMock);
+        // Simulate a folder linking to the rule set.
+        NodeRef linkingFolder = new NodeRef("linking://folder/");
+        ChildAssociationRef linkingAssocMock = mock(ChildAssociationRef.class);
+        given(linkingAssocMock.getParentRef()).willReturn(linkingFolder);
+        given(nodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(owningAssocMock, linkingAssocMock));
+
+        List<NodeRef> linkingFolders = ruleService.getFoldersLinkingToRuleSet(ruleSetNode);
+
+        assertEquals("Unexpected list of linking folders.", List.of(linkingFolder), linkingFolders);
+    }
+
+    /** Check that permissions affect which linked folders are returned to the user. */
+    @Test
+    public void testGetFoldersLinkingToRuleSet_respectsPermissions()
+    {
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        NodeRef owningFolder = new NodeRef("owning://folder/");
+        ChildAssociationRef owningAssocMock = mock(ChildAssociationRef.class);
+        given(owningAssocMock.getParentRef()).willReturn(owningFolder);
+        given(nodeService.getPrimaryParent(ruleSetNode)).willReturn(owningAssocMock);
+        // Simulate a folder linking to the rule set.
+        NodeRef linkingFolder = new NodeRef("linking://folder/");
+        ChildAssociationRef linkingAssocMock = mock(ChildAssociationRef.class);
+        given(linkingAssocMock.getParentRef()).willReturn(linkingFolder);
+        given(nodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(owningAssocMock, linkingAssocMock));
+        // The currect user does not have permission to view the folder.
+        given(permissionService.hasReadPermission(linkingFolder)).willReturn(DENIED);
+
+        List<NodeRef> linkingFolders = ruleService.getFoldersLinkingToRuleSet(ruleSetNode);
+
+        assertEquals("Unexpected list of linking folders.", emptyList(), linkingFolders);
+    }
 }

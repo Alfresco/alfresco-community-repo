@@ -78,7 +78,7 @@ public abstract class AbstractRuleWebScript extends DeclarativeWebScript
     private static final String RULE_OUTBOUND = "outbound";
     private static final String ACTION_CHECK_OUT = "check-out";
 
-    private static final String CANNOT_CREATE_RULE = "cannot.create.rule.checkout.outbound";
+    public static final String CANNOT_CREATE_RULE = "cannot.create.rule.checkout.outbound";
     
     protected NodeService nodeService;
     protected RuleService ruleService;

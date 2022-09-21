@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -45,7 +45,7 @@ import org.junit.experimental.categories.Category;
 public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases 
 {
     
-    public void testGetFilterLanguages() throws Exception
+    public void testGetFilterLanguages()
     {
         // get the list of content filter languages
         List<String> lggs = contentFilterLanguagesService.getFilterLanguages();
@@ -57,7 +57,7 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
         try 
         {
             lggs.add("NEW LOCALE");
-            assertTrue("Add a value to the content filter language list is not permit, this list would be read only", false);
+            fail("Add a value to the content filter language list is not permit, this list would be read only");
         } 
         catch (Exception e) 
         {
@@ -67,7 +67,7 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
         try 
         {
             lggs.remove(0);
-            assertTrue("Remove a value to the content filter language list is not permit, this list would be read only", false);
+            fail("Remove a value to the content filter language list is not permit, this list would be read only");
         } 
         catch (Exception e) 
         {
@@ -76,7 +76,7 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
     }
 
     @SuppressWarnings("unchecked")
-    public void testGetMissingLanguages() throws Exception
+    public void testGetMissingLanguages()
     {
         List<String> lggs = contentFilterLanguagesService.getFilterLanguages();
         
@@ -97,7 +97,7 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
         assertEquals("Language list returned with the empty parameter  corrupted", missingLggsEmpty.size(), lggs.size());
         
         // get missing languages with a two locale list 
-        List<String> param = new ArrayList<String>();
+        List<String> param = new ArrayList<>();
         param.add(0, lggs.get(0));
         param.add(1, lggs.get(1));
         List<String> missingLggsOk = contentFilterLanguagesService.getMissingLanguages(param);
@@ -123,29 +123,29 @@ public class ContentFilterLanguagesMapTest extends AbstractMultilingualTestCases
         assertFalse("Language found : " + param.get(2), missingLggsWrong.contains(param.get(2)));
     }
     
-    public void testISOCodeConvertions() throws Exception
+    public void testISOCodeConversions()
     {
         // New ISO code list
         String[] newCode = {"he", "id", "yi"};
         String[] oldCode = {"iw", "in", "ji"};
 
-        Locale loc0 = new Locale(newCode[0]);
-        Locale loc1 = new Locale(newCode[1]);
-        Locale loc2 = new Locale(newCode[2]);
+        Locale loc0 = new Locale(oldCode[0]);
+        Locale loc1 = new Locale(oldCode[1]);
+        Locale loc2 = new Locale(oldCode[2]);
         
-        // Ensure that java.util.Locale has converted the new ISO code into new iso code
-        assertEquals("java.util.Locale Convertion not correct for " + newCode[0], oldCode[0], loc0.getLanguage());
-        assertEquals("java.util.Locale Convertion not correct for " + newCode[1], oldCode[1], loc1.getLanguage());
-        assertEquals("java.util.Locale Convertion not correct for " + newCode[2], oldCode[2], loc2.getLanguage());
+        // Ensure that java.util.Locale has converted the old ISO code into new ISO code
+        // This conversion can be avoided by setting the java.locale.useOldISOCodes=true system property
+        assertEquals("java.util.Locale Conversion not correct for " + oldCode[0], newCode[0], loc0.getLanguage());
+        assertEquals("java.util.Locale Conversion not correct for " + oldCode[1], newCode[1], loc1.getLanguage());
+        assertEquals("java.util.Locale Conversion not correct for " + oldCode[2], newCode[2], loc2.getLanguage());
 
-        // Ensure that the convertion is correcte
-        assertEquals("Convertion of new ISO codes not correct for " + newCode[0], oldCode[0], contentFilterLanguagesService.convertToOldISOCode(newCode[0]));
-        assertEquals("Convertion of new ISO codes not correct for " + newCode[1], oldCode[1], contentFilterLanguagesService.convertToOldISOCode(newCode[1]));
-        assertEquals("Convertion of new ISO codes not correct for " + newCode[2], oldCode[2], contentFilterLanguagesService.convertToOldISOCode(newCode[2]));
+        // Ensure that the conversion is correct
+        assertEquals("Conversion of new ISO codes not correct for " + newCode[0], oldCode[0], contentFilterLanguagesService.convertToOldISOCode(newCode[0]));
+        assertEquals("Conversion of new ISO codes not correct for " + newCode[1], oldCode[1], contentFilterLanguagesService.convertToOldISOCode(newCode[1]));
+        assertEquals("Conversion of new ISO codes not correct for " + newCode[2], oldCode[2], contentFilterLanguagesService.convertToOldISOCode(newCode[2]));
 
-        
-        assertEquals("Convertion of old ISO codes not correct for " + oldCode[0], newCode[0], contentFilterLanguagesService.convertToNewISOCode(oldCode[0]));
-        assertEquals("Convertion of old ISO codes not correct for " + oldCode[1], newCode[1], contentFilterLanguagesService.convertToNewISOCode(oldCode[1]));
-        assertEquals("Convertion of old ISO codes not correct for " + oldCode[2], newCode[2], contentFilterLanguagesService.convertToNewISOCode(oldCode[2]));
+        assertEquals("Conversion of old ISO codes not correct for " + oldCode[0], newCode[0], contentFilterLanguagesService.convertToNewISOCode(oldCode[0]));
+        assertEquals("Conversion of old ISO codes not correct for " + oldCode[1], newCode[1], contentFilterLanguagesService.convertToNewISOCode(oldCode[1]));
+        assertEquals("Conversion of old ISO codes not correct for " + oldCode[2], newCode[2], contentFilterLanguagesService.convertToNewISOCode(oldCode[2]));
     }    
 }

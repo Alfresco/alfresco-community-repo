@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 <suite name="REST API tests part1" preserve-order="true">
-	<listeners>
+    <listeners>
         <listener class-name="org.alfresco.utility.report.HtmlReportListener"/>
         <listener class-name="org.alfresco.utility.testrail.TestRailExecutorListener"/>
         <listener class-name="org.alfresco.utility.testng.OSTestMethodSelector"/>
-	</listeners>
+    </listeners>
 
     <test name="Part1">
         <packages>
@@ -14,6 +14,7 @@
             <package name="org.alfresco.rest.comments.*"/>
             <package name="org.alfresco.rest.downloads.*"/>
             <package name="org.alfresco.rest.favorites.*"/>
+            <package name="org.alfresco.rest.rules.*" />
             <package name="org.alfresco.rest.servlet.*"/>
         </packages>
     </test>

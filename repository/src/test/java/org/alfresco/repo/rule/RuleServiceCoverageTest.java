@@ -99,6 +99,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.StopWatch;
@@ -194,25 +195,26 @@ public class RuleServiceCoverageTest extends TestCase
                 ContentModel.ASSOC_CHILDREN,
                 ContentModel.TYPE_CONTAINER).getChildRef();      
     }
-	
-	private Rule createRule(
-			String ruleTypeName, 
-			String actionName, 
-			Map<String, Serializable> actionParams, 
-			String conditionName, 
-			Map<String, Serializable> conditionParams)
-	{
-		Rule rule = new Rule();
-        rule.setRuleType(ruleTypeName);        
-        
-        Action action = this.actionService.createAction(actionName, actionParams);        
+
+    private Rule createRule(
+            String ruleTypeName,
+            String actionName,
+            Map<String, Serializable> actionParams,
+            String conditionName,
+            Map<String, Serializable> conditionParams)
+    {
+        Rule rule = new Rule();
+        rule.setTitle(GUID.generate());
+        rule.setRuleType(ruleTypeName);
+
+        Action action = this.actionService.createAction(actionName, actionParams);
         ActionCondition condition = this.actionService.createActionCondition(conditionName, conditionParams);
         action.addActionCondition(condition);
-        rule.setAction(action);  
-        
+        rule.setAction(action);
+
         return rule;
-	}
-    
+    }
+
     /**
      * Create the categories used in the tests
      */

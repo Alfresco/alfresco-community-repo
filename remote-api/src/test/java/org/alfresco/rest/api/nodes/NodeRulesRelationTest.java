@@ -26,11 +26,15 @@
 
 package org.alfresco.rest.api.nodes;
 
+import static org.mockito.BDDMockito.then;
+
+import java.util.List;
+
 import junit.framework.TestCase;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.tests.core.ParamsExtender;
 import org.alfresco.service.Experimental;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,19 +44,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.then;
-
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
 public class NodeRulesRelationTest extends TestCase
 {
-
     private static final String FOLDER_NODE_ID = "dummy-node-id";
     private static final String RULE_SET_ID = "dummy-rule-set-id";
+    private static final String RULE_ID = "dummy-rule-id";
+    private static final List<String> INCLUDE = List.of("include-field");
+    private static final Paging PAGING = Paging.DEFAULT;
 
     @Mock
-    private Rules rules;
+    private Rules rulesMock;
 
     @InjectMocks
     private NodeRulesRelation nodeRulesRelation;
@@ -67,14 +70,34 @@ public class NodeRulesRelationTest extends TestCase
     @Test
     public void testReadAll()
     {
-        final Paging paging = Paging.DEFAULT;
-        final Params.RecognizedParams params = new Params.RecognizedParams(null, paging, null, null, null, null, null, null, false);
-        final Parameters parameters = Params.valueOf(FOLDER_NODE_ID, RULE_SET_ID, params, null, null);
+        final Parameters parameters = ParamsExtender.valueOf(PAGING, FOLDER_NODE_ID, RULE_SET_ID, null, INCLUDE);
 
         // when
         nodeRulesRelation.readAll(FOLDER_NODE_ID, parameters);
 
-        then(rules).should().getRules(eq(FOLDER_NODE_ID), eq(RULE_SET_ID), eq(paging));
-        then(rules).shouldHaveNoMoreInteractions();
+        then(rulesMock).should().getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);
+        then(rulesMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testReadById()
+    {
+        final Parameters parameters = ParamsExtender.valueOf(null, FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE);
+
+        // when
+        nodeRulesRelation.readById(FOLDER_NODE_ID, RULE_SET_ID, parameters);
+
+        then(rulesMock).should().getRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE);
+        then(rulesMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testDeleteById() {
+        final Parameters parameters = ParamsExtender.valueOf(null, FOLDER_NODE_ID, RULE_SET_ID, RULE_ID, INCLUDE);
+        // when
+        nodeRulesRelation.delete(FOLDER_NODE_ID, RULE_SET_ID, parameters);
+
+        then(rulesMock).should().deleteRuleById(FOLDER_NODE_ID, RULE_SET_ID, RULE_ID);
+        then(rulesMock).shouldHaveNoMoreInteractions();
     }
 }

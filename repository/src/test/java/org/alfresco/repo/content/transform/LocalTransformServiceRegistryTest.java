@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,44 +25,39 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
-
-import java.io.IOException;
-import java.util.Properties;
-import java.util.StringJoiner;
-
 import static org.alfresco.repo.content.transform.LocalTransformServiceRegistry.LOCAL_TRANSFORMER;
 import static org.alfresco.repo.content.transform.LocalTransformServiceRegistry.URL;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Properties;
+import java.util.StringJoiner;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
+
+@RunWith(MockitoJUnitRunner.class)
 public class LocalTransformServiceRegistryTest
 {
     @Spy
-    private Properties properties = new Properties();
-
+    private Properties properties;
     @InjectMocks
-    LocalTransformServiceRegistry registry = new LocalTransformServiceRegistry();
-
-    @Rule
-    public MockitoRule initRule = MockitoJUnit.rule();
+    private LocalTransformServiceRegistry registry;
 
     @Test
-    public void testGetTEngineUrlsSortedByName() throws IOException
+    public void testGetTEngineUrlsSortedByName()
     {
-        properties.put(LOCAL_TRANSFORMER+"aa"+URL,      "aa");
-        properties.put(LOCAL_TRANSFORMER+"engine1"+URL, "http_xxxx1");
-        properties.put(LOCAL_TRANSFORMER+"engine3"+URL, "http3");
-        properties.put(LOCAL_TRANSFORMER+"engine2"+URL, "http_xx2");
-        properties.put(LOCAL_TRANSFORMER+"bb"+URL,      "bb");
-        properties.put(LOCAL_TRANSFORMER+"b"+URL,       "b");
+        properties.put(LOCAL_TRANSFORMER + "aa" + URL, "aa");
+        properties.put(LOCAL_TRANSFORMER + "engine1" + URL, "http_xxxx1");
+        properties.put(LOCAL_TRANSFORMER + "engine3" + URL, "http3");
+        properties.put(LOCAL_TRANSFORMER + "engine2" + URL, "http_xx2");
+        properties.put(LOCAL_TRANSFORMER + "bb" + URL, "bb");
+        properties.put(LOCAL_TRANSFORMER + "b" + URL, "b");
 
         StringJoiner orderEngineConfigRead = new StringJoiner(",");
-        registry.getTEngineUrlsSortedByName().forEach(name -> orderEngineConfigRead.add(name));
+        registry.getTEngineUrlsSortedByName().forEach(orderEngineConfigRead::add);
         assertEquals("aa,b,bb,http_xxxx1,http_xx2,http3", orderEngineConfigRead.toString());
     }
 }

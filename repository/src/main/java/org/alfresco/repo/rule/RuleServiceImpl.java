@@ -689,6 +689,20 @@ public class RuleServiceImpl
         return inheritors;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    @Experimental
+    public List<NodeRef> getFoldersLinkingToRuleSet(NodeRef ruleSet)
+    {
+        NodeRef parentRef = nodeService.getPrimaryParent(ruleSet).getParentRef();
+        return nodeService.getParentAssocs(ruleSet)
+                          .stream()
+                          .map(ChildAssociationRef::getParentRef)
+                          .filter(folder -> !folder.equals(parentRef))
+                          .filter(folder -> permissionService.hasReadPermission(folder) == ALLOWED)
+                          .collect(Collectors.toList());
+    }
+
     /**
      * Gets the inherited rules for a given node reference
      *

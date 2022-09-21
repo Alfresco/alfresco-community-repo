@@ -32,6 +32,7 @@ import static org.alfresco.rest.api.model.rules.InclusionType.OWNED;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -47,6 +48,7 @@ public class RuleSetLoader
     protected static final String INCLUSION_TYPE = "inclusionType";
     protected static final String INHERITED_BY = "inheritedBy";
     protected static final String LINKED_TO_BY = "linkedToBy";
+    protected static final String IS_INHERITED = "isInherited";
     private static final int MAX_INHERITED_BY_SIZE = 100;
     private NodeService nodeService;
     private RuleService ruleService;
@@ -98,6 +100,10 @@ public class RuleSetLoader
                                                       .collect(Collectors.toList());
                 ruleSet.setLinkedToBy(linkedToBy);
             }
+            if (includes.contains(IS_INHERITED))
+            {
+                ruleSet.setIsInherited(loadIsInherited(ruleSetNodeRef));
+            }
         }
         return ruleSet;
     }
@@ -105,6 +111,11 @@ public class RuleSetLoader
     private List<NodeRef> loadInheritedBy(NodeRef ruleSetNodeRef)
     {
         return ruleService.getFoldersInheritingRuleSet(ruleSetNodeRef, MAX_INHERITED_BY_SIZE);
+    }
+
+    private boolean loadIsInherited(NodeRef ruleSetNodeRef)
+    {
+        return AuthenticationUtil.runAsSystem(() -> !ruleService.getFoldersInheritingRuleSet(ruleSetNodeRef, 1).isEmpty());
     }
 
     public void setNodeService(NodeService nodeService)

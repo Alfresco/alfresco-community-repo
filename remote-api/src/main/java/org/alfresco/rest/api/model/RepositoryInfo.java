@@ -285,7 +285,7 @@ public class RepositoryInfo
                         .setMaxUsers(licenseDescriptor.getMaxUsers())
                         .setClusterEnabled(licenseDescriptor.isClusterEnabled())
                         .setCryptodocEnabled(licenseDescriptor.isCryptodocEnabled())
-                        .setCustomEmbeddedWorkflow(licenseDescriptor.isCustomEmbeddedWorkflowEnabled());
+                        .setCustomEmbeddedWorkflowEnabled(licenseDescriptor.isCustomEmbeddedWorkflowEnabled());
         }
 
         public Date getIssuedAt()

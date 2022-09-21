@@ -28,6 +28,7 @@ package org.alfresco.rest.api.impl.rules;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INHERITED_BY;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.IS_INHERITED;
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.IS_LINKED_TO;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.LINKED_TO_BY;
 import static org.alfresco.rest.api.impl.rules.RuleSetLoader.OWNING_FOLDER;
 import static org.alfresco.rest.api.model.rules.InclusionType.INHERITED;
@@ -168,6 +169,16 @@ public class RuleSetLoaderTest extends TestCase
         RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, List.of(IS_INHERITED));
 
         RuleSet expected = RuleSet.builder().id(RULE_SET_ID).isInherited(true).create();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testLoadRuleSet_isLinkedTo()
+    {
+        // Call the method under test.
+        RuleSet actual = ruleSetLoader.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, List.of(IS_LINKED_TO));
+
+        RuleSet expected = RuleSet.builder().id(RULE_SET_ID).isLinkedTo(true).create();
         assertEquals(expected, actual);
     }
 }

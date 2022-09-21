@@ -42,6 +42,8 @@ public class RuleSet
     private NodeRef owningFolder;
     private InclusionType inclusionType;
     private List<NodeRef> inheritedBy;
+    private List<NodeRef> linkedToBy;
+    private Boolean isInherited;
 
     public static RuleSet of(String id)
     {
@@ -98,6 +100,36 @@ public class RuleSet
         this.inheritedBy = inheritedBy;
     }
 
+    public List<NodeRef> getLinkedToBy()
+    {
+        return linkedToBy;
+    }
+
+    public void setLinkedToBy(List<NodeRef> linkedToBy)
+    {
+        this.linkedToBy = linkedToBy;
+    }
+
+    /**
+     * Set a flag indicating that the rule set is inherited by a folder.
+     *
+     * @param inherited The flag.
+     */
+    public void setIsInherited(Boolean inherited)
+    {
+        isInherited = inherited;
+    }
+
+    /**
+     * Find if the rule set is inherited by a folder.
+     *
+     * @return The value of the flag.
+     */
+    public Boolean getIsInherited()
+    {
+        return isInherited;
+    }
+
     @Override
     public String toString()
     {
@@ -107,6 +139,8 @@ public class RuleSet
                     .add("owningFolder='" + owningFolder + "'")
                     .add("inclusionType='" + inclusionType + "'")
                     .add("inheritedBy='" + inheritedBy + "'")
+                    .add("linkedToBy='" + linkedToBy + "'")
+                    .add("isInherited='" + isInherited + "'")
                     .toString()
                 + '}';
     }
@@ -122,13 +156,15 @@ public class RuleSet
         return Objects.equals(id, ruleSet.id)
                 && Objects.equals(owningFolder, ruleSet.owningFolder)
                 && inclusionType == ruleSet.inclusionType
-                && Objects.equals(inheritedBy, ruleSet.inheritedBy);
+                && Objects.equals(inheritedBy, ruleSet.inheritedBy)
+                && Objects.equals(linkedToBy, ruleSet.linkedToBy)
+                && Objects.equals(isInherited, ruleSet.isInherited);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, owningFolder, inclusionType, inheritedBy);
+        return Objects.hash(id, owningFolder, inclusionType, inheritedBy, linkedToBy, isInherited);
     }
 
     public static Builder builder()
@@ -142,6 +178,8 @@ public class RuleSet
         private NodeRef owningFolder;
         private InclusionType inclusionType;
         private List<NodeRef> inheritedBy;
+        private List<NodeRef> linkedToBy;
+        private Boolean isInherited;
 
         public Builder id(String id)
         {
@@ -167,6 +205,18 @@ public class RuleSet
             return this;
         }
 
+        public Builder linkedToBy(List<NodeRef> linkedToBy)
+        {
+            this.linkedToBy = linkedToBy;
+            return this;
+        }
+
+        public Builder isInherited(Boolean isInherited)
+        {
+            this.isInherited = isInherited;
+            return this;
+        }
+
         public RuleSet create()
         {
             final RuleSet ruleSet = new RuleSet();
@@ -174,6 +224,8 @@ public class RuleSet
             ruleSet.setOwningFolder(owningFolder);
             ruleSet.setInclusionType(inclusionType);
             ruleSet.setInheritedBy(inheritedBy);
+            ruleSet.setLinkedToBy(linkedToBy);
+            ruleSet.setIsInherited(isInherited);
             return ruleSet;
         }
     }

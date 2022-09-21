@@ -38,7 +38,8 @@ public class GetDeploymentsSanityTests extends RestTest
                 .fieldsCount().is(4).and()
                 .field("id").isNotEmpty().and()
                 .field("deployedAt").isNotEmpty().and()
-                .field("name").isNotEmpty();
+                .field("name").isNotEmpty().and()
+                .field("category").isNull();
     }
 
 }

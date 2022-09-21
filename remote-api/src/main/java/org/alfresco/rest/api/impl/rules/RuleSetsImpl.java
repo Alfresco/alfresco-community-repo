@@ -110,6 +110,31 @@ public class RuleSetsImpl implements RuleSets
         return ruleSetLink;
     }
 
+    @Override
+    public void unlinkRuleSet(String folderNodeId, String ruleSetId)
+    {
+        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
+        final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, true);
+
+        //The folder should have pre-existing rules
+        if (!ruleService.hasRules(folderNodeRef)) {
+            throw new InvalidArgumentException("The folder node is not linked to a rule set.");
+        }
+
+        // Check that the actioned upon node has the rules aspect applied
+        if (nodeService.hasAspect(folderNodeRef, RuleModel.ASPECT_RULES))
+        {
+            // Get the rule node the actioned upon node is linked to
+            NodeRef linkedToNode = ruleService.getLinkedToRuleNode(folderNodeRef);
+            if (linkedToNode != null)
+            {
+                nodeService.removeAspect(folderNodeRef, RuleModel.ASPECT_RULES);
+            }
+        }
+
+
+    }
+
     public void setRuleSetLoader(RuleSetLoader ruleSetLoader)
     {
         this.ruleSetLoader = ruleSetLoader;

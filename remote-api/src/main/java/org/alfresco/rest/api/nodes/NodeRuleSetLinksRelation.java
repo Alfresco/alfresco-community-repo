@@ -35,6 +35,7 @@ import org.alfresco.rest.api.model.rules.RuleSetLink;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
+import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -42,8 +43,9 @@ import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
 
-@RelationshipResource(name = "rule-set-links", entityResource = NodesEntityResource.class, title = "Linking to a rule set")
-public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipResourceAction.Create<RuleSetLink>
+@RelationshipResource(name = "rule-set-links", entityResource = NodesEntityResource.class, title = "Rule set links")
+public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipResourceAction.Create<RuleSetLink>,
+                                                                   RelationshipResourceAction.Delete
 {
 
     private final RuleSets ruleSets;
@@ -65,6 +67,25 @@ public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipR
         return ruleSetLinksBody.stream()
                 .map(r -> ruleSets.linkToRuleSet(nodeId, r.getId()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Remove link between a rule set and a folder rule for given rule set's and folder's node IDs.
+     * <p>
+     * - DELETE /nodes/{folderNodeId}/linked-rule-sets/{rulesetId}
+     *
+     * @param folderNodeId - folder node ID
+     * @param ruleSetNodeId - rule set node ID (associated with folder node)
+     * @param parameters - Should not be null. Should contain at least ruleId (relationship2Id) (????????????)
+     * @throws RelationshipResourceNotFoundException in case resource was not found
+     */
+    @WebApiDescription(title = "Remove link between a rule set and a folder node",
+            description = "Submits a request to unlink a rule set from a folder",
+            successStatus = HttpServletResponse.SC_NO_CONTENT)
+    @Override
+    public void delete(String folderNodeId, String ruleSetNodeId, Parameters parameters)
+    {
+        ruleSets.unlinkRuleSet(folderNodeId, ruleSetNodeId);
     }
 
     public NodeRuleSetLinksRelation(RuleSets ruleSets)

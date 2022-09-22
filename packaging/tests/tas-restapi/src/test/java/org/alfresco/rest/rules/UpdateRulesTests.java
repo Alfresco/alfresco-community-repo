@@ -33,8 +33,10 @@ import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ASYNC_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
+import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
 import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
@@ -42,10 +44,11 @@ import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -388,7 +391,6 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
@@ -409,7 +411,6 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
@@ -430,7 +431,6 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
@@ -451,11 +451,38 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Parameter in condition must not be blank");
+    }
+
+    /**
+     * Check we can update a rule by adding several actions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleAddActions()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule by adding several actions");
+        final Map<String, Serializable> copyParams =
+                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
+        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
+        final Map<String, Serializable> checkOutParams =
+                Map.of("destination-folder", "dummy-folder-node", "assoc-name", "cm:checkout", "assoc-type",
+                        "cm:contains");
+        final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
+        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
+        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        rule.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID)
+                .assertThat().field(ID).isNotNull();
     }
 
     private RestRuleModel createAndSaveRule(String name)

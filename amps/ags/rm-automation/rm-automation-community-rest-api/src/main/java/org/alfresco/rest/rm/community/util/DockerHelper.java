@@ -153,8 +153,6 @@ public class DockerHelper
      */
     public void checkExceptionIsInAlfrescoLogs(String expectedException) throws Exception
     {
-        System.out.println("Showing the Docker Logs");
-        getAlfrescoLogs().stream().forEach(System.out::println);
         //Retry the operation because sometimes it takes few seconds to throw the exception
         Utility.sleep(6000, 30000, () ->
         {

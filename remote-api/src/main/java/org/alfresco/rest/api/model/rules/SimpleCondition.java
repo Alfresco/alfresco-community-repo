@@ -59,48 +59,9 @@ import org.apache.commons.collections.CollectionUtils;
 @Experimental
 public class SimpleCondition
 {
-    public static final String CATEGORY_INVALID_MSG = "Category in condition is invalid";
-    public static final String PARAM_CATEGORY = "category";
-    public static final String PARAM_MIMETYPE = "mimetype";
-
     private String field;
     private String comparator;
     private String parameter;
-
-    /**
-     * Converts list of service POJO action conditions to list of REST model simple conditions.
-     *
-     * @param actionConditions - list of {@link ActionCondition} service POJOs
-     * @return list of {@link SimpleCondition} REST models
-     */
-    public static List<SimpleCondition> listOf(final List<ActionCondition> actionConditions,
-                                               final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
-    {
-        if (CollectionUtils.isEmpty(actionConditions))
-        {
-            return null;
-        }
-        return simpleConditionMapper.toRestModels(actionConditions);
-    }
-
-    /**
-     * Creates simple condition REST model instance from service POJO action condition.
-     *
-     * @param actionCondition - {@link ActionCondition} service POJO
-     * @return {@link SimpleCondition} REST model
-     */
-    public static SimpleCondition from(final ActionCondition actionCondition,
-                                       final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
-    {
-        return simpleConditionMapper.toRestModel(actionCondition);
-    }
-
-    public ActionCondition toServiceModel(final boolean inverted, final RestModelMapper<SimpleCondition, ActionCondition> mapper)
-    {
-        final ActionCondition actionCondition = mapper.toServiceModel(this);
-        actionCondition.setInvertCondition(inverted);
-        return actionCondition;
-    }
 
     public String getField()
     {

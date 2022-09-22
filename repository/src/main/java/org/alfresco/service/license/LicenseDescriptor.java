@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2022 Alfresco Software Limited
+ * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -139,12 +139,6 @@ public interface LicenseDescriptor
      * @return <code>true</code> if the license allows cryptodoc
      */
     boolean isCryptodocEnabled();
-
-    /**
-     * Does this license allow custom embedded workflows?
-     * @return <code>true</code> if the license allows custom embedded workflows
-     */
-    boolean isCustomEmbeddedWorkflowEnabled();
     
     /**
      * ATS Transformation Server Expiry Date

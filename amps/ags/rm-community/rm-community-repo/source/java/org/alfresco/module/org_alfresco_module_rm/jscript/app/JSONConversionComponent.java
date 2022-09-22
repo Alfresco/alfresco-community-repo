@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.extern.slf4j.Slf4j;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
@@ -78,6 +79,7 @@ import org.json.simple.JSONObject;
  *
  * @author Roy Wetherall
  */
+@Slf4j
 public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JSONConversionComponent
                                      implements NodeServicePolicies.OnDeleteNodePolicy,
                                                 NodeServicePolicies.OnCreateNodePolicy
@@ -527,7 +529,11 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                         DispositionActionDefinition dispositionActionDefinition = nextDispositionAction.getDispositionActionDefinition();
                         HashMap properties = (HashMap) rmNodeValues.get("properties");
                         properties.put("incompleteDispositionEvent", details.getEventName());
-                        if(dispositionActionDefinition != null)
+                        if(dispositionActionDefinition == null)
+                        {
+                            log.debug("Disposition action definition for this node has been removed or never exist");
+                        }
+                        else
                         {
                             properties.put("combineDispositionStepConditions", nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_COMBINE_DISPOSITION_STEP_CONDITIONS));
                             properties.put("dispositionEventCombination", nodeService.getProperty(dispositionActionDefinition.getNodeRef(), PROP_DISPOSITION_EVENT_COMBINATION));

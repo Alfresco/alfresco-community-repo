@@ -284,8 +284,7 @@ public class RepositoryInfo
                         .setMaxDocs(licenseDescriptor.getMaxDocs())
                         .setMaxUsers(licenseDescriptor.getMaxUsers())
                         .setClusterEnabled(licenseDescriptor.isClusterEnabled())
-                        .setCryptodocEnabled(licenseDescriptor.isCryptodocEnabled())
-                        .setCustomEmbeddedWorkflowEnabled(licenseDescriptor.isCustomEmbeddedWorkflowEnabled());
+                        .setCryptodocEnabled(licenseDescriptor.isCryptodocEnabled());
         }
 
         public Date getIssuedAt()
@@ -344,7 +343,6 @@ public class RepositoryInfo
         private Long maxDocs;
         private boolean isClusterEnabled;
         private boolean isCryptodocEnabled;
-        private boolean isCustomEmbeddedWorkflowEnabled;
 
         public LicenseEntitlement()
         {
@@ -394,17 +392,6 @@ public class RepositoryInfo
             return this;
         }
 
-        public boolean getIsCustomEmbeddedWorkflowEnabled()
-        {
-            return isCustomEmbeddedWorkflowEnabled;
-        }
-
-        public LicenseEntitlement setCustomEmbeddedWorkflowEnabled(boolean customEmbeddedWorkflowEnabled)
-        {
-            isCustomEmbeddedWorkflowEnabled = customEmbeddedWorkflowEnabled;
-            return this;
-        }
-
         @Override
         public String toString()
         {
@@ -413,7 +400,6 @@ public class RepositoryInfo
                         .append(", maxDocs=").append(maxDocs)
                         .append(", isClusterEnabled=").append(isClusterEnabled)
                         .append(", isCryptodocEnabled=").append(isCryptodocEnabled)
-                        .append(", isCustomEmbeddedWorkflowEnabled=").append(isCustomEmbeddedWorkflowEnabled)
                         .append(']');
             return sb.toString();
         }

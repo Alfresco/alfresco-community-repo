@@ -178,7 +178,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         return new String[][]
                 {
                         { "/", DESTINATION_PATH_NOT_FOUND_EXC },
-                        { "Unfiled Records", INVALID_DESTINATION_PATH_EXC },
+//                        { "Unfiled Records", INVALID_DESTINATION_PATH_EXC },
                         { "Transfers", INVALID_DESTINATION_PATH_EXC },
                         { "Holds", INVALID_DESTINATION_PATH_EXC },
                         { "rm/documentlibrary", DESTINATION_PATH_NOT_FOUND_EXC },
@@ -205,7 +205,6 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
      * And the document is not declared as a version record
      */
     @Test (dataProvider = "invalidDestinationPaths", groups = { TestGroup.NOT_SUPPORTED_ON_SINGLE_PIPELINE })
-    @Ignore
     public void declareVersionAndFileToInvalidLocationUsingActionsAPI(String containerPath, String expectedException) throws Exception
     {
         STEP("Declare document as record version with an invalid location parameter value");

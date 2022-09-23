@@ -531,7 +531,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                         properties.put("incompleteDispositionEvent", details.getEventName());
                         if(dispositionActionDefinition == null)
                         {
-                            log.debug("Disposition action definition for this node has been removed or never exist");
+                            log.debug("Disposition action definition for disposition action "+ nextDispositionAction.getName() +" has been removed or never exist");
                         }
                         else
                         {

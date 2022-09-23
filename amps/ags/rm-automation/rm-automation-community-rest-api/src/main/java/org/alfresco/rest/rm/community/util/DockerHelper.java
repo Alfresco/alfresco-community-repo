@@ -159,7 +159,6 @@ public class DockerHelper
         for(String logLine: getAlfrescoLogs()) {
             System.out.println("LogLine " + count + ": " + logLine);
             System.out.println("Comparision against expectedException is: " + logLine.contains(expectedException));
-            if(logLine.contains(expectedException)) break;
             count++;
         }
         //Retry the operation because sometimes it takes few seconds to throw the exception

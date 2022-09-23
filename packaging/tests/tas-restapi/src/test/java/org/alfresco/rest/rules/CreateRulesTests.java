@@ -93,7 +93,6 @@ public class CreateRulesTests extends RestTest
                                        .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
-        expectedRuleModel.setConditions(createEmptyConditionModel());
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED)
                 .assertThat().field(ID).isNotNull()
@@ -383,7 +382,6 @@ public class CreateRulesTests extends RestTest
 
         final RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
-        expectedRuleModel.setConditions(createEmptyConditionModel());
         expectedRuleModel.setTriggers(List.of("inbound"));
 
         restClient.assertStatusCodeIs(CREATED);
@@ -459,7 +457,6 @@ public class CreateRulesTests extends RestTest
             .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
-        expectedRuleModel.setConditions(createCompositeCondition(null));
         expectedRuleModel.setTriggers(List.of("inbound"));
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED);

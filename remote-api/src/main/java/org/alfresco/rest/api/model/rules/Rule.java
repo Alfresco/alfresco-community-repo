@@ -63,7 +63,7 @@ public class Rule
      * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
      * @return {@link Rule} REST model
      */
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
+    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper)
     {
         if (ruleModel == null)
         {
@@ -86,7 +86,7 @@ public class Rule
         }
         if (ruleModel.getAction() != null)
         {
-            builder.conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions(), simpleConditionMapper));
+            builder.conditions(compositeConditionMapper.toRestModel(ruleModel.getAction().getActionConditions()));
             if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
             {
                 builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
@@ -106,7 +106,7 @@ public class Rule
      * @param nodes The nodes API.
      * @return The rule service POJO.
      */
-    public org.alfresco.service.cmr.rule.Rule toServiceModel(final Nodes nodes, final RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
+    public org.alfresco.service.cmr.rule.Rule toServiceModel(final Nodes nodes, final RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper)
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
         final NodeRef nodeRef = (id != null) ? nodes.validateOrLookupNode(id, null) : null;
@@ -129,7 +129,7 @@ public class Rule
         }
         if (conditions != null)
         {
-            conditions.toServiceModels(simpleConditionMapper).forEach(condition -> ruleModel.getAction().addActionCondition(condition));
+            compositeConditionMapper.toServiceModels(conditions).forEach(condition -> ruleModel.getAction().addActionCondition(condition));
         }
 
         return ruleModel;

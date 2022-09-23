@@ -28,13 +28,13 @@ package org.alfresco.rest.api.impl.rules;
 import java.util.List;
 
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
+import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.SimpleCondition;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.service.namespace.NamespaceService;
 
 /** Responsible for creating {@link Rule} objects. */
 @Experimental
@@ -43,11 +43,11 @@ public class RuleLoader
     public static final String IS_SHARED = "isShared";
     private RuleService ruleService;
     private NodeValidator nodeValidator;
-    private RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper;
+    private RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper;
 
     public Rule loadRule(org.alfresco.service.cmr.rule.Rule ruleModel, List<String> includes)
     {
-        Rule rule = Rule.from(ruleModel, simpleConditionMapper);
+        Rule rule = Rule.from(ruleModel, compositeConditionMapper);
         if (includes != null && includes.contains(IS_SHARED))
         {
             NodeRef ruleSet = ruleService.getRuleSetNode(ruleModel.getNodeRef());
@@ -67,9 +67,9 @@ public class RuleLoader
         this.nodeValidator = nodeValidator;
     }
 
-    public void setSimpleConditionMapper(
-            RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
+    public void setCompositeConditionMapper(
+            RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper)
     {
-        this.simpleConditionMapper = simpleConditionMapper;
+        this.compositeConditionMapper = compositeConditionMapper;
     }
 }

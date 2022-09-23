@@ -26,19 +26,25 @@
 
 package org.alfresco.rest.api.impl.mapper.rules;
 
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.COMPARATOR_NOT_NULL;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.FIELD_NOT_NULL;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAMETER_NOT_NULL;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAM_CATEGORY;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAM_MIMETYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.evaluator.CompareMimeTypeEvaluator;
@@ -54,6 +60,7 @@ import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
 import org.alfresco.repo.action.evaluator.compare.ContentPropertyName;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.rules.SimpleCondition;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -69,7 +76,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
-public class RestRuleSimpleConditionModelMapperTest extends TestCase
+public class RestRuleSimpleConditionModelMapperTest
 {
     private static final boolean NULL_RESULT = true;
     private static final String PARAMETER_DEFAULT = "value";
@@ -156,7 +163,8 @@ public class RestRuleSimpleConditionModelMapperTest extends TestCase
     public void testToRestModelListOfNullActionConditions()
     {
         // when
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> objectUnderTest.toRestModels(null));
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> objectUnderTest.toRestModels(
+                (Collection<ActionCondition>) null));
     }
 
     @Test
@@ -212,7 +220,7 @@ public class RestRuleSimpleConditionModelMapperTest extends TestCase
     @Test
     public void testToServiceModel_compareMimetype()
     {
-        final SimpleCondition simpleCondition = createSimpleCondition(SimpleCondition.PARAM_MIMETYPE);
+        final SimpleCondition simpleCondition = createSimpleCondition(PARAM_MIMETYPE);
 
         // when
         final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);
@@ -264,7 +272,7 @@ public class RestRuleSimpleConditionModelMapperTest extends TestCase
     @Test
     public void testToServiceModel_inCategory()
     {
-        final SimpleCondition simpleCondition = createSimpleCondition(SimpleCondition.PARAM_CATEGORY);
+        final SimpleCondition simpleCondition = createSimpleCondition(PARAM_CATEGORY);
         final NodeRef defaultNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARAMETER_DEFAULT);
         given(nodesMock.validateOrLookupNode(PARAMETER_DEFAULT, null)).willReturn(defaultNodeRef);
 
@@ -295,6 +303,67 @@ public class RestRuleSimpleConditionModelMapperTest extends TestCase
         assertThat(actualActionCondition)
                 .isNotNull().usingRecursiveComparison().ignoringFields("id", "parameterValues.type.prefix")
                 .isEqualTo(expectedActionCondition);
+    }
+
+    @Test
+    public void testToServiceModel_nullOrBlankParameter()
+    {
+        final SimpleCondition simpleConditionNullParam = createSimpleCondition(IsSubTypeEvaluator.PARAM_TYPE, null);
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionNullParam))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(PARAMETER_NOT_NULL);
+
+        final SimpleCondition simpleConditionEmptyParam = createSimpleCondition(IsSubTypeEvaluator.PARAM_TYPE, " ");
+
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionEmptyParam))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(PARAMETER_NOT_NULL);
+    }
+
+    @Test
+    public void testToServiceModel_nullOrEmptyField()
+    {
+        final SimpleCondition simpleConditionNullField = createSimpleCondition(null);
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionNullField))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(FIELD_NOT_NULL);
+
+        final SimpleCondition simpleConditionEmptyField = createSimpleCondition("");
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionEmptyField))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(FIELD_NOT_NULL);
+    }
+
+    @Test
+    public void testToServiceModel_nullOrEmptyComparatorWhenRequired()
+    {
+        final SimpleCondition simpleConditionNullComparator = SimpleCondition.builder()
+                .field("size")
+                .comparator(null)
+                .parameter("65000")
+                .create();
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionNullComparator))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(COMPARATOR_NOT_NULL);
+
+        final SimpleCondition simpleConditionEmptyComparator = SimpleCondition.builder()
+                .field("size")
+                .comparator(" ")
+                .parameter("65000")
+                .create();
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionEmptyComparator))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(COMPARATOR_NOT_NULL);
     }
 
     private static ActionCondition createActionCondition(final String actionDefinitionName)

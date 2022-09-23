@@ -270,6 +270,14 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      */
     public Object executeString(String source, Map<String, Object> model)
     {
+        return executeString(source, model, false);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptProcessor#executeString(java.lang.String, java.util.Map, boolean)
+     */
+    public Object executeString(String source, Map<String, Object> model, boolean secure)
+    {
         try
         {
             // compile the script based on the node content
@@ -283,7 +291,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 Context.exit();
             }
-            return executeScriptImpl(script, model, true, "string script");
+            return executeScriptImpl(script, model, secure, "string script");
         }
         catch (Throwable err)
         {

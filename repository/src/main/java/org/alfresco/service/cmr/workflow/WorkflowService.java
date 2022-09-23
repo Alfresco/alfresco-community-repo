@@ -77,7 +77,24 @@ public interface WorkflowService
             parameters = {"engineId", "workflowDefinition", "mimetype", "name"},
             recordable = {true,       false,                true,       true})
     public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype, String name);
-    
+
+    /**
+     * Deploy a Workflow Definition to the Alfresco Repository
+     *
+     * @param  engineId  the bpm engine id
+     * @param  workflowDefinition  the workflow definition
+     * @param  mimetype  the mimetype of the workflow definition
+     * @param  name  a name representing the deployment
+     * @parm   fullAccess true if workflow should be considered secure (e.g., if it is deployed in classpath) and should have full access to the execution context,
+     *                    false if it should be executed in a sandbox context (more restricted)
+     * @return  workflow deployment descriptor
+     * @since 4.0
+     */
+    @Auditable(
+            parameters = {"engineId", "workflowDefinition", "mimetype", "name", "fullAccess"},
+            recordable = {true,       false,                true,       true,   true})
+    public WorkflowDeployment deployDefinition(String engineId, InputStream workflowDefinition, String mimetype, String name, boolean fullAccess);
+
     /**
      * Deploy a Workflow Definition to the Alfresco Repository
      * 
@@ -117,6 +134,17 @@ public interface WorkflowService
             parameters = {"engineId", "workflowDefinition", "mimetype"},
             recordable = {true,       false,                true})
     public boolean isDefinitionDeployed(String engineId, InputStream workflowDefinition, String mimetype);
+
+    /**
+     * Checks if the deployment for supplied workflow definition has the proper category
+     *
+     * @param  engineId  the bpm engine id
+     * @param  workflowDefinition  the definition to check
+     */
+    @Auditable(
+            parameters = {"engineId", "workflowDefinition"},
+            recordable = {true,       false})
+    public void checkDeploymentCategory(String engineId, InputStream workflowDefinition);
     
     /**
      * Undeploy an exisiting Workflow Definition

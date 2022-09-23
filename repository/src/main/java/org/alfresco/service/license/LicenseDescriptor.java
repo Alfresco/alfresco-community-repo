@@ -142,10 +142,14 @@ public interface LicenseDescriptor
 
     /**
      * Does this license allow custom embedded workflows?
+     *
      * @return <code>true</code> if the license allows custom embedded workflows
      */
-    boolean isCustomEmbeddedWorkflowEnabled();
-    
+    default boolean isCustomEmbeddedWorkflowEnabled()
+    {
+        return false;
+    }
+
     /**
      * ATS Transformation Server Expiry Date
      * @return the ATS Transformation Server Expiry Date or <code>null</code>

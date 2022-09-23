@@ -162,7 +162,7 @@ public class DockerHelper
             count++;
         }
         //Retry the operation because sometimes it takes few seconds to throw the exception
-        Utility.sleep(6000, 30000, () ->
+        Utility.sleep(6000, 60000, () ->
         {
             List<String> alfrescoLogs = getAlfrescoLogs();
             assertTrue(alfrescoLogs.stream().anyMatch(logLine -> logLine.contains(expectedException)));

@@ -149,6 +149,7 @@ public class DockerHelper
      * Helper method to check if the specified exception is thrown in alfresco logs
      *
      * @param expectedException the expected exception to be thrown
+     * @param containerPath the container path for which the logs are checked
      * @throws Exception
      */
     public void checkExceptionIsInAlfrescoLogs(String expectedException, String containerPath) throws Exception

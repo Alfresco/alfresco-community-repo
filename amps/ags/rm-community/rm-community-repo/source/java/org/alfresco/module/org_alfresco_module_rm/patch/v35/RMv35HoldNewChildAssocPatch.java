@@ -267,8 +267,8 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
         public void setupHold()
         {
             // Get child assocs without preloading
-            List<ChildAssociationRef> holdChildren = nodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT, null,
-                    Integer.MAX_VALUE, false);
+            List<ChildAssociationRef> holdChildren = nodeService.getChildAssocs(hold, ASSOC_FROZEN_CONTENT,
+                    RegexQNamePattern.MATCH_ALL, Integer.MAX_VALUE, false);
             this.iterator = holdChildren.listIterator();
             this.workSize = holdChildren.size();
         }

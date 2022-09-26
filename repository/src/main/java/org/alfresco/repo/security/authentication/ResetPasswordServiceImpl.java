@@ -504,6 +504,21 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         return UrlUtil.replaceShareUrlPlaceholder(url, sysAdminParams);
     }
 
+    private String getAdwUrl(String url, String propName)
+    {
+        if (url == null)
+        {
+            LOGGER.warn("The url for the property [" + propName + "] is not configured.");
+            return "";
+        }
+
+        if (url.endsWith("/"))
+        {
+            url = url.substring(0, url.length() - 1);
+        }
+        return UrlUtil.replaceAdwUrlPlaceholder(url, sysAdminParams);
+    }
+
     protected String getResetPasswordEmailTemplate(ClientApp clientApp)
     {
         return clientApp.getProperty("requestResetPasswordTemplatePath");
@@ -522,22 +537,28 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
         StringBuilder sb = new StringBuilder(100);
 
         String pageUrl = clientApp.getProperty("resetPasswordPageUrl");
-        if (StringUtils.isEmpty(pageUrl))
-        {
-            sb.append(UrlUtil.getShareUrl(sysAdminParams));
 
-            LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName()
+        if(clientApp.getName().equals("adw")) {
+            sb.append(getAdwUrl(pageUrl, ""));
+            LOGGER.warn("Client Name is " + clientApp.getName() + " The url used is     " + sb.toString());
+            sb.append("?key=").append(key)
+                    .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id)).append("&userName=").append(userName);
+
+        }
+        else {
+            if (StringUtils.isEmpty(pageUrl)) {
+                sb.append(UrlUtil.getShareUrl(sysAdminParams));
+
+                LOGGER.warn("'resetPasswordPageUrl' property is not set for the client [" + clientApp.getName()
                         + "]. The default base url of Share will be used [" + sb.toString() + "]");
-        }
-        else
-        {
-            // We pass an empty string as we know that the pageUrl is not null
-            sb.append(getUrl(pageUrl, ""));
-        }
+            } else {
+                // We pass an empty string as we know that the pageUrl is not null
+                sb.append(getUrl(pageUrl, ""));
+            }
 
-        sb.append("?key=").append(key)
+            sb.append("?key=").append(key)
                     .append("&id=").append(BPMEngineRegistry.createGlobalId(ActivitiConstants.ENGINE_ID, id));
-
+        }
         return sb.toString();
     }
 

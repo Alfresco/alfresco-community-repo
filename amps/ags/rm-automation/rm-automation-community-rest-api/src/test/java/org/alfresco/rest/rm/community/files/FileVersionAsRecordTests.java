@@ -177,22 +177,22 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
     {
         return new String[][]
                 {
-                        { "/", DESTINATION_PATH_NOT_FOUND_EXC },
-                        { "Unfiled Records", INVALID_DESTINATION_PATH_EXC },
-                        { "Transfers", INVALID_DESTINATION_PATH_EXC },
-                        { "Holds", INVALID_DESTINATION_PATH_EXC },
-                        { "rm/documentlibrary", DESTINATION_PATH_NOT_FOUND_EXC },
-                        { recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC },
-                        // a closed record folder
-                        { Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()),
-                                ACCESS_DENIED_EXC },
-                         // a frozen record folder
-                        { Utility.buildPath(recordCategory.getName(), heldRecordFolder.getName()),
-                                ACCESS_DENIED_EXC },
-                        // an arbitrary unfiled records folder
-                        { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
-                        // a collaboration site folder
-                        { testFolder.getCmisLocation(), DESTINATION_PATH_NOT_FOUND_EXC }
+//                        { "/", DESTINATION_PATH_NOT_FOUND_EXC },
+                        { "Unfiled Records", INVALID_DESTINATION_PATH_EXC }
+//                        { "Transfers", INVALID_DESTINATION_PATH_EXC },
+//                        { "Holds", INVALID_DESTINATION_PATH_EXC },
+//                        { "rm/documentlibrary", DESTINATION_PATH_NOT_FOUND_EXC },
+//                        { recordCategory.getName(), DESTINATION_PATH_NOT_RECORD_FOLDER_EXC },
+//                        // a closed record folder
+//                        { Utility.buildPath(recordCategory.getName(), closedRecordFolder.getName()),
+//                                ACCESS_DENIED_EXC },
+//                         // a frozen record folder
+//                        { Utility.buildPath(recordCategory.getName(), heldRecordFolder.getName()),
+//                                ACCESS_DENIED_EXC },
+//                        // an arbitrary unfiled records folder
+//                        { "Unfiled Records/" + unfiledContainerFolder.getName(), INVALID_DESTINATION_PATH_EXC },
+//                        // a collaboration site folder
+//                        { testFolder.getCmisLocation(), DESTINATION_PATH_NOT_FOUND_EXC }
                 };
     }
 

@@ -38,7 +38,6 @@ import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.mapper.rules.RestRuleCompositeConditionModelMapper;
-import org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
@@ -57,7 +56,7 @@ public class RuleTest
     private static final String RULE_NAME = "rule name";
     private static final String RULE_DESCRIPTION = "rule description";
     private static final boolean RULE_ENABLED = true;
-    private static final boolean RULE_CASCADE = true;
+    private static final boolean RULE_INHERITABLE = true;
     private static final boolean RULE_ASYNC = true;
     private static final boolean RULE_SHARED = true;
     private static final String ACTION_DEFINITION_NAME = "action-def-name";
@@ -82,7 +81,7 @@ public class RuleTest
     public void testFromRuleModelWithNullValues()
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
-        final Rule expectedRule = Rule.builder().enabled(true).create();
+        final Rule expectedRule = Rule.builder().isEnabled(true).create();
 
         // when
         final Rule actualRule = Rule.from(ruleModel, compositeConditionMapper);
@@ -141,9 +140,9 @@ public class RuleTest
             .id(RULE_ID)
             .name(RULE_NAME)
             .description(RULE_DESCRIPTION)
-            .enabled(RULE_ENABLED)
-            .cascade(RULE_CASCADE)
-            .asynchronous(RULE_ASYNC)
+            .isEnabled(RULE_ENABLED)
+            .isInheritable(RULE_INHERITABLE)
+            .isAsynchronous(RULE_ASYNC)
             .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
             .errorScript(ERROR_SCRIPT)
             .conditions(compositeConditionMapper.toRestModel(Collections.emptyList()))
@@ -156,7 +155,7 @@ public class RuleTest
         ruleModel.setTitle(RULE_NAME);
         ruleModel.setDescription(RULE_DESCRIPTION);
         ruleModel.setRuleDisabled(!RULE_ENABLED);
-        ruleModel.applyToChildren(RULE_CASCADE);
+        ruleModel.applyToChildren(RULE_INHERITABLE);
         ruleModel.setExecuteAsynchronously(RULE_ASYNC);
         ruleModel.setRuleTypes(List.of(RuleType.INBOUND, RuleType.UPDATE));
         ruleModel.setAction(createActionModel());

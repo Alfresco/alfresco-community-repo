@@ -53,7 +53,7 @@ public class RuleLoaderTest
     private static final String TITLE = "title";
     private static final String DESCRIPTION = "description";
     private static final boolean ENABLED = true;
-    private static final boolean CASCADE = true;
+    private static final boolean INHERITABLE = true;
     private static final boolean EXECUTE_ASYNCHRONOUSLY = false;
     private static final List<String> TRIGGERS = List.of("update", "outbound");
     private static final NodeRef RULE_SET_NODE = new NodeRef("rule://set/");
@@ -80,9 +80,9 @@ public class RuleLoaderTest
         Rule expected = Rule.builder().id(NODE_ID)
                             .name(TITLE)
                             .description(DESCRIPTION)
-                            .enabled(ENABLED)
-                            .cascade(CASCADE)
-                            .asynchronous(EXECUTE_ASYNCHRONOUSLY)
+                            .isEnabled(ENABLED)
+                            .isInheritable(INHERITABLE)
+                            .isAsynchronous(EXECUTE_ASYNCHRONOUSLY)
                             .triggers(List.of(UPDATE, OUTBOUND)).create();
         assertThat(rule).isEqualTo(expected);
     }
@@ -112,7 +112,7 @@ public class RuleLoaderTest
         rule.setTitle(TITLE);
         rule.setDescription(DESCRIPTION);
         rule.setRuleDisabled(!ENABLED);
-        rule.applyToChildren(CASCADE);
+        rule.applyToChildren(INHERITABLE);
         rule.setExecuteAsynchronously(EXECUTE_ASYNCHRONOUSLY);
         rule.setRuleTypes(TRIGGERS);
         return rule;

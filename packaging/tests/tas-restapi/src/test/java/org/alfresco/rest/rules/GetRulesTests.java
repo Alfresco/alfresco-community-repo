@@ -150,11 +150,11 @@ public class GetRulesTests extends RestTest
                 rules.getEntries().get(i).onModel()
                      .assertThat().field("isShared").isNotNull()
                         .assertThat().field("description").isNull()
-                        .assertThat().field("enabled").is(false)
-                        .assertThat().field("cascade").is(false)
-                        .assertThat().field("asynchronous").is(false)
+                        .assertThat().field("isEnabled").is(false)
+                        .assertThat().field("isInheritable").is(false)
+                        .assertThat().field("isAsynchronous").is(false)
                         .assertThat().field("errorScript").isNull()
-                        .assertThat().field("shared").isNull()
+                        .assertThat().field("isShared").isNull()
                         .assertThat().field("triggers").is("[inbound]"));
     }
 

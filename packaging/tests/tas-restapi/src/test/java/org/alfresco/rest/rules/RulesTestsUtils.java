@@ -61,9 +61,9 @@ public class RulesTestsUtils
     {
         RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         ruleModel.setDescription(RULE_DESCRIPTION_DEFAULT);
-        ruleModel.setEnabled(RULE_ENABLED_DEFAULT);
-        ruleModel.setCascade(RULE_CASCADE_DEFAULT);
-        ruleModel.setAsynchronous(RULE_ASYNC_DEFAULT);
+        ruleModel.setIsEnabled(RULE_ENABLED_DEFAULT);
+        ruleModel.setIsInheritable(RULE_CASCADE_DEFAULT);
+        ruleModel.setIsAsynchronous(RULE_ASYNC_DEFAULT);
         ruleModel.setIsShared(RULE_SHARED_DEFAULT);
         ruleModel.setTriggers(RULE_TRIGGERS_DEFAULT);
         ruleModel.setErrorScript(RULE_ERROR_SCRIPT_DEFAULT);

@@ -25,17 +25,21 @@
  */
 package org.alfresco.repo.rule;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.model.ContentModel.ASSOC_MEMBER;
+import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+import static org.alfresco.model.ContentModel.TYPE_FOLDER;
 import static org.alfresco.repo.rule.RuleModel.ASPECT_IGNORE_INHERITED_RULES;
 import static org.alfresco.repo.rule.RuleModel.ASSOC_ACTION;
 import static org.alfresco.repo.rule.RuleModel.ASSOC_RULE_FOLDER;
 import static org.alfresco.repo.rule.RuleModel.TYPE_RULE;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 import static org.alfresco.service.cmr.security.AccessStatus.DENIED;
+import static org.alfresco.service.namespace.RegexQNamePattern.MATCH_ALL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
@@ -52,18 +56,19 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionServiceException;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -98,6 +103,8 @@ public class RuleServiceImplUnitTest
     @Mock
     private RuntimeActionService runtimeActionService;
     @Mock
+    private DictionaryService dictionaryService;
+    @Mock
     private Rule mockRule;
     @Mock
     private Action mockAction;
@@ -106,6 +113,10 @@ public class RuleServiceImplUnitTest
     public void setUp()
     {
         openMocks(this);
+
+        when(dictionaryService.isSubClass(TYPE_FOLDER, TYPE_FOLDER)).thenReturn(true);
+        when(dictionaryService.isSubClass(TYPE_CONTENT, TYPE_FOLDER)).thenReturn(false);
+        when(permissionService.hasReadPermission(any())).thenReturn(ALLOWED);
     }
 
     @Test
@@ -220,7 +231,7 @@ public class RuleServiceImplUnitTest
     @Test
     public void testGetRuleSetNode_emptyAssociation()
     {
-        given(runtimeNodeService.getChildAssocs(any(), any(), any())).willReturn(Collections.emptyList());
+        given(runtimeNodeService.getChildAssocs(any(), any(), any())).willReturn(emptyList());
 
         // when
         final NodeRef actualNode = ruleService.getRuleSetNode(FOLDER_NODE);
@@ -264,7 +275,7 @@ public class RuleServiceImplUnitTest
     @Test
     public void testIsRuleSetAssociatedWithFolder_emptyAssociation()
     {
-        given(runtimeNodeService.getParentAssocs(any(), any(), any())).willReturn(Collections.emptyList());
+        given(runtimeNodeService.getParentAssocs(any(), any(), any())).willReturn(emptyList());
 
         // when
         boolean associated = ruleService.isRuleSetAssociatedWithFolder(RULE_SET_NODE, FOLDER_NODE);
@@ -343,7 +354,7 @@ public class RuleServiceImplUnitTest
     @Test
     public void testIsRuleAssociatedWithRuleSet_emptyAssociation()
     {
-        given(runtimeNodeService.getParentAssocs(any())).willReturn(Collections.emptyList());
+        given(runtimeNodeService.getParentAssocs(any())).willReturn(emptyList());
 
         // when
         boolean associated = ruleService.isRuleAssociatedWithRuleSet(RULE_NODE, RULE_SET_NODE);
@@ -456,7 +467,7 @@ public class RuleServiceImplUnitTest
     {
         Map<String, NodeRef> nodes = createParentChildHierarchy("A,B", "B,C", "C,D", "D,E");
         // Replace the B,C association with a user group membership association.
-        ChildAssociationRef memberAssoc = new ChildAssociationRef(ASSOC_MEMBER, nodes.get("B"), ContentModel.TYPE_FOLDER, nodes.get("C"));
+        ChildAssociationRef memberAssoc = new ChildAssociationRef(ASSOC_MEMBER, nodes.get("B"), TYPE_FOLDER, nodes.get("C"));
         given(runtimeNodeService.getParentAssocs(nodes.get("C"))).willReturn(List.of(memberAssoc));
 
         List<NodeRef> actual = ruleService.getNodesSupplyingRuleSets(nodes.get("E"));
@@ -570,10 +581,179 @@ public class RuleServiceImplUnitTest
                                                          .filter(assoc -> assoc.endsWith(nodeName))
                                                          .map(assoc -> assoc.split(",")[0])
                                                          .map(nodeRefMap::get)
-                                                         .map(parentRef -> new ChildAssociationRef(ASSOC_CONTAINS, parentRef, ContentModel.TYPE_FOLDER, nodeRef))
+                                                         .map(parentRef -> new ChildAssociationRef(ASSOC_CONTAINS, parentRef, TYPE_FOLDER, nodeRef))
                                                          .collect(toList());
             given(runtimeNodeService.getParentAssocs(nodeRef)).willReturn(parentAssocs);
         });
         return nodeRefMap;
+    }
+
+    /** Check that getFoldersInheritingRuleSet returns a child folder. */
+    @Test
+    public void testGetFoldersInheritingRuleSet()
+    {
+        NodeRef parent = new NodeRef("parent://node/");
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        ChildAssociationRef ruleSetAssociation = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(ruleSetAssociation));
+        given(ruleSetAssociation.getParentRef()).willReturn(parent);
+        NodeRef child = new NodeRef("child://node/");
+        ChildAssociationRef childAssocMock = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getChildAssocs(parent, ASSOC_CONTAINS, MATCH_ALL)).willReturn(List.of(childAssocMock));
+        given(childAssocMock.getChildRef()).willReturn(child);
+        given(runtimeNodeService.getType(child)).willReturn(TYPE_FOLDER);
+
+        List<NodeRef> actual = ruleService.getFoldersInheritingRuleSet(ruleSetNode, 100);
+
+        assertEquals("Unexpected list of inheriting folders.", List.of(child), actual);
+    }
+
+    /** Check that getFoldersInheritingRuleSet omits a child folder if IGNORE_INHERITED_RULES is applied. */
+    @Test
+    public void testGetFoldersInheritingRuleSet_ignoreInheritedRules()
+    {
+        NodeRef parent = new NodeRef("parent://node/");
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        ChildAssociationRef ruleSetAssociation = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(ruleSetAssociation));
+        given(ruleSetAssociation.getParentRef()).willReturn(parent);
+        NodeRef child = new NodeRef("child://node/");
+        ChildAssociationRef childAssocMock = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getChildAssocs(parent, ASSOC_CONTAINS, MATCH_ALL)).willReturn(List.of(childAssocMock));
+        given(childAssocMock.getChildRef()).willReturn(child);
+        given(runtimeNodeService.getType(child)).willReturn(TYPE_FOLDER);
+        given(runtimeNodeService.hasAspect(child, ASPECT_IGNORE_INHERITED_RULES)).willReturn(true);
+
+        List<NodeRef> actual = ruleService.getFoldersInheritingRuleSet(ruleSetNode, 100);
+
+        assertEquals("Unexpected list of inheriting folders.", emptyList(), actual);
+    }
+
+    /** Check that getFoldersInheritingRuleSet only returns at most the requested number of folders. */
+    @Test
+    public void testGetFoldersExceedsLimit()
+    {
+        NodeRef root = new NodeRef("root://node/");
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        ChildAssociationRef ruleSetAssociation = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(ruleSetAssociation));
+        given(ruleSetAssociation.getParentRef()).willReturn(root);
+        // Create a chain of ancestors starting from the root that is 10 folders deep.
+        List<NodeRef> nodeChain = new ArrayList<>();
+        nodeChain.add(root);
+        IntStream.range(0, 10).forEach(index -> {
+            NodeRef parent = nodeChain.get(nodeChain.size() - 1);
+            NodeRef child = new NodeRef("chain://node/" + index);
+            nodeChain.add(child);
+            ChildAssociationRef childAssocMock = mock(ChildAssociationRef.class);
+            given(runtimeNodeService.getChildAssocs(parent, ASSOC_CONTAINS, MATCH_ALL)).willReturn(List.of(childAssocMock));
+            given(childAssocMock.getChildRef()).willReturn(child);
+            given(runtimeNodeService.getType(child)).willReturn(TYPE_FOLDER);
+        });
+
+        // Request at most 9 folders inheriting the rule.
+        List<NodeRef> actual = ruleService.getFoldersInheritingRuleSet(ruleSetNode, 9);
+
+        // Check we don't get the root node or the final descendant folder.
+        assertEquals("Unexpected list of inheriting folders.", nodeChain.subList(1, 10), actual);
+    }
+
+    /** Check that getFoldersInheritingRuleSet doesn't include documents. */
+    @Test
+    public void testGetFoldersInheritingRuleSet_ignoreFiles()
+    {
+        NodeRef parent = new NodeRef("parent://node/");
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        ChildAssociationRef ruleSetAssociation = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(ruleSetAssociation));
+        given(ruleSetAssociation.getParentRef()).willReturn(parent);
+        NodeRef childDocument = new NodeRef("child://document/");
+        ChildAssociationRef childAssocMock = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getChildAssocs(parent, ASSOC_CONTAINS, MATCH_ALL)).willReturn(List.of(childAssocMock));
+        given(childAssocMock.getChildRef()).willReturn(childDocument);
+        given(runtimeNodeService.getType(childDocument)).willReturn(TYPE_CONTENT);
+
+        List<NodeRef> actual = ruleService.getFoldersInheritingRuleSet(ruleSetNode, 100);
+
+        assertEquals("Unexpected list of inheriting folders.", emptyList(), actual);
+    }
+
+    /**
+     * Check that getFoldersInheritingRuleSet does not include folders that the user doesn't have access to.
+     * <p>
+     * This test uses a chain of three folders:
+     * <pre>
+     *     grandparent - owns the rule set
+     *     parent - user does not have read access
+     *     child - user _does_ have read access
+     * </pre>
+     */
+    @Test
+    public void testGetFoldersInheritingRuleSet_omitFoldersWithoutReadPermission()
+    {
+        NodeRef grandparent = new NodeRef("grandparent://node/");
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        ChildAssociationRef ruleSetAssociation = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(ruleSetAssociation));
+        given(ruleSetAssociation.getParentRef()).willReturn(grandparent);
+        NodeRef parent = new NodeRef("parent://node/");
+        ChildAssociationRef parentAssocMock = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getChildAssocs(grandparent, ASSOC_CONTAINS, MATCH_ALL)).willReturn(List.of(parentAssocMock));
+        given(parentAssocMock.getChildRef()).willReturn(parent);
+        given(runtimeNodeService.getType(parent)).willReturn(TYPE_FOLDER);
+        NodeRef child = new NodeRef("child://node/");
+        ChildAssociationRef childAssocMock = mock(ChildAssociationRef.class);
+        given(runtimeNodeService.getChildAssocs(grandparent, ASSOC_CONTAINS, MATCH_ALL)).willReturn(List.of(childAssocMock));
+        given(childAssocMock.getChildRef()).willReturn(child);
+        given(runtimeNodeService.getType(child)).willReturn(TYPE_FOLDER);
+
+        // The current user doesn't have permission to view the parent node.
+        given(permissionService.hasReadPermission(parent)).willReturn(DENIED);
+
+        List<NodeRef> actual = ruleService.getFoldersInheritingRuleSet(ruleSetNode, 100);
+
+        assertEquals("Unexpected list of inheriting folders.", List.of(child), actual);
+    }
+
+    /** Check that a linked folder can be retrieved from a rule set node. */
+    @Test
+    public void testGetFoldersLinkingToRuleSet()
+    {
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        NodeRef owningFolder = new NodeRef("owning://folder/");
+        ChildAssociationRef owningAssocMock = mock(ChildAssociationRef.class);
+        given(owningAssocMock.getParentRef()).willReturn(owningFolder);
+        given(nodeService.getPrimaryParent(ruleSetNode)).willReturn(owningAssocMock);
+        // Simulate a folder linking to the rule set.
+        NodeRef linkingFolder = new NodeRef("linking://folder/");
+        ChildAssociationRef linkingAssocMock = mock(ChildAssociationRef.class);
+        given(linkingAssocMock.getParentRef()).willReturn(linkingFolder);
+        given(nodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(owningAssocMock, linkingAssocMock));
+
+        List<NodeRef> linkingFolders = ruleService.getFoldersLinkingToRuleSet(ruleSetNode);
+
+        assertEquals("Unexpected list of linking folders.", List.of(linkingFolder), linkingFolders);
+    }
+
+    /** Check that permissions affect which linked folders are returned to the user. */
+    @Test
+    public void testGetFoldersLinkingToRuleSet_respectsPermissions()
+    {
+        NodeRef ruleSetNode = new NodeRef("rule://set/");
+        NodeRef owningFolder = new NodeRef("owning://folder/");
+        ChildAssociationRef owningAssocMock = mock(ChildAssociationRef.class);
+        given(owningAssocMock.getParentRef()).willReturn(owningFolder);
+        given(nodeService.getPrimaryParent(ruleSetNode)).willReturn(owningAssocMock);
+        // Simulate a folder linking to the rule set.
+        NodeRef linkingFolder = new NodeRef("linking://folder/");
+        ChildAssociationRef linkingAssocMock = mock(ChildAssociationRef.class);
+        given(linkingAssocMock.getParentRef()).willReturn(linkingFolder);
+        given(nodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(owningAssocMock, linkingAssocMock));
+        // The currect user does not have permission to view the folder.
+        given(permissionService.hasReadPermission(linkingFolder)).willReturn(DENIED);
+
+        List<NodeRef> linkingFolders = ruleService.getFoldersLinkingToRuleSet(ruleSetNode);
+
+        assertEquals("Unexpected list of linking folders.", emptyList(), linkingFolders);
     }
 }

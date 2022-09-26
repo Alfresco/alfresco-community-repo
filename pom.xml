@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>17.114-SNAPSHOT</version>
+    <version>17.132-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -51,18 +51,18 @@
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-service.version>1.5.4-A3</dependency.alfresco-transform-service.version>
-        <dependency.alfresco-transform-core.version>2.7.0-A1</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>2.0.0-A2</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>3.0.0-A2</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.4</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.16</dependency.acs-event-model.version>
 
-        <dependency.spring.version>5.3.22</dependency.spring.version>
-        <dependency.antlr.version>3.5.2</dependency.antlr.version>
+        <dependency.spring.version>5.3.23</dependency.spring.version>
+        <dependency.antlr.version>3.5.3</dependency.antlr.version>
         <dependency.jackson.version>2.13.3</dependency.jackson.version>
         <dependency.jackson-databind.version>2.13.3</dependency.jackson-databind.version>
         <dependency.cxf.version>3.5.3</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
-        <dependency.webscripts.version>8.31</dependency.webscripts.version>
+        <dependency.webscripts.version>8.32</dependency.webscripts.version>
         <dependency.bouncycastle.version>1.70</dependency.bouncycastle.version>
         <dependency.mockito-core.version>4.6.1</dependency.mockito-core.version>
         <dependency.assertj.version>3.23.1</dependency.assertj.version>
@@ -74,11 +74,11 @@
         <dependency.httpcore.version>4.4.15</dependency.httpcore.version>
         <dependency.commons-httpclient.version>3.1-HTTPCLIENT-1265</dependency.commons-httpclient.version>
         <dependency.xercesImpl.version>2.12.2</dependency.xercesImpl.version>
-        <dependency.slf4j.version>1.7.36</dependency.slf4j.version>
+        <dependency.slf4j.version>2.0.1</dependency.slf4j.version>
         <dependency.gytheio.version>0.17</dependency.gytheio.version>
         <dependency.groovy.version>3.0.12</dependency.groovy.version>
         <dependency.tika.version>2.4.1</dependency.tika.version>
-        <dependency.spring-security.version>5.7.2</dependency.spring-security.version>
+        <dependency.spring-security.version>5.7.3</dependency.spring-security.version>
         <dependency.truezip.version>7.7.10</dependency.truezip.version>
         <dependency.poi.version>5.2.2</dependency.poi.version>
         <dependency.ooxml-schemas.version>1.4</dependency.ooxml-schemas.version>
@@ -117,13 +117,13 @@
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
 
-        <dependency.postgresql.version>42.4.1</dependency.postgresql.version>
+        <dependency.postgresql.version>42.5.0</dependency.postgresql.version>
         <dependency.mysql.version>8.0.30</dependency.mysql.version>
         <dependency.mysql-image.version>8</dependency.mysql-image.version>
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
-        <dependency.tas-utility.version>3.0.49</dependency.tas-utility.version>
-        <dependency.rest-assured.version>5.1.1</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.115</dependency.tas-restapi.version>
+        <dependency.tas-utility.version>3.0.56</dependency.tas-utility.version>
+        <dependency.rest-assured.version>5.2.0</dependency.rest-assured.version>
+        <dependency.tas-restapi.version>1.122</dependency.tas-restapi.version>
         <dependency.tas-cmis.version>1.32</dependency.tas-cmis.version>
         <dependency.tas-email.version>1.9</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.7</dependency.tas-webdav.version>
@@ -408,7 +408,7 @@
             <dependency>
                 <groupId>org.apache.xmlbeans</groupId>
                 <artifactId>xmlbeans</artifactId>
-                <version>5.1.0</version>
+                <version>5.1.1</version>
             </dependency>
             <dependency>
                 <groupId>org.json</groupId>
@@ -515,6 +515,11 @@
                 <groupId>com.fasterxml.jackson.dataformat</groupId>
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${dependency.jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.yaml</groupId>
+                <artifactId>snakeyaml</artifactId>
+                <version>1.32</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
@@ -659,7 +664,7 @@
             <dependency>
                 <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
-                <version>1.15.2</version>
+                <version>1.15.3</version>
             </dependency>
             <!-- upgrade dependency from TIKA -->
             <dependency>
@@ -738,7 +743,7 @@
             <dependency>
                 <groupId>joda-time</groupId>
                 <artifactId>joda-time</artifactId>
-                <version>2.10.14</version>
+                <version>2.11.1</version>
             </dependency>
 
             <!-- provided dependencies -->
@@ -947,7 +952,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.4.0</version>
+                    <version>3.4.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

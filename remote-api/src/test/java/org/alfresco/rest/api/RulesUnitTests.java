@@ -26,13 +26,16 @@
 
 package org.alfresco.rest.api;
 
+import org.alfresco.rest.api.impl.mapper.rules.RestRuleCompositeConditionModelMapperTest;
+import org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapperTest;
+import org.alfresco.rest.api.impl.rules.ActionParameterConverterTest;
+import org.alfresco.rest.api.impl.rules.ActionPermissionValidatorTest;
 import org.alfresco.rest.api.impl.rules.NodeValidatorTest;
+import org.alfresco.rest.api.impl.rules.RuleLoaderTest;
 import org.alfresco.rest.api.impl.rules.RuleSetsImplTest;
 import org.alfresco.rest.api.model.rules.ActionTest;
-import org.alfresco.rest.api.model.rules.CompositeConditionTest;
 import org.alfresco.rest.api.impl.rules.RulesImplTest;
 import org.alfresco.rest.api.model.rules.RuleTest;
-import org.alfresco.rest.api.model.rules.SimpleConditionTest;
 import org.alfresco.rest.api.nodes.NodeRulesRelationTest;
 import org.alfresco.service.Experimental;
 import org.junit.runner.RunWith;
@@ -47,8 +50,11 @@ import org.junit.runners.Suite;
     NodeValidatorTest.class,
     RuleTest.class,
     ActionTest.class,
-    SimpleConditionTest.class,
-    CompositeConditionTest.class
+    RuleLoaderTest.class,
+    ActionParameterConverterTest.class,
+    ActionPermissionValidatorTest.class,
+    RestRuleSimpleConditionModelMapperTest.class,
+    RestRuleCompositeConditionModelMapperTest.class
 })
 public class RulesUnitTests
 {

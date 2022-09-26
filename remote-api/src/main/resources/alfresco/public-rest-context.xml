@@ -863,6 +863,7 @@
 
     <bean id="ruleSetLoader" class="org.alfresco.rest.api.impl.rules.RuleSetLoader">
         <property name="nodeService" ref="NodeService" />
+        <property name="ruleService" ref="RuleService" />
     </bean>
 
     <bean id="ruleSets" class="org.alfresco.rest.api.impl.rules.RuleSetsImpl">
@@ -886,7 +887,7 @@
     <bean id="ruleLoader" class="org.alfresco.rest.api.impl.rules.RuleLoader">
         <property name="ruleService" ref="RuleService" />
         <property name="nodeValidator" ref="nodeValidator" />
-        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="compositeConditionMapper" ref="compositeConditionMapper"/>
     </bean>
 
     <bean class="org.alfresco.rest.api.nodes.NodeRuleSetsRelation">
@@ -910,7 +911,7 @@
         <property name="ruleLoader" ref="ruleLoader"/>
         <property name="actionParameterConverter" ref="actionParameterConverter"/>
         <property name="actionPermissionValidator" ref="actionPermissionValidator"/>
-        <property name="namespaceService" ref="NamespaceService"/>
+        <property name="compositeConditionMapper" ref="compositeConditionMapper"/>
     </bean>
 
     <bean id="Rules" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -944,6 +945,14 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeRuleSettingsRelation">
         <property name="ruleSettings" ref="RuleSettings" />
+    </bean>
+
+    <bean id="simpleConditionMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper">
+        <constructor-arg name="namespaceService" ref="NamespaceService"/>
+        <constructor-arg name="nodes" ref="Nodes"/>
+    </bean>
+    <bean id="compositeConditionMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleCompositeConditionModelMapper">
+        <constructor-arg name="simpleConditionMapper" ref="simpleConditionMapper"/>
     </bean>
 
     <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">

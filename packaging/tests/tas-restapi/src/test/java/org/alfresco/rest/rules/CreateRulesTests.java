@@ -67,8 +67,6 @@ import org.testng.annotations.Test;
 @Test(groups = {TestGroup.RULES})
 public class CreateRulesTests extends RestTest
 {
-    private static final String IGNORE_ID = "id";
-    private static final String IGNORE_IS_SHARED = "isShared";
     private UserModel user;
     private SiteModel site;
     private FolderModel ruleFolder;
@@ -95,11 +93,10 @@ public class CreateRulesTests extends RestTest
                                        .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
-        expectedRuleModel.setConditions(createEmptyConditionModel());
         restClient.assertStatusCodeIs(CREATED);
-        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
-                .assertThat().field("id").isNotNull()
-                .assertThat().field("isShared").isNull();
+        rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED)
+                .assertThat().field(ID).isNotNull()
+                .assertThat().field(IS_SHARED).isNull();
     }
 
     /** Check creating a rule in a non-existent folder returns an error. */
@@ -385,12 +382,47 @@ public class CreateRulesTests extends RestTest
 
         final RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
-        expectedRuleModel.setConditions(createEmptyConditionModel());
         expectedRuleModel.setTriggers(List.of("inbound"));
 
         restClient.assertStatusCodeIs(CREATED);
-        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
-                .assertThat().field("isShared").isNull();
+        rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED)
+                .assertThat().field(IS_SHARED).isNull();
+    }
+
+    /**
+     * Check we get error when attempt to create a rule without any actions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithoutActionsShouldFail()
+    {
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setActions(null);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("A rule must have at least one action");
+    }
+
+    /**
+     * Check we get error when attempt to create a rule with invalid action.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithInvalidActionsShouldFail()
+    {
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        final String actionDefinitionId = "invalid-definition-value";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("dummy-key", "dummy-value"));
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertLastError().containsSummary(actionDefinitionId);
     }
 
     /**
@@ -409,7 +441,7 @@ public class CreateRulesTests extends RestTest
         expectedRuleModel.setConditions(createVariousConditions());
         expectedRuleModel.setTriggers(List.of("inbound"));
         restClient.assertStatusCodeIs(CREATED);
-        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED);
+        rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED);
     }
 
     /**
@@ -425,10 +457,9 @@ public class CreateRulesTests extends RestTest
             .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
-        expectedRuleModel.setConditions(createCompositeCondition(null));
         expectedRuleModel.setTriggers(List.of("inbound"));
         restClient.assertStatusCodeIs(CREATED);
-        rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED);
+        rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED);
     }
 
     /**

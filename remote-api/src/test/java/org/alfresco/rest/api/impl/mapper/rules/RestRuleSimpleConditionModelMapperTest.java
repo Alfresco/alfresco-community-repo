@@ -24,14 +24,21 @@
  * #L%
  */
 
-package org.alfresco.rest.api.model.rules;
+package org.alfresco.rest.api.impl.mapper.rules;
 
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.COMPARATOR_NOT_NULL;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.FIELD_NOT_NULL;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAMETER_NOT_NULL;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAM_CATEGORY;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAM_MIMETYPE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +59,8 @@ import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.evaluator.compare.ComparePropertyValueOperation;
 import org.alfresco.repo.action.evaluator.compare.ContentPropertyName;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.rules.SimpleCondition;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,54 +70,43 @@ import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @Experimental
 @RunWith(MockitoJUnitRunner.class)
-public class SimpleConditionTest
+public class RestRuleSimpleConditionModelMapperTest
 {
     private static final boolean NULL_RESULT = true;
-    private static final boolean NOT_INVERTED = false;
     private static final String PARAMETER_DEFAULT = "value";
 
-    private final Nodes nodes = mock(Nodes.class);
-    private final NamespaceService namespaceService = mock(NamespaceService.class);
+    @Mock
+    private NamespaceService namespaceServiceMock;
+    @Mock
+    private Nodes nodesMock;
+
+    @InjectMocks
+    private RestRuleSimpleConditionModelMapper objectUnderTest;
 
     @Before
     public void setUp() throws Exception
     {
-        given(namespaceService.getPrefixes(NamespaceService.CONTENT_MODEL_1_0_URI)).willReturn(List.of(NamespaceService.CONTENT_MODEL_PREFIX));
-        given(namespaceService.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).willReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
-        given(namespaceService.getPrefixes(NamespaceService.AUDIO_MODEL_1_0_URI)).willReturn(List.of(NamespaceService.AUDIO_MODEL_PREFIX));
-        given(namespaceService.getNamespaceURI(NamespaceService.AUDIO_MODEL_PREFIX)).willReturn(NamespaceService.AUDIO_MODEL_1_0_URI);
-    }
-
-    private static List<TestData> getTestData() {
-        return List.of(
-            TestData.of(ComparePropertyValueEvaluator.NAME),
-            TestData.of(CompareMimeTypeEvaluator.NAME),
-            TestData.of(HasAspectEvaluator.NAME),
-            TestData.of(HasChildEvaluator.NAME, NULL_RESULT),
-            TestData.of(HasTagEvaluator.NAME),
-            TestData.of(HasVersionHistoryEvaluator.NAME, NULL_RESULT),
-            TestData.of(InCategoryEvaluator.NAME),
-            TestData.of(IsSubTypeEvaluator.NAME),
-            TestData.of(NoConditionEvaluator.NAME, NULL_RESULT),
-            TestData.of("fake-definition-name", NULL_RESULT),
-            TestData.of("", NULL_RESULT),
-            TestData.of(null, NULL_RESULT)
-        );
+        given(namespaceServiceMock.getPrefixes(NamespaceService.CONTENT_MODEL_1_0_URI)).willReturn(List.of(NamespaceService.CONTENT_MODEL_PREFIX));
+        given(namespaceServiceMock.getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX)).willReturn(NamespaceService.CONTENT_MODEL_1_0_URI);
+        given(namespaceServiceMock.getPrefixes(NamespaceService.AUDIO_MODEL_1_0_URI)).willReturn(List.of(NamespaceService.AUDIO_MODEL_PREFIX));
+        given(namespaceServiceMock.getNamespaceURI(NamespaceService.AUDIO_MODEL_PREFIX)).willReturn(NamespaceService.AUDIO_MODEL_1_0_URI);
     }
 
     @Test
-    public void testFrom()
+    public void testToRestModel()
     {
         for (TestData testData : getTestData())
         {
             final ActionCondition actionCondition = createActionCondition(testData.conditionDefinitionName);
 
             // when
-            final SimpleCondition actualSimpleCondition = SimpleCondition.from(actionCondition, namespaceService);
+            final SimpleCondition actualSimpleCondition = objectUnderTest.toRestModel(actionCondition);
 
             assertThat(Objects.isNull(actualSimpleCondition)).isEqualTo(testData.isNullResult);
             if (!testData.isNullResult)
@@ -121,92 +119,64 @@ public class SimpleConditionTest
     }
 
     @Test
-    public void testFromNullValue()
+    public void testToRestModelFromNullValue()
     {
         // when
-        final SimpleCondition actualSimpleCondition = SimpleCondition.from(null, namespaceService);
+        final ActionCondition actionCondition = null;
+        final SimpleCondition actualSimpleCondition = objectUnderTest.toRestModel(actionCondition);
 
         assertThat(actualSimpleCondition).isNull();
     }
 
     @Test
-    public void testFromActionConditionWithoutDefinitionName()
+    public void testToRestModelFromActionConditionWithoutDefinitionName()
     {
         final ActionCondition actionCondition = new ActionConditionImpl("fake-id", null, createParameterValues());
 
         // when
-        final SimpleCondition actualSimpleCondition = SimpleCondition.from(actionCondition, namespaceService);
+        final SimpleCondition actualSimpleCondition = objectUnderTest.toRestModel(actionCondition);
 
         assertThat(actualSimpleCondition).isNull();
     }
 
     @Test
-    public void testFromActionConditionWithoutParameterValues()
+    public void testToRestModelFromActionConditionWithoutParameterValues()
     {
         final ActionCondition actionCondition = new ActionConditionImpl("fake-id", "fake-def-name", null);
 
         // when
-        final SimpleCondition actualSimpleCondition = SimpleCondition.from(actionCondition, namespaceService);
+        final SimpleCondition actualSimpleCondition = objectUnderTest.toRestModel(actionCondition);
 
         assertThat(actualSimpleCondition).isNull();
     }
 
     @Test
-    public void testListOf()
+    public void testToRestModelListOfEmptyActionConditions()
     {
-        final List<ActionCondition> actionConditions = List.of(
-            createActionCondition(ComparePropertyValueEvaluator.NAME),
-            createActionCondition(CompareMimeTypeEvaluator.NAME)
-        );
-
         // when
-        final List<SimpleCondition> actualSimpleConditions = SimpleCondition.listOf(actionConditions, namespaceService);
+        final List<SimpleCondition> actualSimpleConditions =  objectUnderTest.toRestModels(Collections.emptyList());
 
-        final List<SimpleCondition> expectedSimpleConditions = List.of(
-            SimpleCondition.builder()
-                .field("content-property")
-                .comparator("operation")
-                .parameter("value")
-                .create(),
-            SimpleCondition.builder()
-                .field(SimpleCondition.PARAM_MIMETYPE)
-                .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
-                .parameter("value")
-                .create()
-        );
-        assertThat(actualSimpleConditions)
-            .isNotNull()
-            .containsExactlyElementsOf(expectedSimpleConditions);
+        assertThat(actualSimpleConditions).isEmpty();
     }
 
     @Test
-    public void testListOfEmptyActionConditions()
+    public void testToRestModelListOfNullActionConditions()
     {
         // when
-        final List<SimpleCondition> actualSimpleConditions = SimpleCondition.listOf(Collections.emptyList(), namespaceService);
-
-        assertThat(actualSimpleConditions).isNull();
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> objectUnderTest.toRestModels(
+                (Collection<ActionCondition>) null));
     }
 
     @Test
-    public void testListOfNullActionConditions()
-    {
-        // when
-        final List<SimpleCondition> actualSimpleConditions = SimpleCondition.listOf(null, namespaceService);
-
-        assertThat(actualSimpleConditions).isNull();
-    }
-
-    @Test
-    public void testListOfActionConditionsContainingNull()
+    public void testToRestModelListOfActionConditionsContainingNull()
     {
         final List<ActionCondition> actionConditions = new ArrayList<>();
         actionConditions.add(null);
 
         // when
-        final List<SimpleCondition> actualSimpleConditions = SimpleCondition.listOf(actionConditions, namespaceService);
+        final List<SimpleCondition> actualSimpleConditions =  objectUnderTest.toRestModels(actionConditions);
 
-        assertThat(actualSimpleConditions).isNotNull().isEmpty();
+        assertThat(actualSimpleConditions).hasSize(1).containsOnlyNulls();
     }
 
     @Test
@@ -215,7 +185,7 @@ public class SimpleConditionTest
         final SimpleCondition simpleCondition = createSimpleCondition(ContentPropertyName.SIZE.toString().toLowerCase());
 
         // when
-        final ActionCondition actualActionCondition = simpleCondition.toServiceModel(NOT_INVERTED, nodes, namespaceService);
+        final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);
 
         final Map<String, Serializable> expectedParameterValues = new HashMap<>();
         expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_CONTENT_PROPERTY, ContentPropertyName.SIZE.toString());
@@ -224,17 +194,18 @@ public class SimpleConditionTest
         expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, PARAMETER_DEFAULT);
         ActionCondition expectedActionCondition = new ActionConditionImpl(null, ComparePropertyValueEvaluator.NAME, expectedParameterValues);
         assertThat(actualActionCondition)
-            .isNotNull().usingRecursiveComparison().ignoringFields("id")
-            .isEqualTo(expectedActionCondition);
+                .isNotNull().usingRecursiveComparison().ignoringFields("id")
+                .isEqualTo(expectedActionCondition);
     }
 
     @Test
     public void testToServiceModel_withoutContentProperty()
     {
-        final SimpleCondition simpleCondition = createSimpleCondition(ContentModel.PROP_DESCRIPTION.toPrefixString(namespaceService));
+        final String field = NamespaceService.CONTENT_MODEL_PREFIX + QName.NAMESPACE_PREFIX + ContentModel.PROP_DESCRIPTION.toPrefixString();
+        final SimpleCondition simpleCondition = createSimpleCondition(field);
 
         // when
-        final ActionCondition actualActionCondition = simpleCondition.toServiceModel(NOT_INVERTED, nodes, namespaceService);
+        final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);
 
         final Map<String, Serializable> expectedParameterValues = new HashMap<>();
         expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.PROP_DESCRIPTION);
@@ -242,42 +213,43 @@ public class SimpleConditionTest
         expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, PARAMETER_DEFAULT);
         final ActionCondition expectedActionCondition = new ActionConditionImpl(null, ComparePropertyValueEvaluator.NAME, expectedParameterValues);
         assertThat(actualActionCondition)
-            .isNotNull().usingRecursiveComparison().ignoringFields("id", "parameterValues.property.prefix")
-            .isEqualTo(expectedActionCondition);
+                .isNotNull().usingRecursiveComparison().ignoringFields("id", "parameterValues.property.prefix")
+                .isEqualTo(expectedActionCondition);
     }
 
     @Test
     public void testToServiceModel_compareMimetype()
     {
-        final SimpleCondition simpleCondition = createSimpleCondition(SimpleCondition.PARAM_MIMETYPE);
+        final SimpleCondition simpleCondition = createSimpleCondition(PARAM_MIMETYPE);
 
         // when
-        final ActionCondition actualActionCondition = simpleCondition.toServiceModel(NOT_INVERTED, nodes, namespaceService);
+        final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);
 
         final Map<String, Serializable> expectedParameterValues = new HashMap<>();
         expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.TYPE_CONTENT);
         expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, PARAMETER_DEFAULT);
         final ActionCondition expectedActionCondition = new ActionConditionImpl(null, CompareMimeTypeEvaluator.NAME, expectedParameterValues);
         assertThat(actualActionCondition)
-            .isNotNull().usingRecursiveComparison().ignoringFields("id")
-            .isEqualTo(expectedActionCondition);
+                .isNotNull().usingRecursiveComparison().ignoringFields("id")
+                .isEqualTo(expectedActionCondition);
     }
 
     @Test
     public void testToServiceModel_hasAspect()
     {
         final QName audioAspect = QName.createQName(NamespaceService.AUDIO_MODEL_1_0_URI, NamespaceService.AUDIO_MODEL_PREFIX);
-        final SimpleCondition simpleCondition = createSimpleCondition(HasAspectEvaluator.PARAM_ASPECT, audioAspect.toPrefixString(namespaceService));
+        final String field = NamespaceService.AUDIO_MODEL_PREFIX + QName.NAMESPACE_PREFIX + NamespaceService.AUDIO_MODEL_PREFIX;
+        final SimpleCondition simpleCondition = createSimpleCondition(HasAspectEvaluator.PARAM_ASPECT, field);
 
         // when
-        final ActionCondition actualActionCondition = simpleCondition.toServiceModel(NOT_INVERTED, nodes, namespaceService);
+        final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);
 
         final Map<String, Serializable> expectedParameterValues = new HashMap<>();
         expectedParameterValues.put(HasAspectEvaluator.PARAM_ASPECT, audioAspect);
         final ActionCondition expectedActionCondition = new ActionConditionImpl(null, HasAspectEvaluator.NAME, expectedParameterValues);
         assertThat(actualActionCondition)
-            .isNotNull().usingRecursiveComparison().ignoringFields("id", "parameterValues.aspect.prefix")
-            .isEqualTo(expectedActionCondition);
+                .isNotNull().usingRecursiveComparison().ignoringFields("id", "parameterValues.aspect.prefix")
+                .isEqualTo(expectedActionCondition);
     }
 
     @Test
@@ -287,82 +259,111 @@ public class SimpleConditionTest
         final SimpleCondition simpleCondition = createSimpleCondition(HasTagEvaluator.PARAM_TAG, tag);
 
         // when
-        final ActionCondition actualActionCondition = simpleCondition.toServiceModel(NOT_INVERTED, nodes, namespaceService);
+        final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);
 
         final Map<String, Serializable> expectedParameterValues = new HashMap<>();
         expectedParameterValues.put(HasTagEvaluator.PARAM_TAG, tag);
         final ActionCondition expectedActionCondition = new ActionConditionImpl(null, HasTagEvaluator.NAME, expectedParameterValues);
         assertThat(actualActionCondition)
-            .isNotNull().usingRecursiveComparison().ignoringFields("id")
-            .isEqualTo(expectedActionCondition);
+                .isNotNull().usingRecursiveComparison().ignoringFields("id")
+                .isEqualTo(expectedActionCondition);
     }
 
     @Test
     public void testToServiceModel_inCategory()
     {
-        final SimpleCondition simpleCondition = createSimpleCondition(SimpleCondition.PARAM_CATEGORY);
+        final SimpleCondition simpleCondition = createSimpleCondition(PARAM_CATEGORY);
         final NodeRef defaultNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, PARAMETER_DEFAULT);
-        given(nodes.validateOrLookupNode(PARAMETER_DEFAULT, null)).willReturn(defaultNodeRef);
+        given(nodesMock.validateOrLookupNode(PARAMETER_DEFAULT, null)).willReturn(defaultNodeRef);
 
         // when
-        final ActionCondition actualActionCondition = simpleCondition.toServiceModel(NOT_INVERTED, nodes, namespaceService);
+        final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);
 
         final Map<String, Serializable> expectedParameterValues = new HashMap<>();
         expectedParameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_ASPECT, ContentModel.ASPECT_GEN_CLASSIFIABLE);
         expectedParameterValues.put(InCategoryEvaluator.PARAM_CATEGORY_VALUE, defaultNodeRef);
         final ActionCondition expectedActionCondition = new ActionConditionImpl(null, InCategoryEvaluator.NAME, expectedParameterValues);
         assertThat(actualActionCondition)
-            .isNotNull().usingRecursiveComparison().ignoringFields("id")
-            .isEqualTo(expectedActionCondition);
+                .isNotNull().usingRecursiveComparison().ignoringFields("id")
+                .isEqualTo(expectedActionCondition);
     }
 
     @Test
     public void testToServiceModel_isSubType()
     {
-        final SimpleCondition simpleCondition = createSimpleCondition(IsSubTypeEvaluator.PARAM_TYPE, ContentModel.TYPE_FOLDER.toPrefixString(namespaceService));
+        final String field = NamespaceService.CONTENT_MODEL_PREFIX + QName.NAMESPACE_PREFIX + ContentModel.TYPE_FOLDER.toPrefixString();
+        final SimpleCondition simpleCondition = createSimpleCondition(IsSubTypeEvaluator.PARAM_TYPE, field);
 
         // when
-        final ActionCondition actualActionCondition = simpleCondition.toServiceModel(NOT_INVERTED, nodes, namespaceService);
+        final ActionCondition actualActionCondition = objectUnderTest.toServiceModel(simpleCondition);
 
         final Map<String, Serializable> expectedParameterValues = new HashMap<>();
         expectedParameterValues.put(IsSubTypeEvaluator.PARAM_TYPE, ContentModel.TYPE_FOLDER);
         final ActionCondition expectedActionCondition = new ActionConditionImpl(null, IsSubTypeEvaluator.NAME, expectedParameterValues);
         assertThat(actualActionCondition)
-            .isNotNull().usingRecursiveComparison().ignoringFields("id", "parameterValues.type.prefix")
-            .isEqualTo(expectedActionCondition);
+                .isNotNull().usingRecursiveComparison().ignoringFields("id", "parameterValues.type.prefix")
+                .isEqualTo(expectedActionCondition);
     }
 
     @Test
-    public void testToServiceModel_inverted()
+    public void testToServiceModel_nullOrBlankParameter()
     {
-        final SimpleCondition simpleCondition = createSimpleCondition(ContentModel.PROP_DESCRIPTION.toPrefixString(namespaceService));
+        final SimpleCondition simpleConditionNullParam = createSimpleCondition(IsSubTypeEvaluator.PARAM_TYPE, null);
 
         // when
-        final ActionCondition actualActionCondition = simpleCondition.toServiceModel(!NOT_INVERTED, nodes, namespaceService);
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionNullParam))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(PARAMETER_NOT_NULL);
 
-        final Map<String, Serializable> expectedParameterValues = new HashMap<>();
-        expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, ContentModel.PROP_DESCRIPTION);
-        expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_OPERATION, ComparePropertyValueOperation.EQUALS.toString());
-        expectedParameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, PARAMETER_DEFAULT);
-        final ActionCondition expectedActionCondition = new ActionConditionImpl(null, ComparePropertyValueEvaluator.NAME, expectedParameterValues);
-        expectedActionCondition.setInvertCondition(!NOT_INVERTED);
-        assertThat(actualActionCondition)
-            .isNotNull().usingRecursiveComparison().ignoringFields("id", "parameterValues.property.prefix")
-            .isEqualTo(expectedActionCondition);
+        final SimpleCondition simpleConditionEmptyParam = createSimpleCondition(IsSubTypeEvaluator.PARAM_TYPE, " ");
+
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionEmptyParam))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(PARAMETER_NOT_NULL);
     }
 
-    private static SimpleCondition createSimpleCondition(final String field)
+    @Test
+    public void testToServiceModel_nullOrEmptyField()
     {
-        return createSimpleCondition(field, PARAMETER_DEFAULT);
+        final SimpleCondition simpleConditionNullField = createSimpleCondition(null);
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionNullField))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(FIELD_NOT_NULL);
+
+        final SimpleCondition simpleConditionEmptyField = createSimpleCondition("");
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionEmptyField))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(FIELD_NOT_NULL);
     }
 
-    private static SimpleCondition createSimpleCondition(final String field, final String parameter)
+    @Test
+    public void testToServiceModel_nullOrEmptyComparatorWhenRequired()
     {
-        return SimpleCondition.builder()
-            .field(field)
-            .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
-            .parameter(parameter)
-            .create();
+        final SimpleCondition simpleConditionNullComparator = SimpleCondition.builder()
+                .field("size")
+                .comparator(null)
+                .parameter("65000")
+                .create();
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionNullComparator))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(COMPARATOR_NOT_NULL);
+
+        final SimpleCondition simpleConditionEmptyComparator = SimpleCondition.builder()
+                .field("size")
+                .comparator(" ")
+                .parameter("65000")
+                .create();
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionEmptyComparator))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(COMPARATOR_NOT_NULL);
     }
 
     private static ActionCondition createActionCondition(final String actionDefinitionName)
@@ -385,6 +386,37 @@ public class SimpleConditionTest
         parameterValues.put(IsSubTypeEvaluator.PARAM_TYPE, ContentModel.TYPE_FOLDER);
 
         return parameterValues;
+    }
+
+    private static SimpleCondition createSimpleCondition(final String field)
+    {
+        return createSimpleCondition(field, PARAMETER_DEFAULT);
+    }
+
+    private static SimpleCondition createSimpleCondition(final String field, final String parameter)
+    {
+        return SimpleCondition.builder()
+                .field(field)
+                .comparator(ComparePropertyValueOperation.EQUALS.toString().toLowerCase())
+                .parameter(parameter)
+                .create();
+    }
+
+    private static List<TestData> getTestData() {
+        return List.of(
+                TestData.of(ComparePropertyValueEvaluator.NAME),
+                TestData.of(CompareMimeTypeEvaluator.NAME),
+                TestData.of(HasAspectEvaluator.NAME),
+                TestData.of(HasChildEvaluator.NAME, NULL_RESULT),
+                TestData.of(HasTagEvaluator.NAME),
+                TestData.of(HasVersionHistoryEvaluator.NAME, NULL_RESULT),
+                TestData.of(InCategoryEvaluator.NAME),
+                TestData.of(IsSubTypeEvaluator.NAME),
+                TestData.of(NoConditionEvaluator.NAME, NULL_RESULT),
+                TestData.of("fake-definition-name", NULL_RESULT),
+                TestData.of("", NULL_RESULT),
+                TestData.of(null, NULL_RESULT)
+        );
     }
 
     private static class TestData

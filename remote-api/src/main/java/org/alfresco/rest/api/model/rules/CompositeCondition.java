@@ -26,17 +26,10 @@
 
 package org.alfresco.rest.api.model.rules;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.namespace.NamespaceService;
-import org.apache.commons.collections.CollectionUtils;
 
 @Experimental
 public class CompositeCondition
@@ -45,89 +38,6 @@ public class CompositeCondition
     private ConditionOperator booleanMode = ConditionOperator.AND;
     private List<CompositeCondition> compositeConditions;
     private List<SimpleCondition> simpleConditions;
-
-    /**
-     * Converts Action conditions (service POJO) list to composite condition (REST model).
-     *
-     * @param actionConditions - list of {@link ActionCondition} service POJOs
-     * @return {@link CompositeCondition} REST model
-     */
-    public static CompositeCondition from(final List<ActionCondition> actionConditions, final NamespaceService namespaceService)
-    {
-        if (actionConditions == null)
-        {
-            return null;
-        }
-
-        final CompositeCondition conditions = new CompositeCondition();
-        conditions.compositeConditions = new ArrayList<>();
-        // group action conditions by inversion flag
-        actionConditions.stream().filter(Objects::nonNull).collect(Collectors.groupingBy(ActionCondition::getInvertCondition))
-            // map action condition sub lists
-            .forEach((inverted, actionConditionsPart) -> Optional.ofNullable(CompositeCondition.ofActionConditions(actionConditionsPart, namespaceService, inverted, ConditionOperator.AND))
-                // if composite condition present add to final list
-                .ifPresent(compositeCondition -> conditions.compositeConditions.add(compositeCondition)));
-
-        if (conditions.compositeConditions.isEmpty()) {
-            conditions.compositeConditions = null;
-        }
-
-        return conditions;
-    }
-
-    private static CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions, final NamespaceService namespaceService, final boolean inverted, final ConditionOperator conditionOperator)
-    {
-        if (actionConditions == null)
-        {
-            return null;
-        }
-
-        return ofSimpleConditions(SimpleCondition.listOf(actionConditions, namespaceService), inverted, conditionOperator);
-    }
-
-    /**
-     * Creates a composite condition instance of simple conditions.
-     *
-     * @param simpleConditions - list of {@link SimpleCondition}
-     * @param inverted - determines if condition should be inverted
-     * @param conditionOperator - determines the operation, see {@link ConditionOperator}
-     * @return {@link CompositeCondition}
-     */
-    public static CompositeCondition ofSimpleConditions(final List<SimpleCondition> simpleConditions, final boolean inverted, final ConditionOperator conditionOperator)
-    {
-        return of(simpleConditions, null, inverted, conditionOperator);
-    }
-
-    private static CompositeCondition of(final List<SimpleCondition> simpleConditions, final List<CompositeCondition> compositeConditions,
-        final boolean inverted, final ConditionOperator conditionOperator)
-    {
-        if (CollectionUtils.isEmpty(simpleConditions) && CollectionUtils.isEmpty(compositeConditions))
-        {
-            return null;
-        }
-
-        return builder()
-            .inverted(inverted)
-            .booleanMode(conditionOperator)
-            .simpleConditions(simpleConditions)
-            .compositeConditions(compositeConditions)
-            .create();
-    }
-
-    public List<ActionCondition> toServiceModels(final Nodes nodes, final NamespaceService namespaceService)
-    {
-        final List<ActionCondition> actionConditions = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(simpleConditions))
-        {
-            simpleConditions.forEach(simpleCondition -> actionConditions.add(simpleCondition.toServiceModel(inverted, nodes, namespaceService)));
-        }
-        if (CollectionUtils.isNotEmpty(compositeConditions))
-        {
-            compositeConditions.forEach(compositeCondition -> actionConditions.addAll(compositeCondition.toServiceModels(nodes, namespaceService)));
-        }
-
-        return actionConditions;
-    }
 
     public boolean isInverted()
     {

@@ -43,11 +43,11 @@ public class RuleLoader
     public static final String IS_SHARED = "isShared";
     private RuleService ruleService;
     private NodeValidator nodeValidator;
-    private RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper;
+    private RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper;
 
     public Rule loadRule(org.alfresco.service.cmr.rule.Rule ruleModel, List<String> includes)
     {
-        Rule rule = Rule.from(ruleModel, compositeConditionMapper);
+        final Rule rule = ruleMapper.toRestModel(ruleModel);
         if (includes != null && includes.contains(IS_SHARED))
         {
             NodeRef ruleSet = ruleService.getRuleSetNode(ruleModel.getNodeRef());
@@ -67,9 +67,9 @@ public class RuleLoader
         this.nodeValidator = nodeValidator;
     }
 
-    public void setCompositeConditionMapper(
-            RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper)
+    public void setRuleMapper(
+            RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper)
     {
-        this.compositeConditionMapper = compositeConditionMapper;
+        this.ruleMapper = ruleMapper;
     }
 }

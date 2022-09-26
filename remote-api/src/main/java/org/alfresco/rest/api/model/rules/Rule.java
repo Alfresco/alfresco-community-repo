@@ -30,17 +30,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.action.executer.ScriptActionExecuter;
-import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.cmr.action.CompositeAction;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.util.GUID;
 
 @Experimental
 public class Rule
@@ -56,84 +47,6 @@ public class Rule
     private List<RuleTrigger> triggers = List.of(RuleTrigger.INBOUND);
     private CompositeCondition conditions;
     private List<Action> actions;
-
-    /**
-     * Converts service POJO rule to REST model rule.
-     *
-     * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
-     * @return {@link Rule} REST model
-     */
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper)
-    {
-        if (ruleModel == null)
-        {
-            return null;
-        }
-
-        final Rule.Builder builder = builder()
-            .name(ruleModel.getTitle())
-            .description(ruleModel.getDescription())
-            .enabled(!ruleModel.getRuleDisabled())
-            .cascade(ruleModel.isAppliedToChildren())
-            .asynchronous(ruleModel.getExecuteAsynchronously());
-
-        if (ruleModel.getNodeRef() != null) {
-            builder.id(ruleModel.getNodeRef().getId());
-        }
-        if (ruleModel.getRuleTypes() != null)
-        {
-            builder.triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()));
-        }
-        if (ruleModel.getAction() != null)
-        {
-            builder.conditions(compositeConditionMapper.toRestModel(ruleModel.getAction().getActionConditions()));
-            if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
-            {
-                builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
-            }
-            if (ruleModel.getAction() instanceof CompositeAction && ((CompositeAction) ruleModel.getAction()).getActions() != null)
-            {
-                builder.actions(((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList()));
-            }
-        }
-
-        return builder.create();
-    }
-
-    /**
-     * Convert the REST model object to the equivalent service POJO.
-     *
-     * @param nodes The nodes API.
-     * @return The rule service POJO.
-     */
-    public org.alfresco.service.cmr.rule.Rule toServiceModel(final Nodes nodes, final RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper)
-    {
-        final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
-        final NodeRef nodeRef = (id != null) ? nodes.validateOrLookupNode(id, null) : null;
-        ruleModel.setNodeRef(nodeRef);
-        ruleModel.setTitle(name);
-        ruleModel.setDescription(description);
-        ruleModel.setRuleDisabled(!enabled);
-        ruleModel.applyToChildren(cascade);
-        ruleModel.setExecuteAsynchronously(asynchronous);
-        if (triggers != null)
-        {
-            ruleModel.setRuleTypes(triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList()));
-        }
-        ruleModel.setAction(Action.toCompositeAction(actions));
-        if (errorScript != null)
-        {
-            final org.alfresco.service.cmr.action.Action compensatingAction = new ActionImpl(null, GUID.generate(), ScriptActionExecuter.NAME);
-            compensatingAction.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, errorScript);
-            ruleModel.getAction().setCompensatingAction(compensatingAction);
-        }
-        if (conditions != null)
-        {
-            compositeConditionMapper.toServiceModels(conditions).forEach(condition -> ruleModel.getAction().addActionCondition(condition));
-        }
-
-        return ruleModel;
-    }
 
     @UniqueId
     public String getId()

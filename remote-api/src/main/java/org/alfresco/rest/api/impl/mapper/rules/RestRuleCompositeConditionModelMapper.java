@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.impl.mapper.rules;
 
+import static org.alfresco.repo.action.evaluator.NoConditionEvaluator.NAME;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -65,10 +67,19 @@ public class RestRuleCompositeConditionModelMapper implements RestModelMapper<Co
         {
             return null;
         }
+        final List<ActionCondition> filteredActions = actionConditions.stream()
+                .filter(Objects::nonNull)
+                .filter(c -> !NAME.equals(c.getActionConditionDefinitionName()))
+                .collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(filteredActions))
+        {
+            return null;
+        }
         final CompositeCondition conditions = new CompositeCondition();
         conditions.setCompositeConditions(new ArrayList<>());
         // group action conditions by inversion flag
-        actionConditions.stream().filter(Objects::nonNull).collect(Collectors.groupingBy(ActionCondition::getInvertCondition))
+        filteredActions.stream()
+                .collect(Collectors.groupingBy(ActionCondition::getInvertCondition))
                 // map action condition sub lists
                 .forEach((inverted, actionConditionsPart) -> Optional
                         .ofNullable(ofActionConditions(actionConditionsPart, inverted, ConditionOperator.AND))
@@ -113,7 +124,7 @@ public class RestRuleCompositeConditionModelMapper implements RestModelMapper<Co
     private CompositeCondition ofActionConditions(final List<ActionCondition> actionConditions, final boolean inverted,
                                                   final ConditionOperator conditionOperator)
     {
-        if (actionConditions == null)
+        if (CollectionUtils.isEmpty(actionConditions))
         {
             return null;
         }

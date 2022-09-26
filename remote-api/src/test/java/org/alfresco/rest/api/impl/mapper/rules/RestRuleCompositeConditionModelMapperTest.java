@@ -26,8 +26,9 @@
 
 package org.alfresco.rest.api.impl.mapper.rules;
 
+import static org.alfresco.repo.action.evaluator.NoConditionEvaluator.NAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.BDDMockito.given;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class RestRuleCompositeConditionModelMapperTest
     private RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapperMock;
 
     @InjectMocks
-    RestRuleCompositeConditionModelMapper objectUnderTest;
+    private RestRuleCompositeConditionModelMapper objectUnderTest;
 
     @Test
     public void testToRestModel()
@@ -81,9 +82,8 @@ public class RestRuleCompositeConditionModelMapperTest
             createCompositeCondition(false, simpleConditions.subList(0,2)),
             createCompositeCondition(true, simpleConditions.subList(2,3))
         ));
-
-        when(simpleConditionMapperMock.toRestModels(actionConditions.subList(0,2))).thenReturn(simpleConditions.subList(0,2));
-        when(simpleConditionMapperMock.toRestModels(actionConditions.subList(2,3))).thenReturn(simpleConditions.subList(2,3));
+        given(simpleConditionMapperMock.toRestModels(actionConditions.subList(2,3))).willReturn(simpleConditions.subList(2,3));
+        given(simpleConditionMapperMock.toRestModels(actionConditions.subList(0,2))).willReturn(simpleConditions.subList(0,2));
 
         // when
         final CompositeCondition actualCompositeCondition = objectUnderTest.toRestModel(actionConditions);
@@ -112,16 +112,29 @@ public class RestRuleCompositeConditionModelMapperTest
     }
 
     @Test
-    public void testToRestModel_fromListContainingNull()
+    public void testToRestModel_fromListContainingNullsOnly()
     {
         final List<ActionCondition> actionConditions = new ArrayList<>();
         actionConditions.add(null);
-        final CompositeCondition expectedCompositeCondition = CompositeCondition.builder().create();
+        actionConditions.add(null);
 
         // when
         final CompositeCondition actualCompositeCondition = objectUnderTest.toRestModel(actionConditions);
 
-        assertThat(actualCompositeCondition).isNotNull().usingRecursiveComparison().isEqualTo(expectedCompositeCondition);
+        assertThat(actualCompositeCondition).isNull();
+    }
+
+    @Test
+    public void testToRestModel_fromNoCondition()
+    {
+        final List<ActionCondition> actionConditions = new ArrayList<>();
+        final ActionCondition noCondition = new ActionConditionImpl("fake-id", NAME);
+        actionConditions.add(noCondition);
+
+        // when
+        final CompositeCondition actualCompositeCondition = objectUnderTest.toRestModel(actionConditions);
+
+        assertThat(actualCompositeCondition).isNull();
     }
 
     @Test
@@ -142,7 +155,7 @@ public class RestRuleCompositeConditionModelMapperTest
         );
 
         IntStream.rangeClosed(0, 2)
-                .forEach(i -> when(simpleConditionMapperMock.toServiceModel(simpleConditions.get(i))).thenReturn(actionConditions.get(i)));
+                .forEach(i -> given(simpleConditionMapperMock.toServiceModel(simpleConditions.get(i))).willReturn(actionConditions.get(i)));
 
         final List<ActionCondition> actualActionConditions = objectUnderTest.toServiceModels(compositeCondition);
         assertThat(actualActionConditions).isEqualTo(actionConditions);
@@ -163,7 +176,7 @@ public class RestRuleCompositeConditionModelMapperTest
         );
 
         IntStream.rangeClosed(0, 2)
-                .forEach(i -> when(simpleConditionMapperMock.toServiceModel(simpleConditions.get(i))).thenReturn(actionConditions.get(i)));
+                .forEach(i -> given(simpleConditionMapperMock.toServiceModel(simpleConditions.get(i))).willReturn(actionConditions.get(i)));
 
         final List<ActionCondition> actualActionConditions = objectUnderTest.toServiceModels(compositeCondition);
         assertThat(actualActionConditions).isEqualTo(actionConditions);

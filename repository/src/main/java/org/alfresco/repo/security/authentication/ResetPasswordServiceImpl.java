@@ -373,7 +373,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
 
         final ClientApp clientApp = getClientAppConfig(clientName);
         Map<String, Serializable> emailTemplateModel = Collections.singletonMap(FTL_RESET_PASSWORD_URL,
-                    createResetPasswordUrl(clientApp, id, key));
+                    createResetPasswordUrl(clientApp, id, key, userName));
 
         final String templatePath = emailHelper.getEmailTemplate(clientName,
                     getResetPasswordEmailTemplate(clientApp),
@@ -532,7 +532,7 @@ public class ResetPasswordServiceImpl implements ResetPasswordService
     /**
      * This method creates a URL for the 'reset password' link which appears in the email
      */
-    protected String createResetPasswordUrl(ClientApp clientApp, final String id, final String key)
+    protected String createResetPasswordUrl(ClientApp clientApp, final String id, final String key, final String userName)
     {
         StringBuilder sb = new StringBuilder(100);
 

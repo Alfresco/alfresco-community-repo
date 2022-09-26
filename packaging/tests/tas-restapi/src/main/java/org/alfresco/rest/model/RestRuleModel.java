@@ -70,17 +70,17 @@ public class RestRuleModel extends TestModel implements IRestModel<RestRuleModel
     Whether the rule is enabled
     */	        
 
-    private boolean enabled;	    
+    private boolean isEnabled;
     /**
     Whether the rule also applies to subfolders
     */	        
 
-    private boolean cascade;	    
+    private boolean isInheritable;
     /**
     Whether the rule should be run in the background
     */	        
 
-    private boolean asynchronous;	    
+    private boolean isAsynchronous;
     /**
     If the rule should be run in the background then an optional error script can be referenced
     */	        
@@ -146,34 +146,34 @@ If the field is omitted then the rule will apply to all nodes.
         this.description = description;
     }				
 
-    public boolean getEnabled()
+    public boolean getIsEnabled()
     {
-        return this.enabled;
+        return this.isEnabled;
     }
 
-    public void setEnabled(boolean enabled)
+    public void setIsEnabled(boolean isEnabled)
     {
-        this.enabled = enabled;
+        this.isEnabled = isEnabled;
     }				
 
-    public boolean getCascade()
+    public boolean getIsInheritable()
     {
-        return this.cascade;
+        return this.isInheritable;
     }
 
-    public void setCascade(boolean cascade)
+    public void setIsInheritable(boolean isInheritable)
     {
-        this.cascade = cascade;
+        this.isInheritable = isInheritable;
     }				
 
-    public boolean getAsynchronous()
+    public boolean getIsAsynchronous()
     {
-        return this.asynchronous;
+        return this.isAsynchronous;
     }
 
-    public void setAsynchronous(boolean asynchronous)
+    public void setIsAsynchronous(boolean isAsynchronous)
     {
-        this.asynchronous = asynchronous;
+        this.isAsynchronous = isAsynchronous;
     }				
 
     public String getErrorScript()
@@ -229,8 +229,8 @@ If the field is omitted then the rule will apply to all nodes.
     @Override
     public String toString()
     {
-        return "RestRuleModel{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", enabled=" + enabled + ", cascade=" + cascade
-            + ", asynchronous=" + asynchronous + ", errorScript='" + errorScript + '\'' + ", isShared=" + isShared + ", triggers=" + triggers + ", conditions=" + conditions
+        return "RestRuleModel{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", isEnabled=" + isEnabled + ", isInheritable=" + isInheritable
+            + ", isAsynchronous=" + isAsynchronous + ", errorScript='" + errorScript + '\'' + ", isShared=" + isShared + ", triggers=" + triggers + ", conditions=" + conditions
             + ", actions=" + actions + '}';
     }
 
@@ -242,7 +242,7 @@ If the field is omitted then the rule will apply to all nodes.
         if (o == null || getClass() != o.getClass())
             return false;
         RestRuleModel ruleModel = (RestRuleModel) o;
-        return enabled == ruleModel.enabled && cascade == ruleModel.cascade && asynchronous == ruleModel.asynchronous && Objects.equals(id, ruleModel.id) && Objects.equals(
+        return isEnabled == ruleModel.isEnabled && isInheritable == ruleModel.isInheritable && isAsynchronous == ruleModel.isAsynchronous && Objects.equals(id, ruleModel.id) && Objects.equals(
             name, ruleModel.name) && Objects.equals(description, ruleModel.description) && Objects.equals(errorScript, ruleModel.errorScript) && Objects.equals(
             isShared, ruleModel.isShared) && Objects.equals(triggers, ruleModel.triggers) && Objects.equals(conditions, ruleModel.conditions) && Objects.equals(
             actions, ruleModel.actions);
@@ -251,7 +251,7 @@ If the field is omitted then the rule will apply to all nodes.
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name, description, enabled, cascade, asynchronous, errorScript, isShared, triggers, conditions, actions);
+        return Objects.hash(id, name, description, isEnabled, isInheritable, isAsynchronous, errorScript, isShared, triggers, conditions, actions);
     }
 }
  

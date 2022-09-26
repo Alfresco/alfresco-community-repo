@@ -77,9 +77,9 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
         final Rule.Builder builder = Rule.builder()
                 .name(serviceRule.getTitle())
                 .description(serviceRule.getDescription())
-                .enabled(!serviceRule.getRuleDisabled())
-                .cascade(serviceRule.isAppliedToChildren())
-                .asynchronous(serviceRule.getExecuteAsynchronously());
+                .isEnabled(!serviceRule.getRuleDisabled())
+                .isInheritable(serviceRule.isAppliedToChildren())
+                .isAsynchronous(serviceRule.getExecuteAsynchronously());
 
         if (serviceRule.getNodeRef() != null)
         {
@@ -124,9 +124,9 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
         serviceRule.setNodeRef(nodeRef);
         serviceRule.setTitle(restRuleModel.getName());
         serviceRule.setDescription(restRuleModel.getDescription());
-        serviceRule.setRuleDisabled(!restRuleModel.isEnabled());
-        serviceRule.applyToChildren(restRuleModel.isCascade());
-        serviceRule.setExecuteAsynchronously(restRuleModel.isAsynchronous());
+        serviceRule.setRuleDisabled(!restRuleModel.getIsEnabled());
+        serviceRule.applyToChildren(restRuleModel.getIsInheritable());
+        serviceRule.setExecuteAsynchronously(restRuleModel.getIsAsynchronous());
         serviceRule.setRuleTypes(restRuleModel.getTriggers());
         serviceRule.setAction(actionMapper.toServiceModel(restRuleModel.getActions()));
         if (restRuleModel.getErrorScript() != null)

@@ -33,8 +33,10 @@ import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ASYNC_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
+import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
 import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
@@ -46,6 +48,8 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -235,7 +239,7 @@ public class UpdateRulesTests extends RestTest
      * Check we get error when attempt to update a rule to one with invalid action.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void updateRuleWithInvalidActionsShouldFail()
+    public void updateRuleWithInvalidActionDefinitionShouldFail()
     {
         RestRuleModel rule = createAndSaveRule("Rule name");
 
@@ -388,7 +392,6 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
@@ -409,7 +412,6 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
@@ -430,7 +432,6 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
@@ -451,11 +452,79 @@ public class UpdateRulesTests extends RestTest
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Parameter in condition must not be blank");
+    }
+
+    /**
+     * Check we can update a rule by adding several actions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleAddActions()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule by adding several actions");
+        final Map<String, Serializable> copyParams =
+                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
+        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
+        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
+        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
+        rule.setActions(Arrays.asList(copyAction, scriptAction));
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /**
+     * Check we get a 400 error when attempting to update a rule by adding action with not allowed parameter.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleAddCheckoutActionForOutboundShouldFail()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule by adding checkout action");
+        final Map<String, Serializable> checkOutParams =
+                Map.of("destination-folder", "dummy-folder-node", "assoc-name", "cm:checkout", "assoc-type",
+                        "cm:contains");
+        final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
+        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
+        rule.setActions(List.of(checkOutAction));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Check out action cannot be performed for the rule type outbound!");
+    }
+
+    /**
+     * Check we get a 500 error when attempting to update a rule by adding action with parameter with non existing namespace in value.
+     * In near future we need to fix this kind of negative path to return a 4xx error.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleAddActionWithInvalidParamShouldFail()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule by adding action with invalid parameter (non-existing namespace in value)");
+        final RestActionBodyExecTemplateModel action = new RestActionBodyExecTemplateModel();
+        action.setActionDefinitionId("add-features");
+        action.setParams(Map.of("aspect-name", "dummy:dummy"));
+        rule.setActions(List.of(action));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
+        restClient.assertLastError().containsSummary("Namespace prefix dummy is not mapped to a namespace URI");
     }
 
     private RestRuleModel createAndSaveRule(String name)

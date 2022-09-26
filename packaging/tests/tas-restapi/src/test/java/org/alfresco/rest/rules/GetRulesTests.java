@@ -154,7 +154,7 @@ public class GetRulesTests extends RestTest
                         .assertThat().field("isInheritable").is(false)
                         .assertThat().field("isAsynchronous").is(false)
                         .assertThat().field("errorScript").isNull()
-                        .assertThat().field("isShared").isNull()
+                        .assertThat().field("isShared").is(false)
                         .assertThat().field("triggers").is("[inbound]"));
     }
 

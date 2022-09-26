@@ -59,7 +59,7 @@ public class RestRuleModelMapperTest
     private static final String RULE_NAME = "rule name";
     private static final String RULE_DESCRIPTION = "rule description";
     private static final boolean RULE_ENABLED = true;
-    private static final boolean RULE_CASCADE = true;
+    private static final boolean RULE_INHERITABLE = true;
     private static final boolean RULE_ASYNC = true;
     private static final String ACTION_DEFINITION_NAME = "action-def-name";
     private static final String ERROR_SCRIPT = "error-script-ref";
@@ -96,7 +96,7 @@ public class RestRuleModelMapperTest
     public void testToRestModelWithNullValues()
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
-        final Rule expectedRule = Rule.builder().enabled(true).create();
+        final Rule expectedRule = Rule.builder().isEnabled(true).create();
 
         // when
         final Rule actualRule = objectUnderTest.toRestModel(ruleModel);
@@ -160,15 +160,15 @@ public class RestRuleModelMapperTest
     private Rule createRuleWithDefaultValues()
     {
         return Rule.builder()
-                .id(RULE_ID)
-                .name(RULE_NAME)
-                .description(RULE_DESCRIPTION)
-                .enabled(RULE_ENABLED)
-                .cascade(RULE_CASCADE)
-                .asynchronous(RULE_ASYNC)
-                .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
-                .errorScript(ERROR_SCRIPT)
-                .create();
+            .id(RULE_ID)
+            .name(RULE_NAME)
+            .description(RULE_DESCRIPTION)
+            .isEnabled(RULE_ENABLED)
+            .isInheritable(RULE_INHERITABLE)
+            .isAsynchronous(RULE_ASYNC)
+            .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
+            .errorScript(ERROR_SCRIPT)
+            .create();
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRuleModel()
@@ -178,7 +178,7 @@ public class RestRuleModelMapperTest
         ruleModel.setTitle(RULE_NAME);
         ruleModel.setDescription(RULE_DESCRIPTION);
         ruleModel.setRuleDisabled(!RULE_ENABLED);
-        ruleModel.applyToChildren(RULE_CASCADE);
+        ruleModel.applyToChildren(RULE_INHERITABLE);
         ruleModel.setExecuteAsynchronously(RULE_ASYNC);
         ruleModel.setRuleTypes(List.of(RuleType.INBOUND, RuleType.UPDATE));
         ruleModel.setAction(createActionModel());

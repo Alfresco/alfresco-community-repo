@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
@@ -291,9 +292,9 @@ public class UpdateRulesTests extends RestTest
         rule.setTriggers(List.of(INBOUND));
         final String updatedDescription = "Updated description";
         rule.setDescription(updatedDescription);
-        rule.setEnabled(!RULE_ENABLED_DEFAULT);
-        rule.setCascade(!RULE_CASCADE_DEFAULT);
-        rule.setAsynchronous(!RULE_ASYNC_DEFAULT);
+        rule.setIsEnabled(!RULE_ENABLED_DEFAULT);
+        rule.setIsInheritable(!RULE_CASCADE_DEFAULT);
+        rule.setIsAsynchronous(!RULE_ASYNC_DEFAULT);
         final String updatedErrorScript = "updated-error-script";
         rule.setErrorScript(updatedErrorScript);
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()

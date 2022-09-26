@@ -154,13 +154,6 @@ public class DockerHelper
      */
     public void checkExceptionIsInAlfrescoLogs(String expectedException, String containerPath) throws Exception
     {
-        int count=1;
-        System.out.println("The Expected Exception is " + expectedException + " for " + containerPath);
-        for(String logLine: getAlfrescoLogs()) {
-            System.out.println("LogLine " + count + ": " + logLine);
-            System.out.println("Comparision against expectedException is: " + logLine.contains(expectedException));
-            count++;
-        }
         //Retry the operation because sometimes it takes few seconds to throw the exception
         Utility.sleep(6000, 60000, () ->
         {

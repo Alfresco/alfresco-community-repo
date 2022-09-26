@@ -153,36 +153,24 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
             {
                 for (NodeRef hold : holdService.getHolds(filePlan))
                 {
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("Analyzing hold {}", hold.getId());
-                    }
+                    LOGGER.debug("Analyzing hold {}", hold.getId());
 
                     BatchWorker batchWorker = new BatchWorker(hold);
 
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("Hold has {} items to be analyzed", batchWorker.getWorkSize());
-                    }
+                    LOGGER.debug("Hold has {} items to be analyzed", batchWorker.getWorkSize());
 
                     while (batchWorker.hasMoreResults())
                     {
                         processBatch(hold, batchWorker);
                     }
 
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("Patched {} items in hold", batchWorker.getTotalPatchedNodes());
-                    }
+                    LOGGER.debug("Patched {} items in hold", batchWorker.getTotalPatchedNodes());
 
                     patchedNodesCounter += batchWorker.getTotalPatchedNodes();
                 }
             }
 
-            if (LOGGER.isDebugEnabled())
-            {
-                LOGGER.debug("Patch applied to {} children across all holds", patchedNodesCounter);
-            }
+            LOGGER.debug("Patch applied to {} children across all holds", patchedNodesCounter);
         }
         finally
         {
@@ -193,32 +181,25 @@ public class RMv35HoldNewChildAssocPatch extends AbstractModulePatch
 
     private void processBatch(NodeRef hold, BatchWorker batch)
     {
-        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
+        transactionService.getRetryingTransactionHelper().doInTransaction(() -> {
+
+            Collection<ChildAssociationRef> childRefs = batch.getNextWork();
+
+            LOGGER.debug("Processing batch of {} children in hold", childRefs.size());
+
+            for (ChildAssociationRef child : childRefs)
             {
-                Collection<ChildAssociationRef> childRefs = batch.getNextWork();
+                NodeRef childNodeRef = child.getChildRef();
 
-                if (LOGGER.isDebugEnabled())
+                if (!isChildContainedByHold(hold, childNodeRef))
                 {
-                    LOGGER.debug("Processing batch of {} children in hold", childRefs.size());
+                    nodeService.addChild(hold, childNodeRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
+                    batch.countPatchedNode();
                 }
-
-                for (ChildAssociationRef child : childRefs)
-                {
-                    NodeRef childNodeRef = child.getChildRef();
-
-                    if (!isChildContainedByHold(hold, childNodeRef))
-                    {
-                        nodeService.addChild(hold, childNodeRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
-                        batch.countPatchedNode();
-                    }
-                }
-
-                return null;
             }
-        }, false, true);
 
+            return null;
+        }, false, true);
     }
 
     private boolean isChildContainedByHold(NodeRef hold, NodeRef child)

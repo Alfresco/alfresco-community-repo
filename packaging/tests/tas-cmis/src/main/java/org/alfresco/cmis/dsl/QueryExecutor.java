@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.google.common.collect.Streams;
 
@@ -40,7 +41,7 @@ public class QueryExecutor
     CmisWrapper cmisWrapper;
     private long returnedResults = -1;
     private String currentQuery = "";
-    private ItemIterable<QueryResult> results;
+    private List<QueryResult> results;
 
     public QueryExecutor(CmisWrapper cmisWrapper, String query)
     {
@@ -56,19 +57,20 @@ public class QueryExecutor
 
     public QueryResultAssertion assertColumnIsOrdered()
     {
-        results = executeQuery(currentQuery);
-        return new QueryResultAssertion();
+        return assertValues();
     }
 
     public QueryResultAssertion assertColumnValuesRange()
     {
-        results = executeQuery(currentQuery);
-        return new QueryResultAssertion();
+        return assertValues();
     }
 
     public QueryResultAssertion assertValues()
     {
-        results = executeQuery(currentQuery);
+        STEP("Sending query " + currentQuery);
+        results = StreamSupport.stream(executeQuery(currentQuery).spliterator(), false)
+                               .collect(toList());
+        STEP("Received results " + results);
         return new QueryResultAssertion();
     }
 
@@ -160,7 +162,7 @@ public class QueryExecutor
 
     public class QueryResultAssertion
     {
-        public QueryResultAssertion equals(long expectedValue)
+        public QueryResultAssertion hasLength(long expectedValue)
         {
             STEP(String.format("Verify that query: '%s' has %d results count returned", currentQuery, expectedValue));
             Assert.assertEquals(returnedResults, expectedValue, showErrorMessage());
@@ -232,8 +234,8 @@ public class QueryExecutor
         public <T> QueryResultAssertion isReturningValues(String queryName, Set<T> values)
         {
             STEP(String.format("Verify that query: '%s' returns the values from %s for column %s", currentQuery, values, queryName));
-            Set<T> resultSet = Streams.stream(results).map(r -> (T) r.getPropertyValueByQueryName(queryName)).collect(toSet());
-            Assert.assertEquals(resultSet, values, "Values did not match");
+            Set<T> resultSet = results.stream().map(r -> (T) r.getPropertyValueByQueryName(queryName)).collect(toSet());
+            Assert.assertEquals(resultSet, values, "Values did not match - expected " + values + " got " + resultSet);
 
             return this;
         }
@@ -241,7 +243,7 @@ public class QueryExecutor
         public <T> QueryResultAssertion isReturningOrderedValues(String queryName, List<T> values)
         {
             STEP(String.format("Verify that query: '%s' returns the values from %s for column %s", currentQuery, values, queryName));
-            List<T> resultList = Streams.stream(results).map(r -> (T) r.getPropertyValueByQueryName(queryName)).collect(toList());
+            List<T> resultList = results.stream().map(r -> (T) r.getPropertyValueByQueryName(queryName)).collect(toList());
             // Include both lists in assertion message as TestNG does not provide this information.
             Assert.assertEquals(resultList, values, "Values did not match expected " + values + " but found " + resultList);
 

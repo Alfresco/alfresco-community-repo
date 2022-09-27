@@ -1,12 +1,15 @@
 package org.alfresco.cmis.search;
 
+import static java.util.stream.Collectors.toList;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.alfresco.utility.Utility;
-import org.alfresco.utility.data.provider.XMLDataConfig;
-import org.alfresco.utility.data.provider.XMLTestDataProvider;
+import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FileType;
 import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.QueryModel;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -17,6 +20,21 @@ public class SearchInFolderTests extends AbstractCmisE2ETest
     private FolderModel parentFolder, subFolder1, subFolder2, subFolder3;
     private FileModel subFile1, subFile2, subFile3, subFile4, subFile5;
 
+    /**
+     * Create test data in the following format:
+     * <pre>
+     * testSite
+     * +- parentFolder
+     *    +- subFile5 (fifthFile.txt: "fifthFile content")
+     *    +- subFolder1
+     *    +- subFolder2
+     *    +- subFolder3 (subFolder)
+     *    +- subFile1 (firstFile.xls)
+     *    +- subFile2 (.pptx)
+     *    +- subFile3 (.txt)
+     *    +- subFile4 (fourthFile.docx: "fourthFileTitle", "fourthFileDescription")
+     * </pre>
+     */
     @BeforeClass(alwaysRun = true)
     public void createTestData() throws Exception
     {
@@ -42,7 +60,7 @@ public class SearchInFolderTests extends AbstractCmisE2ETest
                 .createFile(subFile3)
                 .createFile(subFile4);
         // wait for index
-        Utility.waitToLoopTime(getElasticWaitTimeInSeconds());
+        Utility.waitToLoopTime(5);//getElasticWaitTimeInSeconds());
     }
 
     @AfterClass(alwaysRun = true)
@@ -51,12 +69,161 @@ public class SearchInFolderTests extends AbstractCmisE2ETest
         dataContent.deleteSite(testSite);
     }
 
-    @Test(dataProviderClass = XMLTestDataProvider.class, dataProvider = "getQueriesData")
-    @XMLDataConfig(file = "src/test/resources/search-in-folder.xml")
-    public void executeCMISQuery(QueryModel query)
+    @Test
+    public void executeCMISQuery0()
     {
-        String currentQuery = String.format(query.getValue(), parentFolder.getNodeRef());
+        String query = "SELECT cmis:name, cmis:parentId, cmis:path, cmis:allowedChildObjectTypeIds" +
+                " FROM cmis:folder where IN_FOLDER('%s') AND cmis:name = 'subFolder'";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
         cmisApi.authenticateUser(testUser);
-        Assert.assertTrue(waitForIndexing(currentQuery, query.getResults()), String.format("Result count not as expected for query: %s", currentQuery));
+        waitForIndexing(currentQuery, subFolder3);
+    }
+
+    @Test
+    public void executeCMISQuery1()
+    {
+        String query = "SELECT cmis:name, cmis:objectId, cmis:lastModifiedBy, cmis:creationDate, cmis:contentStreamFileName" +
+                " FROM cmis:document where IN_FOLDER('%s') AND cmis:name = 'fourthFile'";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        waitForIndexing(currentQuery, subFile4);
+    }
+
+    @Test
+    public void executeCMISQuery2()
+    {
+        String query = "SELECT cmis:parentId FROM cmis:folder where IN_FOLDER('%s')";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        // Expect to get the same parent for each of the three matches.
+        String parentId = parentFolder.getNodeRef();
+        List<String> expectedParentIds = List.of(parentId, parentId, parentId);
+        waitForIndexing(query, execution -> execution.isReturningOrderedValues("cmis:parentId", expectedParentIds));
+    }
+
+    @Test
+    public void executeCMISQuery3()
+    {
+        String query = "SELECT * FROM cmis:document where IN_FOLDER('%s')";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        waitForIndexing(currentQuery, subFile1, subFile2, subFile3, subFile4, subFile5);
+    }
+
+    @Test
+    public void executeCMISQuery4()
+    {
+        String query = "SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name NOT LIKE 'file%%' ORDER BY cmis:name ASC";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        waitForIndexingOrdered(currentQuery, subFile5, subFile1, subFile4);
+    }
+
+    @Test
+    public void executeCMISQuery5()
+    {
+        String query = "SELECT * FROM cmis:document where IN_FOLDER('%s') ORDER BY cmis:name DESC";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 5), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery6()
+    {
+        String query = "SELECT * FROM cmis:folder where IN_FOLDER('%s') ORDER BY cmis:lastModificationDate ASC";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 3), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery7()
+    {
+        String query = "SELECT * FROM cmis:folder where IN_FOLDER('%s') ORDER BY cmis:lastModificationDate DESC";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 3), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery8()
+    {
+        String query = "SELECT * FROM cmis:document where IN_FOLDER('%s') ORDER BY cmis:createdBy DESC";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 5), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery9()
+    {
+        String query = "SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name IS NOT NULL";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 5), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery10()
+    {
+        String query = "SELECT * FROM cmis:folder where IN_FOLDER('%s') AND cmis:name IS NOT NULL";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 3), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery11()
+    {
+        String query = "SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name LIKE 'fourthFile'";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 1), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery12()
+    {
+        String query = "SELECT * FROM cmis:folder where IN_FOLDER('%s') AND NOT(cmis:name NOT IN ('subFolder'))";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 1), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery13()
+    {
+        String query = "SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name IN ('fourthFile', 'fifthFile.txt')";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 2), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery14()
+    {
+        String query = "SELECT * FROM cmis:document where IN_FOLDER('%s') AND cmis:name NOT IN ('fourthFile', 'fifthFile.txt')";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 3), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery15()
+    {
+        String query = "SELECT * FROM cmis:folder where IN_FOLDER('%s') AND cmis:name <> 'subFolder'";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 2), String.format("Result count not as expected for query: %s", currentQuery));
+    }
+
+    @Test
+    public void executeCMISQuery16()
+    {
+        String query = "SELECT cmis:secondaryObjectTypeIds FROM cmis:folder where IN_FOLDER('%s') AND cmis:name = 'subFolder'";
+        String currentQuery = String.format(query, parentFolder.getNodeRef());
+        cmisApi.authenticateUser(testUser);
+        Assert.assertTrue(waitForIndexing(currentQuery, 1), String.format("Result count not as expected for query: %s", currentQuery));
     }
 }

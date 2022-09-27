@@ -57,7 +57,7 @@ public class SearchInFolderTests extends AbstractCmisE2ETest
                 .createFile(subFile3)
                 .createFile(subFile4);
         // wait for index
-        Utility.waitToLoopTime(5);//getElasticWaitTimeInSeconds());
+        Utility.waitToLoopTime(getElasticWaitTimeInSeconds());
     }
 
     @AfterClass(alwaysRun = true)

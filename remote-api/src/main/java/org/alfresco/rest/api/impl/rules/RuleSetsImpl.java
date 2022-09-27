@@ -41,6 +41,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -116,20 +117,20 @@ public class RuleSetsImpl implements RuleSets
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
         final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, true);
 
-        //The folder should have pre-existing rules
-        if (!ruleService.hasRules(folderNodeRef)) {
-            throw new InvalidArgumentException("The folder node is not linked to a rule set.");
+        //The folder should be linked to a rule set
+        if (!ruleService.isLinkedToRuleNode(ruleSetNodeRef))
+        {
+            throw new InvalidArgumentException("The folder is not linked to a rule set.");
         }
 
         // Check that the folder node has the rules aspect applied
-        if (nodeService.hasAspect(folderNodeRef, RuleModel.ASPECT_RULES))
+        if (!nodeService.hasAspect(folderNodeRef,RuleModel.ASPECT_RULES))
         {
-            if (ruleSetNodeRef != null)
-            {
-                //The following line also handles the deletion of the child folder that gets created during linking
-                nodeService.removeAspect(folderNodeRef, RuleModel.ASPECT_RULES);
-            }
+            throw new AspectMissingException(RuleModel.ASPECT_RULES, folderNodeRef);
         }
+
+        //The following line also handles the deletion of the child folder that gets created during linking
+        nodeService.removeAspect(folderNodeRef,RuleModel.ASPECT_RULES);
     }
 
     public void setRuleSetLoader(RuleSetLoader ruleSetLoader)

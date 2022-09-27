@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.nodes;
 
+import static org.mockito.BDDMockito.then;
+
 import junit.framework.TestCase;
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSetLink;
@@ -46,6 +48,7 @@ public class NodeRuleSetsRelationTest extends TestCase
 {
     private static final String FOLDER_NODE_ID = "dummy-folder-node-id";
     private static final String LINK_TO_NODE_ID = "dummy-link-to-node-id";
+    private static final String RULE_SET_NODE_ID = "dummy-rule-set-node-id";
 
     @Mock
     private RuleSets ruleSets;
@@ -69,6 +72,16 @@ public class NodeRuleSetsRelationTest extends TestCase
 
         List<RuleSetLink> actual = nodeRuleSetLinksRelation.create(FOLDER_NODE_ID,List.of(requestBody), parameters);
         Assert.assertEquals(ruleResult, actual);
+    }
+
+    @Test
+    public void testUnlinkRuleSet()
+    {
+        //when
+        ruleSets.unlinkRuleSet(FOLDER_NODE_ID,RULE_SET_NODE_ID);
+
+        then(ruleSets).should().unlinkRuleSet(FOLDER_NODE_ID,RULE_SET_NODE_ID);
+        then(ruleSets).shouldHaveNoMoreInteractions();
     }
 
 

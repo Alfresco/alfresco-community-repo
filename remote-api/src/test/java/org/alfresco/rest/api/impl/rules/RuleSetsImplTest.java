@@ -46,6 +46,7 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -293,5 +294,39 @@ public class RuleSetsImplTest extends TestCase
         then(ruleServiceMock).should().hasRules(FOLDER_NODE);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         then(runtimeRuleServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testUnlinkRuleSet()
+    {
+        given(ruleServiceMock.isLinkedToRuleNode(FOLDER_NODE)).willReturn(true);
+
+        //when
+        ruleSets.unlinkRuleSet(FOLDER_ID,RULE_SET_ID);
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID,true);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID,FOLDER_NODE);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().isLinkedToRuleNode(FOLDER_NODE);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).should().removeAspect(FOLDER_NODE,RuleModel.ASPECT_RULES);
+        then(nodeServiceMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testUnlinkRuleSet_folderIsNotLinkedToRuleSet()
+    {
+        given(ruleServiceMock.isLinkedToRuleNode(FOLDER_NODE)).willReturn(false);
+
+        //when
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
+                () -> ruleSets.unlinkRuleSet(FOLDER_ID,RULE_SET_ID));
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID,true);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID,FOLDER_NODE);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().isLinkedToRuleNode(FOLDER_NODE);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(nodeServiceMock).shouldHaveNoInteractions();
     }
 }

@@ -63,4 +63,9 @@ public interface RuleSets
      * Link a rule set to a folder
      */
     RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId);
+
+    /**
+     * Removes the link between a rule set and a folder
+     */
+    void unlinkRuleSet(String folderNodeId, String ruleSetId);
 }

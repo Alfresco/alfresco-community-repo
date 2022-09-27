@@ -101,7 +101,6 @@ public class RuleSetsImplTest extends TestCase
         given(nodeValidatorMock.validateRuleSetNode(LINK_TO_NODE_ID,true)).willReturn(LINK_TO_NODE);
         given(nodeValidatorMock.validateFolderNode(eq(FOLDER_ID), anyBoolean())).willReturn(FOLDER_NODE);
         given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
-        given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, true)).willReturn(RULE_SET_NODE);
 
         given(ruleServiceMock.getRuleSetNode(FOLDER_NODE)).willReturn(RULE_SET_NODE);
         given(ruleServiceMock.getNodesSupplyingRuleSets(FOLDER_NODE)).willReturn(List.of(FOLDER_NODE));
@@ -300,54 +299,33 @@ public class RuleSetsImplTest extends TestCase
     @Test
     public void testUnlinkRuleSet()
     {
-        given(ruleServiceMock.getLinkedToRuleNode(RULE_SET_NODE)).willReturn(LINK_TO_NODE);
-        given(nodeServiceMock.hasAspect(FOLDER_NODE,RuleModel.ASPECT_RULES)).willReturn(true);
+        given(ruleServiceMock.isLinkedToRuleNode(FOLDER_NODE)).willReturn(true);
 
         //when
         ruleSets.unlinkRuleSet(FOLDER_ID,RULE_SET_ID);
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID,true);
-        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID,true);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID,FOLDER_NODE);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
-        then(ruleServiceMock).should().getLinkedToRuleNode(RULE_SET_NODE);
+        then(ruleServiceMock).should().isLinkedToRuleNode(FOLDER_NODE);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
-        then(nodeServiceMock).should().hasAspect(FOLDER_NODE,RuleModel.ASPECT_RULES);
         then(nodeServiceMock).should().removeAspect(FOLDER_NODE,RuleModel.ASPECT_RULES);
-        then(nodeServiceMock).shouldHaveNoMoreInteractions();
-    }
-
-    @Test
-    public void testUnlinkRuleSet_folderDoesntHaveRuleAspect()
-    {
-        given(ruleServiceMock.getLinkedToRuleNode(RULE_SET_NODE)).willReturn(LINK_TO_NODE);
-        given(nodeServiceMock.hasAspect(FOLDER_NODE,RuleModel.ASPECT_RULES)).willReturn(false);
-
-        //when
-        assertThatExceptionOfType(AspectMissingException.class).isThrownBy(
-                () -> ruleSets.unlinkRuleSet(FOLDER_ID,RULE_SET_ID));
-
-        then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID,true);
-        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID,true);
-        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
-        then(ruleServiceMock).should().getLinkedToRuleNode(RULE_SET_NODE);
-        then(ruleServiceMock).shouldHaveNoMoreInteractions();
-        then(nodeServiceMock).should().hasAspect(FOLDER_NODE,RuleModel.ASPECT_RULES);
         then(nodeServiceMock).shouldHaveNoMoreInteractions();
     }
 
     @Test
     public void testUnlinkRuleSet_folderIsNotLinkedToRuleSet()
     {
-        given(ruleServiceMock.getLinkedToRuleNode(RULE_SET_NODE)).willReturn(null);
+        given(ruleServiceMock.isLinkedToRuleNode(FOLDER_NODE)).willReturn(false);
 
         //when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
                 () -> ruleSets.unlinkRuleSet(FOLDER_ID,RULE_SET_ID));
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID,true);
-        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID,true);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID,FOLDER_NODE);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
-        then(ruleServiceMock).should().getLinkedToRuleNode(RULE_SET_NODE);
+        then(ruleServiceMock).should().isLinkedToRuleNode(FOLDER_NODE);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).shouldHaveNoInteractions();
     }

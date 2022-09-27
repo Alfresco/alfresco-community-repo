@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.workflow.ForbiddenWorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
@@ -62,11 +63,14 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 import javax.transaction.UserTransaction;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 /**
  * Alfresco bootstrap Process deployment.
@@ -310,9 +314,10 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                         }
                         else
                         {
-                            WorkflowDeployment deployment = workflowService.deployDefinition(engineId, workflowResource.getInputStream(), 
-                                        mimetype, workflowResource.getFilename());
-                            logDeployment(location, deployment);
+                            final InputStream workflowInputStream = workflowResource.getInputStream();
+                            final Optional<WorkflowDeployment> possibleDeployment = tryToDeploy(() ->
+                                    workflowService.deployDefinition(engineId, workflowInputStream, mimetype, workflowResource.getFilename()));
+                            possibleDeployment.ifPresent(deployment -> logDeployment(location, deployment));
                         }
                     }
                     else
@@ -399,10 +404,9 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                     else
                     {
                         // deploy / re-deploy
-                        WorkflowDeployment deployment = workflowService.deployDefinition(nodeRef);
-                        logDeployment(nodeRef, deployment);
-                        if (deployment != null)
+                        tryToDeploy(() -> workflowService.deployDefinition(nodeRef)).ifPresent(deployment ->
                         {
+                            logDeployment(nodeRef, deployment);
                             WorkflowDefinition def = deployment.getDefinition();
                             
                             // Update the meta data for the model
@@ -421,7 +425,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                             }
 
                            nodeService.setProperties(nodeRef, props);
-                         }
+                         });
                      }
                 }
                 else
@@ -435,6 +439,19 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         {
             if (logger.isDebugEnabled())
                 logger.debug("Workflow deployer: Definition '" + nodeRef + "' not deployed since it is a working copy");
+        }
+    }
+
+    private Optional<WorkflowDeployment> tryToDeploy(Supplier<WorkflowDeployment> workflowDeployment)
+    {
+        try
+        {
+            return Optional.ofNullable(workflowDeployment.get());
+        }
+        catch (ForbiddenWorkflowException e)
+        {
+            logger.debug("Workflow " + e.getWorkflowName() + " won't be deployed. It's not allowed.");
+            return Optional.empty();
         }
     }
 

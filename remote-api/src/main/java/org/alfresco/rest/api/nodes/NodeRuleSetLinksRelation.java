@@ -76,7 +76,6 @@ public class NodeRuleSetLinksRelation implements InitializingBean, RelationshipR
      *
      * @param folderNodeId - folder node ID
      * @param ruleSetNodeId - rule set node ID (associated with folder node)
-     * @param parameters - Should not be null. Should contain at least ruleId (relationship2Id) (????????????)
      * @throws RelationshipResourceNotFoundException in case resource was not found
      */
     @WebApiDescription(title = "Remove link between a rule set and a folder node",

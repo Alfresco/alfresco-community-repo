@@ -115,18 +115,12 @@ public class RuleSetsImpl implements RuleSets
     public void unlinkRuleSet(String folderNodeId, String ruleSetId)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
-        final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, true);
+        final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
 
         //The folder should be linked to a rule set
-        if (!ruleService.isLinkedToRuleNode(ruleSetNodeRef))
+        if (!ruleService.isLinkedToRuleNode(folderNodeRef))
         {
             throw new InvalidArgumentException("The folder is not linked to a rule set.");
-        }
-
-        // Check that the folder node has the rules aspect applied
-        if (!nodeService.hasAspect(folderNodeRef,RuleModel.ASPECT_RULES))
-        {
-            throw new AspectMissingException(RuleModel.ASPECT_RULES, folderNodeRef);
         }
 
         //The following line also handles the deletion of the child folder that gets created during linking

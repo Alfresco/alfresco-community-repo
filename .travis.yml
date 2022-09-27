@@ -335,6 +335,7 @@ jobs:
       before_script:
         - ${TAS_SCRIPTS}/start-compose.sh ${TAS_ENVIRONMENT}/docker-compose-minimal.yml
         - ${TAS_SCRIPTS}/wait-for-alfresco-start.sh "http://localhost:8082/alfresco"
+        - travis_retry travis_wait 40 mvn install -pl :alfresco-community-repo-integration-test -am -DskipTests -Pall-tas-tests
       script: travis_wait 30 mvn -B verify -f packaging/tests/tas-integration/pom.xml -Pall-tas-tests -Denvironment=default -DrunBugs=false
       after_failure: ${TAS_SCRIPTS}/output_logs_for_failures.sh "packaging/tests/tas-integration"
 

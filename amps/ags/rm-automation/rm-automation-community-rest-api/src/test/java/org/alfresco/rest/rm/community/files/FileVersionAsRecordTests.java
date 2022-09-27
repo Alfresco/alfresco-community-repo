@@ -212,7 +212,7 @@ public class FileVersionAsRecordTests extends BaseRMRestTest
         assertStatusCode(ACCEPTED);
 
         STEP("Check the exception thrown in alfresco logs");
-        dockerHelper.checkExceptionIsInAlfrescoLogs(expectedException, containerPath);
+        dockerHelper.checkExceptionIsInAlfrescoLogs(expectedException);
     }
 
     /**

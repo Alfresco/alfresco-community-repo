@@ -262,7 +262,7 @@ public class DeclareAndFileDocumentAsRecordTests extends BaseRMRestTest
         assertStatusCode(ACCEPTED);
 
         STEP("Check the exception thrown in alfresco logs");
-        dockerHelper.checkExceptionIsInAlfrescoLogs(expectedException, containerPath);
+        dockerHelper.checkExceptionIsInAlfrescoLogs(expectedException);
 
         STEP("Check that the file is not a record");
         assertFalse(hasRecordAspect(testFile), "File should not have record aspect");

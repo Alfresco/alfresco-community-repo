@@ -176,7 +176,7 @@ public class RestRuleSimpleConditionModelMapperTest
         // when
         final List<SimpleCondition> actualSimpleConditions =  objectUnderTest.toRestModels(actionConditions);
 
-        assertThat(actualSimpleConditions).hasSize(1).containsOnlyNulls();
+        assertThat(actualSimpleConditions).isEmpty();
     }
 
     @Test

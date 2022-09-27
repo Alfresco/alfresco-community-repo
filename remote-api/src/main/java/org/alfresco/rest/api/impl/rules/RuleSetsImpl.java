@@ -123,7 +123,7 @@ public class RuleSetsImpl implements RuleSets
             throw new InvalidArgumentException("The folder is not linked to a rule set.");
         }
 
-        //The following line also handles the deletion of the child folder that gets created during linking
+        //The following line also handles the deletion of the parent-child association that gets created during linking
         nodeService.removeAspect(folderNodeRef,RuleModel.ASPECT_RULES);
     }
 

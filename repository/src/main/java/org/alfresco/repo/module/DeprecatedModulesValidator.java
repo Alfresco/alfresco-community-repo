@@ -33,6 +33,7 @@ import java.util.List;
 
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Halts the bootstrap process if a deprecated module is present.
@@ -42,7 +43,7 @@ import org.alfresco.service.cmr.module.ModuleService;
  */
 public class DeprecatedModulesValidator
 {
-    private static final String ERROR_MSG = "The following deprecated modules are installed: %s. Please remove these AMPs in order to continue.";
+    private static final String ERROR_MSG = "module.err.deprecated_modules";
     private final ModuleService moduleService;
     private final List<String> deprecatedModules;
 
@@ -70,6 +71,6 @@ public class DeprecatedModulesValidator
 
     private static void throwException(String foundDeprecatedModules)
     {
-        throw new IllegalStateException(String.format(ERROR_MSG, foundDeprecatedModules));
+        throw new IllegalStateException(I18NUtil.getMessage(ERROR_MSG, foundDeprecatedModules));
     }
 }

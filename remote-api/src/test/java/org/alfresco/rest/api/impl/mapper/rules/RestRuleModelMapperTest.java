@@ -27,6 +27,7 @@
 package org.alfresco.rest.api.impl.mapper.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
@@ -34,14 +35,17 @@ import java.util.List;
 
 import org.alfresco.repo.action.ActionConditionImpl;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.impl.rules.ActionParameterConverter;
 import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleTrigger;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleType;
@@ -70,26 +74,35 @@ public class RestRuleModelMapperTest
     private RestRuleCompositeConditionModelMapper compositeConditionMapperMock;
     @Mock
     private Nodes nodesMock;
+    @Mock
+    private ActionParameterConverter actionParameterConverterMock;
 
     private RestRuleModelMapper objectUnderTest;
 
     @Before
     public void setUp()
     {
-        objectUnderTest = new RestRuleModelMapper(compositeConditionMapperMock, actionMapperMock, nodesMock);
+        objectUnderTest = new RestRuleModelMapper(compositeConditionMapperMock, actionMapperMock, nodesMock, actionParameterConverterMock);
     }
 
     @Test
     public void testToRestModel()
     {
         final org.alfresco.service.cmr.rule.Rule ruleModel = createRuleModel();
-        final Rule expectedRule = createRuleWithDefaultValues();
+        given(actionParameterConverterMock.convertParamFromServiceModel(any())).willAnswer(a -> a.getArgument(0));
+        given(actionMapperMock.toRestModel(createActionModel())).willReturn(createAction());
+        given(compositeConditionMapperMock.toRestModel(List.of(createConditionModel()))).willReturn(createCondition());
 
         // when
         final Rule actualRule = objectUnderTest.toRestModel(ruleModel);
 
+        then(compositeConditionMapperMock).should().toRestModel(ruleModel.getAction().getActionConditions());
+        then(compositeConditionMapperMock).shouldHaveNoMoreInteractions();
+        then(actionParameterConverterMock).should().convertParamFromServiceModel(ERROR_SCRIPT);
+        then(actionParameterConverterMock).shouldHaveNoMoreInteractions();
+        ((CompositeAction) ruleModel.getAction()).getActions().forEach(a -> then(actionMapperMock).should().toRestModel(a));
+        final Rule expectedRule = createRuleWithDefaultValues();
         assertThat(actualRule).isNotNull().usingRecursiveComparison().isEqualTo(expectedRule);
-
     }
 
     @Test
@@ -114,9 +127,10 @@ public class RestRuleModelMapperTest
         final CompositeCondition compositeCondition = CompositeCondition.builder().create();
         final org.alfresco.service.cmr.rule.Rule expectedRuleModel = createRuleModel();
         rule.setConditions(compositeCondition);
-        final org.alfresco.service.cmr.action.Action actionModel = createActionModel();
+        final org.alfresco.service.cmr.action.Action actionModel = createCompositeActionModel();
         given(actionMapperMock.toServiceModel(List.of(action))).willReturn(actionModel);
         given(compositeConditionMapperMock.toServiceModels(compositeCondition)).willCallRealMethod();
+        given(actionParameterConverterMock.getConvertedParams(any(), any())).willAnswer(a -> a.getArgument(0));
         // when
         final org.alfresco.service.cmr.rule.Rule actualRuleModel = objectUnderTest.toServiceModel(rule);
 
@@ -160,15 +174,26 @@ public class RestRuleModelMapperTest
     private Rule createRuleWithDefaultValues()
     {
         return Rule.builder()
-            .id(RULE_ID)
-            .name(RULE_NAME)
-            .description(RULE_DESCRIPTION)
-            .isEnabled(RULE_ENABLED)
-            .isInheritable(RULE_INHERITABLE)
-            .isAsynchronous(RULE_ASYNC)
-            .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
-            .errorScript(ERROR_SCRIPT)
-            .create();
+                .id(RULE_ID)
+                .name(RULE_NAME)
+                .description(RULE_DESCRIPTION)
+                .isEnabled(RULE_ENABLED)
+                .isInheritable(RULE_INHERITABLE)
+                .isAsynchronous(RULE_ASYNC)
+                .triggers(List.of(RuleTrigger.INBOUND, RuleTrigger.UPDATE))
+                .errorScript(ERROR_SCRIPT)
+                .actions(List.of(createAction()))
+                .conditions(createCondition())
+                .create();
+    }
+
+    private CompositeCondition createCondition()
+    {
+        return CompositeCondition.builder().create();
+    }
+
+    private Action createAction() {
+        return Action.builder().actionDefinitionId(ACTION_DEFINITION_NAME).create();
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRuleModel()
@@ -181,19 +206,30 @@ public class RestRuleModelMapperTest
         ruleModel.applyToChildren(RULE_INHERITABLE);
         ruleModel.setExecuteAsynchronously(RULE_ASYNC);
         ruleModel.setRuleTypes(List.of(RuleType.INBOUND, RuleType.UPDATE));
-        ruleModel.setAction(createActionModel());
+        ruleModel.setAction(createCompositeActionModel());
 
         return ruleModel;
     }
 
-    private static org.alfresco.service.cmr.action.Action createActionModel()
+    private static org.alfresco.service.cmr.action.Action createCompositeActionModel()
     {
-        final ActionCondition actionCondition = new ActionConditionImpl("action-condition-id", "action-condition-def-name");
-        final org.alfresco.service.cmr.action.Action actionModel = new ActionImpl(null, "action-id", ACTION_DEFINITION_NAME);
-        actionModel.setCompensatingAction(createCompensatingActionModel());
-        actionModel.addActionCondition(actionCondition);
+        final ActionCondition actionCondition = createConditionModel();
+        final org.alfresco.service.cmr.action.CompositeAction compositeActionModel = new CompositeActionImpl(null, "composite-action");
+        compositeActionModel.addAction(createActionModel());
+        compositeActionModel.setCompensatingAction(createCompensatingActionModel());
+        compositeActionModel.addActionCondition(actionCondition);
 
-        return actionModel;
+        return compositeActionModel;
+    }
+
+    private static ActionConditionImpl createConditionModel()
+    {
+        return new ActionConditionImpl("action-condition-id", "action-condition-def-name");
+    }
+
+    private static ActionImpl createActionModel()
+    {
+        return new ActionImpl(null, "action-id", ACTION_DEFINITION_NAME);
     }
 
     private static org.alfresco.service.cmr.action.Action createCompensatingActionModel()

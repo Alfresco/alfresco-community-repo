@@ -26,11 +26,14 @@
 
 package org.alfresco.rest.api.impl.mapper.rules;
 
+import java.io.Serializable;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.executer.ScriptActionExecuter;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.impl.rules.ActionParameterConverter;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.rest.api.model.rules.CompositeCondition;
@@ -42,22 +45,29 @@ import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 @Experimental
 public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule>
 {
+    private static Log log = LogFactory.getLog(RestRuleModelMapper.class);
+
     private final RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper;
     private final RestModelMapper<Action, org.alfresco.service.cmr.action.Action> actionMapper;
     private final Nodes nodes;
+    private final ActionParameterConverter actionParameterConverter;
 
     public RestRuleModelMapper(
             RestModelMapper<CompositeCondition, ActionCondition> compositeConditionMapper,
             RestModelMapper<Action, org.alfresco.service.cmr.action.Action> actionMapper,
-            Nodes nodes)
+            Nodes nodes,
+            ActionParameterConverter actionParameterConverter)
     {
         this.compositeConditionMapper = compositeConditionMapper;
         this.actionMapper = actionMapper;
         this.nodes = nodes;
+        this.actionParameterConverter = actionParameterConverter;
     }
 
     /**
@@ -95,8 +105,9 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
             if (serviceRule.getAction().getCompensatingAction() != null &&
                     serviceRule.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
             {
-                builder.errorScript(
-                        serviceRule.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
+                String errorScript = actionParameterConverter.convertParamFromServiceModel(
+                        serviceRule.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF)).toString();
+                builder.errorScript(errorScript);
             }
             if (serviceRule.getAction() instanceof CompositeAction && ((CompositeAction) serviceRule.getAction()).getActions() != null)
             {
@@ -104,7 +115,10 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
                         ((CompositeAction) serviceRule.getAction()).getActions().stream()
                                 .map(actionMapper::toRestModel)
                                 .collect(Collectors.toList()));
+            } else {
+                log.warn("Rule Action should be of 'CompositeAction' type but found: " + serviceRule.getAction().getClass());
             }
+
         }
 
         return builder.create();
@@ -133,7 +147,10 @@ public class RestRuleModelMapper implements RestModelMapper<Rule, org.alfresco.s
         {
             final org.alfresco.service.cmr.action.Action compensatingAction =
                     new ActionImpl(null, GUID.generate(), ScriptActionExecuter.NAME);
-            compensatingAction.setParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF, restRuleModel.getErrorScript());
+            final Map<String, Serializable> scriptParam = actionParameterConverter
+                    .getConvertedParams(Map.of(ScriptActionExecuter.PARAM_SCRIPTREF, restRuleModel.getErrorScript()),
+                            compensatingAction.getActionDefinitionName());
+            compensatingAction.setParameterValues(scriptParam);
             serviceRule.getAction().setCompensatingAction(compensatingAction);
         }
         if (restRuleModel.getConditions() != null)

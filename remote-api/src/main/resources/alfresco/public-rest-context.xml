@@ -959,7 +959,9 @@
 
     <bean id="ruleMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleModelMapper">
         <constructor-arg name="compositeConditionMapper" ref="compositeConditionMapper"/>
+        <constructor-arg name="actionMapper" ref="actionMapper"/>
         <constructor-arg name="nodes" ref="Nodes"/>
+        <constructor-arg name="actionParameterConverter" ref="actionParameterConverter"/>
     </bean>
 
     <bean id="publicapi.mimeTypePropertyLookup" class="org.alfresco.rest.api.lookups.MimeTypePropertyLookup">

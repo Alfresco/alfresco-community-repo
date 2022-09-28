@@ -369,7 +369,7 @@ public class CreateRulesTests extends RestTest
                 .createSingleRule(createVariousActions());
 
         RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
-        expectedRuleModel.setActions(Arrays.asList(createVariousActions().getActions().toArray(new RestActionBodyExecTemplateModel[3])));
+        expectedRuleModel.setActions(createVariousActions().getActions());
         expectedRuleModel.setTriggers(List.of("inbound"));
 
         restClient.assertStatusCodeIs(CREATED);

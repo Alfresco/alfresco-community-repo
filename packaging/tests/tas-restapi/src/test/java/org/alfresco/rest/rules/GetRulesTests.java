@@ -150,11 +150,11 @@ public class GetRulesTests extends RestTest
                 rules.getEntries().get(i).onModel()
                      .assertThat().field("isShared").isNotNull()
                         .assertThat().field("description").isNull()
-                        .assertThat().field("enabled").is(false)
-                        .assertThat().field("cascade").is(false)
-                        .assertThat().field("asynchronous").is(false)
+                        .assertThat().field("isEnabled").is(false)
+                        .assertThat().field("isInheritable").is(false)
+                        .assertThat().field("isAsynchronous").is(false)
                         .assertThat().field("errorScript").isNull()
-                        .assertThat().field("shared").isNull()
+                        .assertThat().field("isShared").is(false)
                         .assertThat().field("triggers").is("[inbound]"));
     }
 
@@ -190,7 +190,6 @@ public class GetRulesTests extends RestTest
 
         RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
         expectedRuleModel.setTriggers(List.of("update"));
-        expectedRuleModel.setConditions(createEmptyConditionModel());
 
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, IGNORE_ID, IGNORE_IS_SHARED)
@@ -212,7 +211,6 @@ public class GetRulesTests extends RestTest
 
         RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
         expectedRuleModel.setTriggers(List.of("inbound"));
-        expectedRuleModel.setConditions(createEmptyConditionModel());
 
         restClient.assertStatusCodeIs(CREATED);
 

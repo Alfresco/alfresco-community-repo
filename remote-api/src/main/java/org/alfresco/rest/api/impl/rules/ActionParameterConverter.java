@@ -65,7 +65,7 @@ public class ActionParameterConverter
         this.namespaceService = namespaceService;
     }
 
-    Map<String, Serializable> getConvertedParams(Map<String, Serializable> params, String name)
+    public Map<String, Serializable> getConvertedParams(Map<String, Serializable> params, String name)
     {
         final Map<String, Serializable> parameters = new HashMap<>(params.size());
         final ParameterizedItemDefinition definition;

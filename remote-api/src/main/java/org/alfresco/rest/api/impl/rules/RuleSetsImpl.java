@@ -41,6 +41,7 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -108,6 +109,22 @@ public class RuleSetsImpl implements RuleSets
         ruleSetLink.setId(ruleSetNodeRef.getId());
 
         return ruleSetLink;
+    }
+
+    @Override
+    public void unlinkRuleSet(String folderNodeId, String ruleSetId)
+    {
+        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
+        final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+
+        //The folder should be linked to a rule set
+        if (!ruleService.isLinkedToRuleNode(folderNodeRef))
+        {
+            throw new InvalidArgumentException("The folder is not linked to a rule set.");
+        }
+
+        //The following line also handles the deletion of the parent-child association that gets created during linking
+        nodeService.removeAspect(folderNodeRef,RuleModel.ASPECT_RULES);
     }
 
     public void setRuleSetLoader(RuleSetLoader ruleSetLoader)

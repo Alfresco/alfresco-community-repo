@@ -1247,7 +1247,15 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         WorkflowDefinition definition = deployment.getDefinition();
         return definition;
     }
-    
+
+    protected WorkflowDefinition deployDefinition(String resource, String name, boolean fullAccess)
+    {
+        InputStream input = getInputStream(resource);
+        WorkflowDeployment deployment = workflowService.deployDefinition(getEngine(), input, XML, name, fullAccess);
+        WorkflowDefinition definition = deployment.getDefinition();
+        return definition;
+    }
+
     protected abstract QName getAdhocProcessName();
     
 

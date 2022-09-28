@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2021 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -177,6 +177,7 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(1000L, entitlements.getMaxDocs().longValue());
         assertTrue(entitlements.getIsClusterEnabled());
         assertFalse(entitlements.getIsCryptodocEnabled());
+        assertFalse(entitlements.getIsCustomEmbeddedWorkflowEnabled());
 
         // Check status
         StatusInfo statusInfo = repositoryInfo.getStatus();
@@ -297,11 +298,13 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(1000L, entitlements.getMaxDocs().longValue());
         assertTrue(entitlements.getIsClusterEnabled());
         assertFalse(entitlements.getIsCryptodocEnabled());
+        assertFalse(entitlements.getIsCustomEmbeddedWorkflowEnabled());
 
         // Override entitlements
         when(licenseDescriptorMock.getMaxDocs()).thenReturn(null);
         when(licenseDescriptorMock.isClusterEnabled()).thenReturn(false);
         when(licenseDescriptorMock.isCryptodocEnabled()).thenReturn(true);
+        when(licenseDescriptorMock.isCustomEmbeddedWorkflowEnabled()).thenReturn(true);
 
         response = get("discovery", null, 200);
 
@@ -319,6 +322,7 @@ public class DiscoveryApiTest extends AbstractSingleNetworkSiteTest
         assertNull(entitlements.getMaxDocs());
         assertFalse(entitlements.getIsClusterEnabled());
         assertTrue(entitlements.getIsCryptodocEnabled());
+        assertTrue(entitlements.getIsCustomEmbeddedWorkflowEnabled());
     }
 
     @Test

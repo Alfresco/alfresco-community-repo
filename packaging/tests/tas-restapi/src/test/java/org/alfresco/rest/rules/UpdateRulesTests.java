@@ -27,26 +27,37 @@ package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INBOUND;
+import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ASYNC_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
+import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
+import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
+import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
@@ -229,7 +240,7 @@ public class UpdateRulesTests extends RestTest
      * Check we get error when attempt to update a rule to one with invalid action.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void updateRuleWithInvalidActionsShouldFail()
+    public void updateRuleWithInvalidActionDefinitionShouldFail()
     {
         RestRuleModel rule = createAndSaveRule("Rule name");
 
@@ -281,18 +292,240 @@ public class UpdateRulesTests extends RestTest
         rule.setTriggers(List.of(INBOUND));
         final String updatedDescription = "Updated description";
         rule.setDescription(updatedDescription);
-        rule.setEnabled(!RULE_ENABLED_DEFAULT);
-        rule.setCascade(!RULE_CASCADE_DEFAULT);
-        rule.setAsynchronous(!RULE_ASYNC_DEFAULT);
+        rule.setIsEnabled(!RULE_ENABLED_DEFAULT);
+        rule.setIsInheritable(!RULE_CASCADE_DEFAULT);
+        rule.setIsAsynchronous(!RULE_ASYNC_DEFAULT);
         final String updatedErrorScript = "updated-error-script";
         rule.setErrorScript(updatedErrorScript);
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(OK);
-        updatedRule.assertThat().isEqualTo(rule, ID, IS_SHARED)
+        updatedRule.assertThat().isEqualTo(rule, ID)
                 .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update rule by adding conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleAddConditions()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule and add conditions.");
+        rule.setConditions(createVariousConditions());
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update a rule rule without any conditions by adding null conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleAddNullConditions()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule and add null conditions.");
+        rule.setConditions(null);
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update rule by modifying conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleModifyConditions()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule and modify conditions.");
+        final RestCompositeConditionDefinitionModel compositeCondition = createCompositeCondition(
+                List.of(createCompositeCondition(false, List.of(createSimpleCondition("tag", "equals", "sample_tag")))));
+        rule.setConditions(compositeCondition);
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we can use the POST response and update rule by removing all conditions. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleRemoveAllConditions()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule and remove all conditions.");
+        rule.setConditions(null);
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /** Check we get a 400 error when using the POST response and update rule by adding condition with invalid category. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithInvalidCategoryInConditionAndFail()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule with invalid condition.");
+        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("category", "equals", "fake-category-id")))));
+        rule.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Category in condition is invalid");
+    }
+
+    /** Check we get a 400 error when using the POST response and update rule by adding condition without comparator when it is required. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithConditionWithoutComparatorAndFail()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule with invalid condition (null comparator when required non-null).");
+        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", null, "65500")))));
+        rule.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Comparator in condition must not be blank");
+    }
+
+    /** Check we get a 400 error when using the POST response and update rule by adding condition without field. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithConditionWithoutFieldAndFail()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule with invalid condition (null field).");
+        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition(null, "greater_than", "65500")))));
+        rule.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Field in condition must not be blank");
+    }
+
+    /** Check we get a 400 error when using the POST response and update rule by adding condition without parameter value. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    public void updateRuleWithConditionWithoutParamValueAndFail()
+    {
+        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
+
+        STEP("Try to update the rule with invalid condition (null parameter).");
+        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
+                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", "greater_than", "")))));
+        rule.setConditions(conditions);
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Parameter in condition must not be blank");
+    }
+
+    /**
+     * Check we can update a rule by adding several actions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleAddActions()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule by adding several actions");
+        final Map<String, Serializable> copyParams =
+                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
+        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
+        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
+        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
+        rule.setActions(Arrays.asList(copyAction, scriptAction));
+
+        final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().isEqualTo(rule, ID)
+                .assertThat().field(ID).isNotNull();
+    }
+
+    /**
+     * Check we get a 400 error when attempting to update a rule by adding action with not allowed parameter.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleAddCheckoutActionForOutboundShouldFail()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule by adding checkout action");
+        final Map<String, Serializable> checkOutParams =
+                Map.of("destination-folder", "dummy-folder-node", "assoc-name", "cm:checkout", "assoc-type",
+                        "cm:contains");
+        final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
+        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
+        rule.setActions(List.of(checkOutAction));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Check out action cannot be performed for the rule type outbound!");
+    }
+
+    /**
+     * Check we get a 500 error when attempting to update a rule by adding action with parameter with non existing namespace in value.
+     * In near future we need to fix this kind of negative path to return a 4xx error.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void updateRuleAddActionWithInvalidParamShouldFail()
+    {
+        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+
+        STEP("Try to update the rule by adding action with invalid parameter (non-existing namespace in value)");
+        final RestActionBodyExecTemplateModel action = new RestActionBodyExecTemplateModel();
+        action.setActionDefinitionId("add-features");
+        action.setParams(Map.of("aspect-name", "dummy:dummy"));
+        rule.setActions(List.of(action));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
+        restClient.assertLastError().containsSummary("Namespace prefix dummy is not mapped to a namespace URI");
     }
 
     private RestRuleModel createAndSaveRule(String name)

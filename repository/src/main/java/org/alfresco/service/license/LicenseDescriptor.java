@@ -139,7 +139,17 @@ public interface LicenseDescriptor
      * @return <code>true</code> if the license allows cryptodoc
      */
     boolean isCryptodocEnabled();
-    
+
+    /**
+     * Does this license allow custom embedded workflows?
+     *
+     * @return <code>true</code> if the license allows custom embedded workflows
+     */
+    default boolean isCustomEmbeddedWorkflowEnabled()
+    {
+        return false;
+    }
+
     /**
      * ATS Transformation Server Expiry Date
      * @return the ATS Transformation Server Expiry Date or <code>null</code>

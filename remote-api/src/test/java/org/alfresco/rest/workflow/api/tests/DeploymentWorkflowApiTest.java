@@ -38,6 +38,7 @@ import java.util.Map;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.rest.api.tests.AbstractTestFixture;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
@@ -128,7 +129,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         Deployment adhocDeployment = deploymentMap.get("adhoc.bpmn20.xml");
         
         assertEquals(activitiDeployment.getId(), adhocDeployment.getId());
-        assertEquals(activitiDeployment.getCategory(), adhocDeployment.getCategory());
+        assertEquals(activitiDeployment.getCategory(), WorkflowDeployer.CATEGORY_FULL_ACCESS);
         assertEquals(activitiDeployment.getName(), adhocDeployment.getName());
         assertEquals(activitiDeployment.getDeploymentTime(), adhocDeployment.getDeployedAt());
         
@@ -251,7 +252,7 @@ public class DeploymentWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertNotNull(deployment);
         
         assertEquals(activitiDeployment.getId(), deployment.getId());
-        assertEquals(activitiDeployment.getCategory(), deployment.getCategory());
+        assertEquals(activitiDeployment.getCategory(), WorkflowDeployer.CATEGORY_FULL_ACCESS);
         assertEquals(activitiDeployment.getName(), deployment.getName());
         assertEquals(activitiDeployment.getDeploymentTime(), deployment.getDeployedAt());
         

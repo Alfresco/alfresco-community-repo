@@ -26,77 +26,17 @@
 
 package org.alfresco.rest.api.model.rules;
 
-import static org.alfresco.repo.action.access.ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME;
-
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import org.alfresco.repo.action.ActionImpl;
-import org.alfresco.repo.action.CompositeActionImpl;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.GUID;
 
 @Experimental
 public class Action
 {
     private String actionDefinitionId;
     private Map<String, Serializable> params;
-
-    /**
-     * Converts service POJO action to REST model action.
-     *
-     * @param actionModel - {@link org.alfresco.service.cmr.action.Action} service POJO
-     * @return {@link Action} REST model
-     */
-    public static Action from(final org.alfresco.service.cmr.action.Action actionModel)
-    {
-        if (actionModel == null)
-        {
-            return null;
-        }
-
-        final Action.Builder builder = builder().actionDefinitionId(actionModel.getActionDefinitionName());
-        if (actionModel.getParameterValues() != null)
-        {
-            Map<String, Serializable> params = new HashMap<>(actionModel.getParameterValues());
-            params.remove(ACTION_CONTEXT_PARAM_NAME);
-            builder.params(params);
-        }
-
-        return builder.create();
-    }
-
-    /**
-     * Convert the REST model object to the equivalent service POJO.
-     *
-     * @param nodeRef The node reference.
-     * @return The action service POJO.
-     */
-    public org.alfresco.service.cmr.action.Action toServiceModel(final NodeRef nodeRef)
-    {
-        return new ActionImpl(nodeRef, GUID.generate(), this.actionDefinitionId, params);
-    }
-
-    /**
-     * Convert the REST model objects to composite action service POJO.
-     *
-     * @param actions List of actions.
-     * @return The composite action service POJO.
-     */
-    public static org.alfresco.service.cmr.action.Action toCompositeAction(final List<Action> actions) {
-        if (actions == null)
-        {
-            return null;
-        }
-
-        final org.alfresco.service.cmr.action.CompositeAction compositeAction = new CompositeActionImpl(null, GUID.generate());
-        actions.forEach(action -> compositeAction.addAction(action.toServiceModel(null)));
-        return compositeAction;
-    }
 
     public String getActionDefinitionId()
     {

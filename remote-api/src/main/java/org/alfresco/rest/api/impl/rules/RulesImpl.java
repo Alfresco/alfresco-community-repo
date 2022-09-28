@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
+import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -57,13 +58,11 @@ public class RulesImpl implements Rules
     private static final Logger LOGGER = LoggerFactory.getLogger(RulesImpl.class);
     private static final String MUST_HAVE_AT_LEAST_ONE_ACTION = "A rule must have at least one action";
 
-    private Nodes nodes;
     private RuleService ruleService;
     private NodeValidator validator;
     private RuleLoader ruleLoader;
-    private ActionParameterConverter actionParameterConverter;
     private ActionPermissionValidator actionPermissionValidator;
-    private RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper;
+    private RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper;
 
     @Override
     public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId,
@@ -76,7 +75,7 @@ public class RulesImpl implements Rules
         NodeRef owningFolder = ruleService.getOwningNodeRef(ruleSetNode);
 
         final List<Rule> rules = ruleService.getRules(owningFolder, false).stream()
-                .map(ruleModel -> loadRuleAndConvertActionParams(ruleModel, includes))
+                .map(ruleModel -> ruleLoader.loadRule(ruleModel, includes))
                 .collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
@@ -89,7 +88,7 @@ public class RulesImpl implements Rules
         final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validator.validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return loadRuleAndConvertActionParams(ruleService.getRule(ruleNodeRef), includes);
+        return ruleLoader.loadRule(ruleService.getRule(ruleNodeRef), includes);
     }
 
     @Override
@@ -105,7 +104,7 @@ public class RulesImpl implements Rules
         return rules.stream()
                 .map(this::mapToServiceModelAndValidateActions)
                 .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                .map(rule -> loadRuleAndConvertActionParams(rule, includes))
+                .map(rule -> ruleLoader.loadRule(rule, includes))
                 .collect(Collectors.toList());
     }
 
@@ -137,30 +136,9 @@ public class RulesImpl implements Rules
         {
             throw new InvalidArgumentException(MUST_HAVE_AT_LEAST_ONE_ACTION);
         }
-        final org.alfresco.service.cmr.rule.Rule serviceModelRule = rule.toServiceModel(nodes, simpleConditionMapper);
-        final CompositeAction compositeAction = (CompositeAction) serviceModelRule.getAction();
-        compositeAction.getActions().forEach(action -> action.setParameterValues(
-                actionParameterConverter.getConvertedParams(action.getParameterValues(), action.getActionDefinitionName())));
+        final org.alfresco.service.cmr.rule.Rule serviceModelRule = ruleMapper.toServiceModel(rule);
 
         return actionPermissionValidator.validateRulePermissions(serviceModelRule);
-    }
-
-    private Rule loadRuleAndConvertActionParams(org.alfresco.service.cmr.rule.Rule ruleModel, List<String> includes)
-    {
-        final Rule rule = ruleLoader.loadRule(ruleModel, includes);
-        rule.getActions()
-                .forEach(a -> a.setParams(a.getParams().entrySet()
-                                .stream()
-                                .collect(Collectors
-                                        .toMap(Map.Entry::getKey, e -> actionParameterConverter.convertParamFromServiceModel(e.getValue())))
-                        )
-                );
-        return rule;
-    }
-
-    public void setNodes(Nodes nodes)
-    {
-        this.nodes = nodes;
     }
 
     public void setRuleService(RuleService ruleService)
@@ -178,19 +156,14 @@ public class RulesImpl implements Rules
         this.ruleLoader = ruleLoader;
     }
 
-    public void setActionParameterConverter(ActionParameterConverter actionParameterConverter)
-    {
-        this.actionParameterConverter = actionParameterConverter;
-    }
-
     public void setActionPermissionValidator(ActionPermissionValidator actionPermissionValidator)
     {
         this.actionPermissionValidator = actionPermissionValidator;
     }
 
-    public void setSimpleConditionMapper(
-            RestModelMapper<SimpleCondition, ActionCondition> simpleConditionMapper)
+    public void setRuleMapper(
+            RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper)
     {
-        this.simpleConditionMapper = simpleConditionMapper;
+        this.ruleMapper = ruleMapper;
     }
 }

@@ -21,6 +21,7 @@ package org.alfresco.httpclient;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -57,7 +58,7 @@ public class RequestHeadersHttpClient extends HttpClient
         if (defaultHeaders != null)
         {
             defaultHeaders.forEach((k,v) -> {
-                method.addRequestHeader(k, v);
+                method.setRequestHeader(k, v);
             });
         }        
     }

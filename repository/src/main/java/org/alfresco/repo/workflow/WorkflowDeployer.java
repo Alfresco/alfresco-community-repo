@@ -46,7 +46,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.workflow.ForbiddenWorkflowException;
+import org.alfresco.service.cmr.workflow.FailedWorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowAdminService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
@@ -444,15 +444,16 @@ public class WorkflowDeployer extends AbstractLifecycleBean
 
     private Optional<WorkflowDeployment> tryToDeploy(Supplier<WorkflowDeployment> workflowDeployment)
     {
-        try
+        final WorkflowDeployment deployment = workflowDeployment.get();
+        final Optional<String> possibleFailure = FailedWorkflowDeployment.getFailure(deployment);
+
+        if (possibleFailure.isEmpty())
         {
-            return Optional.ofNullable(workflowDeployment.get());
+            return Optional.ofNullable(deployment);
         }
-        catch (ForbiddenWorkflowException e)
-        {
-            logger.debug("Workflow " + e.getWorkflowName() + " won't be deployed. It's not allowed.");
-            return Optional.empty();
-        }
+
+        logger.warn("Failed to deploy a workflow. " + possibleFailure.get());
+        return Optional.empty();
     }
 
     /**

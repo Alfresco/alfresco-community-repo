@@ -21,6 +21,7 @@ package org.alfresco.httpclient;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -36,6 +37,8 @@ public class RequestHeadersHttpClient extends HttpClient
 {
     
     private Map<String, String> defaultHeaders;
+
+    private boolean overrideDefaultHeaders = false;
     
     public RequestHeadersHttpClient(MultiThreadedHttpConnectionManager connectionManager)
     {
@@ -57,7 +60,14 @@ public class RequestHeadersHttpClient extends HttpClient
         if (defaultHeaders != null)
         {
             defaultHeaders.forEach((k,v) -> {
-                method.addRequestHeader(k, v);
+                if (overrideDefaultHeaders)
+                {
+                    method.setRequestHeader(k, v);
+                }
+                else
+                {
+                    method.addRequestHeader(k, v);
+                }
             });
         }        
     }
@@ -84,4 +94,8 @@ public class RequestHeadersHttpClient extends HttpClient
         return super.executeMethod(hostconfig, method, state);
     }
 
+    public void setOverrideDefaultHeaders(boolean overrideDefaultHeaders)
+    {
+        this.overrideDefaultHeaders = overrideDefaultHeaders;
+    }
 }

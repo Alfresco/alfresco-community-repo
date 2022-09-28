@@ -27,4 +27,13 @@ public interface AlfrescoHttpClient
      * 
      */
     public void close();
+
+    /**
+     * Allows to override (or not) the default headers that will be included in HTTP requests
+     *
+     * @param override
+     *            if true, it will prevent the default headers to be duplicated, otherwise the request may contain
+     *            multiple instances of the same header
+     */
+    public void setOverrideDefaultHeaders(boolean override);
 }

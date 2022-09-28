@@ -203,7 +203,18 @@ public abstract class AbstractHttpClient implements AlfrescoHttpClient
        }
         
     }
-    
-    
 
+    /*
+     * @see AlfrescoHttpClient#setOverrideDefaultHeaders(boolean)
+     */
+    public void setOverrideDefaultHeaders(boolean override)
+    {
+        if (httpClient != null)
+        {
+            if (httpClient instanceof RequestHeadersHttpClient)
+            {
+                ((RequestHeadersHttpClient) httpClient).setOverrideDefaultHeaders(override);
+            }
+        }
+    }
 }

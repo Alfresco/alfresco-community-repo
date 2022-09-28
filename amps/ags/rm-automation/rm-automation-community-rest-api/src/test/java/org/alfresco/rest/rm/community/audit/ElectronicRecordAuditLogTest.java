@@ -37,12 +37,18 @@ import org.alfresco.rest.v0.RecordsAPI;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.UserModel;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.AssertJUnit;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,10 +67,8 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
     private RMAuditAPI auditLog;
-
     @Autowired
     private RecordsAPI recordApi;
-
     /* electronic record details */
     private static final String AUDIT_ELECTRONIC_RECORD = generateTestPrefix(ElectronicRecordAuditLogTest.class) + "electronic record";
     private static final String AUDIT_COMPLETE_REOPEN_ELECTRONIC_RECORD = "Complete Reopen Electronic Record";
@@ -72,7 +76,7 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
     public static final String DESCRIPTION = "Description";
     private RecordCategory category1;
     private RecordCategoryChild recordFolder1;
-    private Record electronicRecord;
+    private Record electronicRecord, electronicRecord2;
 
     @BeforeClass(alwaysRun = true)
     public void electronicRecordsAuditLogSetup()
@@ -135,11 +139,12 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
         assertTrue("Updated metadata Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Updated Metadata")));
     }
 
-    @Test (description = "Complete and reopen electronic record")
+    @Test (
+        dependsOnMethods = "newElectronicRecordAudit",
+        description = "Complete and reopen electronic record")
     @AlfrescoTest(jira="RM-4303")
     public void completeAndReopenElectronicRecord() {
-        auditLog.clearAuditLog(rmAdmin.get().getUsername(),rmAdmin.get().getPassword());
-        Record electronicRecord2 = createElectronicRecord(recordFolder1.getId(),AUDIT_COMPLETE_REOPEN_ELECTRONIC_RECORD);
+        electronicRecord2 = createElectronicRecord(recordFolder1.getId(),AUDIT_COMPLETE_REOPEN_ELECTRONIC_RECORD);
 
         // complete record
         recordApi.completeRecord(rmAdmin.get().getUsername(),rmAdmin.get().getPassword(),
@@ -186,31 +191,44 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
         assertTrue("Reopen Record Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Reopen Record")));
     }
 
-//    @Test
-//        (
-//            dependsOnMethods = "completeAndReopenElectronicRecord",
-//            description = "File electronic record's audit log as record"
-//        )
-//    @AlfrescoTest(jira="RM-4303")
-//    public void fileElectronicRecordAuditLogAsRecord()
-//    {
-//
-//        logPage.clickOnFileAsRecord()
-//            .select(AUDIT_CATEGORY)
-//            .select(AUDIT_FOLDER)
-//            .clickOnOk();
-//
-//        logPage.close();
-//
-//        // audit log is stored in the same folder, refresh it so that it appears in the list
-//        filePlan.refreshAndReRenderCurrentPage(filePlan);
-//
-//        // check audit log
-//        Record auditRecord = filePlan.getRecord(AUDIT_LOG_RECORD_PREFIX);
-//        AssertJUnit.assertTrue(auditRecord.getName().endsWith(".html"));
-//        AssertJUnit.assertTrue(auditRecord.isIncomplete());
-//    }
+    @Test
+        (
+            dependsOnMethods = "completeAndReopenElectronicRecord",
+            description = "File electronic record's audit log as record"
+        )
+    @AlfrescoTest(jira="RM-4303")
+    public void fileElectronicRecordAuditLogAsRecord()
+    {
+        // audit log is stored in the same folder, refresh it so that it appears in the list
+        HttpResponse auditRecordHttpResponse = auditLog.logsAuditLogAsRecord(rmAdmin.get().getUsername(),rmAdmin.get().getPassword(),
+        getRecordNodeRef(electronicRecord2.getId()),getFolderNodeRef(recordFolder1.getId()));
+        JSONObject auditRecordProperties = getAuditPropertyValues(auditRecordHttpResponse);
+        Record auditRecord = getRestAPIFactory().getRecordsAPI().getRecord(auditRecordProperties.get("record").toString()
+            .replace("workspace://SpacesStore/",""));
+        // check audit log
+        AssertJUnit.assertTrue(auditRecordProperties.get("recordName").toString().endsWith(".html"));
+        AssertJUnit.assertTrue(auditRecord.getAspectNames().stream().noneMatch(x -> x.startsWith(ASPECTS_COMPLETED_RECORD)));
+    }
 
+    private String getFolderNodeRef(String folderId) {
+        return "workspace://SpacesStore/" + folderId;
+    }
+
+    private String getRecordNodeRef(String recordId) {
+        return "workspace/SpacesStore/" + recordId;
+    }
+
+    private JSONObject getAuditPropertyValues(HttpResponse httpResponse) {
+        HttpEntity entity = httpResponse.getEntity();
+        String responseString = null;
+        try {
+            responseString = EntityUtils.toString(entity, "UTF-8");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        JSONObject result = new JSONObject(responseString);
+        return result;
+    }
 
     @AfterMethod
     private void closeAuditLog() {

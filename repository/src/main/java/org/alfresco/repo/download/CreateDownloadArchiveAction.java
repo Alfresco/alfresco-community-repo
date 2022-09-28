@@ -36,6 +36,7 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -203,7 +204,7 @@ public class CreateDownloadArchiveAction extends ActionExecuterAbstractBase
                 crawlerParameters.setExportFrom(exportFrom);
                 
                 crawlerParameters.setCrawlSelf(true);
-                crawlerParameters.setExcludeChildAssocs(new QName[] {RenditionModel.ASSOC_RENDITION, ForumModel.ASSOC_DISCUSSION});
+                crawlerParameters.setExcludeChildAssocs(new QName[] {RenditionModel.ASSOC_RENDITION, ForumModel.ASSOC_DISCUSSION, RuleModel.ASSOC_RULE_FOLDER });
                 crawlerParameters.setExcludeAspects(new QName[] {ContentModel.ASPECT_WORKING_COPY});
         
                 // Get an estimate of the size for statuses

@@ -85,6 +85,21 @@ public class RMAuditAPI extends BaseAPI
     }
 
     /**
+     * Returns a list of rm audit entries .
+     *
+     * @param user     The username of the user to use.
+     * @param password The password of the user.
+     * @param size     Maximum number of log entries to return
+     * @return return All return log entries
+     */
+    public List<AuditEntry> getRMAuditLogAll(String user, String password, final int size) {
+        String parameters = "size=" + size;
+        JSONArray auditEntries =  doGetRequest(user, password,
+            MessageFormat.format(RM_AUDIT_LOG_API,"{0}", parameters)).getJSONObject("data").getJSONArray("entries");
+        return PojoUtility.jsonToObject(auditEntries, AuditEntry.class);
+    }
+
+    /**
      * Clear the list of audit entries.
      *
      * @param username The username of the user to use.

@@ -26,6 +26,7 @@
 package org.alfresco.rest.rules;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -142,6 +143,23 @@ public class RulesTestsUtils
                 createSimpleCondition("cm:modelVersion", "begins", "1.")
             ))
         ));
+    }
+
+    public static RestRuleModel createVariousActions()
+    {
+        final Map<String, Serializable> copyParams =
+                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
+        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
+        final Map<String, Serializable> checkOutParams =
+                Map.of("destination-folder", "fake-folder-node", "assoc-name", "cm:checkout", "assoc-type",
+                        "cm:contains");
+        final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
+        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
+        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
+
+        return ruleModel;
     }
 
     public static RestSimpleConditionDefinitionModel createSimpleCondition(String field, String comparator, String parameter)

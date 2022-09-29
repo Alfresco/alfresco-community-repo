@@ -121,7 +121,7 @@ public class RestRequestTest
 
         RestRequest restRequest = requestWithBody(GET, "BODY", "nodes/{nodeId}", "nodeId", "key1=value1", "key2=value2");
 
-        String expected = "Request: GET BASE://1234/BASE_PATH/nodes/nodeId?key1=value1&key2=value2\nbody:BODY\n";
+        String expected = "Request: GET BASE:1234/BASE_PATH/nodes/nodeId?key1=value1&key2=value2\nbody:BODY\n";
         assertEquals(restRequest.toString(), expected, "Unexpected toString representation");
 
         RestAssured.reset();

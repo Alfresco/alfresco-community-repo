@@ -55,6 +55,8 @@ import org.alfresco.rest.model.RestRatingModel;
 import org.alfresco.rest.model.RestRatingModelsCollection;
 import org.alfresco.rest.model.RestRenditionInfoModel;
 import org.alfresco.rest.model.RestRenditionInfoModelCollection;
+import org.alfresco.rest.model.RestRuleExecutionBodyModel;
+import org.alfresco.rest.model.RestRuleExecutionModel;
 import org.alfresco.rest.model.RestRuleSetLinkModel;
 import org.alfresco.rest.model.RestRuleSetModel;
 import org.alfresco.rest.model.RestRuleSetModelsCollection;
@@ -1092,5 +1094,17 @@ public class Node extends ModelRequest<Node>
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/rule-set-links/{ruleSetId}", repoModel.getNodeRef(), ruleSetId);
         restWrapper.processEmptyModel(request);
+    }
+
+    /**
+     * Trigger rules on a folder performing POST call on "/nodes/{folderNodeId}/rule-executions"
+     *
+     * @param body - rules execution request
+     * @return execution result
+     */
+    public RestRuleExecutionModel executeRules(RestRuleExecutionBodyModel body)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, body.toJson(), "nodes/{nodeId}/rule-executions", repoModel.getNodeRef());
+        return restWrapper.processModel(RestRuleExecutionModel.class, request);
     }
 }

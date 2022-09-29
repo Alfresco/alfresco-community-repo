@@ -305,7 +305,19 @@ public class ModelAssertion<T>
         public T contains(String value)
         {
             if (!fieldValue.toString().contains(value))
+            {
                 Assert.fail(errorMessage("does NOT contain expected value: " + value + ", Current Value: " + fieldValue.toString()));
+            }
+
+            return (T) model;
+        }
+
+        public T notContains(String value)
+        {
+            if (fieldValue.toString().contains(value))
+            {
+                Assert.fail(errorMessage("does contain unexpected value: " + value + ", Current Value: " + fieldValue.toString()));
+            }
 
             return (T) model;
         }

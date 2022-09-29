@@ -178,7 +178,7 @@ public class RestRequest
                     .append(getHttpMethod())
                     .append(" ")
                     .append(RestAssured.baseURI)
-                    .append("://")
+                    .append(":")
                     .append(RestAssured.port)
                     .append("/")
                     .append(RestAssured.basePath)

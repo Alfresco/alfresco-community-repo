@@ -25,17 +25,23 @@
  */
 package org.alfresco.rest.api.impl;
 
+import com.google.common.base.Strings;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.api.model.ActionParameterConstraint;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -47,6 +53,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.collections.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -55,10 +62,13 @@ import org.springframework.extensions.webscripts.WebScriptException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,6 +78,8 @@ import static java.util.Comparator.nullsFirst;
 
 public class ActionsImpl implements Actions
 {
+    static final String NAMES = "names";
+
     private ActionService actionService;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
@@ -295,6 +307,44 @@ public class ActionsImpl implements Actions
         result.setId(cmrAction.getId());
 
         return result;
+    }
+
+    @Override
+    @Experimental
+    public CollectionWithPagingInfo<ActionParameterConstraint> getActionConstraints(Parameters parameters)
+    {
+        final String namesParam = parameters.getParameter(NAMES);
+        final List<String> namesFilter = Strings.isNullOrEmpty(namesParam) ? Collections.emptyList() : Arrays.asList(namesParam.split(","));
+        List<ParameterConstraint> parameterConstraints;
+        if (CollectionUtils.isEmpty(namesFilter))
+        {
+            parameterConstraints = actionService.getParameterConstraints();
+        } else
+        {
+            parameterConstraints = namesFilter.stream()
+                    .map(n -> actionService.getParameterConstraint(n))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(parameterConstraints))
+            {
+                throw new NotFoundException("Action parameter constraints (" + namesParam + ") do not exist.");
+            }
+        }
+
+        final List<ActionParameterConstraint> actionParameterConstraints = parameterConstraints.stream()
+                .map(this::mapToActionConstraint)
+                .collect(Collectors.toList());
+
+        return ListPage.of(actionParameterConstraints, parameters.getPaging());
+    }
+
+    @Experimental
+    private ActionParameterConstraint mapToActionConstraint(ParameterConstraint parameterConstraint)
+    {
+        final ActionParameterConstraint constraint = new ActionParameterConstraint();
+        constraint.setName(parameterConstraint.getName());
+        constraint.setConstraintsMap(parameterConstraint.getAllowableValues());
+        return constraint;
     }
 
     private Map<String, Serializable> extractActionParams(org.alfresco.service.cmr.action.ActionDefinition actionDefinition, Map<String, String> params)

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2017 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -23,34 +23,37 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.rest.api.actions;
 
-package org.alfresco.rest.api;
+import javax.servlet.http.HttpServletResponse;
 
-
-import org.alfresco.rest.api.model.Action;
-import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
 
-public interface Actions
+@EntityResource(name="action-constraints", title = "Action parameter constraints")
+@Experimental
+public class ActionConstraintsEntityResource implements EntityResourceAction.Read<ActionParameterConstraint>
 {
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params);
+    private final Actions actions;
 
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params);
-
-    ActionDefinition getActionDefinitionById(String actionDefinitionId);
-    
-    enum SortKey
+    public ActionConstraintsEntityResource(Actions actions)
     {
-        NAME,
-        TITLE
+        this.actions = actions;
     }
-    
-    Action executeAction(Action action, Parameters parameters);
 
-    @Experimental
-    CollectionWithPagingInfo<ActionParameterConstraint> getActionConstraints(Parameters parameters);
+    @WebApiDescription(title = "Get action parameters constraints",
+            description = "Retrieves a list of action parameters constraints",
+            successStatus = HttpServletResponse.SC_OK)
+    @Override
+    public CollectionWithPagingInfo<ActionParameterConstraint> readAll(Parameters params)
+    {
+        return actions.getActionConstraints(params);
+    }
+
 }

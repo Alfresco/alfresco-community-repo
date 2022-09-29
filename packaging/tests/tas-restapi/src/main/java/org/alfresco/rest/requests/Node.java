@@ -1090,7 +1090,7 @@ public class Node extends ModelRequest<Node>
      */
     public void unlinkRuleSet(String ruleSetId)
     {
-        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/ratings/{ratingId}", repoModel.getNodeRef(), ruleSetId);
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/rule-set-links/{ruleSetId}", repoModel.getNodeRef(), ruleSetId);
         restWrapper.processEmptyModel(request);
     }
 }

@@ -1067,4 +1067,16 @@ public class Node extends ModelRequest<Node>
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, body.toJson(), "nodes/{nodeId}/rule-set-links", repoModel.getNodeRef());
         return restWrapper.processModel(RestRuleSetLinkModel.class, request);
     }
+
+    /**
+     * Try to delete a ruleset link performing a DELETE call on "/nodes/{folderNodeId}/rule-set-links/{rulesetId}"
+     *
+     * @param ruleSetId the id of the ruleset to be unlinked from the folder
+     * @return
+     */
+    public void unlinkRuleSet(String ruleSetId)
+    {
+        RestRequest request = RestRequest.simpleRequest(HttpMethod.DELETE, "nodes/{nodeId}/ratings/{ratingId}", repoModel.getNodeRef(), ruleSetId);
+        restWrapper.processEmptyModel(request);
+    }
 }

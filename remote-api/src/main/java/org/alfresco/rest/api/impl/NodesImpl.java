@@ -400,7 +400,7 @@ public class NodesImpl implements Nodes
     @Override
     public NodeRef validateNode(StoreRef storeRef, String nodeId)
     {
-        String versionLabel = null;
+        String versionLabel;
 
         int idx = nodeId.indexOf(";");
         if (idx != -1)
@@ -409,8 +409,7 @@ public class NodesImpl implements Nodes
             nodeId = nodeId.substring(0, idx);
             if (versionLabel.equals("pwc"))
             {
-                // TODO correct exception?
-                throw new EntityNotFoundException(nodeId);
+                throw new InvalidArgumentException("Node with id: " + nodeId + "not found.");
             }
         }
 

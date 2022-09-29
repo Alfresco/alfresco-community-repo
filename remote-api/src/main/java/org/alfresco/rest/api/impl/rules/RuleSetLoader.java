@@ -149,7 +149,7 @@ public class RuleSetLoader
         );
     }
 
-    private List<String> loadRuleIds(NodeRef folderNodeRef)
+    public List<String> loadRuleIds(NodeRef folderNodeRef)
     {
         return ruleService.getRules(folderNodeRef, false).stream()
                           .map(restRuleModelMapper::toRestModel)

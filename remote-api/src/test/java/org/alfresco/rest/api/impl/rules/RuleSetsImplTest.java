@@ -27,6 +27,7 @@ package org.alfresco.rest.api.impl.rules;
 
 import static java.util.Collections.emptyList;
 
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.RULE_IDS;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -46,7 +47,6 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -328,5 +328,103 @@ public class RuleSetsImplTest extends TestCase
         then(ruleServiceMock).should().isLinkedToRuleNode(FOLDER_NODE);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         then(nodeServiceMock).shouldHaveNoInteractions();
+    }
+
+    @Test
+    public void testUpdateRuleSet()
+    {
+        given(ruleSetMock.getId()).willReturn(RULE_SET_ID);
+        given(nodeValidatorMock.validateFolderNode(FOLDER_ID, false)).willReturn(FOLDER_NODE);
+        given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
+        RuleSet ruleSetResponse = mock(RuleSet.class);
+        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, emptyList())).willReturn(ruleSetResponse);
+
+        //when
+        RuleSet ruleSet = ruleSets.updateRuleSet(FOLDER_ID, ruleSetMock, emptyList());
+
+        assertEquals("Unexpected rule set returned.", ruleSetResponse, ruleSet);
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE);
+        then(ruleSetLoaderMock).should().loadRuleSet(RULE_SET_NODE, FOLDER_NODE, emptyList());
+    }
+
+    /** Simulate rules being reordered from [RuleA, RuleB] to [RuleB, RuleA]. */
+    @Test
+    public void testUpdateRuleSet_reorderRules()
+    {
+        List<String> dbOrder = List.of("RuleA", "RuleB");
+        List<String> newOrder = List.of("RuleB", "RuleA");
+        List<String> includes = List.of(RULE_IDS);
+
+        RuleSet dbRuleSet = mock(RuleSet.class);
+        RuleSet requestRuleSet = mock(RuleSet.class);
+        given(requestRuleSet.getId()).willReturn(RULE_SET_ID);
+        given(requestRuleSet.getRuleIds()).willReturn(newOrder);
+
+        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, includes)).willReturn(dbRuleSet);
+        given(ruleSetLoaderMock.loadRuleIds(FOLDER_NODE)).willReturn(dbOrder);
+        given(nodeValidatorMock.validateFolderNode(FOLDER_ID, false)).willReturn(FOLDER_NODE);
+        given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
+
+        //when
+        RuleSet ruleSet = ruleSets.updateRuleSet(FOLDER_ID, requestRuleSet, includes);
+
+        assertEquals("Unexpected rule set returned.", dbRuleSet, ruleSet);
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE);
+        then(ruleSetLoaderMock).should().loadRuleSet(RULE_SET_NODE, FOLDER_NODE, includes);
+        then(dbRuleSet).should().setRuleIds(newOrder);
+    }
+
+    /** Check that we can't remove a rule by updating the rule set. */
+    @Test
+    public void testUpdateRuleSet_tryToChangeSetOfRuleIds()
+    {
+        List<String> dbOrder = List.of("RuleA", "RuleB");
+        List<String> newOrder = List.of("RuleA");
+        List<String> includes = List.of(RULE_IDS);
+
+        RuleSet dbRuleSet = mock(RuleSet.class);
+        RuleSet requestRuleSet = mock(RuleSet.class);
+        given(requestRuleSet.getId()).willReturn(RULE_SET_ID);
+        given(requestRuleSet.getRuleIds()).willReturn(newOrder);
+
+        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, includes)).willReturn(dbRuleSet);
+        given(ruleSetLoaderMock.loadRuleIds(FOLDER_NODE)).willReturn(dbOrder);
+        given(nodeValidatorMock.validateFolderNode(FOLDER_ID, false)).willReturn(FOLDER_NODE);
+        given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
+
+        //when
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
+                () -> ruleSets.updateRuleSet(FOLDER_ID, requestRuleSet, includes)
+        );
+    }
+
+    /** Check that we can update the rule ids without returning them. */
+    @Test
+    public void testUpdateRuleSet_dontIncludeRuleIds()
+    {
+        List<String> dbOrder = List.of("RuleA", "RuleB");
+        List<String> newOrder = List.of("RuleB", "RuleA");
+        List<String> includes = emptyList();
+
+        RuleSet dbRuleSet = mock(RuleSet.class);
+        RuleSet requestRuleSet = mock(RuleSet.class);
+        given(requestRuleSet.getId()).willReturn(RULE_SET_ID);
+        given(requestRuleSet.getRuleIds()).willReturn(newOrder);
+
+        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, includes)).willReturn(dbRuleSet);
+        given(ruleSetLoaderMock.loadRuleIds(FOLDER_NODE)).willReturn(dbOrder);
+        given(nodeValidatorMock.validateFolderNode(FOLDER_ID, false)).willReturn(FOLDER_NODE);
+        given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
+
+        //when
+        RuleSet ruleSet = ruleSets.updateRuleSet(FOLDER_ID, requestRuleSet, includes);
+
+        // Expect the DB rule set to be returned, but no extra fields to be populated.
+        assertEquals("Unexpected rule set returned.", dbRuleSet, ruleSet);
+        then(dbRuleSet).shouldHaveNoInteractions();
     }
 }

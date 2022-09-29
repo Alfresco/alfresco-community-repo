@@ -28,8 +28,14 @@ package org.alfresco.rest.api.impl.rules;
 
 import static java.util.stream.Collectors.toList;
 
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+import static org.alfresco.util.collections.CollectionUtils.isEmpty;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.rule.RuntimeRuleService;
@@ -41,7 +47,6 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.AspectMissingException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
@@ -78,6 +83,43 @@ public class RuleSetsImpl implements RuleSets
         NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNode);
 
         return ruleSetLoader.loadRuleSet(ruleSetNode, folderNode, includes);
+    }
+
+    @Override
+    public RuleSet updateRuleSet(String folderNodeId, RuleSet ruleSet, List<String> includes)
+    {
+        // Editing the order of the rules doesn't require permission to edit the rule set itself.
+        NodeRef folderNode = validator.validateFolderNode(folderNodeId, false);
+        NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSet.getId(), folderNode);
+
+        RuleSet returnedRuleSet = ruleSetLoader.loadRuleSet(ruleSetNode, folderNode, includes);
+
+        // Currently the only field that can be updated is ruleIds to reorder the rules.
+        List<String> suppliedRuleIds = ruleSet.getRuleIds();
+        if (!isEmpty(suppliedRuleIds))
+        {
+            // Check there are no duplicate rule ids in the request.
+            Set<String> suppliedRuleIdSet = new HashSet<>(suppliedRuleIds);
+
+            // Check that the set of rule ids hasn't changed.
+            Set<String> existingRuleIds = new HashSet<>(ruleSetLoader.loadRuleIds(folderNode));
+            if (!suppliedRuleIdSet.equals(existingRuleIds))
+            {
+                throw new InvalidArgumentException("Unexpected set of rule ids - received " + suppliedRuleIds + " but expected " + existingRuleIds);
+            }
+
+            IntStream.range(0, suppliedRuleIds.size()).forEach(index ->
+            {
+                NodeRef ruleNode = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, suppliedRuleIds.get(index));
+                ruleService.setRulePosition(folderNode, ruleNode, index);
+            });
+            if (includes.contains(RuleSetLoader.RULE_IDS))
+            {
+                returnedRuleSet.setRuleIds(suppliedRuleIds);
+            }
+        }
+
+        return returnedRuleSet;
     }
 
     @Override

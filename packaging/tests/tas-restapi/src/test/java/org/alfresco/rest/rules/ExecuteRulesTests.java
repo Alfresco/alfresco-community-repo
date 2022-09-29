@@ -91,4 +91,6 @@ public class ExecuteRulesTests extends RestTest
             fileNode.assertThat().field("aspectNames").contains(AUDIO_ASPECT);
         });
     }
+
+    // TODO add more E2Es. For more see: ACS-3620
 }

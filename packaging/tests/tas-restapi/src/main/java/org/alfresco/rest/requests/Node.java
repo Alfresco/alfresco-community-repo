@@ -27,6 +27,7 @@
 package org.alfresco.rest.requests;
 
 import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
+import static org.springframework.http.HttpMethod.PUT;
 
 import javax.json.JsonArrayBuilder;
 import java.io.File;
@@ -163,7 +164,7 @@ public class Node extends ModelRequest<Node>
     public RestCommentModel updateComment(RestCommentModel commentModel, String commentContent)
     {
         String postBody = JsonBodyGenerator.keyValueJson("content", commentContent);
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, postBody, "nodes/{nodeId}/comments/{commentId}?{parameters}", repoModel.getNodeRef(), commentModel.getId(), restWrapper.getParameters());
+        RestRequest request = RestRequest.requestWithBody(PUT, postBody, "nodes/{nodeId}/comments/{commentId}?{parameters}", repoModel.getNodeRef(), commentModel.getId(), restWrapper.getParameters());
         request.setContentType("UTF-8");
         RestCommentModel response = restWrapper.processModel(RestCommentModel.class, request);
         return response;
@@ -707,7 +708,7 @@ public class Node extends ModelRequest<Node>
      */
     public RestNodeModel updateNode(String putBody)
     {
-        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, putBody, "nodes/{nodeId}?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+        RestRequest request = RestRequest.requestWithBody(PUT, putBody, "nodes/{nodeId}?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
         request.setContentType("UTF-8");
         return restWrapper.processModel(RestNodeModel.class, request);
     }
@@ -771,7 +772,7 @@ public class Node extends ModelRequest<Node>
         {
             restWrapper.usingContentType(ContentType.BINARY);
             String body = Files.readFile(new FileInputStream(nodeContent));
-            RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, body, "nodes/{nodeId}/content?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
+            RestRequest request = RestRequest.requestWithBody(PUT, body, "nodes/{nodeId}/content?{parameters}", repoModel.getNodeRef(), restWrapper.getParameters());
             request.setContentType("UTF-8");
             restWrapper.usingContentType(ContentType.JSON);
             return restWrapper.processModel(RestNodeModel.class, request);
@@ -1035,6 +1036,19 @@ public class Node extends ModelRequest<Node>
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, RULE_SET_BY_ID,
                 repoModel.getNodeRef(), ruleSetId);
+        return restWrapper.processModel(RestRuleSetModel.class, request);
+    }
+
+    /**
+     * Update a rule set on this folder - for example to reorder the rules.
+     *
+     * @param ruleSet The updated rule set.
+     * @return The updated rule set returned by the server.
+     */
+    public RestRuleSetModel updateRuleSet(RestRuleSetModel ruleSet)
+    {
+        RestRequest request = RestRequest.requestWithBody(HttpMethod.PUT, ruleSet.toJson(), RULE_SET_BY_ID,
+                repoModel.getNodeRef(), ruleSet.getId());
         return restWrapper.processModel(RestRuleSetModel.class, request);
     }
 

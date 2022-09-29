@@ -66,6 +66,8 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
     private Boolean isInherited;
     /** Whether any folders link to this rule set. */
     private Boolean isLinkedTo;
+    /** Ordered list of ids for the rules in this rule set. */
+    private List<String> ruleIds;
 
     public String getId()
     {
@@ -137,12 +139,22 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
         this.isLinkedTo = isLinkedTo;
     }
 
+    public List<String> getRuleIds()
+    {
+        return ruleIds;
+    }
+
+    public void setRuleIds(List<String> ruleIds)
+    {
+        this.ruleIds = ruleIds;
+    }
+
     @Override
     public String toString()
     {
         return "RestRuleSetModel{id='" + id + "', owningFolder='" + owningFolder + "', inclusionType='" + inclusionType
                 + "', inheritedBy=" + inheritedBy + ", linkedToBy=" + linkedToBy + ", isInherited=" + isInherited
-                + ", isLinkedTo=" + isLinkedTo + "}";
+                + ", isLinkedTo=" + isLinkedTo + ", ruleIds=" + ruleIds + "}";
     }
 
     @Override
@@ -157,12 +169,13 @@ public class RestRuleSetModel extends TestModel implements IRestModel<RestRuleSe
                 && Objects.equals(inheritedBy, that.inheritedBy)
                 && Objects.equals(linkedToBy, that.linkedToBy)
                 && Objects.equals(isInherited, that.isInherited)
-                && Objects.equals(isLinkedTo, that.isLinkedTo);
+                && Objects.equals(isLinkedTo, that.isLinkedTo)
+                && Objects.equals(ruleIds, that.ruleIds);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, owningFolder, inclusionType, inheritedBy, linkedToBy, isInherited, isLinkedTo);
+        return Objects.hash(id, owningFolder, inclusionType, inheritedBy, linkedToBy, isInherited, isLinkedTo, ruleIds);
     }
 }

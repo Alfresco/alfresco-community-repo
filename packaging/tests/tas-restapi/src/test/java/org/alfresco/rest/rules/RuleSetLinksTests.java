@@ -27,9 +27,7 @@ package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.utility.report.log.Step.STEP;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.*;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
@@ -310,4 +308,77 @@ public class RuleSetLinksTests extends RestTest
                 .get(0).onModel().assertThat().isEqualTo(expectedRuleSet);
     }
 
+    /**
+     * Check we can DELETE/unlink a ruleset
+     *
+     * DELETE /nodes/{folderNodeId}/rule-set-links/{ruleSetId}.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void unlinkRuleSet()
+    {
+        STEP("Create folders in existing site");
+        final FolderModel ruleFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Create a rule in the rule folder.");
+        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        STEP("Get the rule sets for the folder and find the rule set id");
+        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+                .getListOfRuleSets();
+        ruleSets.assertThat().entriesListCountIs(1);
+        final String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
+
+        STEP("Link to a rule folder");
+        final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
+        request.setId(ruleFolder.getNodeRef());
+        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
+
+        STEP("Unlink the rule set");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).unlinkRuleSet(ruleSetId);
+
+        STEP("Assert unlink result");
+        restClient.assertStatusCodeIs(NO_CONTENT);
+    }
+
+    /**
+     * Check a 400 is thrown when using folder/content id instead of a ruleSetId.
+     *
+     * DELETE /nodes/{folderNodeId}/rule-set-links/{ruleSetId}
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void unlinkUsingDocumentId()
+    {
+        STEP("Create folders in existing site");
+        final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Attempt to unlink the rule set");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).unlinkRuleSet(folder.getNodeRef());
+
+        STEP("Assert unlink result");
+        restClient.assertStatusCodeIs(BAD_REQUEST)
+                  .assertLastError().containsSummary("NodeId of a rule set is expected!");
+    }
+
+    /**
+     * Check a 404 is thrown when using non-existent id instead of a ruleSetId.
+     *
+     * DELETE /nodes/{folderNodeId}/rule-set-links/{ruleSetId}
+     */
+    //TODO This test may need to be modified once ACS-3616 is done
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void unlinkUsingRandomId()
+    {
+        STEP("Create folders in existing site");
+        final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Attempt to unlink the rule set");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).unlinkRuleSet("non-existent-id");
+
+        STEP("Assert unlink result");
+        restClient.assertStatusCodeIs(NOT_FOUND)
+                .assertLastError().containsSummary("The entity with id:");
+    }
 }

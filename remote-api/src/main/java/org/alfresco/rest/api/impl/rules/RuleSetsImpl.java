@@ -42,6 +42,7 @@ import org.alfresco.repo.rule.RuntimeRuleService;
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.api.model.rules.RuleSetLink;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
@@ -156,17 +157,34 @@ public class RuleSetsImpl implements RuleSets
     @Override
     public void unlinkRuleSet(String folderNodeId, String ruleSetId)
     {
-        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
-        final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        NodeRef folderNodeRef = null;
+        NodeRef ruleSetNodeRef = null;
 
-        //The folder should be linked to a rule set
-        if (!ruleService.isLinkedToRuleNode(folderNodeRef))
+        try
         {
-            throw new InvalidArgumentException("The folder is not linked to a rule set.");
-        }
+            folderNodeRef = validator.validateFolderNode(folderNodeId,true);
+            ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
 
-        //The following line also handles the deletion of the parent-child association that gets created during linking
-        nodeService.removeAspect(folderNodeRef,RuleModel.ASPECT_RULES);
+            //The folder should be linked to a rule set
+            if (!ruleService.isLinkedToRuleNode(folderNodeRef))
+            {
+                throw new InvalidArgumentException("The folder is not linked to a rule set.");
+            }
+
+            //The following line also handles the deletion of the parent-child association that gets created during linking
+            nodeService.removeAspect(folderNodeRef,RuleModel.ASPECT_RULES);
+        }
+        catch (EntityNotFoundException e)
+        {
+            if (folderNodeRef == null)
+            {
+                throw new InvalidArgumentException("Folder node with id " + folderNodeId + " not found.");
+            }
+            else
+            {
+                throw new InvalidArgumentException("Rule set node with id " + ruleSetId + " not found.");
+            }
+        }
     }
 
     public void setRuleSetLoader(RuleSetLoader ruleSetLoader)

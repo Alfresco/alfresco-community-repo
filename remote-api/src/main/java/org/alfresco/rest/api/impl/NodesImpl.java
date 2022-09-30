@@ -409,8 +409,7 @@ public class NodesImpl implements Nodes
             nodeId = nodeId.substring(0, idx);
             if (versionLabel.equals("pwc"))
             {
-                // TODO correct exception?
-                throw new EntityNotFoundException(nodeId);
+                throw new InvalidArgumentException("Node with id: " + nodeId + "not found.");
             }
         }
 

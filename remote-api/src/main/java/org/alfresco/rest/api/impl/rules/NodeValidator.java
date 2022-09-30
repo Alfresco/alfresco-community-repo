@@ -35,6 +35,7 @@ import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
@@ -68,11 +69,17 @@ public class NodeValidator
      */
     public NodeRef validateFolderNode(final String folderNodeId, boolean requireChangePermission)
     {
-        final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
-        validatePermission(requireChangePermission, nodeRef);
-        verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
+        try
+        {
+            final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
+            validatePermission(requireChangePermission, nodeRef);
+            verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 
-        return nodeRef;
+            return nodeRef;
+        } catch (EntityNotFoundException e)
+        {
+            throw new InvalidArgumentException("Folder node with id " + folderNodeId + " not found.");
+        }
     }
 
     /**
@@ -96,13 +103,18 @@ public class NodeValidator
             return ruleSetNodeRef;
         }
 
-        final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
-        if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef))
-        {
-            throw new InvalidArgumentException("Rule set is not associated with folder node!");
-        }
+        try {
+            final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
 
-        return ruleSetNodeRef;
+            if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef))
+            {
+                throw new InvalidArgumentException("Rule set is not associated with folder node!");
+            }
+            return ruleSetNodeRef;
+
+        } catch (EntityNotFoundException e) {
+            throw new InvalidArgumentException("Rule set node with id " + ruleSetId + " not found.");
+        }
     }
 
     public NodeRef validateRuleSetNode(String linkToNodeId, boolean requireChangePermission)

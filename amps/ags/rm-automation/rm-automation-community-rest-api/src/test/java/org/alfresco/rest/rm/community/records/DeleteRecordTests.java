@@ -318,8 +318,8 @@ public class DeleteRecordTests extends BaseRMRestTest
         RecordCategoryChild recFolder = createFolder(recordCategory.getId(), getRandomName("recFolder"));
         RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(recFolder.getId()).build();
         Record recordFiled = getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, testFile.getNodeRefWithoutVersion());
-        getRestAPIFactory().getRecordsAPI().completeRecord(recordFiled.getId());
-        assertStatusCode(CREATED);
+        completeRecord(recordFiled.getId());
+        assertStatusCode(OK);
 
         STEP("Execute the disposition schedule steps.");
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),

@@ -90,6 +90,7 @@ public class RuleSetLoaderTest extends TestCase
         given(nodeServiceMock.getParentAssocs(RULE_SET_NODE)).willReturn(List.of(ruleSetAssociationMock, linkAssociationMock));
 
         given(ruleServiceMock.getFoldersInheritingRuleSet(eq(RULE_SET_NODE), anyInt())).willReturn(List.of(INHERITING_FOLDER));
+        given(ruleServiceMock.getFoldersLinkingToRuleSet(RULE_SET_NODE)).willReturn(List.of(LINKING_FOLDER));
     }
 
     @Test

@@ -402,6 +402,30 @@ public class RuleSetsImplTest extends TestCase
         );
     }
 
+    /** Check that we can't include a rule twice in a rule set. */
+    @Test
+    public void testUpdateRuleSet_DuplicateRuleId()
+    {
+        List<String> dbOrder = List.of("RuleA", "RuleB");
+        List<String> newOrder = List.of("RuleA", "RuleB", "RuleA");
+        List<String> includes = List.of(RULE_IDS);
+
+        RuleSet dbRuleSet = mock(RuleSet.class);
+        RuleSet requestRuleSet = mock(RuleSet.class);
+        given(requestRuleSet.getId()).willReturn(RULE_SET_ID);
+        given(requestRuleSet.getRuleIds()).willReturn(newOrder);
+
+        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE, FOLDER_NODE, includes)).willReturn(dbRuleSet);
+        given(ruleSetLoaderMock.loadRuleIds(FOLDER_NODE)).willReturn(dbOrder);
+        given(nodeValidatorMock.validateFolderNode(FOLDER_ID, false)).willReturn(FOLDER_NODE);
+        given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
+
+        //when
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
+                () -> ruleSets.updateRuleSet(FOLDER_ID, requestRuleSet, includes)
+                                                                            );
+    }
+
     /** Check that we can update the rule ids without returning them. */
     @Test
     public void testUpdateRuleSet_dontIncludeRuleIds()

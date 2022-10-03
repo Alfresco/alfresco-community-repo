@@ -27,7 +27,7 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
@@ -161,13 +161,13 @@ public class ReorderRules extends RestTest
         RestRuleSetModel ruleSetBody = new RestRuleSetModel();
         ruleSetBody.setId("-default-");
         ruleSetBody.setRuleIds(reversedRuleIds);
-        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
-                                             .include("ruleIds").updateRuleSet(ruleSetBody);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+                  .include("ruleIds").updateRuleSet(ruleSetBody);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
     }
 
-    /** Check that a user cannot reorder the rules in a rule set if they only have read permission. */
+    /** Check that a user can reorder the rules in a rule set if they have write permission. */
     @Test
     public void reorderRulesWithPermission()
     {
@@ -197,7 +197,7 @@ public class ReorderRules extends RestTest
     {
         return IntStream.range(0, 3).mapToObj(index ->
         {
-            RestRuleModel ruleModel = createRuleModel("ruleName");
+            RestRuleModel ruleModel = createRuleModelWithDefaultValues();
             return restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());
     }

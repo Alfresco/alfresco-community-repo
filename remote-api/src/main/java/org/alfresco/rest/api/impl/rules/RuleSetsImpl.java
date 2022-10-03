@@ -103,7 +103,7 @@ public class RuleSetsImpl implements RuleSets
 
             // Check that the set of rule ids hasn't changed.
             Set<String> existingRuleIds = new HashSet<>(ruleSetLoader.loadRuleIds(folderNode));
-            if (!suppliedRuleIdSet.equals(existingRuleIds))
+            if (suppliedRuleIdSet.size() != suppliedRuleIds.size() || !suppliedRuleIdSet.equals(existingRuleIds))
             {
                 throw new InvalidArgumentException("Unexpected set of rule ids - received " + suppliedRuleIds + " but expected " + existingRuleIds);
             }

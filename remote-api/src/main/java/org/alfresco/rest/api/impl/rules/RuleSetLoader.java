@@ -35,7 +35,6 @@ import java.util.List;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.impl.mapper.rules.RestRuleModelMapper;
-import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -152,8 +151,8 @@ public class RuleSetLoader
     private List<String> loadRuleIds(NodeRef folderNodeRef)
     {
         return ruleService.getRules(folderNodeRef, false).stream()
-                          .map(restRuleModelMapper::toRestModel)
-                          .map(Rule::getId)
+                          .map(org.alfresco.service.cmr.rule.Rule::getNodeRef)
+                          .map(NodeRef::getId)
                           .collect(toList());
     }
 

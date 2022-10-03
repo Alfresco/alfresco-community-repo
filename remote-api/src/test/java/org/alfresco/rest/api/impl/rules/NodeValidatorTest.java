@@ -131,7 +131,7 @@ public class NodeValidatorTest
         given(nodesMock.validateOrLookupNode(any(), any())).willThrow(new EntityNotFoundException(FOLDER_NODE_ID));
 
         //when
-        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
             () -> nodeValidator.validateFolderNode(FOLDER_NODE_ID, false));
 
         then(nodesMock).should().validateOrLookupNode(FOLDER_NODE_ID, null);
@@ -236,7 +236,7 @@ public class NodeValidatorTest
         given(nodesMock.validateNode(RULE_SET_ID)).willThrow(new EntityNotFoundException(RULE_SET_ID));
 
         //when
-        assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(
+        assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(
             () -> nodeValidator.validateRuleSetNode(RULE_SET_ID, folderNodeRef));
 
         then(nodesMock).should().validateNode(RULE_SET_ID);

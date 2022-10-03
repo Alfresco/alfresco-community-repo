@@ -341,6 +341,16 @@ public class RuleSetLinksTests extends RestTest
 
         STEP("Assert unlink result");
         restClient.assertStatusCodeIs(NO_CONTENT);
+
+        STEP("GET the rule set and isLinkedTo field.");
+        RestRuleSetModel ruleSet =  restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+                .include("isLinkedTo", "linkedToBy", "owningFolder")
+                .getDefaultRuleSet();
+
+        STEP("Assert linkedTo is false.");
+        restClient.assertStatusCodeIs(OK);
+        ruleSet.assertThat().field("isLinkedTo").is(false)
+                .assertThat().field("linkedToBy").isEmpty();;
     }
 
     /**

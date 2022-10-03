@@ -35,6 +35,7 @@ import org.alfresco.rest.v0.RMAuditAPI;
 import org.alfresco.rest.v0.RMRolesAndActionsAPI;
 import org.alfresco.rest.v0.RecordFoldersAPI;
 import org.alfresco.test.AlfrescoTest;
+import org.alfresco.utility.Utility;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
@@ -43,9 +44,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import java.util.List;
 import java.util.Optional;
+
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAspects.ASPECTS_COMPLETED_RECORD;
 import static org.alfresco.rest.rm.community.utils.FilePlanComponentsUtil.createRecordFolderModel;
 import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.test.util.AssertionErrors.assertTrue;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.fail;
 
 public class RecordFolderAuditLogTest extends BaseRMRestTest {
 
@@ -96,18 +101,6 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
 
     }
 
-    @AfterMethod
-    private void closeAuditLog() {
-        auditLog.clearAuditLog(rmAdmin.get().getUsername(), rmAdmin.get().getPassword());
-    }
-
-    @AfterClass(alwaysRun = true)
-    public void recordFolderAuditLogCleanup() {
-        deleteRecordFolder(recordFolder1.getId());
-        deleteRecordCategory(category1.getId());
-        dataUser.usingAdmin().deleteUser(new UserModel(rmAdmin.get().getUsername(), rmAdmin.get().getPassword()));
-
-    }
 
     @Test
             (
@@ -134,17 +127,54 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
         //close folder
         recordFoldersAPI.closeRecordFolder(rmAdmin.get().getUsername(), rmAdmin.get().getPassword(),
                 recordFolder1.getName());
+        try
+        {
+            Utility.sleep(1000, 30000, () ->
+            {
+                List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
+                assertTrue("Folder Close Record Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Close Record Folder")));
 
-        List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
-        assertTrue("Complete Record Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Close Record Folder")));
+            });
+        }
+        catch (InterruptedException e)
+        {
+            fail("InterruptedException received while waiting for results.");
+        }
+
 
         //reopen folder
         recordFoldersAPI.reOpenRecordFolder(rmAdmin.get().getUsername(), rmAdmin.get().getPassword(),
                 recordFolder1.getName());
+        try
+        {
+            Utility.sleep(1000, 30000, () ->
+            {
 
-        auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
-        assertTrue("Reopen Record Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Open Record Folder")));
+                List<AuditEntry> auditEntries  = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
+                assertTrue("Reopen Record Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Open Record Folder")));
+
+            });
+        }
+        catch (InterruptedException e)
+        {
+            fail("InterruptedException received while waiting for results.");
+        }
 
     }
+    @AfterMethod
+    private void closeAuditLog()
+    {
+        auditLog.clearAuditLog(rmAdmin.get().getUsername(),rmAdmin.get().getPassword());
+    }
+
+    @AfterClass (alwaysRun = true)
+    public void recordFolderAuditLogCleanup()
+    {
+        deleteRecordFolder(recordFolder1.getId());
+        deleteRecordCategory(category1.getId());
+        dataUser.usingAdmin().deleteUser(new UserModel(rmAdmin.get().getUsername(), rmAdmin.get().getPassword()));
+
+    }
+
 
 }

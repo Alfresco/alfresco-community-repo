@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-community-repo</artifactId>
-    <version>17.139-SNAPSHOT</version>
+    <version>17.149-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Community Repo Parent</name>
 
@@ -110,9 +110,9 @@
         <dependency.jakarta-json-path.version>2.7.0</dependency.jakarta-json-path.version>
         <dependency.jakarta-rpc-api.version>1.1.4</dependency.jakarta-rpc-api.version>
 
-        <alfresco.googledrive.version>3.2.3-A2</alfresco.googledrive.version>
+        <alfresco.googledrive.version>3.2.3-A3</alfresco.googledrive.version>
         <alfresco.aos-module.version>1.4.1</alfresco.aos-module.version> 
-        <alfresco.api-explorer.version>7.2.1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
+        <alfresco.api-explorer.version>7.3.0-A1</alfresco.api-explorer.version> <!-- Also in alfresco-enterprise-share -->
 
         <alfresco.maven-plugin.version>2.2.0</alfresco.maven-plugin.version>
         <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
@@ -123,7 +123,7 @@
         <dependency.mariadb.version>2.7.4</dependency.mariadb.version>
         <dependency.tas-utility.version>3.0.56</dependency.tas-utility.version>
         <dependency.rest-assured.version>5.2.0</dependency.rest-assured.version>
-        <dependency.tas-restapi.version>1.124</dependency.tas-restapi.version>
+        <dependency.tas-restapi.version>1.127</dependency.tas-restapi.version>
         <dependency.tas-email.version>1.9</dependency.tas-email.version>
         <dependency.tas-webdav.version>1.7</dependency.tas-webdav.version>
         <dependency.tas-ftp.version>1.7</dependency.tas-ftp.version>

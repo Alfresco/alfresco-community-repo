@@ -45,6 +45,7 @@ public class RuleSet
     private List<NodeRef> linkedToBy;
     private Boolean isInherited;
     private Boolean isLinkedTo;
+    private List<String> ruleIds;
 
     public static RuleSet of(String id)
     {
@@ -151,6 +152,16 @@ public class RuleSet
         return isLinkedTo;
     }
 
+    public List<String> getRuleIds()
+    {
+        return ruleIds;
+    }
+
+    public void setRuleIds(List<String> ruleIds)
+    {
+        this.ruleIds = ruleIds;
+    }
+
     @Override
     public String toString()
     {
@@ -163,6 +174,7 @@ public class RuleSet
                     .add("linkedToBy='" + linkedToBy + "'")
                     .add("isInherited='" + isInherited + "'")
                     .add("isLinkedTo='" + isLinkedTo + "'")
+                    .add("ruleIds='" + ruleIds + "'")
                     .toString()
                 + '}';
     }
@@ -181,13 +193,14 @@ public class RuleSet
                 && Objects.equals(inheritedBy, ruleSet.inheritedBy)
                 && Objects.equals(linkedToBy, ruleSet.linkedToBy)
                 && Objects.equals(isInherited, ruleSet.isInherited)
-                && Objects.equals(isLinkedTo, ruleSet.isLinkedTo);
+                && Objects.equals(isLinkedTo, ruleSet.isLinkedTo)
+                && Objects.equals(ruleIds, ruleSet.ruleIds);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, owningFolder, inclusionType, inheritedBy, linkedToBy, isInherited, isLinkedTo);
+        return Objects.hash(id, owningFolder, inclusionType, inheritedBy, linkedToBy, isInherited, isLinkedTo, ruleIds);
     }
 
     public static Builder builder()
@@ -204,6 +217,7 @@ public class RuleSet
         private List<NodeRef> linkedToBy;
         private Boolean isInherited;
         private Boolean isLinkedTo;
+        private List<String> ruleIds;
 
         public Builder id(String id)
         {
@@ -247,6 +261,12 @@ public class RuleSet
             return this;
         }
 
+        public Builder ruleIds(List<String> ruleIds)
+        {
+            this.ruleIds = ruleIds;
+            return this;
+        }
+
         public RuleSet create()
         {
             final RuleSet ruleSet = new RuleSet();
@@ -257,6 +277,7 @@ public class RuleSet
             ruleSet.setLinkedToBy(linkedToBy);
             ruleSet.setIsInherited(isInherited);
             ruleSet.setIsLinkedTo(isLinkedTo);
+            ruleSet.setRuleIds(ruleIds);
             return ruleSet;
         }
     }

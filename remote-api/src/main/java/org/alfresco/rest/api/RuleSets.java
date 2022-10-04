@@ -60,6 +60,16 @@ public interface RuleSets
     RuleSet getRuleSetById(String folderNodeId, String ruleSetId, List<String> includes);
 
     /**
+     * Update a rule set - for example to reorder the rules within it.
+     *
+     * @param folderNodeId Folder node ID
+     * @param ruleSet The updated rule set.
+     * @param includes List of fields to include in the response.
+     * @return The updated rule set from the server.
+     */
+    RuleSet updateRuleSet(String folderNodeId, RuleSet ruleSet, List<String> includes);
+
+    /**
      * Link a rule set to a folder
      */
     RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId);

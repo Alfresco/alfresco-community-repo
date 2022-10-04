@@ -1,20 +1,19 @@
 package org.alfresco.rest.actions.access;
 
-import org.alfresco.rest.RestTest;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.UserModel;
-import org.springframework.http.HttpStatus;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import org.alfresco.rest.core.RestWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+
+import org.alfresco.rest.RestTest;
+import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 public class V1AdminAccessRestrictionTest extends RestTest {
 
@@ -45,7 +44,7 @@ public class V1AdminAccessRestrictionTest extends RestTest {
                           .executeAction(MAIL_ACTION, testFolder, createMailParameters(adminUser, testUser));
 
         restClient.onResponse()
-                .assertThat().statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .assertThat().statusCode(HttpStatus.FORBIDDEN.value())
                 .assertThat().body("entry.id", nullValue());
         restClient.assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
     }

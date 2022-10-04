@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INBOUND;
 import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
@@ -36,8 +37,8 @@ import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
 import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleWithPrivateAction;
 import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
 import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
@@ -526,6 +527,40 @@ public class UpdateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
         restClient.assertLastError().containsSummary("Namespace prefix dummy is not mapped to a namespace URI");
+    }
+
+    /** Check that a normal user cannot create rules that use private actions. */
+    @Test
+    public void updateRuleWithActions_userCannotUsePrivateAction()
+    {
+        STEP("Using admin create a rule with a private action.");
+        RestRuleModel rule = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                                       .createSingleRule(createRuleWithPrivateAction());
+
+        STEP("Try to update the rule with a normal user.");
+        rule.setName("Updated name");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(FORBIDDEN)
+                  .assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
+    }
+
+    /** Check that an administrator can create rules that use private actions. */
+    @Test
+    public void updateRuleWithActions_adminCanUsePrivateAction()
+    {
+        STEP("Using admin create a rule with a private action.");
+        RestRuleModel rule = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                                       .createSingleRule(createRuleWithPrivateAction());
+
+        STEP("Try to update the rule with the admin user.");
+        rule.setName("Updated name");
+        RestRuleModel updatedRule = restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                                              .updateRule(rule.getId(), rule);
+
+        restClient.assertStatusCodeIs(OK);
+        updatedRule.assertThat().field("name").is("Updated name");
     }
 
     private RestRuleModel createAndSaveRule(String name)

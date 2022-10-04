@@ -27,7 +27,20 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.*;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
+import static org.alfresco.rest.rules.RulesTestsUtils.ID;
+import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
+import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
+import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
+import static org.alfresco.rest.rules.RulesTestsUtils.createRuleWithPrivateAction;
+import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
+import static org.alfresco.rest.rules.RulesTestsUtils.createVariousActions;
+import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
@@ -41,8 +54,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -375,6 +386,27 @@ public class CreateRulesTests extends RestTest
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED)
                 .assertThat().field(IS_SHARED).isNull();
+    }
+
+    /** Check that a normal user cannot create rules that use private actions. */
+    @Test
+    public void createRuleWithActions_userCannotUsePrivateAction()
+    {
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(createRuleWithPrivateAction());
+
+        restClient.assertStatusCodeIs(FORBIDDEN)
+                  .assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
+    }
+
+    /** Check that an administrator can create rules that use private actions. */
+    @Test
+    public void createRuleWithActions_adminCanUsePrivateAction()
+    {
+        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(createRuleWithPrivateAction());
+
+        restClient.assertStatusCodeIs(CREATED);
     }
 
     /**

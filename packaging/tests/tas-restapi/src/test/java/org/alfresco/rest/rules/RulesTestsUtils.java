@@ -162,6 +162,16 @@ public class RulesTestsUtils
         return ruleModel;
     }
 
+    public static RestRuleModel createRuleWithPrivateAction()
+    {
+        RestActionBodyExecTemplateModel mailAction = new RestActionBodyExecTemplateModel();
+        mailAction.setActionDefinitionId("mail");
+        mailAction.setParams(Map.of("to", "test@example.com"));
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setActions(Arrays.asList(mailAction));
+        return ruleModel;
+    }
+
     public static RestSimpleConditionDefinitionModel createSimpleCondition(String field, String comparator, String parameter)
     {
         RestSimpleConditionDefinitionModel simpleCondition = new RestSimpleConditionDefinitionModel();

@@ -26,17 +26,21 @@
 
 package org.alfresco.rest.api.impl;
 
-import static org.alfresco.rest.api.impl.ActionsImpl.NAMES;
+import static org.alfresco.rest.api.impl.ActionsImpl.CONSTRAINT_NOT_EXISTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.alfresco.repo.action.constraint.FolderContentsParameterConstraint;
+import org.alfresco.rest.api.impl.rules.ActionParameterConverter;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -61,6 +65,8 @@ public class ActionsImplTest
     private ActionService actionServiceMock;
     @Mock
     private Parameters parametersMock;
+    @Mock
+    private ActionParameterConverter parameterConverterMock;
 
     @InjectMocks
     private ActionsImpl objectUnderTest;
@@ -68,7 +74,6 @@ public class ActionsImplTest
     @Test
     public void testGetAllActionConstraints()
     {
-        given(parametersMock.getParameter(NAMES)).willReturn(null);
         final int constraintsCount = 3;
         final List<ParameterConstraint> constraints = createConstraints(constraintsCount);
         given(actionServiceMock.getParameterConstraints()).willReturn(constraints);
@@ -76,7 +81,6 @@ public class ActionsImplTest
         //when
         final CollectionWithPagingInfo<ActionParameterConstraint> actionConstraints = objectUnderTest.getActionConstraints(parametersMock);
 
-        then(parametersMock).should().getParameter(NAMES);
         then(parametersMock).should().getPaging();
         then(parametersMock).shouldHaveNoMoreInteractions();
         then(actionServiceMock).should().getParameterConstraints();
@@ -86,54 +90,84 @@ public class ActionsImplTest
         IntStream.rangeClosed(1, constraintsCount).forEach(i -> {
             ActionParameterConstraint actualConstraint =
                     actionConstraints.getCollection().stream()
-                            .filter(c -> (NAME + i).equals(c.getName()))
+                            .filter(c -> (NAME + i).equals(c.getConstraintName()))
                             .findFirst()
                             .get();
             final ParameterConstraint parameterConstraint = constraints.get(i - 1);
             assertThat(actualConstraint).isNotNull();
-            assertThat(actualConstraint.getName()).isEqualTo(parameterConstraint.getName());
-            assertThat(actualConstraint.getConstraintsMap()).isNotNull().usingRecursiveComparison()
-                    .isEqualTo(parameterConstraint.getAllowableValues());
+            assertThat(actualConstraint.getConstraintName()).isEqualTo(parameterConstraint.getName());
+            ActionParameterConstraint.ConstraintData expectedConstraintData = new ActionParameterConstraint.ConstraintData(CONSTRAINT + i, LABEL + i);
+            assertThat(actualConstraint.getConstraintValues()).isNotNull().hasSize(1);
+            ActionParameterConstraint.ConstraintData actualConstraintData = actualConstraint.getConstraintValues().get(0);
+            assertThat(actualConstraintData).usingRecursiveComparison().isEqualTo(expectedConstraintData);
         });
     }
 
     @Test
-    public void testGetActionConstraintsWithNameFilter()
+    public void testGetSingleActionConstraint()
     {
         final String name = "name1";
-        final String names = name;
-        given(parametersMock.getParameter(NAMES)).willReturn(names);
-        final Map<String, String> values = Map.of(CONSTRAINT + "1", LABEL + "1");
+        final String value = CONSTRAINT + "1";
+        final String label = LABEL + "1";
+        final Map<String, String> values = Map.of(value, label);
         final ParameterConstraint testConstraint = createTestConstraint(name, values);
         given(actionServiceMock.getParameterConstraint(name)).willReturn(testConstraint);
-        //when
-        final CollectionWithPagingInfo<ActionParameterConstraint> actionConstraints = objectUnderTest.getActionConstraints(parametersMock);
 
-        then(parametersMock).should().getParameter(NAMES);
-        then(parametersMock).should().getPaging();
-        then(parametersMock).shouldHaveNoMoreInteractions();
+        //when
+        final ActionParameterConstraint actualConstraint = objectUnderTest.getActionConstraint(name);
+
+        then(parametersMock).shouldHaveNoInteractions();
         then(actionServiceMock).should().getParameterConstraint(name);
         then(actionServiceMock).shouldHaveNoMoreInteractions();
-        assertThat(actionConstraints).isNotNull();
-        assertThat(actionConstraints.getCollection()).hasSize(1);
-        final ActionParameterConstraint actualConstraint = actionConstraints.getCollection().stream().findFirst().get();
         assertThat(actualConstraint).isNotNull();
-        assertThat(actualConstraint.getName()).isEqualTo(testConstraint.getName());
-        assertThat(actualConstraint.getConstraintsMap()).isNotNull().usingRecursiveComparison()
-                .isEqualTo(testConstraint.getAllowableValues());
+        assertThat(actualConstraint.getConstraintName()).isEqualTo(testConstraint.getName());
+        ActionParameterConstraint.ConstraintData expectedConstraintData = new ActionParameterConstraint.ConstraintData(value, label);
+        assertThat(actualConstraint.getConstraintValues()).isNotNull().hasSize(1);
+        ActionParameterConstraint.ConstraintData actualConstraintData = actualConstraint.getConstraintValues().get(0);
+        assertThat(actualConstraintData).usingRecursiveComparison().isEqualTo(expectedConstraintData);
+    }
+
+    @Test
+    public void testGetSingleActionNodeConstraint()
+    {
+        final String name = "name1";
+        final String dummyNodeid = "dummy-node-id";
+        final String value = "workspace://DummyStore/" + dummyNodeid;
+        final String label = LABEL + "1";
+        final Map<String, String> values = Map.of(value, label);
+        final FolderContentsParameterConstraint testConstraint = mock(FolderContentsParameterConstraint.class);
+        given(testConstraint.getName()).willReturn(name);
+        given(testConstraint.getAllowableValues()).willReturn(values);
+        given(actionServiceMock.getParameterConstraint(name)).willReturn(testConstraint);
+        given(parameterConverterMock.convertParamFromServiceModel(any())).willReturn(dummyNodeid);
+
+        //when
+        final ActionParameterConstraint actualConstraint = objectUnderTest.getActionConstraint(name);
+
+        then(parametersMock).shouldHaveNoInteractions();
+        then(actionServiceMock).should().getParameterConstraint(name);
+        then(actionServiceMock).shouldHaveNoMoreInteractions();
+        assertThat(actualConstraint).isNotNull();
+        assertThat(actualConstraint.getConstraintName()).isEqualTo(testConstraint.getName());
+        ActionParameterConstraint.ConstraintData expectedConstraintData = new ActionParameterConstraint.ConstraintData(dummyNodeid, label, true);
+        assertThat(actualConstraint.getConstraintValues()).isNotNull().hasSize(1);
+        ActionParameterConstraint.ConstraintData actualConstraintData = actualConstraint.getConstraintValues().get(0);
+        assertThat(actualConstraintData).usingRecursiveComparison().isEqualTo(expectedConstraintData);
     }
 
     @Test
     public void testGetActionConstraintsWithNameFilterNonExistingConstraint()
     {
         final String name = "name1";
-        final String names = name;
-        given(parametersMock.getParameter(NAMES)).willReturn(names);
         given(actionServiceMock.getParameterConstraint(name)).willReturn(null);
 
         //when
-        assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> objectUnderTest.getActionConstraints(parametersMock))
-                .withMessageContaining("Action parameter constraints (name1) do not exist");
+        assertThatExceptionOfType(NotFoundException.class).isThrownBy(() -> objectUnderTest.getActionConstraint(name))
+                .withMessageContaining(String.format(CONSTRAINT_NOT_EXISTS, name));
+
+        then(parametersMock).shouldHaveNoInteractions();
+        then(actionServiceMock).should().getParameterConstraint(name);
+        then(actionServiceMock).shouldHaveNoMoreInteractions();
     }
 
     private List<ParameterConstraint> createConstraints(int constraintsCount)

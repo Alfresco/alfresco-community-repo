@@ -53,4 +53,6 @@ public interface Actions
 
     @Experimental
     CollectionWithPagingInfo<ActionParameterConstraint> getActionConstraints(Parameters parameters);
+    @Experimental
+    ActionParameterConstraint getActionConstraint(String constraintName);
 }

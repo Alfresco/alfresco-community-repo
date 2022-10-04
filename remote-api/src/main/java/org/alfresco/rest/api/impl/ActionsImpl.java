@@ -25,10 +25,11 @@
  */
 package org.alfresco.rest.api.impl;
 
-import com.google.common.base.Strings;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.action.access.ActionAccessRestriction;
+import org.alfresco.repo.action.constraint.FolderContentsParameterConstraint;
 import org.alfresco.rest.api.Actions;
+import org.alfresco.rest.api.impl.rules.ActionParameterConverter;
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
@@ -53,7 +54,6 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.collections.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -62,8 +62,6 @@ import org.springframework.extensions.webscripts.WebScriptException;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -79,12 +77,14 @@ import static java.util.Comparator.nullsFirst;
 public class ActionsImpl implements Actions
 {
     static final String NAMES = "names";
+    static final String CONSTRAINT_NOT_EXISTS = "Action parameter constraints for name %s do not exist.";
 
     private ActionService actionService;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private NamespacePrefixResolver prefixResolver;
+    private ActionParameterConverter actionParameterConverter;
 
     public void setActionService(ActionService actionService)
     {
@@ -109,6 +109,11 @@ public class ActionsImpl implements Actions
     public void setPrefixResolver(NamespacePrefixResolver prefixResolver)
     {
         this.prefixResolver = prefixResolver;
+    }
+
+    public void setActionParameterConverter(ActionParameterConverter actionParameterConverter)
+    {
+        this.actionParameterConverter = actionParameterConverter;
     }
 
     @Override
@@ -137,10 +142,10 @@ public class ActionsImpl implements Actions
 
         return result;
     }
-    
-    private ActionDefinition getActionDefinition( 
+
+    private ActionDefinition getActionDefinition(
             org.alfresco.service.cmr.action.ActionDefinition actionDefinitionId)
-    {        
+    {
         List<ActionDefinition.ParameterDefinition> paramDefs =
                 actionDefinitionId.
                         getParameterDefinitions().
@@ -157,7 +162,7 @@ public class ActionsImpl implements Actions
                 actionDefinitionId.getTrackStatus(),
                 paramDefs);
     }
-    
+
     @Override
     public CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params)
     {
@@ -186,7 +191,7 @@ public class ActionsImpl implements Actions
             sortKey = Actions.SortKey.valueOf(sorting.get(0).column.toUpperCase());
             sortAsc = sorting.get(0).asc;
         }
-        
+
         Comparator<? super ActionDefinition> comparator;
         switch (sortKey)
         {
@@ -199,7 +204,7 @@ public class ActionsImpl implements Actions
             default:
                 throw new IllegalArgumentException("Invalid sort key, must be either 'title' or 'name'.");
         }
-        
+
         if (!sortAsc)
         {
             comparator = comparator.reversed();
@@ -232,7 +237,7 @@ public class ActionsImpl implements Actions
                 skip(skip).
                 limit(maxItems).
                 collect(Collectors.toList());
-        
+
         boolean hasMoreItems = actionDefinitions.size() > (skip + maxItems);
 
         return CollectionWithPagingInfo.asPaged(
@@ -313,38 +318,52 @@ public class ActionsImpl implements Actions
     @Experimental
     public CollectionWithPagingInfo<ActionParameterConstraint> getActionConstraints(Parameters parameters)
     {
-        final String namesParam = parameters.getParameter(NAMES);
-        final List<String> namesFilter = Strings.isNullOrEmpty(namesParam) ? Collections.emptyList() : Arrays.asList(namesParam.split(","));
-        List<ParameterConstraint> parameterConstraints;
-        if (CollectionUtils.isEmpty(namesFilter))
-        {
-            parameterConstraints = actionService.getParameterConstraints();
-        } else
-        {
-            parameterConstraints = namesFilter.stream()
-                    .map(n -> actionService.getParameterConstraint(n))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(parameterConstraints))
-            {
-                throw new NotFoundException("Action parameter constraints (" + namesParam + ") do not exist.");
-            }
-        }
-
+        final List<ParameterConstraint> parameterConstraints = actionService.getParameterConstraints();
         final List<ActionParameterConstraint> actionParameterConstraints = parameterConstraints.stream()
                 .map(this::mapToActionConstraint)
                 .collect(Collectors.toList());
-
         return ListPage.of(actionParameterConstraints, parameters.getPaging());
+    }
+
+    @Override
+    @Experimental
+    public ActionParameterConstraint getActionConstraint(String constraintName)
+    {
+        final ParameterConstraint parameterConstraint = actionService.getParameterConstraint(constraintName);
+        if (Objects.isNull(parameterConstraint))
+        {
+            throw new NotFoundException(String.format(CONSTRAINT_NOT_EXISTS, constraintName));
+        }
+        return mapToActionConstraint(parameterConstraint);
     }
 
     @Experimental
     private ActionParameterConstraint mapToActionConstraint(ParameterConstraint parameterConstraint)
     {
         final ActionParameterConstraint constraint = new ActionParameterConstraint();
-        constraint.setName(parameterConstraint.getName());
-        constraint.setConstraintsMap(parameterConstraint.getAllowableValues());
+        constraint.setConstraintName(parameterConstraint.getName());
+        constraint.setConstraintValues(getConstraintDataList(parameterConstraint));
         return constraint;
+    }
+
+    @Experimental
+    private List<ActionParameterConstraint.ConstraintData> getConstraintDataList(final ParameterConstraint parameterConstraint) {
+        if (parameterConstraint instanceof FolderContentsParameterConstraint) {
+            return convertNodeRefConstraintValues(parameterConstraint.getAllowableValues()).entrySet().stream()
+                    .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue(), true))
+                    .collect(Collectors.toList());
+        } else {
+            return parameterConstraint.getAllowableValues().entrySet().stream()
+                    .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue()))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Experimental
+    private Map<String, String> convertNodeRefConstraintValues(final Map<String, String> inputValues) {
+        return inputValues.entrySet().stream()
+                .collect(Collectors.toMap(e -> actionParameterConverter.convertParamFromServiceModel(new NodeRef(e.getKey())).toString(),
+                        Map.Entry::getValue));
     }
 
     private Map<String, Serializable> extractActionParams(org.alfresco.service.cmr.action.ActionDefinition actionDefinition, Map<String, String> params)
@@ -441,7 +460,7 @@ public class ActionsImpl implements Actions
                 map(this::toShortQName).
                 collect(Collectors.toList());
     }
-    
+
     private String toShortQName(QName type)
     {
         return type.toPrefixString(prefixResolver);

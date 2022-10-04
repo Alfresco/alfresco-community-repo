@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -38,7 +39,7 @@ import org.alfresco.service.Experimental;
 
 @EntityResource(name="action-constraints", title = "Action parameter constraints")
 @Experimental
-public class ActionConstraintsEntityResource implements EntityResourceAction.Read<ActionParameterConstraint>
+public class ActionConstraintsEntityResource implements EntityResourceAction.Read<ActionParameterConstraint>, EntityResourceAction.ReadById<ActionParameterConstraint>
 {
     private final Actions actions;
 
@@ -50,10 +51,20 @@ public class ActionConstraintsEntityResource implements EntityResourceAction.Rea
     @WebApiDescription(title = "Get action parameters constraints",
             description = "Retrieves a list of action parameters constraints",
             successStatus = HttpServletResponse.SC_OK)
+    @Experimental
     @Override
     public CollectionWithPagingInfo<ActionParameterConstraint> readAll(Parameters params)
     {
         return actions.getActionConstraints(params);
     }
 
+    @WebApiDescription(title = "Get single action parameters constraint",
+            description = "Retrieves a single action parameters constraint by constraint name",
+            successStatus = HttpServletResponse.SC_OK)
+    @Experimental
+    @Override
+    public ActionParameterConstraint readById(String constraintName, Parameters parameters) throws EntityNotFoundException
+    {
+        return actions.getActionConstraint(constraintName);
+    }
 }

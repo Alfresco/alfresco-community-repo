@@ -67,4 +67,18 @@ public class ActionConstraintsEntityResourceTest
         then(actionsMock).shouldHaveNoMoreInteractions();
         assertThat(result).isNotNull().usingRecursiveComparison().isEqualTo(pagedConstraints);
     }
+
+    @Test
+    public void testReadById() {
+        final String name = "name";
+        final ActionParameterConstraint dummyConstraint = new ActionParameterConstraint();
+        given(actionsMock.getActionConstraint(name)).willReturn(dummyConstraint);
+
+        //when
+        ActionParameterConstraint result = objectUnderTest.readById(name, parametersMock);
+
+        then(actionsMock).should().getActionConstraint(name);
+        then(actionsMock).shouldHaveNoMoreInteractions();
+        assertThat(result).isNotNull().usingRecursiveComparison().isEqualTo(dummyConstraint);
+    }
 }

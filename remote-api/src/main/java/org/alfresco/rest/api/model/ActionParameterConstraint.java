@@ -26,8 +26,8 @@
 
 package org.alfresco.rest.api.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
 
 import org.alfresco.service.Experimental;
 
@@ -43,32 +43,64 @@ public class ActionParameterConstraint
     /**
      * Constraint name.
      */
-    private String name;
+    private String constraintName;
     /**
-     * Key-value (String-String) collection representing value constraint (key) and its label (value)
+     * List of objects representing constraint values along with additional data
      */
-    private Map<String, String> constraintsMap;
+    private List<ConstraintData> constraintValues;
 
-    public String getName()
+    public List<ConstraintData> getConstraintValues()
     {
-        return name;
+        return constraintValues;
     }
 
-    public void setName(String name)
+    public void setConstraintValues(List<ConstraintData> constraintValues)
     {
-        this.name = name;
+        this.constraintValues = constraintValues;
     }
 
-    public Map<String, String> getConstraintsMap()
+    public String getConstraintName()
     {
-        if (constraintsMap == null) {
-            constraintsMap = new HashMap<>();
+        return constraintName;
+    }
+
+    public void setConstraintName(String constraintName)
+    {
+        this.constraintName = constraintName;
+    }
+
+    public static class ConstraintData
+    {
+        public ConstraintData(final String value, final String label)
+        {
+            this.value = value;
+            this.label = label;
         }
-        return constraintsMap;
-    }
 
-    public void setConstraintsMap(Map<String, String> constraintsMap)
-    {
-        this.constraintsMap = constraintsMap;
+        public ConstraintData(final String value, final String label, final boolean isNode)
+        {
+            this.value = value;
+            this.label = label;
+            this.isNode = isNode;
+        }
+
+        private String value;
+        private String label;
+        private Boolean isNode;
+
+        public String getValue()
+        {
+            return value;
+        }
+
+        public String getLabel()
+        {
+            return label;
+        }
+
+        public Boolean getIsNode()
+        {
+            return isNode;
+        }
     }
 }

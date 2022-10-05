@@ -54,6 +54,7 @@ public class RuleSetLoader
     protected static final String IS_LINKED_TO = "isLinkedTo";
     protected static final String RULE_IDS = "ruleIds";
     private static final int MAX_INHERITED_BY_SIZE = 100;
+    private static final int MAX_LINKED_TO_BY_SIZE = 100;
     private NodeService nodeService;
     private RuleService ruleService;
 
@@ -122,7 +123,7 @@ public class RuleSetLoader
 
     private List<NodeRef> loadLinkedToBy(NodeRef ruleSetNodeRef)
     {
-        return ruleService.getFoldersLinkingToRuleSet(ruleSetNodeRef);
+        return ruleService.getFoldersLinkingToRuleSet(ruleSetNodeRef, MAX_LINKED_TO_BY_SIZE);
     }
 
     private boolean loadIsInherited(NodeRef ruleSetNodeRef)

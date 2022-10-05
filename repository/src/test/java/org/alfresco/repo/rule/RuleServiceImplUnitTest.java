@@ -730,7 +730,7 @@ public class RuleServiceImplUnitTest
         given(linkingAssocMock.getParentRef()).willReturn(linkingFolder);
         given(nodeService.getParentAssocs(ruleSetNode)).willReturn(List.of(owningAssocMock, linkingAssocMock));
 
-        List<NodeRef> linkingFolders = ruleService.getFoldersLinkingToRuleSet(ruleSetNode);
+        List<NodeRef> linkingFolders = ruleService.getFoldersLinkingToRuleSet(ruleSetNode, 100);
 
         assertEquals("Unexpected list of linking folders.", List.of(linkingFolder), linkingFolders);
     }
@@ -752,7 +752,7 @@ public class RuleServiceImplUnitTest
         // The currect user does not have permission to view the folder.
         given(permissionService.hasReadPermission(linkingFolder)).willReturn(DENIED);
 
-        List<NodeRef> linkingFolders = ruleService.getFoldersLinkingToRuleSet(ruleSetNode);
+        List<NodeRef> linkingFolders = ruleService.getFoldersLinkingToRuleSet(ruleSetNode, 100);
 
         assertEquals("Unexpected list of linking folders.", emptyList(), linkingFolders);
     }

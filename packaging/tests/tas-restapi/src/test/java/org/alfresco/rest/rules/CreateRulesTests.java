@@ -352,7 +352,7 @@ public class CreateRulesTests extends RestTest
         STEP(String.format("Add a user with '%s' role in the private site's folder", userRole.toString()));
         UserModel userWithRole = dataUser.createRandomTestUser();
         dataUser.addUserToSite(userWithRole, privateSite, userRole);
-        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createDefaultActionModel()));
+        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createAddAudioAspectAction()));
 
         return restClient.authenticateUser(userWithRole).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }
@@ -363,25 +363,13 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithActions()
     {
-        final Map<String, Serializable> copyParams =
-                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
-        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
-        final Map<String, Serializable> checkOutParams =
-                Map.of("destination-folder", "dummy-folder-node", "assoc-name", "cm:checkout", "assoc-type",
-                        "cm:contains");
-        final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
-        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
-        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
-        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
-        ruleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
-
         final UserModel admin = dataUser.getAdminUser();
 
         final RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .createSingleRule(ruleModel);
+                .createSingleRule(createVariousActions());
 
-        final RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
-        expectedRuleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction));
+        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        expectedRuleModel.setActions(createVariousActions().getActions());
         expectedRuleModel.setTriggers(List.of("inbound"));
 
         restClient.assertStatusCodeIs(CREATED);

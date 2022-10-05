@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -63,6 +63,8 @@ public class GetRulesTests extends RestTest
     private RestRuleModel createdRuleA;
     private static final String IGNORE_ID = "id";
     private static final String IGNORE_IS_SHARED = "isShared";
+    private static final String ACTIONS = "actions";
+    private static final String CONDITIONS = "conditions";
 
     @BeforeClass(alwaysRun = true)
     public void dataPreparation()
@@ -150,7 +152,7 @@ public class GetRulesTests extends RestTest
                 rules.getEntries().get(i).onModel()
                      .assertThat().field("isShared").isNotNull()
                         .assertThat().field("description").isNull()
-                        .assertThat().field("isEnabled").is(false)
+                        .assertThat().field("isEnabled").is(true)
                         .assertThat().field("isInheritable").is(false)
                         .assertThat().field("isAsynchronous").is(false)
                         .assertThat().field("errorScript").isNull()
@@ -304,5 +306,57 @@ public class GetRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(OK);
         rules.assertThat().entriesListContains("name", "Private site rule");
+    }
+
+    /**
+     * Check we can GET Rule's actions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void getRuleActions()
+    {
+        STEP("Create a rule with a few actions");
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+                .createSingleRule(createVariousActions());
+
+        STEP("Retrieve the created rule via the GET endpoint");
+        final RestRuleModel getRuleBody = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(rule.getId());
+
+        STEP("Assert that actions are returned as expected from the GET endpoint");
+        restClient.assertStatusCodeIs(OK);
+        getRuleBody.assertThat().field(ACTIONS).contains("actionDefinitionId=copy")
+                   .assertThat().field(ACTIONS).contains("destination-folder=dummy-folder-node")
+                   .assertThat().field(ACTIONS).contains("deep-copy=true")
+                   .assertThat().field(ACTIONS).contains("actionDefinitionId=check-out")
+                   .assertThat().field(ACTIONS).contains("destination-folder=fake-folder-node")
+                   .assertThat().field(ACTIONS).contains("assoc-name=cm:checkout");
+    }
+
+    /**
+     * Check we can GET rule's conditions.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void getRulesConditions()
+    {
+        STEP("Create a rule with several conditions");
+        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        ruleModel.setConditions(createVariousConditions());
+
+        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        STEP("Retrieve the created rule via the GET endpoint");
+        final RestRuleModel getRuleBody = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(rule.getId());
+
+        STEP("Assert that conditions are retrieved using the GET endpoint");
+        restClient.assertStatusCodeIs(OK);
+        getRuleBody.assertThat().field(CONDITIONS).contains("comparator=ends")
+                   .assertThat().field(CONDITIONS).contains("field=cm:creator")
+                   .assertThat().field(CONDITIONS).contains("parameter=ski")
+                   .assertThat().field(CONDITIONS).contains("comparator=begins")
+                   .assertThat().field(CONDITIONS).contains("field=cm:modelVersion")
+                   .assertThat().field(CONDITIONS).contains("parameter=1.");
     }
 }

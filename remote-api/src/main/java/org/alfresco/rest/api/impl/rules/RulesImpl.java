@@ -26,29 +26,30 @@
 
 package org.alfresco.rest.api.impl.rules;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.alfresco.rest.api.Nodes;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
+import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
-import org.alfresco.rest.api.model.rules.CompositeCondition;
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.api.model.rules.RuleExecution;
 import org.alfresco.rest.api.model.rules.RuleSet;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.api.model.rules.SimpleCondition;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.ActionCondition;
-import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
-import org.alfresco.util.collections.CollectionUtils;
-import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.GUID;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +59,7 @@ public class RulesImpl implements Rules
     private static final Logger LOGGER = LoggerFactory.getLogger(RulesImpl.class);
     private static final String MUST_HAVE_AT_LEAST_ONE_ACTION = "A rule must have at least one action";
 
+    private ActionService actionService;
     private RuleService ruleService;
     private NodeValidator validator;
     private RuleLoader ruleLoader;
@@ -130,6 +132,26 @@ public class RulesImpl implements Rules
         ruleService.removeRule(folderNodeRef, rule);
     }
 
+    @Override
+    public RuleExecution executeRules(final String folderNodeId, final boolean eachSubFolderIncluded, final boolean eachInheritedRuleExecuted)
+    {
+        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
+        final Map<String, Serializable> parameterValues = new HashMap<>();
+        parameterValues.put(ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, eachSubFolderIncluded);
+        parameterValues.put(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, eachInheritedRuleExecuted);
+        final ActionImpl action = new ActionImpl(null, GUID.generate(), ExecuteAllRulesActionExecuter.NAME);
+        action.setNodeRef(folderNodeRef);
+        action.setParameterValues(parameterValues);
+
+        ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.V1_ACTION_CONTEXT);
+        actionService.executeAction(action, folderNodeRef, true, false);
+
+        return RuleExecution.builder()
+            .eachSubFolderIncluded(eachSubFolderIncluded)
+            .eachInheritedRuleExecuted(eachInheritedRuleExecuted)
+            .create();
+    }
+
     private org.alfresco.service.cmr.rule.Rule mapToServiceModelAndValidateActions(Rule rule)
     {
         if (CollectionUtils.isEmpty(rule.getActions()))
@@ -139,6 +161,11 @@ public class RulesImpl implements Rules
         final org.alfresco.service.cmr.rule.Rule serviceModelRule = ruleMapper.toServiceModel(rule);
 
         return actionPermissionValidator.validateRulePermissions(serviceModelRule);
+    }
+
+    public void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
     }
 
     public void setRuleService(RuleService ruleService)

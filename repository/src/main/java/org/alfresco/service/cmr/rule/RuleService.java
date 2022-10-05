@@ -243,11 +243,12 @@ public interface RuleService
      * Get a list of folders linking to the specified rule set.
      *
      * @param ruleSet The rule set node.
+     * @param maxFoldersToReturn A limit on the number of folders to return.
      * @return The list linking folders.
      */
     @Auditable (parameters = { "ruleSet" })
     @Experimental
-    List<NodeRef> getFoldersLinkingToRuleSet(NodeRef ruleSet);
+    List<NodeRef> getFoldersLinkingToRuleSet(NodeRef ruleSet, int maxFoldersToReturn);
 
     /**
      * Get the rule given its node reference

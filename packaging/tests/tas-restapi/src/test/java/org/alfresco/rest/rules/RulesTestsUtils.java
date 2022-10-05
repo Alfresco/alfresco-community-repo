@@ -25,6 +25,10 @@
  */
 package org.alfresco.rest.rules;
 
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.createMailParameters;
+import static org.alfresco.utility.model.UserModel.getRandomUserModel;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -165,8 +169,8 @@ public class RulesTestsUtils
     public static RestRuleModel createRuleWithPrivateAction()
     {
         RestActionBodyExecTemplateModel mailAction = new RestActionBodyExecTemplateModel();
-        mailAction.setActionDefinitionId("mail");
-        mailAction.setParams(Map.of("to", "test@example.com"));
+        mailAction.setActionDefinitionId(MAIL_ACTION);
+        mailAction.setParams(createMailParameters(getRandomUserModel(), getRandomUserModel()));
         RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         ruleModel.setActions(Arrays.asList(mailAction));
         return ruleModel;

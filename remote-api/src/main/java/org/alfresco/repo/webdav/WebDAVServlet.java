@@ -123,7 +123,7 @@ public class WebDAVServlet extends HttpServlet
 
         if (request.getMethod().equals("POST") && !initParams.isPostMethodAllowed())
         {
-            logger.error("POST method not allowed!");
+            logger.error("POST method is not allowed!");
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
         }

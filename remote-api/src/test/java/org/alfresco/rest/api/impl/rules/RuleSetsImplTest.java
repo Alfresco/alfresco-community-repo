@@ -98,7 +98,7 @@ public class RuleSetsImplTest extends TestCase
         MockitoAnnotations.openMocks(this);
 
         given(nodeValidatorMock.validateFolderNode(eq(LINK_TO_NODE_ID), anyBoolean())).willReturn(LINK_TO_NODE);
-        given(nodeValidatorMock.validateRuleSetNode(LINK_TO_NODE_ID,true)).willReturn(LINK_TO_NODE);
+        given(nodeValidatorMock.validateRuleSetNode(LINK_TO_NODE_ID,false)).willReturn(LINK_TO_NODE);
         given(nodeValidatorMock.validateFolderNode(eq(FOLDER_ID), anyBoolean())).willReturn(FOLDER_NODE);
         given(nodeValidatorMock.validateRuleSetNode(RULE_SET_ID, FOLDER_NODE)).willReturn(RULE_SET_NODE);
 
@@ -252,7 +252,7 @@ public class RuleSetsImplTest extends TestCase
 
         then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID,true);
         then(nodeValidatorMock).should().isRuleSetNode(LINK_TO_NODE_ID);
-        then(nodeValidatorMock).should().validateRuleSetNode(LINK_TO_NODE_ID,true);
+        then(nodeValidatorMock).should().validateRuleSetNode(LINK_TO_NODE_ID,false);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().hasRules(LINK_TO_NODE);
         then(ruleServiceMock).should().hasRules(FOLDER_NODE);

@@ -129,8 +129,8 @@ public class RuleSetsImpl implements RuleSets
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
         final boolean isRuleSetNode = validator.isRuleSetNode(linkToNodeId);
         final NodeRef linkToNodeRef = isRuleSetNode
-                ? validator.validateRuleSetNode(linkToNodeId, true)
-                : validator.validateFolderNode(linkToNodeId, true);
+                ? validator.validateRuleSetNode(linkToNodeId, false)
+                : validator.validateFolderNode(linkToNodeId, false);
 
         //The target node should have pre-existing rules to link to
         if (!ruleService.hasRules(linkToNodeRef)) {

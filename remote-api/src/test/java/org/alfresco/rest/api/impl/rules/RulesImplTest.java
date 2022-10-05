@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mock;
@@ -40,13 +41,18 @@ import static org.mockito.Mockito.mock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import junit.framework.TestCase;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
+import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.api.model.rules.RuleExecution;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -54,12 +60,14 @@ import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundE
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -77,9 +85,13 @@ public class RulesImplTest extends TestCase
     private static final NodeRef RULE_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_ID);
     private static final Paging PAGING = Paging.DEFAULT;
     private static final List<String> INCLUDE = emptyList();
+    private static final boolean INCLUDE_SUB_FOLDERS = true;
+    private static final boolean EXECUTE_INHERITED_RULES = true;
 
     @Mock
     private Nodes nodesMock;
+    @Mock
+    private ActionService actionServiceMock;
     @Mock
     private RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper;
     @Mock
@@ -616,6 +628,39 @@ public class RulesImplTest extends TestCase
             then(nodeValidatorMock).shouldHaveNoMoreInteractions();
             then(ruleServiceMock).shouldHaveNoInteractions();
         }
+    }
+
+    @Test
+    public void testExecuteRule()
+    {
+        // when
+        final RuleExecution actualRuleExecution = rules.executeRules(FOLDER_NODE_ID, INCLUDE_SUB_FOLDERS, EXECUTE_INHERITED_RULES);
+
+        final RuleExecution expectedRuleExecution = RuleExecution.builder()
+            .eachSubFolderIncluded(INCLUDE_SUB_FOLDERS)
+            .eachInheritedRuleExecuted(EXECUTE_INHERITED_RULES)
+            .create();
+        final ActionImpl expectedAction = new ActionImpl(null, null, ExecuteAllRulesActionExecuter.NAME);
+        expectedAction.setNodeRef(FOLDER_NODE_REF);
+        expectedAction.setParameterValues(Map.of(
+            ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, INCLUDE_SUB_FOLDERS,
+            ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, EXECUTE_INHERITED_RULES,
+            ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME, ActionAccessRestriction.V1_ACTION_CONTEXT)
+        );
+        final ArgumentCaptor<ActionImpl> actionCaptor = ArgumentCaptor.forClass(ActionImpl.class);
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+        then(actionServiceMock).should().executeAction(actionCaptor.capture(), eq(FOLDER_NODE_REF), eq(true), eq(false));
+        then(actionServiceMock).shouldHaveNoMoreInteractions();
+        final ActionImpl actualAction = actionCaptor.getValue();
+        assertThat(actualAction)
+            .isNotNull()
+            .usingRecursiveComparison().ignoringFields("id")
+            .isEqualTo(expectedAction);
+        assertThat(actualRuleExecution)
+            .isNotNull()
+            .usingRecursiveComparison()
+            .isEqualTo(expectedRuleExecution);
     }
 
     private static org.alfresco.service.cmr.rule.Rule createRule(final String id)

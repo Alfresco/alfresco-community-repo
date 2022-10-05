@@ -35,7 +35,7 @@ import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
 import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createDefaultActionModel;
+import static org.alfresco.rest.rules.RulesTestsUtils.createAddAudioAspectAction;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleWithPrivateAction;
@@ -565,7 +565,7 @@ public class UpdateRulesTests extends RestTest
 
     private RestRuleModel createAndSaveRule(String name)
     {
-        return createAndSaveRule(name, List.of(createDefaultActionModel()));
+        return createAndSaveRule(name, List.of(createAddAudioAspectAction()));
     }
 
     /**

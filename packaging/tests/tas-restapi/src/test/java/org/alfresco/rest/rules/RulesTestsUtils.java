@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
+import org.alfresco.rest.model.RestRuleExecutionBodyModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestSimpleConditionDefinitionModel;
 
@@ -52,15 +53,22 @@ public class RulesTestsUtils
     static final String AND = "and";
     static final String ID = "id";
     static final String IS_SHARED = "isShared";
+    static final String AUDIO_ASPECT = "audio:audio";
 
-    /**
-     * Create a rule model filled with default values.
-     *
-     * @return The created rule model.
-     */
     public static RestRuleModel createRuleModelWithModifiedValues()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        return createRuleModelWithModifiedValues(List.of(createAddAudioAspectAction()));
+    }
+
+    /**
+     * Create a rule model filled with custom constant values.
+     *
+     * @param actions - rule's actions.
+     * @return The created rule model.
+     */
+    public static RestRuleModel createRuleModelWithModifiedValues(List<RestActionBodyExecTemplateModel> actions)
+    {
+        RestRuleModel ruleModel = createRuleModel(RULE_NAME_DEFAULT, actions);
         ruleModel.setDescription(RULE_DESCRIPTION_DEFAULT);
         ruleModel.setIsEnabled(RULE_ENABLED_DEFAULT);
         ruleModel.setIsInheritable(RULE_CASCADE_DEFAULT);
@@ -74,26 +82,27 @@ public class RulesTestsUtils
 
     public static RestRuleModel createRuleModelWithDefaultValues()
     {
-        return createRuleModel(RULE_NAME_DEFAULT, List.of(createDefaultActionModel()));
+        return createRuleModel(RULE_NAME_DEFAULT);
     }
 
     public static RestRuleModel createRuleModel(String name)
     {
-        return createRuleModel(name, List.of(createDefaultActionModel()));
+        return createRuleModel(name, List.of(createAddAudioAspectAction()));
     }
 
     /**
      * Create a rule model.
      *
      * @param name The name for the rule.
-     * @param restActionModels Rule's actions.
+     * @param actions Rule's actions.
      * @return The created rule model.
      */
-    public static RestRuleModel createRuleModel(String name, List<RestActionBodyExecTemplateModel> restActionModels)
+    public static RestRuleModel createRuleModel(String name, List<RestActionBodyExecTemplateModel> actions)
     {
         RestRuleModel ruleModel = new RestRuleModel();
+        ruleModel.setIsEnabled(true);
         ruleModel.setName(name);
-        ruleModel.setActions(restActionModels);
+        ruleModel.setActions(actions);
         return ruleModel;
     }
 
@@ -102,12 +111,9 @@ public class RulesTestsUtils
      *
      * @return The created action model.
      */
-    public static RestActionBodyExecTemplateModel createDefaultActionModel()
+    public static RestActionBodyExecTemplateModel createAddAudioAspectAction()
     {
-        RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
-        restActionModel.setActionDefinitionId("set-property-value");
-        restActionModel.setParams(Map.of("aspect-name", "cm:audio"));
-        return restActionModel;
+        return createCustomActionModel("add-features", Map.of("aspect-name", AUDIO_ASPECT));
     }
 
     public static RestActionBodyExecTemplateModel createCustomActionModel(String actionDefinitionId, Map<String, Serializable> params)
@@ -139,7 +145,7 @@ public class RulesTestsUtils
                 createSimpleCondition("tag", "equals", "uat")
             )),
             createCompositeCondition(INVERTED, List.of(
-                createSimpleCondition("aspect", "equals", "audio:audio"),
+                createSimpleCondition("aspect", "equals", AUDIO_ASPECT),
                 createSimpleCondition("cm:modelVersion", "begins", "1.")
             ))
         ));
@@ -180,6 +186,20 @@ public class RulesTestsUtils
         List<RestSimpleConditionDefinitionModel> simpleConditions)
     {
         return createCompositeCondition(AND, inverted, null, simpleConditions);
+    }
+
+    public static RestRuleExecutionBodyModel createRuleExecutionRequest()
+    {
+        return createRuleExecutionRequest(false, false);
+    }
+
+    public static RestRuleExecutionBodyModel createRuleExecutionRequest(boolean eachSubFolderIncluded, boolean eachInheritedRuleExecuted)
+    {
+        RestRuleExecutionBodyModel ruleExecutionBody = new RestRuleExecutionBodyModel();
+        ruleExecutionBody.setIsEachSubFolderIncluded(eachSubFolderIncluded);
+        ruleExecutionBody.setIsEachInheritedRuleExecuted(eachInheritedRuleExecuted);
+
+        return ruleExecutionBody;
     }
 
     private static RestCompositeConditionDefinitionModel createCompositeCondition(String booleanMode, boolean inverted,

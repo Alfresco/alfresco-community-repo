@@ -352,7 +352,7 @@ public class CreateRulesTests extends RestTest
         STEP(String.format("Add a user with '%s' role in the private site's folder", userRole.toString()));
         UserModel userWithRole = dataUser.createRandomTestUser();
         dataUser.addUserToSite(userWithRole, privateSite, userRole);
-        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createDefaultActionModel()));
+        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createAddAudioAspectAction()));
 
         return restClient.authenticateUser(userWithRole).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }

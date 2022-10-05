@@ -692,11 +692,12 @@ public class RuleServiceImpl
     /** {@inheritDoc} */
     @Override
     @Experimental
-    public List<NodeRef> getFoldersLinkingToRuleSet(NodeRef ruleSet)
+    public List<NodeRef> getFoldersLinkingToRuleSet(NodeRef ruleSet, int maxFoldersToReturn)
     {
         NodeRef parentRef = nodeService.getPrimaryParent(ruleSet).getParentRef();
         return nodeService.getParentAssocs(ruleSet)
                           .stream()
+                          .limit(maxFoldersToReturn)
                           .map(ChildAssociationRef::getParentRef)
                           .filter(folder -> !folder.equals(parentRef))
                           .filter(folder -> permissionService.hasReadPermission(folder) == ALLOWED)

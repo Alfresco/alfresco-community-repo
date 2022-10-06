@@ -27,19 +27,20 @@
 package org.alfresco.rest.api.model;
 
 import java.util.List;
-import java.util.Objects;
 
 import org.alfresco.service.Experimental;
 
 /**
  * Representation of action parameter constraint.
+ * Helps to constraint the list of allowable values for an action parameter.
+ * When action parameter has constraints defined (@see ActionDefinition.ParameterDefinition#getParameterConstraintName())
+ * they will be listed here.
  *
  * @author mpichura
  */
 @Experimental
 public class ActionParameterConstraint
 {
-
     /**
      * Constraint name.
      */
@@ -84,8 +85,17 @@ public class ActionParameterConstraint
             this.isNode = isNode;
         }
 
+        /**
+         * Actual constraint value
+         */
         private String value;
+        /**
+         * A label associated to constraint's value
+         */
         private String label;
+        /**
+         * Indicates whether value of the constraint refers to a node (is a node id)
+         */
         private Boolean isNode;
 
         public String getValue()

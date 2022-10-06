@@ -29,6 +29,7 @@ package org.alfresco.repo.action.constraint;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -55,17 +56,22 @@ public class TypeParameterConstraint extends BaseParameterConstraint
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {   
-        Collection<QName> types = dictionaryService.getAllTypes();
-        Map<String, String> result = new LinkedHashMap<String, String>(types.size());
-        for (QName type : types)
-        {
-            TypeDefinition typeDef = dictionaryService.getType(type);
-            if (typeDef != null && typeDef.getTitle(dictionaryService) != null)
-            {
-                result.put(type.toPrefixString(), typeDef.getTitle(dictionaryService));
-            }
-        }        
-        return result;
-    }    
+    {
+        final Map<String, String> values = getValues();
+        values.values().removeIf(Objects::isNull);
+        return values;
+    }
+
+    @Override
+    public Map<String, String> getValues()
+    {
+        return dictionaryService.getAllTypes().stream()
+                .collect(LinkedHashMap::new, (m, v) -> m.put(v.toPrefixString(), getTitle(v)), LinkedHashMap::putAll);
+    }
+
+    private String getTitle(QName type)
+    {
+        final TypeDefinition typeDef = dictionaryService.getType(type);
+        return typeDef != null ? typeDef.getTitle(dictionaryService) : null;
+    }
 }

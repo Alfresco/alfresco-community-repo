@@ -63,4 +63,12 @@ public interface ParameterConstraint
      *  The implementers are expected to return allowed values in the insertion order.
      */
     Map<String, String> getAllowableValues();
+
+    /**
+     *  Returns possible constraint values.
+     *  By default returns getAllowableValues() to be backwards compatible.
+     */
+    default Map<String, String> getValues() {
+        return getAllowableValues();
+    }
 }

@@ -76,7 +76,6 @@ import static java.util.Comparator.nullsFirst;
 
 public class ActionsImpl implements Actions
 {
-    static final String NAMES = "names";
     static final String CONSTRAINT_NOT_EXISTS = "Action parameter constraints for name %s do not exist.";
 
     private ActionService actionService;
@@ -337,12 +336,13 @@ public class ActionsImpl implements Actions
 
     @Experimental
     private List<ActionParameterConstraint.ConstraintData> getConstraintDataList(final ParameterConstraint parameterConstraint) {
+        final Map<String, String> constraintValues = parameterConstraint.getValues();
         if (parameterConstraint instanceof FolderContentsParameterConstraint) {
-            return convertNodeRefConstraintValues(parameterConstraint.getAllowableValues()).entrySet().stream()
+            return convertNodeRefConstraintValues(constraintValues).entrySet().stream()
                     .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue(), true))
                     .collect(Collectors.toList());
         } else {
-            return parameterConstraint.getAllowableValues().entrySet().stream()
+            return constraintValues.entrySet().stream()
                     .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue()))
                     .collect(Collectors.toList());
         }

@@ -100,7 +100,7 @@ public class ActionsImplTest
         final Map<String, String> values = Map.of(value, LABEL);
         final FolderContentsParameterConstraint testConstraint = mock(FolderContentsParameterConstraint.class);
         given(testConstraint.getName()).willReturn(name);
-        given(testConstraint.getAllowableValues()).willReturn(values);
+        given(testConstraint.getValues()).willReturn(values);
         given(actionServiceMock.getParameterConstraint(name)).willReturn(testConstraint);
         given(parameterConverterMock.convertParamFromServiceModel(any())).willReturn(dummyNodeId);
 
@@ -135,7 +135,7 @@ public class ActionsImplTest
 
     private ParameterConstraint createTestConstraint(final String name, final Map<String, String> values)
     {
-        final ParameterConstraint constraint = new ParameterConstraint()
+        return new ParameterConstraint()
         {
             @Override
             public String getName()
@@ -161,6 +161,5 @@ public class ActionsImplTest
                 return values;
             }
         };
-        return constraint;
     }
 }

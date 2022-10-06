@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.rest.api.actions.ActionValidator;
 import org.alfresco.rest.api.impl.rules.ActionParameterConverter;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Action;

@@ -36,10 +36,10 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ActionParameterConstraintsValidatorTest
+public class ActionParameterDefinitionValidatorTest
 {
     @InjectMocks
-    private ActionParameterConstraintsValidator objectUnderTest;
+    private ActionParameterDefinitionValidator objectUnderTest;
 
     @Test
     public void testGetActionDefinitions()

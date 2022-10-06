@@ -26,6 +26,7 @@
 
 package org.alfresco.rest.api.impl.validator.actions;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,24 +42,35 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 
-public class ActionParameterConstraintsValidator implements ActionValidator
+/**
+ * This class will validate all action types against action parameters definitions (mandatory parameters, parameter constraints)
+ */
+public class ActionParameterDefinitionValidator implements ActionValidator
 {
     private static final boolean IS_ENABLED = true;
 
     private final Actions actions;
 
-    public ActionParameterConstraintsValidator(Actions actions)
+    public ActionParameterDefinitionValidator(Actions actions)
     {
         this.actions = actions;
     }
 
+    /**
+     * Validates action against its paramaters definitions (mandatory parameters, parameter constraints)
+     *
+     * @param action Action to be validated
+     */
     @Override
     public void validate(Action action)
     {
         final ActionDefinition actionDefinition = actions.getActionDefinitionById(action.getActionDefinitionId());
-        actionDefinition.getParameterDefinitions().forEach(p -> validateConstraints(p, action));
+        actionDefinition.getParameterDefinitions().forEach(p -> validateParameters(p, action));
     }
 
+    /**
+     * @return List of all action definition names derived from sub classes of ActionExecuterAbstractBase
+     */
     @Override
     public List<String> getActionDefinitionIds()
     {
@@ -88,13 +100,25 @@ public class ActionParameterConstraintsValidator implements ActionValidator
         return IS_ENABLED;
     }
 
-    private void validateConstraints(ActionDefinition.ParameterDefinition parameterDefinition, Action action)
+    private void validateParameters(ActionDefinition.ParameterDefinition parameterDefinition, Action action)
     {
-        final ActionParameterConstraint actionConstraint = actions.getActionConstraint(parameterDefinition.getParameterConstraintName());
-        if (action.getParams().get(parameterDefinition.getName()) == null) {
+        final Serializable parameterValue = action.getParams().get(parameterDefinition.getName());
+        if (parameterDefinition.isMandatory() && parameterValue == null)
+        {
             throw new IllegalArgumentException("Missing action mandatory parameter: " + parameterDefinition.getName());
         }
-        //TODO: further validations here
+        if (parameterDefinition.getParameterConstraintName() != null)
+        {
+            final ActionParameterConstraint actionConstraint =
+                    actions.getActionConstraint(parameterDefinition.getParameterConstraintName());
+            if (actionConstraint.getConstraintValues().stream()
+                    .noneMatch(constraintData -> constraintData.getValue().equals(parameterValue.toString())))
+            {
+                throw new IllegalArgumentException(
+                        "Action parameter: " + parameterDefinition.getName() + " has invalid value. Look up constrained values for " +
+                                actionConstraint.getConstraintName());
+            }
+        }
     }
 
 

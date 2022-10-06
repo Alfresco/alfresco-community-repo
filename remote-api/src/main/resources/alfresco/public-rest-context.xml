@@ -590,7 +590,7 @@
     </bean>
 
     <!--    action parameter validators start here -->
-    <bean id="actionParameterConstraintsValidator" class="org.alfresco.rest.api.impl.validator.actions.ActionParameterConstraintsValidator">
+    <bean id="actionParameterConstraintsValidator" class="org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionValidator">
         <constructor-arg name="actions" ref="Actions"/>
     </bean>
 

@@ -30,6 +30,7 @@ import java.util.Map;
 import org.alfresco.rest.core.JsonBodyGenerator;
 import org.alfresco.rest.core.RestRequest;
 import org.alfresco.rest.core.RestWrapper;
+import org.alfresco.rest.model.RestActionConstraintModel;
 import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestActionDefinitionModelsCollection;
 import org.alfresco.utility.model.RepoTestModel;
@@ -79,5 +80,14 @@ public class Actions extends ModelRequest<Actions>
     {
         RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "action-definitions/".concat(actionDefinitionId));
         return restWrapper.processModel(RestActionDefinitionModel.class, request);
+    }
+
+    /**
+     * Get specific action constraint using GET on '/action-constraints/{actionConstraintName}'
+     */
+    public RestActionConstraintModel getActionConstraintByName(String actionConstraintName)
+    {
+        final RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "action-constraints/".concat(actionConstraintName));
+        return restWrapper.processModel(RestActionConstraintModel.class, request);
     }
 }

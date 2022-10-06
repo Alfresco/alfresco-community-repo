@@ -316,17 +316,6 @@ public class ActionsImpl implements Actions
 
     @Override
     @Experimental
-    public CollectionWithPagingInfo<ActionParameterConstraint> getActionConstraints(Parameters parameters)
-    {
-        final List<ParameterConstraint> parameterConstraints = actionService.getParameterConstraints();
-        final List<ActionParameterConstraint> actionParameterConstraints = parameterConstraints.stream()
-                .map(this::mapToActionConstraint)
-                .collect(Collectors.toList());
-        return ListPage.of(actionParameterConstraints, parameters.getPaging());
-    }
-
-    @Override
-    @Experimental
     public ActionParameterConstraint getActionConstraint(String constraintName)
     {
         final ParameterConstraint parameterConstraint = actionService.getParameterConstraint(constraintName);

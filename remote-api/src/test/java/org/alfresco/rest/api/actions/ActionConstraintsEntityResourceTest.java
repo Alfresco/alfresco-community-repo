@@ -30,12 +30,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,20 +49,6 @@ public class ActionConstraintsEntityResourceTest
 
     @InjectMocks
     private ActionConstraintsEntityResource objectUnderTest;
-
-    @Test
-    public void testReadAll()
-    {
-        final CollectionWithPagingInfo<ActionParameterConstraint> pagedConstraints = CollectionWithPagingInfo.asPaged(null, Collections.emptyList());
-        given(actionsMock.getActionConstraints(parametersMock)).willReturn(pagedConstraints);
-
-        //when
-        final CollectionWithPagingInfo<ActionParameterConstraint> result = objectUnderTest.readAll(parametersMock);
-
-        then(actionsMock).should().getActionConstraints(parametersMock);
-        then(actionsMock).shouldHaveNoMoreInteractions();
-        assertThat(result).isNotNull().usingRecursiveComparison().isEqualTo(pagedConstraints);
-    }
 
     @Test
     public void testReadById() {

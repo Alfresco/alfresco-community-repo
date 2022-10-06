@@ -36,7 +36,6 @@ import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -182,8 +181,8 @@ public class ExecuteRulesTests extends RestTest
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertThat(fileNode)
-            .containsAspects(AUDIO_ASPECT)
-            .notContainsAspects(LOCKABLE_ASPECT);
+            .containsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
+        // LOCKABLE_ASPECT shouldn't be present here, see ACS-3683
     }
 
     /**

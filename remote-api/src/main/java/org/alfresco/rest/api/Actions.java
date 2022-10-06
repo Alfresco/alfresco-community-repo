@@ -29,8 +29,10 @@ package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.api.model.ActionParameterConstraint;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 public interface Actions
@@ -45,7 +47,10 @@ public interface Actions
     {
         NAME,
         TITLE
-    };
+    }
     
     Action executeAction(Action action, Parameters parameters);
+
+    @Experimental
+    ActionParameterConstraint getActionConstraint(String constraintName);
 }

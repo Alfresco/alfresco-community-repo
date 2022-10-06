@@ -30,6 +30,7 @@ import static org.alfresco.repo.action.access.ActionAccessRestriction.ACTION_CON
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -46,10 +47,13 @@ import org.apache.commons.collections.CollectionUtils;
 public class RestRuleActionModelMapper implements RestModelMapper<Action, org.alfresco.service.cmr.action.Action>
 {
     private final ActionParameterConverter parameterConverter;
+    private final List<ActionValidator> actionValidators;
 
-    public RestRuleActionModelMapper(ActionParameterConverter parameterConverter)
+    public RestRuleActionModelMapper(ActionParameterConverter parameterConverter,
+                                     List<ActionValidator> actionValidators)
     {
         this.parameterConverter = parameterConverter;
+        this.actionValidators = actionValidators;
     }
 
     /**
@@ -100,8 +104,14 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
 
     private org.alfresco.service.cmr.action.Action toServiceAction(Action action)
     {
+        validateAction(action);
         final Map<String, Serializable> convertedParams =
                 parameterConverter.getConvertedParams(action.getParams(), action.getActionDefinitionId());
         return new ActionImpl(null, GUID.generate(), action.getActionDefinitionId(), convertedParams);
+    }
+    private void validateAction(Action action) {
+        actionValidators.stream()
+                .filter(v -> v.getActionDefinitionIds().contains(action.getActionDefinitionId()))
+                .forEach(v -> v.validate(action));
     }
 }

@@ -57,7 +57,6 @@ public class RuleSetLoader
     private static final int MAX_LINKED_TO_BY_SIZE = 100;
     private NodeService nodeService;
     private RuleService ruleService;
-    private RestRuleModelMapper restRuleModelMapper;
 
     /**
      * Load a rule set for the given node ref.
@@ -167,8 +166,4 @@ public class RuleSetLoader
         this.ruleService = ruleService;
     }
 
-    public void setRestRuleModelMapper(RestRuleModelMapper restRuleModelMapper)
-    {
-        this.restRuleModelMapper = restRuleModelMapper;
-    }
 }

@@ -94,7 +94,7 @@ public class SetInheritanceTests extends RestTest
                   .retrieveSetting();
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND)
-                  .containsSummary("The entity with id: fake-id was not found");
+                  .containsSummary("The entity with id: fake-id which is a folder was not found");
     }
 
     /** Check we get an error when trying to retrieve a non-existent setting. */
@@ -188,7 +188,7 @@ public class SetInheritanceTests extends RestTest
                   .updateSetting(updateBody);
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND)
-                  .containsSummary("The entity with id: fake-id was not found");
+                  .containsSummary("The entity with id: fake-id which is a folder was not found");
     }
 
     /** Check we get an error when trying to set a non-existent setting. */

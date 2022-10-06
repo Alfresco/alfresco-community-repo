@@ -78,7 +78,7 @@ public class NodeValidator
             return nodeRef;
         } catch (EntityNotFoundException e)
         {
-            throw new InvalidArgumentException("Folder node with id " + folderNodeId + " not found.");
+            throw new EntityNotFoundException(folderNodeId + " which is a folder");
         }
     }
 
@@ -113,7 +113,7 @@ public class NodeValidator
             return ruleSetNodeRef;
 
         } catch (EntityNotFoundException e) {
-            throw new InvalidArgumentException("Rule set node with id " + ruleSetId + " not found.");
+            throw new EntityNotFoundException(ruleSetId + " which is a rule set");
         }
     }
 

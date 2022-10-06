@@ -113,7 +113,7 @@ public class CreateRulesTests extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistentFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(NOT_FOUND);
-        restClient.assertLastError().containsSummary("fake-id was not found");
+        restClient.assertLastError().containsSummary("The entity with id: fake-id which is a folder was not found");
     }
 
     /** Check creating a rule in a non-existent rule set returns an error. */
@@ -127,7 +127,7 @@ public class CreateRulesTests extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingRuleSet("fake-id").createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(NOT_FOUND);
-        restClient.assertLastError().containsSummary("fake-id was not found");
+        restClient.assertLastError().containsSummary("The entity with id: fake-id which is a rule set was not found");
     }
 
     /** Try to create a rule without a name and check the error. */

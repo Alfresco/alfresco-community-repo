@@ -161,10 +161,8 @@ public class ActionsTests extends RestTest
         restClient.authenticateUser(testUser);
 
         final String compareOperationsName = "ac-compare-operations";
-        final RestActionConstraintModel actionConstraintCompareOperations = restClient.
-                withCoreAPI().
-                usingActions().
-                getActionConstraintByName(compareOperationsName);
+        final RestActionConstraintModel actionConstraintCompareOperations =
+                restClient.withCoreAPI().usingActions().getActionConstraintByName(compareOperationsName);
 
         restClient.assertStatusCodeIs(HttpStatus.OK);
 
@@ -181,10 +179,7 @@ public class ActionsTests extends RestTest
     {
         final UserModel testUser = dataUser.createRandomTestUser();
         restClient.authenticateUser(testUser);
-        restClient.
-                withCoreAPI().
-                usingActions().
-                getActionConstraintByName("dummy-name");
+        restClient.withCoreAPI().usingActions().getActionConstraintByName("dummy-name");
 
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }

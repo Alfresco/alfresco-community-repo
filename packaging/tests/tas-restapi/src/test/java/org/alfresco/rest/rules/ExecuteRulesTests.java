@@ -101,7 +101,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Execute one rule with one action trying to add audio aspect to a file.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY })
     public void executeRules_onlyOwnedRules()
     {
         STEP("Check if file aspects don't contain Audio and Lockable ones");
@@ -124,7 +124,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Execute owned rule adding Audio aspect and inherited rule adding Lockable aspect.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY })
     public void executeRules_includeInheritedRules()
     {
         STEP("Check if file aspects don't contain Audio and Lockable ones");
@@ -149,7 +149,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Execute rules on parent folder (add Lockable aspect) including sub-folder folders (add Audio aspect).
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY })
     public void executeRules_includeSubFolderRules()
     {
         STEP("Check if parent folder's file aspects don't contain Audio and Lockable ones");
@@ -188,7 +188,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Try to execute disabled rule and check if nothing changed.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES})
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
     public void executeRules_disabledRule()
     {
         STEP("Disable folder rules");
@@ -215,7 +215,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Try to execute inherited parent folder's rule which is not inheritable.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES})
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
     public void executeRules_notInheritableRule()
     {
         STEP("Set parent rule as not inheritable");
@@ -245,7 +245,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Try to execute private folder's rules by user not added to site and receive 403.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
     public void executeRules_privateFolder()
     {
         STEP("Using admin create private site, folder and rule");
@@ -262,7 +262,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Try to execute private folder's rules as site contributor and receive 403.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
     public void executeRules_privateFolderAsContributor()
     {
         STEP("Using admin create private site, folder, file in it, rule and add user to site as contributor");
@@ -281,7 +281,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Execute private folder's rules as site collaborator.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
     public void executeRules_privateFolderAsCollaborator()
     {
         STEP("Using admin create private site, folder, file in it, rule and add user to site as collaborator");
@@ -311,7 +311,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Try to execute rule with broken action and receive 500.
      */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
     public void executeRules_brokenAction()
     {
         STEP("Update folder rule with broken action");

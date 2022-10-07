@@ -60,12 +60,7 @@ public class RestActionConstraintDataModel extends TestModel implements IRestMod
     Constraint display label
     */	        
 
-    private String label;	    
-    /**
-    True if value is a node id
-    */	        
-
-    private boolean isNode;	    
+    private String label;
 
     public String getValue()
     {
@@ -85,16 +80,6 @@ public class RestActionConstraintDataModel extends TestModel implements IRestMod
     public void setLabel(String label)
     {
         this.label = label;
-    }				
-
-    public boolean getIsNode()
-    {
-        return this.isNode;
-    }
-
-    public void setIsNode(boolean isNode)
-    {
-        this.isNode = isNode;
     }
 
     @Override
@@ -103,13 +88,13 @@ public class RestActionConstraintDataModel extends TestModel implements IRestMod
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RestActionConstraintDataModel that = (RestActionConstraintDataModel) o;
-        return isNode == that.isNode && value.equals(that.value) && Objects.equals(label, that.label);
+        return value.equals(that.value) && Objects.equals(label, that.label);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(value, label, isNode);
+        return Objects.hash(value, label);
     }
 }
  

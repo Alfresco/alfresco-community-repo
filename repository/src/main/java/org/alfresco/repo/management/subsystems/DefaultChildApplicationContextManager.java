@@ -104,6 +104,12 @@ public class DefaultChildApplicationContextManager extends AbstractPropertyBacke
 
     /*
      * (non-Javadoc)
+     * @see org.alfresco.repo.management.ChildApplicationContextManager#getDefaultChain()
+     */
+    public String getDefaultChain() { return defaultChain; }
+
+    /*
+     * (non-Javadoc)
      * @see org.alfresco.repo.management.subsystems.AbstractPropertyBackedBean#getDescription(java.lang.String)
      */
     @Override

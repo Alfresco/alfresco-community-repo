@@ -37,7 +37,7 @@ import java.util.Map;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestNodeModel;
-import org.alfresco.rest.model.RestRuleExecutionBodyModel;
+import org.alfresco.rest.model.RestRuleExecutionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestSimpleConditionDefinitionModel;
 
@@ -209,16 +209,15 @@ public class RulesTestsUtils
         return createCompositeCondition(AND, inverted, null, simpleConditions);
     }
 
-    public static RestRuleExecutionBodyModel createRuleExecutionRequest()
+    public static RestRuleExecutionModel createRuleExecutionRequest()
     {
-        return createRuleExecutionRequest(false, false);
+        return createRuleExecutionRequest(false);
     }
 
-    public static RestRuleExecutionBodyModel createRuleExecutionRequest(boolean eachSubFolderIncluded, boolean eachInheritedRuleExecuted)
+    public static RestRuleExecutionModel createRuleExecutionRequest(boolean eachSubFolderIncluded)
     {
-        RestRuleExecutionBodyModel ruleExecutionBody = new RestRuleExecutionBodyModel();
+        RestRuleExecutionModel ruleExecutionBody = new RestRuleExecutionModel();
         ruleExecutionBody.setIsEachSubFolderIncluded(eachSubFolderIncluded);
-        ruleExecutionBody.setIsEachInheritedRuleExecuted(eachInheritedRuleExecuted);
 
         return ruleExecutionBody;
     }

@@ -87,7 +87,7 @@ public class Actions extends ModelRequest<Actions>
      */
     public RestActionConstraintModel getActionConstraintByName(String actionConstraintName)
     {
-        final RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "action-constraints/".concat(actionConstraintName));
+        final RestRequest request = RestRequest.simpleRequest(HttpMethod.GET, "action-parameter-constraints/".concat(actionConstraintName));
         return restWrapper.processModel(RestActionConstraintModel.class, request);
     }
 }

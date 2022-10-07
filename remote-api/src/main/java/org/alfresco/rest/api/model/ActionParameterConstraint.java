@@ -77,14 +77,6 @@ public class ActionParameterConstraint
             this.value = value;
             this.label = label;
         }
-
-        public ConstraintData(final String value, final String label, final boolean isNode)
-        {
-            this.value = value;
-            this.label = label;
-            this.isNode = isNode;
-        }
-
         /**
          * Actual constraint value
          */
@@ -93,10 +85,6 @@ public class ActionParameterConstraint
          * A label associated to constraint's value
          */
         private String label;
-        /**
-         * Indicates whether value of the constraint refers to a node (is a node id)
-         */
-        private Boolean isNode;
 
         public String getValue()
         {
@@ -106,11 +94,6 @@ public class ActionParameterConstraint
         public String getLabel()
         {
             return label;
-        }
-
-        public Boolean getIsNode()
-        {
-            return isNode;
         }
     }
 }

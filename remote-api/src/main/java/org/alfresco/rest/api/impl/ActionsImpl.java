@@ -335,13 +335,16 @@ public class ActionsImpl implements Actions
     }
 
     @Experimental
-    private List<ActionParameterConstraint.ConstraintData> getConstraintDataList(final ParameterConstraint parameterConstraint) {
+    private List<ActionParameterConstraint.ConstraintData> getConstraintDataList(final ParameterConstraint parameterConstraint)
+    {
         final Map<String, String> constraintValues = parameterConstraint.getValues();
-        if (parameterConstraint instanceof FolderContentsParameterConstraint) {
+        if (parameterConstraint instanceof FolderContentsParameterConstraint)
+        {
             return convertNodeRefConstraintValues(constraintValues).entrySet().stream()
-                    .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue(), true))
+                    .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue()))
                     .collect(Collectors.toList());
-        } else {
+        } else
+        {
             return constraintValues.entrySet().stream()
                     .map(e -> new ActionParameterConstraint.ConstraintData(e.getKey(), e.getValue()))
                     .collect(Collectors.toList());
@@ -349,7 +352,8 @@ public class ActionsImpl implements Actions
     }
 
     @Experimental
-    private Map<String, String> convertNodeRefConstraintValues(final Map<String, String> inputValues) {
+    private Map<String, String> convertNodeRefConstraintValues(final Map<String, String> inputValues)
+    {
         return inputValues.entrySet().stream()
                 .collect(Collectors.toMap(e -> actionParameterConverter.convertParamFromServiceModel(new NodeRef(e.getKey())).toString(),
                         Map.Entry::getValue));

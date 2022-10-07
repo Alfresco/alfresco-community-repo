@@ -31,6 +31,7 @@ import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefault
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -62,6 +63,8 @@ public class GetRuleSetsTests extends RestTest
     private UserModel user;
     private SiteModel site;
     private FolderModel ruleFolder;
+    /** A folder with a rule in a private site owned by admin. */
+    private FolderModel privateFolder;
     private FolderModel inheritingChildFolder;
     private FolderModel notInheritingChildFolder;
     private RestRuleModel rule;
@@ -93,6 +96,11 @@ public class GetRuleSetsTests extends RestTest
                                                          .getListOfRuleSets();
         ruleSets.assertThat().entriesListCountIs(1);
         ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
+
+        STEP("Use admin to create a private site containing a rule in a rule set that can be inherited.");
+        SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
+        privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
+        coreAPIForAdmin().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithModifiedValues());
     }
 
     /** Check we can get an empty list of rule sets. */
@@ -133,6 +141,48 @@ public class GetRuleSetsTests extends RestTest
         nonExistentFolder.setNodeRef("fake-id");
         restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistentFolder).getListOfRuleSets();
         restClient.assertStatusCodeIs(NOT_FOUND);
+    }
+
+    /** Check that we get a 403 error when trying to get rule sets for a folder we don't have read access to. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void getRuleSetsWithoutPermission()
+    {
+        STEP("Check a user cannot list rule sets without read access.");
+        coreAPIForUser().usingNode(privateFolder).getListOfRuleSets();
+        restClient.assertStatusCodeIs(FORBIDDEN);
+    }
+
+    /** Check that we can still list some rule sets if we don't have permission to view them all. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void permissionsAreRespectedWhenListingRuleSets()
+    {
+        STEP("Create a public site containing a parent and child folder with rule inheritance enabled.");
+        SiteModel publicSite = dataSite.usingUser(user).createPublicRandomSite();
+        FolderModel parentFolder = dataContent.usingUser(user).usingSite(publicSite).createFolder();
+        FolderModel childFolder = dataContent.usingUser(user).usingResource(parentFolder).createFolder();
+        RestRuleSettingsModel enabled = new RestRuleSettingsModel();
+        enabled.setValue(true);
+        coreAPIForUser().usingNode(parentFolder).usingRuleSetting(IS_INHERITANCE_ENABLED).updateSetting(enabled);
+
+        STEP("Link the parent folder to a private rule set.");
+        RestRuleSetLinkModel linkModel = new RestRuleSetLinkModel();
+        linkModel.setId(privateFolder.getNodeRef());
+        coreAPIForAdmin().usingNode(parentFolder).createRuleLink(linkModel);
+
+        STEP("Create a rule on the child folder.");
+        coreAPIForUser().usingNode(childFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithDefaultValues());
+
+        STEP("Check admin can view both rule sets.");
+        RestRuleSetModelsCollection adminViewOfRuleSets = coreAPIForAdmin().usingNode(childFolder).getListOfRuleSets();
+        restClient.assertStatusCodeIs(OK);
+        RestRuleSetModel parentRuleSet = adminViewOfRuleSets.getEntries().get(0).onModel();
+        RestRuleSetModel childRuleSet = adminViewOfRuleSets.getEntries().get(1).onModel();
+
+        STEP("Check the normal user can only view the child rule set.");
+        RestRuleSetModelsCollection userViewOfRuleSets = coreAPIForUser().usingNode(childFolder).getListOfRuleSets();
+        restClient.assertStatusCodeIs(OK);
+        userViewOfRuleSets.assertThat().entriesListContains("id", childRuleSet.getId())
+                          .and().entriesListDoesNotContain("id", parentRuleSet.getId());
     }
 
     /** Check we can get the id of the folder that owns a list of rule sets. */
@@ -501,6 +551,38 @@ public class GetRuleSetsTests extends RestTest
 
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("isLinkedTo").is(false);
+    }
+
+    /** Check that we can only view a rule set if have read permission. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void permissionsChecksForFolderWithPrivateAndPublicRuleSets()
+    {
+        STEP("Create a public site containing a parent and child folder with rule inheritance enabled.");
+        SiteModel publicSite = dataSite.usingUser(user).createPublicRandomSite();
+        FolderModel parentFolder = dataContent.usingUser(user).usingSite(publicSite).createFolder();
+        FolderModel childFolder = dataContent.usingUser(user).usingResource(parentFolder).createFolder();
+        RestRuleSettingsModel enabled = new RestRuleSettingsModel();
+        enabled.setValue(true);
+        coreAPIForUser().usingNode(parentFolder).usingRuleSetting(IS_INHERITANCE_ENABLED).updateSetting(enabled);
+
+        STEP("Link the parent folder to a private rule set.");
+        RestRuleSetLinkModel linkModel = new RestRuleSetLinkModel();
+        linkModel.setId(privateFolder.getNodeRef());
+        coreAPIForAdmin().usingNode(parentFolder).createRuleLink(linkModel);
+
+        STEP("Create a rule on the child folder.");
+        coreAPIForUser().usingNode(childFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithDefaultValues());
+
+        STEP("Use the admin user to get both rule sets.");
+        RestRuleSetModelsCollection adminViewOfRuleSets = coreAPIForAdmin().usingNode(childFolder).getListOfRuleSets();
+        RestRuleSetModel parentRuleSet = adminViewOfRuleSets.getEntries().get(0).onModel();
+        RestRuleSetModel childRuleSet = adminViewOfRuleSets.getEntries().get(1).onModel();
+
+        STEP("Check the normal user can only view the child rule set.");
+        coreAPIForUser().usingNode(childFolder).getRuleSet(parentRuleSet.getId());
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        coreAPIForUser().usingNode(childFolder).getRuleSet(childRuleSet.getId());
+        restClient.assertStatusCodeIs(OK);
     }
 
     private RestCoreAPI coreAPIForUser()

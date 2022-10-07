@@ -83,7 +83,7 @@ public class Actions extends ModelRequest<Actions>
     }
 
     /**
-     * Get specific action constraint using GET on '/action-constraints/{actionConstraintName}'
+     * Get specific action constraint using GET on '/action-parameter-constraints/{actionConstraintName}'
      */
     public RestActionConstraintModel getActionConstraintByName(String actionConstraintName)
     {

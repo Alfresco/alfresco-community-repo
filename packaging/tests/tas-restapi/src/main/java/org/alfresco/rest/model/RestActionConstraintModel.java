@@ -94,18 +94,6 @@ Sample object could be:
               "label": "Less Than Or Equal To"
            }
         ]
-```
-or
-```JSON
-"constraintValues": [
-                        {
-                            "value": "fa41fd6e-5640-410f-9f3e-93f268186f69",
-                            "label": "Start Pooled Review and Approve Workflow",
-                            "isNode": true
-                        }
-                    ]
-```
-
     */	        
 
     private List<RestActionConstraintDataModel> constraintValues;	    

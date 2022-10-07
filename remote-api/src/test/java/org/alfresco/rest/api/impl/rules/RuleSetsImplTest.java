@@ -42,6 +42,7 @@ import java.util.List;
 import junit.framework.TestCase;
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.rule.RuntimeRuleService;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -143,6 +144,34 @@ public class RuleSetsImplTest extends TestCase
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
 
         assertEquals(emptyList(), actual.getCollection());
+        assertEquals(PAGING, actual.getPaging());
+    }
+
+    @Test
+    public void testOnlyGetPermittedRuleSets()
+    {
+        // Simulate a private folder with a rule set that the current user can't access.
+        NodeRef privateFolder = new NodeRef("private://folder/");
+        NodeRef privateRuleSetNode = new NodeRef("private://rule/set/node/");
+        given(ruleServiceMock.getRuleSetNode(privateFolder)).willReturn(privateRuleSetNode);
+        given(ruleServiceMock.getNodesSupplyingRuleSets(FOLDER_NODE)).willReturn(List.of(FOLDER_NODE, privateFolder));
+        given(ruleSetLoaderMock.loadRuleSet(eq(privateRuleSetNode), any(NodeRef.class), any(List.class)))
+                .willThrow(new AccessDeniedException("Cannot access private rule set."));
+
+        // Call the method under test.
+        CollectionWithPagingInfo<RuleSet> actual = ruleSets.getRuleSets(FOLDER_ID, INCLUDES, PAGING);
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_ID, false);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+
+        then(ruleServiceMock).should().getNodesSupplyingRuleSets(FOLDER_NODE);
+        then(ruleServiceMock).should().getRuleSetNode(FOLDER_NODE);
+        then(ruleServiceMock).should().getRuleSetNode(privateFolder);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+
+        // Check we only get the accessible rule set back.
+        Collection<RuleSet> expected = List.of(ruleSetMock);
+        assertEquals(expected, actual.getCollection());
         assertEquals(PAGING, actual.getPaging());
     }
 

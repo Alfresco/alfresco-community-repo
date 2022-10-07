@@ -26,6 +26,8 @@
 
 package org.alfresco.rest.api.impl.mapper.rules;
 
+import static java.util.Collections.emptyMap;
+
 import static org.alfresco.repo.action.access.ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME;
 import static org.alfresco.repo.action.executer.SetPropertyValueActionExecuter.PARAM_PROPERTY;
 import static org.alfresco.repo.action.executer.SetPropertyValueActionExecuter.PARAM_VALUE;
@@ -89,7 +91,7 @@ public class RestRuleActionModelMapperTest
     public void testToRestModelWithNullValues()
     {
         final org.alfresco.service.cmr.action.Action actionServiceModel = new ActionImpl(null, null, null);
-        final Action expectedAction = Action.builder().params(Collections.emptyMap()).create();
+        final Action expectedAction = Action.builder().params(emptyMap()).create();
 
         //when
         final Action actualAction = objectUnderTest.toRestModel(actionServiceModel);
@@ -122,4 +124,16 @@ public class RestRuleActionModelMapperTest
         assertThat(serviceModelAction).isNull();
     }
 
+    @Test
+    public void testToServiceModelWithNullParams()
+    {
+        final Action action = Action.builder().actionDefinitionId(ACTION_DEFINITION_NAME).params(null).create();
+        final List<Action> actions = List.of(action);
+
+        //when
+        final org.alfresco.service.cmr.action.Action serviceModelAction = objectUnderTest.toServiceModel(actions);
+        then(parameterConverter).should().getConvertedParams(emptyMap(), ACTION_DEFINITION_NAME);
+        then(parameterConverter).shouldHaveNoMoreInteractions();
+        assertThat(serviceModelAction).isNotNull();
+    }
 }

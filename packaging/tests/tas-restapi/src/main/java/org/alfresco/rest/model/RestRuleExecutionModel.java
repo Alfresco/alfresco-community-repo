@@ -49,17 +49,11 @@ public class RestRuleExecutionModel extends TestModel implements IRestModel<Rest
     }
 
     /**
-    Whether the rules were executed also against sub-folders
+     Whether to execute rules also against sub-folders
     */	        
 
     @JsonProperty(required = true)    
-    private boolean isEachSubFolderIncluded;	    
-    /**
-    Whether the inherited rules were also executed
-    */	        
-
-    @JsonProperty(required = true)    
-    private boolean isEachInheritedRuleExecuted;	    
+    private boolean isEachSubFolderIncluded;
 
     public boolean getIsEachSubFolderIncluded()
     {
@@ -69,22 +63,12 @@ public class RestRuleExecutionModel extends TestModel implements IRestModel<Rest
     public void setIsEachSubFolderIncluded(boolean isEachSubFolderIncluded)
     {
         this.isEachSubFolderIncluded = isEachSubFolderIncluded;
-    }				
-
-    public boolean getIsEachInheritedRuleExecuted()
-    {
-        return this.isEachInheritedRuleExecuted;
-    }
-
-    public void setIsEachInheritedRuleExecuted(boolean isEachInheritedRuleExecuted)
-    {
-        this.isEachInheritedRuleExecuted = isEachInheritedRuleExecuted;
     }
 
     @Override
     public String toString()
     {
-        return "RestRuleExecutionModel{" + "isEachSubFolderIncluded=" + isEachSubFolderIncluded + ", isEachInheritedRuleExecuted=" + isEachInheritedRuleExecuted + '}';
+        return "RestRuleExecutionModel{" + "isEachSubFolderIncluded=" + isEachSubFolderIncluded + '}';
     }
 
     @Override
@@ -95,13 +79,13 @@ public class RestRuleExecutionModel extends TestModel implements IRestModel<Rest
         if (o == null || getClass() != o.getClass())
             return false;
         RestRuleExecutionModel that = (RestRuleExecutionModel) o;
-        return isEachSubFolderIncluded == that.isEachSubFolderIncluded && isEachInheritedRuleExecuted == that.isEachInheritedRuleExecuted;
+        return isEachSubFolderIncluded == that.isEachSubFolderIncluded;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(isEachSubFolderIncluded, isEachInheritedRuleExecuted);
+        return Objects.hash(isEachSubFolderIncluded);
     }
 }
  

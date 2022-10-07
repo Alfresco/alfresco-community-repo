@@ -48,6 +48,8 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 public class ActionParameterDefinitionValidator implements ActionValidator
 {
     private static final boolean IS_ENABLED = true;
+    static final String INVALID_PARAMETER_VALUE =
+            "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
 
     private final Actions actions;
 
@@ -69,6 +71,8 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     }
 
     /**
+     * This list is meant to pick up all action definition names so that the validation will be executed against all possible actions.
+     *
      * @return List of all action definition names derived from sub classes of ActionExecuterAbstractBase
      */
     @Override
@@ -114,9 +118,8 @@ public class ActionParameterDefinitionValidator implements ActionValidator
             if (actionConstraint.getConstraintValues().stream()
                     .noneMatch(constraintData -> constraintData.getValue().equals(parameterValue.toString())))
             {
-                throw new IllegalArgumentException(
-                        "Action parameter: " + parameterDefinition.getName() + " has invalid value. Look up constrained values for " +
-                                actionConstraint.getConstraintName());
+                throw new IllegalArgumentException(String.format(INVALID_PARAMETER_VALUE, parameterDefinition.getName(), parameterValue,
+                        actionConstraint.getConstraintName()));
             }
         }
     }

@@ -50,6 +50,8 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     private static final boolean IS_ENABLED = true;
     static final String INVALID_PARAMETER_VALUE =
             "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
+    static final String MISSING_PARAMETER = "Missing action mandatory parameter: %s";
+    static final String MUST_NOT_CONTAIN_PARAMETER_ = "Action of definition id: %s must not contain parameter of name: %s";
 
     private final Actions actions;
 
@@ -68,6 +70,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     {
         final ActionDefinition actionDefinition = actions.getActionDefinitionById(action.getActionDefinitionId());
         actionDefinition.getParameterDefinitions().forEach(p -> validateParameters(p, action));
+        action.getParams().forEach((key, value) -> shouldExist(key, actionDefinition));
     }
 
     /**
@@ -109,7 +112,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         final Serializable parameterValue = action.getParams().get(parameterDefinition.getName());
         if (parameterDefinition.isMandatory() && parameterValue == null)
         {
-            throw new IllegalArgumentException("Missing action mandatory parameter: " + parameterDefinition.getName());
+            throw new IllegalArgumentException(String.format(MISSING_PARAMETER, parameterDefinition.getName()));
         }
         if (parameterDefinition.getParameterConstraintName() != null)
         {
@@ -121,6 +124,15 @@ public class ActionParameterDefinitionValidator implements ActionValidator
                 throw new IllegalArgumentException(String.format(INVALID_PARAMETER_VALUE, parameterDefinition.getName(), parameterValue,
                         actionConstraint.getConstraintName()));
             }
+        }
+    }
+
+    private void shouldExist(String parameterName, ActionDefinition actionDefinition)
+    {
+        if (actionDefinition.getParameterDefinitions().stream().noneMatch(pd -> parameterName.equals(pd.getName()))) {
+            throw new IllegalArgumentException(
+                    String.format(MUST_NOT_CONTAIN_PARAMETER_, actionDefinition.getName(),
+                            parameterName));
         }
     }
 

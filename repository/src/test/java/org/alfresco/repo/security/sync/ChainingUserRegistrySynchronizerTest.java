@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -1548,6 +1548,14 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         public ApplicationContext getApplicationContext(String id)
         {
             return this.contexts.get(id);
+        }
+
+        /*
+         * (non-Javadoc)
+         * @see org.alfresco.repo.management.ChildApplicationContextManager#getDefaultChain()
+         */
+        public String getDefaultChain() {
+            return null;
         }
 
         /*

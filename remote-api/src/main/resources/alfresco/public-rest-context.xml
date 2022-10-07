@@ -585,7 +585,7 @@
     <bean class="org.alfresco.rest.api.actions.ActionExecutionsEntityResource">
         <property name="actions" ref="Actions"/>
     </bean>
-    <bean class="org.alfresco.rest.api.actions.ActionConstraintsEntityResource">
+    <bean class="org.alfresco.rest.api.actions.ActionParameterConstraintsEntityResource">
         <constructor-arg name="actions" ref="Actions"/>
     </bean>
     

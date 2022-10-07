@@ -40,7 +40,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ActionConstraintsEntityResourceTest
+public class ActionParameterConstraintsEntityResourceTest
 {
     @Mock
     private Actions actionsMock;
@@ -48,7 +48,7 @@ public class ActionConstraintsEntityResourceTest
     private Parameters parametersMock;
 
     @InjectMocks
-    private ActionConstraintsEntityResource objectUnderTest;
+    private ActionParameterConstraintsEntityResource objectUnderTest;
 
     @Test
     public void testReadById() {

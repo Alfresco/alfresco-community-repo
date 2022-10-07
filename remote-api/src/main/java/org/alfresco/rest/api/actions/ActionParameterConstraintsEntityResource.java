@@ -36,19 +36,19 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 
-@EntityResource(name="action-constraints", title = "Action parameter constraints")
+@EntityResource(name="action-parameter-constraints", title = "Action parameter constraints")
 @Experimental
-public class ActionConstraintsEntityResource implements EntityResourceAction.ReadById<ActionParameterConstraint>
+public class ActionParameterConstraintsEntityResource implements EntityResourceAction.ReadById<ActionParameterConstraint>
 {
     private final Actions actions;
 
-    public ActionConstraintsEntityResource(Actions actions)
+    public ActionParameterConstraintsEntityResource(Actions actions)
     {
         this.actions = actions;
     }
 
-    @WebApiDescription(title = "Get single action parameters constraint",
-            description = "Retrieves a single action parameters constraint by constraint name",
+    @WebApiDescription(title = "Get single action parameter constraint",
+            description = "Retrieves a single action parameter constraint by constraint name",
             successStatus = HttpServletResponse.SC_OK)
     @Experimental
     @Override

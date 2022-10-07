@@ -133,12 +133,12 @@ public class RulesImpl implements Rules
     }
 
     @Override
-    public RuleExecution executeRules(final String folderNodeId, final boolean eachSubFolderIncluded, final boolean eachInheritedRuleExecuted)
+    public RuleExecution executeRules(final String folderNodeId, final boolean eachSubFolderIncluded)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
         final Map<String, Serializable> parameterValues = new HashMap<>();
         parameterValues.put(ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, eachSubFolderIncluded);
-        parameterValues.put(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, eachInheritedRuleExecuted);
+        parameterValues.put(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, true);
         final ActionImpl action = new ActionImpl(null, GUID.generate(), ExecuteAllRulesActionExecuter.NAME);
         action.setNodeRef(folderNodeRef);
         action.setParameterValues(parameterValues);
@@ -148,7 +148,6 @@ public class RulesImpl implements Rules
 
         return RuleExecution.builder()
             .eachSubFolderIncluded(eachSubFolderIncluded)
-            .eachInheritedRuleExecuted(eachInheritedRuleExecuted)
             .create();
     }
 

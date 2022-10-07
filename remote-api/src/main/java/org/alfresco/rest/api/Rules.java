@@ -104,7 +104,6 @@ public interface Rules
      *
      * @param folderNodeId - the ID of a folder
      * @param eachSubFolderIncluded - indicates if rules should be executed also on sub-folders
-     * @param eachInheritedRuleExecuted - indicates if the inherited rules should be also executed
      */
-    RuleExecution executeRules(final String folderNodeId, final boolean eachSubFolderIncluded, final boolean eachInheritedRuleExecuted);
+    RuleExecution executeRules(final String folderNodeId, final boolean eachSubFolderIncluded);
 }

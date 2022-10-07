@@ -634,12 +634,9 @@ public class RulesImplTest extends TestCase
     public void testExecuteRule()
     {
         // when
-        final RuleExecution actualRuleExecution = rules.executeRules(FOLDER_NODE_ID, INCLUDE_SUB_FOLDERS, EXECUTE_INHERITED_RULES);
+        final RuleExecution actualRuleExecution = rules.executeRules(FOLDER_NODE_ID, INCLUDE_SUB_FOLDERS);
 
-        final RuleExecution expectedRuleExecution = RuleExecution.builder()
-            .eachSubFolderIncluded(INCLUDE_SUB_FOLDERS)
-            .eachInheritedRuleExecuted(EXECUTE_INHERITED_RULES)
-            .create();
+        final RuleExecution expectedRuleExecution = RuleExecution.builder().eachSubFolderIncluded(INCLUDE_SUB_FOLDERS).create();
         final ActionImpl expectedAction = new ActionImpl(null, null, ExecuteAllRulesActionExecuter.NAME);
         expectedAction.setNodeRef(FOLDER_NODE_REF);
         expectedAction.setParameterValues(Map.of(

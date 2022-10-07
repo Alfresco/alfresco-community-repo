@@ -65,6 +65,6 @@ public class NodeRuleExecutionsRelation implements RelationshipResourceAction.Cr
     public List<RuleExecution> create(String folderNodeId, List<RuleExecution> ruleExecutionParameters, Parameters parameters)
     {
         final RuleExecution ruleExecution = ruleExecutionParameters.stream().findFirst().orElse(new RuleExecution());
-        return List.of(rules.executeRules(folderNodeId, ruleExecution.getIsEachSubFolderIncluded(), ruleExecution.getIsEachInheritedRuleExecuted()));
+        return List.of(rules.executeRules(folderNodeId, ruleExecution.getIsEachSubFolderIncluded()));
     }
 }

@@ -103,7 +103,7 @@ public class ExecuteRulesTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS, TestGroup.SANITY })
     public void executeRules_onlyOwnedRules()
     {
-        STEP("Check if file aspects don't contain Audio and Lockable ones");
+        STEP("Check if file aspects don't contain Audio one");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
         assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
@@ -185,9 +185,10 @@ public class ExecuteRulesTests extends RestTest
     @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
     public void executeRules_disabledRule()
     {
-        STEP("Disable folder rules");
-        childFolderRule.setIsEnabled(false);
-        restClient.authenticateUser(user).withCoreAPI().usingNode(childFolder).usingDefaultRuleSet().updateRule(childFolderRule.getId(), childFolderRule);
+        STEP("Disable child rules");
+        RestRuleModel updatedChildRule = createRuleModelWithDefaultValues();
+        updatedChildRule.setIsEnabled(false);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(childFolder).usingDefaultRuleSet().updateRule(childFolderRule.getId(), updatedChildRule);
 
         STEP("Check if file aspects don't contain Audio one");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
@@ -212,8 +213,9 @@ public class ExecuteRulesTests extends RestTest
     public void executeRules_notInheritableRule()
     {
         STEP("Set parent rule as not inheritable");
-        parentFolderRule.setIsInheritable(false);
-        restClient.authenticateUser(user).withCoreAPI().usingNode(parentFolder).usingDefaultRuleSet().updateRule(parentFolderRule.getId(), parentFolderRule);
+        RestRuleModel updatedParentRule = createRuleModelWithDefaultValues();
+        updatedParentRule.setIsInheritable(false);
+        restClient.authenticateUser(user).withCoreAPI().usingNode(parentFolder).usingDefaultRuleSet().updateRule(parentFolderRule.getId(), updatedParentRule);
 
         STEP("Check if file aspects don't contain Audio and Lockable ones");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();

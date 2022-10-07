@@ -113,7 +113,7 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     }
     private void validateAction(Action action) {
         actionValidators.stream()
-                .filter(v -> v.getActionDefinitionIds().contains(action.getActionDefinitionId()))
+                .filter(ActionValidator::isEnabled)
                 .forEach(v -> v.validate(action));
     }
 }

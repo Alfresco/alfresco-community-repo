@@ -27,20 +27,15 @@
 package org.alfresco.rest.api.impl.validator.actions;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.actions.ActionValidator;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
 import org.alfresco.rest.api.model.rules.Action;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.MapUtils;
 
 /**
  * This class will validate all action types against action parameters definitions (mandatory parameters, parameter constraints)
@@ -52,6 +47,8 @@ public class ActionParameterDefinitionValidator implements ActionValidator
             "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
     static final String MISSING_PARAMETER = "Missing action mandatory parameter: %s";
     static final String MUST_NOT_CONTAIN_PARAMETER_ = "Action of definition id: %s must not contain parameter of name: %s";
+    static final String PARAMS_SHOULD_NOT_BE_EMPTY =
+            "Action parameters should not be null or empty for this action. See Action Definition for action of: %s";
 
     private final Actions actions;
 
@@ -69,36 +66,9 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     public void validate(Action action)
     {
         final ActionDefinition actionDefinition = actions.getActionDefinitionById(action.getActionDefinitionId());
-        actionDefinition.getParameterDefinitions().forEach(p -> validateParameters(p, action));
+        compareParametersSize(action.getParams(), actionDefinition);
         action.getParams().forEach((key, value) -> shouldExist(key, actionDefinition));
-    }
-
-    /**
-     * This list is meant to pick up all action definition names so that the validation will be executed against all possible actions.
-     *
-     * @return List of all action definition names derived from sub classes of ActionExecuterAbstractBase
-     */
-    @Override
-    public List<String> getActionDefinitionIds()
-    {
-        final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-        provider.addIncludeFilter(new AssignableTypeFilter(ActionExecuterAbstractBase.class));
-
-        final Set<BeanDefinition> components = provider.findCandidateComponents("org/alfresco/repo/action/executer");
-        final List<String> actionDefinitionsIds = new ArrayList<>();
-        for (BeanDefinition component : components)
-        {
-            try
-            {
-                final Class<?> clazz = Class.forName(component.getBeanClassName());
-                final Field field = clazz.getDeclaredField("NAME");
-                actionDefinitionsIds.add((String) field.get(String.class));
-            } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e)
-            {
-                //don't add to the list
-            }
-        }
-        return actionDefinitionsIds;
+        actionDefinition.getParameterDefinitions().forEach(p -> validateParameters(p, action));
     }
 
     @Override
@@ -107,7 +77,15 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         return IS_ENABLED;
     }
 
-    private void validateParameters(ActionDefinition.ParameterDefinition parameterDefinition, Action action)
+    private void compareParametersSize(final Map<String, Serializable> params, final ActionDefinition actionDefinition)
+    {
+        if (CollectionUtils.isNotEmpty(actionDefinition.getParameterDefinitions()) && MapUtils.isEmpty(params))
+        {
+            throw new IllegalArgumentException(String.format(PARAMS_SHOULD_NOT_BE_EMPTY, actionDefinition.getName()));
+        }
+    }
+
+    private void validateParameters(final ActionDefinition.ParameterDefinition parameterDefinition, final Action action)
     {
         final Serializable parameterValue = action.getParams().get(parameterDefinition.getName());
         if (parameterDefinition.isMandatory() && parameterValue == null)
@@ -127,9 +105,10 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         }
     }
 
-    private void shouldExist(String parameterName, ActionDefinition actionDefinition)
+    private void shouldExist(final String parameterName, final ActionDefinition actionDefinition)
     {
-        if (actionDefinition.getParameterDefinitions().stream().noneMatch(pd -> parameterName.equals(pd.getName()))) {
+        if (actionDefinition.getParameterDefinitions().stream().noneMatch(pd -> parameterName.equals(pd.getName())))
+        {
             throw new IllegalArgumentException(
                     String.format(MUST_NOT_CONTAIN_PARAMETER_, actionDefinition.getName(),
                             parameterName));

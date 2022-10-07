@@ -26,13 +26,11 @@
 
 package org.alfresco.rest.api.actions;
 
-import java.util.List;
-
 import org.alfresco.rest.api.model.rules.Action;
 
 public interface ActionValidator
 {
     void validate(Action action);
-    List<String> getActionDefinitionIds();
+
     boolean isEnabled();
 }

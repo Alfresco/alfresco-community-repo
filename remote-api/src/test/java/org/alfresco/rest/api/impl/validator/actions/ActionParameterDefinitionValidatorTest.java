@@ -26,11 +26,6 @@
 
 package org.alfresco.rest.api.impl.validator.actions;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.MockitoJUnitRunner;
@@ -41,15 +36,4 @@ public class ActionParameterDefinitionValidatorTest
     @InjectMocks
     private ActionParameterDefinitionValidator objectUnderTest;
 
-    @Test
-    public void testGetActionDefinitions()
-    {
-        final List<String> expectedList =
-                List.of("add-features", "check-in", "check-out", "composite-action", "copy", "count-children", "counter", "create-version",
-                        "execute-all-rules", "export", "transform-image", "import", "link-category", "mail", "move", "remove-features",
-                        "repository-export", "script", "set-property-value", "simple-workflow", "specialise-type", "take-ownership",
-                        "transform");
-        final List<String> actionDefinitionIds = objectUnderTest.getActionDefinitionIds();
-        assertEquals(expectedList, actionDefinitionIds);
-    }
 }

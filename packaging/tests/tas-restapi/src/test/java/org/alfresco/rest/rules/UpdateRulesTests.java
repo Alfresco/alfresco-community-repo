@@ -255,8 +255,8 @@ public class UpdateRulesTests extends RestTest
                 .include(IS_SHARED)
                 .updateRule(rule.getId(), rule);
 
-        restClient.assertStatusCodeIs(NOT_FOUND);
-        restClient.assertLastError().containsSummary(actionDefinitionId);
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary(String.format("Invalid action definition requested %s", actionDefinitionId));
     }
 
     /** Check we can use the POST response to create the new rule. */
@@ -472,9 +472,9 @@ public class UpdateRulesTests extends RestTest
         final Map<String, Serializable> copyParams =
                 Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
         final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
-        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
-        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
-        rule.setActions(Arrays.asList(copyAction, scriptAction));
+        final Map<String, Serializable> addAspectParams = Map.of("aspect-name", "cm:taggable");
+        final RestActionBodyExecTemplateModel addAspectAction = createCustomActionModel("add-features", addAspectParams);
+        rule.setActions(Arrays.asList(copyAction, addAspectAction));
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .updateRule(rule.getId(), rule);
@@ -519,14 +519,18 @@ public class UpdateRulesTests extends RestTest
         STEP("Try to update the rule by adding action with invalid parameter (non-existing namespace in value)");
         final RestActionBodyExecTemplateModel action = new RestActionBodyExecTemplateModel();
         action.setActionDefinitionId("add-features");
-        action.setParams(Map.of("aspect-name", "dummy:dummy"));
+        final String aspectNameParam = "aspect-name";
+        final String paramValue = "dummy:dummy";
+        action.setParams(Map.of(aspectNameParam, paramValue));
         rule.setActions(List.of(action));
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .updateRule(rule.getId(), rule);
 
-        restClient.assertStatusCodeIs(INTERNAL_SERVER_ERROR);
-        restClient.assertLastError().containsSummary("Namespace prefix dummy is not mapped to a namespace URI");
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary(
+                String.format("Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s",
+                        aspectNameParam, paramValue, "ac-aspects"));
     }
 
     /** Check that a normal user cannot create rules that use private actions. */

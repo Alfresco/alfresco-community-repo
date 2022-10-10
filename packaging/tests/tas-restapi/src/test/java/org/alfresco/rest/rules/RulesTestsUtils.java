@@ -171,12 +171,10 @@ public class RulesTestsUtils
                 Map.of("destination-folder", "fake-folder-node", "assoc-name", "cm:checkout", "assoc-type",
                         "cm:contains");
         final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
-        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
-        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel("script", scriptParams);
         // The counter action takes no parameters, so check we can omit the "params" entry.
         final RestActionBodyExecTemplateModel counterAction = createCustomActionModel("counter", null);
         final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
-        ruleModel.setActions(Arrays.asList(copyAction, checkOutAction, scriptAction, counterAction));
+        ruleModel.setActions(Arrays.asList(copyAction, checkOutAction, counterAction));
 
         return ruleModel;
     }

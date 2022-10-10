@@ -34,21 +34,26 @@ import org.alfresco.rest.api.actions.ActionValidator;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
 import org.alfresco.rest.api.model.rules.Action;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
+import org.alfresco.service.Experimental;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 
 /**
  * This class will validate all action types against action parameters definitions (mandatory parameters, parameter constraints)
  */
+@Experimental
 public class ActionParameterDefinitionValidator implements ActionValidator
 {
     private static final boolean IS_ENABLED = true;
     static final String INVALID_PARAMETER_VALUE =
             "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
-    static final String MISSING_PARAMETER = "Missing action mandatory parameter: %s";
-    static final String MUST_NOT_CONTAIN_PARAMETER_ = "Action of definition id: %s must not contain parameter of name: %s";
+    static final String MISSING_PARAMETER = "Missing action's mandatory parameter: %s";
+    static final String MUST_NOT_CONTAIN_PARAMETER = "Action of definition id: %s must not contain parameter of name: %s";
     static final String PARAMS_SHOULD_NOT_BE_EMPTY =
             "Action parameters should not be null or empty for this action. See Action Definition for action of: %s";
+    static final String INVALID_ACTION_DEFINITION = "Invalid action definition requested %s";
 
     private final Actions actions;
 
@@ -58,17 +63,27 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     }
 
     /**
-     * Validates action against its paramaters definitions (mandatory parameters, parameter constraints)
+     * Validates action against its parameters definitions (mandatory parameters, parameter constraints)
      *
      * @param action Action to be validated
      */
     @Override
     public void validate(Action action)
     {
-        final ActionDefinition actionDefinition = actions.getActionDefinitionById(action.getActionDefinitionId());
+        ActionDefinition actionDefinition;
+        try
+        {
+            actionDefinition = actions.getActionDefinitionById(action.getActionDefinitionId());
+        } catch (NotFoundException e) {
+            throw new InvalidArgumentException(String.format(INVALID_ACTION_DEFINITION, action.getActionDefinitionId()));
+        }
         compareParametersSize(action.getParams(), actionDefinition);
-        action.getParams().forEach((key, value) -> shouldExist(key, actionDefinition));
-        actionDefinition.getParameterDefinitions().forEach(p -> validateParameters(p, action));
+        final Map<String, Serializable> params = action.getParams();
+        if (MapUtils.isNotEmpty(params))
+        {
+            params.forEach((key, value) -> checkParameterShouldExist(key, actionDefinition));
+            actionDefinition.getParameterDefinitions().forEach(p -> validateParameterDefinitions(p, params));
+        }
     }
 
     @Override
@@ -85,9 +100,10 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         }
     }
 
-    private void validateParameters(final ActionDefinition.ParameterDefinition parameterDefinition, final Action action)
+    private void validateParameterDefinitions(final ActionDefinition.ParameterDefinition parameterDefinition,
+                                              final Map<String, Serializable> params)
     {
-        final Serializable parameterValue = action.getParams().get(parameterDefinition.getName());
+        final Serializable parameterValue = params.get(parameterDefinition.getName());
         if (parameterDefinition.isMandatory() && parameterValue == null)
         {
             throw new IllegalArgumentException(String.format(MISSING_PARAMETER, parameterDefinition.getName()));
@@ -96,7 +112,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         {
             final ActionParameterConstraint actionConstraint =
                     actions.getActionConstraint(parameterDefinition.getParameterConstraintName());
-            if (actionConstraint.getConstraintValues().stream()
+            if (parameterValue != null && actionConstraint.getConstraintValues().stream()
                     .noneMatch(constraintData -> constraintData.getValue().equals(parameterValue.toString())))
             {
                 throw new IllegalArgumentException(String.format(INVALID_PARAMETER_VALUE, parameterDefinition.getName(), parameterValue,
@@ -105,13 +121,11 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         }
     }
 
-    private void shouldExist(final String parameterName, final ActionDefinition actionDefinition)
+    private void checkParameterShouldExist(final String parameterName, final ActionDefinition actionDefinition)
     {
         if (actionDefinition.getParameterDefinitions().stream().noneMatch(pd -> parameterName.equals(pd.getName())))
         {
-            throw new IllegalArgumentException(
-                    String.format(MUST_NOT_CONTAIN_PARAMETER_, actionDefinition.getName(),
-                            parameterName));
+            throw new IllegalArgumentException(String.format(MUST_NOT_CONTAIN_PARAMETER, actionDefinition.getName(), parameterName));
         }
     }
 

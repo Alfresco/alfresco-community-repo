@@ -54,6 +54,7 @@ import org.alfresco.utility.model.UserModel;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -304,6 +305,7 @@ public class ExecuteRulesTests extends RestTest
     /**
      * Try to execute rule with broken action and receive 500.
      */
+    @Ignore("It shouldn't be possible to create a rule with broken action any more.")
     @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
     public void executeRules_brokenActionResultsWith500()
     {

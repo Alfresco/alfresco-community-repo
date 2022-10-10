@@ -43,11 +43,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.rest.api.actions.ActionValidator;
 import org.alfresco.rest.api.impl.rules.ActionParameterConverter;
 import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -65,9 +68,16 @@ public class RestRuleActionModelMapperTest
 
     @Mock
     private ActionParameterConverter parameterConverter;
+    @Mock
+    private ActionValidator sampleValidatorMock;
 
-    @InjectMocks
     private RestRuleActionModelMapper objectUnderTest;
+
+    @Before
+    public void setUp() {
+        objectUnderTest = new RestRuleActionModelMapper(parameterConverter, List.of(sampleValidatorMock));
+        given(sampleValidatorMock.isEnabled()).willReturn(true);
+    }
 
     @Test
     public void testToRestModel()

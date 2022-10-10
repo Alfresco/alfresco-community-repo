@@ -26,7 +26,6 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
-
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
@@ -34,6 +33,7 @@ import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.createAddAudioAspectAction;
 import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
+import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
@@ -441,8 +441,74 @@ public class CreateRulesTests extends RestTest
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
-        restClient.assertStatusCodeIs(NOT_FOUND);
-        restClient.assertLastError().containsSummary(actionDefinitionId);
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary(String.format("Invalid action definition requested %s", actionDefinitionId));
+    }
+
+    /**
+     * Check we get error when attempt to create a rule with missing action parameters.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithMissingActionParametersShouldFail()
+    {
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        final String actionDefinitionId = "copy";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary(
+                String.format("Action parameters should not be null or empty for this action. See Action Definition for action of: %s",
+                        actionDefinitionId));
+    }
+
+    /**
+     * Check we get error when attempt to create a rule with parameter not fulfilling constraint.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithActionParameterNotFulfillingConstraint()
+    {
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final String actionDefinitionId = "script";
+        final String scriptRef = "script-ref";
+        final String scriptNodeId = "dummy-script-node-id";
+        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel(actionDefinitionId, Map.of(scriptRef, scriptNodeId));
+        ruleModel.setActions(List.of(scriptAction));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        final String acScriptsConstraint = "ac-scripts";
+        restClient.assertLastError().containsSummary(
+                String.format("Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s",
+                        scriptRef, scriptNodeId, acScriptsConstraint));
+    }
+
+    /**
+     * Check we get error when attempt to create a rule without mandatory action parameters.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithoutMandatoryActionParameterShouldFail()
+    {
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        final String actionDefinitionId = "add-features";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        final String invalidParameterKey = "invalidParameterKey";
+        invalidAction.setParams(Map.of(invalidParameterKey,"dummyValue"));
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary(
+                String.format("Action of definition id: %s must not contain parameter of name: %s", actionDefinitionId, invalidParameterKey));
     }
 
     /**

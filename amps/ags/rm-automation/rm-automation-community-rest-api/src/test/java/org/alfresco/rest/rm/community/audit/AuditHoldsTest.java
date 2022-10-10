@@ -32,10 +32,13 @@ import static org.alfresco.rest.rm.community.model.audit.AuditEvents.REMOVE_FROM
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.core.IsNot.not;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.testng.AssertJUnit.*;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.alfresco.dataprep.CMISUtil;
@@ -54,41 +57,28 @@ import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 public class AuditHoldsTest extends BaseRMRestTest {
     private final String PREFIX = generateTestPrefix(AuditAddToHoldTests.class);
     private final String HOLD1 = PREFIX + "hold1";
-    private final String HOLD2 = PREFIX + "hold2";
-
-
     private SiteModel publicSite;
     private FileModel testFile;
-
-
-
     @Autowired
     private RMAuditService rmAuditService;
-
     @Autowired
     private HoldsAPI holdsAPI;
     @Autowired
     private RoleService roleService;
-
-
-
-    private UserModel rmAdmin, rmManagerNoReadOnHold, rmManagerNoReadOnNode;
-    private SiteModel privateSite;
+    private UserModel rmAdmin;
     private RecordCategory recordCategory;
     private RecordCategoryChild recordFolder1,recordFolder2;
-
     private List<AuditEntry> auditEntries;
-    private final List<String> holdsList = asList(HOLD1, HOLD2);
-    private List<String> holdsListRef = new ArrayList<>();
     private String hold1NodeRef;
-    private FileModel documentHeld, contentToAddToHold, contentAddToHoldNoPermission;
     public static final String RECORD_FOLDER_THREE = "record-folder-three";
+    private static final String SITES_PATH = "/Sites";
     @BeforeClass(alwaysRun = true)
     public void preconditionForAuditAddToHoldTests()
     {
@@ -111,25 +101,22 @@ public class AuditHoldsTest extends BaseRMRestTest {
         Record recordToBeAdded = createElectronicRecord(recordFolder1.getId(), PREFIX + "record");
         assertStatusCode(CREATED);
 
-        //This is required to assert line 137
-        rmAuditService.clearAuditLog();
+//        //This is required to assert line 137
+//        rmAuditService.clearAuditLog();
 
         STEP("Add some items to the hold, then remove them from the hold");
-        final List<String> holdsList = Collections.singletonList(HOLD1);
         final List<String> itemsList = asList(testFile.getNodeRefWithoutVersion(), recordToBeAdded.getId(), recordFolder2.getId());
+        final List<String> holdsList = Collections.singletonList(HOLD1);
         holdsAPI.addItemToHold(rmAdmin.getUsername(), rmAdmin.getPassword(), recordToBeAdded.getId(), HOLD1);
         holdsAPI.removeItemsFromHolds(rmAdmin.getUsername(), rmAdmin.getPassword(), itemsList, holdsList);
 
         STEP("Delete the record folder that was held");
         getRestAPIFactory().getRecordFolderAPI().deleteRecordFolder(recordFolder2.getId());
 
-
         STEP("Rename the parent of the record that was held");
         RecordFolder recordFolder = RecordFolder.builder().name(RECORD_FOLDER_THREE).build();
         getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(recordFolder, recordFolder1.getId());
-
     }
-
     /**
      * Data provider with hold events that have links to held items
      *
@@ -144,24 +131,23 @@ public class AuditHoldsTest extends BaseRMRestTest {
                 { REMOVE_FROM_HOLD }
             };
     }
-
-
     @Test (dataProvider = "holdsEvents")
-
-    public void checkItemPathLink(AuditEvents event)
-    {
+    public void checkItemPathLink(AuditEvents event) {
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), event);
         assertFalse("Audit results should not be empty",auditEntries.size()==0);
-        final String auditedEvent = event.toString() + " - " + testFile.getName();
-  //      assertTrue("Audit results should contain one " + auditedEvent + " event",auditEntries.stream().anyMatch(e -> e.getEvent().startsWith(event.name())));
-//        String expectedLocation = testFile.getCmisLocation().replace(SITES_PATH, "");
-//        String expectedUrl = getShareURL() + documentDetails.getPageURL(publicSite.getId(),
-//                     NODE_REF_WORKSPACE_SPACES_STORE + testFile.getNodeRef());
-//        expectedUrl = expectedUrl.replace(encodedWorkspaceSpacesStore, NODE_REF_WORKSPACE_SPACES_STORE);
-//        assertEquals(currentUrl, expectedUrl, "Location link didn't redirect to the document details page");
-//        assertFalse(isElementNotFoundErrorMessageDisplayed(), "The path link should not be broken.");
+        final String auditedEvent = event + " - " + testFile.getName();
+        assertTrue("Audit results should contain one " + auditedEvent + " event",auditEntries.stream().anyMatch(e -> e.getEvent().startsWith(event.eventDisplayName)));
+        String expectedLocation = testFile.getCmisLocation().replace(SITES_PATH, "");
+        System.out.println(auditEntries.size());
         STEP("Check the audit log contains only an entry for add to hold.");
-        assertEquals("The list of events should contain only an entry", 1, auditEntries.size());
-
+        assertThat(auditEntries, is(not(empty())));
+    }
+    @AfterClass(alwaysRun = true)
+    private void cleanup() {
+        dataSite.usingAdmin().deleteSite(publicSite);
+        deleteRecordFolder(recordFolder1.getId());
+        deleteRecordFolder(recordFolder2.getId());
+        deleteRecordCategory(recordCategory.getId());
+        rmAuditService.clearAuditLog();
     }
 }

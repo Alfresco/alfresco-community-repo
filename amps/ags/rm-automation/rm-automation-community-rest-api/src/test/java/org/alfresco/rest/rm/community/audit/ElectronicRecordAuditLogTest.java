@@ -135,7 +135,6 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
 
         // we expect 1 new event: "metadata update"
         List<AuditEntry> auditEntries= auditLog.getRMAuditLogAll(getAdminUser().getUsername(),getAdminUser().getPassword(),100);
-//        assertTrue("Move To Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Move to")));
         assertTrue("Updated metadata Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Updated Metadata")));
     }
 

@@ -65,7 +65,6 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
     private RMRolesAndActionsAPI rmRolesAndActionsAPI;
     @Autowired
     private RMAuditAPI auditLog;
-
     @Autowired
     private RecordsAPI recordApi;
     private RecordCategory category1;
@@ -137,7 +136,6 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
 
         // we expect 1 new event: "metadata update"
         List<AuditEntry> auditEntries= auditLog.getRMAuditLogAll(getAdminUser().getUsername(),getAdminUser().getPassword(),100);
-//        assertTrue("Move To Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Move to")));
         assertTrue("Updated metadata Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Updated Metadata")));
 
     }
@@ -232,10 +230,6 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
         JSONObject result = new JSONObject(responseString);
         return result;
     }
-
-
-
-
     @AfterMethod
     private void closeAuditLog() {
         auditLog.clearAuditLog(rmAdmin.get().getUsername(),rmAdmin.get().getPassword());
@@ -249,5 +243,4 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
         deleteRecordCategory(category1.getId());
         dataUser.usingAdmin().deleteUser(new UserModel(rmAdmin.get().getUsername(), rmAdmin.get().getPassword()));
     }
-
 }

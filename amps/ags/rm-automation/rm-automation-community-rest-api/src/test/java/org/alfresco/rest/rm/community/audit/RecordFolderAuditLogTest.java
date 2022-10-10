@@ -101,7 +101,6 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
 
     }
 
-
     @Test
             (
                     dependsOnMethods = "recordFolderAuditIsEvent",
@@ -123,7 +122,6 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
     @Test(description = "Close and reopen folder")
     @AlfrescoTest(jira = "RM-4303")
     public void closeReopenFolder() {
-
         //close folder
         recordFoldersAPI.closeRecordFolder(rmAdmin.get().getUsername(), rmAdmin.get().getPassword(),
                 recordFolder1.getName());
@@ -140,7 +138,6 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
         {
             fail("InterruptedException received while waiting for results.");
         }
-
 
         //reopen folder
         recordFoldersAPI.reOpenRecordFolder(rmAdmin.get().getUsername(), rmAdmin.get().getPassword(),
@@ -159,7 +156,6 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
         {
             fail("InterruptedException received while waiting for results.");
         }
-
     }
     @AfterMethod
     private void closeAuditLog()
@@ -173,8 +169,6 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
         deleteRecordFolder(recordFolder1.getId());
         deleteRecordCategory(category1.getId());
         dataUser.usingAdmin().deleteUser(new UserModel(rmAdmin.get().getUsername(), rmAdmin.get().getPassword()));
-
     }
-
 
 }

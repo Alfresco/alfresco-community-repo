@@ -35,6 +35,7 @@ import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
@@ -65,14 +66,21 @@ public class NodeValidator
      * @return folder node reference
      * @throws InvalidArgumentException if node is not of an expected type
      * @throws PermissionDeniedException if the user doesn't have the appropriate permission for the folder.
+     * @throws EntityNotFoundException if the folder node isn't found
      */
     public NodeRef validateFolderNode(final String folderNodeId, boolean requireChangePermission)
     {
-        final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
-        validatePermission(requireChangePermission, nodeRef);
-        verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
+        try
+        {
+            final NodeRef nodeRef = nodes.validateOrLookupNode(folderNodeId, null);
+            validatePermission(requireChangePermission, nodeRef);
+            verifyNodeType(nodeRef, ContentModel.TYPE_FOLDER, null);
 
-        return nodeRef;
+            return nodeRef;
+        } catch (EntityNotFoundException e)
+        {
+            throw new EntityNotFoundException("Folder with id " + folderNodeId + " was not found.", e);
+        }
     }
 
     /**
@@ -82,6 +90,8 @@ public class NodeValidator
      * @param associatedFolderNodeRef - folder node ref to check the association
      * @return rule set node reference
      * @throws InvalidArgumentException in case of not matching associated folder node
+     * @throws RelationshipResourceNotFoundException if the folder doesn't have a -default- rule set
+     * @throws EntityNotFoundException if the rule set node isn't found
      */
     public NodeRef validateRuleSetNode(final String ruleSetId, final NodeRef associatedFolderNodeRef)
     {
@@ -96,13 +106,18 @@ public class NodeValidator
             return ruleSetNodeRef;
         }
 
-        final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
-        if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef))
-        {
-            throw new InvalidArgumentException("Rule set is not associated with folder node!");
-        }
+        try {
+            final NodeRef ruleSetNodeRef = validateNode(ruleSetId, ContentModel.TYPE_SYSTEM_FOLDER, RULE_SET_EXPECTED_TYPE_NAME);
 
-        return ruleSetNodeRef;
+            if (!ruleService.isRuleSetAssociatedWithFolder(ruleSetNodeRef, associatedFolderNodeRef))
+            {
+                throw new InvalidArgumentException("Rule set is not associated with folder node!");
+            }
+            return ruleSetNodeRef;
+
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException("Rule set with id " + ruleSetId + " was not found.", e);
+        }
     }
 
     public NodeRef validateRuleSetNode(String linkToNodeId, boolean requireChangePermission)

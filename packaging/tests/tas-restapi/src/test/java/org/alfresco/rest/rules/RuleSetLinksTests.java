@@ -440,7 +440,7 @@ public class RuleSetLinksTests extends RestTest
 
         STEP("Assert unlink result");
         restClient.assertStatusCodeIs(NOT_FOUND)
-                .assertLastError().containsSummary("The entity with id:");
+                .assertLastError().containsSummary("Rule set with id non-existent-id was not found");
     }
 
     /**

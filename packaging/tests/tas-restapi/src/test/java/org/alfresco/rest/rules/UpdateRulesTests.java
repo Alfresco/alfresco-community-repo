@@ -122,7 +122,7 @@ public class UpdateRulesTests extends RestTest
                   .updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND)
-                                    .containsSummary("fake-id was not found");
+                                    .containsSummary("Folder with id fake-id was not found");
     }
 
     /** Check we get a 404 if trying to update a rule in a rule set that doesn't exist. */
@@ -138,7 +138,7 @@ public class UpdateRulesTests extends RestTest
                   .updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(NOT_FOUND)
-                  .containsSummary("fake-id was not found");
+                  .containsSummary("Rule set with id fake-id was not found");
     }
 
     /** Check we get a 404 if trying to update a rule that doesn't exist. */

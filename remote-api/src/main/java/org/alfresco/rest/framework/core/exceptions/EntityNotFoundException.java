@@ -43,4 +43,9 @@ public class EntityNotFoundException extends NotFoundException
     {
         super(DEFAULT_MESSAGE_ID, new String[] {entityId});
     }
+
+    public EntityNotFoundException(String msgId, Throwable cause)
+    {
+        super(msgId, cause);
+    }
 }

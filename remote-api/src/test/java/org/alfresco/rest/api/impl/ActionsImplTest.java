@@ -112,7 +112,7 @@ public class ActionsImplTest
         then(actionServiceMock).shouldHaveNoMoreInteractions();
         assertThat(actualConstraint).isNotNull();
         assertThat(actualConstraint.getConstraintName()).isEqualTo(testConstraint.getName());
-        ActionParameterConstraint.ConstraintData expectedConstraintData = new ActionParameterConstraint.ConstraintData(dummyNodeId, LABEL, true);
+        ActionParameterConstraint.ConstraintData expectedConstraintData = new ActionParameterConstraint.ConstraintData(dummyNodeId, LABEL);
         assertThat(actualConstraint.getConstraintValues()).isNotNull().hasSize(1);
         ActionParameterConstraint.ConstraintData actualConstraintData = actualConstraint.getConstraintValues().get(0);
         assertThat(actualConstraintData).usingRecursiveComparison().isEqualTo(expectedConstraintData);

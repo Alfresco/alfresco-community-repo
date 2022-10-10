@@ -33,7 +33,6 @@ import org.alfresco.service.Experimental;
 public class RuleExecution
 {
     private boolean eachSubFolderIncluded;
-    private boolean eachInheritedRuleExecuted;
 
     public boolean getIsEachSubFolderIncluded()
     {
@@ -45,20 +44,10 @@ public class RuleExecution
         this.eachSubFolderIncluded = eachSubFolderIncluded;
     }
 
-    public boolean getIsEachInheritedRuleExecuted()
-    {
-        return eachInheritedRuleExecuted;
-    }
-
-    public void setIsEachInheritedRuleExecuted(boolean eachInheritedRuleExecuted)
-    {
-        this.eachInheritedRuleExecuted = eachInheritedRuleExecuted;
-    }
-
     @Override
     public String toString()
     {
-        return "RuleExecution{" + "eachSubFolderIncluded=" + eachSubFolderIncluded + ", eachInheritedRuleExecuted=" + eachInheritedRuleExecuted + '}';
+        return "RuleExecution{" + "eachSubFolderIncluded=" + eachSubFolderIncluded + '}';
     }
 
     @Override
@@ -69,13 +58,13 @@ public class RuleExecution
         if (o == null || getClass() != o.getClass())
             return false;
         RuleExecution that = (RuleExecution) o;
-        return eachSubFolderIncluded == that.eachSubFolderIncluded && eachInheritedRuleExecuted == that.eachInheritedRuleExecuted;
+        return eachSubFolderIncluded == that.eachSubFolderIncluded;
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(eachSubFolderIncluded, eachInheritedRuleExecuted);
+        return Objects.hash(eachSubFolderIncluded);
     }
 
     public static Builder builder()
@@ -86,7 +75,6 @@ public class RuleExecution
     public static class Builder
     {
         private boolean eachSubFolderIncluded;
-        private boolean eachInheritedRuleExecuted;
 
         public Builder eachSubFolderIncluded(boolean eachSubFolderIncluded)
         {
@@ -94,17 +82,10 @@ public class RuleExecution
             return this;
         }
 
-        public Builder eachInheritedRuleExecuted(boolean eachInheritedRuleExecuted)
-        {
-            this.eachInheritedRuleExecuted = eachInheritedRuleExecuted;
-            return this;
-        }
-
         public RuleExecution create()
         {
             final RuleExecution ruleExecution = new RuleExecution();
             ruleExecution.setIsEachSubFolderIncluded(eachSubFolderIncluded);
-            ruleExecution.setIsEachInheritedRuleExecuted(eachInheritedRuleExecuted);
             return ruleExecution;
         }
     }

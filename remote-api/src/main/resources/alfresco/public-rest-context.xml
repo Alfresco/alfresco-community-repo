@@ -585,7 +585,7 @@
     <bean class="org.alfresco.rest.api.actions.ActionExecutionsEntityResource">
         <property name="actions" ref="Actions"/>
     </bean>
-    <bean class="org.alfresco.rest.api.actions.ActionConstraintsEntityResource">
+    <bean class="org.alfresco.rest.api.actions.ActionParameterConstraintsEntityResource">
         <constructor-arg name="actions" ref="Actions"/>
     </bean>
 
@@ -595,7 +595,7 @@
     </bean>
 
     <!--    action parameter validators end here-->
-    
+
     <bean id="Downloads" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.Downloads</value>

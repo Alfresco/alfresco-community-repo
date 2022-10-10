@@ -23,34 +23,37 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+package org.alfresco.rest.api.actions;
 
-package org.alfresco.rest.api;
+import javax.servlet.http.HttpServletResponse;
 
-
-import org.alfresco.rest.api.model.Action;
-import org.alfresco.rest.api.model.ActionDefinition;
+import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.repository.NodeRef;
 
-public interface Actions
+@EntityResource(name="action-parameter-constraints", title = "Action parameter constraints")
+@Experimental
+public class ActionParameterConstraintsEntityResource implements EntityResourceAction.ReadById<ActionParameterConstraint>
 {
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(NodeRef nodeRef, Parameters params);
+    private final Actions actions;
 
-    CollectionWithPagingInfo<ActionDefinition> getActionDefinitions(Parameters params);
-
-    ActionDefinition getActionDefinitionById(String actionDefinitionId);
-    
-    enum SortKey
+    public ActionParameterConstraintsEntityResource(Actions actions)
     {
-        NAME,
-        TITLE
+        this.actions = actions;
     }
-    
-    Action executeAction(Action action, Parameters parameters);
 
+    @WebApiDescription(title = "Get single action parameter constraint",
+            description = "Retrieves a single action parameter constraint by constraint name",
+            successStatus = HttpServletResponse.SC_OK)
     @Experimental
-    ActionParameterConstraint getActionConstraint(String constraintName);
+    @Override
+    public ActionParameterConstraint readById(String constraintName, Parameters parameters) throws EntityNotFoundException
+    {
+        return actions.getActionConstraint(constraintName);
+    }
 }

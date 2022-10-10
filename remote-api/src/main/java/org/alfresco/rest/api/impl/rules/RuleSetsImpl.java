@@ -39,6 +39,7 @@ import java.util.stream.IntStream;
 
 import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.rule.RuntimeRuleService;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.api.model.rules.RuleSetLink;
@@ -50,10 +51,14 @@ import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Experimental
 public class RuleSetsImpl implements RuleSets
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RuleSetsImpl.class);
+
     private RuleSetLoader ruleSetLoader;
     private RuleService ruleService;
     private NodeValidator validator;
@@ -67,13 +72,40 @@ public class RuleSetsImpl implements RuleSets
 
         List<RuleSet> ruleSets = ruleService.getNodesSupplyingRuleSets(folderNode)
                                             .stream()
-                                            .map(ruleService::getRuleSetNode)
+                                            .map(supplyingNode -> loadRuleSet(supplyingNode, folderNode, includes))
                                             .filter(Objects::nonNull)
-                                            .map(nodeRef -> ruleSetLoader.loadRuleSet(nodeRef, folderNode, includes))
                                             .distinct()
                                             .collect(toList());
 
         return ListPage.of(ruleSets, paging);
+    }
+
+    /**
+     * Load the specified rule set if the user has permission.
+     *
+     * @param supplyingNode The folder supplying a rule set.
+     * @param folderNode The folder being supplied with rule sets.
+     * @param includes The list of optional fields to include for each rule set in the response.
+     * @return The rule set from the DB or null if the folder has no rule set, or the current user does not have permission to view it.
+     */
+    private RuleSet loadRuleSet(NodeRef supplyingNode, NodeRef folderNode, List<String> includes)
+    {
+        NodeRef ruleSetNode = ruleService.getRuleSetNode(supplyingNode);
+        // Check if the folder has no rule sets.
+        if (ruleSetNode == null)
+        {
+            return null;
+        }
+
+        try
+        {
+            return ruleSetLoader.loadRuleSet(ruleSetNode, folderNode, includes);
+        }
+        catch (AccessDeniedException e)
+        {
+            LOGGER.debug("User does not have permission to view rule set with id {}.", ruleSetNode, e);
+            return null;
+        }
     }
 
     @Override

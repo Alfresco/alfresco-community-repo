@@ -36,7 +36,8 @@ import java.util.Map;
 
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
-import org.alfresco.rest.model.RestRuleExecutionBodyModel;
+import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.RestRuleExecutionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestSimpleConditionDefinitionModel;
 
@@ -58,6 +59,7 @@ public class RulesTestsUtils
     static final String ID = "id";
     static final String IS_SHARED = "isShared";
     static final String AUDIO_ASPECT = "audio:audio";
+    static final String LOCKABLE_ASPECT = "cm:lockable";
 
     public static RestRuleModel createRuleModelWithModifiedValues()
     {
@@ -117,7 +119,12 @@ public class RulesTestsUtils
      */
     public static RestActionBodyExecTemplateModel createAddAudioAspectAction()
     {
-        return createCustomActionModel("add-features", Map.of("aspect-name", AUDIO_ASPECT));
+        return createAddAspectAction(AUDIO_ASPECT);
+    }
+
+    public static RestActionBodyExecTemplateModel createAddAspectAction(String aspect)
+    {
+        return createCustomActionModel("add-features", Map.of("aspect-name", aspect));
     }
 
     public static RestActionBodyExecTemplateModel createCustomActionModel(String actionDefinitionId, Map<String, Serializable> params)
@@ -202,16 +209,15 @@ public class RulesTestsUtils
         return createCompositeCondition(AND, inverted, null, simpleConditions);
     }
 
-    public static RestRuleExecutionBodyModel createRuleExecutionRequest()
+    public static RestRuleExecutionModel createRuleExecutionRequest()
     {
-        return createRuleExecutionRequest(false, false);
+        return createRuleExecutionRequest(false);
     }
 
-    public static RestRuleExecutionBodyModel createRuleExecutionRequest(boolean eachSubFolderIncluded, boolean eachInheritedRuleExecuted)
+    public static RestRuleExecutionModel createRuleExecutionRequest(boolean eachSubFolderIncluded)
     {
-        RestRuleExecutionBodyModel ruleExecutionBody = new RestRuleExecutionBodyModel();
+        RestRuleExecutionModel ruleExecutionBody = new RestRuleExecutionModel();
         ruleExecutionBody.setIsEachSubFolderIncluded(eachSubFolderIncluded);
-        ruleExecutionBody.setIsEachInheritedRuleExecuted(eachInheritedRuleExecuted);
 
         return ruleExecutionBody;
     }
@@ -226,5 +232,32 @@ public class RulesTestsUtils
         compositeCondition.setSimpleConditions(simpleConditions);
 
         return compositeCondition;
+    }
+
+    public static NodeAssertion assertThat(RestNodeModel node)
+    {
+        return new NodeAssertion(node);
+    }
+
+    public static class NodeAssertion
+    {
+        private final RestNodeModel node;
+
+        private NodeAssertion(RestNodeModel node)
+        {
+            this.node = node;
+        }
+
+        public NodeAssertion containsAspects(String ...expectedAspects)
+        {
+            Arrays.stream(expectedAspects).forEach(aspect -> node.assertThat().field("aspectNames").contains(aspect));
+            return this;
+        }
+
+        public NodeAssertion notContainsAspects(String ...unexpectedAspects)
+        {
+            Arrays.stream(unexpectedAspects).forEach(aspect -> node.assertThat().field("aspectNames").notContains(aspect));
+            return this;
+        }
     }
 }

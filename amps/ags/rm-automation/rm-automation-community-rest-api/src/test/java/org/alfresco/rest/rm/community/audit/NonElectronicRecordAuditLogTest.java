@@ -97,7 +97,7 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
     @AlfrescoTest(jira="RM-4303")
     public void newNonElectronicRecordAudit()
     {
-
+        System.out.println("Executing newNonElectronicRecordAudit test");
         List<AuditEntry> auditEntries= auditLog.getRMAuditLogAll(getAdminUser().getUsername(),getAdminUser().getPassword(),100);
 
         // newly created record contains 3 events: "created object", "file to" and metadata update
@@ -114,6 +114,7 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
     @AlfrescoTest(jira="RM-4303")
     public void nonElectronicRecordAuditIsEvent()
     {
+        System.out.println("Executing nonElectronicRecordAuditIsEvent test");
         List<AuditEntry> auditEntries= auditLog.getRMAuditLogAll(getAdminUser().getUsername(),getAdminUser().getPassword(),100);
         assertTrue("Audit View Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Audit View")));
 
@@ -127,6 +128,7 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
     @AlfrescoTest(jira="RM-4303")
     public void renameNonElectronicRecord()
     {
+        System.out.println("Executing renameNonElectronicRecord test");
         auditLog.clearAuditLog(rmAdmin.get().getUsername(),rmAdmin.get().getPassword());
         Record renameNonElectronicRecord = createRecordModel("edited " + nonElectronicRecord.getName(), "", "");
 
@@ -144,6 +146,7 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
     @AlfrescoTest(jira="RM-4303")
     public void completeAndReopenNonElectronicRecord()
     {
+        System.out.println("Executing completeAndReopenNonElectronicRecord test");
         nonElectronicRecord2 = createNonElectronicRecord(recordFolder1.getId(),AUDIT_COMPLETE_REOPEN_NON_ELECTRONIC_RECORD);
 
         // complete record
@@ -199,6 +202,7 @@ public class NonElectronicRecordAuditLogTest extends BaseRMRestTest {
     @AlfrescoTest(jira="RM-4303")
     public void fileNonElectronicRecordAuditLogAsRecord()
     {
+        System.out.println("Executing fileNonElectronicRecordAuditLogAsRecord test");
         // audit log is stored in the same folder, refresh it so that it appears in the list
         HttpResponse auditRecordHttpResponse = auditLog.logsAuditLogAsRecord(rmAdmin.get().getUsername(),rmAdmin.get().getPassword(),
                 getRecordNodeRef(nonElectronicRecord2.getId()),getFolderNodeRef(recordFolder1.getId()));

@@ -70,6 +70,7 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest {
     @Test
     @AlfrescoTest(jira = "RM-2768")
     public void recordCategoryAudit() throws Exception {
+        System.out.println("Executing recordCategoryAudit test");
         STEP("Create root level category");
         recordCategoryAudit = createRootCategory(AUDIT_CATEGORY);
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
@@ -92,7 +93,7 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest {
         )
     @AlfrescoTest(jira="RM-4303")
     public void recordCategoryAuditIsEvent() {
-
+        System.out.println("Executing recordCategoryAuditIsEvent test");
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
         assertTrue("Audit View Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Audit View")));
     }
@@ -104,6 +105,7 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest {
         )
     @AlfrescoTest(jira="RM-4303")
     public void renameRecordCategory() {
+        System.out.println("Executing renameRecordCategory test");
         String categoryName = "Category name " + getRandomAlphanumeric();
         RecordCategory rootRecordCategory = createRootCategory(categoryName);
         String newCategoryName = "Rename " + categoryName;

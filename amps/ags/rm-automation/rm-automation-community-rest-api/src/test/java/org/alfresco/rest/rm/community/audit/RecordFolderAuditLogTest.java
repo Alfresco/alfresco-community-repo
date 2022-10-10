@@ -81,6 +81,7 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
     @Test(description = "Audit log for empty record folder")
     @AlfrescoTest(jira = "RM-4303")
     public void recordFolderAudit() {
+        System.out.println("Executing recordFolderAudit test");
         category1 = createRootCategory(TITLE, DESCRIPTION);
         recordFolder1 = createFolder(category1.getId(), TITLE);
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
@@ -96,6 +97,7 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
             )
     @AlfrescoTest(jira = "RM-4303")
     public void recordFolderAuditIsEvent() {
+        System.out.println("Executing recordFolderAuditIsEvent test");
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
         assertTrue("Audit View Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Audit View")));
 
@@ -108,6 +110,7 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
             )
     @AlfrescoTest(jira = "RM-4303")
     public void renameRecordFolder() {
+        System.out.println("Executing renameRecordFolder test");
         auditLog.clearAuditLog(rmAdmin.get().getUsername(), rmAdmin.get().getPassword());
         RecordFolder renameRecordFolder = createRecordFolderModel(category1.getId(), "edited");
         getRestAPIFactory().getRecordFolderAPI().updateRecordFolder(renameRecordFolder, recordFolder1.getId());
@@ -123,6 +126,7 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
         description = "Close and reopen folder")
     @AlfrescoTest(jira = "RM-4303")
     public void closeReopenFolder() {
+        System.out.println("Executing closeReopenFolder test");
         //close folder
         recordFoldersAPI.closeRecordFolder(rmAdmin.get().getUsername(), rmAdmin.get().getPassword(),
                 recordFolder1.getName());

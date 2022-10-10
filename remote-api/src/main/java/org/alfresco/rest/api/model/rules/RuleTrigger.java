@@ -31,31 +31,15 @@ import org.alfresco.service.Experimental;
 @Experimental
 public enum RuleTrigger
 {
-    INBOUND("inbound"),
-    UPDATE("update"),
-    OUTBOUND("outbound");
-
-    RuleTrigger(String value)
-    {
-        this.value = value;
-    }
-
-    private final String value;
+    INBOUND, UPDATE, OUTBOUND;
 
     public String getValue()
     {
-        return value;
+        return this.name().toLowerCase();
     }
 
     public static RuleTrigger of(final String value)
     {
-        for (RuleTrigger ruleTrigger : values())
-        {
-            if (ruleTrigger.value.equals(value)) {
-                return ruleTrigger;
-            }
-        }
-
-        return null;
+        return RuleTrigger.valueOf(value.toUpperCase());
     }
 }

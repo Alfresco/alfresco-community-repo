@@ -191,18 +191,38 @@ public class ScriptServiceImpl implements ScriptService
     }
 
     /**
+     * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map, boolean)
+     */
+    public Object executeScriptString(String script, Map<String, Object> model, boolean secure)
+        throws ScriptException
+    {
+        return executeScriptString(this.defaultScriptProcessor, script, model, secure);
+    }
+
+    /**
      * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map)
      */
     public Object executeScriptString(String engine, String script, Map<String, Object> model)
         throws ScriptException
     {
         ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
-        return executeString(scriptProcessor, script, model);
+        return executeString(scriptProcessor, script, model, false);
+    }
+
+    /**
+     * @see org.alfresco.service.cmr.repository.ScriptService#executeScriptString(java.lang.String, java.util.Map, boolean)
+     */
+    public Object executeScriptString(String engine, String script, Map<String, Object> model, boolean secure)
+        throws ScriptException
+    {
+        ScriptProcessor scriptProcessor = lookupScriptProcessor(engine);
+        return executeString(scriptProcessor, script, model, secure);
     }
     
     /**
      * Execute script
-     * 
+     *
+     * @param processor the script processor that will be responsible for supplied script execution
      * @param location  the location of the script 
      * @param model     context model
      * @return Object   the result of the script
@@ -227,6 +247,7 @@ public class ScriptServiceImpl implements ScriptService
     /**
      * Execute script
      * 
+     * @param processor     the script processor that will be responsible for supplied script execution
      * @param scriptRef       the script node reference
      * @param contentProp   the content property of the script
      * @param model         the context model
@@ -251,7 +272,8 @@ public class ScriptServiceImpl implements ScriptService
     
     /** 
      * Execute script
-     * 
+     *
+     * @param processor the script processor that will be responsible for supplied script execution
      * @param location  the classpath string locating the script
      * @param model     the context model
      * @return Object   the result of the script
@@ -275,12 +297,15 @@ public class ScriptServiceImpl implements ScriptService
     
     /**
      * Execute script string
-     * 
+     *
+     * @param processor the script processor that will be responsible for supplied script execution
      * @param script    the script string
      * @param model     the context model
+     * @param secure    the flag indicating if string script is considered secure (e.g., if it comes from classpath)
+     *                  if true it will have access to the full execution context, if false the script will be executed in a sandbox context
      * @return Object   the result of the script 
      */
-    protected Object executeString(ScriptProcessor processor, String script, Map<String, Object> model)
+    protected Object executeString(ScriptProcessor processor, String script, Map<String, Object> model, boolean secure)
     {
         ParameterCheck.mandatoryString("script", script);
         
@@ -290,7 +315,7 @@ public class ScriptServiceImpl implements ScriptService
         }
         try
         {
-            return processor.executeString(script, model);
+            return processor.executeString(script, model, secure);
         }
         catch (Throwable err)
         {

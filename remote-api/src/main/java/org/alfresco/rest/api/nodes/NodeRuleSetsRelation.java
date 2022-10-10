@@ -28,8 +28,6 @@ package org.alfresco.rest.api.nodes;
 
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.List;
-
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -37,7 +35,6 @@ import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundE
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.util.PropertyCheck;
@@ -50,6 +47,7 @@ import org.springframework.beans.factory.InitializingBean;
 @RelationshipResource(name = "rule-sets", entityResource = NodesEntityResource.class, title = "Folder node rule sets")
 public class NodeRuleSetsRelation implements RelationshipResourceAction.Read<RuleSet>,
                                              RelationshipResourceAction.ReadById<RuleSet>,
+                                             RelationshipResourceAction.Update<RuleSet>,
                                              InitializingBean
 {
     private RuleSets ruleSets;
@@ -105,5 +103,21 @@ public class NodeRuleSetsRelation implements RelationshipResourceAction.Read<Rul
     public void setRuleSets(RuleSets ruleSets)
     {
         this.ruleSets = ruleSets;
+    }
+
+    /**
+     * Update a rule set, in particular this is useful for reordering rules in a rule set.
+     * <p>
+     * - PUT /nodes/{folderNodeId}/rule-sets/{ruleSetId}
+     *
+     * @param folderNodeId The id for the folder.
+     * @param ruleSet The updated rule set.
+     * @param parameters Contains information about which fields to include in the response.
+     * @return The updated rule set.
+     */
+    @Override
+    public RuleSet update(String folderNodeId, RuleSet ruleSet, Parameters parameters)
+    {
+        return ruleSets.updateRuleSet(folderNodeId, ruleSet, parameters.getInclude());
     }
 }

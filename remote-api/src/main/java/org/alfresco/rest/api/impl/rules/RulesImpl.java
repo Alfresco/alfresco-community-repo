@@ -26,19 +26,30 @@
 
 package org.alfresco.rest.api.impl.rules;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.alfresco.rest.api.Nodes;
+import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
+import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
 import org.alfresco.rest.api.Rules;
+import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Rule;
+import org.alfresco.rest.api.model.rules.RuleExecution;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.ListPage;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.util.GUID;
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,51 +57,61 @@ import org.slf4j.LoggerFactory;
 public class RulesImpl implements Rules
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(RulesImpl.class);
+    private static final String MUST_HAVE_AT_LEAST_ONE_ACTION = "A rule must have at least one action";
 
-    private Nodes nodes;
+    private ActionService actionService;
     private RuleService ruleService;
     private NodeValidator validator;
+    private RuleLoader ruleLoader;
+    private ActionPermissionValidator actionPermissionValidator;
+    private RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper;
 
     @Override
-    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId, final String ruleSetId, final Paging paging)
+    public CollectionWithPagingInfo<Rule> getRules(final String folderNodeId,
+                                                   final String ruleSetId,
+                                                   final List<String> includes,
+                                                   final Paging paging)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
-        final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        NodeRef ruleSetNode = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        NodeRef owningFolder = ruleService.getOwningNodeRef(ruleSetNode);
 
-        final boolean isShared = validator.isRuleSetNotNullAndShared(ruleSetNodeRef);
-        final List<Rule> rules = ruleService.getRules(folderNodeRef).stream()
-            .map(ruleModel -> Rule.from(ruleModel, isShared))
-            .collect(Collectors.toList());
+        final List<Rule> rules = ruleService.getRules(owningFolder, false).stream()
+                .map(ruleModel -> ruleLoader.loadRule(ruleModel, includes))
+                .collect(Collectors.toList());
 
         return ListPage.of(rules, paging);
     }
 
     @Override
-    public Rule getRuleById(final String folderNodeId, final String ruleSetId, final String ruleId)
+    public Rule getRuleById(final String folderNodeId, final String ruleSetId, final String ruleId, final List<String> includes)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
         final NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
         final NodeRef ruleNodeRef = validator.validateRuleNode(ruleId, ruleSetNodeRef);
 
-        return Rule.from(ruleService.getRule(ruleNodeRef), validator.isRuleSetNotNullAndShared(ruleSetNodeRef));
+        return ruleLoader.loadRule(ruleService.getRule(ruleNodeRef), includes);
     }
 
     @Override
-    public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules)
+    public List<Rule> createRules(final String folderNodeId, final String ruleSetId, final List<Rule> rules, final List<String> includes)
     {
         final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, true);
         // Don't validate the ruleset node if -default- is passed since we may need to create it.
-        final NodeRef ruleSetNodeRef = (RuleSet.isNotDefaultId(ruleSetId)) ? validator.validateRuleSetNode(ruleSetId, folderNodeRef) : null;
+        if (RuleSet.isNotDefaultId(ruleSetId))
+        {
+            validator.validateRuleSetNode(ruleSetId, folderNodeRef);
+        }
 
         return rules.stream()
-                    .map(rule -> rule.toServiceModel(nodes))
-                    .map(rule -> ruleService.saveRule(folderNodeRef, rule))
-                    .map(rule -> Rule.from(rule, validator.isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef)))
-                    .collect(Collectors.toList());
+                .map(this::mapToServiceModelAndValidateActions)
+                .map(rule -> ruleService.saveRule(folderNodeRef, rule))
+                .map(rule -> ruleLoader.loadRule(rule, includes))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Rule updateRuleById(String folderNodeId, String ruleSetId, String ruleId, Rule rule)
+    public Rule updateRuleById(String folderNodeId, String ruleSetId, String ruleId, Rule rule, List<String> includes)
     {
         LOGGER.debug("Updating rule in folder {}, rule set {}, rule {} to {}", folderNodeId, ruleSetId, ruleId, rule);
 
@@ -98,8 +119,7 @@ public class RulesImpl implements Rules
         NodeRef ruleSetNodeRef = validator.validateRuleSetNode(ruleSetId, folderNodeRef);
         validator.validateRuleNode(ruleId, ruleSetNodeRef);
 
-        boolean shared = validator.isRuleSetNotNullAndShared(ruleSetNodeRef, folderNodeRef);
-        return Rule.from(ruleService.saveRule(folderNodeRef, rule.toServiceModel(nodes)), shared);
+        return ruleLoader.loadRule(ruleService.saveRule(folderNodeRef, mapToServiceModelAndValidateActions(rule)), includes);
     }
 
     @Override
@@ -112,9 +132,39 @@ public class RulesImpl implements Rules
         ruleService.removeRule(folderNodeRef, rule);
     }
 
-    public void setNodes(Nodes nodes)
+    @Override
+    public RuleExecution executeRules(final String folderNodeId, final boolean eachSubFolderIncluded)
     {
-        this.nodes = nodes;
+        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId, false);
+        final Map<String, Serializable> parameterValues = new HashMap<>();
+        parameterValues.put(ExecuteAllRulesActionExecuter.PARAM_RUN_ALL_RULES_ON_CHILDREN, eachSubFolderIncluded);
+        parameterValues.put(ExecuteAllRulesActionExecuter.PARAM_EXECUTE_INHERITED_RULES, true);
+        final ActionImpl action = new ActionImpl(null, GUID.generate(), ExecuteAllRulesActionExecuter.NAME);
+        action.setNodeRef(folderNodeRef);
+        action.setParameterValues(parameterValues);
+
+        ActionAccessRestriction.setActionContext(action, ActionAccessRestriction.V1_ACTION_CONTEXT);
+        actionService.executeAction(action, folderNodeRef, true, false);
+
+        return RuleExecution.builder()
+            .eachSubFolderIncluded(eachSubFolderIncluded)
+            .create();
+    }
+
+    private org.alfresco.service.cmr.rule.Rule mapToServiceModelAndValidateActions(Rule rule)
+    {
+        if (CollectionUtils.isEmpty(rule.getActions()))
+        {
+            throw new InvalidArgumentException(MUST_HAVE_AT_LEAST_ONE_ACTION);
+        }
+        final org.alfresco.service.cmr.rule.Rule serviceModelRule = ruleMapper.toServiceModel(rule);
+
+        return actionPermissionValidator.validateRulePermissions(serviceModelRule);
+    }
+
+    public void setActionService(ActionService actionService)
+    {
+        this.actionService = actionService;
     }
 
     public void setRuleService(RuleService ruleService)
@@ -125,5 +175,21 @@ public class RulesImpl implements Rules
     public void setValidator(NodeValidator validator)
     {
         this.validator = validator;
+    }
+
+    public void setRuleLoader(RuleLoader ruleLoader)
+    {
+        this.ruleLoader = ruleLoader;
+    }
+
+    public void setActionPermissionValidator(ActionPermissionValidator actionPermissionValidator)
+    {
+        this.actionPermissionValidator = actionPermissionValidator;
+    }
+
+    public void setRuleMapper(
+            RestModelMapper<Rule, org.alfresco.service.cmr.rule.Rule> ruleMapper)
+    {
+        this.ruleMapper = ruleMapper;
     }
 }

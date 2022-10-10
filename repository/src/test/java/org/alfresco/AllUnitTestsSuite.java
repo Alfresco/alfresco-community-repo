@@ -67,6 +67,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.management.subsystems.CryptodocSwitchableApplicationContextFactoryTest.class,
     org.alfresco.repo.module.ModuleDetailsImplTest.class,
     org.alfresco.repo.module.ModuleVersionNumberTest.class,
+    org.alfresco.repo.module.DeprecatedModulesValidatorTest.class,
     org.alfresco.repo.node.integrity.IntegrityEventTest.class,
     org.alfresco.repo.policy.MTPolicyComponentTest.class,
     org.alfresco.repo.policy.PolicyComponentTest.class,

@@ -28,6 +28,7 @@ package org.alfresco.repo.action;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.service.cmr.action.ParameterizedItem;
 
@@ -135,7 +136,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
     @Override
     public int hashCode()
     {
-        return this.id.hashCode(); 
+        return Objects.hashCode(this.id);
     }
     
     /**

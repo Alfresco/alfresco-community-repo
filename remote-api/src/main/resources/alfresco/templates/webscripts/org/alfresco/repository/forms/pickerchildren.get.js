@@ -309,7 +309,7 @@ function sortByName(a, b)
 
 function findUsers(searchTerm, maxResults, results)
 {
-   var personRefs = people.getPeople(searchTerm, maxResults, "lastName", true);
+   var personRefs = people.getPeople(searchTerm+ " [hint:useCQ]", maxResults, "lastName", true);
    
    // create person object for each result
    for each(var personRef in personRefs)

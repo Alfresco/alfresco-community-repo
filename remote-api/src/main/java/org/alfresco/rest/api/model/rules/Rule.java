@@ -30,12 +30,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.alfresco.repo.action.executer.ScriptActionExecuter;
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.Experimental;
-import org.alfresco.service.cmr.action.CompositeAction;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 @Experimental
 public class Rule
@@ -43,76 +39,14 @@ public class Rule
     private String id;
     private String name;
     private String description;
-    private boolean enabled;
-    private boolean cascade;
-    private boolean asynchronous;
-    private boolean shared;
+    private boolean isEnabled;
+    private boolean isInheritable;
+    private boolean isAsynchronous;
+    private Boolean isShared;
     private String errorScript;
-    private List<RuleTrigger> triggers;
+    private List<RuleTrigger> triggers = List.of(RuleTrigger.INBOUND);
     private CompositeCondition conditions;
     private List<Action> actions;
-
-    /**
-     * Converts service POJO rule to REST model rule.
-     *
-     * @param ruleModel - {@link org.alfresco.service.cmr.rule.Rule} service POJO
-     * @return {@link Rule} REST model
-     */
-    public static Rule from(final org.alfresco.service.cmr.rule.Rule ruleModel, final boolean shared)
-    {
-        if (ruleModel == null)
-        {
-            return null;
-        }
-
-        final Rule.Builder builder = builder()
-            .name(ruleModel.getTitle())
-            .description(ruleModel.getDescription())
-            .enabled(!ruleModel.getRuleDisabled())
-            .cascade(ruleModel.isAppliedToChildren())
-            .asynchronous(ruleModel.getExecuteAsynchronously())
-            .shared(shared);
-
-        if (ruleModel.getNodeRef() != null) {
-            builder.id(ruleModel.getNodeRef().getId());
-        }
-        if (ruleModel.getRuleTypes() != null)
-        {
-            builder.triggers(ruleModel.getRuleTypes().stream().map(RuleTrigger::of).collect(Collectors.toList()));
-        }
-        if (ruleModel.getAction() != null)
-        {
-            builder.conditions(CompositeCondition.from(ruleModel.getAction().getActionConditions()));
-            if (ruleModel.getAction().getCompensatingAction() != null && ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF) != null)
-            {
-                builder.errorScript(ruleModel.getAction().getCompensatingAction().getParameterValue(ScriptActionExecuter.PARAM_SCRIPTREF).toString());
-            }
-            if (ruleModel.getAction() instanceof CompositeAction && ((CompositeAction) ruleModel.getAction()).getActions() != null)
-            {
-                builder.actions(((CompositeAction) ruleModel.getAction()).getActions().stream().map(Action::from).collect(Collectors.toList()));
-            }
-        }
-
-        return builder.create();
-    }
-
-    /**
-     * Convert the REST model object to the equivalent service POJO.
-     *
-     * @param nodes The nodes API.
-     * @return The rule service POJO.
-     */
-    public org.alfresco.service.cmr.rule.Rule toServiceModel(Nodes nodes)
-    {
-        final org.alfresco.service.cmr.rule.Rule ruleModel = new org.alfresco.service.cmr.rule.Rule();
-        final NodeRef nodeRef = (id != null) ? nodes.validateOrLookupNode(id, null) : null;
-        ruleModel.setNodeRef(nodeRef);
-        ruleModel.setTitle(name);
-
-        ruleModel.setAction(Action.toCompositeAction(actions));
-
-        return ruleModel;
-    }
 
     @UniqueId
     public String getId()
@@ -145,34 +79,34 @@ public class Rule
         this.description = description;
     }
 
-    public boolean isEnabled()
+    public boolean getIsEnabled()
     {
-        return enabled;
+        return isEnabled;
     }
 
-    public void setEnabled(boolean enabled)
+    public void setIsEnabled(boolean isEnabled)
     {
-        this.enabled = enabled;
+        this.isEnabled = isEnabled;
     }
 
-    public boolean isCascade()
+    public boolean getIsInheritable()
     {
-        return cascade;
+        return isInheritable;
     }
 
-    public void setCascade(boolean cascade)
+    public void setIsInheritable(boolean isInheritable)
     {
-        this.cascade = cascade;
+        this.isInheritable = isInheritable;
     }
 
-    public boolean isAsynchronous()
+    public boolean getIsAsynchronous()
     {
-        return asynchronous;
+        return isAsynchronous;
     }
 
-    public void setAsynchronous(boolean asynchronous)
+    public void setIsAsynchronous(boolean isAsynchronous)
     {
-        this.asynchronous = asynchronous;
+        this.isAsynchronous = isAsynchronous;
     }
 
     public String getErrorScript()
@@ -185,14 +119,14 @@ public class Rule
         this.errorScript = errorScript;
     }
 
-    public boolean isShared()
+    public Boolean isIsShared()
     {
-        return shared;
+        return isShared;
     }
 
-    public void setShared(boolean shared)
+    public void setIsShared(Boolean shared)
     {
-        this.shared = shared;
+        this.isShared = shared;
     }
 
     public List<String> getTriggers()
@@ -204,7 +138,15 @@ public class Rule
         return triggers.stream().map(RuleTrigger::getValue).collect(Collectors.toList());
     }
 
-    public void setTriggers(List<RuleTrigger> triggers)
+    public void setTriggers(List<String> triggers)
+    {
+        if (triggers != null)
+        {
+            this.triggers = triggers.stream().map(RuleTrigger::of).collect(Collectors.toList());
+        }
+    }
+
+    public void setRuleTriggers(List<RuleTrigger> triggers)
     {
         this.triggers = triggers;
     }
@@ -232,8 +174,8 @@ public class Rule
     @Override
     public String toString()
     {
-        return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", enabled=" + enabled + ", cascade=" + cascade
-            + ", asynchronous=" + asynchronous + ", shared=" + shared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", conditions=" + conditions
+        return "Rule{" + "id='" + id + '\'' + ", name='" + name + '\'' + ", description='" + description + '\'' + ", isEnabled=" + isEnabled + ", isInheritable=" + isInheritable
+            + ", isAsynchronous=" + isAsynchronous + ", isShared=" + isShared + ", errorScript='" + errorScript + '\'' + ", triggers=" + triggers + ", conditions=" + conditions
             + ", actions=" + actions + '}';
     }
 
@@ -245,15 +187,23 @@ public class Rule
         if (o == null || getClass() != o.getClass())
             return false;
         Rule rule = (Rule) o;
-        return enabled == rule.enabled && cascade == rule.cascade && asynchronous == rule.asynchronous && shared == rule.shared && Objects.equals(id, rule.id) && Objects.equals(
-            name, rule.name) && Objects.equals(description, rule.description) && Objects.equals(errorScript, rule.errorScript) && Objects.equals(triggers, rule.triggers)
-            && Objects.equals(conditions, rule.conditions) && Objects.equals(actions, rule.actions);
+        return isEnabled == rule.isEnabled
+                && isInheritable == rule.isInheritable
+                && isAsynchronous == rule.isAsynchronous
+                && Objects.equals(isShared, rule.isShared)
+                && Objects.equals(id, rule.id)
+                && Objects.equals(name, rule.name)
+                && Objects.equals(description, rule.description)
+                && Objects.equals(errorScript, rule.errorScript)
+                && Objects.equals(triggers, rule.triggers)
+                && Objects.equals(conditions, rule.conditions)
+                && Objects.equals(actions, rule.actions);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(id, name, description, enabled, cascade, asynchronous, shared, errorScript, triggers, conditions, actions);
+        return Objects.hash(id, name, description, isEnabled, isInheritable, isAsynchronous, isShared, errorScript, triggers, conditions, actions);
     }
 
     public static Builder builder()
@@ -267,12 +217,12 @@ public class Rule
         private String id;
         private String name;
         private String description;
-        private boolean enabled;
-        private boolean cascade;
-        private boolean asynchronous;
-        private boolean shared;
+        private boolean isEnabled;
+        private boolean isInheritable;
+        private boolean isAsynchronous;
+        private Boolean isShared;
         private String errorScript;
-        private List<RuleTrigger> triggers;
+        private List<RuleTrigger> triggers = List.of(RuleTrigger.INBOUND);
         private CompositeCondition conditions;
         private List<Action> actions;
 
@@ -294,27 +244,27 @@ public class Rule
             return this;
         }
 
-        public Builder enabled(boolean enabled)
+        public Builder isEnabled(boolean isEnabled)
         {
-            this.enabled = enabled;
+            this.isEnabled = isEnabled;
             return this;
         }
 
-        public Builder cascade(boolean cascade)
+        public Builder isInheritable(boolean isInheritable)
         {
-            this.cascade = cascade;
+            this.isInheritable = isInheritable;
             return this;
         }
 
-        public Builder asynchronous(boolean asynchronous)
+        public Builder isAsynchronous(boolean isAsynchronous)
         {
-            this.asynchronous = asynchronous;
+            this.isAsynchronous = isAsynchronous;
             return this;
         }
 
-        public Builder shared(boolean shared)
+        public Builder isShared(Boolean isShared)
         {
-            this.shared = shared;
+            this.isShared = isShared;
             return this;
         }
 
@@ -348,12 +298,12 @@ public class Rule
             rule.setId(id);
             rule.setName(name);
             rule.setDescription(description);
-            rule.setEnabled(enabled);
-            rule.setCascade(cascade);
-            rule.setAsynchronous(asynchronous);
-            rule.setShared(shared);
+            rule.setIsEnabled(isEnabled);
+            rule.setIsInheritable(isInheritable);
+            rule.setIsAsynchronous(isAsynchronous);
+            rule.setIsShared(isShared);
             rule.setErrorScript(errorScript);
-            rule.setTriggers(triggers);
+            rule.setRuleTriggers(triggers);
             rule.setConditions(conditions);
             rule.setActions(actions);
             return rule;

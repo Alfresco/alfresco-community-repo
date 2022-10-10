@@ -26,6 +26,9 @@
 
 package org.alfresco.rest.api.nodes;
 
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -37,9 +40,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.Experimental;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 /**
  * Folder node's rules.
@@ -65,7 +65,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
 
     /**
      * List folder rules for given folder node's and rule set's IDs as a page.
-     *
+     * <p>
      * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules
      *
      * @param folderNodeId - entity resource context for this relationship
@@ -82,12 +82,12 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     {
         final String ruleSetId = parameters.getRelationshipId();
 
-        return rules.getRules(folderNodeId, ruleSetId, parameters.getPaging());
+        return rules.getRules(folderNodeId, ruleSetId, parameters.getInclude(), parameters.getPaging());
     }
 
     /**
      * Get single folder rule for given node's, rule set's and rule's IDs.
-     *
+     * <p>
      * - GET /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
      *
      * @param folderNodeId - entity resource context for this relationship
@@ -106,7 +106,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     {
         final String ruleId = parameters.getRelationship2Id();
 
-        return rules.getRuleById(folderNodeId, ruleSetId, ruleId);
+        return rules.getRuleById(folderNodeId, ruleSetId, ruleId, parameters.getInclude());
     }
 
     /**
@@ -129,7 +129,7 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     {
         final String ruleSetId = parameters.getRelationshipId();
 
-        return rules.createRules(folderNodeId, ruleSetId, ruleList);
+        return rules.createRules(folderNodeId, ruleSetId, ruleList, parameters.getInclude());
     }
 
     /**
@@ -153,12 +153,12 @@ public class NodeRulesRelation implements RelationshipResourceAction.Read<Rule>,
     {
         String ruleSetId = parameters.getRelationshipId();
         String ruleId = parameters.getRelationship2Id();
-        return rules.updateRuleById(folderNodeId, ruleSetId, ruleId, rule);
+        return rules.updateRuleById(folderNodeId, ruleSetId, ruleId, rule, parameters.getInclude());
     }
 
     /**
      * Delete single folder rule for given node's, rule set's and rule's IDs.
-     *
+     * <p>
      * - DELETE /nodes/{folderNodeId}/rule-sets/{ruleSetId}/rules/{ruleId}
      *
      * @param folderNodeId - entity resource context for this relationship

@@ -27,8 +27,8 @@ package org.alfresco.rest.api;
 
 import java.util.List;
 
-import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.api.model.rules.RuleSetLink;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.Experimental;
@@ -58,4 +58,24 @@ public interface RuleSets
      * @return {@link RuleSet} definition
      */
     RuleSet getRuleSetById(String folderNodeId, String ruleSetId, List<String> includes);
+
+    /**
+     * Update a rule set - for example to reorder the rules within it.
+     *
+     * @param folderNodeId Folder node ID
+     * @param ruleSet The updated rule set.
+     * @param includes List of fields to include in the response.
+     * @return The updated rule set from the server.
+     */
+    RuleSet updateRuleSet(String folderNodeId, RuleSet ruleSet, List<String> includes);
+
+    /**
+     * Link a rule set to a folder
+     */
+    RuleSetLink linkToRuleSet(String folderNodeId, String linkToNodeId);
+
+    /**
+     * Removes the link between a rule set and a folder
+     */
+    void unlinkRuleSet(String folderNodeId, String ruleSetId);
 }

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -63,4 +63,12 @@ public interface ParameterConstraint
      *  The implementers are expected to return allowed values in the insertion order.
      */
     Map<String, String> getAllowableValues();
+
+    /**
+     *  Returns possible constraint values.
+     *  By default returns getAllowableValues() to be backwards compatible.
+     */
+    default Map<String, String> getValues() {
+        return getAllowableValues();
+    }
 }

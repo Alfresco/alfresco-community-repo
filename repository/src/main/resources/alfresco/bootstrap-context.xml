@@ -135,6 +135,26 @@
     <bean id="siteLoadBootstrap-Spaces" parent="spacesStoreImporter"/>
     <bean id="siteLoadBootstrap-Users" parent="userStoreImporter"/>
 
+   <!-- Descriptor Service -->
+   <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
+      <property name="serverDescriptorDAO">
+         <ref bean="serverDescriptorDAO"/>
+      </property>
+      <property name="currentRepoDescriptorDAO">
+         <ref bean="currentRepoDescriptorDAO"/>
+      </property>
+      <property name="installedRepoDescriptorDAO">
+         <ref bean="installedRepoDescriptorDAO"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService"/>
+      </property>
+      <property name="hbDataCollectorService">
+         <ref bean="hbDataCollectorService"/>
+      </property>
+      <property name="repoUsageComponent" ref="repoUsageComponent"/>
+   </bean>
+
     <bean id="workflowBootstrap" parent="workflowDeployer">
         <property name="workflowDefinitions">
             <list>
@@ -254,26 +274,6 @@
       </property>
       
    </bean>
-
-    <!-- Descriptor Service -->
-    <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
-       <property name="serverDescriptorDAO">
-           <ref bean="serverDescriptorDAO"/>
-       </property>
-       <property name="currentRepoDescriptorDAO">
-           <ref bean="currentRepoDescriptorDAO"/>
-       </property>
-       <property name="installedRepoDescriptorDAO">
-           <ref bean="installedRepoDescriptorDAO"/>
-       </property>
-       <property name="transactionService">
-           <ref bean="transactionService"/>
-       </property>
-        <property name="hbDataCollectorService">
-            <ref bean="hbDataCollectorService"/>
-        </property>
-       <property name="repoUsageComponent" ref="repoUsageComponent"/>
-    </bean>
 
     <!-- Bootstrap MT (multi-tenancy) if applicable -->
     <bean id="multiTenantBootstrap" class="org.alfresco.repo.tenant.MultiTenantBootstrap" >

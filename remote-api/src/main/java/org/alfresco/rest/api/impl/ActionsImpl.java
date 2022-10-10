@@ -453,7 +453,7 @@ public class ActionsImpl implements Actions
                 map(this::toShortQName).
                 collect(Collectors.toList());
     }
-
+    
     private String toShortQName(QName type)
     {
         return type.toPrefixString(prefixResolver);

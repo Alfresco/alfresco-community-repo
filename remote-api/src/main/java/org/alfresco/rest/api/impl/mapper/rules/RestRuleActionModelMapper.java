@@ -32,12 +32,14 @@ import static org.alfresco.repo.action.access.ActionAccessRestriction.ACTION_CON
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
+import org.alfresco.rest.api.actions.ActionValidator;
 import org.alfresco.rest.api.impl.rules.ActionParameterConverter;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Action;
@@ -49,10 +51,13 @@ import org.apache.commons.collections.CollectionUtils;
 public class RestRuleActionModelMapper implements RestModelMapper<Action, org.alfresco.service.cmr.action.Action>
 {
     private final ActionParameterConverter parameterConverter;
+    private final List<ActionValidator> actionValidators;
 
-    public RestRuleActionModelMapper(ActionParameterConverter parameterConverter)
+    public RestRuleActionModelMapper(ActionParameterConverter parameterConverter,
+                                     List<ActionValidator> actionValidators)
     {
         this.parameterConverter = parameterConverter;
+        this.actionValidators = actionValidators;
     }
 
     /**
@@ -104,8 +109,14 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     private org.alfresco.service.cmr.action.Action toServiceAction(Action action)
     {
         final Map<String, Serializable> params = Optional.ofNullable(action.getParams()).orElse(emptyMap());
+        validateAction(action);
         final Map<String, Serializable> convertedParams =
                 parameterConverter.getConvertedParams(params, action.getActionDefinitionId());
         return new ActionImpl(null, GUID.generate(), action.getActionDefinitionId(), convertedParams);
+    }
+    private void validateAction(Action action) {
+        actionValidators.stream()
+                .filter(ActionValidator::isEnabled)
+                .forEach(v -> v.validate(action));
     }
 }

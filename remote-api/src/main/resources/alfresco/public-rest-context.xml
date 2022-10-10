@@ -588,7 +588,14 @@
     <bean class="org.alfresco.rest.api.actions.ActionParameterConstraintsEntityResource">
         <constructor-arg name="actions" ref="Actions"/>
     </bean>
-    
+
+    <!--    action parameter validators start here -->
+    <bean id="actionParameterConstraintsValidator" class="org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionValidator">
+        <constructor-arg name="actions" ref="Actions"/>
+    </bean>
+
+    <!--    action parameter validators end here-->
+
     <bean id="Downloads" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.rest.api.Downloads</value>
@@ -965,6 +972,11 @@
 
     <bean id="actionMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleActionModelMapper">
         <constructor-arg name="parameterConverter" ref="actionParameterConverter"/>
+        <constructor-arg name="actionValidators">
+            <list>
+                <ref bean="actionParameterConstraintsValidator"/>
+            </list>
+        </constructor-arg>
     </bean>
 
     <bean id="ruleMapper" class="org.alfresco.rest.api.impl.mapper.rules.RestRuleModelMapper">

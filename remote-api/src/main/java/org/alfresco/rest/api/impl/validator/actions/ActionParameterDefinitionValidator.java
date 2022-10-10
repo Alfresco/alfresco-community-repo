@@ -77,7 +77,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         } catch (NotFoundException e) {
             throw new InvalidArgumentException(String.format(INVALID_ACTION_DEFINITION, action.getActionDefinitionId()));
         }
-        compareParametersSize(action.getParams(), actionDefinition);
+        validateParametersSize(action.getParams(), actionDefinition);
         final Map<String, Serializable> params = action.getParams();
         if (MapUtils.isNotEmpty(params))
         {
@@ -92,7 +92,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         return IS_ENABLED;
     }
 
-    private void compareParametersSize(final Map<String, Serializable> params, final ActionDefinition actionDefinition)
+    private void validateParametersSize(final Map<String, Serializable> params, final ActionDefinition actionDefinition)
     {
         if (CollectionUtils.isNotEmpty(actionDefinition.getParameterDefinitions()) && MapUtils.isEmpty(params))
         {

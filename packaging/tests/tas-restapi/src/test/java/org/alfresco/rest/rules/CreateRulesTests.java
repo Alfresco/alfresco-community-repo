@@ -490,10 +490,10 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
-     * Check we get error when attempt to create a rule without mandatory action parameters.
+     * Check we get error when attempt to create a rule with action parameter that should not be passed.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void createRuleWithoutMandatoryActionParameterShouldFail()
+    public void createRuleWithoutInvalidActionParameterShouldFail()
     {
         final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
         final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
@@ -509,6 +509,26 @@ public class CreateRulesTests extends RestTest
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary(
                 String.format("Action of definition id: %s must not contain parameter of name: %s", actionDefinitionId, invalidParameterKey));
+    }
+
+    /**
+     * Check we get error when attempt to create a rule with missing mandatory action parameter.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithoutMandatoryActionParametersShouldFail()
+    {
+        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        final String actionDefinitionId = "copy";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("deep-copy",false));
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Missing action's mandatory parameter: destination-folder");
     }
 
     /**

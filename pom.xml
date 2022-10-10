@@ -51,15 +51,14 @@
         <dependency.alfresco-log-sanitizer.version>0.2</dependency.alfresco-log-sanitizer.version>
         <dependency.activiti-engine.version>5.23.0</dependency.activiti-engine.version>
         <dependency.activiti.version>5.23.0</dependency.activiti.version>
-        <dependency.alfresco-transform-service.version>2.0.0-A3</dependency.alfresco-transform-service.version>
-        <dependency.alfresco-transform-core.version>3.0.0-A3</dependency.alfresco-transform-core.version>
+        <dependency.alfresco-transform-service.version>2.0.0-A4</dependency.alfresco-transform-service.version>
+        <dependency.alfresco-transform-core.version>3.0.0-A4</dependency.alfresco-transform-core.version>
         <dependency.alfresco-greenmail.version>6.4</dependency.alfresco-greenmail.version>
         <dependency.acs-event-model.version>0.0.16</dependency.acs-event-model.version>
 
         <dependency.spring.version>5.3.23</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.13.3</dependency.jackson.version>
-        <dependency.jackson-databind.version>2.13.3</dependency.jackson-databind.version>
+        <dependency.jackson.version>2.14.0-rc1</dependency.jackson.version>
         <dependency.cxf.version>3.5.3</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.32</dependency.webscripts.version>
@@ -503,7 +502,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${dependency.jackson-databind.version}</version>
+                <version>${dependency.jackson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.datatype</groupId>

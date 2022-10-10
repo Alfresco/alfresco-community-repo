@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,9 +26,9 @@
 
 package org.alfresco.repo.action.constraint;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -55,19 +55,22 @@ public class AspectParameterConstraint extends BaseParameterConstraint
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {   
-        Collection<QName> aspects = dictionaryService.getAllAspects();
-        Map<String, String> result = new LinkedHashMap<String, String>(aspects.size());
-        for (QName aspect : aspects)
-        {
-            AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
-            if (aspectDef != null && aspectDef.getTitle(dictionaryService) != null)
-            {
-                result.put(aspect.toPrefixString(), aspectDef.getTitle(dictionaryService));
-            }
-        }        
-        return result;
-    }    
-    
-    
+    {
+        final Map<String, String> values = getValues();
+        values.values().removeIf(Objects::isNull);
+        return values;
+    }
+
+    @Override
+    public Map<String, String> getValues()
+    {
+        return dictionaryService.getAllAspects().stream()
+                .collect(LinkedHashMap::new, (m, v) -> m.put(v.toPrefixString(), getTitle(v)), LinkedHashMap::putAll);
+    }
+
+    private String getTitle(QName aspect)
+    {
+        final AspectDefinition aspectDef = dictionaryService.getAspect(aspect);
+        return aspectDef != null ? aspectDef.getTitle(dictionaryService) : null;
+    }
 }

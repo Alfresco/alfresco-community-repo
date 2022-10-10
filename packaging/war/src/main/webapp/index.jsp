@@ -71,7 +71,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
          </div>
 
          <div class="index-list">
-            <h4><%=descriptorService.getServerDescriptor().getEdition()%>&nbsp;-&nbsp;<%=descriptorService.getServerDescriptor().getVersion()%></h4>
+            <h4><%=descriptorService.getServerDescriptor().getEdition()%></h4>
             <p></p>
             <p><a href="http://docs.alfresco.com/">Online Documentation</a></p>
             <p></p>

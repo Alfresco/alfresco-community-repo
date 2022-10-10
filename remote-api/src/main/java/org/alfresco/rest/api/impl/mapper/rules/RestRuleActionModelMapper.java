@@ -26,12 +26,15 @@
 
 package org.alfresco.rest.api.impl.mapper.rules;
 
+import static java.util.Collections.emptyMap;
+
 import static org.alfresco.repo.action.access.ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.alfresco.repo.action.ActionImpl;
@@ -107,8 +110,9 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     private org.alfresco.service.cmr.action.Action toServiceAction(Action action)
     {
         validateAction(action);
-        final Map<String, Serializable> convertedParams = MapUtils.isEmpty(action.getParams()) ? action.getParams() :
-                parameterConverter.getConvertedParams(action.getParams(), action.getActionDefinitionId());
+        final Map<String, Serializable> params = Optional.ofNullable(action.getParams()).orElse(emptyMap());
+        final Map<String, Serializable> convertedParams =
+                parameterConverter.getConvertedParams(params, action.getActionDefinitionId());
         return new ActionImpl(null, GUID.generate(), action.getActionDefinitionId(), convertedParams);
     }
     private void validateAction(Action action) {

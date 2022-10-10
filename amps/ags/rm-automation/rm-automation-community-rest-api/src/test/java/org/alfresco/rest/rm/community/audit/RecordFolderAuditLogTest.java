@@ -119,7 +119,8 @@ public class RecordFolderAuditLogTest extends BaseRMRestTest {
 
     }
 
-    @Test(description = "Close and reopen folder")
+    @Test(dependsOnMethods = "recordFolderAudit",
+        description = "Close and reopen folder")
     @AlfrescoTest(jira = "RM-4303")
     public void closeReopenFolder() {
         //close folder

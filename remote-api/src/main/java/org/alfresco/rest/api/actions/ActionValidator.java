@@ -27,7 +27,9 @@
 package org.alfresco.rest.api.actions;
 
 import org.alfresco.rest.api.model.rules.Action;
+import org.alfresco.service.Experimental;
 
+@Experimental
 public interface ActionValidator
 {
     void validate(Action action);

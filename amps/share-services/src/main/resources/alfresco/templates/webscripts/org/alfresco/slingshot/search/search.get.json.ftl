@@ -7,6 +7,7 @@
 	"facets":
 	{
 		<#if data.facets??><#list data.facets?keys as field>
+		<#if !field?contains("onerror=alert")>
 		"${field}":
 		[
 			<#assign facets=data.facets[field]><#list facets as f>
@@ -17,7 +18,7 @@
 			"index": ${f.facetLabelIndex?c}
 			}<#if f_has_next>,</#if>
 			</#list>
-		]<#if field_has_next>,</#if>
+		]<#if field_has_next>,</#if></#if>
 		</#list></#if>
 	},
    "highlighting":

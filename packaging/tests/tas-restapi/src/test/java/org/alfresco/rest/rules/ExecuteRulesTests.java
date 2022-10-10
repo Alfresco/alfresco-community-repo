@@ -302,21 +302,5 @@ public class ExecuteRulesTests extends RestTest
         assertThat(fileNode).containsAspects(AUDIO_ASPECT);
     }
 
-    /**
-     * Try to execute rule with broken action and receive 500.
-     */
-    @Ignore("It shouldn't be possible to create a rule with broken action any more.")
-    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
-    public void executeRules_brokenActionResultsWith500()
-    {
-        STEP("Update folder rule with broken action");
-        RestActionBodyExecTemplateModel brokenAction = createCustomActionModel("set-property-value", Map.of("aspect-name", AUDIO_ASPECT));
-        childFolderRule.setActions(List.of(brokenAction));
-        restClient.authenticateUser(user).withCoreAPI().usingNode(childFolder).usingDefaultRuleSet().updateRule(childFolderRule.getId(), childFolderRule);
-        restClient.assertStatusCodeIs(HttpStatus.OK);
-
-        STEP("Try to execute rule with broken action");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(childFolder).executeRules(createRuleExecutionRequest());
-        restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    //TODO: add test(s) that would cover handling executing broken rule and/or broken rule execution (ACS-3699)
 }

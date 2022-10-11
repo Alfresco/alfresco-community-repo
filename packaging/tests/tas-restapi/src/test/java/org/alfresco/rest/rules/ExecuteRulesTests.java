@@ -81,7 +81,7 @@ public class ExecuteRulesTests extends RestTest
         site = dataSite.usingUser(user).createPublicRandomSite();
     }
 
-    @BeforeMethod
+    @BeforeMethod(alwaysRun = true)
     public void setUp()
     {
         STEP("Create parent folder, rule folder and file in it");

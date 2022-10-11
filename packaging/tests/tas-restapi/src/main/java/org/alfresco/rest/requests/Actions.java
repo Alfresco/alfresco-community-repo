@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.requests;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.rest.core.JsonBodyGenerator;
@@ -56,7 +57,7 @@ public class Actions extends ModelRequest<Actions>
     /**
      * Execute action with parameters using POST on '/action-executions'
      */
-    public JSONObject executeAction(String actionDefinitionId, RepoTestModel targetNode, Map<String, String> params)
+    public JSONObject executeAction(String actionDefinitionId, RepoTestModel targetNode, Map<String, Serializable> params)
     {
         String postBody = JsonBodyGenerator.executeActionPostBody(actionDefinitionId, targetNode, params);
         RestRequest request = RestRequest.requestWithBody(HttpMethod.POST, postBody, "action-executions");

@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.core.assertion;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +37,11 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
 
 import io.restassured.path.json.JsonPath;
 import org.alfresco.utility.exception.TestConfigurationException;
@@ -168,13 +173,29 @@ public class ModelAssertion<T>
     @SuppressWarnings("unchecked")
     private T createCopyIgnoringFields(T model, String... ignoreFields)
     {
-        Gson gson = new Gson();
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapterFactory(new SerializableTypeAdapterFactory());
+        Gson gson = gsonBuilder.create();
         JsonObject jsonObject = gson.fromJson(gson.toJson(model), JsonObject.class);
         for (String ignoreField : ignoreFields)
         {
             jsonObject.remove(ignoreField);
         }
         return gson.fromJson(gson.toJson(jsonObject), (Class<? extends T>) model.getClass());
+    }
+
+    /** Workaround from https://github.com/google/gson/issues/544 */
+    private class SerializableTypeAdapterFactory implements TypeAdapterFactory
+    {
+        @Override
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type)
+        {
+            if (Serializable.class.equals(type.getRawType()))
+            {
+                return (TypeAdapter<T>) gson.getAdapter(Object.class);
+            }
+            return null;
+        }
     }
 
     /**

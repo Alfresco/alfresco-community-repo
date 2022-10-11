@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.model;
 
+import java.io.Serializable;
+import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -52,7 +54,7 @@ public class RestActionBodyExecTemplateModel extends TestModel implements IRestM
     @JsonProperty(required = true)    
     private String actionDefinitionId;	    
 
-    private Object params;	    
+    private Map<String, Serializable> params;
 
     public String getActionDefinitionId()
     {
@@ -64,12 +66,12 @@ public class RestActionBodyExecTemplateModel extends TestModel implements IRestM
         this.actionDefinitionId = actionDefinitionId;
     }				
 
-    public Object getParams()
+    public Map<String, Serializable> getParams()
     {
         return this.params;
     }
 
-    public void setParams(Object params)
+    public void setParams(Map<String, Serializable> params)
     {
         this.params = params;
     }

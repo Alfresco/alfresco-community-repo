@@ -30,6 +30,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonBuilderFactory;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -261,12 +262,13 @@ public class JsonBodyGenerator
      * @param params
      * @return
      */
-    public static String executeActionPostBody(String actionDefinitionId, RepoTestModel targetNode, Map<String, String> params)
+    public static String executeActionPostBody(String actionDefinitionId, RepoTestModel targetNode, Map<String, Serializable> params)
     {
         JsonObjectBuilder objectBuilder = jsonBuilder().createObjectBuilder();
-        for(Map.Entry<String, String> param : params.entrySet())
+        for(Map.Entry<String, Serializable> param : params.entrySet())
         {
-            objectBuilder.add(param.getKey(), param.getValue());
+            addJsonValue(objectBuilder, param.getKey(), param.getValue());
+
         }
         JsonObject value = defineJSON()
                 .add("actionDefinitionId", actionDefinitionId)
@@ -274,7 +276,40 @@ public class JsonBodyGenerator
                 .add("params", objectBuilder).build();
         return value.toString();
     }
-    
+
+    /** Add a value to the JSON object. */
+    private static void addJsonValue(JsonObjectBuilder objectBuilder, String key, Serializable value)
+    {
+        if (value == null)
+        {
+            objectBuilder.add(key, JsonObject.NULL);
+        }
+        else if (value instanceof Boolean)
+        {
+            objectBuilder.add(key, (boolean) value);
+        }
+        else if (value instanceof String)
+        {
+            objectBuilder.add(key, (String) value);
+        }
+        else if (value instanceof Integer)
+        {
+            objectBuilder.add(key, (int) value);
+        }
+        else if (value instanceof Long)
+        {
+            objectBuilder.add(key, (long) value);
+        }
+        else if (value instanceof Double)
+        {
+            objectBuilder.add(key, (double) value);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Unable to add entry to JsonObject: {" + key + ": " + value + "}");
+        }
+    }
+
     /**
      * {
      * "actionDefinitionId": "check-out",

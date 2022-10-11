@@ -72,7 +72,7 @@ public class WebDAVInsecurePostMethodTest
 
 
     @Test
-    public void shouldReturn405StatusForPostMethodWhenNotAllowed() throws ServletException, IOException
+    public void shouldReturn405StatusWhenPostMethodIsNotAllowed() throws ServletException, IOException
     {
         prepareRequest("POST");
         when(webDAVInitParameters.allowInsecurePOSTMethod()).thenReturn(false);
@@ -83,7 +83,7 @@ public class WebDAVInsecurePostMethodTest
     }
 
     @Test
-    public void shouldNotReturn405StatusForPostMethodWhenAllowed() throws ServletException, IOException
+    public void shouldNotReturn405StatusWhenPostMethodIsAllowed() throws ServletException, IOException
     {
         prepareRequest("POST");
         when(webDAVInitParameters.allowInsecurePOSTMethod()).thenReturn(true);

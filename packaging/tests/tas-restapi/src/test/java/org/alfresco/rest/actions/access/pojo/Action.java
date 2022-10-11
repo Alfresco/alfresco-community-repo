@@ -1,5 +1,6 @@
 package org.alfresco.rest.actions.access.pojo;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -8,7 +9,7 @@ public class Action {
     private String actionedUponNode;
     private List<ActionCondition> conditions;
     private List<Action> actions;
-    private Map<String, String> parameterValues;
+    private Map<String, Serializable> parameterValues;
 
     private boolean executeAsynchronously;
 
@@ -47,11 +48,11 @@ public class Action {
         this.actions = actions;
     }
 
-    public Map<String, String> getParameterValues() {
+    public Map<String, Serializable> getParameterValues() {
         return parameterValues;
     }
 
-    public void setParameterValues(Map<String, String> parameterValues) {
+    public void setParameterValues(Map<String, Serializable> parameterValues) {
         this.parameterValues = parameterValues;
     }
 }

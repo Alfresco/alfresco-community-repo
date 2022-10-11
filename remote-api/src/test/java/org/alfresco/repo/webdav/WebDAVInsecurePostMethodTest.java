@@ -74,7 +74,7 @@ public class WebDAVInsecurePostMethodTest
     @Test
     public void shouldReturn405StatusWhenPostMethodIsNotAllowed() throws ServletException, IOException
     {
-        prepareRequest("POST");
+        prepareRequest(WebDAV.METHOD_POST);
         when(webDAVInitParameters.allowInsecurePOSTMethod()).thenReturn(false);
 
         davServlet.service(request, response);
@@ -85,7 +85,7 @@ public class WebDAVInsecurePostMethodTest
     @Test
     public void shouldNotReturn405StatusWhenPostMethodIsAllowed() throws ServletException, IOException
     {
-        prepareRequest("POST");
+        prepareRequest(WebDAV.METHOD_POST);
         when(webDAVInitParameters.allowInsecurePOSTMethod()).thenReturn(true);
 
         davServlet.service(request, response);
@@ -96,7 +96,7 @@ public class WebDAVInsecurePostMethodTest
     @Test
     public void shouldNotReturn405StatusForPutMethod() throws ServletException, IOException
     {
-        prepareRequest("PUT");
+        prepareRequest(WebDAV.METHOD_PUT);
 
         davServlet.service(request, response);
 
@@ -106,7 +106,7 @@ public class WebDAVInsecurePostMethodTest
     @Test
     public void shouldNotReturn405StatusForGetMethod() throws ServletException, IOException
     {
-        prepareRequest("GET");
+        prepareRequest(WebDAV.METHOD_GET);
 
         davServlet.service(request, response);
 
@@ -116,7 +116,7 @@ public class WebDAVInsecurePostMethodTest
     @Test
     public void shouldNotReturn405StatusForDeleteMethod() throws ServletException, IOException
     {
-        prepareRequest("DELETE");
+        prepareRequest(WebDAV.METHOD_DELETE);
 
         davServlet.service(request, response);
 

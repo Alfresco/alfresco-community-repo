@@ -121,7 +121,7 @@ public class WebDAVServlet extends HttpServlet
             startTime = System.currentTimeMillis();
         }
 
-        if (request.getMethod().equals("POST") && !initParams.allowInsecurePOSTMethod())
+        if (request.getMethod().equals(WebDAV.METHOD_POST) && !initParams.allowInsecurePOSTMethod())
         {
             logger.error("POST method is not allowed!");
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);

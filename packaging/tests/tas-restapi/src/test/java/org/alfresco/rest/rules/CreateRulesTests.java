@@ -523,6 +523,49 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
+     * Check we get error when attempting to create a rule that copies files to a non-existent folder.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleThatUsesNonExistentNode()
+    {
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        String actionDefinitionId = "copy";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("destination-folder", "non-existent-node"));
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertLastError().containsSummary("The entity with id: non-existent-node was not found");
+    }
+
+    /**
+     * Check we get error when attempting to create a rule that references a folder that the user does not have read permission for.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleThatUsesNodeWithoutReadPermission()
+    {
+        SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
+
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        String actionDefinitionId = "copy";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("destination-folder", privateFolder.getNodeRef()));
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertLastError().containsSummary("The entity with id: " + privateFolder.getNodeRef() + " was not found");
+    }
+
+    /**
      * Check we can create a rule with multiple conditions
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})

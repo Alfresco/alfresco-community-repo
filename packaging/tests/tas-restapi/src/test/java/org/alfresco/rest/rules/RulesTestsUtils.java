@@ -93,6 +93,7 @@ public class RulesTestsUtils implements InitializingBean
     private FolderModel copyDestinationFolder;
 
     private FolderModel checkOutDestinationFolder;
+
     /**
      * Initialise the util class.
      */

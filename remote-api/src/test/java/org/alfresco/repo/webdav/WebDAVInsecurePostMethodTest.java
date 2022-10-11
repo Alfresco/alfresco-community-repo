@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Hashtable;
 
 import org.alfresco.repo.webdav.WebDAVServlet.WebDAVInitParameters;
 import org.junit.Before;
@@ -46,7 +47,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * Tests for the allowing insecure POST method flag.
+ * Tests for the allowInsecurePOSTMethod flag.
  *
  * @see  WebDAVInitParameters
  * @author Aleksandra Onych
@@ -55,18 +56,17 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class WebDAVInsecurePostMethodTest
 {
     private WebDAVServlet davServlet;
-
     private @Mock WebDAVInitParameters webDAVInitParameters;
-
     private @Mock HttpServletRequest request;
-
     private @Mock HttpServletResponse response;
+    private @Mock Hashtable<String,Class<? extends WebDAVMethod>> davMethods;
 
     @Before
     public void setUp()
     {
         davServlet = new WebDAVServlet();
         ReflectionTestUtils.setField(davServlet, "initParams", webDAVInitParameters);
+        ReflectionTestUtils.setField(davServlet, "m_davMethods", davMethods);
         doReturn(true).when(webDAVInitParameters).getEnabled();
     }
 
@@ -75,8 +75,8 @@ public class WebDAVInsecurePostMethodTest
     public void shouldReturn405StatusForPostMethodWhenNotAllowed() throws ServletException, IOException
     {
         // given
-        when(webDAVInitParameters.isPostMethodAllowed()).thenReturn(false);
-        when(request.getMethod()).thenReturn("POST");
+        prepareRequest("POST");
+        when(webDAVInitParameters.allowInsecurePOSTMethod()).thenReturn(false);
 
         // when
         davServlet.service(request, response);
@@ -89,8 +89,8 @@ public class WebDAVInsecurePostMethodTest
     public void shouldNotReturn405StatusForPostMethodWhenAllowed() throws ServletException, IOException
     {
         // given
-        when(webDAVInitParameters.isPostMethodAllowed()).thenReturn(true);
-        when(request.getMethod()).thenReturn("POST");
+        prepareRequest("POST");
+        when(webDAVInitParameters.allowInsecurePOSTMethod()).thenReturn(true);
 
         // when
         davServlet.service(request, response);
@@ -103,7 +103,7 @@ public class WebDAVInsecurePostMethodTest
     public void shouldNotReturn405StatusForPutMethod() throws ServletException, IOException
     {
         // given
-        when(request.getMethod()).thenReturn("PUT");
+        prepareRequest("PUT");
 
         // when
         davServlet.service(request, response);
@@ -116,7 +116,7 @@ public class WebDAVInsecurePostMethodTest
     public void shouldNotReturn405StatusForGetMethod() throws ServletException, IOException
     {
         // given
-        when(request.getMethod()).thenReturn("GET");
+        prepareRequest("GET");
 
         // when
         davServlet.service(request, response);
@@ -129,12 +129,18 @@ public class WebDAVInsecurePostMethodTest
     public void shouldNotReturn405StatusForDeleteMethod() throws ServletException, IOException
     {
         // given
-        when(request.getMethod()).thenReturn("DELETE");
+        prepareRequest("DELETE");
 
         // when
         davServlet.service(request, response);
 
         // then
         verify(response, never()).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+    }
+
+    private void prepareRequest(String requestMethodName)
+    {
+        doReturn(PutMethod.class).when(davMethods).get(requestMethodName);
+        when(request.getMethod()).thenReturn(requestMethodName);
     }
 }

@@ -121,7 +121,7 @@ public class WebDAVServlet extends HttpServlet
             startTime = System.currentTimeMillis();
         }
 
-        if (request.getMethod().equals("POST") && !initParams.isPostMethodAllowed())
+        if (request.getMethod().equals("POST") && !initParams.allowInsecurePOSTMethod())
         {
             logger.error("POST method is not allowed!");
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -414,7 +414,7 @@ public class WebDAVServlet extends HttpServlet
         private String storeName;
         private String rootPath;
         private String urlPathPrefix;
-        private boolean postMethodAllowed = false;
+        private boolean allowInsecurePOSTMethod = false;
         
         public boolean getEnabled()
         {
@@ -491,14 +491,14 @@ public class WebDAVServlet extends HttpServlet
             this.urlPathPrefix = urlPathPrefix;
         }
 
-        public boolean isPostMethodAllowed()
+        public boolean allowInsecurePOSTMethod()
         {
-            return postMethodAllowed;
+            return allowInsecurePOSTMethod;
         }
 
-        public void setPostMethodAllowed(boolean postMethodAllowed)
+        public void setAllowInsecurePOSTMethod(boolean allowInsecurePOSTMethod)
         {
-            this.postMethodAllowed = postMethodAllowed;
+            this.allowInsecurePOSTMethod = allowInsecurePOSTMethod;
         }
     }
 }

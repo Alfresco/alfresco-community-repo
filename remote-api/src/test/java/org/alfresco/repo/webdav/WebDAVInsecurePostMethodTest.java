@@ -67,74 +67,59 @@ public class WebDAVInsecurePostMethodTest
         davServlet = new WebDAVServlet();
         ReflectionTestUtils.setField(davServlet, "initParams", webDAVInitParameters);
         ReflectionTestUtils.setField(davServlet, "m_davMethods", davMethods);
-        doReturn(true).when(webDAVInitParameters).getEnabled();
+        when(webDAVInitParameters.getEnabled()).thenReturn(true);
     }
 
 
     @Test
     public void shouldReturn405StatusForPostMethodWhenNotAllowed() throws ServletException, IOException
     {
-        // given
         prepareRequest("POST");
         when(webDAVInitParameters.allowInsecurePOSTMethod()).thenReturn(false);
 
-        // when
         davServlet.service(request, response);
 
-        // then
         verify(response).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Test
     public void shouldNotReturn405StatusForPostMethodWhenAllowed() throws ServletException, IOException
     {
-        // given
         prepareRequest("POST");
         when(webDAVInitParameters.allowInsecurePOSTMethod()).thenReturn(true);
 
-        // when
         davServlet.service(request, response);
 
-        // then
         verify(response, never()).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Test
     public void shouldNotReturn405StatusForPutMethod() throws ServletException, IOException
     {
-        // given
         prepareRequest("PUT");
 
-        // when
         davServlet.service(request, response);
 
-        // then
         verify(response, never()).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Test
     public void shouldNotReturn405StatusForGetMethod() throws ServletException, IOException
     {
-        // given
         prepareRequest("GET");
 
-        // when
         davServlet.service(request, response);
 
-        // then
         verify(response, never()).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 
     @Test
     public void shouldNotReturn405StatusForDeleteMethod() throws ServletException, IOException
     {
-        // given
         prepareRequest("DELETE");
 
-        // when
         davServlet.service(request, response);
 
-        // then
         verify(response, never()).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
 

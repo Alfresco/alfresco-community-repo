@@ -1,14 +1,16 @@
 package org.alfresco.rest.actions.access;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
+
 import org.alfresco.rest.actions.access.pojo.Action;
 import org.alfresco.rest.actions.access.pojo.ActionCondition;
 import org.alfresco.rest.actions.access.pojo.Rule;
 import org.alfresco.utility.model.UserModel;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class AccessRestrictionUtil {
 
@@ -19,8 +21,8 @@ public class AccessRestrictionUtil {
             "Only admin or system user is allowed to define uses of or directly execute this action";
     private static final String ERROR_MESSAGE_FAILED_TO_SEND_EMAIL = "Failed to send email to:";
 
-    public static Map<String, String> createMailParameters(UserModel sender, UserModel recipient) {
-        Map<String, String> parameterValues = new HashMap<>();
+    public static Map<String, Serializable> createMailParameters(UserModel sender, UserModel recipient) {
+        Map<String, Serializable> parameterValues = new HashMap<>();
         parameterValues.put("from", sender.getEmailAddress());
         parameterValues.put("to", recipient.getEmailAddress());
         parameterValues.put("subject", "Test");
@@ -29,7 +31,7 @@ public class AccessRestrictionUtil {
         return parameterValues;
     }
 
-    public static Rule createRuleWithAction(String actionName, Map<String, String> parameterValues) {
+    public static Rule createRuleWithAction(String actionName, Map<String, Serializable> parameterValues) {
         Rule rule = new Rule();
         rule.setId("");
         rule.setTitle("Test rule title");
@@ -57,7 +59,7 @@ public class AccessRestrictionUtil {
         return rule;
     }
 
-    public static Action createActionWithParameters(String actionName, Map<String, String> parameterValues) {
+    public static Action createActionWithParameters(String actionName, Map<String, Serializable> parameterValues) {
         Action compositeAction = new Action();
         compositeAction.setActionDefinitionName("composite-action");
 
@@ -76,7 +78,7 @@ public class AccessRestrictionUtil {
     }
 
 
-    public static Action createAction(String actionName, Map<String, String> parameterValues) {
+    public static Action createAction(String actionName, Map<String, Serializable> parameterValues) {
         Action action = new Action();
         action.setActionDefinitionName(actionName);
         action.setParameterValues(parameterValues);

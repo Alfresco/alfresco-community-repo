@@ -78,6 +78,7 @@ public class AuditHoldsTest extends BaseRMRestTest {
     private List<AuditEntry> auditEntries;
     private String hold1NodeRef;
     public static final String RECORD_FOLDER_THREE = "record-folder-three";
+    private static final String SITES_PATH = "/Sites";
     @BeforeClass(alwaysRun = true)
     public void preconditionForAuditAddToHoldTests()
     {
@@ -92,12 +93,16 @@ public class AuditHoldsTest extends BaseRMRestTest {
         publicSite = dataSite.usingAdmin().createPublicRandomSite();
         testFile = dataContent.usingAdmin().usingSite(publicSite).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
+
         STEP("Create a record category with 2 folders and 1 record");
         recordCategory = createRootCategory(getRandomName("recordCategory"));
         recordFolder1 = createRecordFolder(recordCategory.getId(), PREFIX + "recFolder1");
         recordFolder2 = createRecordFolder(recordCategory.getId(), PREFIX + "recFolder2");
         Record recordToBeAdded = createElectronicRecord(recordFolder1.getId(), PREFIX + "record");
         assertStatusCode(CREATED);
+
+//        //This is required to assert line 137
+//        rmAuditService.clearAuditLog();
 
         STEP("Add some items to the hold, then remove them from the hold");
         final List<String> itemsList = asList(testFile.getNodeRefWithoutVersion(), recordToBeAdded.getId(), recordFolder2.getId());
@@ -128,11 +133,12 @@ public class AuditHoldsTest extends BaseRMRestTest {
     }
     @Test (dataProvider = "holdsEvents")
     public void checkItemPathLink(AuditEvents event) {
-        System.out.println("Executing checkItemPathLink test");
         auditEntries = rmAuditService.getAuditEntriesFilteredByEvent(getAdminUser(), event);
         assertFalse("Audit results should not be empty",auditEntries.size()==0);
         final String auditedEvent = event + " - " + testFile.getName();
         assertTrue("Audit results should contain one " + auditedEvent + " event",auditEntries.stream().anyMatch(e -> e.getEvent().startsWith(event.eventDisplayName)));
+        String expectedLocation = testFile.getCmisLocation().replace(SITES_PATH, "");
+        System.out.println(auditEntries.size());
         STEP("Check the audit log contains only an entry for add to hold.");
         assertThat(auditEntries, is(not(empty())));
     }

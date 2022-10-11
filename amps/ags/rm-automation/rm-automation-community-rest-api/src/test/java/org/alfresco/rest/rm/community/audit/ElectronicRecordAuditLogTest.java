@@ -98,7 +98,6 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
     @Test(description = "Audit log for newly filed electronic record")
     @AlfrescoTest(jira="RM-4303")
     public void newElectronicRecordAudit() {
-        System.out.println("Executing newElectronicRecordAudit test");
         List<AuditEntry> auditEntries= auditLog.getRMAuditLogAll(getAdminUser().getUsername(),getAdminUser().getPassword(),100);
 
         // newly created record contains 2 events: "file to" and metadata update
@@ -116,7 +115,6 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
     @AlfrescoTest(jira="RM-4303")
     public void electronicRecordAuditIsEvent()
     {
-        System.out.println("Executing electronicRecordAuditIsEvent test");
         List<AuditEntry> auditEntries= auditLog.getRMAuditLogAll(getAdminUser().getUsername(),getAdminUser().getPassword(),100);
         assertTrue("Audit View Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Audit View")));
     }
@@ -128,7 +126,6 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
         )
     @AlfrescoTest(jira="RM-4303")
     public void renameElectronicRecord() {
-        System.out.println("Executing renameElectronicRecord test");
         auditLog.clearAuditLog(rmAdmin.get().getUsername(),rmAdmin.get().getPassword());
         Record renameElectronicRecord = createRecordModel("edited " + electronicRecord.getName(), "", "");
 
@@ -146,7 +143,6 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
         description = "Complete and reopen electronic record")
     @AlfrescoTest(jira="RM-4303")
     public void completeAndReopenElectronicRecord() {
-        System.out.println("Executing completeAndReopenElectronicRecord test");
         electronicRecord2 = createElectronicRecord(recordFolder1.getId(),AUDIT_COMPLETE_REOPEN_ELECTRONIC_RECORD);
 
         // complete record
@@ -202,7 +198,6 @@ public class ElectronicRecordAuditLogTest extends BaseRMRestTest {
     @AlfrescoTest(jira="RM-4303")
     public void fileElectronicRecordAuditLogAsRecord()
     {
-        System.out.println("Executing completeAndReopenElectronicRecord test");
         // audit log is stored in the same folder, refresh it so that it appears in the list
         HttpResponse auditRecordHttpResponse = auditLog.logsAuditLogAsRecord(rmAdmin.get().getUsername(),rmAdmin.get().getPassword(),
         getRecordNodeRef(electronicRecord2.getId()),getFolderNodeRef(recordFolder1.getId()));

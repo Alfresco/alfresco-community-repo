@@ -869,7 +869,7 @@
         <property name="nodeService" ref="NodeService"/>
     </bean>
 
-    <bean class="org.alfresco.rest.api.nodes.NodeRulesRelation">
+    <bean class="org.alfresco.rest.api.rules.NodeRulesRelation">
         <property name="rules" ref="Rules" />
     </bean>
 
@@ -902,7 +902,7 @@
         <property name="ruleMapper" ref="ruleMapper"/>
     </bean>
 
-    <bean class="org.alfresco.rest.api.nodes.NodeRuleSetsRelation">
+    <bean class="org.alfresco.rest.api.rules.NodeRuleSetsRelation">
         <property name="ruleSets" ref="RuleSets" />
     </bean>
 
@@ -935,11 +935,11 @@
         </property>
     </bean>
 
-    <bean class="org.alfresco.rest.api.nodes.NodeRuleSetLinksRelation">
+    <bean class="org.alfresco.rest.api.rules.NodeRuleSetLinksRelation">
         <constructor-arg name="ruleSets" ref="RuleSets" />
     </bean>
 
-    <bean class="org.alfresco.rest.api.nodes.NodeRuleExecutionsRelation">
+    <bean class="org.alfresco.rest.api.rules.NodeRuleExecutionsRelation">
         <constructor-arg name="rules" ref="Rules" />
     </bean>
 
@@ -958,7 +958,7 @@
         </property>
     </bean>
 
-    <bean class="org.alfresco.rest.api.nodes.NodeRuleSettingsRelation">
+    <bean class="org.alfresco.rest.api.rules.NodeRuleSettingsRelation">
         <property name="ruleSettings" ref="RuleSettings" />
     </bean>
 

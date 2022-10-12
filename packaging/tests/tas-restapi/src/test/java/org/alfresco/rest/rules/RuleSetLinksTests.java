@@ -80,11 +80,11 @@ public class RuleSetLinksTests extends RestTest
 
         STEP("Create a rule in the rule folder.");
         RestRuleModel ruleModel = createRuleModel("ruleName");
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
         STEP("Get the rule sets for the folder and find the rule set id");
-        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
                 .getListOfRuleSets();
         ruleSets.assertThat().entriesListCountIs(1);
         final String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
@@ -92,7 +92,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Link to a rule folder");
         final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(ruleFolder.getNodeRef());
-        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
+        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).createRuleLink(request);
 
         STEP("Assert link result");
         restClient.assertStatusCodeIs(CREATED);
@@ -101,7 +101,7 @@ public class RuleSetLinksTests extends RestTest
         ruleLink.assertThat().isEqualTo(expectedLink);
 
         STEP("Check if folder returns same rules");
-        final RestRuleModelsCollection linkedRules = restClient.authenticateUser(user).withCoreAPI()
+        final RestRuleModelsCollection linkedRules = restClient.authenticateUser(user).withPrivateAPI()
                 .usingNode(folder)
                 .usingDefaultRuleSet()
                 .getListOfRules();
@@ -109,7 +109,7 @@ public class RuleSetLinksTests extends RestTest
         linkedRules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
 
         STEP("Check if folder returns rule set with linked inclusionType");
-        final RestRuleSetModelsCollection linkedRuleSets = restClient.authenticateUser(user).withCoreAPI()
+        final RestRuleSetModelsCollection linkedRuleSets = restClient.authenticateUser(user).withPrivateAPI()
                 .usingNode(folder)
                 .include("inclusionType")
                 .getListOfRuleSets();
@@ -133,11 +133,11 @@ public class RuleSetLinksTests extends RestTest
 
         STEP("Create a rule in the rule folder.");
         RestRuleModel ruleModel = createRuleModel("ruleName");
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
         STEP("Get the rule sets for the folder and find the rule set id");
-        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
                 .getListOfRuleSets();
         ruleSets.assertThat().entriesListCountIs(1);
         final String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
@@ -145,7 +145,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Link to a rule set");
         final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(ruleSetId);
-        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
+        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).createRuleLink(request);
 
         STEP("Assert link result");
         restClient.assertStatusCodeIs(CREATED);
@@ -154,7 +154,7 @@ public class RuleSetLinksTests extends RestTest
         ruleLink.assertThat().isEqualTo(expectedLink);
 
         STEP("Check if folder returns same rules");
-        final RestRuleModelsCollection linkedRules = restClient.authenticateUser(user).withCoreAPI()
+        final RestRuleModelsCollection linkedRules = restClient.authenticateUser(user).withPrivateAPI()
                 .usingNode(folder)
                 .usingDefaultRuleSet()
                 .getListOfRules();
@@ -162,7 +162,7 @@ public class RuleSetLinksTests extends RestTest
         linkedRules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
 
         STEP("Check if folder returns rule set with linked inclusionType");
-        final RestRuleSetModelsCollection likedRuleSets = restClient.authenticateUser(user).withCoreAPI()
+        final RestRuleSetModelsCollection likedRuleSets = restClient.authenticateUser(user).withPrivateAPI()
                 .usingNode(folder)
                 .include("inclusionType")
                 .getListOfRuleSets();
@@ -186,7 +186,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Link to non-existing rule set");
         final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId("dummy-rule-set-id");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).createRuleLink(request);
 
         STEP("Assert link result is 404");
         restClient.assertStatusCodeIs(NOT_FOUND);
@@ -205,7 +205,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Link to a folder without rules");
         final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(folder2.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder1).createRuleLink(request);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder1).createRuleLink(request);
 
         STEP("Assert link result is 400");
         restClient.assertStatusCodeIs(BAD_REQUEST)
@@ -224,16 +224,16 @@ public class RuleSetLinksTests extends RestTest
 
         STEP("Create rules in both folders.");
         RestRuleModel ruleModel1 = createRuleModel("ruleName1");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder1).usingDefaultRuleSet()
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder1).usingDefaultRuleSet()
                 .createSingleRule(ruleModel1);
         RestRuleModel ruleModel2 = createRuleModel("ruleName2");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder2).usingDefaultRuleSet()
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder2).usingDefaultRuleSet()
                 .createSingleRule(ruleModel2);
 
         STEP("Link from a folder with rules");
         final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(folder2.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder1).createRuleLink(request);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder1).createRuleLink(request);
 
         STEP("Assert link result is 400");
         restClient.assertStatusCodeIs(BAD_REQUEST)
@@ -254,7 +254,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Link to a file node");
         final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(fileContent.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).createRuleLink(request);
 
         STEP("Assert link result is 400");
         restClient.assertStatusCodeIs(BAD_REQUEST)
@@ -273,11 +273,11 @@ public class RuleSetLinksTests extends RestTest
 
         STEP("Create a rule in the parent folder.");
         RestRuleModel ruleModel = createRuleModel("ruleName");
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(parentFolder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
         STEP("Get the rule sets for the folder and find the rule set id");
-        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(parentFolder)
+        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder)
                 .getListOfRuleSets();
         ruleSets.assertThat().entriesListCountIs(1);
         final String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
@@ -285,7 +285,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Link to the parent folder");
         final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(parentFolder.getNodeRef());
-        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolder).createRuleLink(request);
+        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).createRuleLink(request);
 
         STEP("Assert link result");
         restClient.assertStatusCodeIs(CREATED);
@@ -294,7 +294,7 @@ public class RuleSetLinksTests extends RestTest
         ruleLink.assertThat().isEqualTo(expectedLink);
 
         STEP("Check if child folder returns same rules");
-        final RestRuleModelsCollection linkedRules = restClient.authenticateUser(user).withCoreAPI()
+        final RestRuleModelsCollection linkedRules = restClient.authenticateUser(user).withPrivateAPI()
                 .usingNode(childFolder)
                 .usingDefaultRuleSet()
                 .getListOfRules();
@@ -302,7 +302,7 @@ public class RuleSetLinksTests extends RestTest
         linkedRules.getEntries().get(0).onModel().assertThat().isEqualTo(rule);
 
         STEP("Check if child folder returns rule set with linked inclusionType");
-        final RestRuleSetModelsCollection linkedRuleSets = restClient.authenticateUser(user).withCoreAPI()
+        final RestRuleSetModelsCollection linkedRuleSets = restClient.authenticateUser(user).withPrivateAPI()
                 .usingNode(childFolder)
                 .include("inclusionType")
                 .getListOfRuleSets();
@@ -323,14 +323,14 @@ public class RuleSetLinksTests extends RestTest
         STEP("Use admin to create a private site with a folder containing a rule.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
-        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
                   .createSingleRule(createRuleModelWithDefaultValues());
 
         STEP("Use a normal user to try to link to the rule.");
         FolderModel publicFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(privateFolder.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(publicFolder).createRuleLink(request);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(publicFolder).createRuleLink(request);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
     }
@@ -344,7 +344,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Use admin to create a private site with a folder containing a rule.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
-        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
                   .createSingleRule(createRuleModelWithDefaultValues());
 
         STEP("Add the normal user as a consumer.");
@@ -354,7 +354,7 @@ public class RuleSetLinksTests extends RestTest
         FolderModel publicFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(privateFolder.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(publicFolder).createRuleLink(request);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(publicFolder).createRuleLink(request);
 
         restClient.assertStatusCodeIs(CREATED);
     }
@@ -373,11 +373,11 @@ public class RuleSetLinksTests extends RestTest
 
         STEP("Create a rule in the rule folder.");
         RestRuleModel ruleModel = createRuleModel("ruleName");
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
         STEP("Get the rule sets for the folder and find the rule set id");
-        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+        final RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
                 .getListOfRuleSets();
         ruleSets.assertThat().entriesListCountIs(1);
         final String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
@@ -385,23 +385,23 @@ public class RuleSetLinksTests extends RestTest
         STEP("Link to a rule folder");
         final RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(ruleFolder.getNodeRef());
-        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).createRuleLink(request);
+        final RestRuleSetLinkModel ruleLink = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).createRuleLink(request);
 
         STEP("Unlink the rule set");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).unlinkRuleSet(ruleSetId);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).unlinkRuleSet(ruleSetId);
 
         STEP("Assert unlink result");
         restClient.assertStatusCodeIs(NO_CONTENT);
 
         STEP("GET the rule set and isLinkedTo field.");
-        RestRuleSetModel ruleSet =  restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+        RestRuleSetModel ruleSet =  restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
                 .include("isLinkedTo", "linkedToBy", "owningFolder")
                 .getDefaultRuleSet();
 
         STEP("Assert linkedTo is false.");
         restClient.assertStatusCodeIs(OK);
         ruleSet.assertThat().field("isLinkedTo").is(false)
-                .assertThat().field("linkedToBy").isEmpty();;
+                .assertThat().field("linkedToBy").isEmpty();
     }
 
     /**
@@ -416,7 +416,7 @@ public class RuleSetLinksTests extends RestTest
         final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Attempt to unlink the rule set");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).unlinkRuleSet(folder.getNodeRef());
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).unlinkRuleSet(folder.getNodeRef());
 
         STEP("Assert unlink result");
         restClient.assertStatusCodeIs(BAD_REQUEST)
@@ -436,7 +436,7 @@ public class RuleSetLinksTests extends RestTest
         final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Attempt to unlink the rule set");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).unlinkRuleSet("non-existent-id");
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).unlinkRuleSet("non-existent-id");
 
         STEP("Assert unlink result");
         restClient.assertStatusCodeIs(NOT_FOUND)
@@ -452,7 +452,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Use admin to create a private site with a folder containing a rule.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
-        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
                   .createSingleRule(createRuleModelWithDefaultValues());
 
         STEP("Add the user as a consumer.");
@@ -462,14 +462,14 @@ public class RuleSetLinksTests extends RestTest
         FolderModel publicFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(privateFolder.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(publicFolder).createRuleLink(request);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(publicFolder).createRuleLink(request);
         restClient.assertStatusCodeIs(CREATED);
 
         STEP("Remove the user from the private site.");
         dataUser.usingAdmin().removeUserFromSite(user, privateSite);
 
         STEP("Use the user to try to unlink from the rule set.");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(publicFolder).unlinkRuleSet("-default-");
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(publicFolder).unlinkRuleSet("-default-");
 
         restClient.assertStatusCodeIs(FORBIDDEN);
     }
@@ -483,7 +483,7 @@ public class RuleSetLinksTests extends RestTest
         STEP("Use admin to create a private site with a folder containing a rule.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
-        restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet()
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
                   .createSingleRule(createRuleModelWithDefaultValues());
 
         STEP("Add the user as a consumer.");
@@ -493,11 +493,11 @@ public class RuleSetLinksTests extends RestTest
         FolderModel publicFolder = dataContent.usingUser(user).usingSite(site).createFolder();
         RestRuleSetLinkModel request = new RestRuleSetLinkModel();
         request.setId(privateFolder.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(publicFolder).createRuleLink(request);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(publicFolder).createRuleLink(request);
         restClient.assertStatusCodeIs(CREATED);
 
         STEP("Use the consumer to try to unlink from the rule set.");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(publicFolder).unlinkRuleSet("-default-");
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(publicFolder).unlinkRuleSet("-default-");
 
         restClient.assertStatusCodeIs(NO_CONTENT);
     }

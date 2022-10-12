@@ -73,11 +73,6 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest {
         STEP("Create root level category");
         recordCategoryAudit = createRootCategory(AUDIT_CATEGORY);
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
-        System.out.println(auditEntries.size());
-
-        auditEntries.stream().forEach(x -> {
-            System.out.println(x.getEvent());
-        });
         // newly created record category contains 3 events: object creation, inherited permissions set to false and metadata update
         // the order in which object creation and metadata update are listed isn't always identical due to
         // both happening in the same transaction
@@ -92,7 +87,6 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest {
         )
     @AlfrescoTest(jira="RM-4303")
     public void recordCategoryAuditIsEvent() {
-
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
         assertTrue("Audit View Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Audit View")));
     }
@@ -113,7 +107,6 @@ public class RecordCategoryAuditLogTest extends BaseRMRestTest {
         assertStatusCode(OK);
         // we expect 1 new event: "metadata update"
         List<AuditEntry> auditEntries = auditLog.getRMAuditLogAll(getAdminUser().getUsername(), getAdminUser().getPassword(), 100);
-       // assertTrue("Move To Event is not present.",auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Move to")));
         assertTrue("Updated metadata Event is not present.", auditEntries.stream().anyMatch(x -> x.getEvent().startsWith("Updated Metadata")));
     }
     @AfterClass(alwaysRun = true)

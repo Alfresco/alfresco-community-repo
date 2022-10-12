@@ -24,13 +24,14 @@
  * #L%
  */
 
-package org.alfresco.rest.api.nodes;
+package org.alfresco.rest.api.rules;
 
 import static org.mockito.BDDMockito.then;
 
 import junit.framework.TestCase;
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSetLink;
+import org.alfresco.rest.api.rules.NodeRuleSetLinksRelation;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.junit.Assert;
 import org.junit.Test;

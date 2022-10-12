@@ -24,12 +24,13 @@
  * #L%
  */
 
-package org.alfresco.rest.api.nodes;
+package org.alfresco.rest.api.rules;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSet;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;

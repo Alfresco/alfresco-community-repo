@@ -23,12 +23,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.rest.api.nodes;
+package org.alfresco.rest.api.rules;
 
 import java.util.List;
 
 import org.alfresco.rest.api.Rules;
 import org.alfresco.rest.api.model.rules.RuleExecution;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;

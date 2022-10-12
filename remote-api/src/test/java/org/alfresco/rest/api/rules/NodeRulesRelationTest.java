@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.api.nodes;
+package org.alfresco.rest.api.rules;
 
 import static org.mockito.BDDMockito.then;
 
@@ -32,6 +32,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 import org.alfresco.rest.api.Rules;
+import org.alfresco.rest.api.rules.NodeRulesRelation;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.tests.core.ParamsExtender;

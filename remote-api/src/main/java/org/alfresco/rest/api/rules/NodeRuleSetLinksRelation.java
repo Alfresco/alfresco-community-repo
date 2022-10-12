@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.api.nodes;
+package org.alfresco.rest.api.rules;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.rest.api.RuleSets;
 import org.alfresco.rest.api.model.rules.RuleSetLink;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;

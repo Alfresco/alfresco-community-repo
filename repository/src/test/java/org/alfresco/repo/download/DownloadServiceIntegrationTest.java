@@ -28,6 +28,9 @@ package org.alfresco.repo.download;
 import net.sf.acegisecurity.Authentication;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
+import org.alfresco.repo.action.evaluator.IsSubTypeEvaluator;
+import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.SystemNodeUtils;
@@ -36,6 +39,10 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionCondition;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.CompositeAction;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.download.DownloadService;
@@ -49,6 +56,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -78,7 +86,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -132,6 +143,8 @@ public class DownloadServiceIntegrationTest
     private static RetryingTransactionHelper TRANSACTION_HELPER;
     private static IntegrityChecker          INTEGRITY_CHECKER;
     private static RepoAdminService          REPO_ADMIN_SERVICE;
+    private static RuleService               RULE_SERVICE;
+    private static ActionService ACTION_SERVICE;
     
     // Test Content 
     private NodeRef rootFolder;
@@ -196,6 +209,8 @@ public class DownloadServiceIntegrationTest
         INTEGRITY_CHECKER.setFailOnViolation(true);
         INTEGRITY_CHECKER.setTraceOn(true);
         REPO_ADMIN_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("RepoAdminService", RepoAdminService.class);
+        RULE_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("ruleService", RuleService.class);
+        ACTION_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("actionService", ActionService.class);
     }
  
     /**
@@ -211,16 +226,77 @@ public class DownloadServiceIntegrationTest
         NodeRef COMPANY_HOME = repositoryHelper.getCompanyHome();
         
         // Create some static test content
-       rootFolder = testNodes.createNode(COMPANY_HOME, "rootFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
-       allEntries.add("rootFolder/");
+        rootFolder = testNodes.createNode(COMPANY_HOME, "rootFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+        allEntries.add("rootFolder/");
+/*
+        // create rule
+        org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
+        rule.setTitle("add aspect");
+        rule.setDescription("This rule adds the classified aspect");
+        rule.applyToChildren(true);
+        rule.setExecuteAsynchronously(false);
+        rule.setRuleDisabled(false);
+        rule.setRuleType(RuleType.INBOUND);
+        rule.setNodeRef(rootFolder);
 
-       org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule(rootFolder);
+        // create action
+        Action addAspectAction = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
+        Map<String, Serializable> parameters = new HashMap<>();
+        parameters.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+        addAspectAction.setParameterValues(parameters);
 
-       rule.setRuleType(RuleType.INBOUND);
+        // create composite action
+        CompositeAction compositeAction = ACTION_SERVICE.createCompositeAction();
+        compositeAction.setExecuteAsynchronously(false);
+        ActionCondition actionCondition = ACTION_SERVICE.createActionCondition(IsSubTypeEvaluator.NAME);
+        Map<String, Serializable> conditionParameters = new HashMap<>();
+        conditionParameters.put(IsSubTypeEvaluator.PARAM_TYPE, ContentModel.TYPE_CONTENT);
+        conditionParameters.put(IsSubTypeEvaluator.PARAM_TYPE, ContentModel.TYPE_FOLDER);
+        actionCondition.setParameterValues(conditionParameters);
 
-       ActionImpl action = new ActionImpl(null, null, AddFeaturesActionExecuter.PARAM_ASPECT_NAME, null);
-       action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
-       rule.setAction(action);
+        compositeAction.addActionCondition(actionCondition);
+
+        compositeAction.addAction(addAspectAction);
+        rule.setAction(compositeAction);
+        RULE_SERVICE.saveRule(rootFolder, rule);
+
+       RULE_SERVICE.enableRules();
+*/
+        /*
+        // Rule properties
+        Map<String, Serializable> actionProps = new HashMap<String, Serializable>();
+        actionProps.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+
+        List<String> ruleTypes = new ArrayList<String>(1);
+        ruleTypes.add(RuleType.INBOUND);
+
+        // Create the action
+        Action action = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
+        action.setParameterValues(actionProps);
+
+        // Create the rule
+        org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
+        rule.setRuleTypes(ruleTypes);
+        rule.setTitle("test"+System.currentTimeMillis());
+        rule.setDescription("test"+System.currentTimeMillis());
+        rule.applyToChildren(true);
+//        rule.setAction(action);
+
+        System.out.println("rootFolder: "+rootFolder.toString());
+        RULE_SERVICE.saveRule(rootFolder, rule);
+
+         */
+
+        org.alfresco.service.cmr.rule.Rule parentRule = new org.alfresco.service.cmr.rule.Rule();
+        parentRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
+        parentRule.setTitle("RuleServiceTest" + GUID.generate());
+        parentRule.setDescription("Add Versionable");
+        Action action = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
+        action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+        parentRule.setAction(action);
+        parentRule.applyToChildren(true);
+
+        RULE_SERVICE.saveRule(rootFolder, parentRule);
 
        rootFile = testNodes.createNodeWithTextContent(COMPANY_HOME, "rootFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Root file content");
        allEntries.add("rootFile.txt");

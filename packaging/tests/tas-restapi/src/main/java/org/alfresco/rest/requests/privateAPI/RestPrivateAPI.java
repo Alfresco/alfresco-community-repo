@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.requests.privateAPI;
 
+import io.restassured.RestAssured;
 import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestCustomTypeModel;
 import org.alfresco.rest.model.RestSubscriberModel;
@@ -33,14 +34,14 @@ import org.alfresco.rest.requests.CustomAspectModelManager;
 import org.alfresco.rest.requests.CustomModelManager;
 import org.alfresco.rest.requests.CustomTypeManager;
 import org.alfresco.rest.requests.ModelRequest;
+import org.alfresco.rest.requests.Node;
 import org.alfresco.rest.requests.syncServiceAPI.Healthcheck;
 import org.alfresco.rest.requests.syncServiceAPI.Subscribers;
 import org.alfresco.rest.requests.syncServiceAPI.Subscriptions;
 import org.alfresco.rest.requests.syncServiceAPI.Sync;
 import org.alfresco.utility.model.CustomAspectModel;
 import org.alfresco.utility.model.CustomContentModel;
-
-import io.restassured.RestAssured;
+import org.alfresco.utility.model.RepoTestModel;
 
 /**
  * @author Bogdan Bocancea
@@ -145,6 +146,17 @@ public class RestPrivateAPI extends ModelRequest<RestPrivateAPI>
     public Healthcheck doHealthCheck()
     {
         return new Healthcheck(restWrapper);
+    }
+
+    /**
+     * Provides DSL on all REST calls under <code>nodes/</code> API path
+     *
+     * @param node
+     * @return
+     */
+    public Node usingNode(RepoTestModel node)
+    {
+        return new Node(node, restWrapper);
     }
 
 }

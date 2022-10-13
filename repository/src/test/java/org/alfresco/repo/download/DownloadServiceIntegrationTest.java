@@ -228,75 +228,25 @@ public class DownloadServiceIntegrationTest
         // Create some static test content
         rootFolder = testNodes.createNode(COMPANY_HOME, "rootFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
         allEntries.add("rootFolder/");
-/*
-        // create rule
-        org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
-        rule.setTitle("add aspect");
-        rule.setDescription("This rule adds the classified aspect");
-        rule.applyToChildren(true);
-        rule.setExecuteAsynchronously(false);
-        rule.setRuleDisabled(false);
-        rule.setRuleType(RuleType.INBOUND);
-        rule.setNodeRef(rootFolder);
 
-        // create action
-        Action addAspectAction = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
-        Map<String, Serializable> parameters = new HashMap<>();
-        parameters.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
-        addAspectAction.setParameterValues(parameters);
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                org.alfresco.service.cmr.rule.Rule parentRule = new org.alfresco.service.cmr.rule.Rule();
+                parentRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
+                parentRule.setTitle("DownloadServiceIntegrationTest" + GUID.generate());
+                parentRule.setDescription("Add Classifiable");
+                Action action = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
+                action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+                parentRule.setAction(action);
+                parentRule.applyToChildren(true);
 
-        // create composite action
-        CompositeAction compositeAction = ACTION_SERVICE.createCompositeAction();
-        compositeAction.setExecuteAsynchronously(false);
-        ActionCondition actionCondition = ACTION_SERVICE.createActionCondition(IsSubTypeEvaluator.NAME);
-        Map<String, Serializable> conditionParameters = new HashMap<>();
-        conditionParameters.put(IsSubTypeEvaluator.PARAM_TYPE, ContentModel.TYPE_CONTENT);
-        conditionParameters.put(IsSubTypeEvaluator.PARAM_TYPE, ContentModel.TYPE_FOLDER);
-        actionCondition.setParameterValues(conditionParameters);
+                RULE_SERVICE.saveRule(rootFolder, parentRule);
 
-        compositeAction.addActionCondition(actionCondition);
-
-        compositeAction.addAction(addAspectAction);
-        rule.setAction(compositeAction);
-        RULE_SERVICE.saveRule(rootFolder, rule);
-
-       RULE_SERVICE.enableRules();
-*/
-        /*
-        // Rule properties
-        Map<String, Serializable> actionProps = new HashMap<String, Serializable>();
-        actionProps.put(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
-
-        List<String> ruleTypes = new ArrayList<String>(1);
-        ruleTypes.add(RuleType.INBOUND);
-
-        // Create the action
-        Action action = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
-        action.setParameterValues(actionProps);
-
-        // Create the rule
-        org.alfresco.service.cmr.rule.Rule rule = new org.alfresco.service.cmr.rule.Rule();
-        rule.setRuleTypes(ruleTypes);
-        rule.setTitle("test"+System.currentTimeMillis());
-        rule.setDescription("test"+System.currentTimeMillis());
-        rule.applyToChildren(true);
-//        rule.setAction(action);
-
-        System.out.println("rootFolder: "+rootFolder.toString());
-        RULE_SERVICE.saveRule(rootFolder, rule);
-
-         */
-
-        org.alfresco.service.cmr.rule.Rule parentRule = new org.alfresco.service.cmr.rule.Rule();
-        parentRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
-        parentRule.setTitle("RuleServiceTest" + GUID.generate());
-        parentRule.setDescription("Add Versionable");
-        Action action = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
-        action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
-        parentRule.setAction(action);
-        parentRule.applyToChildren(true);
-
-        RULE_SERVICE.saveRule(rootFolder, parentRule);
+                return null;
+            }
+        }, false, true);
 
        rootFile = testNodes.createNodeWithTextContent(COMPANY_HOME, "rootFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Root file content");
        allEntries.add("rootFile.txt");

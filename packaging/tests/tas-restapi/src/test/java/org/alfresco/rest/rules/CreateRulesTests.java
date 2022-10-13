@@ -26,21 +26,12 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
+
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.createAddAudioAspectAction;
-import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
-import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleWithPrivateAction;
-import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
-import static org.alfresco.rest.rules.RulesTestsUtils.createVariousActions;
-import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
@@ -98,12 +89,12 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRule()
     {
-        RestRuleModel ruleModel = createRuleModelWithModifiedValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithModifiedValues();
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
+        RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithModifiedValues();
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED)
                 .assertThat().field(ID).isNotNull()
@@ -145,7 +136,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithEmptyName()
     {
-        RestRuleModel ruleModel = createRuleModel("");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("");
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
@@ -157,7 +148,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void duplicateRuleNameIsAcceptable()
     {
-        RestRuleModel ruleModel = createRuleModel("duplicateRuleName");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("duplicateRuleName");
 
         STEP("Create two identical rules");
         RestRuleModel ruleA = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
@@ -244,7 +235,7 @@ public class CreateRulesTests extends RestTest
     {
         STEP("Create a list of rules in one POST request");
         List<String> ruleNames = List.of("ruleA", "ruleB", "ruleC");
-        List<RestRuleModel> ruleModels = ruleNames.stream().map(RulesTestsUtils::createRuleModel).collect(toList());
+        List<RestRuleModel> ruleModels = ruleNames.stream().map(rulesUtils::createRuleModel).collect(toList());
 
         RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                                    .createListOfRules(ruleModels);
@@ -263,10 +254,10 @@ public class CreateRulesTests extends RestTest
     public void createRulesWithOneError()
     {
         STEP("Try to create a three rules but the middle one has an error.");
-        RestRuleModel ruleA = createRuleModel("ruleA");
-        RestRuleModel ruleB = createRuleModel("");
+        RestRuleModel ruleA = rulesUtils.createRuleModel("ruleA");
+        RestRuleModel ruleB = rulesUtils.createRuleModel("");
         // Don't set a name for Rule B.
-        RestRuleModel ruleC = createRuleModel("ruleC");
+        RestRuleModel ruleC = rulesUtils.createRuleModel("ruleC");
         List<RestRuleModel> ruleModels = List.of(ruleA, ruleB, ruleC);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createListOfRules(ruleModels);
@@ -279,7 +270,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithoutDescription()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -295,7 +286,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithoutTriggers()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -311,7 +302,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithoutErrorScript()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
 
         RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -327,7 +318,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void createRuleWithSharedFlag()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         ruleModel.setIsShared(true);
         UserModel admin = dataUser.getAdminUser();
 
@@ -344,7 +335,7 @@ public class CreateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void createRuleAndIncludeFieldsInResponse()
     {
-        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("ruleName");
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .include("isShared")
@@ -363,7 +354,7 @@ public class CreateRulesTests extends RestTest
         STEP(String.format("Add a user with '%s' role in the private site's folder", userRole.toString()));
         UserModel userWithRole = dataUser.createRandomTestUser();
         dataUser.addUserToSite(userWithRole, privateSite, userRole);
-        RestRuleModel ruleModel = createRuleModel("testRule", List.of(createAddAudioAspectAction()));
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("testRule", List.of(rulesUtils.createAddAudioAspectAction()));
 
         return restClient.authenticateUser(userWithRole).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
     }
@@ -377,10 +368,10 @@ public class CreateRulesTests extends RestTest
         final UserModel admin = dataUser.getAdminUser();
 
         final RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .createSingleRule(createVariousActions());
+                .createSingleRule(rulesUtils.createVariousActions());
 
-        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
-        expectedRuleModel.setActions(createVariousActions().getActions());
+        RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithDefaultValues();
+        expectedRuleModel.setActions(rulesUtils.createVariousActions().getActions());
         expectedRuleModel.setTriggers(List.of("inbound"));
 
         restClient.assertStatusCodeIs(CREATED);
@@ -393,7 +384,7 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithActions_userCannotUsePrivateAction()
     {
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(createRuleWithPrivateAction());
+                  .createSingleRule(rulesUtils.createRuleWithPrivateAction());
 
         restClient.assertStatusCodeIs(FORBIDDEN)
                   .assertLastError().containsSummary(ERROR_MESSAGE_ACCESS_RESTRICTED);
@@ -404,7 +395,7 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithActions_adminCanUsePrivateAction()
     {
         restClient.authenticateUser(dataUser.getAdminUser()).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(createRuleWithPrivateAction());
+                  .createSingleRule(rulesUtils.createRuleWithPrivateAction());
 
         restClient.assertStatusCodeIs(CREATED);
     }
@@ -415,7 +406,7 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithoutActionsShouldFail()
     {
-        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         ruleModel.setActions(null);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -431,7 +422,7 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithInvalidActionsShouldFail()
     {
-        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
         final String actionDefinitionId = "invalid-definition-value";
         invalidAction.setActionDefinitionId(actionDefinitionId);
@@ -451,7 +442,7 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithMissingActionParametersShouldFail()
     {
-        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
         final String actionDefinitionId = "copy";
         invalidAction.setActionDefinitionId(actionDefinitionId);
@@ -472,11 +463,11 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithActionParameterNotFulfillingConstraint()
     {
-        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         final String actionDefinitionId = "script";
         final String scriptRef = "script-ref";
         final String scriptNodeId = "dummy-script-node-id";
-        final RestActionBodyExecTemplateModel scriptAction = createCustomActionModel(actionDefinitionId, Map.of(scriptRef, scriptNodeId));
+        final RestActionBodyExecTemplateModel scriptAction = rulesUtils.createCustomActionModel(actionDefinitionId, Map.of(scriptRef, scriptNodeId));
         ruleModel.setActions(List.of(scriptAction));
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -495,7 +486,7 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithoutInvalidActionParameterShouldFail()
     {
-        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
         final String actionDefinitionId = "add-features";
         invalidAction.setActionDefinitionId(actionDefinitionId);
@@ -517,7 +508,7 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithoutMandatoryActionParametersShouldFail()
     {
-        final RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
         final String actionDefinitionId = "copy";
         invalidAction.setActionDefinitionId(actionDefinitionId);
@@ -537,14 +528,14 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithConditions()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
-        ruleModel.setConditions(createVariousConditions());
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        ruleModel.setConditions(rulesUtils.createVariousConditions());
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
-        expectedRuleModel.setConditions(createVariousConditions());
+        RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithDefaultValues();
+        expectedRuleModel.setConditions(rulesUtils.createVariousConditions());
         expectedRuleModel.setTriggers(List.of("inbound"));
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED);
@@ -556,13 +547,13 @@ public class CreateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithConditions_emptyConditionList()
     {
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
-        ruleModel.setConditions(createCompositeCondition(null));
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        ruleModel.setConditions(rulesUtils.createCompositeCondition(null));
 
         RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithDefaultValues();
         expectedRuleModel.setTriggers(List.of("inbound"));
         restClient.assertStatusCodeIs(CREATED);
         rule.assertThat().isEqualTo(expectedRuleModel, ID, IS_SHARED);
@@ -576,12 +567,12 @@ public class CreateRulesTests extends RestTest
     {
         STEP("Try to create a rule with non existing category in conditions.");
         String fakeCategoryId = "bdba5f9f-fake-id22-803b-349bcfd06fd1";
-        RestCompositeConditionDefinitionModel conditions = createCompositeCondition(List.of(
-            createCompositeCondition(!INVERTED, List.of(
-                createSimpleCondition("category", "equals", fakeCategoryId)
+        RestCompositeConditionDefinitionModel conditions = rulesUtils.createCompositeCondition(List.of(
+            rulesUtils.createCompositeCondition(!INVERTED, List.of(
+                    rulesUtils.createSimpleCondition("category", "equals", fakeCategoryId)
             ))
         ));
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         ruleModel.setConditions(conditions);
 
         restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);

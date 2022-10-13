@@ -34,14 +34,29 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.rest.core.RestWrapper;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
+import org.alfresco.rest.model.RestActionConstraintDataModel;
+import org.alfresco.rest.model.RestActionConstraintModel;
+import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestNodeModel;
+import org.alfresco.rest.model.RestParameterDefinitionModel;
 import org.alfresco.rest.model.RestRuleExecutionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestSimpleConditionDefinitionModel;
+import org.alfresco.utility.data.DataContent;
+import org.alfresco.utility.data.DataSite;
+import org.alfresco.utility.data.DataUserAIS;
+import org.alfresco.utility.model.FolderModel;
+import org.alfresco.utility.model.SiteModel;
+import org.alfresco.utility.model.UserModel;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-public class RulesTestsUtils
+@Service
+public class RulesTestsUtils implements InitializingBean
 {
     static final String RULE_NAME_DEFAULT = "ruleName";
     static final String RULE_DESCRIPTION_DEFAULT = "rule description";
@@ -49,7 +64,9 @@ public class RulesTestsUtils
     static final boolean RULE_CASCADE_DEFAULT = true;
     static final boolean RULE_ASYNC_DEFAULT = true;
     static final boolean RULE_SHARED_DEFAULT = false;
-    static final String RULE_ERROR_SCRIPT_DEFAULT = "error-script";
+    static final String RULE_SCRIPT_ID = "script";
+    static final String RULE_SCRIPT_PARAM_ID = "script-ref";
+    static final String RULE_ERROR_SCRIPT_LABEL = "Start Pooled Review and Approve Workflow";
     static final String INBOUND = "inbound";
     static final String UPDATE = "update";
     static final String OUTBOUND = "outbound";
@@ -61,9 +78,65 @@ public class RulesTestsUtils
     static final String AUDIO_ASPECT = "audio:audio";
     static final String LOCKABLE_ASPECT = "cm:lockable";
 
-    public static RestRuleModel createRuleModelWithModifiedValues()
+    @Autowired
+    private RestWrapper restClient;
+    @Autowired
+    private DataUserAIS dataUser;
+    @Autowired
+    private DataSite dataSite;
+    @Autowired
+    private DataContent dataContent;
+
+    private SiteModel site;
+    private String reviewAndApproveWorkflowNode;
+
+    private FolderModel copyDestinationFolder;
+
+    private FolderModel checkOutDestinationFolder;
+    /**
+     * Initialise the util class.
+     */
+    @Override
+    public void afterPropertiesSet()
+    {
+        UserModel admin = dataUser.getAdminUser();
+        // Obtain the node ref for the review and approve workflow.
+        RestActionDefinitionModel actionDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionDefinitionById(RULE_SCRIPT_ID);
+        RestParameterDefinitionModel paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(RULE_SCRIPT_PARAM_ID)).findFirst().get();
+        String constraintName = paramDef.getParameterConstraintName();
+        RestActionConstraintModel constraintDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
+        RestActionConstraintDataModel reviewAndApprove = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(RULE_ERROR_SCRIPT_LABEL)).findFirst().get();
+        reviewAndApproveWorkflowNode = reviewAndApprove.getValue();
+
+        // Create a couple of public folders to be used as action destinations.
+        site = dataSite.usingUser(admin).createPublicRandomSite();
+        copyDestinationFolder = dataContent.usingUser(admin).usingSite(site).createFolder();
+        checkOutDestinationFolder = dataContent.usingUser(admin).usingSite(site).createFolder();
+    }
+
+    public RestRuleModel createRuleModelWithModifiedValues()
     {
         return createRuleModelWithModifiedValues(List.of(createAddAudioAspectAction()));
+    }
+
+    /**
+     * Get the review and approve workflow node (throwing an exception if this utility class has not been initialised).
+     *
+     * @return The node ref of the script node.
+     */
+    public String getReviewAndApproveWorkflowNode()
+    {
+        return reviewAndApproveWorkflowNode;
+    }
+
+    public FolderModel getCopyDestinationFolder()
+    {
+        return copyDestinationFolder;
+    }
+
+    public FolderModel getCheckOutDestinationFolder()
+    {
+        return checkOutDestinationFolder;
     }
 
     /**
@@ -72,7 +145,7 @@ public class RulesTestsUtils
      * @param actions - rule's actions.
      * @return The created rule model.
      */
-    public static RestRuleModel createRuleModelWithModifiedValues(List<RestActionBodyExecTemplateModel> actions)
+    public RestRuleModel createRuleModelWithModifiedValues(List<RestActionBodyExecTemplateModel> actions)
     {
         RestRuleModel ruleModel = createRuleModel(RULE_NAME_DEFAULT, actions);
         ruleModel.setDescription(RULE_DESCRIPTION_DEFAULT);
@@ -81,17 +154,17 @@ public class RulesTestsUtils
         ruleModel.setIsAsynchronous(RULE_ASYNC_DEFAULT);
         ruleModel.setIsShared(RULE_SHARED_DEFAULT);
         ruleModel.setTriggers(RULE_TRIGGERS_DEFAULT);
-        ruleModel.setErrorScript(RULE_ERROR_SCRIPT_DEFAULT);
+        ruleModel.setErrorScript(getReviewAndApproveWorkflowNode());
 
         return ruleModel;
     }
 
-    public static RestRuleModel createRuleModelWithDefaultValues()
+    public RestRuleModel createRuleModelWithDefaultValues()
     {
         return createRuleModel(RULE_NAME_DEFAULT);
     }
 
-    public static RestRuleModel createRuleModel(String name)
+    public RestRuleModel createRuleModel(String name)
     {
         return createRuleModel(name, List.of(createAddAudioAspectAction()));
     }
@@ -103,7 +176,7 @@ public class RulesTestsUtils
      * @param actions Rule's actions.
      * @return The created rule model.
      */
-    public static RestRuleModel createRuleModel(String name, List<RestActionBodyExecTemplateModel> actions)
+    public RestRuleModel createRuleModel(String name, List<RestActionBodyExecTemplateModel> actions)
     {
         RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setIsEnabled(true);
@@ -117,17 +190,17 @@ public class RulesTestsUtils
      *
      * @return The created action model.
      */
-    public static RestActionBodyExecTemplateModel createAddAudioAspectAction()
+    public RestActionBodyExecTemplateModel createAddAudioAspectAction()
     {
         return createAddAspectAction(AUDIO_ASPECT);
     }
 
-    public static RestActionBodyExecTemplateModel createAddAspectAction(String aspect)
+    public RestActionBodyExecTemplateModel createAddAspectAction(String aspect)
     {
         return createCustomActionModel("add-features", Map.of("aspect-name", aspect));
     }
 
-    public static RestActionBodyExecTemplateModel createCustomActionModel(String actionDefinitionId, Map<String, Serializable> params)
+    public RestActionBodyExecTemplateModel createCustomActionModel(String actionDefinitionId, Map<String, Serializable> params)
     {
         RestActionBodyExecTemplateModel restActionModel = new RestActionBodyExecTemplateModel();
         restActionModel.setActionDefinitionId(actionDefinitionId);
@@ -135,7 +208,7 @@ public class RulesTestsUtils
         return restActionModel;
     }
 
-    public static RestCompositeConditionDefinitionModel createEmptyConditionModel()
+    public RestCompositeConditionDefinitionModel createEmptyConditionModel()
     {
         RestCompositeConditionDefinitionModel conditions = new RestCompositeConditionDefinitionModel();
         conditions.setInverted(!INVERTED);
@@ -143,7 +216,7 @@ public class RulesTestsUtils
         return conditions;
     }
 
-    public static RestCompositeConditionDefinitionModel createVariousConditions()
+    public RestCompositeConditionDefinitionModel createVariousConditions()
     {
         return createCompositeCondition(List.of(
             createCompositeCondition(!INVERTED, List.of(
@@ -162,14 +235,14 @@ public class RulesTestsUtils
         ));
     }
 
-    public static RestRuleModel createVariousActions()
+    public RestRuleModel createVariousActions()
     {
         final Map<String, Serializable> copyParams =
-                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
+                Map.of("destination-folder", copyDestinationFolder.getNodeRef(), "deep-copy", true);
         final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
         final Map<String, Serializable> checkOutParams =
-                Map.of("destination-folder", "fake-folder-node", "assoc-name", "cm:checkout", "assoc-type",
-                        "cm:contains");
+                Map.of("destination-folder", checkOutDestinationFolder.getNodeRef(), "assoc-name", "cm:checkout",
+                        "assoc-type", "cm:contains");
         final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
         // The counter action takes no parameters, so check we can omit the "params" entry.
         final RestActionBodyExecTemplateModel counterAction = createCustomActionModel("counter", null);
@@ -179,7 +252,7 @@ public class RulesTestsUtils
         return ruleModel;
     }
 
-    public static RestRuleModel createRuleWithPrivateAction()
+    public RestRuleModel createRuleWithPrivateAction()
     {
         RestActionBodyExecTemplateModel mailAction = new RestActionBodyExecTemplateModel();
         mailAction.setActionDefinitionId(MAIL_ACTION);
@@ -189,7 +262,7 @@ public class RulesTestsUtils
         return ruleModel;
     }
 
-    public static RestSimpleConditionDefinitionModel createSimpleCondition(String field, String comparator, String parameter)
+    public RestSimpleConditionDefinitionModel createSimpleCondition(String field, String comparator, String parameter)
     {
         RestSimpleConditionDefinitionModel simpleCondition = new RestSimpleConditionDefinitionModel();
         simpleCondition.setField(field);
@@ -198,23 +271,23 @@ public class RulesTestsUtils
         return simpleCondition;
     }
 
-    public static RestCompositeConditionDefinitionModel createCompositeCondition(List<RestCompositeConditionDefinitionModel> compositeConditions)
+    public RestCompositeConditionDefinitionModel createCompositeCondition(List<RestCompositeConditionDefinitionModel> compositeConditions)
     {
         return createCompositeCondition(AND, !INVERTED, compositeConditions, null);
     }
 
-    public static RestCompositeConditionDefinitionModel createCompositeCondition(boolean inverted,
+    public RestCompositeConditionDefinitionModel createCompositeCondition(boolean inverted,
         List<RestSimpleConditionDefinitionModel> simpleConditions)
     {
         return createCompositeCondition(AND, inverted, null, simpleConditions);
     }
 
-    public static RestRuleExecutionModel createRuleExecutionRequest()
+    public RestRuleExecutionModel createRuleExecutionRequest()
     {
         return createRuleExecutionRequest(false);
     }
 
-    public static RestRuleExecutionModel createRuleExecutionRequest(boolean eachSubFolderIncluded)
+    public RestRuleExecutionModel createRuleExecutionRequest(boolean eachSubFolderIncluded)
     {
         RestRuleExecutionModel ruleExecutionBody = new RestRuleExecutionModel();
         ruleExecutionBody.setIsEachSubFolderIncluded(eachSubFolderIncluded);
@@ -222,7 +295,7 @@ public class RulesTestsUtils
         return ruleExecutionBody;
     }
 
-    private static RestCompositeConditionDefinitionModel createCompositeCondition(String booleanMode, boolean inverted,
+    private RestCompositeConditionDefinitionModel createCompositeCondition(String booleanMode, boolean inverted,
         List<RestCompositeConditionDefinitionModel> compositeConditions, List<RestSimpleConditionDefinitionModel> simpleConditions)
     {
         RestCompositeConditionDefinitionModel compositeCondition = new RestCompositeConditionDefinitionModel();
@@ -234,12 +307,12 @@ public class RulesTestsUtils
         return compositeCondition;
     }
 
-    public static NodeAssertion assertThat(RestNodeModel node)
+    public NodeAssertion assertThat(RestNodeModel node)
     {
         return new NodeAssertion(node);
     }
 
-    public static class NodeAssertion
+    public class NodeAssertion
     {
         private final RestNodeModel node;
 

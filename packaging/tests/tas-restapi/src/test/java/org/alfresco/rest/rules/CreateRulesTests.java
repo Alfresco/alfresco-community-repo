@@ -566,6 +566,30 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
+     * Check we get error when attempting to create a rule that copies files to a folder that a user only has read permission for.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void createRuleThatWritesToNodeWithoutPermission()
+    {
+        SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
+        dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);
+
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        String actionDefinitionId = "copy";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("destination-folder", privateFolder.getNodeRef()));
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(NOT_FOUND);
+        restClient.assertLastError().containsSummary("The entity with id: " + privateFolder.getNodeRef() + " was not found");
+    }
+
+    /**
      * Check we can create a rule with multiple conditions
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})

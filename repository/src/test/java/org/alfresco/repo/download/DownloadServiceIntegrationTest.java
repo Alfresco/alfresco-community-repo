@@ -221,31 +221,25 @@ public class DownloadServiceIntegrationTest
         rootFolder = testNodes.createNode(COMPANY_HOME, "rootFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
         allEntries.add("rootFolder/");
 
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                org.alfresco.service.cmr.rule.Rule parentRule = new org.alfresco.service.cmr.rule.Rule();
-                parentRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
-                parentRule.setTitle("DownloadServiceIntegrationTest" + GUID.generate());
-                parentRule.setDescription("Add Classifiable");
-                Action action = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
-                action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
-                parentRule.setAction(action);
-                parentRule.applyToChildren(true);
+        TRANSACTION_HELPER.doInTransaction(() -> {
+            org.alfresco.service.cmr.rule.Rule parentRule = new org.alfresco.service.cmr.rule.Rule();
+            parentRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
+            parentRule.setTitle("DownloadServiceIntegrationTest" + GUID.generate());
+            parentRule.setDescription("Add Classifiable");
+            Action action = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
+            action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+            parentRule.setAction(action);
+            parentRule.applyToChildren(true);
 
-                RULE_SERVICE.saveRule(rootFolder, parentRule);
+            RULE_SERVICE.saveRule(rootFolder, parentRule);
 
-                return null;
-            }
+            return null;
         }, false, true);
 
        rootFile = testNodes.createNodeWithTextContent(COMPANY_HOME, "rootFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Root file content");
        allEntries.add("rootFile.txt");
 
-       NodeRef createdNode;
-
-       createdNode = testNodes.createNodeWithTextContent(rootFolder, "level1File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 1 file content");
+       NodeRef createdNode = testNodes.createNodeWithTextContent(rootFolder, "level1File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 1 file content");
        assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
        allEntries.add("rootFolder/level1File.txt");
        

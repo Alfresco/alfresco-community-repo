@@ -71,7 +71,7 @@ public class ReorderRules extends RestTest
         List<RestRuleModel> rules = createRulesInFolder(folder, user);
 
         STEP("Get the default rule set for the folder including the ordered rule ids");
-        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI().usingNode(folder)
+        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder)
                                              .include("ruleIds").getDefaultRuleSet();
 
         List<String> expectedRuleIds = rules.stream().map(RestRuleModel::getId).collect(toList());
@@ -93,7 +93,7 @@ public class ReorderRules extends RestTest
         List<RestRuleModel> rules = createRulesInFolder(ruleFolder, dataUser.getAdminUser());
 
         STEP("Get the rule set with the ordered list of rules");
-        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
                                              .include("ruleIds").getDefaultRuleSet();
 
         restClient.assertStatusCodeIs(OK);
@@ -114,7 +114,7 @@ public class ReorderRules extends RestTest
         RestRuleSetModel ruleSetBody = new RestRuleSetModel();
         ruleSetBody.setId("-default-");
         ruleSetBody.setRuleIds(reversedRuleIds);
-        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI().usingNode(folder)
+        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder)
                                              .include("ruleIds").updateRuleSet(ruleSetBody);
 
         restClient.assertStatusCodeIs(OK);
@@ -130,12 +130,12 @@ public class ReorderRules extends RestTest
         List<RestRuleModel> rules = createRulesInFolder(folder, user);
 
         STEP("Get the rule set with its id.");
-        RestRuleSetModel ruleSetResponse = restClient.authenticateUser(user).withCoreAPI().usingNode(folder)
+        RestRuleSetModel ruleSetResponse = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder)
                                                      .include("ruleIds").getDefaultRuleSet();
 
         STEP("Reverse the order of the rules within the rule set");
         ruleSetResponse.setRuleIds(Lists.reverse(ruleSetResponse.getRuleIds()));
-        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI().usingNode(folder)
+        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder)
                                              .include("ruleIds").updateRuleSet(ruleSetResponse);
 
         restClient.assertStatusCodeIs(OK);
@@ -161,7 +161,7 @@ public class ReorderRules extends RestTest
         RestRuleSetModel ruleSetBody = new RestRuleSetModel();
         ruleSetBody.setId("-default-");
         ruleSetBody.setRuleIds(reversedRuleIds);
-        restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
                   .include("ruleIds").updateRuleSet(ruleSetBody);
 
         restClient.assertStatusCodeIs(FORBIDDEN);
@@ -185,7 +185,7 @@ public class ReorderRules extends RestTest
         RestRuleSetModel ruleSetBody = new RestRuleSetModel();
         ruleSetBody.setId("-default-");
         ruleSetBody.setRuleIds(reversedRuleIds);
-        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder)
+        RestRuleSetModel ruleSet = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder)
                                              .include("ruleIds").updateRuleSet(ruleSetBody);
 
         restClient.assertStatusCodeIs(OK);
@@ -198,7 +198,7 @@ public class ReorderRules extends RestTest
         return IntStream.range(0, 3).mapToObj(index ->
         {
             RestRuleModel ruleModel = createRuleModelWithDefaultValues();
-            return restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
+            return restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());
     }
 }

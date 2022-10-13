@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.api.nodes;
+package org.alfresco.rest.api.rules;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;

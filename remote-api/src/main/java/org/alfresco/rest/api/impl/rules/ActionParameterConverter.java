@@ -47,7 +47,6 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -62,17 +61,15 @@ public class ActionParameterConverter
     private final DictionaryService dictionaryService;
     private final ActionService actionService;
     private final NamespaceService namespaceService;
-    private final NodeService nodeService;
     private final PermissionService permissionService;
     private final Nodes nodes;
 
     public ActionParameterConverter(DictionaryService dictionaryService, ActionService actionService, NamespaceService namespaceService,
-                                    NodeService nodeService, PermissionService permissionService, Nodes nodes)
+                                    PermissionService permissionService, Nodes nodes)
     {
         this.dictionaryService = dictionaryService;
         this.actionService = actionService;
         this.namespaceService = namespaceService;
-        this.nodeService = nodeService;
         this.permissionService = permissionService;
         this.nodes = nodes;
     }

@@ -24,7 +24,7 @@
  * #L%
  */
 
-package org.alfresco.rest.api.nodes;
+package org.alfresco.rest.api.rules;
 
 import static org.mockito.BDDMockito.then;
 

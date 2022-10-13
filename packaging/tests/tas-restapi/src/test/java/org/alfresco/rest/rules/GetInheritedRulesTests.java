@@ -72,21 +72,21 @@ public class GetInheritedRulesTests extends RestTest
         FolderModel parent = dataContent.usingUser(user).usingSite(site).createFolder();
         FolderModel child = dataContent.usingUser(user).usingResource(parent).createFolder();
         RestRuleModel parentRule = rulesUtils.createRuleModelWithDefaultValues();
-        parentRule = restClient.authenticateUser(user).withCoreAPI().usingNode(parent).usingDefaultRuleSet().createSingleRule(parentRule);
+        parentRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(parent).usingDefaultRuleSet().createSingleRule(parentRule);
         RestRuleModel childRule = rulesUtils.createRuleModelWithDefaultValues();
-        childRule = restClient.authenticateUser(user).withCoreAPI().usingNode(child).usingDefaultRuleSet().createSingleRule(childRule);
+        childRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingDefaultRuleSet().createSingleRule(childRule);
 
         STEP("Get the rules in the default rule set for the child folder");
-        RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(child).usingDefaultRuleSet().getListOfRules();
+        RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingDefaultRuleSet().getListOfRules();
         rules.assertThat().entriesListContains("id", childRule.getId())
              .and().entriesListCountIs(1);
 
         STEP("Get the rules in the inherited rule set for the child folder");
-        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(child).include("inclusionType").getListOfRuleSets();
+        RestRuleSetModelsCollection ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).include("inclusionType").getListOfRuleSets();
         String inheritedRuleSetId = ruleSets.getEntries().stream()
                                             .filter(ruleSet -> ruleSet.onModel().getInclusionType().equals("inherited"))
                                             .findFirst().get().onModel().getId();
-        RestRuleModelsCollection inheritedRules = restClient.authenticateUser(user).withCoreAPI().usingNode(child).usingRuleSet(inheritedRuleSetId).getListOfRules();
+        RestRuleModelsCollection inheritedRules = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingRuleSet(inheritedRuleSetId).getListOfRules();
         inheritedRules.assertThat().entriesListContains("id", parentRule.getId())
                       .and().entriesListCountIs(1);
     }
@@ -110,23 +110,23 @@ public class GetInheritedRulesTests extends RestTest
         FolderModel folderB = dataContent.usingUser(user).usingResource(folderA).createFolder();
         FolderModel folderC = dataContent.usingUser(user).usingResource(folderB).createFolder();
         FolderModel folderD = dataContent.usingUser(user).usingResource(folderC).createFolder();
-        RestRuleModel ruleB = restClient.authenticateUser(user).withCoreAPI().usingNode(folderB).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
-        RestRuleModel ruleC = restClient.authenticateUser(user).withCoreAPI().usingNode(folderC).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
-        RestRuleModel ruleD = restClient.authenticateUser(user).withCoreAPI().usingNode(folderD).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+        RestRuleModel ruleB = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderB).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+        RestRuleModel ruleC = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderC).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+        RestRuleModel ruleD = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderD).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
         STEP("Link folderA to ruleSetD");
         RestRuleSetLinkModel linkModel = new RestRuleSetLinkModel();
         linkModel.setId(folderD.getNodeRef());
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folderA).createRuleLink(linkModel);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folderA).createRuleLink(linkModel);
 
         STEP("Get the rule sets for the folderD");
-        List<RestRuleSetModel> ruleSets = restClient.authenticateUser(user).withCoreAPI().usingNode(folderD).getListOfRuleSets().getEntries();
+        List<RestRuleSetModel> ruleSets = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderD).getListOfRuleSets().getEntries();
 
         STEP("Check the rules for each rule set are as expected");
         List<RestRuleModel> expectedRuleIds = List.of(ruleD, ruleB, ruleC);
         IntStream.range(0, 2).forEach(index -> {
             String ruleSetId = ruleSets.get(index).onModel().getId();
             List<RestRuleModel> rules = restClient.authenticateUser(user)
-                                                  .withCoreAPI()
+                                                  .withPrivateAPI()
                                                   .usingNode(folderD)
                                                   .usingRuleSet(ruleSetId)
                                                   .getListOfRules()

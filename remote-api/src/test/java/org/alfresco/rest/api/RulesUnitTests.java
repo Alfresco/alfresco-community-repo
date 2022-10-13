@@ -36,7 +36,8 @@ import org.alfresco.rest.api.impl.rules.NodeValidatorTest;
 import org.alfresco.rest.api.impl.rules.RuleLoaderTest;
 import org.alfresco.rest.api.impl.rules.RuleSetsImplTest;
 import org.alfresco.rest.api.impl.rules.RulesImplTest;
-import org.alfresco.rest.api.nodes.NodeRulesRelationTest;
+import org.alfresco.rest.api.rules.NodeRuleSetsRelationTest;
+import org.alfresco.rest.api.rules.NodeRulesRelationTest;
 import org.alfresco.service.Experimental;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -45,6 +46,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     NodeRulesRelationTest.class,
+    NodeRuleSetsRelationTest.class,
     RulesImplTest.class,
     RuleSetsImplTest.class,
     NodeValidatorTest.class,

@@ -76,7 +76,7 @@ public class GetRulesTests extends RestTest
         STEP("Create rules in the folder");
         createdRules = Stream.of("ruleA", "ruleB").map(ruleName -> {
             RestRuleModel ruleModel = rulesUtils.createRuleModel(ruleName);
-            return restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+            return restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());
         createdRuleA = createdRules.get(0);
     }
@@ -89,7 +89,7 @@ public class GetRulesTests extends RestTest
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Get the rules that apply to the folder");
-        RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getListOfRules();
+        RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().getListOfRules();
 
         restClient.assertStatusCodeIs(NOT_FOUND);
         assertTrue("Expected no rules to be present.", rules.isEmpty());
@@ -104,7 +104,7 @@ public class GetRulesTests extends RestTest
     public void getRulesList()
     {
         STEP("Get the rules that apply to the folder");
-        RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().getListOfRules();
+        RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().getListOfRules();
 
         restClient.assertStatusCodeIs(OK);
         rules.assertThat().entriesListCountIs(createdRules.size());
@@ -122,7 +122,7 @@ public class GetRulesTests extends RestTest
         STEP("Try to load rules for a non-existent folder.");
         FolderModel nonExistentFolder = FolderModel.getRandomFolderModel();
         nonExistentFolder.setNodeRef("fake-id");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistentFolder).usingDefaultRuleSet().getListOfRules();
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(nonExistentFolder).usingDefaultRuleSet().getListOfRules();
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
@@ -133,7 +133,7 @@ public class GetRulesTests extends RestTest
         STEP("Create a folder in existing site");
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         STEP("Try to load rules for a non-existent rule set.");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingRuleSet("fake-id").getListOfRules();
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingRuleSet("fake-id").getListOfRules();
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
@@ -142,7 +142,7 @@ public class GetRulesTests extends RestTest
     public void getRulesListWithIncludedFields()
     {
         STEP("Get the rules that apply to the folder");
-        RestRuleModelsCollection rules = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        RestRuleModelsCollection rules = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                                    .include("isShared")
                                                    .getListOfRules();
 
@@ -168,7 +168,7 @@ public class GetRulesTests extends RestTest
     public void getSingleRule()
     {
         STEP("Load a particular rule");
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet().getSingleRule(createdRuleA.getId());
+        RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().getSingleRule(createdRuleA.getId());
 
         restClient.assertStatusCodeIs(OK);
 
@@ -186,7 +186,7 @@ public class GetRulesTests extends RestTest
         ruleModel.setTriggers(List.of("update"));
         UserModel admin = dataUser.getAdminUser();
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
-        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithModifiedValues();
@@ -207,7 +207,7 @@ public class GetRulesTests extends RestTest
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
-        RestRuleModel rule = restClient.authenticateUser(admin).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
         RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithDefaultValues();
@@ -228,7 +228,7 @@ public class GetRulesTests extends RestTest
         STEP("Try to load a rule from a non-existent folder.");
         FolderModel nonExistentFolder = FolderModel.getRandomFolderModel();
         nonExistentFolder.setNodeRef("fake-id");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(nonExistentFolder).usingDefaultRuleSet().getSingleRule("fake-rule-id");
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(nonExistentFolder).usingDefaultRuleSet().getSingleRule("fake-rule-id");
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
@@ -239,7 +239,7 @@ public class GetRulesTests extends RestTest
         STEP("Create a folder in existing site");
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         STEP("Try to load rules for a non-existent rule set.");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingRuleSet("fake-id").getSingleRule("fake-rule-id");
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingRuleSet("fake-id").getSingleRule("fake-rule-id");
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
@@ -250,7 +250,7 @@ public class GetRulesTests extends RestTest
         STEP("Create a folder in existing site");
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         STEP("Try to load a rule for a wrong but existing folder.");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(createdRuleA.getId());
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(createdRuleA.getId());
         restClient.assertStatusCodeIs(NOT_FOUND);
     }
 
@@ -259,7 +259,7 @@ public class GetRulesTests extends RestTest
     public void getSingleRuleWithIncludedFields()
     {
         STEP("Load a particular rule");
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .include("isShared")
                                        .getSingleRule(createdRuleA.getId());
 
@@ -275,10 +275,10 @@ public class GetRulesTests extends RestTest
         FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
         RestRuleModel ruleModel = new RestRuleModel();
         ruleModel.setName("Private site rule");
-        restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        restClient.authenticateUser(privateUser).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Try to get the rule with another user");
-        restClient.authenticateUser(user).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().getListOfRules();
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().getListOfRules();
 
         restClient.assertLastError()
                   .statusCodeIs(FORBIDDEN)
@@ -293,7 +293,7 @@ public class GetRulesTests extends RestTest
         SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
         RestRuleModel ruleModel = rulesUtils.createRuleModel("Private site rule");
-        restClient.authenticateUser(privateUser).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        restClient.authenticateUser(privateUser).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Create a collaborator in the private site");
         UserModel collaborator = dataUser.createRandomTestUser();
@@ -301,7 +301,7 @@ public class GetRulesTests extends RestTest
         restClient.authenticateUser(privateUser).withCoreAPI().usingSite(privateSite).addPerson(collaborator);
 
         STEP("Check the collaborator can view the rule");
-        RestRuleModelsCollection rules = restClient.authenticateUser(collaborator).withCoreAPI().usingNode(privateFolder).usingDefaultRuleSet().getListOfRules();
+        RestRuleModelsCollection rules = restClient.authenticateUser(collaborator).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().getListOfRules();
 
         restClient.assertStatusCodeIs(OK);
         rules.assertThat().entriesListContains("name", "Private site rule");
@@ -315,11 +315,11 @@ public class GetRulesTests extends RestTest
     {
         STEP("Create a rule with a few actions");
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
-        final RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+        final RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
                 .createSingleRule(rulesUtils.createVariousActions());
 
         STEP("Retrieve the created rule via the GET endpoint");
-        final RestRuleModel getRuleBody = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(rule.getId());
+        final RestRuleModel getRuleBody = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(rule.getId());
 
         STEP("Assert that actions are returned as expected from the GET endpoint");
         restClient.assertStatusCodeIs(OK);
@@ -343,11 +343,11 @@ public class GetRulesTests extends RestTest
 
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 
-        RestRuleModel rule = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet()
+        RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
         STEP("Retrieve the created rule via the GET endpoint");
-        final RestRuleModel getRuleBody = restClient.authenticateUser(user).withCoreAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(rule.getId());
+        final RestRuleModel getRuleBody = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(rule.getId());
 
         STEP("Assert that conditions are retrieved using the GET endpoint");
         restClient.assertStatusCodeIs(OK);

@@ -910,7 +910,6 @@
         <constructor-arg name="actionService" ref="ActionService"/>
         <constructor-arg name="dictionaryService" ref="DictionaryService"/>
         <constructor-arg name="namespaceService" ref="NamespaceService"/>
-        <constructor-arg name="nodeService" ref="NodeService"/>
         <constructor-arg name="permissionService" ref="PermissionService" />
         <constructor-arg name="nodes" ref="Nodes"/>
     </bean>

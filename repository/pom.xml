@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-community-repo</artifactId>
-        <version>17.167-SNAPSHOT</version>
+        <version>17.168-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -300,8 +300,8 @@
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
-            <artifactId>ooxml-schemas</artifactId>
-            <version>${dependency.ooxml-schemas.version}</version>
+            <artifactId>poi-ooxml-lite</artifactId>
+            <version>${dependency.poi-ooxml-lite.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

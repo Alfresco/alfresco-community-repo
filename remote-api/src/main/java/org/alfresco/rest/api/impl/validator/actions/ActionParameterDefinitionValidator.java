@@ -27,6 +27,8 @@
 package org.alfresco.rest.api.impl.validator.actions;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.rest.api.Actions;
@@ -47,6 +49,9 @@ import org.apache.commons.collections.MapUtils;
 public class ActionParameterDefinitionValidator implements ActionValidator
 {
     private static final boolean IS_ENABLED = true;
+    private static final String BASE_PACKAGE = "org/alfresco/repo/action/executer";
+    private static final String NAME = "NAME";
+
     static final String INVALID_PARAMETER_VALUE =
             "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
     static final String MISSING_PARAMETER = "Missing action's mandatory parameter: %s";
@@ -55,6 +60,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
             "Action parameters should not be null or empty for this action. See Action Definition for action of: %s";
     static final String INVALID_ACTION_DEFINITION = "Invalid action definition requested %s";
 
+    private final List<String> actionDefinitionIds = new ArrayList<>();
     private final Actions actions;
 
     public ActionParameterDefinitionValidator(Actions actions)
@@ -74,7 +80,8 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         try
         {
             actionDefinition = actions.getActionDefinitionById(action.getActionDefinitionId());
-        } catch (NotFoundException e) {
+        } catch (NotFoundException e)
+        {
             throw new InvalidArgumentException(String.format(INVALID_ACTION_DEFINITION, action.getActionDefinitionId()));
         }
         validateParametersSize(action.getParams(), actionDefinition);
@@ -90,6 +97,27 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     public boolean isEnabled()
     {
         return IS_ENABLED;
+    }
+
+    /**
+     * This validator should be applied to all actions
+     *
+     * @return list of all defined action definition ids
+     */
+    @Override
+    public List<String> getActionDefinitionIds()
+    {
+        return List.of(ALL_ACTIONS);
+    }
+
+    /**
+     * This validator should have highest priority and be executed first of all.
+     * @return minimal integer value
+     */
+    @Override
+    public int getPriority()
+    {
+        return Integer.MIN_VALUE;
     }
 
     private void validateParametersSize(final Map<String, Serializable> params, final ActionDefinition actionDefinition)
@@ -128,6 +156,4 @@ public class ActionParameterDefinitionValidator implements ActionValidator
             throw new IllegalArgumentException(String.format(MUST_NOT_CONTAIN_PARAMETER, actionDefinition.getName(), parameterName));
         }
     }
-
-
 }

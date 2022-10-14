@@ -585,8 +585,8 @@ public class CreateRulesTests extends RestTest
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                   .createSingleRule(ruleModel);
 
-        restClient.assertStatusCodeIs(NOT_FOUND);
-        restClient.assertLastError().containsSummary("The entity with id: " + privateFolder.getNodeRef() + " was not found");
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("No proper permissions for node: " + privateFolder.getNodeRef());
     }
 
     /**

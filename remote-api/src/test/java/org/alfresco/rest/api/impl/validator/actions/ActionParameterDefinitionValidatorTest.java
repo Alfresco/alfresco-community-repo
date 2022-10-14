@@ -32,6 +32,7 @@ import static org.alfresco.rest.api.impl.validator.actions.ActionParameterDefini
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.BOOLEAN;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.TEXT;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.then;
 
 import java.util.Collections;
@@ -199,6 +200,15 @@ public class ActionParameterDefinitionValidatorTest
 
         then(actionsMock).should().getActionDefinitionById(actionDefinitionId);
         then(actionsMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testHasProperPriority()
+    {
+        final int expectedPriority = Integer.MIN_VALUE;
+        final int actualPriority = objectUnderTest.getPriority();
+
+        assertEquals(expectedPriority, actualPriority);
     }
 
     private ActionDefinition createActionDefinition(final String actionDefinitionId,

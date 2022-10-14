@@ -26,12 +26,17 @@
 
 package org.alfresco.rest.api.impl.rules;
 
+import static org.alfresco.rest.framework.core.exceptions.NotFoundException.DEFAULT_MESSAGE_ID;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
@@ -42,8 +47,8 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.json.JSONArray;
@@ -56,13 +61,17 @@ public class ActionParameterConverter
     private final DictionaryService dictionaryService;
     private final ActionService actionService;
     private final NamespaceService namespaceService;
+    private final PermissionService permissionService;
+    private final Nodes nodes;
 
-    public ActionParameterConverter(DictionaryService dictionaryService, ActionService actionService,
-                                    NamespaceService namespaceService)
+    public ActionParameterConverter(DictionaryService dictionaryService, ActionService actionService, NamespaceService namespaceService,
+                                    PermissionService permissionService, Nodes nodes)
     {
         this.dictionaryService = dictionaryService;
         this.actionService = actionService;
         this.namespaceService = namespaceService;
+        this.permissionService = permissionService;
+        this.nodes = nodes;
     }
 
     public Map<String, Serializable> getConvertedParams(Map<String, Serializable> params, String name)
@@ -74,10 +83,12 @@ public class ActionParameterConverter
             definition = actionService.getActionDefinition(name);
             if (definition == null)
             {
-                throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{name});
+                throw new NotFoundException(DEFAULT_MESSAGE_ID, new String[]{name});
             }
-        } catch (NoSuchBeanDefinitionException e) {
-            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{name});
+        }
+        catch (NoSuchBeanDefinitionException e)
+        {
+            throw new NotFoundException(DEFAULT_MESSAGE_ID, new String[]{name});
         }
 
         for (Map.Entry<String, Serializable> param : params.entrySet())
@@ -91,7 +102,8 @@ public class ActionParameterConverter
             {
                 final QName typeQName = paramDef.getType();
                 parameters.put(param.getKey(), convertValue(typeQName, param.getValue()));
-            } else
+            }
+            else
             {
                 parameters.put(param.getKey(), param.getValue().toString());
             }
@@ -105,7 +117,8 @@ public class ActionParameterConverter
         {
             return ((QName) param).toPrefixString(namespaceService);
         }
-        else if (param instanceof NodeRef) {
+        else if (param instanceof NodeRef)
+        {
             return ((NodeRef) param).getId();
         }
         else
@@ -121,7 +134,7 @@ public class ActionParameterConverter
         final DataTypeDefinition typeDef = dictionaryService.getDataType(typeQName);
         if (typeDef == null)
         {
-            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[]{typeQName.toPrefixString()});
+            throw new NotFoundException(DEFAULT_MESSAGE_ID, new String[]{typeQName.toPrefixString()});
         }
 
         if (propertyValue instanceof JSONArray)
@@ -130,7 +143,8 @@ public class ActionParameterConverter
             try
             {
                 Class.forName(javaClassName);
-            } catch (ClassNotFoundException e)
+            }
+            catch (ClassNotFoundException e)
             {
                 throw new DictionaryException("Java class " + javaClassName + " of property type " + typeDef.getName() + " is invalid", e);
             }
@@ -151,7 +165,12 @@ public class ActionParameterConverter
             }
             else if (typeQName.isMatch(DataTypeDefinition.NODE_REF))
             {
-                value = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, propertyValue.toString());
+                NodeRef nodeRef = nodes.validateOrLookupNode(propertyValue.toString(), null);
+                if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
+                {
+                    throw new EntityNotFoundException(propertyValue.toString());
+                }
+                value = nodeRef;
             }
             else
             {

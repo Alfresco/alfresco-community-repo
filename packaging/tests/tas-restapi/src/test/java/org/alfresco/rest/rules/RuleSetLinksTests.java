@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.rules;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -79,7 +77,7 @@ public class RuleSetLinksTests extends RestTest
         final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Create a rule in the rule folder.");
-        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("ruleName");
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
@@ -132,7 +130,7 @@ public class RuleSetLinksTests extends RestTest
         final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Create a rule in the rule folder.");
-        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("ruleName");
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
@@ -223,10 +221,10 @@ public class RuleSetLinksTests extends RestTest
         final FolderModel folder2 = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Create rules in both folders.");
-        RestRuleModel ruleModel1 = createRuleModel("ruleName1");
+        RestRuleModel ruleModel1 = rulesUtils.createRuleModel("ruleName1");
         restClient.authenticateUser(user).withPrivateAPI().usingNode(folder1).usingDefaultRuleSet()
                 .createSingleRule(ruleModel1);
-        RestRuleModel ruleModel2 = createRuleModel("ruleName2");
+        RestRuleModel ruleModel2 = rulesUtils.createRuleModel("ruleName2");
         restClient.authenticateUser(user).withPrivateAPI().usingNode(folder2).usingDefaultRuleSet()
                 .createSingleRule(ruleModel2);
 
@@ -272,7 +270,7 @@ public class RuleSetLinksTests extends RestTest
         final FolderModel childFolder = dataContent.usingUser(user).usingSite(site).usingResource(parentFolder).createFolder();
 
         STEP("Create a rule in the parent folder.");
-        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("ruleName");
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
@@ -324,7 +322,7 @@ public class RuleSetLinksTests extends RestTest
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                  .createSingleRule(createRuleModelWithDefaultValues());
+                  .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Use a normal user to try to link to the rule.");
         FolderModel publicFolder = dataContent.usingUser(user).usingSite(site).createFolder();
@@ -345,7 +343,7 @@ public class RuleSetLinksTests extends RestTest
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                  .createSingleRule(createRuleModelWithDefaultValues());
+                  .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Add the normal user as a consumer.");
         dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);
@@ -372,7 +370,7 @@ public class RuleSetLinksTests extends RestTest
         final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 
         STEP("Create a rule in the rule folder.");
-        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("ruleName");
         RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
@@ -453,7 +451,7 @@ public class RuleSetLinksTests extends RestTest
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                  .createSingleRule(createRuleModelWithDefaultValues());
+                  .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Add the user as a consumer.");
         dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);
@@ -484,7 +482,7 @@ public class RuleSetLinksTests extends RestTest
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet()
-                  .createSingleRule(createRuleModelWithDefaultValues());
+                  .createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Add the user as a consumer.");
         dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);

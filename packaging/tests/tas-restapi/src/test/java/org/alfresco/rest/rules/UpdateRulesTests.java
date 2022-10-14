@@ -33,19 +33,10 @@ import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ASYNC_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_CASCADE_DEFAULT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_ENABLED_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.createCompositeCondition;
-import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createAddAudioAspectAction;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleWithPrivateAction;
-import static org.alfresco.rest.rules.RulesTestsUtils.createSimpleCondition;
-import static org.alfresco.rest.rules.RulesTestsUtils.createVariousConditions;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
 
@@ -96,7 +87,7 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule.");
-        RestRuleModel updatedRuleModel = createRuleModel("Updated rule name");
+        RestRuleModel updatedRuleModel = rulesUtils.createRuleModel("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .updateRule(rule.getId(), updatedRuleModel);
 
@@ -182,7 +173,7 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule to have no name.");
-        RestRuleModel updatedRuleModel = createRuleModel("");
+        RestRuleModel updatedRuleModel = rulesUtils.createRuleModel("");
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().updateRule(rule.getId(), updatedRuleModel);
 
         restClient.assertLastError().statusCodeIs(BAD_REQUEST)
@@ -196,7 +187,7 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule id and check it isn't changed.");
-        RestRuleModel updatedRuleModel = createRuleModel("Rule name");
+        RestRuleModel updatedRuleModel = rulesUtils.createRuleModel("Rule name");
         updatedRuleModel.setId("new-rule-id");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                               .updateRule(rule.getId(), updatedRuleModel);
@@ -211,7 +202,7 @@ public class UpdateRulesTests extends RestTest
         RestRuleModel rule = createAndSaveRule("Rule name");
 
         STEP("Try to update the rule.");
-        RestRuleModel updatedRuleModel = createRuleModel("Updated rule name");
+        RestRuleModel updatedRuleModel = rulesUtils.createRuleModel("Updated rule name");
         RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                               .include(IS_SHARED)
                                               .updateRule(rule.getId(), updatedRuleModel);
@@ -286,7 +277,7 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleFields()
     {
-        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+        final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule fields.");
         rule.setName("Updated rule name");
@@ -296,8 +287,7 @@ public class UpdateRulesTests extends RestTest
         rule.setIsEnabled(!RULE_ENABLED_DEFAULT);
         rule.setIsInheritable(!RULE_CASCADE_DEFAULT);
         rule.setIsAsynchronous(!RULE_ASYNC_DEFAULT);
-        final String updatedErrorScript = "updated-error-script";
-        rule.setErrorScript(updatedErrorScript);
+        rule.setErrorScript(null);
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .updateRule(rule.getId(), rule);
 
@@ -310,10 +300,10 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleAddConditions()
     {
-        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+        final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule and add conditions.");
-        rule.setConditions(createVariousConditions());
+        rule.setConditions(rulesUtils.createVariousConditions());
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .updateRule(rule.getId(), rule);
@@ -327,7 +317,7 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleAddNullConditions()
     {
-        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+        final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule and add null conditions.");
         rule.setConditions(null);
@@ -344,13 +334,13 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleModifyConditions()
     {
-        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
-        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(rulesUtils.createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
         STEP("Try to update the rule and modify conditions.");
-        final RestCompositeConditionDefinitionModel compositeCondition = createCompositeCondition(
-                List.of(createCompositeCondition(false, List.of(createSimpleCondition("tag", "equals", "sample_tag")))));
+        final RestCompositeConditionDefinitionModel compositeCondition = rulesUtils.createCompositeCondition(
+                List.of(rulesUtils.createCompositeCondition(false, List.of(rulesUtils.createSimpleCondition("tag", "equals", "sample_tag")))));
         rule.setConditions(compositeCondition);
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -365,8 +355,8 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleRemoveAllConditions()
     {
-        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
-        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(rulesUtils.createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
         STEP("Try to update the rule and remove all conditions.");
@@ -384,13 +374,13 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleWithInvalidCategoryInConditionAndFail()
     {
-        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
-        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(rulesUtils.createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
         STEP("Try to update the rule with invalid condition.");
-        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
-                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("category", "equals", "fake-category-id")))));
+        final RestCompositeConditionDefinitionModel conditions = rulesUtils.createCompositeCondition(
+                List.of(rulesUtils.createCompositeCondition(!INVERTED, List.of(rulesUtils.createSimpleCondition("category", "equals", "fake-category-id")))));
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -404,13 +394,13 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleWithConditionWithoutComparatorAndFail()
     {
-        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
-        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(rulesUtils.createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
         STEP("Try to update the rule with invalid condition (null comparator when required non-null).");
-        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
-                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", null, "65500")))));
+        final RestCompositeConditionDefinitionModel conditions = rulesUtils.createCompositeCondition(
+                List.of(rulesUtils.createCompositeCondition(!INVERTED, List.of(rulesUtils.createSimpleCondition("size", null, "65500")))));
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -424,13 +414,13 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleWithConditionWithoutFieldAndFail()
     {
-        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
-        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(rulesUtils.createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
         STEP("Try to update the rule with invalid condition (null field).");
-        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
-                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition(null, "greater_than", "65500")))));
+        final RestCompositeConditionDefinitionModel conditions = rulesUtils.createCompositeCondition(
+                List.of(rulesUtils.createCompositeCondition(!INVERTED, List.of(rulesUtils.createSimpleCondition(null, "greater_than", "65500")))));
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -444,13 +434,13 @@ public class UpdateRulesTests extends RestTest
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.SANITY })
     public void updateRuleWithConditionWithoutParamValueAndFail()
     {
-        final RestRuleModel ruleModelWithInitialValues = createRuleModelWithModifiedValues();
-        ruleModelWithInitialValues.setConditions(createVariousConditions());
+        final RestRuleModel ruleModelWithInitialValues = rulesUtils.createRuleModelWithModifiedValues();
+        ruleModelWithInitialValues.setConditions(rulesUtils.createVariousConditions());
         final RestRuleModel rule = createAndSaveRule(ruleModelWithInitialValues);
 
         STEP("Try to update the rule with invalid condition (null parameter).");
-        final RestCompositeConditionDefinitionModel conditions = createCompositeCondition(
-                List.of(createCompositeCondition(!INVERTED, List.of(createSimpleCondition("size", "greater_than", "")))));
+        final RestCompositeConditionDefinitionModel conditions = rulesUtils.createCompositeCondition(
+                List.of(rulesUtils.createCompositeCondition(!INVERTED, List.of(rulesUtils.createSimpleCondition("size", "greater_than", "")))));
         rule.setConditions(conditions);
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -466,14 +456,14 @@ public class UpdateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void updateRuleAddActions()
     {
-        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+        final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule by adding several actions");
         final Map<String, Serializable> copyParams =
-                Map.of("destination-folder", "dummy-folder-node", "deep-copy", true);
-        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
+                Map.of("destination-folder", rulesUtils.getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
+        final RestActionBodyExecTemplateModel copyAction = rulesUtils.createCustomActionModel("copy", copyParams);
         final Map<String, Serializable> addAspectParams = Map.of("aspect-name", "cm:taggable");
-        final RestActionBodyExecTemplateModel addAspectAction = createCustomActionModel("add-features", addAspectParams);
+        final RestActionBodyExecTemplateModel addAspectAction = rulesUtils.createCustomActionModel("add-features", addAspectParams);
         rule.setActions(Arrays.asList(copyAction, addAspectAction));
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -490,14 +480,13 @@ public class UpdateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void updateRuleAddCheckoutActionForOutboundShouldFail()
     {
-        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+        final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule by adding checkout action");
         final Map<String, Serializable> checkOutParams =
-                Map.of("destination-folder", "dummy-folder-node", "assoc-name", "cm:checkout", "assoc-type",
-                        "cm:contains");
-        final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
-        final Map<String, Serializable> scriptParams = Map.of("script-ref", "dummy-script-node-id");
+                Map.of("destination-folder", rulesUtils.getCheckOutDestinationFolder().getNodeRef(), "assoc-name", "cm:checkout",
+                        "assoc-type", "cm:contains");
+        final RestActionBodyExecTemplateModel checkOutAction = rulesUtils.createCustomActionModel("check-out", checkOutParams);
         rule.setActions(List.of(checkOutAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -514,7 +503,7 @@ public class UpdateRulesTests extends RestTest
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void updateRuleAddActionWithInvalidParamShouldFail()
     {
-        final RestRuleModel rule = createAndSaveRule(createRuleModelWithModifiedValues());
+        final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule by adding action with invalid parameter (non-existing namespace in value)");
         final RestActionBodyExecTemplateModel action = new RestActionBodyExecTemplateModel();
@@ -539,7 +528,7 @@ public class UpdateRulesTests extends RestTest
     {
         STEP("Using admin create a rule with a private action.");
         RestRuleModel rule = restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .createSingleRule(createRuleWithPrivateAction());
+                                       .createSingleRule(rulesUtils.createRuleWithPrivateAction());
 
         STEP("Try to update the rule with a normal user.");
         rule.setName("Updated name");
@@ -556,7 +545,7 @@ public class UpdateRulesTests extends RestTest
     {
         STEP("Using admin create a rule with a private action.");
         RestRuleModel rule = restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                                       .createSingleRule(createRuleWithPrivateAction());
+                                       .createSingleRule(rulesUtils.createRuleWithPrivateAction());
 
         STEP("Try to update the rule with the admin user.");
         rule.setName("Updated name");
@@ -569,7 +558,7 @@ public class UpdateRulesTests extends RestTest
 
     private RestRuleModel createAndSaveRule(String name)
     {
-        return createAndSaveRule(name, List.of(createAddAudioAspectAction()));
+        return createAndSaveRule(name, List.of(rulesUtils.createAddAudioAspectAction()));
     }
 
     /**
@@ -582,7 +571,7 @@ public class UpdateRulesTests extends RestTest
     private RestRuleModel createAndSaveRule(String name, List<RestActionBodyExecTemplateModel> restActionModels)
     {
         STEP("Create a rule called " + name + ", containing actions: " + restActionModels);
-        RestRuleModel ruleModel = createRuleModel(name, restActionModels);
+        RestRuleModel ruleModel = rulesUtils.createRuleModel(name, restActionModels);
         return restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
             .createSingleRule(ruleModel);
     }

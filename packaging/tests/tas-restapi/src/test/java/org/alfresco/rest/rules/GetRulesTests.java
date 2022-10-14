@@ -27,14 +27,13 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.*;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.OK;
-import static org.springframework.http.HttpStatus.CREATED;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -76,7 +75,7 @@ public class GetRulesTests extends RestTest
 
         STEP("Create rules in the folder");
         createdRules = Stream.of("ruleA", "ruleB").map(ruleName -> {
-            RestRuleModel ruleModel = createRuleModel(ruleName);
+            RestRuleModel ruleModel = rulesUtils.createRuleModel(ruleName);
             return restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());
         createdRuleA = createdRules.get(0);
@@ -183,14 +182,14 @@ public class GetRulesTests extends RestTest
     public void getRulesOtherFieldsModified()
     {
         STEP("Create a rule with all other fields default values modified");
-        RestRuleModel ruleModel = createRuleModelWithModifiedValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithModifiedValues();
         ruleModel.setTriggers(List.of("update"));
         UserModel admin = dataUser.getAdminUser();
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithModifiedValues();
+        RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithModifiedValues();
         expectedRuleModel.setTriggers(List.of("update"));
 
         restClient.assertStatusCodeIs(CREATED);
@@ -205,13 +204,13 @@ public class GetRulesTests extends RestTest
     public void getRulesDefaultFields()
     {
         STEP("Create a rule with all other fields default values");
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         UserModel admin = dataUser.getAdminUser();
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
-        RestRuleModel expectedRuleModel = createRuleModelWithDefaultValues();
+        RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithDefaultValues();
         expectedRuleModel.setTriggers(List.of("inbound"));
 
         restClient.assertStatusCodeIs(CREATED);
@@ -293,7 +292,7 @@ public class GetRulesTests extends RestTest
         UserModel privateUser = dataUser.createRandomTestUser();
         SiteModel privateSite = dataSite.usingUser(privateUser).createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingUser(privateUser).usingSite(privateSite).createFolder();
-        RestRuleModel ruleModel = createRuleModel("Private site rule");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("Private site rule");
         restClient.authenticateUser(privateUser).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Create a collaborator in the private site");
@@ -317,7 +316,7 @@ public class GetRulesTests extends RestTest
         STEP("Create a rule with a few actions");
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
         final RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
-                .createSingleRule(createVariousActions());
+                .createSingleRule(rulesUtils.createVariousActions());
 
         STEP("Retrieve the created rule via the GET endpoint");
         final RestRuleModel getRuleBody = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(rule.getId());
@@ -325,10 +324,10 @@ public class GetRulesTests extends RestTest
         STEP("Assert that actions are returned as expected from the GET endpoint");
         restClient.assertStatusCodeIs(OK);
         getRuleBody.assertThat().field(ACTIONS).contains("actionDefinitionId=copy")
-                   .assertThat().field(ACTIONS).contains("destination-folder=dummy-folder-node")
+                   .assertThat().field(ACTIONS).contains("destination-folder=" + rulesUtils.getCopyDestinationFolder().getNodeRef())
                    .assertThat().field(ACTIONS).contains("deep-copy=true")
                    .assertThat().field(ACTIONS).contains("actionDefinitionId=check-out")
-                   .assertThat().field(ACTIONS).contains("destination-folder=fake-folder-node")
+                   .assertThat().field(ACTIONS).contains("destination-folder=" + rulesUtils.getCheckOutDestinationFolder().getNodeRef())
                    .assertThat().field(ACTIONS).contains("assoc-name=cm:checkout");
     }
 
@@ -339,8 +338,8 @@ public class GetRulesTests extends RestTest
     public void getRulesConditions()
     {
         STEP("Create a rule with several conditions");
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
-        ruleModel.setConditions(createVariousConditions());
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        ruleModel.setConditions(rulesUtils.createVariousConditions());
 
         FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
 

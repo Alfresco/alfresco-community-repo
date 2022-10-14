@@ -27,7 +27,6 @@ package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.OK;
@@ -197,7 +196,7 @@ public class ReorderRules extends RestTest
     {
         return IntStream.range(0, 3).mapToObj(index ->
         {
-            RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+            RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
             return restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
         }).collect(toList());
     }

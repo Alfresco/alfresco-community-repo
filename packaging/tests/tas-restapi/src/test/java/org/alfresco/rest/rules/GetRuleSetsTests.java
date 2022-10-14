@@ -26,9 +26,6 @@
 package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -88,7 +85,7 @@ public class GetRuleSetsTests extends RestTest
                   .usingIsInheritanceEnabledRuleSetting().updateSetting(doesntInherit);
 
         STEP("Create a rule in the folder.");
-        RestRuleModel ruleModel = createRuleModel("ruleName");
+        RestRuleModel ruleModel = rulesUtils.createRuleModel("ruleName");
         rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                                        .createSingleRule(ruleModel);
 
@@ -101,7 +98,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Use admin to create a private site containing a rule in a rule set that can be inherited.");
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
-        privateAPIForAdmin().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithModifiedValues());
+        privateAPIForAdmin().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithModifiedValues());
     }
 
     /** Check we can get an empty list of rule sets. */
@@ -171,7 +168,7 @@ public class GetRuleSetsTests extends RestTest
         privateAPIForAdmin().usingNode(parentFolder).createRuleLink(linkModel);
 
         STEP("Create a rule on the child folder.");
-        privateAPIForUser().usingNode(childFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithDefaultValues());
+        privateAPIForUser().usingNode(childFolder).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Check admin can view both rule sets.");
         RestRuleSetModelsCollection adminViewOfRuleSets = privateAPIForAdmin().usingNode(childFolder).getListOfRuleSets();
@@ -356,7 +353,7 @@ public class GetRuleSetsTests extends RestTest
         FolderModel descendantFolder = dataContent.usingUser(user).usingResource(linkingFolder).createFolder();
 
         STEP("Create an inheritable rule in the folder and get the rule set id.");
-        RestRuleModel ruleModel = createRuleModelWithModifiedValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithModifiedValues();
         privateAPIForUser().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
         RestRuleSetModelsCollection ruleSets = privateAPIForUser().usingNode(folder).getListOfRuleSets();
         String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
@@ -398,7 +395,7 @@ public class GetRuleSetsTests extends RestTest
         dataUser.removeUserFromSite(user, siteModel);
 
         STEP("Create a rule in the folder and link to it from the other two.");
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         privateAPIForUser().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
         RestRuleSetModelsCollection ruleSets = privateAPIForAdmin().usingNode(ruleFolder).getListOfRuleSets();
         String ruleSetId = ruleSets.getEntries().get(0).onModel().getId();
@@ -428,7 +425,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Create a folder with a rule set and a private child folder to inherit it");
         FolderModel ruleFolder = dataContent.usingUser(user).usingSite(siteModel).createFolder();
         dataContent.usingAdmin().usingResource(ruleFolder).createFolder();
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         privateAPIForUser().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Remove the user from  the site");
@@ -452,7 +449,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Create a site and a folder with a rule");
         SiteModel siteModel = dataSite.usingUser(user).createPublicRandomSite();
         FolderModel ruleFolder = dataContent.usingUser(user).usingSite(siteModel).createFolder();
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         privateAPIForUser().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Create a second folder in the site that links to the rule set");
@@ -480,7 +477,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Create a site and a folder with a rule");
         SiteModel siteModel = dataSite.usingUser(user).createPublicRandomSite();
         FolderModel ruleFolder = dataContent.usingUser(user).usingSite(siteModel).createFolder();
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         privateAPIForUser().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Create a second folder in the site that links to the rule set");
@@ -509,7 +506,7 @@ public class GetRuleSetsTests extends RestTest
 
         STEP("Create a folder with a rule set");
         FolderModel ruleFolder = dataContent.usingUser(user).usingSite(siteModel).createFolder();
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         privateAPIForUser().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Create a private folder linking to the rule set");
@@ -541,7 +538,7 @@ public class GetRuleSetsTests extends RestTest
         STEP("Create a site, a folder with a rule and a child folder that inherits it");
         SiteModel siteModel = dataSite.usingUser(user).createPublicRandomSite();
         FolderModel ruleFolder = dataContent.usingUser(user).usingSite(siteModel).createFolder();
-        RestRuleModel ruleModel = createRuleModelWithDefaultValues();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         privateAPIForUser().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
         dataContent.usingUser(user).usingResource(ruleFolder).createFolder();
 
@@ -572,7 +569,7 @@ public class GetRuleSetsTests extends RestTest
         privateAPIForAdmin().usingNode(parentFolder).createRuleLink(linkModel);
 
         STEP("Create a rule on the child folder.");
-        privateAPIForUser().usingNode(childFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithDefaultValues());
+        privateAPIForUser().usingNode(childFolder).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Use the admin user to get both rule sets.");
         RestRuleSetModelsCollection adminViewOfRuleSets = privateAPIForAdmin().usingNode(childFolder).getListOfRuleSets();

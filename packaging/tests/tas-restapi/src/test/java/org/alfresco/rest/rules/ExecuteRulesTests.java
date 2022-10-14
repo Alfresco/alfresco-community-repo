@@ -28,16 +28,9 @@ package org.alfresco.rest.rules;
 import static org.alfresco.rest.rules.RulesTestsUtils.AUDIO_ASPECT;
 import static org.alfresco.rest.rules.RulesTestsUtils.LOCKABLE_ASPECT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.assertThat;
-import static org.alfresco.rest.rules.RulesTestsUtils.createAddAspectAction;
-import static org.alfresco.rest.rules.RulesTestsUtils.createCustomActionModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleExecutionRequest;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModel;
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithDefaultValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
@@ -54,7 +47,6 @@ import org.alfresco.utility.model.UserModel;
 import org.springframework.http.HttpStatus;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -91,11 +83,11 @@ public class ExecuteRulesTests extends RestTest
         childFolderFile = dataContent.usingUser(user).usingResource(childFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         STEP("Create rules for parent and rule folders");
-        RestActionBodyExecTemplateModel addLockableAspectAction = createAddAspectAction(LOCKABLE_ASPECT);
-        RestRuleModel ruleModel = createRuleModel(RULE_NAME_DEFAULT, List.of(addLockableAspectAction));
+        RestActionBodyExecTemplateModel addLockableAspectAction = rulesUtils.createAddAspectAction(LOCKABLE_ASPECT);
+        RestRuleModel ruleModel = rulesUtils.createRuleModel(RULE_NAME_DEFAULT, List.of(addLockableAspectAction));
         ruleModel.setIsInheritable(true);
         parentFolderRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
-        childFolderRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithDefaultValues());
+        childFolderRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
     }
 
     /**
@@ -107,17 +99,17 @@ public class ExecuteRulesTests extends RestTest
         STEP("Check if file aspects don't contain Audio one");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
+        rulesUtils.assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
 
         STEP("Execute rule");
-        RestRuleExecutionModel executionResult = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).executeRules(createRuleExecutionRequest());
+        RestRuleExecutionModel executionResult = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).executeRules(rulesUtils.createRuleExecutionRequest());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         executionResult.assertThat().field("isEachSubFolderIncluded").is(false);
 
         STEP("Check if only Audio aspect was added");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).containsAspects(AUDIO_ASPECT);
+        rulesUtils.assertThat(fileNode).containsAspects(AUDIO_ASPECT);
     }
 
     /**
@@ -129,10 +121,10 @@ public class ExecuteRulesTests extends RestTest
         STEP("Check if file aspects don't contain Audio and Lockable ones");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).notContainsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
+        rulesUtils.assertThat(fileNode).notContainsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
 
         STEP("Execute rules including inherited rules");
-        RestRuleExecutionModel ruleExecutionRequest = createRuleExecutionRequest();
+        RestRuleExecutionModel ruleExecutionRequest = rulesUtils.createRuleExecutionRequest();
         RestRuleExecutionModel executionResult = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).executeRules(ruleExecutionRequest);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         executionResult.assertThat().field("isEachSubFolderIncluded").is(false);
@@ -140,7 +132,7 @@ public class ExecuteRulesTests extends RestTest
         STEP("Check if Audio and Lockable aspects were added");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).containsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
+        rulesUtils.assertThat(fileNode).containsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
     }
 
     /**
@@ -152,15 +144,15 @@ public class ExecuteRulesTests extends RestTest
         STEP("Check if parent folder's file aspects don't contain Audio and Lockable ones");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(parentFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).notContainsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
+        rulesUtils.assertThat(fileNode).notContainsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
 
         STEP("Check if child folder's file aspects don't contain Audio and Lockable ones");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).notContainsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
+        rulesUtils.assertThat(fileNode).notContainsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
 
         STEP("Execute rules on parent folder including sub-folders");
-        RestRuleExecutionModel ruleExecutionRequest = createRuleExecutionRequest();
+        RestRuleExecutionModel ruleExecutionRequest = rulesUtils.createRuleExecutionRequest();
         ruleExecutionRequest.setIsEachSubFolderIncluded(true);
         RestRuleExecutionModel executionResult = restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder).executeRules(ruleExecutionRequest);
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
@@ -169,14 +161,14 @@ public class ExecuteRulesTests extends RestTest
         STEP("Check if Lockable aspects was added to parent folder's file");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(parentFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode)
+        rulesUtils.assertThat(fileNode)
             .containsAspects(LOCKABLE_ASPECT)
             .notContainsAspects(AUDIO_ASPECT);
 
         STEP("Check if Audio and Lockable aspects were added to child folder's file");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode)
+        rulesUtils.assertThat(fileNode)
             .containsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
     }
 
@@ -187,24 +179,24 @@ public class ExecuteRulesTests extends RestTest
     public void executeRules_disabledRule()
     {
         STEP("Disable child rules");
-        RestRuleModel updatedChildRule = createRuleModelWithDefaultValues();
+        RestRuleModel updatedChildRule = rulesUtils.createRuleModelWithDefaultValues();
         updatedChildRule.setIsEnabled(false);
         restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).usingDefaultRuleSet().updateRule(childFolderRule.getId(), updatedChildRule);
 
         STEP("Check if file aspects don't contain Audio one");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
+        rulesUtils.assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
 
         STEP("Execute rule");
-        RestRuleExecutionModel executionResult = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).executeRules(createRuleExecutionRequest());
+        RestRuleExecutionModel executionResult = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).executeRules(rulesUtils.createRuleExecutionRequest());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         executionResult.assertThat().field("isEachSubFolderIncluded").is(false);
 
         STEP("Check if Audio aspect is still missing");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
+        rulesUtils.assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
     }
 
     /**
@@ -214,24 +206,24 @@ public class ExecuteRulesTests extends RestTest
     public void executeRules_notInheritableRule()
     {
         STEP("Set parent rule as not inheritable");
-        RestRuleModel updatedParentRule = createRuleModelWithDefaultValues();
+        RestRuleModel updatedParentRule = rulesUtils.createRuleModelWithDefaultValues();
         updatedParentRule.setIsInheritable(false);
         restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder).usingDefaultRuleSet().updateRule(parentFolderRule.getId(), updatedParentRule);
 
         STEP("Check if file aspects don't contain Audio and Lockable ones");
         RestNodeModel fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).notContainsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
+        rulesUtils.assertThat(fileNode).notContainsAspects(AUDIO_ASPECT, LOCKABLE_ASPECT);
 
         STEP("Execute child folder rules including inherited rules");
-        RestRuleExecutionModel executionResult = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).executeRules(createRuleExecutionRequest());
+        RestRuleExecutionModel executionResult = restClient.authenticateUser(user).withPrivateAPI().usingNode(childFolder).executeRules(rulesUtils.createRuleExecutionRequest());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
         executionResult.assertThat().field("isEachSubFolderIncluded").is(false);
 
         STEP("Check if Audio aspect is present and Lockable is still missing");
         fileNode = restClient.authenticateUser(user).withCoreAPI().usingNode(childFolderFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode)
+        rulesUtils.assertThat(fileNode)
             .containsAspects(AUDIO_ASPECT)
             .notContainsAspects(LOCKABLE_ASPECT);
     }
@@ -246,10 +238,10 @@ public class ExecuteRulesTests extends RestTest
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         dataContent.usingAdmin().usingResource(privateFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithDefaultValues());
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
 
         STEP("Try to execute private folder's rules by user");
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(privateFolder).executeRules(createRuleExecutionRequest());
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(privateFolder).executeRules(rulesUtils.createRuleExecutionRequest());
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
@@ -264,11 +256,11 @@ public class ExecuteRulesTests extends RestTest
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         dataContent.usingAdmin().usingResource(privateFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithDefaultValues());
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
         dataUser.usingAdmin().addUserToSite(contributor, privateSite, UserRole.SiteContributor);
 
         STEP("Try to execute private folder's rules by contributor");
-        restClient.authenticateUser(contributor).withPrivateAPI().usingNode(privateFolder).executeRules(createRuleExecutionRequest());
+        restClient.authenticateUser(contributor).withPrivateAPI().usingNode(privateFolder).executeRules(rulesUtils.createRuleExecutionRequest());
         restClient.assertStatusCodeIs(HttpStatus.FORBIDDEN);
     }
 
@@ -284,22 +276,22 @@ public class ExecuteRulesTests extends RestTest
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
         FileModel privateFile = dataContent.usingAdmin().usingResource(privateFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-        restClient.authenticateUser(admin).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(createRuleModelWithDefaultValues());
+        restClient.authenticateUser(admin).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
         dataUser.usingAdmin().addUserToSite(collaborator, privateSite, UserRole.SiteCollaborator);
 
         STEP("Check if file aspects don't contain Audio one");
         RestNodeModel fileNode = restClient.authenticateUser(admin).withCoreAPI().usingNode(privateFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
+        rulesUtils.assertThat(fileNode).notContainsAspects(AUDIO_ASPECT);
 
         STEP("Execute private folder's rules by collaborator");
-        restClient.authenticateUser(collaborator).withPrivateAPI().usingNode(privateFolder).executeRules(createRuleExecutionRequest());
+        restClient.authenticateUser(collaborator).withPrivateAPI().usingNode(privateFolder).executeRules(rulesUtils.createRuleExecutionRequest());
         restClient.assertStatusCodeIs(HttpStatus.CREATED);
 
         STEP("Check if Audio aspect is present");
         fileNode = restClient.authenticateUser(admin).withCoreAPI().usingNode(privateFile).getNode();
         restClient.assertStatusCodeIs(HttpStatus.OK);
-        assertThat(fileNode).containsAspects(AUDIO_ASPECT);
+        rulesUtils.assertThat(fileNode).containsAspects(AUDIO_ASPECT);
     }
 
     //TODO: add test(s) that would cover handling executing broken rule and/or broken rule execution (ACS-3699)

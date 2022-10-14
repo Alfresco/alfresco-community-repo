@@ -25,7 +25,6 @@
  */
 package org.alfresco.rest.rules;
 
-import static org.alfresco.rest.rules.RulesTestsUtils.createRuleModelWithModifiedValues;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.testng.Assert.assertEquals;
 
@@ -72,9 +71,9 @@ public class GetInheritedRulesTests extends RestTest
         STEP("Create a parent and child folder, each with inheriting rules");
         FolderModel parent = dataContent.usingUser(user).usingSite(site).createFolder();
         FolderModel child = dataContent.usingUser(user).usingResource(parent).createFolder();
-        RestRuleModel parentRule = createRuleModelWithModifiedValues();
+        RestRuleModel parentRule = rulesUtils.createRuleModelWithDefaultValues();
         parentRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(parent).usingDefaultRuleSet().createSingleRule(parentRule);
-        RestRuleModel childRule = createRuleModelWithModifiedValues();
+        RestRuleModel childRule = rulesUtils.createRuleModelWithDefaultValues();
         childRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(child).usingDefaultRuleSet().createSingleRule(childRule);
 
         STEP("Get the rules in the default rule set for the child folder");
@@ -111,9 +110,9 @@ public class GetInheritedRulesTests extends RestTest
         FolderModel folderB = dataContent.usingUser(user).usingResource(folderA).createFolder();
         FolderModel folderC = dataContent.usingUser(user).usingResource(folderB).createFolder();
         FolderModel folderD = dataContent.usingUser(user).usingResource(folderC).createFolder();
-        RestRuleModel ruleB = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderB).usingDefaultRuleSet().createSingleRule(createRuleModelWithModifiedValues());
-        RestRuleModel ruleC = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderC).usingDefaultRuleSet().createSingleRule(createRuleModelWithModifiedValues());
-        RestRuleModel ruleD = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderD).usingDefaultRuleSet().createSingleRule(createRuleModelWithModifiedValues());
+        RestRuleModel ruleB = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderB).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+        RestRuleModel ruleC = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderC).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
+        RestRuleModel ruleD = restClient.authenticateUser(user).withPrivateAPI().usingNode(folderD).usingDefaultRuleSet().createSingleRule(rulesUtils.createRuleModelWithDefaultValues());
         STEP("Link folderA to ruleSetD");
         RestRuleSetLinkModel linkModel = new RestRuleSetLinkModel();
         linkModel.setId(folderD.getNodeRef());

@@ -368,10 +368,10 @@ public class CreateRulesTests extends RestTest
         final UserModel admin = dataUser.getAdminUser();
 
         final RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .createSingleRule(rulesUtils.createVariousActions());
+                .createSingleRule(rulesUtils.createRuleWithVariousActions());
 
         RestRuleModel expectedRuleModel = rulesUtils.createRuleModelWithDefaultValues();
-        expectedRuleModel.setActions(rulesUtils.createVariousActions().getActions());
+        expectedRuleModel.setActions(rulesUtils.createRuleWithVariousActions().getActions());
         expectedRuleModel.setTriggers(List.of("inbound"));
 
         restClient.assertStatusCodeIs(CREATED);

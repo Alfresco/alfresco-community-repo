@@ -459,12 +459,10 @@ public class UpdateRulesTests extends RestTest
         final RestRuleModel rule = createAndSaveRule(rulesUtils.createRuleModelWithModifiedValues());
 
         STEP("Try to update the rule by adding several actions");
-        final Map<String, Serializable> copyParams =
-                Map.of("destination-folder", rulesUtils.getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
-        final RestActionBodyExecTemplateModel copyAction = rulesUtils.createCustomActionModel("copy", copyParams);
+        final RestActionBodyExecTemplateModel counterAction = rulesUtils.createCustomActionModel("counter", null);
         final Map<String, Serializable> addAspectParams = Map.of("aspect-name", "cm:taggable");
         final RestActionBodyExecTemplateModel addAspectAction = rulesUtils.createCustomActionModel("add-features", addAspectParams);
-        rule.setActions(Arrays.asList(copyAction, addAspectAction));
+        rule.setActions(Arrays.asList(counterAction, addAspectAction));
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .updateRule(rule.getId(), rule);
@@ -489,7 +487,8 @@ public class UpdateRulesTests extends RestTest
         final RestActionBodyExecTemplateModel checkOutAction = rulesUtils.createCustomActionModel("check-out", checkOutParams);
         rule.setActions(List.of(checkOutAction));
 
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        final UserModel admin = dataUser.getAdminUser();
+        restClient.authenticateUser(admin).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);

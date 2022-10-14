@@ -236,7 +236,7 @@ public class RulesTestsUtils implements InitializingBean
         ));
     }
 
-    public RestRuleModel createVariousActions()
+    public RestRuleModel createRuleWithVariousActions()
     {
         final Map<String, Serializable> copyParams =
                 Map.of("destination-folder", copyDestinationFolder.getNodeRef(), "deep-copy", true);

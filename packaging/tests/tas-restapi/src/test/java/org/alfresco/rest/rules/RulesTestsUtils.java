@@ -67,6 +67,7 @@ public class RulesTestsUtils implements InitializingBean
     static final String RULE_SCRIPT_ID = "script";
     static final String RULE_SCRIPT_PARAM_ID = "script-ref";
     static final String RULE_ERROR_SCRIPT_LABEL = "Start Pooled Review and Approve Workflow";
+    public static final String CHECKIN_ACTION = "check-in";
     static final String INBOUND = "inbound";
     static final String UPDATE = "update";
     static final String OUTBOUND = "outbound";
@@ -77,6 +78,7 @@ public class RulesTestsUtils implements InitializingBean
     static final String IS_SHARED = "isShared";
     static final String AUDIO_ASPECT = "audio:audio";
     static final String LOCKABLE_ASPECT = "cm:lockable";
+    public static final String TEMPLATE_PARAM = "template";
 
     @Autowired
     private RestWrapper restClient;

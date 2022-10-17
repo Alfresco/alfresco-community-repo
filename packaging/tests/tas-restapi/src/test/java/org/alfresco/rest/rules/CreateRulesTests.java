@@ -28,16 +28,20 @@ package org.alfresco.rest.rules;
 import static java.util.stream.Collectors.toList;
 
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
+import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_SCRIPT_ID;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_SCRIPT_PARAM_ID;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
 import static org.alfresco.utility.constants.UserRole.SiteManager;
 import static org.alfresco.utility.model.FileModel.getRandomFileModel;
 import static org.alfresco.utility.model.FileType.TEXT_PLAIN;
+import static org.alfresco.utility.model.UserModel.getRandomUserModel;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -45,13 +49,18 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
+import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
+import org.alfresco.rest.model.RestParameterDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.constants.UserRole;
@@ -400,6 +409,33 @@ public class CreateRulesTests extends RestTest
         restClient.assertStatusCodeIs(CREATED);
     }
 
+    /** Check that an administrator can create rules that use private actions. */
+    @Test
+    public void createRuleWithActions_adminCanUseMailActionWithTemplate()
+    {
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel mailAction = new RestActionBodyExecTemplateModel();
+        mailAction.setActionDefinitionId(MAIL_ACTION);
+        final Map<String, Serializable> params = new HashMap<>();
+        final UserModel sender = getRandomUserModel();
+        final UserModel recipient = getRandomUserModel();
+        params.put("from", sender.getEmailAddress());
+        params.put("to", recipient.getEmailAddress());
+        params.put("subject", "Test");
+        final RestActionDefinitionModel actionDef = restClient.authenticateUser(user).withCoreAPI().usingActions().getActionDefinitionById(RULE_SCRIPT_ID);
+        final RestParameterDefinitionModel
+                paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(RULE_SCRIPT_PARAM_ID)).findFirst().get();
+        final String templateScriptRef = paramDef.getParameterConstraintName();
+        params.put("template", templateScriptRef);
+        mailAction.setParams(params);
+        ruleModel.setActions(Arrays.asList(mailAction));
+
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(rulesUtils.createRuleWithPrivateAction());
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
     /**
      * Check we get error when attempt to create a rule without any actions.
      */
@@ -587,6 +623,59 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(FORBIDDEN);
         restClient.assertLastError().containsSummary("No proper permissions for node: " + privateFolder.getNodeRef());
+    }
+
+    /**
+     * Check we get error when attempting to create a rule that moves files to a folder that a user only has read permission for.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleThatMovesToNodeWithoutPermission()
+    {
+        SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
+        dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);
+
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        String actionDefinitionId = "move";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("destination-folder", privateFolder.getNodeRef()));
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("No proper permissions for node: " + privateFolder.getNodeRef());
+    }
+
+
+    /**
+     * Check we get error when attempting to create a rule with mail action defined with non-existing mail template.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithMailActionReferringToNonExistingTemplate()
+    {
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel mailAction = new RestActionBodyExecTemplateModel();
+        mailAction.setActionDefinitionId(MAIL_ACTION);
+        final Map<String, Serializable> params = new HashMap<>();
+        final UserModel sender = getRandomUserModel();
+        final UserModel recipient = getRandomUserModel();
+        params.put("from", sender.getEmailAddress());
+        params.put("to", recipient.getEmailAddress());
+        params.put("subject", "Test");
+        final String mailTemplate = "non-existing-node-id";
+        params.put("template", mailTemplate);
+        mailAction.setParams(params);
+        ruleModel.setActions(Arrays.asList(mailAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Action parameter: template has invalid value (" + mailTemplate +
+                "). Look up possible values for constraint name ac-email-templates");
     }
 
     /**

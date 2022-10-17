@@ -80,7 +80,7 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
             final Map<String, Serializable> convertedParams = actionModel.getParameterValues()
                     .entrySet()
                     .stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> parameterConverter.convertParamFromServiceModel(e.getValue())));
+                    .collect(HashMap::new, (m, v) -> m.put(v.getKey(), parameterConverter.convertParamFromServiceModel(v.getValue())), HashMap::putAll);
             convertedParams.remove(ACTION_CONTEXT_PARAM_NAME);
             builder.params(convertedParams);
         }

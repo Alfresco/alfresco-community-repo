@@ -749,6 +749,50 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
+     * Check a rule can link nodes to a category.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkLinkToCategoryAction()
+    {
+        STEP("Get a category id using the action constraints API.");
+        String actionId = "link-category";
+        String constraintName = "category-value";
+        String categoryId = rulesUtils.findConstraintValue(user, actionId, constraintName, "");
+
+        STEP("Create rule that links to category.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel categoryAction = new RestActionBodyExecTemplateModel();
+        categoryAction.setActionDefinitionId(actionId);
+        categoryAction.setParams(Map.of(constraintName, categoryId));
+        ruleModel.setActions(List.of(categoryAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
+    /**
+     * Check a real category needs to be supplied when linking to a category.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkLinkToCategoryNeedsRealCategory()
+    {
+        STEP("Attempt to link to a category with a folder node, rather than a category node.");
+        String nonCategoryNodeRef = ruleFolder.getNodeRef();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel categoryAction = new RestActionBodyExecTemplateModel();
+        categoryAction.setActionDefinitionId("link-category");
+        categoryAction.setParams(Map.of("category-value", nonCategoryNodeRef));
+        ruleModel.setActions(List.of(categoryAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+    }
+
+    /**
      * Check we can create a rule with multiple conditions
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})

@@ -793,6 +793,50 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
+     * Check the import action works when the destination is a valid folder node.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkCanUseImportAction()
+    {
+        STEP("Create a destination folder");
+        FolderModel destinationFolder = dataContent.usingUser(user).usingSite(site).createFolder();
+
+        STEP("Create rule that links to category.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel importAction = new RestActionBodyExecTemplateModel();
+        importAction.setActionDefinitionId("import");
+        importAction.setParams(Map.of("destination", destinationFolder.getNodeRef()));
+        ruleModel.setActions(List.of(importAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
+    /**
+     * Check an error is throw if the import action works when the destination is a valid folder node.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkImportDestinationLocationMustBeFolder()
+    {
+        STEP("Create a content node");
+        ContentModel contentNode = dataContent.usingUser(user).usingSite(site).createContent(getRandomFileModel(TEXT_PLAIN));
+
+        STEP("Create rule that tries to import to the node.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel importAction = new RestActionBodyExecTemplateModel();
+        importAction.setActionDefinitionId("import");
+        importAction.setParams(Map.of("destination", contentNode.getNodeRef()));
+        ruleModel.setActions(List.of(importAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+    }
+
+    /**
      * Check we can create a rule with multiple conditions
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})

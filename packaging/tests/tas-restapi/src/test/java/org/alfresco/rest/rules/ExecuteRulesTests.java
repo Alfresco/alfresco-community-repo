@@ -30,7 +30,10 @@ import static org.alfresco.rest.rules.RulesTestsUtils.LOCKABLE_ASPECT;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
 import static org.alfresco.utility.report.log.Step.STEP;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.rest.RestTest;
@@ -294,5 +297,33 @@ public class ExecuteRulesTests extends RestTest
         rulesUtils.assertThat(fileNode).containsAspects(AUDIO_ASPECT);
     }
 
-    //TODO: add test(s) that would cover handling executing broken rule and/or broken rule execution (ACS-3699)
+    /**
+     * Try to execute rule with broken action and receive 500.
+     */
+    @Test(groups = { TestGroup.REST_API, TestGroup.RULES, TestGroup.ACTIONS })
+    public void executeRules_copyActionWithDeletedDestinationFolder()
+    {
+        STEP("Create copy action and rule");
+        UserModel admin = dataUser.getAdminUser();
+        SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
+        FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
+        FolderModel destinationFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
+        FileModel privateFile = dataContent.usingAdmin().usingResource(privateFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        final Map<String, Serializable> copyParams =
+                Map.of("destinationFolder", rulesUtils.getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
+        final RestActionBodyExecTemplateModel copyAction = rulesUtils.createCustomActionModel("copy", copyParams);
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        ruleModel.setActions(Arrays.asList(copyAction));
+
+
+        //create rule with copy action
+        restClient.authenticateUser(admin).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        //delete destination folder
+        dataContent.usingAdmin().usingSite(privateSite).deleteTree(destinationFolder);
+
+        STEP("Try to execute broken rule after deleting destination folder and check 500 error");
+        restClient.authenticateUser(admin).withPrivateAPI().usingNode(privateFolder).executeRules(rulesUtils.createRuleExecutionRequest());
+        restClient.assertStatusCodeIs(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

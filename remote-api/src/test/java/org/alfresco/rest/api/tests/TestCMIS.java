@@ -546,18 +546,18 @@ public class TestCMIS extends EnterpriseTestApi
         // request with a callback parameter
         HttpResponse response;
         final Map<String, String> params = Map.of("callback", "");
-        response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", params);
+        response = publicApiClient.get(network1.getId() + "/public/api/-default-/versions/1.0/nodes/-my-", params);
         assertEquals(403, response.getStatusCode());
 
         String exceptionMessage = I18NUtil.getMessage(JsonpCallbackNotAllowedException.DEFAULT_MESSAGE_ID, params);
         assertTrue(response.getResponse().endsWith(exceptionMessage));
 
         // request without a callback parameter
-        response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", null);
+        response = publicApiClient.get(network1.getId() + "/public/api/-default-/versions/1.0/nodes/-my-", null);
         assertEquals(200, response.getStatusCode());
     }
 
-    /*
+    /**
      * MNT-22428 Check the return from http://localhost:8080/alfresco/api/-default-/public/cmis/versions/1.1/browser/root&callback= when jsonp callback is enabled
      *
      * @throws Exception
@@ -581,11 +581,11 @@ public class TestCMIS extends EnterpriseTestApi
         // request with a callback parameter
         HttpResponse response;
         final Map<String, String> params = Map.of("callback", "someFunction");
-        response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", params);
+        response = publicApiClient.get(network1.getId() + "/public/api/-default-/versions/1.0/nodes/-my-", params);
         assertEquals(200, response.getStatusCode());
 
         // request without a callback parameter
-        response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/browser/root", null);
+        response = publicApiClient.get(network1.getId() + "/public/api/-default-/versions/1.0/nodes/-my-", null);
         assertEquals(200, response.getStatusCode());
     }
 

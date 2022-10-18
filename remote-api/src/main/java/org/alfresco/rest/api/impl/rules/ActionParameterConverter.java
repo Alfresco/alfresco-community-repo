@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -159,16 +160,17 @@ public class ActionParameterConverter
         }
         else
         {
-            if (typeQName.equals(DataTypeDefinition.QNAME) && typeQName.toString().contains(":"))
+            final String stringValue = Objects.toString(propertyValue, null);
+            if (typeQName.isMatch(DataTypeDefinition.QNAME) && typeQName.toString().contains(":"))
             {
-                value = QName.createQName(propertyValue.toString(), namespaceService);
+                value = QName.createQName(stringValue, namespaceService);
             }
             else if (typeQName.isMatch(DataTypeDefinition.NODE_REF))
             {
-                NodeRef nodeRef = nodes.validateOrLookupNode(propertyValue.toString(), null);
+                NodeRef nodeRef = nodes.validateOrLookupNode(stringValue, null);
                 if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
                 {
-                    throw new EntityNotFoundException(propertyValue.toString());
+                    throw new EntityNotFoundException(stringValue);
                 }
                 value = nodeRef;
             }

@@ -692,7 +692,7 @@ public class CreateRulesTests extends RestTest
         scriptAction.setParams(Map.of("script-ref", rulesUtils.getReviewAndApproveWorkflowNode()));
         ruleModel.setActions(List.of(scriptAction));
 
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                   .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);

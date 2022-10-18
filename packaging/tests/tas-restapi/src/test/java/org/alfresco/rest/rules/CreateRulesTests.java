@@ -704,10 +704,10 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
-     * Check the admin user can create a rule with a script.
+     * Check the user can create a rule with a script.
      */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
-    public void checkAdminCanUseScriptInRule()
+    public void checkCanUseScriptInRule()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         RestActionBodyExecTemplateModel scriptAction = new RestActionBodyExecTemplateModel();
@@ -715,7 +715,7 @@ public class CreateRulesTests extends RestTest
         scriptAction.setParams(Map.of("script-ref", rulesUtils.getReviewAndApproveWorkflowNode()));
         ruleModel.setActions(List.of(scriptAction));
 
-        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                   .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
@@ -750,25 +750,6 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST)
                   .assertLastError().containsSummary("script-ref has invalid value");
-    }
-
-    /**
-     * Check we get error when a non-admin user tries to create a rule with a script.
-     */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
-    public void checkNormalUserCantUseScriptInRule()
-    {
-        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel scriptAction = new RestActionBodyExecTemplateModel();
-        scriptAction.setActionDefinitionId("script");
-        scriptAction.setParams(Map.of("script-ref", rulesUtils.getReviewAndApproveWorkflowNode()));
-        ruleModel.setActions(List.of(scriptAction));
-
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
-
-        restClient.assertStatusCodeIs(FORBIDDEN);
-        restClient.assertLastError().containsSummary("Only admin or system user is allowed to define uses of or directly execute this action");
     }
 
     /**

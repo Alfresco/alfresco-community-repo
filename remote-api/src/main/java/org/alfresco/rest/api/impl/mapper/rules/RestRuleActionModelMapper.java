@@ -33,11 +33,11 @@ import static org.alfresco.rest.api.actions.ActionValidator.ALL_ACTIONS;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.action.CompositeActionImpl;
@@ -82,7 +82,7 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
             final Map<String, Serializable> convertedParams = actionModel.getParameterValues()
                     .entrySet()
                     .stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> parameterConverter.convertParamFromServiceModel(e.getValue())));
+                    .collect(HashMap::new, (m, v) -> m.put(v.getKey(), parameterConverter.convertParamFromServiceModel(v.getValue())), HashMap::putAll);
             convertedParams.remove(ACTION_CONTEXT_PARAM_NAME);
             builder.params(convertedParams);
         }

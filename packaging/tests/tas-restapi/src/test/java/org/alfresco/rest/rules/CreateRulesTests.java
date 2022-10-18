@@ -26,15 +26,14 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
-
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
+import static org.alfresco.rest.rules.RulesTestsUtils.CHECKIN_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_SCRIPT_ID;
-import static org.alfresco.rest.rules.RulesTestsUtils.RULE_SCRIPT_PARAM_ID;
+import static org.alfresco.rest.rules.RulesTestsUtils.TEMPLATE_PARAM;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
 import static org.alfresco.utility.constants.UserRole.SiteContributor;
@@ -58,6 +57,7 @@ import java.util.stream.IntStream;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
+import org.alfresco.rest.model.RestActionConstraintModel;
 import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
 import org.alfresco.rest.model.RestParameterDefinitionModel;
@@ -390,6 +390,23 @@ public class CreateRulesTests extends RestTest
                 .assertThat().field(IS_SHARED).isNull();
     }
 
+    /**
+     * Check we can create a rule with check in action with empty description parameter.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithCheckInActionAndEmptyCheckInDescription()
+    {
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel checkinAction = new RestActionBodyExecTemplateModel();
+        checkinAction.setActionDefinitionId(CHECKIN_ACTION);
+        checkinAction.setParams(Map.of("description", ""));
+        ruleModel.setActions(Arrays.asList(checkinAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
     /** Check that a normal user cannot create rules that use private actions. */
     @Test
     public void createRuleWithActions_userCannotUsePrivateAction()
@@ -411,7 +428,9 @@ public class CreateRulesTests extends RestTest
         restClient.assertStatusCodeIs(CREATED);
     }
 
-    /** Check that an administrator can create rules that use private actions. */
+    /**
+     * Check that an administrator can create rules with email (private) action with reference to an email template.
+     */
     @Test
     public void createRuleWithActions_adminCanUseMailActionWithTemplate()
     {
@@ -424,16 +443,20 @@ public class CreateRulesTests extends RestTest
         params.put("from", sender.getEmailAddress());
         params.put("to", recipient.getEmailAddress());
         params.put("subject", "Test");
-        final RestActionDefinitionModel actionDef = restClient.authenticateUser(user).withCoreAPI().usingActions().getActionDefinitionById(RULE_SCRIPT_ID);
-        final RestParameterDefinitionModel
-                paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(RULE_SCRIPT_PARAM_ID)).findFirst().get();
-        final String templateScriptRef = paramDef.getParameterConstraintName();
-        params.put("template", templateScriptRef);
+        final RestActionDefinitionModel actionDef =
+                restClient.authenticateUser(user).withCoreAPI().usingActions().getActionDefinitionById(MAIL_ACTION);
+        final RestParameterDefinitionModel paramDef =
+                actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(TEMPLATE_PARAM)).findFirst().get();
+        final String constraintName = paramDef.getParameterConstraintName();
+        final RestActionConstraintModel constraint =
+                restClient.authenticateUser(user).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
+        String templateScriptRef = constraint.getConstraintValues().stream().findFirst().get().getValue();
+        params.put(TEMPLATE_PARAM, templateScriptRef);
         mailAction.setParams(params);
         ruleModel.setActions(Arrays.asList(mailAction));
 
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .createSingleRule(rulesUtils.createRuleWithPrivateAction());
+                .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);
     }
@@ -668,7 +691,7 @@ public class CreateRulesTests extends RestTest
         params.put("to", recipient.getEmailAddress());
         params.put("subject", "Test");
         final String mailTemplate = "non-existing-node-id";
-        params.put("template", mailTemplate);
+        params.put(TEMPLATE_PARAM, mailTemplate);
         mailAction.setParams(params);
         ruleModel.setActions(Arrays.asList(mailAction));
 

@@ -51,12 +51,11 @@ import org.alfresco.utility.data.DataUserAIS;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.UserModel;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RulesTestsUtils implements InitializingBean
+public class RulesTestsUtils
 {
     static final String RULE_NAME_DEFAULT = "ruleName";
     static final String RULE_DESCRIPTION_DEFAULT = "rule description";
@@ -67,6 +66,7 @@ public class RulesTestsUtils implements InitializingBean
     static final String RULE_SCRIPT_ID = "script";
     static final String RULE_SCRIPT_PARAM_ID = "script-ref";
     static final String RULE_ERROR_SCRIPT_LABEL = "Start Pooled Review and Approve Workflow";
+    public static final String CHECKIN_ACTION = "check-in";
     static final String INBOUND = "inbound";
     static final String UPDATE = "update";
     static final String OUTBOUND = "outbound";
@@ -77,6 +77,7 @@ public class RulesTestsUtils implements InitializingBean
     static final String IS_SHARED = "isShared";
     static final String AUDIO_ASPECT = "audio:audio";
     static final String LOCKABLE_ASPECT = "cm:lockable";
+    public static final String TEMPLATE_PARAM = "template";
 
     @Autowired
     private RestWrapper restClient;
@@ -87,38 +88,14 @@ public class RulesTestsUtils implements InitializingBean
     @Autowired
     private DataContent dataContent;
 
-    private SiteModel site;
+    /** Public site used by these helper methods. This is populated by the getter and should not be accessed directly. */
+    private SiteModel publicSite;
+    /** Script node used by these helper methods. This is populated by the getter and should not be accessed directly. */
     private String reviewAndApproveWorkflowNode;
-
+    /** Destination folder for copy action used by these helper methods. This is populated by the getter and should not be accessed directly. */
     private FolderModel copyDestinationFolder;
-
+    /** Destination folder for check out action used by these helper methods. This is populated by the getter and should not be accessed directly. */
     private FolderModel checkOutDestinationFolder;
-
-    /**
-     * Initialise the util class.
-     */
-    @Override
-    public void afterPropertiesSet()
-    {
-        UserModel admin = dataUser.getAdminUser();
-        // Obtain the node ref for the review and approve workflow.
-        RestActionDefinitionModel actionDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionDefinitionById(RULE_SCRIPT_ID);
-        RestParameterDefinitionModel paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(RULE_SCRIPT_PARAM_ID)).findFirst().get();
-        String constraintName = paramDef.getParameterConstraintName();
-        RestActionConstraintModel constraintDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
-        RestActionConstraintDataModel reviewAndApprove = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(RULE_ERROR_SCRIPT_LABEL)).findFirst().get();
-        reviewAndApproveWorkflowNode = reviewAndApprove.getValue();
-
-        // Create a couple of public folders to be used as action destinations.
-        site = dataSite.usingUser(admin).createPublicRandomSite();
-        copyDestinationFolder = dataContent.usingUser(admin).usingSite(site).createFolder();
-        checkOutDestinationFolder = dataContent.usingUser(admin).usingSite(site).createFolder();
-    }
-
-    public RestRuleModel createRuleModelWithModifiedValues()
-    {
-        return createRuleModelWithModifiedValues(List.of(createAddAudioAspectAction()));
-    }
 
     /**
      * Get the review and approve workflow node (throwing an exception if this utility class has not been initialised).
@@ -127,17 +104,53 @@ public class RulesTestsUtils implements InitializingBean
      */
     public String getReviewAndApproveWorkflowNode()
     {
+        if (reviewAndApproveWorkflowNode == null)
+        {
+            UserModel admin = dataUser.getAdminUser();
+            // Obtain the node ref for the review and approve workflow.
+            RestActionDefinitionModel actionDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionDefinitionById(RULE_SCRIPT_ID);
+            RestParameterDefinitionModel paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(RULE_SCRIPT_PARAM_ID)).findFirst().get();
+            String constraintName = paramDef.getParameterConstraintName();
+            RestActionConstraintModel constraintDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
+            RestActionConstraintDataModel reviewAndApprove = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(RULE_ERROR_SCRIPT_LABEL)).findFirst().get();
+            reviewAndApproveWorkflowNode = reviewAndApprove.getValue();
+        }
         return reviewAndApproveWorkflowNode;
+    }
+
+    public SiteModel getPublicSite()
+    {
+        if (publicSite == null)
+        {
+            UserModel admin = dataUser.getAdminUser();
+            publicSite = dataSite.usingUser(admin).createPublicRandomSite();
+        }
+        return publicSite;
     }
 
     public FolderModel getCopyDestinationFolder()
     {
+        if (copyDestinationFolder == null)
+        {
+            UserModel admin = dataUser.getAdminUser();
+            copyDestinationFolder = dataContent.usingUser(admin).usingSite(getPublicSite()).createFolder();
+        }
         return copyDestinationFolder;
     }
 
     public FolderModel getCheckOutDestinationFolder()
     {
+        if (checkOutDestinationFolder == null)
+        {
+            UserModel admin = dataUser.getAdminUser();
+            checkOutDestinationFolder = dataContent.usingUser(admin).usingSite(getPublicSite()).createFolder();
+        }
         return checkOutDestinationFolder;
+    }
+
+    public RestRuleModel createRuleModelWithModifiedValues()
+    {
+        return createRuleModelWithModifiedValues(List.of(createAddAudioAspectAction()));
     }
 
     /**
@@ -239,10 +252,10 @@ public class RulesTestsUtils implements InitializingBean
     public RestRuleModel createRuleWithVariousActions()
     {
         final Map<String, Serializable> copyParams =
-                Map.of("destination-folder", copyDestinationFolder.getNodeRef(), "deep-copy", true);
+                Map.of("destination-folder", getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
         final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
         final Map<String, Serializable> checkOutParams =
-                Map.of("destination-folder", checkOutDestinationFolder.getNodeRef(), "assoc-name", "cm:checkout",
+                Map.of("destination-folder", getCheckOutDestinationFolder().getNodeRef(), "assoc-name", "cm:checkout",
                         "assoc-type", "cm:contains");
         final RestActionBodyExecTemplateModel checkOutAction = createCustomActionModel("check-out", checkOutParams);
         // The counter action takes no parameters, so check we can omit the "params" entry.

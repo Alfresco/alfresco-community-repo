@@ -27,7 +27,6 @@
 package org.alfresco.rest.api.impl.validator.actions;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -49,8 +48,6 @@ import org.apache.commons.collections.MapUtils;
 public class ActionParameterDefinitionValidator implements ActionValidator
 {
     private static final boolean IS_ENABLED = true;
-    private static final String BASE_PACKAGE = "org/alfresco/repo/action/executer";
-    private static final String NAME = "NAME";
 
     static final String INVALID_PARAMETER_VALUE =
             "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
@@ -60,7 +57,6 @@ public class ActionParameterDefinitionValidator implements ActionValidator
             "Action parameters should not be null or empty for this action. See Action Definition for action of: %s";
     static final String INVALID_ACTION_DEFINITION = "Invalid action definition requested %s";
 
-    private final List<String> actionDefinitionIds = new ArrayList<>();
     private final Actions actions;
 
     public ActionParameterDefinitionValidator(Actions actions)

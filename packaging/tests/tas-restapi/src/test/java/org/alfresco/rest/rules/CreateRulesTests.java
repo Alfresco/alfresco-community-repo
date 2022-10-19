@@ -48,6 +48,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -496,6 +497,26 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
+     * Check we get error when attempt to create a rule with an action tha is not applicable to rules.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithNotApplicableActionsShouldFail()
+    {
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        final String actionDefinitionId = "delete-rendition";
+        invalidAction.setActionDefinitionId(actionDefinitionId);
+        invalidAction.setParams(Map.of("dummy-key", "dummy-value"));
+        ruleModel.setActions(List.of(invalidAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary(String.format("Invalid action definition requested %s", actionDefinitionId));
+    }
+
+    /**
      * Check we get error when attempt to create a rule with missing action parameters.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
@@ -649,27 +670,25 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
-     * Check we get error when attempting to create a rule that moves files to a folder that a user only has read permission for.
+     * Check we get error when attempting to create a rule that moves files to a node which is not a folder
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void createRuleThatMovesToNodeWithoutPermission()
+    public void createRuleThatMovesToNodeWhichIsNotAFolderShouldFail()
     {
-        SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
-        FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
-        dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);
+        final FileModel fileModel = dataContent.usingUser(user).usingSite(site).createContent(getRandomFileModel(TEXT_PLAIN));
 
-        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        String actionDefinitionId = "move";
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
+        final String actionDefinitionId = "move";
         invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("destination-folder", privateFolder.getNodeRef()));
+        invalidAction.setParams(Map.of("destination-folder", fileModel.getNodeRef()));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
 
-        restClient.assertStatusCodeIs(FORBIDDEN);
-        restClient.assertLastError().containsSummary("No proper permissions for node: " + privateFolder.getNodeRef());
+        restClient.assertStatusCodeIs(BAD_REQUEST);
+        restClient.assertLastError().containsSummary("Node is not a folder " + fileModel.getNodeRef());
     }
 
 

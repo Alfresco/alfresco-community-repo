@@ -218,11 +218,17 @@ public class ActionsImpl implements Actions
 
     @Override
     @Experimental
-    public List<ActionDefinition> getAllActionDefinitions()
+    public ActionDefinition getRuleActionDefinitionById(String actionDefinitionId)
     {
+        if (actionDefinitionId == null)
+        {
+            throw new InvalidArgumentException("actionDefinitionId is null");
+        }
         return actionService.getActionDefinitions().stream()
+                .filter(a -> actionDefinitionId.equals(a.getName()))
                 .map(this::mapFromServiceModel)
-                .collect(Collectors.toList());
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] {actionDefinitionId}));
     }
 
     private ActionDefinition mapFromServiceModel(org.alfresco.service.cmr.action.ActionDefinition actionDefinition)

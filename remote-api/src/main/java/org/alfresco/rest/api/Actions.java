@@ -56,5 +56,5 @@ public interface Actions
     @Experimental
     ActionParameterConstraint getActionConstraint(String constraintName);
     @Experimental
-    List<ActionDefinition> getAllActionDefinitions();
+    ActionDefinition getRuleActionDefinitionById(String actionDefinitionId);
 }

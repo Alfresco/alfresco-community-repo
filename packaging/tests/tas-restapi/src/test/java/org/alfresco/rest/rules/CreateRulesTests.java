@@ -65,11 +65,13 @@ import org.alfresco.rest.model.RestParameterDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.constants.UserRole;
+import org.alfresco.utility.model.ContentModel;
 import org.alfresco.utility.model.FileModel;
 import org.alfresco.utility.model.FolderModel;
 import org.alfresco.utility.model.SiteModel;
 import org.alfresco.utility.model.TestGroup;
 import org.alfresco.utility.model.UserModel;
+import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -713,11 +715,123 @@ public class CreateRulesTests extends RestTest
         ruleModel.setActions(Arrays.asList(mailAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .createSingleRule(ruleModel);
+                  .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Action parameter: template has invalid value (" + mailTemplate +
                 "). Look up possible values for constraint name ac-email-templates");
+    }
+
+    /**
+     * Check the admin user can create a rule with a script.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkAdminCanUseScriptInRule()
+    {
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel scriptAction = new RestActionBodyExecTemplateModel();
+        scriptAction.setActionDefinitionId("script");
+        scriptAction.setParams(Map.of("script-ref", rulesUtils.getReviewAndApproveWorkflowNode()));
+        ruleModel.setActions(List.of(scriptAction));
+
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
+    /**
+     * Check the script has to be stored in the scripts directory in the data dictionary.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkCantUseNodeOutsideScriptsDirectory()
+    {
+        STEP("Copy script to location outside data dictionary.");
+        FolderModel folderOutsideDataDictionary = dataContent.usingUser(user).usingSite(site).createFolder();
+        String sourceNodeId = rulesUtils.getReviewAndApproveWorkflowNode();
+        ContentModel sourceNode = new ContentModel("/Data Dictionary/Scripts/start-pooled-review-workflow.js");
+        sourceNode.setNodeRef("/workspace://SpacesStore/" + sourceNodeId);
+        CmisObject scriptOutsideDataDictionary = dataContent.getContentActions().copyTo(dataUser.getAdminUser().getUsername(),
+                dataUser.getAdminUser().getPassword(),
+                sourceNode.getCmisLocation(),
+                folderOutsideDataDictionary.getCmisLocation());
+        String scriptId = scriptOutsideDataDictionary.getId().substring(0, scriptOutsideDataDictionary.getId().indexOf(";"));
+
+        STEP("Try to use this script in rule.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel scriptAction = new RestActionBodyExecTemplateModel();
+        scriptAction.setActionDefinitionId("script");
+        scriptAction.setParams(Map.of("script-ref", scriptId));
+        ruleModel.setActions(List.of(scriptAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST)
+                  .assertLastError().containsSummary("script-ref has invalid value");
+    }
+
+    /**
+     * Check we get error when a non-admin user tries to create a rule with a script.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkNormalUserCantUseScriptInRule()
+    {
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel scriptAction = new RestActionBodyExecTemplateModel();
+        scriptAction.setActionDefinitionId("script");
+        scriptAction.setParams(Map.of("script-ref", rulesUtils.getReviewAndApproveWorkflowNode()));
+        ruleModel.setActions(List.of(scriptAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+        restClient.assertLastError().containsSummary("Only admin or system user is allowed to define uses of or directly execute this action");
+    }
+
+    /**
+     * Check a rule can link nodes to a category.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkLinkToCategoryAction()
+    {
+        STEP("Get a category id using the action constraints API.");
+        String actionId = "link-category";
+        String constraintName = "category-value";
+        String categoryId = rulesUtils.findConstraintValue(user, actionId, constraintName, "");
+
+        STEP("Create rule that links to category.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel categoryAction = new RestActionBodyExecTemplateModel();
+        categoryAction.setActionDefinitionId(actionId);
+        categoryAction.setParams(Map.of(constraintName, categoryId));
+        ruleModel.setActions(List.of(categoryAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
+    /**
+     * Check a real category needs to be supplied when linking to a category.
+     */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkLinkToCategoryNeedsRealCategory()
+    {
+        STEP("Attempt to link to a category with a folder node, rather than a category node.");
+        String nonCategoryNodeRef = ruleFolder.getNodeRef();
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        RestActionBodyExecTemplateModel categoryAction = new RestActionBodyExecTemplateModel();
+        categoryAction.setActionDefinitionId("link-category");
+        categoryAction.setParams(Map.of("category-value", nonCategoryNodeRef));
+        ruleModel.setActions(List.of(categoryAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+                  .createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST);
     }
 
     /**

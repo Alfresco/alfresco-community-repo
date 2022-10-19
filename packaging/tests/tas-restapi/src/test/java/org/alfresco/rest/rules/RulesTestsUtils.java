@@ -98,6 +98,29 @@ public class RulesTestsUtils
     private FolderModel checkOutDestinationFolder;
 
     /**
+     * Get the constraint value for a given action parameter label.
+     *
+     * @param user The user to use to obtain the information.
+     * @param actionId The id of the action definition.
+     * @param paramId The id of the parameter for the action.
+     * @param constraintLabel The label of the desired value of the parameter.
+     * @return The value to use for the parameter.
+     */
+    public String findConstraintValue(UserModel user, String actionId, String paramId, String constraintLabel)
+    {
+        RestActionDefinitionModel actionDef = restClient.authenticateUser(user).withCoreAPI().usingActions().getActionDefinitionById(actionId);
+        RestParameterDefinitionModel paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(paramId)).findFirst().get();
+        if (paramDef.getParameterConstraintName() == null)
+        {
+            throw new IllegalArgumentException("Supplied parameter " + paramId + " for action " + actionId + " does not have a defined constraint.");
+        }
+        String constraintName = paramDef.getParameterConstraintName();
+        RestActionConstraintModel constraintDef = restClient.authenticateUser(user).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
+        RestActionConstraintDataModel constraintDataModel = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(constraintLabel)).findFirst().get();
+        return constraintDataModel.getValue();
+    }
+
+    /**
      * Get the review and approve workflow node (throwing an exception if this utility class has not been initialised).
      *
      * @return The node ref of the script node.
@@ -107,13 +130,7 @@ public class RulesTestsUtils
         if (reviewAndApproveWorkflowNode == null)
         {
             UserModel admin = dataUser.getAdminUser();
-            // Obtain the node ref for the review and approve workflow.
-            RestActionDefinitionModel actionDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionDefinitionById(RULE_SCRIPT_ID);
-            RestParameterDefinitionModel paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(RULE_SCRIPT_PARAM_ID)).findFirst().get();
-            String constraintName = paramDef.getParameterConstraintName();
-            RestActionConstraintModel constraintDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
-            RestActionConstraintDataModel reviewAndApprove = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(RULE_ERROR_SCRIPT_LABEL)).findFirst().get();
-            reviewAndApproveWorkflowNode = reviewAndApprove.getValue();
+            reviewAndApproveWorkflowNode = findConstraintValue(admin, RULE_SCRIPT_ID, RULE_SCRIPT_PARAM_ID, RULE_ERROR_SCRIPT_LABEL);
         }
         return reviewAndApproveWorkflowNode;
     }

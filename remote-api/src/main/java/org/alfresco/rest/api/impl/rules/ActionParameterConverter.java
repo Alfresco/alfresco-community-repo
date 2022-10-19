@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -51,6 +52,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.logging.log4j.util.Strings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -58,6 +60,8 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 @Experimental
 public class ActionParameterConverter
 {
+    static final String ACTION_PARAMETER_SHOULD_NOT_HAVE_EMPTY_OR_NULL_VALUE =
+            "Action parameter should not have empty or null value";
     private final DictionaryService dictionaryService;
     private final ActionService actionService;
     private final NamespaceService namespaceService;
@@ -93,6 +97,9 @@ public class ActionParameterConverter
 
         for (Map.Entry<String, Serializable> param : params.entrySet())
         {
+            if (Objects.toString(param.getValue(), Strings.EMPTY).isEmpty()) {
+                throw new InvalidArgumentException(ACTION_PARAMETER_SHOULD_NOT_HAVE_EMPTY_OR_NULL_VALUE, new String[] {param.getKey()});
+            }
             final ParameterDefinition paramDef = definition.getParameterDefintion(param.getKey());
             if (paramDef == null && !definition.getAdhocPropertiesAllowed())
             {
@@ -159,16 +166,17 @@ public class ActionParameterConverter
         }
         else
         {
-            if (typeQName.equals(DataTypeDefinition.QNAME) && typeQName.toString().contains(":"))
+            final String stringValue = Objects.toString(propertyValue, Strings.EMPTY);
+            if (typeQName.isMatch(DataTypeDefinition.QNAME) && typeQName.toString().contains(":"))
             {
-                value = QName.createQName(propertyValue.toString(), namespaceService);
+                value = QName.createQName(stringValue, namespaceService);
             }
             else if (typeQName.isMatch(DataTypeDefinition.NODE_REF))
             {
-                NodeRef nodeRef = nodes.validateOrLookupNode(propertyValue.toString(), null);
+                NodeRef nodeRef = nodes.validateOrLookupNode(stringValue, null);
                 if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
                 {
-                    throw new EntityNotFoundException(propertyValue.toString());
+                    throw new EntityNotFoundException(stringValue);
                 }
                 value = nodeRef;
             }

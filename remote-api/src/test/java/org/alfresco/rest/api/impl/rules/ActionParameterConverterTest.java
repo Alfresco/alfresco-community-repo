@@ -44,6 +44,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CheckInActionExecuter;
 import org.alfresco.repo.action.executer.CheckOutActionExecuter;
@@ -56,6 +57,7 @@ import org.alfresco.repo.action.executer.SetPropertyValueActionExecuter;
 import org.alfresco.repo.action.executer.SimpleWorkflowActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionDefinition;
@@ -67,6 +69,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.logging.log4j.util.Strings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -607,6 +610,28 @@ public class ActionParameterConverterTest
 
         //when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.getConvertedParams(params, name));
+    }
+
+    @Test
+    public void testNullParamValue()
+    {
+        final String name = CheckOutActionExecuter.NAME;
+        final String destinationFolderKey = CheckOutActionExecuter.PARAM_DESTINATION_FOLDER;
+        final String assocNameKey = CheckOutActionExecuter.PARAM_ASSOC_QNAME;
+        final String assocTypeKey = CheckOutActionExecuter.PARAM_ASSOC_TYPE_QNAME;
+        final Map<String, Serializable> params =
+                Map.of(destinationFolderKey, Strings.EMPTY, assocNameKey, Strings.EMPTY, assocTypeKey, Strings.EMPTY);
+
+        given(actionService.getActionDefinition(name)).willReturn(actionDefinition);
+
+        //when
+        assertThrows(InvalidArgumentException.class, () ->objectUnderTest.getConvertedParams(params, name));
+
+        then(actionService).should().getActionDefinition(name);
+        then(actionService).shouldHaveNoMoreInteractions();
+        then(actionDefinition).shouldHaveNoInteractions();
+        then(dictionaryService).shouldHaveNoInteractions();
+        then(namespaceService).shouldHaveNoInteractions();
     }
 
     @Test

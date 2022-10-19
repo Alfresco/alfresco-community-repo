@@ -38,6 +38,7 @@ import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
+import org.alfresco.service.cmr.action.ActionService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 
@@ -56,10 +57,11 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     static final String PARAMS_SHOULD_NOT_BE_EMPTY =
             "Action parameters should not be null or empty for this action. See Action Definition for action of: %s";
     static final String INVALID_ACTION_DEFINITION = "Invalid action definition requested %s";
+    static final String NOT_APPLICABLE_ACTION_DEFINITION = "This action definition %s is not applicable within a rule";
 
     private final Actions actions;
 
-    public ActionParameterDefinitionValidator(Actions actions)
+    public ActionParameterDefinitionValidator(Actions actions, ActionService actionService)
     {
         this.actions = actions;
     }
@@ -79,6 +81,10 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         } catch (NotFoundException e)
         {
             throw new InvalidArgumentException(String.format(INVALID_ACTION_DEFINITION, action.getActionDefinitionId()));
+        }
+        if (actions.getAllActionDefinitions().stream().noneMatch(ad -> action.getActionDefinitionId().equals(ad.getId())))
+        {
+            throw new InvalidArgumentException(String.format(NOT_APPLICABLE_ACTION_DEFINITION, action.getActionDefinitionId()));
         }
         validateParametersSize(action.getParams(), actionDefinition);
         final Map<String, Serializable> params = action.getParams();

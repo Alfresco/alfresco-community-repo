@@ -495,7 +495,7 @@ public class CreateRulesTests extends RestTest
                 .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
-        restClient.assertLastError().containsSummary(String.format("Invalid action definition requested %s", actionDefinitionId));
+        restClient.assertLastError().containsSummary(String.format("Invalid rule action definition requested %s", actionDefinitionId));
     }
 
     /**
@@ -515,7 +515,7 @@ public class CreateRulesTests extends RestTest
                 .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
-        restClient.assertLastError().containsSummary(String.format("Invalid action definition requested %s", actionDefinitionId));
+        restClient.assertLastError().containsSummary(String.format("Invalid rule action definition requested %s", actionDefinitionId));
     }
 
     /**
@@ -769,49 +769,6 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST)
                   .assertLastError().containsSummary("script-ref has invalid value");
-    }
-
-    /**
-     * Check we get error when a non-admin user tries to create a rule with a script.
-     */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
-    public void checkNormalUserCantUseScriptInRule()
-    {
-        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel scriptAction = new RestActionBodyExecTemplateModel();
-        scriptAction.setActionDefinitionId("script");
-        scriptAction.setParams(Map.of("script-ref", rulesUtils.getReviewAndApproveWorkflowNode()));
-        ruleModel.setActions(List.of(scriptAction));
-
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
-
-        restClient.assertStatusCodeIs(FORBIDDEN);
-        restClient.assertLastError().containsSummary("Only admin or system user is allowed to define uses of or directly execute this action");
-    }
-
-    /**
-     * Check a rule can link nodes to a category.
-     */
-    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
-    public void checkLinkToCategoryAction()
-    {
-        STEP("Get a category id using the action constraints API.");
-        String actionId = "link-category";
-        String constraintName = "category-value";
-        String categoryId = rulesUtils.findConstraintValue(user, actionId, constraintName, "");
-
-        STEP("Create rule that links to category.");
-        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel categoryAction = new RestActionBodyExecTemplateModel();
-        categoryAction.setActionDefinitionId(actionId);
-        categoryAction.setParams(Map.of(constraintName, categoryId));
-        ruleModel.setActions(List.of(categoryAction));
-
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                  .createSingleRule(ruleModel);
-
-        restClient.assertStatusCodeIs(CREATED);
     }
 
     /**

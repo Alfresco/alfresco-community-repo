@@ -247,7 +247,7 @@ public class UpdateRulesTests extends RestTest
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
-        restClient.assertLastError().containsSummary(String.format("Invalid action definition requested %s", actionDefinitionId));
+        restClient.assertLastError().containsSummary(String.format("Invalid rule action definition requested %s", actionDefinitionId));
     }
 
     /** Check we can use the POST response to create the new rule. */

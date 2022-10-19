@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.logging.log4j.util.Strings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -59,6 +60,8 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 @Experimental
 public class ActionParameterConverter
 {
+    static final String ACTION_PARAMETER_SHOULD_NOT_HAVE_EMPTY_OR_NULL_VALUE =
+            "Action parameter should not have empty or null value";
     private final DictionaryService dictionaryService;
     private final ActionService actionService;
     private final NamespaceService namespaceService;
@@ -94,6 +97,9 @@ public class ActionParameterConverter
 
         for (Map.Entry<String, Serializable> param : params.entrySet())
         {
+            if (Objects.toString(param.getValue(), Strings.EMPTY).isEmpty()) {
+                throw new InvalidArgumentException(ACTION_PARAMETER_SHOULD_NOT_HAVE_EMPTY_OR_NULL_VALUE, new String[] {param.getKey()});
+            }
             final ParameterDefinition paramDef = definition.getParameterDefintion(param.getKey());
             if (paramDef == null && !definition.getAdhocPropertiesAllowed())
             {
@@ -160,7 +166,7 @@ public class ActionParameterConverter
         }
         else
         {
-            final String stringValue = Objects.toString(propertyValue, null);
+            final String stringValue = Objects.toString(propertyValue, Strings.EMPTY);
             if (typeQName.isMatch(DataTypeDefinition.QNAME) && typeQName.toString().contains(":"))
             {
                 value = QName.createQName(stringValue, namespaceService);

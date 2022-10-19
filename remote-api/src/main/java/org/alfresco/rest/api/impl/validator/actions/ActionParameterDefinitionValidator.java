@@ -29,6 +29,7 @@ package org.alfresco.rest.api.impl.validator.actions;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.actions.ActionValidator;
@@ -36,7 +37,6 @@ import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
 import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.service.Experimental;
 import org.alfresco.service.cmr.action.ActionService;
 import org.apache.commons.collections.CollectionUtils;
@@ -56,7 +56,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     static final String MUST_NOT_CONTAIN_PARAMETER = "Action of definition id: %s must not contain parameter of name: %s";
     static final String PARAMS_SHOULD_NOT_BE_EMPTY =
             "Action parameters should not be null or empty for this action. See Action Definition for action of: %s";
-    static final String INVALID_ACTION_DEFINITION = "Invalid action definition requested %s";
+    static final String EMPTY_ACTION_DEFINITION = "Empty/null action definition requested";
     static final String NOT_APPLICABLE_ACTION_DEFINITION = "This action definition %s is not applicable within a rule";
 
     private final Actions actions;
@@ -74,24 +74,24 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     @Override
     public void validate(Action action)
     {
-        ActionDefinition actionDefinition;
-        try
+        final String actionDefinitionId = action.getActionDefinitionId();
+        if (actionDefinitionId == null)
         {
-            actionDefinition = actions.getActionDefinitionById(action.getActionDefinitionId());
-        } catch (NotFoundException e)
-        {
-            throw new InvalidArgumentException(String.format(INVALID_ACTION_DEFINITION, action.getActionDefinitionId()));
+            throw new InvalidArgumentException(EMPTY_ACTION_DEFINITION);
         }
-        if (actions.getAllActionDefinitions().stream().noneMatch(ad -> action.getActionDefinitionId().equals(ad.getId())))
+        final Optional<ActionDefinition> actionDefinition =
+                actions.getAllActionDefinitions().stream().filter(ad -> actionDefinitionId.equals(ad.getId())).findFirst();
+        if (actionDefinition.isEmpty())
         {
-            throw new InvalidArgumentException(String.format(NOT_APPLICABLE_ACTION_DEFINITION, action.getActionDefinitionId()));
+            throw new InvalidArgumentException(String.format(NOT_APPLICABLE_ACTION_DEFINITION, actionDefinitionId));
         }
-        validateParametersSize(action.getParams(), actionDefinition);
+
+        validateParametersSize(action.getParams(), actionDefinition.get());
         final Map<String, Serializable> params = action.getParams();
         if (MapUtils.isNotEmpty(params))
         {
-            params.forEach((key, value) -> checkParameterShouldExist(key, actionDefinition));
-            actionDefinition.getParameterDefinitions().forEach(p -> validateParameterDefinitions(p, params));
+            params.forEach((key, value) -> checkParameterShouldExist(key, actionDefinition.get()));
+            actionDefinition.get().getParameterDefinitions().forEach(p -> validateParameterDefinitions(p, params));
         }
     }
 
@@ -114,6 +114,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
 
     /**
      * This validator should have highest priority and be executed first of all.
+     *
      * @return minimal integer value
      */
     @Override
@@ -126,7 +127,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     {
         if (CollectionUtils.isNotEmpty(actionDefinition.getParameterDefinitions()) && MapUtils.isEmpty(params))
         {
-            throw new IllegalArgumentException(String.format(PARAMS_SHOULD_NOT_BE_EMPTY, actionDefinition.getName()));
+            throw new InvalidArgumentException(String.format(PARAMS_SHOULD_NOT_BE_EMPTY, actionDefinition.getName()));
         }
     }
 
@@ -136,7 +137,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         final Serializable parameterValue = params.get(parameterDefinition.getName());
         if (parameterDefinition.isMandatory() && parameterValue == null)
         {
-            throw new IllegalArgumentException(String.format(MISSING_PARAMETER, parameterDefinition.getName()));
+            throw new InvalidArgumentException(String.format(MISSING_PARAMETER, parameterDefinition.getName()));
         }
         if (parameterDefinition.getParameterConstraintName() != null)
         {
@@ -145,7 +146,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
             if (parameterValue != null && actionConstraint.getConstraintValues().stream()
                     .noneMatch(constraintData -> constraintData.getValue().equals(parameterValue.toString())))
             {
-                throw new IllegalArgumentException(String.format(INVALID_PARAMETER_VALUE, parameterDefinition.getName(), parameterValue,
+                throw new InvalidArgumentException(String.format(INVALID_PARAMETER_VALUE, parameterDefinition.getName(), parameterValue,
                         actionConstraint.getConstraintName()));
             }
         }
@@ -155,7 +156,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     {
         if (actionDefinition.getParameterDefinitions().stream().noneMatch(pd -> parameterName.equals(pd.getName())))
         {
-            throw new IllegalArgumentException(String.format(MUST_NOT_CONTAIN_PARAMETER, actionDefinition.getName(), parameterName));
+            throw new InvalidArgumentException(String.format(MUST_NOT_CONTAIN_PARAMETER, actionDefinition.getName(), parameterName));
         }
     }
 }

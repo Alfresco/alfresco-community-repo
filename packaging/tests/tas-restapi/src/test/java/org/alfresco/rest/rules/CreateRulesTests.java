@@ -173,6 +173,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a user without permission to view the folder cannot create a rule in it. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void requireReadPermissionToCreateRule()
     {
         STEP("Create a user and use them to create a private site containing a folder");
@@ -191,6 +192,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a Collaborator cannot create a rule in a folder in a private site. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void siteCollaboratorCannotCreateRule()
     {
         testRolePermissionsWith(SiteCollaborator);
@@ -200,6 +202,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a Contributor cannot create a rule in a private folder. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void siteContributorCannotCreateRule()
     {
         testRolePermissionsWith(SiteContributor);
@@ -209,6 +212,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a Consumer cannot create a rule in a folder in a private site. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void siteConsumerCannotCreateRule()
     {
         testRolePermissionsWith(SiteConsumer);
@@ -218,6 +222,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a siteManager can create a rule in a folder in a private site. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void siteManagerCanCreateRule()
     {
         testRolePermissionsWith(SiteManager)
@@ -358,7 +363,7 @@ public class CreateRulesTests extends RestTest
         rule.assertThat().field("isShared").isNotNull();
     }
 
-    public RestRuleModel testRolePermissionsWith(UserRole userRole)
+    private RestRuleModel testRolePermissionsWith(UserRole userRole)
     {
         STEP("Create a user and use them to create a private site containing a folder");
         SiteModel privateSite = dataSite.usingUser(user).createPrivateRandomSite();
@@ -373,7 +378,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that the folder's owner can create rules, even if it is in a private site they aren't a member of. */
-    @Test
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void checkOwnerCanCreateRule()
     {
         STEP("Use admin to create a private site.");
@@ -392,7 +397,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that an administrator can create a rule in a private site even if they aren't a member. */
-    @Test
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void checkAdminCanCreateRule()
     {
         STEP("Use a user to create a private site with a folder.");
@@ -407,7 +412,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a coordinator can create rules in folders outside sites. */
-    @Test
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void checkCoordinatorCanCreateRule()
     {
         STEP("Create a folder in the user's file space.");
@@ -426,7 +431,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that an editor cannot create rules in folders outside sites. */
-    @Test
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void checkEditorCannotCreateRule()
     {
         STEP("Create a folder in the user's file space.");
@@ -445,7 +450,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a collaborator cannot create rules in folders outside sites. */
-    @Test
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void checkCollaboratorCannotCreateRule()
     {
         STEP("Create a folder in the user's file space.");

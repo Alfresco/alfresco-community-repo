@@ -63,8 +63,6 @@ public class RulesTestsUtils
     static final boolean RULE_CASCADE_DEFAULT = true;
     static final boolean RULE_ASYNC_DEFAULT = true;
     static final boolean RULE_SHARED_DEFAULT = false;
-    static final String RULE_SCRIPT_ID = "script";
-    static final String RULE_SCRIPT_PARAM_ID = "script-ref";
     static final String RULE_ERROR_SCRIPT_LABEL = "Start Pooled Review and Approve Workflow";
     static final String INBOUND = "inbound";
     static final String UPDATE = "update";
@@ -76,6 +74,15 @@ public class RulesTestsUtils
     static final String IS_SHARED = "isShared";
     static final String AUDIO_ASPECT = "audio:audio";
     static final String LOCKABLE_ASPECT = "cm:lockable";
+    static final String TEMPLATE_PARAM = "template";
+    static final String RULE_SCRIPT_PARAM_ID = "script-ref";
+    static final String CHECKIN_ACTION = "check-in";
+    static final String LINK_CATEGORY_ACTION = "link-category";
+    static final String DELETE_RENDITION_ACTION = "delete-rendition";
+    static final String COPY_ACTION = "copy";
+    static final String ADD_FEATURES_ACTION = "add-features";
+    static final String MOVE_ACTION = "move";
+    static final String SCRIPT_ACTION = "script";
 
     @Autowired
     private RestWrapper restClient;
@@ -96,6 +103,42 @@ public class RulesTestsUtils
     private FolderModel checkOutDestinationFolder;
 
     /**
+     * Get the constraint value for a given action parameter label.
+     *
+     * @param user The user to use to obtain the information.
+     * @param actionId The id of the action definition.
+     * @param paramId The id of the parameter for the action.
+     * @param constraintLabel The label of the desired value of the parameter.
+     * @return The value to use for the parameter.
+     */
+    public String findConstraintValue(UserModel user, String actionId, String paramId, String constraintLabel)
+    {
+        RestActionConstraintModel constraintDef = getConstraintsForActionParam(user, actionId, paramId);
+        RestActionConstraintDataModel constraintDataModel = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(constraintLabel)).findFirst().get();
+        return constraintDataModel.getValue();
+    }
+
+    /**
+     * Get all constraint values for a given action parameter.
+     *
+     * @param user The user to use to obtain the information.
+     * @param actionId The id of the action definition.
+     * @param paramId The id of the parameter for the action.
+     * @return The value to use for the parameter.
+     */
+    public RestActionConstraintModel getConstraintsForActionParam(UserModel user, String actionId, String paramId)
+    {
+        RestActionDefinitionModel actionDef = restClient.authenticateUser(user).withCoreAPI().usingActions().getActionDefinitionById(actionId);
+        RestParameterDefinitionModel paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(paramId)).findFirst().get();
+        if (paramDef.getParameterConstraintName() == null)
+        {
+            throw new IllegalArgumentException("Supplied parameter " + paramId + " for action " + actionId + " does not have a defined constraint.");
+        }
+        String constraintName = paramDef.getParameterConstraintName();
+        return restClient.authenticateUser(user).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
+    }
+
+    /**
      * Get the review and approve workflow node (throwing an exception if this utility class has not been initialised).
      *
      * @return The node ref of the script node.
@@ -105,13 +148,7 @@ public class RulesTestsUtils
         if (reviewAndApproveWorkflowNode == null)
         {
             UserModel admin = dataUser.getAdminUser();
-            // Obtain the node ref for the review and approve workflow.
-            RestActionDefinitionModel actionDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionDefinitionById(RULE_SCRIPT_ID);
-            RestParameterDefinitionModel paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(RULE_SCRIPT_PARAM_ID)).findFirst().get();
-            String constraintName = paramDef.getParameterConstraintName();
-            RestActionConstraintModel constraintDef = restClient.authenticateUser(admin).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
-            RestActionConstraintDataModel reviewAndApprove = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(RULE_ERROR_SCRIPT_LABEL)).findFirst().get();
-            reviewAndApproveWorkflowNode = reviewAndApprove.getValue();
+            reviewAndApproveWorkflowNode = findConstraintValue(admin, SCRIPT_ACTION, RULE_SCRIPT_PARAM_ID, RULE_ERROR_SCRIPT_LABEL);
         }
         return reviewAndApproveWorkflowNode;
     }
@@ -209,7 +246,7 @@ public class RulesTestsUtils
 
     public RestActionBodyExecTemplateModel createAddAspectAction(String aspect)
     {
-        return createCustomActionModel("add-features", Map.of("aspect-name", aspect));
+        return createCustomActionModel(ADD_FEATURES_ACTION, Map.of("aspect-name", aspect));
     }
 
     public RestActionBodyExecTemplateModel createCustomActionModel(String actionDefinitionId, Map<String, Serializable> params)
@@ -247,11 +284,11 @@ public class RulesTestsUtils
         ));
     }
 
-    public RestRuleModel createVariousActions()
+    public RestRuleModel createRuleWithVariousActions()
     {
         final Map<String, Serializable> copyParams =
                 Map.of("destination-folder", getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
-        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
+        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel(COPY_ACTION, copyParams);
         final Map<String, Serializable> checkOutParams =
                 Map.of("destination-folder", getCheckOutDestinationFolder().getNodeRef(), "assoc-name", "cm:checkout",
                         "assoc-type", "cm:contains");

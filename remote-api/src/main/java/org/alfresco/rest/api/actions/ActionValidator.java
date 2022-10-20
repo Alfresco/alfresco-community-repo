@@ -26,13 +26,35 @@
 
 package org.alfresco.rest.api.actions;
 
+import java.util.List;
+
 import org.alfresco.rest.api.model.rules.Action;
 import org.alfresco.service.Experimental;
 
 @Experimental
 public interface ActionValidator
 {
+
+    String ALL_ACTIONS = "all";
+
+    /**
+     * Provides validation logic for given action.
+     */
     void validate(Action action);
 
-    boolean isEnabled();
+    /**
+     * Returns priority of validator (applied to bulk validation in @see {@link org.alfresco.rest.api.impl.mapper.rules.RestRuleActionModelMapper})
+     * The lower number, the higher priority is set for the validator.
+     * @return priority expressed as int
+     */
+    int getPriority();
+
+    /**
+     * By default validator is applied to all actions
+     *
+     * @return indicator for all defined action definition ids
+     */
+    default List<String> getActionDefinitionIds() {
+        return List.of(ALL_ACTIONS);
+    }
 }

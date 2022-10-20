@@ -29,10 +29,12 @@ package org.alfresco.rest.api.impl.mapper.rules;
 import static java.util.Collections.emptyMap;
 
 import static org.alfresco.repo.action.access.ActionAccessRestriction.ACTION_CONTEXT_PARAM_NAME;
+import static org.alfresco.rest.api.actions.ActionValidator.ALL_ACTIONS;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -116,7 +118,9 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     }
     private void validateAction(Action action) {
         actionValidators.stream()
-                .filter(ActionValidator::isEnabled)
-                .forEach(v -> v.validate(action));
+                .filter(v -> (v.getActionDefinitionIds().contains(action.getActionDefinitionId()) ||
+                        v.getActionDefinitionIds().equals(List.of(ALL_ACTIONS))))
+                .sorted(Comparator.comparing(ActionValidator::getPriority))
+                .forEachOrdered(v -> v.validate(action));
     }
 }

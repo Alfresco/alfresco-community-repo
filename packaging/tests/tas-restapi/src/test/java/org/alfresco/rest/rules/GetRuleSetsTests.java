@@ -26,6 +26,7 @@
 package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.requests.RuleSettings.IS_INHERITANCE_ENABLED;
+import static org.alfresco.rest.rules.RulesTestsUtils.MOVE_ACTION;
 import static org.alfresco.utility.report.log.Step.STEP;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -341,7 +342,7 @@ public class GetRuleSetsTests extends RestTest
         dataContent.usingAdmin().usingResource(privateFolder).setInheritPermissions(false);
         // Create the grandchild with user and use admin to move it under the private folder.
         FolderModel publicGrandchild = dataContent.usingUser(user).usingSite(siteModel).createFolder();
-        coreAPIForAdmin().usingActions().executeAction("move", publicGrandchild, ImmutableMap.of("destination-folder", "workspace://SpacesStore/" + privateFolder.getNodeRef()));
+        coreAPIForAdmin().usingActions().executeAction(MOVE_ACTION, publicGrandchild, ImmutableMap.of("destination-folder", "workspace://SpacesStore/" + privateFolder.getNodeRef()));
         // Create the non-inheriting folder.
         FolderModel nonInheritingFolder = dataContent.usingUser(user).usingResource(folder).createFolder();
         RestRuleSettingsModel nonInheriting = new RestRuleSettingsModel();

@@ -103,7 +103,7 @@ public class UnsafeMethodsTest extends TestCase
         Mockito.verify(thread, Mockito.never()).setName(ArgumentMatchers.anyString());
 
         // Verify a newly blocked method in the patched version is blocked
-        Mockito.verify(thread, Mockito.never()).yield();
+        Mockito.verify(thread, Mockito.never()).onSpinWait();
     }
 
     private static List<String> createListOfAllowedMethods()
@@ -117,7 +117,7 @@ public class UnsafeMethodsTest extends TestCase
     {
         List<String> blockedMethods = new ArrayList<>(2);
         blockedMethods.add("java.lang.Thread.setName(java.lang.String)");
-        blockedMethods.add("java.lang.Thread.yield()");
+        blockedMethods.add("java.lang.Thread.onSpinWait()");
         return blockedMethods;
     }
 }

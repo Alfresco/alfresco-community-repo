@@ -26,6 +26,8 @@
 package org.alfresco.rest.rules;
 
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
+import static org.alfresco.rest.rules.RulesTestsUtils.ADD_FEATURES_ACTION;
+import static org.alfresco.rest.rules.RulesTestsUtils.COPY_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INBOUND;
 import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
@@ -247,7 +249,7 @@ public class UpdateRulesTests extends RestTest
                 .updateRule(rule.getId(), rule);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
-        restClient.assertLastError().containsSummary(String.format("Invalid action definition requested %s", actionDefinitionId));
+        restClient.assertLastError().containsSummary(String.format("Invalid rule action definition requested %s", actionDefinitionId));
     }
 
     /** Check we can use the POST response to create the new rule. */
@@ -257,7 +259,7 @@ public class UpdateRulesTests extends RestTest
         FolderModel destination = dataContent.usingUser(user).usingSite(site).createFolder();
 
         RestActionBodyExecTemplateModel copyAction = new RestActionBodyExecTemplateModel();
-        copyAction.setActionDefinitionId("copy");
+        copyAction.setActionDefinitionId(COPY_ACTION);
         copyAction.setParams(ImmutableMap.of("destination-folder", destination.getNodeRef()));
         RestRuleModel rule = createAndSaveRule("Rule name", List.of(copyAction));
 
@@ -269,7 +271,7 @@ public class UpdateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(OK);
         updatedRule.assertThat().field("name").is("Updated rule name")
-                   .assertThat().field("actions.actionDefinitionId").is(List.of("copy"))
+                   .assertThat().field("actions.actionDefinitionId").is(List.of(COPY_ACTION))
                    .assertThat().field("actions.params").is(List.of(ImmutableMap.of("destination-folder", destination.getNodeRef())));
     }
 
@@ -461,7 +463,7 @@ public class UpdateRulesTests extends RestTest
         STEP("Try to update the rule by adding several actions");
         final RestActionBodyExecTemplateModel counterAction = rulesUtils.createCustomActionModel("counter", null);
         final Map<String, Serializable> addAspectParams = Map.of("aspect-name", "cm:taggable");
-        final RestActionBodyExecTemplateModel addAspectAction = rulesUtils.createCustomActionModel("add-features", addAspectParams);
+        final RestActionBodyExecTemplateModel addAspectAction = rulesUtils.createCustomActionModel(ADD_FEATURES_ACTION, addAspectParams);
         rule.setActions(Arrays.asList(counterAction, addAspectAction));
 
         final RestRuleModel updatedRule = restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -506,7 +508,7 @@ public class UpdateRulesTests extends RestTest
 
         STEP("Try to update the rule by adding action with invalid parameter (non-existing namespace in value)");
         final RestActionBodyExecTemplateModel action = new RestActionBodyExecTemplateModel();
-        action.setActionDefinitionId("add-features");
+        action.setActionDefinitionId(ADD_FEATURES_ACTION);
         final String aspectNameParam = "aspect-name";
         final String paramValue = "dummy:dummy";
         action.setParams(Map.of(aspectNameParam, paramValue));

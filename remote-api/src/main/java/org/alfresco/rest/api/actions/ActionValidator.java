@@ -43,12 +43,8 @@ public interface ActionValidator
     void validate(Action action);
 
     /**
-     * Indicates whether validation is enabled. Could be based on property value in a specific implementation.
-     */
-    boolean isEnabled();
-
-    /**
      * Returns priority of validator (applied to bulk validation in @see {@link org.alfresco.rest.api.impl.mapper.rules.RestRuleActionModelMapper})
+     * The lower number, the higher priority is set for the validator.
      * @return priority expressed as int
      */
     int getPriority();

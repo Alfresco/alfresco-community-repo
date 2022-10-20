@@ -145,21 +145,7 @@ public class ActionsImpl implements Actions
     private ActionDefinition getActionDefinition(
             org.alfresco.service.cmr.action.ActionDefinition actionDefinitionId)
     {
-        List<ActionDefinition.ParameterDefinition> paramDefs =
-                actionDefinitionId.
-                        getParameterDefinitions().
-                        stream().
-                        map(this::toModel).
-                        collect(Collectors.toList());
-        return new ActionDefinition(
-                actionDefinitionId.getName(), // ID is a synonym for name.
-                actionDefinitionId.getName(),
-                actionDefinitionId.getTitle(),
-                actionDefinitionId.getDescription(),
-                toShortQNames(actionDefinitionId.getApplicableTypes()),
-                actionDefinitionId.getAdhocPropertiesAllowed(),
-                actionDefinitionId.getTrackStatus(),
-                paramDefs);
+        return mapFromServiceModel(actionDefinitionId);
     }
 
     @Override
@@ -215,23 +201,7 @@ public class ActionsImpl implements Actions
 
         List<ActionDefinition> sortedPage = actionDefinitions.
                 stream().
-                map(actionDefinition -> {
-                    List<ActionDefinition.ParameterDefinition> paramDefs =
-                            actionDefinition.
-                                    getParameterDefinitions().
-                                    stream().
-                                    map(this::toModel).
-                                    collect(Collectors.toList());
-                    return new ActionDefinition(
-                            actionDefinition.getName(), // ID is a synonym for name.
-                            actionDefinition.getName(),
-                            actionDefinition.getTitle(),
-                            actionDefinition.getDescription(),
-                            toShortQNames(actionDefinition.getApplicableTypes()),
-                            actionDefinition.getAdhocPropertiesAllowed(),
-                            actionDefinition.getTrackStatus(),
-                            paramDefs);
-                }).
+                map(this::mapFromServiceModel).
                 sorted(comparator).
                 skip(skip).
                 limit(maxItems).
@@ -244,6 +214,40 @@ public class ActionsImpl implements Actions
                 sortedPage,
                 hasMoreItems,
                 actionDefinitions.size());
+    }
+
+    @Override
+    @Experimental
+    public ActionDefinition getRuleActionDefinitionById(String actionDefinitionId)
+    {
+        if (actionDefinitionId == null)
+        {
+            throw new InvalidArgumentException("actionDefinitionId is null");
+        }
+        return actionService.getActionDefinitions().stream()
+                .filter(a -> actionDefinitionId.equals(a.getName()))
+                .map(this::mapFromServiceModel)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] {actionDefinitionId}));
+    }
+
+    private ActionDefinition mapFromServiceModel(org.alfresco.service.cmr.action.ActionDefinition actionDefinition)
+    {
+        List<ActionDefinition.ParameterDefinition> paramDefs =
+                actionDefinition.
+                        getParameterDefinitions().
+                        stream().
+                        map(this::toModel).
+                        collect(Collectors.toList());
+        return new ActionDefinition(
+                actionDefinition.getName(), // ID is a synonym for name.
+                actionDefinition.getName(),
+                actionDefinition.getTitle(),
+                actionDefinition.getDescription(),
+                toShortQNames(actionDefinition.getApplicableTypes()),
+                actionDefinition.getAdhocPropertiesAllowed(),
+                actionDefinition.getTrackStatus(),
+                paramDefs);
     }
 
     @Override

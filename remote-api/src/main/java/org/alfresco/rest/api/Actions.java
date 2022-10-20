@@ -27,6 +27,8 @@
 package org.alfresco.rest.api;
 
 
+import java.util.List;
+
 import org.alfresco.rest.api.model.Action;
 import org.alfresco.rest.api.model.ActionDefinition;
 import org.alfresco.rest.api.model.ActionParameterConstraint;
@@ -53,4 +55,6 @@ public interface Actions
 
     @Experimental
     ActionParameterConstraint getActionConstraint(String constraintName);
+    @Experimental
+    ActionDefinition getRuleActionDefinitionById(String actionDefinitionId);
 }

@@ -102,7 +102,7 @@ public class ActionNodeParameterValidatorTest
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
@@ -112,7 +112,7 @@ public class ActionNodeParameterValidatorTest
         //when
         objectUnderTest.validate(action);
 
-        then(actionsMock).should().getActionDefinitionById(COPY_ACTION);
+        then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
@@ -134,7 +134,7 @@ public class ActionNodeParameterValidatorTest
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
@@ -143,7 +143,7 @@ public class ActionNodeParameterValidatorTest
         //when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.validate(action));
 
-        then(actionsMock).should().getActionDefinitionById(COPY_ACTION);
+        then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
@@ -164,14 +164,14 @@ public class ActionNodeParameterValidatorTest
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         given(nodesMock.validateNode(NODE_ID)).willThrow(EntityNotFoundException.class);
 
         //when
         assertThatExceptionOfType(EntityNotFoundException.class).isThrownBy(() -> objectUnderTest.validate(action));
 
-        then(actionsMock).should().getActionDefinitionById(COPY_ACTION);
+        then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
@@ -191,7 +191,7 @@ public class ActionNodeParameterValidatorTest
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
@@ -202,7 +202,7 @@ public class ActionNodeParameterValidatorTest
         //when
         objectUnderTest.validate(action);
 
-        then(actionsMock).should().getActionDefinitionById(COPY_ACTION);
+        then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
@@ -225,7 +225,7 @@ public class ActionNodeParameterValidatorTest
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
@@ -236,7 +236,7 @@ public class ActionNodeParameterValidatorTest
         assertThatExceptionOfType(PermissionDeniedException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(NO_PROPER_PERMISSIONS_FOR_NODE + NODE_ID);
 
-        then(actionsMock).should().getActionDefinitionById(COPY_ACTION);
+        then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
@@ -259,13 +259,13 @@ public class ActionNodeParameterValidatorTest
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
 
         //when
         objectUnderTest.validate(action);
 
-        then(actionsMock).should().getActionDefinitionById(COPY_ACTION);
+        then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
@@ -284,7 +284,7 @@ public class ActionNodeParameterValidatorTest
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
@@ -296,7 +296,7 @@ public class ActionNodeParameterValidatorTest
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(NOT_A_FOLDER + NODE_ID);
 
-        then(actionsMock).should().getActionDefinitionById(COPY_ACTION);
+        then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
@@ -320,7 +320,7 @@ public class ActionNodeParameterValidatorTest
         final ActionDefinition actionDefinition =
                 new ActionDefinition(actionDefinitionId, actionDefinitionId, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
@@ -332,7 +332,7 @@ public class ActionNodeParameterValidatorTest
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(NOT_A_CATEGORY + NODE_ID);
 
-        then(actionsMock).should().getActionDefinitionById(actionDefinitionId);
+        then(actionsMock).should().getRuleActionDefinitionById(actionDefinitionId);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();

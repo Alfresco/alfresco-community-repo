@@ -392,16 +392,32 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
-     * Check we can create a rule with check in action with empty description parameter.
+     * Check get an error when creating a rule with action with empty parameter value.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void createRuleWithCheckInActionAndEmptyCheckInDescription()
+    public void createRuleWithEmptyActionParameterValueShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         final RestActionBodyExecTemplateModel checkinAction = new RestActionBodyExecTemplateModel();
         checkinAction.setActionDefinitionId(CHECKIN_ACTION);
         checkinAction.setParams(Map.of("description", ""));
-        ruleModel.setActions(Arrays.asList(checkinAction));
+        ruleModel.setActions(List.of(checkinAction));
+
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(BAD_REQUEST).assertLastError().containsSummary("Action parameter should not have empty or null value");
+    }
+
+    /**
+     * Check get an error when creating a rule with action with empty parameter value.
+     */
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
+    public void createRuleWithoutParameterWhenTheyAreNotMandatory()
+    {
+        final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        final RestActionBodyExecTemplateModel checkinAction = new RestActionBodyExecTemplateModel();
+        checkinAction.setActionDefinitionId(CHECKIN_ACTION);
+        ruleModel.setActions(List.of(checkinAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
@@ -444,17 +460,11 @@ public class CreateRulesTests extends RestTest
         params.put("from", sender.getEmailAddress());
         params.put("to", recipient.getEmailAddress());
         params.put("subject", "Test");
-        final RestActionDefinitionModel actionDef =
-                restClient.authenticateUser(user).withCoreAPI().usingActions().getActionDefinitionById(MAIL_ACTION);
-        final RestParameterDefinitionModel paramDef =
-                actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(TEMPLATE_PARAM)).findFirst().get();
-        final String constraintName = paramDef.getParameterConstraintName();
-        final RestActionConstraintModel constraint =
-                restClient.authenticateUser(user).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
+        final RestActionConstraintModel constraint = rulesUtils.getConstraintsForActionParam(user, MAIL_ACTION, TEMPLATE_PARAM);
         String templateScriptRef = constraint.getConstraintValues().stream().findFirst().get().getValue();
         params.put(TEMPLATE_PARAM, templateScriptRef);
         mailAction.setParams(params);
-        ruleModel.setActions(Arrays.asList(mailAction));
+        ruleModel.setActions(List.of(mailAction));
 
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                 .createSingleRule(ruleModel);
@@ -502,7 +512,7 @@ public class CreateRulesTests extends RestTest
      * Check we get error when attempt to create a rule with an action tha is not applicable to rules.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void createRuleWithNotApplicableActionsShouldFail()
+    public void createRuleWithNotApplicableActionShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
@@ -566,7 +576,7 @@ public class CreateRulesTests extends RestTest
      * Check we get error when attempt to create a rule with action parameter that should not be passed.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void createRuleWithoutInvalidActionParameterShouldFail()
+    public void createRuleWithInvalidActionParameterShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
@@ -712,7 +722,7 @@ public class CreateRulesTests extends RestTest
         final String mailTemplate = "non-existing-node-id";
         params.put(TEMPLATE_PARAM, mailTemplate);
         mailAction.setParams(params);
-        ruleModel.setActions(Arrays.asList(mailAction));
+        ruleModel.setActions(List.of(mailAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                   .createSingleRule(ruleModel);

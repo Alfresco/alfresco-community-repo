@@ -105,7 +105,24 @@ public class ActionParameterDefinitionValidatorTest
     }
 
     @Test
-    public void testValidationPassesWhenNoMandatoryParameters()
+    public void testValidationPassesWhenNoMandatoryParametersNeeded()
+    {
+        final Action action = new Action();
+        final String actionDefinitionId = "properActionDefinition";
+        action.setActionDefinitionId(actionDefinitionId);
+        final ActionDefinition actionDefinition =
+                createActionDefinition(actionDefinitionId, List.of(createParameterDefinition(NON_MANDATORY_PARAM_KEY, TEXT, false, null)));
+        given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
+
+        //when
+        objectUnderTest.validate(action);
+
+        then(actionsMock).should().getRuleActionDefinitionById(actionDefinitionId);
+        then(actionsMock).shouldHaveNoMoreInteractions();
+    }
+
+    @Test
+    public void testValidationPassesWhenOptionalParametersNotProvided()
     {
         final Action action = new Action();
         final String actionDefinitionId = "properActionDefinition";

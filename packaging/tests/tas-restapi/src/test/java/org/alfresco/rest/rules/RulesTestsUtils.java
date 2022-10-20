@@ -108,6 +108,21 @@ public class RulesTestsUtils
      */
     public String findConstraintValue(UserModel user, String actionId, String paramId, String constraintLabel)
     {
+        RestActionConstraintModel constraintDef = getConstraintsForActionParam(user, actionId, paramId);
+        RestActionConstraintDataModel constraintDataModel = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(constraintLabel)).findFirst().get();
+        return constraintDataModel.getValue();
+    }
+
+    /**
+     * Get all constraint values for a given action parameter.
+     *
+     * @param user The user to use to obtain the information.
+     * @param actionId The id of the action definition.
+     * @param paramId The id of the parameter for the action.
+     * @return The value to use for the parameter.
+     */
+    public RestActionConstraintModel getConstraintsForActionParam(UserModel user, String actionId, String paramId)
+    {
         RestActionDefinitionModel actionDef = restClient.authenticateUser(user).withCoreAPI().usingActions().getActionDefinitionById(actionId);
         RestParameterDefinitionModel paramDef = actionDef.getParameterDefinitions().stream().filter(param -> param.getName().equals(paramId)).findFirst().get();
         if (paramDef.getParameterConstraintName() == null)
@@ -115,9 +130,7 @@ public class RulesTestsUtils
             throw new IllegalArgumentException("Supplied parameter " + paramId + " for action " + actionId + " does not have a defined constraint.");
         }
         String constraintName = paramDef.getParameterConstraintName();
-        RestActionConstraintModel constraintDef = restClient.authenticateUser(user).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
-        RestActionConstraintDataModel constraintDataModel = constraintDef.getConstraintValues().stream().filter(constraintValue -> constraintValue.getLabel().equals(constraintLabel)).findFirst().get();
-        return constraintDataModel.getValue();
+        return restClient.authenticateUser(user).withCoreAPI().usingActions().getActionConstraintByName(constraintName);
     }
 
     /**

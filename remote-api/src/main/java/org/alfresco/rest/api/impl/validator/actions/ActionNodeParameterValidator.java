@@ -65,7 +65,6 @@ import org.apache.logging.log4j.util.Strings;
  */
 public class ActionNodeParameterValidator implements ActionValidator
 {
-    private static final boolean IS_ENABLED = true;
     /**
      * This list holds action parameter names which require only READ permission on a referenced node
      * That means, all other parameters that reference nodes will require WRITE permission
@@ -98,17 +97,11 @@ public class ActionNodeParameterValidator implements ActionValidator
     @Override
     public void validate(Action action)
     {
-        final ActionDefinition actionDefinition = actions.getActionDefinitionById(action.getActionDefinitionId());
+        final ActionDefinition actionDefinition = actions.getRuleActionDefinitionById(action.getActionDefinitionId());
         final List<ActionDefinition.ParameterDefinition> nodeRefParams = actionDefinition.getParameterDefinitions().stream()
-                .filter(pd -> NODE_REF.toPrefixString(namespaceService).equals(pd.getType())).collect(
-                        Collectors.toList());
+                .filter(pd -> NODE_REF.toPrefixString(namespaceService).equals(pd.getType()))
+                .collect(Collectors.toList());
         validateNodes(nodeRefParams, action);
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return IS_ENABLED;
     }
 
     @Override
@@ -160,11 +153,11 @@ public class ActionNodeParameterValidator implements ActionValidator
     {
         if (!LinkCategoryActionExecuter.NAME.equals(actionDefinitionId))
         {
-            if (!nodes.nodeMatches(nodeRef, Set.of(TYPE_FOLDER), Collections.emptySet())) {
+            if (!nodes.nodeMatches(nodeRef, Set.of(TYPE_FOLDER), Collections.emptySet()))
+            {
                 throw new InvalidArgumentException(NOT_A_FOLDER + nodeRef.getId());
             }
-        }
-        else if (!nodes.nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet()))
+        } else if (!nodes.nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet()))
         {
             throw new InvalidArgumentException(NOT_A_CATEGORY + nodeRef.getId());
         }

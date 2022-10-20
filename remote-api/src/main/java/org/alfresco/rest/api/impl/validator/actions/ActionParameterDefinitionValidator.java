@@ -27,8 +27,11 @@
 package org.alfresco.rest.api.impl.validator.actions;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.alfresco.rest.api.Actions;
 import org.alfresco.rest.api.actions.ActionValidator;
@@ -48,8 +51,6 @@ import org.apache.logging.log4j.util.Strings;
 @Experimental
 public class ActionParameterDefinitionValidator implements ActionValidator
 {
-    private static final boolean IS_ENABLED = true;
-
     static final String INVALID_PARAMETER_VALUE =
             "Action parameter: %s has invalid value (%s). Look up possible values for constraint name %s";
     static final String MISSING_PARAMETER = "Missing action's mandatory parameter: %s";
@@ -92,14 +93,8 @@ public class ActionParameterDefinitionValidator implements ActionValidator
         if (MapUtils.isNotEmpty(params))
         {
             params.forEach((key, value) -> checkParameterShouldExist(key, actionDefinition));
-            actionDefinition.getParameterDefinitions().forEach(p -> validateParameterDefinitions(p, params));
+            getParameterDefinitions(actionDefinition).forEach(p -> validateParameterDefinitions(p, params));
         }
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return IS_ENABLED;
     }
 
     /**
@@ -114,7 +109,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
     }
 
     /**
-     * This validator should have highest priority and be executed first of all.
+     * This validator should have highest priority and be executed first of all (thus minimal integer is returned here).
      *
      * @return minimal integer value
      */
@@ -126,10 +121,18 @@ public class ActionParameterDefinitionValidator implements ActionValidator
 
     private void validateParametersSize(final Map<String, Serializable> params, final ActionDefinition actionDefinition)
     {
-        if (CollectionUtils.isNotEmpty(actionDefinition.getParameterDefinitions()) && MapUtils.isEmpty(params))
+        final List<ActionDefinition.ParameterDefinition> parameterDefinitions = getParameterDefinitions(actionDefinition);
+        if (CollectionUtils.isNotEmpty(
+                parameterDefinitions.stream().filter(ActionDefinition.ParameterDefinition::isMandatory).collect(Collectors.toList())) &&
+                MapUtils.isEmpty(params))
         {
             throw new InvalidArgumentException(String.format(PARAMS_SHOULD_NOT_BE_EMPTY, actionDefinition.getName()));
         }
+    }
+
+    private List<ActionDefinition.ParameterDefinition> getParameterDefinitions(ActionDefinition actionDefinition)
+    {
+        return actionDefinition.getParameterDefinitions() == null ? Collections.emptyList() : actionDefinition.getParameterDefinitions();
     }
 
     private void validateParameterDefinitions(final ActionDefinition.ParameterDefinition parameterDefinition,
@@ -145,7 +148,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
             final ActionParameterConstraint actionConstraint =
                     actions.getActionConstraint(parameterDefinition.getParameterConstraintName());
             if (parameterValue != null && actionConstraint.getConstraintValues().stream()
-                    .noneMatch(constraintData -> constraintData.getValue().equals(parameterValue.toString())))
+                    .noneMatch(constraintData -> constraintData.getValue().equals(Objects.toString(parameterValue, null))))
             {
                 throw new InvalidArgumentException(String.format(INVALID_PARAMETER_VALUE, parameterDefinition.getName(), parameterValue,
                         actionConstraint.getConstraintName()));
@@ -155,7 +158,7 @@ public class ActionParameterDefinitionValidator implements ActionValidator
 
     private void checkParameterShouldExist(final String parameterName, final ActionDefinition actionDefinition)
     {
-        if (actionDefinition.getParameterDefinitions().stream().noneMatch(pd -> parameterName.equals(pd.getName())))
+        if (getParameterDefinitions(actionDefinition).stream().noneMatch(pd -> parameterName.equals(pd.getName())))
         {
             throw new InvalidArgumentException(String.format(MUST_NOT_CONTAIN_PARAMETER, actionDefinition.getName(), parameterName));
         }

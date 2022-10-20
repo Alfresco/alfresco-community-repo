@@ -118,7 +118,6 @@ public class RestRuleActionModelMapper implements RestModelMapper<Action, org.al
     }
     private void validateAction(Action action) {
         actionValidators.stream()
-                .filter(ActionValidator::isEnabled)
                 .filter(v -> (v.getActionDefinitionIds().contains(action.getActionDefinitionId()) ||
                         v.getActionDefinitionIds().equals(List.of(ALL_ACTIONS))))
                 .sorted(Comparator.comparing(ActionValidator::getPriority))

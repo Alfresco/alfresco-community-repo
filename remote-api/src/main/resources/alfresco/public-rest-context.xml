@@ -593,6 +593,12 @@
     <bean id="actionParameterConstraintsValidator" class="org.alfresco.rest.api.impl.validator.actions.ActionParameterDefinitionValidator">
         <constructor-arg name="actions" ref="Actions"/>
     </bean>
+    <bean id="actionNodeParameterValidator" class="org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator">
+        <constructor-arg name="actions" ref="Actions"/>
+        <constructor-arg name="namespaceService" ref="NamespaceService"/>
+        <constructor-arg name="nodes" ref="Nodes"/>
+        <constructor-arg name="permissionService" ref="PermissionService"/>
+    </bean>
 
     <!--    action parameter validators end here-->
 
@@ -977,6 +983,7 @@
         <constructor-arg name="actionValidators">
             <list>
                 <ref bean="actionParameterConstraintsValidator"/>
+                <ref bean="actionNodeParameterValidator"/>
             </list>
         </constructor-arg>
     </bean>

@@ -76,7 +76,6 @@ public class RestRuleActionModelMapperTest
     @Before
     public void setUp() {
         objectUnderTest = new RestRuleActionModelMapper(parameterConverter, List.of(sampleValidatorMock));
-        given(sampleValidatorMock.isEnabled()).willReturn(true);
     }
 
     @Test

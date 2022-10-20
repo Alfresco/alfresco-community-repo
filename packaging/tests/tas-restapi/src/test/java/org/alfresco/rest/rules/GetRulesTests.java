@@ -314,9 +314,11 @@ public class GetRulesTests extends RestTest
     public void getRuleActions()
     {
         STEP("Create a rule with a few actions");
-        FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
-        final RestRuleModel rule = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
-                .createSingleRule(rulesUtils.createVariousActions());
+        final FolderModel folder = dataContent.usingUser(user).usingSite(site).createFolder();
+        final RestRuleModel ruleWithVariousActions = rulesUtils.createRuleWithVariousActions();
+        final UserModel admin = dataUser.getAdminUser();
+        final RestRuleModel rule = restClient.authenticateUser(admin).withPrivateAPI().usingNode(folder).usingDefaultRuleSet()
+                .createSingleRule(ruleWithVariousActions);
 
         STEP("Retrieve the created rule via the GET endpoint");
         final RestRuleModel getRuleBody = restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().getSingleRule(rule.getId());

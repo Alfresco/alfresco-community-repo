@@ -712,17 +712,17 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
-     * Check the admin user can create a rule with a script.
+     * Check the user can create a rule with a script.
      */
     @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
-    public void checkAdminCanUseScriptInRule()
+    public void checkCanUseScriptInRule()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         RestActionBodyExecTemplateModel scriptAction = rulesUtils.createCustomActionModel(
                 SCRIPT_ACTION, Map.of(RULE_SCRIPT_PARAM_ID, rulesUtils.getReviewAndApproveWorkflowNode()));
         ruleModel.setActions(List.of(scriptAction));
 
-        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
                   .createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(CREATED);

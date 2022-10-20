@@ -45,7 +45,7 @@ import org.mockito.Mockito;
 
 public class UnsafeMethodsTest extends TestCase
 {
-    private static final String TEST_TEMPLATES_DIR = "src/test/resources/org/alfresco/repo/template/templates/";
+    private static final String TEST_TEMPLATES_DIR = "/org/alfresco/repo/template/templates/";
     private static final String ALLOWED_TEXT = ": ALLOWED";
     private static final String BLOCKED_TEXT = ": BLOCKED";
 
@@ -53,7 +53,9 @@ public class UnsafeMethodsTest extends TestCase
 
     public void testUnsafeMethods() throws Exception
     {
-        configuration.setDirectoryForTemplateLoading(new File(TEST_TEMPLATES_DIR));
+        final File jarFile = new File(getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+        File templatesDir = new File(jarFile.getPath() + TEST_TEMPLATES_DIR);
+        configuration.setDirectoryForTemplateLoading(templatesDir);
         configuration.setDefaultEncoding("UTF-8");
         configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         Template template = configuration.getTemplate("unsafemethods.ftl");

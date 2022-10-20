@@ -28,6 +28,7 @@ package org.alfresco.repo.template;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -70,6 +71,8 @@ public class UnsafeMethodsTest extends TestCase
         // Prepare Spies for methods testing
         Thread thread = Mockito.spy(new Thread());
         model.put("thread", thread);
+        URL url = Mockito.spy(new URL("http://someurl"));
+        model.put("url", url);
 
         // Apply the freemarker template
         List<String> results = applyTemplate(template, model);
@@ -77,6 +80,7 @@ public class UnsafeMethodsTest extends TestCase
         // Verify methods were allowed or blocked
         verifyFreemarkerOutput(results, allowedMethods, blockedMethods);
         verifyMethodInvocations(thread);
+        verifyMethodInvocations(url);
     }
 
     private List<String> applyTemplate(Template template, Map<String, Object> inputModel ) throws TemplateException, IOException
@@ -101,9 +105,12 @@ public class UnsafeMethodsTest extends TestCase
 
         // Verify an originally blocked method is still blocked
         Mockito.verify(thread, Mockito.never()).setName(ArgumentMatchers.anyString());
+    }
 
+    private void verifyMethodInvocations(URL url) throws IOException
+    {
         // Verify a newly blocked method in the patched version is blocked
-        Mockito.verify(thread, Mockito.never()).onSpinWait();
+        Mockito.verify(url, Mockito.never()).openStream();
     }
 
     private static List<String> createListOfAllowedMethods()
@@ -117,7 +124,7 @@ public class UnsafeMethodsTest extends TestCase
     {
         List<String> blockedMethods = new ArrayList<>(2);
         blockedMethods.add("java.lang.Thread.setName(java.lang.String)");
-        blockedMethods.add("java.lang.Thread.onSpinWait()");
+        blockedMethods.add("java.net.URL.openStream()");
         return blockedMethods;
     }
 }

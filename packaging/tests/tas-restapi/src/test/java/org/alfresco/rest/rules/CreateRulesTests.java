@@ -29,10 +29,13 @@ import static java.util.stream.Collectors.toList;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.CHECKIN_ACTION;
+import static org.alfresco.rest.rules.RulesTestsUtils.COPY_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.ID;
 import static org.alfresco.rest.rules.RulesTestsUtils.INVERTED;
 import static org.alfresco.rest.rules.RulesTestsUtils.IS_SHARED;
 import static org.alfresco.rest.rules.RulesTestsUtils.RULE_NAME_DEFAULT;
+import static org.alfresco.rest.rules.RulesTestsUtils.RULE_SCRIPT_PARAM_ID;
+import static org.alfresco.rest.rules.RulesTestsUtils.SCRIPT_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.TEMPLATE_PARAM;
 import static org.alfresco.utility.constants.UserRole.SiteCollaborator;
 import static org.alfresco.utility.constants.UserRole.SiteConsumer;
@@ -48,9 +51,8 @@ import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
-import java.io.File;
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,9 +61,7 @@ import java.util.stream.IntStream;
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestActionConstraintModel;
-import org.alfresco.rest.model.RestActionDefinitionModel;
 import org.alfresco.rest.model.RestCompositeConditionDefinitionModel;
-import org.alfresco.rest.model.RestParameterDefinitionModel;
 import org.alfresco.rest.model.RestRuleModel;
 import org.alfresco.rest.model.RestRuleModelsCollection;
 import org.alfresco.utility.constants.UserRole;
@@ -398,9 +398,7 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithEmptyActionParameterValueShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel checkinAction = new RestActionBodyExecTemplateModel();
-        checkinAction.setActionDefinitionId(CHECKIN_ACTION);
-        checkinAction.setParams(Map.of("description", ""));
+        final RestActionBodyExecTemplateModel checkinAction = rulesUtils.createCustomActionModel(CHECKIN_ACTION, Map.of("description", ""));
         ruleModel.setActions(List.of(checkinAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
@@ -409,14 +407,13 @@ public class CreateRulesTests extends RestTest
     }
 
     /**
-     * Check get an error when creating a rule with action with empty parameter value.
+     * Check can create a rule with action without any parameters when action definition states all of them are optional.
      */
     @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
-    public void createRuleWithoutParameterWhenTheyAreNotMandatory()
+    public void createRuleWithoutParameterWhenTheyAreOptional()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel checkinAction = new RestActionBodyExecTemplateModel();
-        checkinAction.setActionDefinitionId(CHECKIN_ACTION);
+        final RestActionBodyExecTemplateModel checkinAction = rulesUtils.createCustomActionModel(CHECKIN_ACTION, null);
         ruleModel.setActions(List.of(checkinAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
@@ -425,7 +422,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a normal user cannot create rules that use private actions. */
-    @Test
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithActions_userCannotUsePrivateAction()
     {
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -436,7 +433,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that an administrator can create rules that use private actions. */
-    @Test
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithActions_adminCanUsePrivateAction()
     {
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -448,7 +445,7 @@ public class CreateRulesTests extends RestTest
     /**
      * Check that an administrator can create rules with email (private) action with reference to an email template.
      */
-    @Test
+    @Test(groups = {TestGroup.REST_API, TestGroup.RULES})
     public void createRuleWithActions_adminCanUseMailActionWithTemplate()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
@@ -495,10 +492,8 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithInvalidActionsShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
         final String actionDefinitionId = "invalid-definition-value";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("dummy-key", "dummy-value"));
+        final RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(actionDefinitionId, Map.of("dummy-key", "dummy-value"));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -515,17 +510,14 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithNotApplicableActionShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        final String actionDefinitionId = "delete-rendition";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("dummy-key", "dummy-value"));
+        final RestActionBodyExecTemplateModel invalidAction =
+                rulesUtils.createCustomActionModel(RulesTestsUtils.DELETE_RENDITION_ACTION, Map.of("dummy-key", "dummy-value"));
         ruleModel.setActions(List.of(invalidAction));
 
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
-                .createSingleRule(ruleModel);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
-        restClient.assertLastError().containsSummary(String.format("Invalid rule action definition requested %s", actionDefinitionId));
+        restClient.assertLastError().containsSummary(String.format("Invalid rule action definition requested %s", RulesTestsUtils.DELETE_RENDITION_ACTION));
     }
 
     /**
@@ -535,9 +527,8 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithMissingActionParametersShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        final String actionDefinitionId = "copy";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
+        final RestActionBodyExecTemplateModel invalidAction =
+                rulesUtils.createCustomActionModel(RulesTestsUtils.COPY_ACTION, Collections.emptyMap());
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -546,7 +537,7 @@ public class CreateRulesTests extends RestTest
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary(
                 String.format("Action parameters should not be null or empty for this action. See Action Definition for action of: %s",
-                        actionDefinitionId));
+                        COPY_ACTION));
     }
 
     /**
@@ -556,8 +547,8 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithActionParameterNotFulfillingConstraint()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final String actionDefinitionId = "script";
-        final String scriptRef = "script-ref";
+        final String actionDefinitionId = SCRIPT_ACTION;
+        final String scriptRef = RULE_SCRIPT_PARAM_ID;
         final String scriptNodeId = "dummy-script-node-id";
         final RestActionBodyExecTemplateModel scriptAction = rulesUtils.createCustomActionModel(actionDefinitionId, Map.of(scriptRef, scriptNodeId));
         ruleModel.setActions(List.of(scriptAction));
@@ -579,11 +570,9 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithInvalidActionParameterShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        final String actionDefinitionId = "add-features";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
         final String invalidParameterKey = "invalidParameterKey";
-        invalidAction.setParams(Map.of(invalidParameterKey,"dummyValue"));
+        final RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(
+                RulesTestsUtils.ADD_FEATURES_ACTION, Map.of(invalidParameterKey, "dummyValue"));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -591,7 +580,7 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary(
-                String.format("Action of definition id: %s must not contain parameter of name: %s", actionDefinitionId, invalidParameterKey));
+                String.format("Action of definition id: %s must not contain parameter of name: %s", RulesTestsUtils.ADD_FEATURES_ACTION, invalidParameterKey));
     }
 
     /**
@@ -601,10 +590,7 @@ public class CreateRulesTests extends RestTest
     public void createRuleWithoutMandatoryActionParametersShouldFail()
     {
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        final String actionDefinitionId = "copy";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("deep-copy",false));
+        final RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(COPY_ACTION, Map.of("deep-copy",false));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -621,10 +607,8 @@ public class CreateRulesTests extends RestTest
     public void createRuleThatUsesNonExistentNode()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        String actionDefinitionId = "copy";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("destination-folder", "non-existent-node"));
+        RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(
+                COPY_ACTION, Map.of("destination-folder", "non-existent-node"));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -644,10 +628,8 @@ public class CreateRulesTests extends RestTest
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
 
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        String actionDefinitionId = "copy";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("destination-folder", privateFolder.getNodeRef()));
+        RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(
+                COPY_ACTION, Map.of("destination-folder", privateFolder.getNodeRef()));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -668,10 +650,9 @@ public class CreateRulesTests extends RestTest
         dataUser.usingAdmin().addUserToSite(user, privateSite, SiteConsumer);
 
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        String actionDefinitionId = "copy";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("destination-folder", privateFolder.getNodeRef()));
+        RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(
+                COPY_ACTION, Map.of("destination-folder", privateFolder.getNodeRef()));
+
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -690,10 +671,8 @@ public class CreateRulesTests extends RestTest
         final FileModel fileModel = dataContent.usingUser(user).usingSite(site).createContent(getRandomFileModel(TEXT_PLAIN));
 
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        final RestActionBodyExecTemplateModel invalidAction = new RestActionBodyExecTemplateModel();
-        final String actionDefinitionId = "move";
-        invalidAction.setActionDefinitionId(actionDefinitionId);
-        invalidAction.setParams(Map.of("destination-folder", fileModel.getNodeRef()));
+        final RestActionBodyExecTemplateModel invalidAction = rulesUtils.createCustomActionModel(
+                RulesTestsUtils.MOVE_ACTION, Map.of("destination-folder", fileModel.getNodeRef()));
         ruleModel.setActions(List.of(invalidAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -739,9 +718,8 @@ public class CreateRulesTests extends RestTest
     public void checkAdminCanUseScriptInRule()
     {
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel scriptAction = new RestActionBodyExecTemplateModel();
-        scriptAction.setActionDefinitionId("script");
-        scriptAction.setParams(Map.of("script-ref", rulesUtils.getReviewAndApproveWorkflowNode()));
+        RestActionBodyExecTemplateModel scriptAction = rulesUtils.createCustomActionModel(
+                SCRIPT_ACTION, Map.of(RULE_SCRIPT_PARAM_ID, rulesUtils.getReviewAndApproveWorkflowNode()));
         ruleModel.setActions(List.of(scriptAction));
 
         restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -769,9 +747,8 @@ public class CreateRulesTests extends RestTest
 
         STEP("Try to use this script in rule.");
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel scriptAction = new RestActionBodyExecTemplateModel();
-        scriptAction.setActionDefinitionId("script");
-        scriptAction.setParams(Map.of("script-ref", scriptId));
+        RestActionBodyExecTemplateModel scriptAction = rulesUtils.createCustomActionModel(
+                SCRIPT_ACTION, Map.of(RULE_SCRIPT_PARAM_ID, scriptId));
         ruleModel.setActions(List.of(scriptAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()
@@ -790,9 +767,8 @@ public class CreateRulesTests extends RestTest
         STEP("Attempt to link to a category with a folder node, rather than a category node.");
         String nonCategoryNodeRef = ruleFolder.getNodeRef();
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
-        RestActionBodyExecTemplateModel categoryAction = new RestActionBodyExecTemplateModel();
-        categoryAction.setActionDefinitionId("link-category");
-        categoryAction.setParams(Map.of("category-value", nonCategoryNodeRef));
+        RestActionBodyExecTemplateModel categoryAction = rulesUtils.createCustomActionModel(
+                RulesTestsUtils.LINK_CATEGORY_ACTION, Map.of("category-value", nonCategoryNodeRef));
         ruleModel.setActions(List.of(categoryAction));
 
         restClient.authenticateUser(user).withPrivateAPI().usingNode(ruleFolder).usingDefaultRuleSet()

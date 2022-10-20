@@ -32,6 +32,7 @@ import static org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterVa
 import static org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator.NOT_A_FOLDER;
 import static org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator.NO_PROPER_PERMISSIONS_FOR_NODE;
 import static org.alfresco.rest.api.impl.validator.actions.ActionNodeParameterValidator.REQUIRE_READ_PERMISSION_PARAMS;
+import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.CATEGORY;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.NODE_REF;
 import static org.alfresco.service.cmr.dictionary.DataTypeDefinition.TEXT;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
@@ -74,8 +75,9 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class ActionNodeParameterValidatorTest
 {
-    private static final String NODE_REF_PARAM = REQUIRE_READ_PERMISSION_PARAMS.get(0);
-    private static final String WRITE_REQUIRED_NODE_REF_PARAM = "dummyNodeParam";
+    private static final String READ_RIGHTS_REQUIRED_DEFINITION_ID = LinkCategoryActionExecuter.NAME;
+    private static final String CATEGORY_NODE_REF_PARAM = REQUIRE_READ_PERMISSION_PARAMS.get(READ_RIGHTS_REQUIRED_DEFINITION_ID).get(0);
+    private static final String DESTINATION_FOLDER_PARAM = "destination-folder";
     private static final String NODE_ID = "node-id";
     private static final String COPY_ACTION = CopyActionExecuter.NAME;
 
@@ -95,29 +97,29 @@ public class ActionNodeParameterValidatorTest
     public void testProperPermissionsForReadRights()
     {
         final Action action = new Action();
-        action.setActionDefinitionId(COPY_ACTION);
-        action.setParams(Map.of(NODE_REF_PARAM, NODE_ID));
+        action.setActionDefinitionId(READ_RIGHTS_REQUIRED_DEFINITION_ID);
+        action.setParams(Map.of(CATEGORY_NODE_REF_PARAM, NODE_ID));
         ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+                new ActionDefinition.ParameterDefinition(CATEGORY_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getRuleActionDefinitionById(COPY_ACTION)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(READ_RIGHTS_REQUIRED_DEFINITION_ID)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
         given(permissionServiceMock.hasReadPermission(nodeRef)).willReturn(AccessStatus.ALLOWED);
-        given(nodesMock.nodeMatches(nodeRef, Set.of(TYPE_FOLDER), Collections.emptySet())).willReturn(true);
+        given(nodesMock.nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet())).willReturn(true);
 
         //when
         objectUnderTest.validate(action);
 
-        then(actionsMock).should().getRuleActionDefinitionById(COPY_ACTION);
+        then(actionsMock).should().getRuleActionDefinitionById(READ_RIGHTS_REQUIRED_DEFINITION_ID);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
         then(nodesMock).should().validateNode(NODE_ID);
-        then(nodesMock).should().nodeMatches(nodeRef, Set.of(TYPE_FOLDER), Collections.emptySet());
+        then(nodesMock).should().nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet());
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(permissionServiceMock).should().hasReadPermission(nodeRef);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
@@ -128,9 +130,9 @@ public class ActionNodeParameterValidatorTest
     {
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
-        action.setParams(Map.of(NODE_REF_PARAM, NODE_ID));
+        action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
         ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
@@ -158,9 +160,9 @@ public class ActionNodeParameterValidatorTest
     {
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
-        action.setParams(Map.of(NODE_REF_PARAM, NODE_ID));
+        action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
         ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
@@ -185,9 +187,9 @@ public class ActionNodeParameterValidatorTest
     {
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
-        action.setParams(Map.of(WRITE_REQUIRED_NODE_REF_PARAM, NODE_ID));
+        action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
         ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(WRITE_REQUIRED_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
@@ -219,9 +221,9 @@ public class ActionNodeParameterValidatorTest
     {
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
-        action.setParams(Map.of(WRITE_REQUIRED_NODE_REF_PARAM, NODE_ID));
+        action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
         ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(WRITE_REQUIRED_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
@@ -278,9 +280,9 @@ public class ActionNodeParameterValidatorTest
     {
         final Action action = new Action();
         action.setActionDefinitionId(COPY_ACTION);
-        action.setParams(Map.of(WRITE_REQUIRED_NODE_REF_PARAM, NODE_ID));
+        action.setParams(Map.of(DESTINATION_FOLDER_PARAM, NODE_ID));
         ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(WRITE_REQUIRED_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+                new ActionDefinition.ParameterDefinition(DESTINATION_FOLDER_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
         final ActionDefinition actionDefinition =
                 new ActionDefinition(COPY_ACTION, COPY_ACTION, null, null, null, false, false,
                         List.of(parameterDef));
@@ -312,27 +314,25 @@ public class ActionNodeParameterValidatorTest
     public void testWrongTypeOfNodeWhenCategoryExpected()
     {
         final Action action = new Action();
-        final String actionDefinitionId = LinkCategoryActionExecuter.NAME;
-        action.setActionDefinitionId(actionDefinitionId);
-        action.setParams(Map.of(WRITE_REQUIRED_NODE_REF_PARAM, NODE_ID));
+        action.setActionDefinitionId(READ_RIGHTS_REQUIRED_DEFINITION_ID);
+        action.setParams(Map.of(CATEGORY_NODE_REF_PARAM, NODE_ID));
         ActionDefinition.ParameterDefinition parameterDef =
-                new ActionDefinition.ParameterDefinition(WRITE_REQUIRED_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
+                new ActionDefinition.ParameterDefinition(CATEGORY_NODE_REF_PARAM, NODE_REF.toPrefixString(), false, true, null, null);
         final ActionDefinition actionDefinition =
-                new ActionDefinition(actionDefinitionId, actionDefinitionId, null, null, null, false, false,
+                new ActionDefinition(READ_RIGHTS_REQUIRED_DEFINITION_ID, READ_RIGHTS_REQUIRED_DEFINITION_ID, null, null, null, false, false,
                         List.of(parameterDef));
-        given(actionsMock.getRuleActionDefinitionById(actionDefinitionId)).willReturn(actionDefinition);
+        given(actionsMock.getRuleActionDefinitionById(READ_RIGHTS_REQUIRED_DEFINITION_ID)).willReturn(actionDefinition);
         given(namespaceServiceMock.getPrefixes(NODE_REF.getNamespaceURI())).willReturn(List.of(DEFAULT_PREFIX));
         final NodeRef nodeRef = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, NODE_ID);
         given(nodesMock.validateNode(NODE_ID)).willReturn(nodeRef);
         given(permissionServiceMock.hasReadPermission(nodeRef)).willReturn(AccessStatus.ALLOWED);
-        given(permissionServiceMock.hasPermission(nodeRef, PermissionService.WRITE)).willReturn(AccessStatus.ALLOWED);
         given(nodesMock.nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet())).willReturn(false);
 
         //when
         assertThatExceptionOfType(InvalidArgumentException.class).isThrownBy(() -> objectUnderTest.validate(action))
                 .withMessageContaining(NOT_A_CATEGORY + NODE_ID);
 
-        then(actionsMock).should().getRuleActionDefinitionById(actionDefinitionId);
+        then(actionsMock).should().getRuleActionDefinitionById(READ_RIGHTS_REQUIRED_DEFINITION_ID);
         then(actionsMock).shouldHaveNoMoreInteractions();
         then(namespaceServiceMock).should().getPrefixes(NODE_REF.getNamespaceURI());
         then(namespaceServiceMock).shouldHaveNoMoreInteractions();
@@ -340,7 +340,6 @@ public class ActionNodeParameterValidatorTest
         then(nodesMock).should().nodeMatches(nodeRef, Set.of(TYPE_CATEGORY), Collections.emptySet());
         then(nodesMock).shouldHaveNoMoreInteractions();
         then(permissionServiceMock).should().hasReadPermission(nodeRef);
-        then(permissionServiceMock).should().hasPermission(nodeRef, PermissionService.WRITE);
         then(permissionServiceMock).shouldHaveNoMoreInteractions();
     }
 

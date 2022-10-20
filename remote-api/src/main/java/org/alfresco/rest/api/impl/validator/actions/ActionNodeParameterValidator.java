@@ -34,6 +34,7 @@ import static org.alfresco.service.cmr.security.PermissionService.WRITE;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -69,7 +70,8 @@ public class ActionNodeParameterValidator implements ActionValidator
      * This list holds action parameter names which require only READ permission on a referenced node
      * That means, all other parameters that reference nodes will require WRITE permission
      */
-    static final List<String> REQUIRE_READ_PERMISSION_PARAMS = List.of(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE);
+    static final Map<String, List<String>> REQUIRE_READ_PERMISSION_PARAMS =
+            Map.of(LinkCategoryActionExecuter.NAME, List.of(LinkCategoryActionExecuter.PARAM_CATEGORY_VALUE));
 
     static final String NO_PROPER_PERMISSIONS_FOR_NODE = "No proper permissions for node: ";
     static final String NOT_A_CATEGORY = "Node is not a category ";
@@ -104,6 +106,9 @@ public class ActionNodeParameterValidator implements ActionValidator
         validateNodes(nodeRefParams, action);
     }
 
+    /**
+     * @return List of action definitions applicable to this validator
+     */
     @Override
     public List<String> getActionDefinitionIds()
     {
@@ -128,19 +133,20 @@ public class ActionNodeParameterValidator implements ActionValidator
                     .forEach(p -> {
                         final String nodeId = Objects.toString(action.getParams().get(p.getName()), Strings.EMPTY);
                         final NodeRef nodeRef = nodes.validateNode(nodeId);
-                        validatePermission(p.getName(), nodeRef);
+                        validatePermission(action.getActionDefinitionId(), p.getName(), nodeRef);
                         validateType(action.getActionDefinitionId(), nodeRef);
                     });
         }
     }
 
-    private void validatePermission(final String paramName, final NodeRef nodeRef)
+    private void validatePermission(final String actionDefinitionId, final String paramName, final NodeRef nodeRef)
     {
         if (permissionService.hasReadPermission(nodeRef) != ALLOWED)
         {
             throw new EntityNotFoundException(nodeRef.getId());
         }
-        if (!REQUIRE_READ_PERMISSION_PARAMS.contains(paramName))
+        if (!REQUIRE_READ_PERMISSION_PARAMS.containsKey(actionDefinitionId) ||
+                REQUIRE_READ_PERMISSION_PARAMS.get(actionDefinitionId).stream().noneMatch(paramName::equals))
         {
             if (permissionService.hasPermission(nodeRef, WRITE) != ALLOWED)
             {

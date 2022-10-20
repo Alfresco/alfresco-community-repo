@@ -63,10 +63,7 @@ public class RulesTestsUtils
     static final boolean RULE_CASCADE_DEFAULT = true;
     static final boolean RULE_ASYNC_DEFAULT = true;
     static final boolean RULE_SHARED_DEFAULT = false;
-    static final String RULE_SCRIPT_ID = "script";
-    static final String RULE_SCRIPT_PARAM_ID = "script-ref";
     static final String RULE_ERROR_SCRIPT_LABEL = "Start Pooled Review and Approve Workflow";
-    public static final String CHECKIN_ACTION = "check-in";
     static final String INBOUND = "inbound";
     static final String UPDATE = "update";
     static final String OUTBOUND = "outbound";
@@ -77,7 +74,15 @@ public class RulesTestsUtils
     static final String IS_SHARED = "isShared";
     static final String AUDIO_ASPECT = "audio:audio";
     static final String LOCKABLE_ASPECT = "cm:lockable";
-    public static final String TEMPLATE_PARAM = "template";
+    static final String TEMPLATE_PARAM = "template";
+    static final String RULE_SCRIPT_PARAM_ID = "script-ref";
+    static final String CHECKIN_ACTION = "check-in";
+    static final String LINK_CATEGORY_ACTION = "link-category";
+    static final String DELETE_RENDITION_ACTION = "delete-rendition";
+    static final String COPY_ACTION = "copy";
+    static final String ADD_FEATURES_ACTION = "add-features";
+    static final String MOVE_ACTION = "move";
+    static final String SCRIPT_ACTION = "script";
 
     @Autowired
     private RestWrapper restClient;
@@ -143,7 +148,7 @@ public class RulesTestsUtils
         if (reviewAndApproveWorkflowNode == null)
         {
             UserModel admin = dataUser.getAdminUser();
-            reviewAndApproveWorkflowNode = findConstraintValue(admin, RULE_SCRIPT_ID, RULE_SCRIPT_PARAM_ID, RULE_ERROR_SCRIPT_LABEL);
+            reviewAndApproveWorkflowNode = findConstraintValue(admin, SCRIPT_ACTION, RULE_SCRIPT_PARAM_ID, RULE_ERROR_SCRIPT_LABEL);
         }
         return reviewAndApproveWorkflowNode;
     }
@@ -241,7 +246,7 @@ public class RulesTestsUtils
 
     public RestActionBodyExecTemplateModel createAddAspectAction(String aspect)
     {
-        return createCustomActionModel("add-features", Map.of("aspect-name", aspect));
+        return createCustomActionModel(ADD_FEATURES_ACTION, Map.of("aspect-name", aspect));
     }
 
     public RestActionBodyExecTemplateModel createCustomActionModel(String actionDefinitionId, Map<String, Serializable> params)
@@ -283,7 +288,7 @@ public class RulesTestsUtils
     {
         final Map<String, Serializable> copyParams =
                 Map.of("destination-folder", getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
-        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel("copy", copyParams);
+        final RestActionBodyExecTemplateModel copyAction = createCustomActionModel(COPY_ACTION, copyParams);
         final Map<String, Serializable> checkOutParams =
                 Map.of("destination-folder", getCheckOutDestinationFolder().getNodeRef(), "assoc-name", "cm:checkout",
                         "assoc-type", "cm:contains");

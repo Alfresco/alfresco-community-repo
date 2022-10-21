@@ -307,8 +307,6 @@ public class ExecuteRulesTests extends RestTest
         UserModel admin = dataUser.getAdminUser();
         SiteModel privateSite = dataSite.usingAdmin().createPrivateRandomSite();
         FolderModel privateFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
-        FolderModel destinationFolder = dataContent.usingAdmin().usingSite(privateSite).createFolder();
-        FileModel privateFile = dataContent.usingAdmin().usingResource(privateFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
 
         final Map<String, Serializable> copyParams =
                 Map.of("destinationFolder", rulesUtils.getCopyDestinationFolder().getNodeRef(), "deep-copy", true);
@@ -316,11 +314,10 @@ public class ExecuteRulesTests extends RestTest
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         ruleModel.setActions(Arrays.asList(copyAction));
 
-
         //create rule with copy action
         restClient.authenticateUser(admin).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
         //delete destination folder
-        dataContent.usingAdmin().usingSite(privateSite).deleteTree(destinationFolder);
+        dataContent.usingAdmin().usingSite(privateSite).deleteTree(rulesUtils.getCopyDestinationFolder());
 
         STEP("Try to execute broken rule after deleting destination folder and check 500 error");
         restClient.authenticateUser(admin).withPrivateAPI().usingNode(privateFolder).executeRules(rulesUtils.createRuleExecutionRequest());

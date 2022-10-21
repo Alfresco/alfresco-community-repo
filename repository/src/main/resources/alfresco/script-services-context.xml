@@ -45,6 +45,21 @@
         <property name="storePath">
             <value>${spaces.company_home.childname}</value>
         </property>
+        <property name="optimizationLevel">
+            <value>${scripts.execution.optimizationLevel}</value>
+        </property>
+        <property name="maxScriptExecutionSeconds">
+            <value>${scripts.execution.maxScriptExecutionSeconds}</value>
+        </property>
+        <property name="maxStackDepth">
+            <value>${scripts.execution.maxStackDepth}</value>
+        </property>
+        <property name="maxMemoryUsed">
+            <value>${scripts.execution.maxMemoryUsed}</value>
+        </property>
+        <property name="observerInstructionCount">
+            <value>${scripts.execution.observerInstructionCount}</value>
+        </property>
     </bean>
 
     <!-- base config implementation that script extension beans extend from - for auto registration

@@ -26,6 +26,7 @@
 package org.alfresco.rest.rules;
 
 import static java.util.stream.Collectors.toList;
+
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.ERROR_MESSAGE_ACCESS_RESTRICTED;
 import static org.alfresco.rest.actions.access.AccessRestrictionUtil.MAIL_ACTION;
 import static org.alfresco.rest.rules.RulesTestsUtils.CHECKIN_ACTION;
@@ -57,6 +58,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
+
+import javax.json.Json;
+import javax.json.JsonObject;
 
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
@@ -172,6 +176,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a user without permission to view the folder cannot create a rule in it. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void requireReadPermissionToCreateRule()
     {
         STEP("Create a user and use them to create a private site containing a folder");
@@ -189,7 +194,8 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
     }
 
-    /** Check that a Collaborator cannot create a rule in a private folder. */
+    /** Check that a Collaborator cannot create a rule in a folder in a private site. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void siteCollaboratorCannotCreateRule()
     {
         testRolePermissionsWith(SiteCollaborator);
@@ -199,6 +205,7 @@ public class CreateRulesTests extends RestTest
     }
 
     /** Check that a Contributor cannot create a rule in a private folder. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void siteContributorCannotCreateRule()
     {
         testRolePermissionsWith(SiteContributor);
@@ -207,7 +214,8 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
     }
 
-    /** Check that a Consumer cannot create a rule in a private folder. */
+    /** Check that a Consumer cannot create a rule in a folder in a private site. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void siteConsumerCannotCreateRule()
     {
         testRolePermissionsWith(SiteConsumer);
@@ -216,7 +224,8 @@ public class CreateRulesTests extends RestTest
         restClient.assertLastError().containsSummary("Insufficient permissions to manage rules");
     }
 
-    /** Check that a siteManager can create a rule in a private folder. */
+    /** Check that a siteManager can create a rule in a folder in a private site. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
     public void siteManagerCanCreateRule()
     {
         testRolePermissionsWith(SiteManager)
@@ -357,7 +366,7 @@ public class CreateRulesTests extends RestTest
         rule.assertThat().field("isShared").isNotNull();
     }
 
-    public RestRuleModel testRolePermissionsWith(UserRole userRole)
+    private RestRuleModel testRolePermissionsWith(UserRole userRole)
     {
         STEP("Create a user and use them to create a private site containing a folder");
         SiteModel privateSite = dataSite.usingUser(user).createPrivateRandomSite();
@@ -369,6 +378,112 @@ public class CreateRulesTests extends RestTest
         RestRuleModel ruleModel = rulesUtils.createRuleModel("testRule", List.of(rulesUtils.createAddAudioAspectAction()));
 
         return restClient.authenticateUser(userWithRole).withPrivateAPI().usingNode(privateFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+    }
+
+    /** Check that the folder's owner can create rules, even if it is in a private site they aren't a member of. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkOwnerCanCreateRule()
+    {
+        STEP("Use admin to create a private site.");
+        SiteModel privateSite = dataSite.usingUser(dataUser.getAdminUser()).createPrivateRandomSite();
+
+        STEP("Add the user to the site, let them create a folder and then evict them from the site again.");
+        dataUser.addUserToSite(user, privateSite, SiteManager);
+        FolderModel folder = dataContent.usingUser(user).usingSite(privateSite).createFolder();
+        dataUser.removeUserFromSite(user, privateSite);
+
+        STEP("Check the folder owner can create a rule.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
+    /** Check that an administrator can create a rule in a private site even if they aren't a member. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkAdminCanCreateRule()
+    {
+        STEP("Use a user to create a private site with a folder.");
+        SiteModel privateSite = dataSite.usingUser(user).createPrivateRandomSite();
+        FolderModel folder = dataContent.usingUser(user).usingSite(privateSite).createFolder();
+
+        STEP("Check admin can create a rule.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        restClient.authenticateUser(dataUser.getAdminUser()).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
+    /** Check that a coordinator can create rules in folders outside sites. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkCoordinatorCanCreateRule()
+    {
+        STEP("Create a folder in the user's file space.");
+        FolderModel folder = dataContent.usingUser(user).usingUserHome().createFolder();
+
+        STEP("Create another user as a coordinator for this folder.");
+        UserModel coordinator = dataUser.createRandomTestUser("Rules");
+        /*
+        Update folder node properties to add a coordinator
+        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "coordinator.getUsername()",
+         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
+        */
+        String putBody = getAddPermissionsBody(coordinator.getUsername(), "Coordinator");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
+
+        STEP("Check the coordinator can create a rule.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        restClient.authenticateUser(coordinator).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(CREATED);
+    }
+
+    /** Check that an editor cannot create rules in folders outside sites. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkEditorCannotCreateRule()
+    {
+        STEP("Create a folder in the user's file space.");
+        FolderModel folder = dataContent.usingUser(user).usingUserHome().createFolder();
+
+        STEP("Create another user as a editor for this folder.");
+        UserModel editor = dataUser.createRandomTestUser();
+        /*
+        Update folder node properties to add an editor
+        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "editor.getUsername()",
+         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
+        */
+        String putBody = getAddPermissionsBody(editor.getUsername(), "Editor");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
+
+        STEP("Check the editor can create a rule.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        restClient.authenticateUser(editor).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
+    }
+
+    /** Check that a collaborator cannot create rules in folders outside sites. */
+    @Test (groups = { TestGroup.REST_API, TestGroup.RULES })
+    public void checkCollaboratorCannotCreateRule()
+    {
+        STEP("Create a folder in the user's file space.");
+        FolderModel folder = dataContent.usingUser(user).usingUserHome().createFolder();
+
+        STEP("Create another user as a collaborator for this folder.");
+        UserModel collaborator = dataUser.createRandomTestUser();
+        /*
+        Update folder node properties to add a collaborator
+        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "collaborator.getUsername()",
+         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
+        */
+        String putBody = getAddPermissionsBody(collaborator.getUsername(), "Collaborator");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
+
+        STEP("Check the collaborator can create a rule.");
+        RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
+        restClient.authenticateUser(collaborator).withPrivateAPI().usingNode(folder).usingDefaultRuleSet().createSingleRule(ruleModel);
+
+        restClient.assertStatusCodeIs(FORBIDDEN);
     }
 
     /**
@@ -834,5 +949,17 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Category in condition is invalid");
+    }
+
+    private String getAddPermissionsBody(String username, String role)
+    {
+        JsonObject userPermission = Json.createObjectBuilder().add("permissions",
+                Json.createObjectBuilder()
+                        .add("isInheritanceEnabled", true)
+                        .add("locallySet", Json.createObjectBuilder()
+                                .add("authorityId", username)
+                                .add("name", role).add("accessStatus", "ALLOWED")))
+                .build();
+        return userPermission.toString();
     }
 }

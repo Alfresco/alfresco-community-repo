@@ -59,6 +59,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+
 import org.alfresco.rest.RestTest;
 import org.alfresco.rest.model.RestActionBodyExecTemplateModel;
 import org.alfresco.rest.model.RestActionConstraintModel;
@@ -419,9 +422,14 @@ public class CreateRulesTests extends RestTest
         FolderModel folder = dataContent.usingUser(user).usingUserHome().createFolder();
 
         STEP("Create another user as a coordinator for this folder.");
-        UserModel coordinator = dataUser.createRandomTestUser();
-        dataContent.getContentActions().setPermissionForUser(user.getUsername(), user.getPassword(), folder.getCmisLocation(),
-                coordinator.getUsername(), "Coordinator", true);
+        UserModel coordinator = dataUser.createRandomTestUser("Rules");
+        /*
+        Update folder node properties to add a coordinator
+        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "coordinator.getUsername()",
+         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
+        */
+        String putBody = getAddPermissionsBody(coordinator.getUsername(), "Coordinator");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
 
         STEP("Check the coordinator can create a rule.");
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
@@ -439,8 +447,13 @@ public class CreateRulesTests extends RestTest
 
         STEP("Create another user as a editor for this folder.");
         UserModel editor = dataUser.createRandomTestUser();
-        dataContent.getContentActions().setPermissionForUser(user.getUsername(), user.getPassword(), folder.getCmisLocation(),
-                editor.getUsername(), "Editor", true);
+        /*
+        Update folder node properties to add an editor
+        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "editor.getUsername()",
+         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
+        */
+        String putBody = getAddPermissionsBody(editor.getUsername(), "Editor");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
 
         STEP("Check the editor can create a rule.");
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
@@ -458,8 +471,13 @@ public class CreateRulesTests extends RestTest
 
         STEP("Create another user as a collaborator for this folder.");
         UserModel collaborator = dataUser.createRandomTestUser();
-        dataContent.getContentActions().setPermissionForUser(user.getUsername(), user.getPassword(), folder.getCmisLocation(),
-                collaborator.getUsername(), "Collaborator", true);
+        /*
+        Update folder node properties to add a collaborator
+        { "permissions": { "isInheritanceEnabled": true, "locallySet": { "authorityId": "collaborator.getUsername()",
+         "name": "Coordinator", "accessStatus":"ALLOWED" } } }
+        */
+        String putBody = getAddPermissionsBody(collaborator.getUsername(), "Collaborator");
+        restClient.authenticateUser(user).withCoreAPI().usingNode(folder).updateNode(putBody);
 
         STEP("Check the collaborator can create a rule.");
         RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
@@ -931,5 +949,17 @@ public class CreateRulesTests extends RestTest
 
         restClient.assertStatusCodeIs(BAD_REQUEST);
         restClient.assertLastError().containsSummary("Category in condition is invalid");
+    }
+
+    private String getAddPermissionsBody(String username, String role)
+    {
+        JsonObject userPermission = Json.createObjectBuilder().add("permissions",
+                Json.createObjectBuilder()
+                        .add("isInheritanceEnabled", true)
+                        .add("locallySet", Json.createObjectBuilder()
+                                .add("authorityId", username)
+                                .add("name", role).add("accessStatus", "ALLOWED")))
+                .build();
+        return userPermission.toString();
     }
 }

@@ -1,7 +1,5 @@
 Freemarker Unsafe Methods Testing
 =================================
-<#assign string = "foo">
-
-java.lang.Thread.getName()<#if (thread.getName())??>${allowedText}<#else>${blockedText}</#if>
-java.lang.Thread.setName(java.lang.String)<#if (thread.setName(string))??>${allowedText}<#else>${blockedText}</#if>
-java.net.URL.openStream()<#if (url.openStream())??>${allowedText}<#else>${blockedText}</#if>
+java.lang.Thread.getId()<#if (thread.getId())??>${allowedText}<#else>${blockedText}</#if>
+java.lang.Thread.interrupt()<#if (thread.interrupt())??>${allowedText}<#else>${blockedText}</#if>
+java.lang.Thread.currentThread()<#if (thread.currentThread())??>${allowedText}<#else>${blockedText}</#if>

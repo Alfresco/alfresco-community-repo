@@ -28,7 +28,6 @@ package org.alfresco.repo.template;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,7 +40,6 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import junit.framework.TestCase;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 public class UnsafeMethodsTest extends TestCase
@@ -71,8 +69,6 @@ public class UnsafeMethodsTest extends TestCase
         // Prepare Spies for methods testing
         Thread thread = Mockito.spy(new Thread());
         model.put("thread", thread);
-        URL url = Mockito.spy(new URL("http://someurl"));
-        model.put("url", url);
 
         // Apply the freemarker template
         List<String> results = applyTemplate(template, model);
@@ -80,7 +76,6 @@ public class UnsafeMethodsTest extends TestCase
         // Verify methods were allowed or blocked
         verifyFreemarkerOutput(results, allowedMethods, blockedMethods);
         verifyMethodInvocations(thread);
-        verifyMethodInvocations(url);
     }
 
     private List<String> applyTemplate(Template template, Map<String, Object> inputModel ) throws TemplateException, IOException
@@ -93,38 +88,36 @@ public class UnsafeMethodsTest extends TestCase
 
     private void verifyFreemarkerOutput(Collection<String> results, List<String> allowedMethods, List<String> blockedMethods)
     {
-        allowedMethods.forEach(method -> assertTrue("Expected method to be allowed", results.contains(method + ALLOWED_TEXT)));
+        allowedMethods.forEach(method -> assertTrue("Expected method '" + method + "' to be allowed", results.contains(method + ALLOWED_TEXT)));
 
-        blockedMethods.forEach(method -> assertTrue("Expected method to be blocked", results.contains(method + BLOCKED_TEXT)));
+        blockedMethods.forEach(method -> assertTrue("Expected method '" + method + "' to be blocked", results.contains(method + BLOCKED_TEXT)));
     }
 
-    private void verifyMethodInvocations(Thread thread)
+    private void verifyMethodInvocations(Thread thread) throws InterruptedException
     {
         // verify an unlisted method is not blocked
-        Mockito.verify(thread, Mockito.times(1)).getName();
+        Mockito.verify(thread, Mockito.times(1)).getId();
 
         // Verify an originally blocked method is still blocked
-        Mockito.verify(thread, Mockito.never()).setName(ArgumentMatchers.anyString());
-    }
+        Mockito.verify(thread, Mockito.never()).interrupt();
 
-    private void verifyMethodInvocations(URL url) throws IOException
-    {
         // Verify a newly blocked method in the patched version is blocked
-        Mockito.verify(url, Mockito.never()).openStream();
+        Mockito.verify(thread, Mockito.never()).currentThread();
+
     }
 
     private static List<String> createListOfAllowedMethods()
     {
         final List<String> allowedMethods = new ArrayList<>(1);
-        allowedMethods.add("java.lang.Thread.getName()");
+        allowedMethods.add("java.lang.Thread.getId()");
         return allowedMethods;
     }
 
     private static List<String> createListOfBlockedMethods()
     {
         List<String> blockedMethods = new ArrayList<>(2);
-        blockedMethods.add("java.lang.Thread.setName(java.lang.String)");
-        blockedMethods.add("java.net.URL.openStream()");
+        blockedMethods.add("java.lang.Thread.interrupt()");
+        blockedMethods.add("java.lang.Thread.currentThread()");
         return blockedMethods;
     }
 }

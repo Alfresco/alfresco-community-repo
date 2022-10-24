@@ -778,6 +778,26 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      */
     private void unsetScope(Map<String, Object> model, Scriptable scope)
     {
+        if (scope != null)
+        {
+            Object[] ids = scope.getIds();
+            if (ids != null)
+            {
+                for (Object id : ids)
+                {
+                    try
+                    {
+                        ScriptableObject.deleteProperty(scope, id.toString());
+                        scope.delete(id.toString());
+                    }
+                    catch (Exception e)
+                    {
+                        logger.info("Unable to delete id: " + id, e);
+                    }
+                }
+            }
+        }
+
         if (model != null)
         {
             for (String key : model.keySet())
@@ -788,15 +808,6 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                     {
                         ScriptableObject.deleteProperty(scope, key);
                         scope.delete(key);
-
-                        Object[] ids = scope.getIds();
-                        if (ids != null)
-                        {
-                            for (Object id : ids) {
-                                ScriptableObject.deleteProperty(scope, id.toString());
-                                scope.delete(id.toString());
-                            }
-                        }
                     }
 
                     Object obj = model.get(key);

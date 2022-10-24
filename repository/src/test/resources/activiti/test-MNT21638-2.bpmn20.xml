@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions 
+  xmlns:activiti="http://activiti.org/bpmn" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath"
+  targetNamespace="http://www.activiti.org/test">
+
+  <process id="test-mnt21638-2" name="test-mnt21638-2">
+
+    <startEvent id="start" activiti:formKey="wf:submitAdhocTask"/>
+    <sequenceFlow id="flow1" sourceRef="start" targetRef="someTask2" />
+
+    <userTask id="someTask2" name="Activiti is awesome!" activiti:formKey="wf:adhocTask">
+      <extensionElements>
+        <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+          <activiti:field name="script">
+            <activiti:string>
+		var exec = new org.alfresco.util.exec.RuntimeExec();
+		exec.setCommand(["/bin/ls"]);
+		var res = exec.execute();
+		java.lang.System.err.println(res.getStdOut());
+	    </activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>	
+    <humanPerformer>
+      <resourceAssignmentExpression>
+        <formalExpression>admin</formalExpression>
+      </resourceAssignmentExpression>
+    </humanPerformer>
+    </userTask>
+    <sequenceFlow id="flow2" sourceRef="someTask2" targetRef="end" />
+
+    <endEvent id="end" />
+
+  </process>
+
+</definitions>

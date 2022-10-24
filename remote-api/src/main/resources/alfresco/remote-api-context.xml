@@ -8,6 +8,7 @@
         <property name="enabled" value="${system.webdav.servlet.enabled}" />
         <property name="storeName" value="${system.webdav.storeName}" />
         <property name="rootPath" value="${system.webdav.rootPath}" />
+        <property name="allowInsecurePOSTMethod" value="${system.webdav.allowInsecurePOSTMethod}" />
     </bean>
     
     <bean id="webDAVLockService" class="org.alfresco.repo.webdav.WebDAVLockServiceImpl">

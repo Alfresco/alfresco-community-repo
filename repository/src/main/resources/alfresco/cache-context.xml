@@ -506,4 +506,12 @@
     <bean name="queryAcceleratorCache" factory-bean="cacheFactory" factory-method="createCache">
         <constructor-arg value="cache.queryAcceleratorCache"/>
     </bean>
+
+   <!-- ===================================== -->
+   <!-- LDAP Initial Dir Context cache		  -->
+   <!-- ===================================== -->
+
+    <bean name="ldapInitialDirContextCache" factory-bean="cacheFactory" factory-method="createCache">
+        <constructor-arg value="cache.ldapInitialDirContextCache"/>
+    </bean>
 </beans>

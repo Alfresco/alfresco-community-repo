@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -29,8 +29,8 @@ import junit.framework.AssertionFailedError;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
-import org.alfresco.transform.client.registry.AbstractTransformRegistry;
-import org.alfresco.transform.client.registry.SupportedTransform;
+import org.alfresco.transform.registry.AbstractTransformRegistry;
+import org.alfresco.transform.registry.SupportedTransform;
 import org.alfresco.util.testing.category.DebugTests;
 import org.junit.Before;
 import org.junit.Test;

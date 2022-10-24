@@ -400,12 +400,10 @@ public class NodesImpl implements Nodes
     @Override
     public NodeRef validateNode(StoreRef storeRef, String nodeId)
     {
-        String versionLabel = null;
-
         int idx = nodeId.indexOf(";");
         if (idx != -1)
         {
-            versionLabel = nodeId.substring(idx + 1);
+            String versionLabel = nodeId.substring(idx + 1);
             nodeId = nodeId.substring(0, idx);
             if (versionLabel.equals("pwc"))
             {
@@ -1753,7 +1751,7 @@ public class NodesImpl implements Nodes
         // default false (if not provided)
         boolean permanentDelete = Boolean.valueOf(parameters.getParameter(PARAM_PERMANENT));
 
-        if (permanentDelete == true)
+        if (permanentDelete)
         {
             boolean isAdmin = authorityService.hasAdminAuthority();
             if (! isAdmin)

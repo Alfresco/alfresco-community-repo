@@ -156,25 +156,24 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
      * @see org.alfresco.repo.rule.RuleServiceImpl#saveRule(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.rule.Rule)
      */
     @Override
-    public void saveRule(final NodeRef nodeRef, final Rule rule)
+    public Rule saveRule(final NodeRef nodeRef, final Rule rule)
     {
         validateWormLockRuleAction(rule);
         if (filePlanService.isFilePlanComponent(nodeRef))
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            return AuthenticationUtil.runAsSystem(new RunAsWork<Rule>()
             {
                 @Override
-                public Void doWork()
+                public Rule doWork()
                 {
-                    ExtendedRuleServiceImpl.super.saveRule(nodeRef, rule);
-                    return null;
+                    return ExtendedRuleServiceImpl.super.saveRule(nodeRef, rule);
                 }
 
             });
         }
         else
         {
-            super.saveRule(nodeRef, rule);
+            return super.saveRule(nodeRef, rule);
         }
     }
 

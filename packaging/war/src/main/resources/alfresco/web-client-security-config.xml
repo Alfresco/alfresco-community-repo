@@ -139,6 +139,33 @@
                <param name="cookie">{token}</param>
             </action>
          </rule>
+         <rule>
+            <request>
+               <method>GET</method>
+               <path>/s/index|/s/</path>
+            </request>
+            <action name="generateToken">
+               <param name="session">{token}</param>
+               <param name="cookie">{token}</param>
+            </action>
+         </rule>
+         <rule>
+            <request>
+               <method>POST</method>
+               <path>/s/index|/s/</path>
+            </request>
+            <action name="assertToken">
+               <param name="session">{token}</param>
+               <param name="parameter">{token}</param>
+            </action>
+            <action name="assertReferer">
+               <param name="referer">{referer}</param>
+            </action>
+            <action name="assertOrigin">
+               <param name="origin">{origin}</param>
+            </action>
+         </rule>
+
 
          <!--
             Verify multipart requests contain the token as a parameter

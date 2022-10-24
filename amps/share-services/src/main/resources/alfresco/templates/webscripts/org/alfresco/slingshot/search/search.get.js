@@ -14,7 +14,7 @@ function main()
       maxResults: (args.maxResults !== null) ? parseInt(args.maxResults, 10) : DEFAULT_MAX_RESULTS,
       pageSize: (args.pageSize !== null) ? parseInt(args.pageSize, 10) : DEFAULT_PAGE_SIZE,
       startIndex: (args.startIndex !== null) ? parseInt(args.startIndex, 10) : 0,
-      facetFields: args.facetFields,
+      facetFields: args.facetFields !== null ? args.facetFields.replace( /(<([^>]+)>)/ig, '') : null,
       filters: args.filters,
       encodedFilters: args.encodedFilters,
       spell: (args.spellcheck !== null) ? (args.spellcheck == "true") : false

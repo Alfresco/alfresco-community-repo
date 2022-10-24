@@ -34,7 +34,9 @@ import static org.alfresco.model.ContentModel.ASSOC_CONTAINS;
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASSOC_FROZEN_CONTENT;
 import static org.alfresco.module.org_alfresco_module_rm.patch.v35.RMv35HoldNewChildAssocPatch.PATCH_ASSOC_NAME;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -51,16 +53,21 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 /**
  * RM V3.5  Create new hold child association to link the record to the hold
@@ -80,6 +87,12 @@ public class RMv35HoldNewChildAssocPatchUnitTest
 
     @Mock
     private BehaviourFilter mockBehaviourFilter;
+
+    @Mock
+    private TransactionService mockTransactionService;
+
+    @Mock
+    private RetryingTransactionHelper mockRetryingTransactionHelper;
 
     @InjectMocks
     private RMv35HoldNewChildAssocPatch patch;
@@ -112,25 +125,63 @@ public class RMv35HoldNewChildAssocPatchUnitTest
     /**
      * Test secondary associations are created for held items so that they are "contained" in the hold.
      */
+    @SuppressWarnings("unchecked")
     @Test
     public void testAddChildDuringUpgrade()
     {
         when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
         when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
-        when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(childAssocs);
+        when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL, Integer.MAX_VALUE, false))
+                .thenReturn(childAssocs);
         when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
+
+        // setup retrying transaction helper
+        Answer<Object> doInTransactionAnswer = new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                RetryingTransactionCallback callback = (RetryingTransactionCallback) invocation.getArguments()[0];
+                // when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
+                return callback.execute();
+            }
+        };
+        doAnswer(doInTransactionAnswer).when(mockRetryingTransactionHelper)
+                .<Object> doInTransaction(any(RetryingTransactionCallback.class), anyBoolean(), anyBoolean());
+
+        when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
 
         patch.applyInternal();
 
         verify(mockNodeService, times(1)).addChild(holdRef, heldItemRef, ASSOC_CONTAINS, PATCH_ASSOC_NAME);
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void patchRunWithSuccessWhenNoHeldChildren()
     {
         when(mockFilePlanService.getFilePlans()).thenReturn(fileplans);
         when(mockHoldService.getHolds(filePlanRef)).thenReturn(holds);
-        when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL)).thenReturn(emptyList());
+        when(mockNodeService.getChildAssocs(holdRef, ASSOC_FROZEN_CONTENT, RegexQNamePattern.MATCH_ALL, Integer.MAX_VALUE, false))
+                .thenReturn(emptyList());
+
+        // setup retrying transaction helper
+        Answer<Object> doInTransactionAnswer = new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                RetryingTransactionCallback callback = (RetryingTransactionCallback) invocation.getArguments()[0];
+                when(childAssociationRef.getChildRef()).thenReturn(heldItemRef);
+                return callback.execute();
+            }
+        };
+        doAnswer(doInTransactionAnswer).when(mockRetryingTransactionHelper)
+                .<Object> doInTransaction(any(RetryingTransactionCallback.class), anyBoolean(), anyBoolean());
+
+        when(mockTransactionService.getRetryingTransactionHelper()).thenReturn(mockRetryingTransactionHelper);
 
         patch.applyInternal();
 

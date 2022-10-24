@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -48,6 +48,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.RenameShuffleDetectionTest.class,
     org.alfresco.repo.webdav.WebDAVHelperTest.class,
     org.alfresco.repo.webdav.WebDAVLockServiceImplTest.class,
+    org.alfresco.rest.api.RulesUnitTests.class,
     org.alfresco.rest.api.impl.ContentStorageInformationImplTest.class,
     org.alfresco.rest.api.nodes.NodeStorageInfoRelationTest.class,
     org.alfresco.rest.api.search.ResultMapperTests.class,
@@ -56,6 +57,7 @@ import org.junit.runners.Suite;
     org.alfresco.rest.api.search.SearchQuerySerializerTests.class,
     org.alfresco.rest.api.search.StoreMapperTests.class,
     org.alfresco.rest.api.tests.ModulePackageTest.class,
+    org.alfresco.rest.framework.resource.parameters.ArrayListPageTest.class,
     org.alfresco.rest.framework.tests.core.InspectorTests.class,
     org.alfresco.rest.framework.tests.core.JsonJacksonTests.class,
     org.alfresco.rest.framework.tests.core.ParamsExtractorTests.class,
@@ -97,6 +99,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.WebDAVMethodTest.class,
     org.alfresco.repo.webdav.PutMethodTest.class,
     org.alfresco.repo.webdav.WebDAVonContentUpdateTest.class,
+    org.alfresco.repo.webdav.WebDAVInsecurePostMethodTest.class,
 
     // [classpath:test-rest-context.xml]
     org.alfresco.rest.framework.tests.core.ExceptionResolverTests.class,

@@ -32,8 +32,10 @@ import org.activiti.engine.delegate.VariableScope;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.el.Expression;
+import org.activiti.engine.impl.persistence.entity.DeploymentEntity;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
 import org.alfresco.service.ServiceRegistry;
@@ -102,14 +104,18 @@ public class ActivitiScriptBase
     {
         // Execute the script using the appropriate processor
         Object scriptResult = null;
+
+        // Checks if current workflow is secure
+        boolean secure = isSecure();
+
         if (scriptProcessorName != null)
         {
-            scriptResult = getServiceRegistry().getScriptService().executeScriptString(scriptProcessorName, theScript, model);
+            scriptResult = getServiceRegistry().getScriptService().executeScriptString(scriptProcessorName, theScript, model, secure);
         }
         else
         {
             // Use default script-processor
-            scriptResult = getServiceRegistry().getScriptService().executeScriptString(theScript, model);
+            scriptResult = getServiceRegistry().getScriptService().executeScriptString(theScript, model, secure);
         }
         
         return scriptResult;
@@ -140,6 +146,32 @@ public class ActivitiScriptBase
             return registry;
         }
         throw new IllegalStateException("No ProcessEngineCOnfiguration found in active context");
+    }
+
+    /**
+     * Checks whether the workflow must be considered secure or not - based on {@link DeploymentEntity} category.
+     * If it is not considered secure, the workflow will be executed in sandbox context with more restrictions
+     *
+     * @return true if workflow is considered secure, false otherwise
+     */
+    private boolean isSecure()
+    {
+        String category = null;
+
+        try
+        {
+            if (Context.isExecutionContextActive())
+            {
+                category = Context.getExecutionContext().getDeployment().getCategory();
+            }
+        }
+        catch (Exception e)
+        {
+            // No action required
+        }
+
+        // If the workflow is considered secure, the deployment entity category matches the condition (either internal or full access)
+        return category != null && (WorkflowDeployer.CATEGORY_ALFRESCO_INTERNAL.equals(category) || WorkflowDeployer.CATEGORY_FULL_ACCESS.equals(category));
     }
 
     /**

@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2020 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.access.ActionAccessRestriction;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.action.executer.CompositeActionExecuter;
@@ -140,6 +141,11 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * All the action definitions currently registered
      */
     private Map<String, ActionDefinition> actionDefinitions = new HashMap<String, ActionDefinition>();
+
+    /**
+     * Action access restricted executers
+     */
+    private Map<String, ActionExecuter> actionExecuters = new HashMap<>();
 
     /**
      * All the parameter constraints
@@ -298,7 +304,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      */
     public List<ActionDefinition> getActionDefinitions()
     {
-        return new ArrayList<ActionDefinition>(this.actionDefinitions.values());
+        return new ArrayList<>(this.actionDefinitions.values());
     }
 
     /**
@@ -588,9 +594,27 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
         else
         {
+            verifyActionAccessRestrictions(action);
             // Add to the post transaction pending action list
             addPostTransactionPendingAction(action, actionedUponNodeRef, checkConditions, actionChain);
         }
+    }
+
+    /**
+     * @see RuntimeActionService#verifyActionAccessRestrictions(Action action)
+     */
+    @Override
+    public void verifyActionAccessRestrictions(Action action) {
+        getActionExecuter(action.getActionDefinitionName())
+                .verifyActionAccessRestrictions(action);
+    }
+
+    private ActionExecuter getActionExecuter(String actionDefName) {
+        if (!actionExecuters.containsKey(actionDefName)) {
+            actionExecuters.put(actionDefName, applicationContext.getBean(actionDefName, ActionExecuter.class));
+        }
+
+        return actionExecuters.get(actionDefName);
     }
 
     private boolean isExecuteAsynchronously(Action action, NodeRef actionedUponNodeRef, boolean executeAsynchronously)

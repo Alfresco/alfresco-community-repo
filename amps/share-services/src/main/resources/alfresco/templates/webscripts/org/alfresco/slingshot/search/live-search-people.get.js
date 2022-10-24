@@ -11,7 +11,7 @@ function main()
    var params =
    {
       type: "people",
-      term: args.t,
+      term: args.t + " [hint:useCQ]",
       maxResults: (args.maxResults !== null) ? parseInt(args.maxResults, 10) : DEFAULT_MAX_RESULTS,
       startIndex: (args.startIndex !== null) ? parseInt(args.startIndex, 10) : 0
    };

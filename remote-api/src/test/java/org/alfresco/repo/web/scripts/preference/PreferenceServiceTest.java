@@ -55,10 +55,14 @@ public class PreferenceServiceTest extends BaseWebScriptTest
     private PersonService personService;
 
     private static final String USER_ONE = "PreferenceTestOne" + System.currentTimeMillis();
-
+    private static final String USER_TWO = "PreferenceTestTwo" + System.currentTimeMillis();
     private static final String USER_BAD = "PreferenceTestBad" + System.currentTimeMillis();
 
-    private static final String URL = "/api/people/" + USER_ONE + "/preferences";;
+    private static final String URL = "/api/people/" + USER_ONE + "/preferences";
+    private static final String URL2 = "/api/people/" + USER_TWO + "/preferences";
+
+    private static final int NUM_THREADS = 3;
+    private static Integer THREADS_FINISHED = 0;
 
     @Override
     protected void setUp() throws Exception
@@ -75,6 +79,7 @@ public class PreferenceServiceTest extends BaseWebScriptTest
 
         // Create users
         createUser(USER_ONE);
+        createUser(USER_TWO);
         createUser(USER_BAD);
 
         // Do tests as user one
@@ -103,7 +108,6 @@ public class PreferenceServiceTest extends BaseWebScriptTest
     {
         super.tearDown();
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
-
     }
 
     public void testPreferences() throws Exception
@@ -193,6 +197,64 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         sendRequest(new GetRequest("/api/people/noExistUser/preferences"), 404);
     }
 
+    public void testPreferencesMNT21901() throws Exception
+    {
+        String[] body = {
+                "{\"org\":{\"alfresco\":{\"share\":{\"forum\":{\"summary\":{\"dashlet\":{\"component-1-5\":{\"topics\":\"mine\"}}}}}}}}",
+                "{\"org\":{\"alfresco\":{\"share\":{\"forum\":{\"summary\":{\"dashlet\":{\"component-2-5\":{\"topics\":\"mine\"}}}}}}}}",
+                "{\"org\":{\"alfresco\":{\"share\":{\"forum\":{\"summary\":{\"dashlet\":{\"component-2-5\":{\"history\":\"1\"}}}}}}}}" 
+        };
+
+        Thread[] threads = new Thread[NUM_THREADS];
+
+        for (int i = 0; i < NUM_THREADS; i++)
+        {
+            UpdatePreferencesThread t = new UpdatePreferencesThread(i, body[i]);
+            threads[i] = t;
+            t.start();
+        }
+
+        for (int i = 0; i < threads.length; i++)
+        {
+            threads[i].join();
+        }
+
+        authenticationComponent.setCurrentUser(USER_ONE);
+
+        if (THREADS_FINISHED != NUM_THREADS)
+        {
+            fail("An error has occurred when updating preferences in concurrency context");
+        }
+    }
+
+    private class UpdatePreferencesThread extends Thread
+    {
+        private String body;
+
+        UpdatePreferencesThread(int threadNum, String body)
+        {
+            super(UpdatePreferencesThread.class.getSimpleName() + "-" + threadNum);
+            this.body = body;
+        }
+
+        @Override
+        public void run()
+        {
+            authenticationComponent.setCurrentUser(USER_TWO);
+
+            try
+            {
+                Response resp = sendRequest(new PostRequest(URL2, body, "application/json"), 200);
+                assertEquals(0, resp.getContentLength());
+                THREADS_FINISHED++;
+            }
+            catch (Exception e)
+            {
+                // Intentionally empty
+            }
+        }
+    }
+
     private JSONObject getPreferenceObj() throws JSONException
     {
         JSONObject jsonObject = new JSONObject();
@@ -208,5 +270,4 @@ public class PreferenceServiceTest extends BaseWebScriptTest
         assertEquals(10, jsonObject.get("numberValue"));
         assertEquals(BigDecimal.valueOf(3.142), jsonObject.get("numberValue2"));
     }
-
 }

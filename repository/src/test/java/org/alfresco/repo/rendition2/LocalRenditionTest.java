@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2018 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software.
  * If the software was purchased under a paid Alfresco license, the terms of
@@ -25,22 +25,15 @@
  */
 package org.alfresco.repo.rendition2;
 
-import org.alfresco.transform.client.registry.AbstractTransformRegistry;
-import org.alfresco.transform.client.registry.SupportedTransform;
+import org.alfresco.transform.registry.AbstractTransformRegistry;
 import org.alfresco.util.testing.category.DebugTests;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.alfresco.repo.content.MimetypeMap.MIMETYPE_TEXT_PLAIN;
 
 /**
  * Repeats quick file rendition tests with local transforms enabled but legacy transformers disabled.

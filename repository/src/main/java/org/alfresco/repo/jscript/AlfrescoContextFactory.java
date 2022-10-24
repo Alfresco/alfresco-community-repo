@@ -33,7 +33,7 @@ import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.Scriptable;
 
 /**
- * Custom factory that allows to apply configured limits to script executions
+ * Custom factory that allows to apply configured limits during script executions
  * 
  * @see ContextFactory
  */
@@ -45,9 +45,11 @@ public class AlfrescoContextFactory extends ContextFactory
     private int maxScriptExecutionSeconds = -1;
     private int maxStackDepth = -1;
     private long maxMemoryUsed = -1L;
-    private int observeInstructionCount = 10;
+    private int observeInstructionCount = -1;
 
     private AlfrescoScriptThreadMxBeanWrapper threadMxBeanWrapper;
+
+    private final int INTERPRETIVE_MODE = -1;
 
     protected Context makeContext()
     {
@@ -58,8 +60,17 @@ public class AlfrescoContextFactory extends ContextFactory
         // Needed for both time and memory measurement
         if (maxScriptExecutionSeconds > 0 || maxMemoryUsed > 0L)
         {
-            context.setGenerateObserverCount(true);
-            context.setInstructionObserverThreshold(observeInstructionCount);
+            if (observeInstructionCount > 0)
+            {
+                LOGGER.info("Enabling observer count...");
+                context.setGenerateObserverCount(true);
+                context.setInstructionObserverThreshold(observeInstructionCount);
+            }
+            else
+            {
+                LOGGER.info("Disabling observer count...");
+                context.setGenerateObserverCount(false);
+            }
         }
 
         // Memory limit
@@ -71,7 +82,12 @@ public class AlfrescoContextFactory extends ContextFactory
         // Max stack depth
         if (maxStackDepth > 0)
         {
-            context.setOptimizationLevel(-1); // stack depth can only be set when no optimizations are applied
+            if (optimizationLevel != INTERPRETIVE_MODE)
+            {
+                LOGGER.warn("Changing optimization level from " + optimizationLevel + " to " + INTERPRETIVE_MODE);
+            }
+            // stack depth can only be set when no optimizations are applied
+            context.setOptimizationLevel(INTERPRETIVE_MODE);
             context.setMaximumInterpreterStackDepth(maxStackDepth);
         }
 
@@ -115,7 +131,6 @@ public class AlfrescoContextFactory extends ContextFactory
         }
     }
 
-    // Override {@link #doTopCall(Callable, Context, Scriptable, Scriptable, Object[])}
     protected Object doTopCall(Callable callable, Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
     {
         AlfrescoScriptContext acx = (AlfrescoScriptContext) cx;

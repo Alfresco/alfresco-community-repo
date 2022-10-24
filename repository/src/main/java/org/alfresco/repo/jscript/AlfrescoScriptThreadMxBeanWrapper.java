@@ -27,9 +27,12 @@ package org.alfresco.repo.jscript;
 
 import java.lang.management.ManagementFactory;
 
+/**
+ * Allows to monitor memory usage
+ */
 public class AlfrescoScriptThreadMxBeanWrapper
 {
-    protected com.sun.management.ThreadMXBean threadMXBean; // Only Oracle / OpenJDK (only checked those)
+    protected com.sun.management.ThreadMXBean threadMXBean; // Only Oracle / OpenJDK
 
     public AlfrescoScriptThreadMxBeanWrapper()
     {

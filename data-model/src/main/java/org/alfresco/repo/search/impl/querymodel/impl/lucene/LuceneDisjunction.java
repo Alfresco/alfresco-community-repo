@@ -69,20 +69,21 @@ public class LuceneDisjunction<Q, S, E extends Throwable> extends BaseDisjunctio
                 @SuppressWarnings("unchecked")
                 LuceneQueryBuilderComponent<Q, S, E> luceneQueryBuilderComponent = (LuceneQueryBuilderComponent<Q, S, E>) constraint;
                 Q constraintQuery = luceneQueryBuilderComponent.addComponent(selectors, functionArgs, luceneContext, functionContext);
-                queriestoDisjoin.add(new Pair<>(constraint, constraintQuery));
+                queriestoDisjoin.add(new Pair<Constraint, Q>(constraint, constraintQuery));
                 if (constraintQuery != null)
                 {
                     switch (constraint.getOccur())
                     {
                     case DEFAULT:
+                    case MANDATORY:
                     case OPTIONAL:
                         expressionBuilder.addOptional(constraintQuery, constraint.getBoost());
                         break;
-                    case MANDATORY:
-                        expressionBuilder.addRequired(constraintQuery, constraint.getBoost());
-                        break;
                     case EXCLUDE:
-                        expressionBuilder.addExcluded(constraintQuery,  constraint.getBoost());
+                        QueryParserExpressionAdaptor<Q, E> subExpressionBuilder = luceneContext.getLuceneQueryParserAdaptor().getExpressionAdaptor();
+                        subExpressionBuilder.addRequired(luceneContext.getLuceneQueryParserAdaptor().getMatchAllNodesQuery());
+                        subExpressionBuilder.addExcluded(constraintQuery);
+                        expressionBuilder.addOptional(subExpressionBuilder.getQuery(),  constraint.getBoost());
                         break;
                     }
                 }

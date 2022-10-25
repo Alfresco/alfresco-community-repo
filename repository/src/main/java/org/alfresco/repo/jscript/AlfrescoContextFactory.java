@@ -44,13 +44,14 @@ public class AlfrescoContextFactory extends ContextFactory
     private int optimizationLevel = -1;
     private int maxScriptExecutionSeconds = -1;
     private int maxStackDepth = -1;
-    private long maxMemoryUsed = -1L;
+    private long maxMemoryUsedInBytes = -1L;
     private int observeInstructionCount = -1;
 
     private AlfrescoScriptThreadMxBeanWrapper threadMxBeanWrapper;
 
     private final int INTERPRETIVE_MODE = -1;
 
+    @Override
     protected Context makeContext()
     {
         AlfrescoScriptContext context = new AlfrescoScriptContext();
@@ -58,7 +59,7 @@ public class AlfrescoContextFactory extends ContextFactory
         context.setOptimizationLevel(optimizationLevel);
 
         // Needed for both time and memory measurement
-        if (maxScriptExecutionSeconds > 0 || maxMemoryUsed > 0L)
+        if (maxScriptExecutionSeconds > 0 || maxMemoryUsedInBytes > 0L)
         {
             if (observeInstructionCount > 0)
             {
@@ -74,7 +75,7 @@ public class AlfrescoContextFactory extends ContextFactory
         }
 
         // Memory limit
-        if (maxMemoryUsed > 0)
+        if (maxMemoryUsedInBytes > 0)
         {
             context.setThreadId(Thread.currentThread().getId());
         }
@@ -94,6 +95,7 @@ public class AlfrescoContextFactory extends ContextFactory
         return context;
     }
 
+    @Override
     protected void observeInstructionCount(Context cx, int instructionCount)
     {
         AlfrescoScriptContext acx = (AlfrescoScriptContext) cx;
@@ -111,7 +113,7 @@ public class AlfrescoContextFactory extends ContextFactory
             }
 
             // Memory
-            if (maxMemoryUsed > 0 && threadMxBeanWrapper != null)
+            if (maxMemoryUsedInBytes > 0 && threadMxBeanWrapper != null)
             {
 
                 if (acx.getStartMemory() <= 0)
@@ -121,9 +123,9 @@ public class AlfrescoContextFactory extends ContextFactory
                 else
                 {
                     long currentAllocatedBytes = threadMxBeanWrapper.getThreadAllocatedBytes(acx.getThreadId());
-                    if (currentAllocatedBytes - acx.getStartMemory() >= maxMemoryUsed)
+                    if (currentAllocatedBytes - acx.getStartMemory() >= maxMemoryUsedInBytes)
                     {
-                        throw new Error("Memory limit of " + maxMemoryUsed + " bytes reached");
+                        throw new Error("Memory limit of " + maxMemoryUsedInBytes + " bytes reached");
                     }
                 }
 
@@ -131,6 +133,7 @@ public class AlfrescoContextFactory extends ContextFactory
         }
     }
 
+    @Override
     protected Object doTopCall(Callable callable, Context cx, Scriptable scope, Scriptable thisObj, Object[] args)
     {
         AlfrescoScriptContext acx = (AlfrescoScriptContext) cx;
@@ -168,15 +171,15 @@ public class AlfrescoContextFactory extends ContextFactory
         this.maxStackDepth = maxStackDepth;
     }
 
-    public long getMaxMemoryUsed()
+    public long getMaxMemoryUsedInBytes()
     {
-        return maxMemoryUsed;
+        return maxMemoryUsedInBytes;
     }
 
-    public void setMaxMemoryUsed(long maxMemoryUsed)
+    public void setMaxMemoryUsedInBytes(long maxMemoryUsedInBytes)
     {
-        this.maxMemoryUsed = maxMemoryUsed;
-        if (maxMemoryUsed > 0)
+        this.maxMemoryUsedInBytes = maxMemoryUsedInBytes;
+        if (maxMemoryUsedInBytes > 0)
         {
             try
             {

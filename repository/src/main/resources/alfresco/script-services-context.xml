@@ -54,8 +54,8 @@
         <property name="maxStackDepth">
             <value>${scripts.execution.maxStackDepth}</value>
         </property>
-        <property name="maxMemoryUsed">
-            <value>${scripts.execution.maxMemoryUsed}</value>
+        <property name="maxMemoryUsedInBytes">
+            <value>${scripts.execution.maxMemoryUsedInBytes}</value>
         </property>
         <property name="observerInstructionCount">
             <value>${scripts.execution.observerInstructionCount}</value>

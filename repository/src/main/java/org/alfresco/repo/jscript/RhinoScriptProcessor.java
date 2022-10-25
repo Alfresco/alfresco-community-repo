@@ -119,7 +119,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     private int maxStackDepth = -1;
 
     /** Maximum memory (bytes) a script can use */
-    private long maxMemoryUsed = -1L;
+    private long maxMemoryUsedInBytes = -1L;
 
     /** Number of (bytecode) instructions that will trigger the observer */
     private int observerInstructionCount = 100;
@@ -190,12 +190,12 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
     }
 
     /**
-     * @param maxMemoryUsed
+     * @param maxMemoryUsedInBytes
      *            the number of memory a script can use
      */
-    public void setMaxMemoryUsed(long maxMemoryUsed)
+    public void setMaxMemoryUsedInBytes(long maxMemoryUsedInBytes)
     {
-        this.maxMemoryUsed = maxMemoryUsed;
+        this.maxMemoryUsedInBytes = maxMemoryUsedInBytes;
     }
 
     /**
@@ -839,9 +839,9 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 contextFactory.setMaxScriptExecutionSeconds(maxScriptExecutionSeconds);
             }
 
-            if (maxMemoryUsed > 0L)
+            if (maxMemoryUsedInBytes > 0L)
             {
-                contextFactory.setMaxMemoryUsed(maxMemoryUsed);
+                contextFactory.setMaxMemoryUsedInBytes(maxMemoryUsedInBytes);
             }
 
             if (maxStackDepth > 0)
@@ -849,7 +849,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 contextFactory.setMaxStackDepth(maxStackDepth);
             }
 
-            if (maxScriptExecutionSeconds > 0 || maxMemoryUsed > 0L)
+            if (maxScriptExecutionSeconds > 0 || maxMemoryUsedInBytes > 0L)
             {
                 contextFactory.setObserveInstructionCount(observerInstructionCount);
             }

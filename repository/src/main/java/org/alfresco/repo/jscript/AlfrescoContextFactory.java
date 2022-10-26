@@ -113,7 +113,7 @@ public class AlfrescoContextFactory extends ContextFactory
             }
 
             // Memory
-            if (maxMemoryUsedInBytes > 0 && threadMxBeanWrapper != null)
+            if (maxMemoryUsedInBytes > 0 && threadMxBeanWrapper != null && threadMxBeanWrapper.isThreadAllocatedMemorySupported())
             {
 
                 if (acx.getStartMemory() <= 0)
@@ -128,7 +128,6 @@ public class AlfrescoContextFactory extends ContextFactory
                         throw new Error("Memory limit of " + maxMemoryUsedInBytes + " bytes reached");
                     }
                 }
-
             }
         }
     }
@@ -181,15 +180,8 @@ public class AlfrescoContextFactory extends ContextFactory
         this.maxMemoryUsedInBytes = maxMemoryUsedInBytes;
         if (maxMemoryUsedInBytes > 0)
         {
-            try
-            {
-                Class clazz = Class.forName("com.sun.management.ThreadMXBean");
-                if (clazz != null)
-                {
-                    this.threadMxBeanWrapper = new AlfrescoScriptThreadMxBeanWrapper();
-                }
-            }
-            catch (ClassNotFoundException cnfe)
+            this.threadMxBeanWrapper = new AlfrescoScriptThreadMxBeanWrapper();
+            if (!threadMxBeanWrapper.isThreadAllocatedMemorySupported())
             {
                 LOGGER.warn("com.sun.management.ThreadMXBean was not found on the classpath. "
                         + "This means that the limiting the memory usage for a script will NOT work.");

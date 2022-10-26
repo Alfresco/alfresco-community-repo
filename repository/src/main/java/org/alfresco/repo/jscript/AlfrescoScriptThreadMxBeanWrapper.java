@@ -26,21 +26,53 @@
 package org.alfresco.repo.jscript;
 
 import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 
 /**
  * Allows to monitor memory usage
  */
 public class AlfrescoScriptThreadMxBeanWrapper
 {
-    protected com.sun.management.ThreadMXBean threadMXBean; // Only Oracle / OpenJDK
+
+    private ThreadMXBean threadMXBean = null;
+    private boolean threadAllocatedMemorySupported = false;
+
+    private final String THREAD_MX_BEAN_SUN = "com.sun.management.ThreadMXBean";
 
     public AlfrescoScriptThreadMxBeanWrapper()
     {
-        this.threadMXBean = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+        checkThreadAllocatedMemory();
     }
 
     public long getThreadAllocatedBytes(long threadId)
     {
-        return threadMXBean.getThreadAllocatedBytes(threadId);
+        if (threadMXBean != null && threadAllocatedMemorySupported)
+        {
+            return ((com.sun.management.ThreadMXBean) threadMXBean).getThreadAllocatedBytes(threadId);
+        }
+
+        return -1;
+    }
+
+    public void checkThreadAllocatedMemory()
+    {
+        try
+        {
+            Class<?> clazz = Class.forName(THREAD_MX_BEAN_SUN);
+            if (clazz != null)
+            {
+                this.threadAllocatedMemorySupported = true;
+                this.threadMXBean = (com.sun.management.ThreadMXBean) ManagementFactory.getThreadMXBean();
+            }
+        }
+        catch (Exception e)
+        {
+            this.threadAllocatedMemorySupported = false;
+        }
+    }
+
+    public boolean isThreadAllocatedMemorySupported()
+    {
+        return threadAllocatedMemorySupported;
     }
 }

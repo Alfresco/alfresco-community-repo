@@ -53,8 +53,6 @@ public class Log4jAppenderUtil
 
     public static void removeAbstractAppenderFromLogger(AbstractAppender appender, Logger logger)
     {
-        Configurator.setLevel(logger, null);
-
         final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         final Configuration config = ctx.getConfiguration();
         appender.stop();

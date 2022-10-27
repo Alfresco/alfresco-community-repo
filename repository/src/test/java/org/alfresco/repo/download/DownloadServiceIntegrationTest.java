@@ -27,6 +27,7 @@ package org.alfresco.repo.download;
 
 import net.sf.acegisecurity.Authentication;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.SystemNodeUtils;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
@@ -34,6 +35,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.download.DownloadService;
@@ -47,6 +50,8 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -75,6 +80,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +88,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -128,6 +135,8 @@ public class DownloadServiceIntegrationTest
     private static RetryingTransactionHelper TRANSACTION_HELPER;
     private static IntegrityChecker          INTEGRITY_CHECKER;
     private static RepoAdminService          REPO_ADMIN_SERVICE;
+    private static RuleService               RULE_SERVICE;
+    private static ActionService ACTION_SERVICE;
     
     // Test Content 
     private NodeRef rootFolder;
@@ -192,6 +201,8 @@ public class DownloadServiceIntegrationTest
         INTEGRITY_CHECKER.setFailOnViolation(true);
         INTEGRITY_CHECKER.setTraceOn(true);
         REPO_ADMIN_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("RepoAdminService", RepoAdminService.class);
+        RULE_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("ruleService", RuleService.class);
+        ACTION_SERVICE = APP_CONTEXT_INIT.getApplicationContext().getBean("actionService", ActionService.class);
     }
  
     /**
@@ -207,28 +218,49 @@ public class DownloadServiceIntegrationTest
         NodeRef COMPANY_HOME = repositoryHelper.getCompanyHome();
         
         // Create some static test content
-       rootFolder = testNodes.createNode(COMPANY_HOME, "rootFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
-       allEntries.add("rootFolder/");
+        rootFolder = testNodes.createNode(COMPANY_HOME, "rootFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+        allEntries.add("rootFolder/");
+
+        TRANSACTION_HELPER.doInTransaction(() -> {
+            org.alfresco.service.cmr.rule.Rule parentRule = new org.alfresco.service.cmr.rule.Rule();
+            parentRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
+            parentRule.setTitle("DownloadServiceIntegrationTest" + GUID.generate());
+            parentRule.setDescription("Add Classifiable");
+            Action action = ACTION_SERVICE.createAction(AddFeaturesActionExecuter.NAME);
+            action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_CLASSIFIABLE);
+            parentRule.setAction(action);
+            parentRule.applyToChildren(true);
+
+            RULE_SERVICE.saveRule(rootFolder, parentRule);
+
+            return null;
+        }, false, true);
 
        rootFile = testNodes.createNodeWithTextContent(COMPANY_HOME, "rootFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Root file content");
        allEntries.add("rootFile.txt");
-       
-       testNodes.createNodeWithTextContent(rootFolder, "level1File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 1 file content");
+
+       NodeRef createdNode = testNodes.createNodeWithTextContent(rootFolder, "level1File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 1 file content");
+       assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
        allEntries.add("rootFolder/level1File.txt");
        
        level1Folder1 = testNodes.createNode(rootFolder, "level1Folder1", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+       assertTrue(NODE_SERVICE.hasAspect(level1Folder1, ContentModel.ASPECT_CLASSIFIABLE));
        allEntries.add("rootFolder/level1Folder1/");
        
        level1Folder2 = testNodes.createNode(rootFolder, "level1Folder2", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+       assertTrue(NODE_SERVICE.hasAspect(level1Folder2, ContentModel.ASPECT_CLASSIFIABLE));
        allEntries.add("rootFolder/level1Folder2/");
        
-       testNodes.createNode(rootFolder, "level1EmptyFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+       createdNode = testNodes.createNode(rootFolder, "level1EmptyFolder", ContentModel.TYPE_FOLDER, AuthenticationUtil.getAdminUserName());
+       assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
        allEntries.add("rootFolder/level1EmptyFolder/");
        
-       testNodes.createNodeWithTextContent(level1Folder1, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
+       createdNode = testNodes.createNodeWithTextContent(level1Folder1, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
+       assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
        allEntries.add("rootFolder/level1Folder1/level2File.txt");
 
-       testNodes.createNodeWithTextContent(level1Folder2, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
+       createdNode = testNodes.createNodeWithTextContent(level1Folder2, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
+       assertTrue(NODE_SERVICE.hasAspect(createdNode, ContentModel.ASPECT_CLASSIFIABLE));
        allEntries.add("rootFolder/level1Folder2/level2File.txt");
        
        secondaryNode = testNodes.createNodeWithTextContent(COMPANY_HOME, "secondaryNodeFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Secondary node");
@@ -240,6 +272,7 @@ public class DownloadServiceIntegrationTest
        // Add the lock and version aspects to the created node
        NODE_SERVICE.addAspect(fileToCheckout, ContentModel.ASPECT_VERSIONABLE, null);
        NODE_SERVICE.addAspect(fileToCheckout, ContentModel.ASPECT_LOCKABLE, null);
+       assertTrue(NODE_SERVICE.hasAspect(fileToCheckout, ContentModel.ASPECT_CLASSIFIABLE));
        
        allEntries.add("rootFolder/level1Folder2/fileToCheckout.txt");
        PERMISSION_SERVICE.setPermission(level1Folder2, TEST_USER.getUsername(), PermissionService.ALL_PERMISSIONS, true);

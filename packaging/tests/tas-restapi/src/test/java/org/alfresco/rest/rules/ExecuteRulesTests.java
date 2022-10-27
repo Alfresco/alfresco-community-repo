@@ -314,11 +314,11 @@ public class ExecuteRulesTests extends RestTest
         final RestRuleModel ruleModel = rulesUtils.createRuleModelWithDefaultValues();
         ruleModel.setActions(Arrays.asList(copyAction));
 
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(owningFolder).usingDefaultRuleSet().createSingleRule(ruleModel);
 
         STEP("Delete destination folder and execute rule");
         restClient.authenticateUser(user).withCoreAPI().usingNode(destinationFolder).deleteNode(destinationFolder.getNodeRef());
-        restClient.authenticateUser(user).withPrivateAPI().usingNode(parentFolder).executeRules(rulesUtils.createRuleExecutionRequest());
+        restClient.authenticateUser(user).withPrivateAPI().usingNode(owningFolder).executeRules(rulesUtils.createRuleExecutionRequest());
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND);
     }
 }

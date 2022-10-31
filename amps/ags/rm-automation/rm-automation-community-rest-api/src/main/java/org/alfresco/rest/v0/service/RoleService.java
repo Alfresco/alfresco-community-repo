@@ -121,6 +121,7 @@ public class RoleService
         getRestAPIFactory().getRMUserAPI().addUserPermission(categoryId, user, userPermission);
         getRmRolesAndActionsAPI().assignRoleToUser(getDataUser().getAdminUser().getUsername(), getDataUser().getAdminUser().getPassword(),
                 user.getUsername(), userRole);
+
     }
 
     /**
@@ -150,6 +151,14 @@ public class RoleService
     {
         return createUserWithRMRoleAndRMNodePermission(userRole, recordCategory.getId(), userPermission);
     }
+
+    public void reassignUserPermissionsOnCategoryAndRMRole(UserModel user, String categoryId, UserPermissions oldUserPermission,
+                                                           UserPermissions newUserPermission,String userRole) {
+        getRestAPIFactory().getRMUserAPI().reassignUserPermission(categoryId,user,oldUserPermission,newUserPermission);
+
+
+    }
+
 
     /**
      * Helper method to create a user with rm role and permissions on the node ref

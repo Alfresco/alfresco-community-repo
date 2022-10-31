@@ -360,4 +360,25 @@ public class RecordsAPI extends BaseAPI
     {
         return getNodeRefSpacesStore() + getItemNodeRef(username, password, recordPath + "/" + recordName);
     }
+
+    /**
+     * Reopens the record given as parameter
+     *
+     * @param user       the user declaring the document as record
+     * @param password   the user's password
+     * @param recordName the record name
+     * @return The HTTP Response.
+     */
+
+    public HttpResponse reOpenRecord(String user, String password, String recordName)
+    {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordName);
+
+        JSONObject requestParams = new JSONObject();
+        requestParams.put("name", "undeclareRecord");
+        requestParams.put("nodeRef", recNodeRef);
+
+        return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+    }
+
 }

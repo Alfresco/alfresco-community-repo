@@ -23,7 +23,7 @@ branches:
     - /release\/.*/
     - /feature\/.*/
     - /fix\/.*/
-    - feature/ACA-4616-ForgotPassword-in-ADW
+    - ACA-4616-ForgotPassword-in-ADW
 
 env:
   global:

@@ -25,6 +25,12 @@
  */
 package org.alfresco.repo.rule;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
@@ -50,12 +56,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Parameter definition implementation unit test.
@@ -365,6 +365,19 @@ public class RuleLinkTest extends BaseSpringTest
     }
 
     @Test
+    public void testGetRuleSetNodeForLinkedFolder() {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        link(folderOne, folderTwo);
+        final NodeRef expectedRuleSetNodeRef = getRuleSetNode(folderOne);
+
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderTwo);
+
+        assertNotNull(ruleSetNodeRef);
+        assertEquals(expectedRuleSetNodeRef, ruleSetNodeRef);
+    }
+
+    @Test
     public void testIsRuleSetAssociatedWithFolder()
     {
         final Rule rule = createTestRule(false, "luke");
@@ -423,6 +436,33 @@ public class RuleLinkTest extends BaseSpringTest
         final boolean associated = ruleService.isRuleAssociatedWithRuleSet(otherRule.getNodeRef(), ruleSetNodeRef);
 
         assertFalse(associated);
+    }
+
+    @Test
+    public void testIsRuleSetShared()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        link(folderOne, folderTwo);
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderOne);
+
+        // when
+        final boolean shared = ruleService.isRuleSetShared(ruleSetNodeRef);
+
+        assertTrue(shared);
+    }
+
+    @Test
+    public void testIsRuleSetNotShared()
+    {
+        final Rule rule = createTestRule(false, "luke");
+        this.ruleService.saveRule(folderOne, rule);
+        final NodeRef ruleSetNodeRef = ruleService.getRuleSetNode(folderOne);
+
+        // when
+        final boolean shared = ruleService.isRuleSetShared(ruleSetNodeRef);
+
+        assertFalse(shared);
     }
 
     protected Rule createTestRule(boolean isAppliedToChildren, String title)

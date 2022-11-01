@@ -34,9 +34,10 @@
     {
       "transformerName": "imagemagick",
       "supportedSourceAndTargetList": [
-        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/jpeg"},
-        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/png"},
-        {"sourceMediaType": "image/jpeg", "targetMediaType": "image/bmp"}
+        {"sourceMediaType": "image/png", "targetMediaType": "image/jpeg"},
+        {"sourceMediaType": "image/png", "targetMediaType": "image/gif"},
+        {"sourceMediaType": "image/png", "targetMediaType": "image/png"},
+        {"sourceMediaType": "image/png", "targetMediaType": "image/tiff"}
       ],
       "transformOptions": [
         "imageMagickOptions"
@@ -54,6 +55,7 @@
     {
       "transformerName": "libreoffice",
       "supportedSourceAndTargetList": [
+        {"sourceMediaType": "application/msword",                                                                                        "targetMediaType": "application/pdf" },
         {"sourceMediaType": "application/vnd.ms-outlook",                                                                                "targetMediaType": "application/pdf"}
       ]
     },

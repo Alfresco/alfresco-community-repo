@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Remote API
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -48,63 +48,16 @@ public class PublicApiJettyComponent extends AbstractJettyComponent
 	@Override
 	protected void configureWebAppContext(WebAppContext webAppContext)
 	{
-//		ServletContext servletContext = webAppContext.getServletContext();
 
 	    // the tenant servlet with alfresco managed authentication
 	    ServletHolder servletHolder = new ServletHolder(PublicApiWebScriptServlet.class);
 	    servletHolder.setInitParameter("authenticator", "publicapi.authenticator");
 	    webAppContext.addServlet(servletHolder, "/" + publicApiServletName + "/*");
-	    
-//	    DependencyInjectedFilter apiFilter = (DependencyInjectedFilter)getApplicationContext().getBean("publicAPICMISFilter");
-//	    BeanProxyFilter filter = new BeanProxyFilter(servletContext, apiFilter);
-//	    FilterHolder filterHolder = new FilterHolder(filter);
-//	    webAppContext.addFilter(filterHolder, "/" + publicApiServletName + "/*", null);
+
 
 	    // the tenant servlet with alfresco managed authentication
 	    servletHolder = new ServletHolder(CmisAtomPubServlet.class);
 	    servletHolder.setInitParameter("callContextHandler", "org.apache.chemistry.opencmis.server.shared.BasicAuthCallContextHandler");
-	    webAppContext.addServlet(servletHolder, "/cmisatom/*");
+		webAppContext.addServlet(servletHolder, "/cmisatom/*");
 	}
-	
-//	private static class BeanProxyFilter implements Filter
-//	{
-//	    private DependencyInjectedFilter filter;
-//	    private ServletContext context;    
-//	    
-//	    private BeanProxyFilter(ServletContext context, DependencyInjectedFilter filter)
-//	    {
-//	    	this.context = context;
-//	    	this.filter = filter;
-//	    }
-//
-//	    /**
-//	     * Initialize the filter.
-//	     * 
-//	     * @param args
-//	     *            FilterConfig
-//	     * @throws ServletException
-//	     *             the servlet exception
-//	     * @exception ServletException
-//	     */
-//	    public void init(FilterConfig args) throws ServletException
-//	    {
-//	    }
-//
-//	    /* (non-Javadoc)
-//	     * @see javax.servlet.Filter#destroy()
-//	     */
-//	    public void destroy()
-//	    {
-//	        this.filter = null;
-//	    }
-//
-//	    /* (non-Javadoc)
-//	     * @see javax.servlet.Filter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
-//	     */
-//	    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
-//	            ServletException
-//	    {
-//	        this.filter.doFilter(this.context, request, response, chain);
-//	    }
-//	}
 }

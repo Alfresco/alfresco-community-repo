@@ -34,7 +34,7 @@ public class EntityNotFoundException extends NotFoundException
 {
     private static final long serialVersionUID = -1198595000441207734L;
     public static String DEFAULT_MESSAGE_ID = "framework.exception.EntityNotFound";
-    
+
     /**
      * The entity id param will be shown in the default error message.
      * @param entityId String
@@ -42,5 +42,21 @@ public class EntityNotFoundException extends NotFoundException
     public EntityNotFoundException(String entityId)
     {
         super(DEFAULT_MESSAGE_ID, new String[] {entityId});
+    }
+
+    /**
+     * The entity id param will be shown in the default error message.
+     *
+     * @param msgId The message template.
+     * @param parameters The message template parameters.
+     */
+    public EntityNotFoundException(String msgId, String[] parameters)
+    {
+        super(msgId, parameters);
+    }
+
+    public EntityNotFoundException(String msgId, Throwable cause)
+    {
+        super(msgId, cause);
     }
 }

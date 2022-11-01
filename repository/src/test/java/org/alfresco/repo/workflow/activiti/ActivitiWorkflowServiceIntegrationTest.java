@@ -790,6 +790,45 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertNull("Workflow should not be deployed", workflowDef);
     }
 
+    /**
+     * 
+     */
+    @Test
+    public void testMNT21638_1()
+    {
+        WorkflowDefinition definition = deployDefinition("activiti/test-MNT21638-1.bpmn20.xml");
+
+        personManager.setUser(USER1);
+
+        // Start the Workflow
+        try
+        {
+            WorkflowPath path = workflowService.startWorkflow(definition.getId(), null);
+            fail("Workflow should not have been executed");
+        }
+        catch (Exception e)
+        {
+            // Do nothing
+        }
+    }
+
+    /**
+     * 
+     */
+    @Test
+    public void testMNT21638_2()
+    {
+        WorkflowDefinition definition = deployDefinition("activiti/test-MNT21638-2.bpmn20.xml", "MNT21638", true);
+
+        personManager.setUser(USER1);
+
+        // Start the Workflow
+        WorkflowPath path = workflowService.startWorkflow(definition.getId(), null);
+        String instanceId = path.getInstance().getId();
+
+        assertNotNull(instanceId);
+    }
+    
     private NodeRef findWorkflowParent()
     {
         RepositoryLocation workflowLocation = (RepositoryLocation)

@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DirectAccessUrl;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.transform.client.model.config.CoreFunction;
+import org.alfresco.transform.config.CoreFunction;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +43,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.alfresco.model.ContentModel.PROP_CONTENT;
-import static org.alfresco.transform.client.util.RequestParamMap.DIRECT_ACCESS_URL;
+import static org.alfresco.transform.common.RequestParamMap.DIRECT_ACCESS_URL;
 
 /**
  * Request synchronous transforms.

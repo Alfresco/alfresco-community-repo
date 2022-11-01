@@ -123,7 +123,7 @@ public class ModulePackagesApiTest extends AbstractBaseApiTest
         assertNotNull(response);
         assertEquals(HttpStatus.SC_NOT_FOUND, response.getStatusCode());
         assertEquals("no-cache", response.getHeaders().get("Cache-Control"));
-        assertEquals("application/json;charset=UTF-8", response.getHeaders().get("Content-Type"));
+        assertEquals("application/json;charset=utf-8", response.getHeaders().get("Content-Type"));
 
         PublicApiClient.ExpectedErrorResponse errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
         assertNotNull(errorResponse);

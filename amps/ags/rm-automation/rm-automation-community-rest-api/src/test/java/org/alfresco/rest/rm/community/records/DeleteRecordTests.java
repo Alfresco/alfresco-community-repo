@@ -75,6 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Ignore;
 import org.testng.annotations.Test;
 
 /**
@@ -102,7 +103,7 @@ public class DeleteRecordTests extends BaseRMRestTest
         testSite = dataSite.usingAdmin().createPublicRandomSite();
         recordFolder = createCategoryFolderInFilePlan();
         unfiledRecordFolder = createUnfiledContainerChild(UNFILED_RECORDS_CONTAINER_ALIAS, getRandomName("Unfiled Folder "),
-                UNFILED_RECORD_FOLDER_TYPE);
+            UNFILED_RECORD_FOLDER_TYPE);
     }
 
     /** Data provider with electronic and non-electronic records to be deleted */
@@ -133,10 +134,10 @@ public class DeleteRecordTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    (
-        dataProvider = "recordsToBeDeleted",
-        description = "Admin user can delete records"
-    )
+        (
+            dataProvider = "recordsToBeDeleted",
+            description = "Admin user can delete records"
+        )
     @AlfrescoTest(jira="RM-4363")
     public void adminCanDeleteRecords(String recordId)
     {
@@ -154,17 +155,17 @@ public class DeleteRecordTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    (
-        description = "User without write permissions can't delete a record"
-    )
+        (
+            description = "User without write permissions can't delete a record"
+        )
     @AlfrescoTest(jira="RM-4363")
     public void userWithoutWritePermissionsCantDeleteRecord()
     {
         // Create a non-electronic record in unfiled records
         UnfiledContainerChild nonElectronicRecord = UnfiledContainerChild.builder()
-                .name("Record " + RandomData.getRandomAlphanumeric())
-                .nodeType(NON_ELECTRONIC_RECORD_TYPE)
-                .build();
+            .name("Record " + RandomData.getRandomAlphanumeric())
+            .nodeType(NON_ELECTRONIC_RECORD_TYPE)
+            .build();
         UnfiledContainerChild newRecord = getRestAPIFactory().getUnfiledContainersAPI().createUnfiledContainerChild(nonElectronicRecord, UNFILED_RECORDS_CONTAINER_ALIAS);
 
         assertStatusCode(CREATED);
@@ -187,9 +188,9 @@ public class DeleteRecordTests extends BaseRMRestTest
      * </pre>
      */
     @Test
-    (
-        description = "User without delete records capability can't delete a record"
-    )
+        (
+            description = "User without delete records capability can't delete a record"
+        )
     @AlfrescoTest(jira="RM-4363")
     public void userWithoutDeleteRecordsCapabilityCantDeleteRecord()
     {
@@ -234,7 +235,7 @@ public class DeleteRecordTests extends BaseRMRestTest
 
         STEP("Create a record in first folder and copy it into second folder.");
         String recordId = getRestAPIFactory().getRecordFolderAPI()
-                    .createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE)).getId();
+            .createRecord(createElectronicRecordModel(), recordFolder.getId(), getFile(IMAGE_FILE)).getId();
         String copyId = copyNode(recordId, recordFolderB.getId()).getId();
         assertStatusCode(CREATED);
 
@@ -318,14 +319,14 @@ public class DeleteRecordTests extends BaseRMRestTest
         RecordCategoryChild recFolder = createFolder(recordCategory.getId(), getRandomName("recFolder"));
         RecordBodyFile recordBodyFile = RecordBodyFile.builder().targetParentId(recFolder.getId()).build();
         Record recordFiled = getRestAPIFactory().getRecordsAPI().fileRecord(recordBodyFile, testFile.getNodeRefWithoutVersion());
-        getRestAPIFactory().getRecordsAPI().completeRecord(recordFiled.getId());
-        assertStatusCode(CREATED);
+        completeRecord(recordFiled.getId());
+        assertStatusCode(OK);
 
         STEP("Execute the disposition schedule steps.");
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
-                RM_ACTIONS.CUT_OFF);
+            RM_ACTIONS.CUT_OFF);
         rmRolesAndActionsAPI.executeAction(getAdminUser().getUsername(), getAdminUser().getUsername(), recordFiled.getName(),
-                RM_ACTIONS.DESTROY);
+            RM_ACTIONS.DESTROY);
 
         STEP("Check that it's possible to load the copy content.");
         getNodeContent(copy.getId());
@@ -348,14 +349,14 @@ public class DeleteRecordTests extends BaseRMRestTest
 
         STEP("Declare file version as record.");
         recordsAPI.declareDocumentVersionAsRecord(getAdminUser().getUsername(), getAdminUser().getPassword(), testSite.getId(),
-                testFile.getName());
+            testFile.getName());
         UnfiledContainerChild unfiledContainerChild = getRestAPIFactory().getUnfiledContainersAPI()
-                                                                       .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
-                                                                       .getEntries().stream()
-                                                                       .filter(child -> child.getEntry().getName()
-                                                                                             .startsWith(testFile.getName().substring(0, testFile.getName().indexOf("."))))
-                                                                       .findFirst()
-                                                                       .get().getEntry();
+            .getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+            .getEntries().stream()
+            .filter(child -> child.getEntry().getName()
+                .startsWith(testFile.getName().substring(0, testFile.getName().indexOf("."))))
+            .findFirst()
+            .get().getEntry();
 
         STEP("Delete the record.");
         deleteAndVerify(unfiledContainerChild.getId());

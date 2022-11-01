@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2017 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -50,7 +50,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.event2.RepoEvent2ITSuite.class,
 
     // Requires running transformers
-    org.alfresco.transform.client.registry.LocalTransformServiceRegistryConfigTest.class,
+    org.alfresco.transform.registry.LocalTransformServiceRegistryConfigTest.class,
     org.alfresco.repo.rendition2.RenditionService2IntegrationTest.class,
     org.alfresco.repo.rendition2.LocalTransformServiceRegistryIntegrationTest.class,
     org.alfresco.repo.rendition2.LocalTransformClientIntegrationTest.class,

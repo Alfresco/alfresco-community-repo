@@ -48,9 +48,8 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.RenameShuffleDetectionTest.class,
     org.alfresco.repo.webdav.WebDAVHelperTest.class,
     org.alfresco.repo.webdav.WebDAVLockServiceImplTest.class,
+    org.alfresco.rest.api.RulesUnitTests.class,
     org.alfresco.rest.api.impl.ContentStorageInformationImplTest.class,
-    org.alfresco.rest.api.impl.RulesImplTest.class,
-    org.alfresco.rest.api.nodes.NodeRulesRelationTest.class,
     org.alfresco.rest.api.nodes.NodeStorageInfoRelationTest.class,
     org.alfresco.rest.api.search.ResultMapperTests.class,
     org.alfresco.rest.api.search.SearchApiWebscriptTests.class,
@@ -100,6 +99,7 @@ import org.junit.runners.Suite;
     org.alfresco.repo.webdav.WebDAVMethodTest.class,
     org.alfresco.repo.webdav.PutMethodTest.class,
     org.alfresco.repo.webdav.WebDAVonContentUpdateTest.class,
+    org.alfresco.repo.webdav.WebDAVInsecurePostMethodTest.class,
 
     // [classpath:test-rest-context.xml]
     org.alfresco.rest.framework.tests.core.ExceptionResolverTests.class,

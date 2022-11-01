@@ -158,3 +158,9 @@ updates:
     - "8.16"
   registries:
   - maven-repository-artifacts-alfresco-com-nexus-content-groups-int
+- package-ecosystem: "docker"
+  directory: "packaging/docker-alfresco/"
+  schedule:
+    interval: "daily"
+    time: "22:00"
+    timezone: Africa/Abidjan

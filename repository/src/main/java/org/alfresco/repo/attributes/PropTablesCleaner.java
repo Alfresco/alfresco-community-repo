@@ -46,6 +46,7 @@ public class PropTablesCleaner
 {
     private static final String PROPERTY_PROP_TABLE_CLEANER_ALG = "system.prop_table_cleaner.algorithm";
     private static final String PROP_TABLE_CLEANER_ALG_V2 = "V2";
+    private static final String PROP_TABLE_CLEANER_ALG_V3 = "V3";
 
     private PropertyValueDAO propertyValueDAO;
     private JobLockService jobLockService;
@@ -99,6 +100,10 @@ public class PropTablesCleaner
             if (PROP_TABLE_CLEANER_ALG_V2.equalsIgnoreCase(getAlgorithm()))
             {
                 propertyValueDAO.cleanupUnusedValuesV2();
+            }
+            else if (PROP_TABLE_CLEANER_ALG_V3.equalsIgnoreCase(getAlgorithm()))
+            {
+                propertyValueDAO.cleanupUnusedValuesV3();
             }
             else
             {

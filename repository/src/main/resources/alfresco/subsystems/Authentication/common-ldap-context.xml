@@ -119,7 +119,12 @@
    -->
 
    <bean id="ldapInitialDirContextFactory" class="org.alfresco.repo.security.authentication.ldap.LDAPInitialDirContextFactoryImpl">
-
+      <property name="ldapInitialDirContextCache">
+         <ref bean="ldapInitialDirContextCache" />
+      </property>
+      <property name="initialChecksEnabled">
+         <value>${ldap.authentication.initial.checks.enabled}</value>
+      </property>
       <property name="trustStorePath">
          <value>${ldap.authentication.truststore.path}</value>
       </property>

@@ -160,7 +160,22 @@ public interface ScriptService
     @Auditable(parameters = {"script", "model"})
     public Object executeScriptString(String script, Map<String, Object> model)
         throws ScriptException;
-    
+
+    /**
+     * Process a script against the supplied data model.  Uses the default script engine.
+     *
+     * @param script       Script content as a String.
+     * @param model        Object model to process script against
+     * @param secure       A flag indicating if string script is considered secure (e.g., if it comes from the classpath)
+     *                     If true it will have access to the full execution context, if false the script will be executed in a sandbox context (more restricted)
+     * @return output of the script (may be null or any valid wrapped JavaScript object)
+     *
+     * @throws ScriptException
+     */
+    @Auditable(parameters = {"script", "model", "secure"})
+    public Object executeScriptString(String script, Map<String, Object> model, boolean secure)
+        throws ScriptException;
+
     /**
      * Process a script against the supplied data model.
      * 
@@ -175,7 +190,23 @@ public interface ScriptService
     @Auditable(parameters = {"engine", "script", "model"})
     public Object executeScriptString(String engine, String script, Map<String, Object> model)
         throws ScriptException;
-    
+
+    /**
+     * Process a script against the supplied data model.
+     *
+     * @param engine       the script engine to use
+     * @param script       Script content as a String.
+     * @param model        Object model to process script against
+     * @param secure       A flag indicating if string script is considered secure
+     *
+     * @return output of the script (may be null or any valid wrapped JavaScript object)
+     *
+     * @throws ScriptException
+     */
+    @Auditable(parameters = {"engine", "script", "model", "secure"})
+    public Object executeScriptString(String engine, String script, Map<String, Object> model, boolean secure)
+        throws ScriptException;
+
     /**
      * Registers a script processor with the script service
      * 

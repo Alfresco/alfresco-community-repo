@@ -51,6 +51,7 @@ import org.alfresco.service.license.LicenseIntegrityException;
 import org.alfresco.util.LockHelper.LockTryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.exceptions.TooManyResultsException;
 import org.springframework.aop.MethodBeforeAdvice;
 import org.springframework.aop.framework.ProxyFactory;
@@ -105,7 +106,8 @@ public class RetryingTransactionHelper
                     DataIntegrityViolationException.class,
                     LicenseIntegrityException.class,
                     TooManyResultsException.class,              // Expected one result but found multiple (bad key alert)
-                    LockTryException.class
+                    LockTryException.class,
+                    PersistenceException.class
                     };
      
         List<Class<?>> retryExceptions = new ArrayList<Class<?>>();

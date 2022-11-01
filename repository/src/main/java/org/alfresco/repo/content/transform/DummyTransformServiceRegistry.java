@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.content.transform;
 
-import org.alfresco.transform.client.model.config.CoreFunction;
-import org.alfresco.transform.client.registry.TransformServiceRegistry;
+import org.alfresco.transform.config.CoreFunction;
+import org.alfresco.transform.registry.TransformServiceRegistry;
 
 import java.util.Map;
 

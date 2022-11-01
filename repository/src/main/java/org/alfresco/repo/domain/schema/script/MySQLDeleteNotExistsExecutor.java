@@ -117,6 +117,7 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
                 {
                     // Process batch
                     primaryId = processPrimaryTableResultSet(primaryPrepStmt, secondaryPrepStmts, deletePrepStmt, deleteIds, primaryTableName, primaryColumnName, tableColumn);
+                    connection.commit();
 
                     if (primaryId == null)
                     {
@@ -195,7 +196,6 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
                     if (deleteIds.size() == deleteBatchSize)
                     {
                         deleteFromPrimaryTable(deletePrepStmt, deleteIds, primaryTableName);
-                        connection.commit();
                     }
 
                     if (!resultSet.next())
@@ -207,12 +207,12 @@ public class MySQLDeleteNotExistsExecutor extends DeleteNotExistsExecutor
                     primaryId = resultSet.getLong(primaryColumnName);
                 }
 
-                if (logger.isTraceEnabled())
-                {
-                    logger.trace("RowsProcessed " + rowsProcessed + " from primary table " + primaryTableName);
-                }
-
                 updateSecondaryIds(primaryId, secondaryIds, secondaryPrepStmts, secondaryOffsets, secondaryResultSets, tableColumn);
+            }
+
+            if (logger.isTraceEnabled())
+            {
+                logger.trace("RowsProcessed " + rowsProcessed + " from primary table " + primaryTableName);
             }
         }
         finally

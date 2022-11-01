@@ -74,4 +74,39 @@ public class RecordFoldersAPI extends BaseAPI
         return null;
     }
 
+    public HttpResponse postFolderAction(String user, String password, JSONObject requestParams, String recordFolder) {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
+        try {
+            requestParams.put("nodeRef", recNodeRef);
+            return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        }
+        catch (Exception error) {
+            LOGGER.error("Unable to extract response parameter", error);
+        }
+        return null;
+    }
+
+    public HttpResponse postRecordAction(String user, String password, JSONObject requestParams, String recordId) {
+        try {
+            requestParams.put("nodeRef", recordId);
+            return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        }
+        catch (JSONException error) {
+            LOGGER.error("Unable to extract response parameter", error);
+        }
+        return null;
+    }
+
+
+    public HttpResponse reOpenRecordFolder(String user, String password, String recordFolder)
+    {
+        String recNodeRef = getNodeRefSpacesStore() + contentService.getNodeRef(user, password, RM_SITE_ID, recordFolder);
+
+            JSONObject requestParams = new JSONObject();
+            requestParams.put("name", "openRecordFolder");
+            requestParams.put("nodeRef", recNodeRef);
+
+            return doPostJsonRequest(user, password, SC_OK, requestParams, RM_ACTIONS_API);
+        }
+
 }

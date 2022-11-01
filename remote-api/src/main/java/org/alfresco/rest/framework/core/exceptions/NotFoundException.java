@@ -53,4 +53,9 @@ public class NotFoundException extends ApiException
         super(msgId, notFoundObjects);
     }
 
+    public NotFoundException(String msgId, Throwable cause)
+    {
+        super(msgId, cause);
+    }
+
 }

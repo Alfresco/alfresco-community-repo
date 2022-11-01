@@ -390,8 +390,12 @@ public class ImporterComponent implements ImporterService
                 {
                     String[] qnameComponents = QName.splitPrefixedQName(segments[i]);
                     
-                    String localName = QName.createValidLocalName(qnameComponents[1]);
-                    
+                    String localName = qnameComponents[1];
+                    if (localName == null || localName.length() == 0)
+                    {
+                        throw new IllegalArgumentException("Local name cannot be null or empty.");
+                    }
+
                     // MT: bootstrap of "alfrescoUserStore.xml" requires 'sys:people/cm:admin@tenant' to be encoded as 'sys:people/cm:admin_x0040_tenant' (for XPath)
                     localName = localName.replace("@", "_x0040_");
                     

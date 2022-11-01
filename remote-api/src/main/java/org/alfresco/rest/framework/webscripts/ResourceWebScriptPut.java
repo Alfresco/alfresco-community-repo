@@ -79,6 +79,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
         final Map<String, String> resourceVars = locator.parseTemplateVars(req.getServiceMatch().getTemplateVars());
         final String entityId = resourceVars.get(ResourceLocator.ENTITY_ID);
         final String relationshipId = resourceVars.get(ResourceLocator.RELATIONSHIP_ID);
+        final String relationship2Id = resourceVars.get(ResourceLocator.RELATIONSHIP2_ID);
 
         final RecognizedParams params = getRecognizedParams(req);
         final ResourceOperation operation = resourceMeta.getOperation(HttpMethod.PUT);
@@ -99,9 +100,16 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 if (StringUtils.isBlank(relationshipId))
                 {
                     throw new UnsupportedResourceOperationException("PUT is executed against the instance URL");                  
-                } else
+                }
+                Object putRel = extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
+                if (StringUtils.isNotBlank(relationship2Id))
                 {
-                    Object putRel = extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
+                    ResourceWebScriptHelper.setUniqueId(putRel, relationship2Id);
+                    return Params.valueOf(false, entityId, relationshipId, relationship2Id,
+                            putRel, null, null, params, null, req);
+                }
+                else
+                {
                     ResourceWebScriptHelper.setUniqueId(putRel,relationshipId);
                     return Params.valueOf(entityId, params, putRel, req);
                 }

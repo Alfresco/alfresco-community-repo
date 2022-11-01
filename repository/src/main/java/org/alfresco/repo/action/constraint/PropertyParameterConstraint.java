@@ -2,7 +2,7 @@
  * #%L
  * Alfresco Repository
  * %%
- * Copyright (C) 2005 - 2016 Alfresco Software Limited
+ * Copyright (C) 2005 - 2022 Alfresco Software Limited
  * %%
  * This file is part of the Alfresco software. 
  * If the software was purchased under a paid Alfresco license, the terms of 
@@ -26,9 +26,9 @@
 
 package org.alfresco.repo.action.constraint;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -55,17 +55,22 @@ public class PropertyParameterConstraint extends BaseParameterConstraint
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {   
-        Collection<QName> properties = dictionaryService.getAllProperties(null);
-        Map<String, String> result = new LinkedHashMap<String, String>(properties.size());
-        for (QName property : properties)
-        {
-            PropertyDefinition propertyDef = dictionaryService.getProperty(property);
-            if (propertyDef != null && propertyDef.getTitle(dictionaryService) != null)
-            {
-                result.put(property.toPrefixString(), propertyDef.getTitle(dictionaryService));
-            }
-        }        
-        return result;
-    }    
+    {
+        final Map<String, String> values = getValues();
+        values.values().removeIf(Objects::isNull);
+        return values;
+    }
+
+    @Override
+    public Map<String, String> getValues()
+    {
+        return dictionaryService.getAllProperties(null).stream()
+                .collect(LinkedHashMap::new, (m, v) -> m.put(v.toPrefixString(), getTitle(v)), LinkedHashMap::putAll);
+    }
+
+    private String getTitle(QName property)
+    {
+        final PropertyDefinition propertyDef = dictionaryService.getProperty(property);
+        return propertyDef != null ? propertyDef.getTitle(dictionaryService) : null;
+    }
 }

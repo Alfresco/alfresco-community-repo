@@ -101,8 +101,8 @@ public abstract class ActionAccessRestrictionAbstractBase implements ActionAcces
         if (context != null)
         {
             return Stream.of(
-                    getConfigKey(context, actionName),
-                    getConfigKey(context));
+                    getConfigKey(actionName, context),
+                    getConfigKey(actionName));
         }
         return Stream.of(getConfigKey(actionName));
     }

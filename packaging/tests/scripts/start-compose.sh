@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -x
 
-export DOCKER_COMPOSE_PATH="$S1"
+export DOCKER_COMPOSE_PATH=$1
 export DOCKER_COMPOSES=""
 export CLEAN_UP=""
 
 for var in "$@"
 do
-  if [ "$var" = "no-clean-up" ]
+  if [ "$var" == "no-clean-up" ]
   then
     export CLEAN_UP="$var"
   else

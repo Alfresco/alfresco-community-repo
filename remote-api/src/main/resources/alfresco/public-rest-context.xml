@@ -879,6 +879,10 @@
         <property name="rules" ref="Rules" />
     </bean>
 
+    <bean class="org.alfresco.rest.api.rules.RuleSetsEntityResource">
+        <constructor-arg name="ruleSets" ref="RuleSets"/>
+    </bean>
+
     <bean id="ruleSetLoader" class="org.alfresco.rest.api.impl.rules.RuleSetLoader">
         <property name="nodeService" ref="NodeService" />
         <property name="ruleService" ref="RuleService" />

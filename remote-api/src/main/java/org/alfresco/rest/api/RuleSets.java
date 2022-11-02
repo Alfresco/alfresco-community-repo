@@ -78,4 +78,11 @@ public interface RuleSets
      * Removes the link between a rule set and a folder
      */
     void unlinkRuleSet(String folderNodeId, String ruleSetId);
+
+    /**
+     * Creates a default rule set for a given folder
+     * @param folderNodeId id of the folder node
+     * @return rule set entity
+     */
+    RuleSet createRuleSet(String folderNodeId);
 }

@@ -31,6 +31,7 @@ import static java.util.stream.Collectors.toList;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
 import static org.alfresco.util.collections.CollectionUtils.isEmpty;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -199,6 +200,20 @@ public class RuleSetsImpl implements RuleSets
 
         //The following line also handles the deletion of the parent-child association that gets created during linking
         nodeService.removeAspect(folderNodeRef,RuleModel.ASPECT_RULES);
+    }
+
+    @Override
+    public RuleSet createRuleSet(String folderNodeId)
+    {
+        final NodeRef folderNodeRef = validator.validateFolderNode(folderNodeId,true);
+        if (this.nodeService.hasAspect(folderNodeRef, RuleModel.ASPECT_RULES))
+        {
+            throw new InvalidArgumentException("Default rule set already exists for folder " + folderNodeId);
+        } else {
+            this.nodeService.addAspect(folderNodeRef, RuleModel.ASPECT_RULES, null);
+        }
+        final NodeRef ruleSetNode = ruleService.getRuleSetNode(folderNodeRef);
+        return ruleSetLoader.loadRuleSet(ruleSetNode, folderNodeRef, Collections.emptyList());
     }
 
     public void setRuleSetLoader(RuleSetLoader ruleSetLoader)

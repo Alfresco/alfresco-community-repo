@@ -33,6 +33,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -48,7 +49,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 
 /**
@@ -65,7 +65,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** batching properties */
     private int batchSize;
     public static final int DEFAULT_BATCH_SIZE = 500;
-    private static final String MSG_NODE_FROZEN = "rm.action.node.frozen.error-message";
 
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
@@ -216,19 +215,15 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                 // execute search
                 ResultSet results = searchService.query(params);
+                hasMore = results.hasMore();
                 if(results.length() != 0) {
-                    for (NodeRef nodeRef : results.getNodeRefs()) {
-                        log.debug("Freeze service: "+freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(nodeRef).getParentRef()));
-                        if (!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(nodeRef).getParentRef())) {
-                            resultList.add(nodeRef);
-                        }
-                    }
-                    hasMore = results.hasMore();
+                    resultList=results.getNodeRefs().parallelStream().filter(node ->!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
                 }
                 skipCount += resultList.size(); // increase by page size
                 results.close();
 
                 log.debug("Processing " + resultList.size() + " nodes");
+
                 // process search results
                 if (!resultList.isEmpty())
                 {

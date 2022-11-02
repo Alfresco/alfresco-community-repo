@@ -218,7 +218,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 ResultSet results = searchService.query(params);
                 if(results.length() != 0) {
                     for (NodeRef nodeRef : results.getNodeRefs()) {
-                        log.info("Freeze service: "+(freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(nodeRef).getParentRef())? MSG_NODE_FROZEN: "Node is not freezed"));
+                        log.debug("Freeze service: "+freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(nodeRef).getParentRef()));
                         if (!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(nodeRef).getParentRef())) {
                             resultList.add(nodeRef);
                         }

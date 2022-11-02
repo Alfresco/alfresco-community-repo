@@ -217,7 +217,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 ResultSet results = searchService.query(params);
                 hasMore = results.hasMore();
                 if(results.length() != 0) {
-                    resultList=results.getNodeRefs().parallelStream().filter(node ->!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
+                    resultList=results.getNodeRefs().stream().filter(node ->!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
                 }
                 skipCount += resultList.size(); // increase by page size
                 results.close();

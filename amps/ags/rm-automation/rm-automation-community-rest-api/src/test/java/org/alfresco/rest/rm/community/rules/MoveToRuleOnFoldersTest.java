@@ -1,4 +1,4 @@
-package org.alfresco.rest.rm.community.rule;
+package org.alfresco.rest.rm.community.rules;
 
 import org.alfresco.rest.model.RestNodeModel;
 import org.alfresco.rest.rm.community.base.BaseRMRestTest;

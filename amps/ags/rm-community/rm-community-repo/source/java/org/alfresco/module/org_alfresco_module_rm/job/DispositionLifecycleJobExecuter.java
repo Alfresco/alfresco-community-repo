@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.job;
 import static org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -194,6 +195,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             boolean hasMore = true;
             int skipCount = 0;
+            List<NodeRef> resultList = new ArrayList<>();
 
             if (batchSize < 1)
             {
@@ -214,17 +216,23 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                 // execute search
                 ResultSet results = searchService.query(params);
-                List<NodeRef> resultNodes = results.getNodeRefs();
-                hasMore = results.hasMore();
-                skipCount += resultNodes.size(); // increase by page size
+                if(results.length() != 0) {
+                    for (NodeRef nodeRef : results.getNodeRefs()) {
+                        log.info("Freeze service: "+(freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(nodeRef).getParentRef())? MSG_NODE_FROZEN: "Node is not freezed"));
+                        if (!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(nodeRef).getParentRef())) {
+                            resultList.add(nodeRef);
+                        }
+                    }
+                    hasMore = results.hasMore();
+                }
+                skipCount += resultList.size(); // increase by page size
                 results.close();
 
-                log.debug("Processing " + resultNodes.size() + " nodes");
-
+                log.debug("Processing " + resultList.size() + " nodes");
                 // process search results
-                if (!resultNodes.isEmpty())
+                if (!resultList.isEmpty())
                 {
-                    executeAction(resultNodes);
+                    executeAction(resultList);
                 }
             }
             log.debug("Job Finished");
@@ -264,12 +272,6 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     continue;
                 }
                 Map<String, Serializable> props = Map.of(PARAM_NO_ERROR_CHECK, false);
-
-                if (freezeService.isFrozenOrHasFrozenChildren(parent.getParentRef()))
-                {
-                    log.debug(I18NUtil.getMessage(MSG_NODE_FROZEN, dispAction));
-                    continue;
-                }
 
                 try
                 {

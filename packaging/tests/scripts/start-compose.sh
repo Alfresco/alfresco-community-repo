@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 export DOCKER_COMPOSE_PATH="$S1"
 export DOCKER_COMPOSES=""

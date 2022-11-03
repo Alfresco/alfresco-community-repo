@@ -295,7 +295,20 @@ public class AuditImpl implements Audit
         }
         else
         {
-            totalItems = hasMoreItems ? getAuditEntriesCountByApp(auditApplication) : totalRetrievedItems;
+            if (hasMoreItems) {
+                if (q != null) {
+                    // filtering via "where" clause
+                    AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
+                    QueryHelper.walk(q, propertyWalker);
+                    entriesAudit = getQueryResultAuditEntries(auditApplication, propertyWalker, parameters.getInclude(), Integer.MAX_VALUE, forward);
+
+                    totalItems = entriesAudit.size();
+                } else {
+                    totalItems = getAuditEntriesCountByApp(auditApplication);
+                }
+            } else {
+                totalItems = totalRetrievedItems;
+            }
         }
 
         entriesAudit = (skipCount >= totalRetrievedItems)

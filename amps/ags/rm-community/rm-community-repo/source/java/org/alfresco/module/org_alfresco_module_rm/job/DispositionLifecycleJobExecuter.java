@@ -194,7 +194,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             boolean hasMore = true;
             int skipCount = 0;
-            List<NodeRef> resultList = new ArrayList<>();
+            List<NodeRef> resultNodes = new ArrayList<>();
 
             if (batchSize < 1)
             {
@@ -217,17 +217,17 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 ResultSet results = searchService.query(params);
                 hasMore = results.hasMore();
                 if(results.length() != 0) {
-                    resultList=results.getNodeRefs().stream().filter(node ->!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
+                    resultNodes=results.getNodeRefs().stream().filter(node ->!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
                 }
-                skipCount += resultList.size(); // increase by page size
+                skipCount += resultNodes.size(); // increase by page size
                 results.close();
 
-                log.debug("Processing " + resultList.size() + " nodes");
+                log.debug("Processing " + resultNodes.size() + " nodes");
 
                 // process search results
-                if (!resultList.isEmpty())
+                if (!resultNodes.isEmpty())
                 {
-                    executeAction(resultList);
+                    executeAction(resultNodes);
                 }
             }
             log.debug("Job Finished");

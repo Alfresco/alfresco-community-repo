@@ -1230,7 +1230,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         List<ChildAssocEntity> list = template.selectList( SELECT_All_CHILD_ASSOCS_OF_PARENT, assoc);
         handleResults(list);
     }
-
+    
     private void handleResults(List<ChildAssocEntity> list)
     {
         final Set<Long> nodeIds = new HashSet<Long>(97);

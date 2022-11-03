@@ -1234,7 +1234,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private void handleResults(List<ChildAssocEntity> list)
     {
         final Set<Long> nodeIds = new HashSet<Long>(97);
-
+        
         for (ChildAssocEntity assoc : list)
         {
             Pair<Long, ChildAssociationRef> childAssocPair = assoc.getPair(qnameDAO);

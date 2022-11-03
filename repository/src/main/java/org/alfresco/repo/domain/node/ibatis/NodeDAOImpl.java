@@ -31,6 +31,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.node.ChildPropertyEntity;
+import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeAspectsEntity;
 import org.alfresco.repo.domain.node.NodeAssocEntity;
@@ -179,6 +180,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected DictionaryService dictionaryService;
 
     private SqlSessionTemplate template;
+
+    private static final String SELECT_All_CHILD_ASSOCS_OF_PARENT = "alfresco.node.select_allChildAssocsOfParent";
     
     public void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
@@ -1176,6 +1179,81 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         resultsCallback.done();
     }
 
+    @Override
+    protected void selectChildAssocs(
+            Long parentNodeId,
+            Long childNodeId,
+            QName assocTypeQName,
+            QName assocQName,
+            Boolean isPrimary,
+            Boolean sameStore)
+    {
+        ChildAssocEntity assoc = new ChildAssocEntity();
+        // Parent
+        NodeEntity parentNode = new NodeEntity();
+        parentNode.setId(parentNodeId);
+        assoc.setParentNode(parentNode);
+        // Child
+        if (childNodeId != null)
+        {
+            NodeEntity childNode = new NodeEntity();
+            childNode.setId(childNodeId);
+            assoc.setChildNode(childNode);
+        }
+        // Type QName
+        if (assocTypeQName != null)
+        {
+            if (!assoc.setTypeQNameAll(qnameDAO, assocTypeQName, false))
+            {
+                return;                     // Shortcut
+            }
+        }
+        // QName
+        if (assocQName != null)
+        {
+            if (!assoc.setQNameAll(qnameDAO, assocQName, false))
+            {
+                return;                     // Shortcut
+            }
+        }
+        // Primary
+        if (isPrimary != null)
+        {
+            assoc.setPrimary(isPrimary);
+        }
+        // Same store
+        if (sameStore != null)
+        {
+            assoc.setSameStore(sameStore);
+        }
+
+        List<ChildAssocEntity> list = template.selectList( SELECT_All_CHILD_ASSOCS_OF_PARENT, assoc);
+        handleResults(list);
+    }
+
+    private void handleResults(List<ChildAssocEntity> list)
+    {
+        final Set<Long> nodeIds = new HashSet<Long>(97);
+
+        for (ChildAssocEntity assoc : list)
+        {
+            Pair<Long, ChildAssociationRef> childAssocPair = assoc.getPair(qnameDAO);
+            Pair<Long, NodeRef> parentNodePair = assoc.getParentNode().getNodePair();
+            Pair<Long, NodeRef> childNodePair = assoc.getChildNode().getNodePair();
+            Long nodeId = childNodePair.getFirst();
+            if (!nodeIds.add(nodeId))
+            {
+                ChildAssociationRef childAssociationRef = childAssocPair.getSecond();
+                // Remember exception we want to throw and exit. If we throw within here, it will be wrapped by IBatis
+                throw new CyclicChildRelationshipException(
+                        "Child Association Cycle detected hitting nodes: " + nodeIds,
+                        childAssociationRef);
+
+            }
+        }
+
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     public void selectChildAssocs(

@@ -267,10 +267,13 @@ public class SolrJSONResultSet implements SearchEngineResultSet {
                         ArrayList<Pair<String, Integer>> facetValues = new ArrayList<Pair<String, Integer>>(facetArraySize/2);
                         for(int i = 0; i < facetArraySize; i+=2)
                         {
-                            String facetEntryName = facets.getString(i);
-                            Integer facetEntryCount = Integer.valueOf(facets.getInt(i+1));
-                            Pair<String, Integer> pair = new Pair<String, Integer>(facetEntryName, facetEntryCount);
-                            facetValues.add(pair);
+                            if(!facets.isNull(i))
+                            {
+                                String facetEntryName = facets.getString(i);
+                                Integer facetEntryCount = Integer.valueOf(facets.getInt(i + 1));
+                                Pair<String, Integer> pair = new Pair<String, Integer>(facetEntryName, facetEntryCount);
+                                facetValues.add(pair);
+                            }
                         }
                         fieldFacets.put(fieldName, facetValues);
                     }

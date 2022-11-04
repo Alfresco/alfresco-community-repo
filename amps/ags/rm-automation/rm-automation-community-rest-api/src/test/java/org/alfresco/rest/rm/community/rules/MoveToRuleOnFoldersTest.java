@@ -41,7 +41,7 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
 
     private String unfiledRecordsNodeRef;
 
-    private String recordFolder2;
+    private RecordCategoryChild recordFolder2;
     private String nonElectronicId;
 
     private Record electronicRecord;
@@ -95,21 +95,19 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
         STEP("Check the electronic record has been created");
         assertStatusCode(CREATED);
 
-        // Generate update metadata
-        String newName = getModifiedPropertyValue(electronicRecord.getName());
-        String newTitle = getModifiedPropertyValue(electronicRecord.getProperties().getTitle());
-        String newDescription = getModifiedPropertyValue(electronicRecord.getProperties().getDescription());
+//        // Generate update metadata
+//        String newName = getModifiedPropertyValue(electronicRecord.getName());
+//        String newTitle = getModifiedPropertyValue(electronicRecord.getProperties().getTitle());
+//        String newDescription = getModifiedPropertyValue(electronicRecord.getProperties().getDescription());
+//
+//        // Update record:EDIT electronic and non electronic metadata [PENDING]
+//
+////        recordsAPI.updateRecord(createRecordModel(newName, newDescription, newTitle), electronicRecord.getId());
+////        assertStatusCode(OK);
 
-        // Update record:EDIT electronic and non electronic metadata [PENDING]
 
-//        recordsAPI.updateRecord(createRecordModel(newName, newDescription, newTitle), electronicRecord.getId());
-//        assertStatusCode(OK);
-
-
-
-        //create non electronic record
         STEP("Create a non-electronic record by completing some of the fields");
-        // Use these properties for non-electronic record to be created
+       // Use these properties for non-electronic record to be created
         String title = "Title " + getRandomAlphanumeric();
         String description = "Description " + getRandomAlphanumeric();
         String box = "Box "+ getRandomAlphanumeric();
@@ -125,34 +123,41 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
         Record nonElectrinicRecordModel = createFullNonElectronicRecordModel(name, title, description, box, file, shelf, storageLocation, numberOfCopies, physicalSize);
         // Create non-electronic record
         nonElectronicId = recordFolderAPI.createRecord(nonElectrinicRecordModel, recordFolder1).getId();
-//        STEP("Check the non-electronic record has been created");
+       STEP("Check the non-electronic record has been created");
         assertStatusCode(CREATED);
 
-        // move the electronic and nonelectronic record from folder1 to folder2
-        STEP("Create the record folder2 inside the rootCategory");
-         recordFolder2 = createCategoryFolderInFilePlan().getId();
+//        STEP("Create Copy of RootRecord");
+//        RestNodeModel RootCategoryCopy = getRestAPIFactory()
+//            .getNodeAPI(toContentModel(RecordCategoryOne.getId()))
+//            .copy(createBodyForMoveCopy(RecordCategoryOne.getId()));
+//        assertStatusCode(CREATED);
+//        RestNodeModel RootCategoryCopy= getRestAPIFactory().getNodeAPI(toContentModel(RecordCategoryOne.getId())).copy(createBodyForMoveCopy(RecordCategoryOne.getId()));
 
-//        //create a rule for completing record for folder 2
+        STEP("Create the  folder2 inside the rootCategory");
+        recordFolder2 = createFolder(getAdminUser(),RecordCategoryOne.getId(),getRandomName("recFolder"));
 
+
+        STEP("create a rule MOVE_TO for folder 2");
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description1")
-            .applyToChildren(true).title(title)
-            .actions(Collections.singletonList(ActionsOnRule.COMPLETE_RECORD.getActionValue()));
-        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX +recordFolder2, ruleDefinition);
-
+            .runInBackground(true).title(title)
+            .actions(Collections.singletonList(ActionsOnRule.MOVE_TO.getActionValue()));
+        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX +recordFolder2.getId() , ruleDefinition);
     }
+
     @Test
     public void MoveToRuleFoldersTest()
-    {    STEP("Move electronic record from folder1 to folder2");
+    {
+        STEP("Move electronic record from folder1 to folder2");
         RestNodeModel electronicDocRestNodeModel = getRestAPIFactory()
             .getNodeAPI(toContentModel(electronicRecord.getId()))
-            .move(createBodyForMoveCopy(recordFolder2));
+            .move(createBodyForMoveCopy(recordFolder2.getId()));
         assertStatusCode(OK);
 
         STEP("Move non-electronic record from folder1 to folder2");
 
         RestNodeModel nonelectronicDocRestNodeModel = getRestAPIFactory()
             .getNodeAPI(toContentModel(nonElectronicId))
-            .move(createBodyForMoveCopy(recordFolder2));
+            .move(createBodyForMoveCopy(recordFolder2.getId()));
         assertStatusCode(OK);
 
     }
@@ -162,6 +167,5 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
         String MODIFIED_PREFIX = "modified_";
         return MODIFIED_PREFIX + originalValue;
     }
-    }
-
+}
 

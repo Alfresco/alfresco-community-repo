@@ -204,7 +204,7 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
         deleteRecordCategory(RecordCategoryOne.getId());
 
         // Delete record and verify status
-        System.out.println(RecordCategoryCopy);
+
 //        recordsAPI.deleteRecord(RecordCategoryCopy.getName(),RecordCategoryCopy.);
 //        assertStatusCode(NO_CONTENT);
         getDataUser().deleteUser(rmAdmin);

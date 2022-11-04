@@ -67,7 +67,6 @@ public class FileAsRecordRuleTests extends BaseRMRestTest
     private static final String CATEGORY_ADMIN = "categoryAdmin" + generateTestPrefix(FileAsRecordRuleTests.class);
     private static final String FOLDER_MANAGER = "recordFolder" + generateTestPrefix(FileAsRecordRuleTests.class);
     private static final String FOLDER_ADMIN = "recordFolder" + generateTestPrefix(FileAsRecordRuleTests.class);
-
     private UserModel nonRMUser,rmManager;
     private SiteModel publicSite;
     private FolderModel testFolder;

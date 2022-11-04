@@ -86,13 +86,13 @@
                         </goals>
                         <configuration>
                             <artifactItems>
-<!--                                <artifactItem>
+                                <artifactItem>
                                     <groupId>org.alfresco.aos-module</groupId>
                                     <artifactId>alfresco-aos-module</artifactId>
                                     <type>amp</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/amps</outputDirectory>
-                                </artifactItem>-->
+                                </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco.integrations</groupId>
                                     <artifactId>alfresco-googledrive-repo-community</artifactId>

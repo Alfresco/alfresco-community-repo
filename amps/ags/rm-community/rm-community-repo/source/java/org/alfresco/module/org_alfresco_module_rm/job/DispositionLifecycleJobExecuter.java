@@ -204,8 +204,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             log.trace("Using batch size of " + batchSize);
 
-            while (hasMore)
-            {
+            while (hasMore) {
                 SearchParameters params = new SearchParameters();
                 params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                 params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
@@ -215,11 +214,9 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                 // execute search
                 ResultSet results = searchService.query(params);
+                // filtering out the hold/freezed cases from the result set
+                resultNodes = results.getNodeRefs().stream().filter(node -> !freezeService.isFrozenOrHasFrozenChildren(node)).collect(Collectors.toList());
                 hasMore = results.hasMore();
-                if(results.length() != 0) {
-                    // filtering out the hold/freezed cases from the result set
-                    resultNodes=results.getNodeRefs().stream().filter(node ->!freezeService.isFrozenOrHasFrozenChildren(nodeService.getPrimaryParent(node).getParentRef())).collect(Collectors.toList());
-                }
                 skipCount += resultNodes.size(); // increase by page size
                 results.close();
 

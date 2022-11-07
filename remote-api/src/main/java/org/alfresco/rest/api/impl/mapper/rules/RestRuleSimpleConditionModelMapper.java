@@ -64,6 +64,7 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
     static final String FIELD_NOT_NULL = "Field in condition must not be blank";
     static final String PARAMETER_NOT_NULL = "Parameter in condition must not be blank";
     static final String COMPARATOR_NOT_NULL = "Comparator in condition must not be blank";
+    static final String INVALID_COMPARATOR_VALUE = "Comparator value for condition is invalid: %s";
     private final NamespaceService namespaceService;
     private final Nodes nodes;
 
@@ -157,11 +158,21 @@ public class RestRuleSimpleConditionModelMapper implements RestModelMapper<Simpl
                     parameterValues.put(ComparePropertyValueEvaluator.PARAM_PROPERTY, QName.createQName(field, namespaceService));
                 }
                 checkStringNotBlank(restModel.getComparator(), COMPARATOR_NOT_NULL);
-                parameterValues.put(ComparePropertyValueEvaluator.PARAM_OPERATION, restModel.getComparator().toUpperCase());
+                parameterValues.put(ComparePropertyValueEvaluator.PARAM_OPERATION, getComparatorValue(restModel.getComparator()));
                 parameterValues.put(ComparePropertyValueEvaluator.PARAM_VALUE, parameter);
                 break;
         }
         return new ActionConditionImpl(UUID.randomUUID().toString(), conditionDefinitionId, parameterValues);
+    }
+
+    private String getComparatorValue(String comparator)
+    {
+        try
+        {
+            return ComparePropertyValueOperation.valueOf(comparator.toUpperCase()).toString();
+        } catch (IllegalArgumentException e) {
+            throw new InvalidArgumentException(String.format(INVALID_COMPARATOR_VALUE, comparator));
+        }
     }
 
     private void checkStringNotBlank(final String string, final String message) {

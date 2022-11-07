@@ -204,7 +204,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
             log.trace("Using batch size of " + batchSize);
 
-            while (hasMore) {
+            while (hasMore) 
+            {
                 SearchParameters params = new SearchParameters();
                 params.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                 params.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);

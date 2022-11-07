@@ -28,6 +28,7 @@ package org.alfresco.rest.api.impl.mapper.rules;
 
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.COMPARATOR_NOT_NULL;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.FIELD_NOT_NULL;
+import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.INVALID_COMPARATOR_VALUE;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAMETER_NOT_NULL;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAM_CATEGORY;
 import static org.alfresco.rest.api.impl.mapper.rules.RestRuleSimpleConditionModelMapper.PARAM_MIMETYPE;
@@ -364,6 +365,22 @@ public class RestRuleSimpleConditionModelMapperTest
         assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionEmptyComparator))
                 .isInstanceOf(InvalidArgumentException.class)
                 .hasMessageContaining(COMPARATOR_NOT_NULL);
+    }
+
+    @Test
+    public void testToServiceModel_invalidComparator()
+    {
+        final String comparator = "greaterthan";
+        final SimpleCondition simpleConditionNullComparator = SimpleCondition.builder()
+                .field("size")
+                .comparator(comparator)
+                .parameter("65000")
+                .create();
+
+        // when
+        assertThatThrownBy(() -> objectUnderTest.toServiceModel(simpleConditionNullComparator))
+                .isInstanceOf(InvalidArgumentException.class)
+                .hasMessageContaining(String.format(INVALID_COMPARATOR_VALUE, comparator));
     }
 
     private static ActionCondition createActionCondition(final String actionDefinitionName)

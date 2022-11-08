@@ -300,9 +300,7 @@ public class AuditImpl implements Audit
                     // filtering via "where" clause
                     AuditEntryQueryWalker propertyWalker = new AuditEntryQueryWalker();
                     QueryHelper.walk(q, propertyWalker);
-                    entriesAudit = getQueryResultAuditEntries(auditApplication, propertyWalker, parameters.getInclude(), Integer.MAX_VALUE, forward);
-
-                    totalItems = entriesAudit.size();
+                    totalItems = getAuditEntriesCountByAppAndProperties(auditApplication, propertyWalker);
                 } else {
                     totalItems = getAuditEntriesCountByApp(auditApplication);
                 }
@@ -907,5 +905,20 @@ public class AuditImpl implements Audit
     {
         final String applicationName = auditApplication.getKey().substring(1);
         return auditService.getAuditEntriesCountByApp(applicationName);
+    }
+
+    public int getAuditEntriesCountByAppAndProperties(AuditService.AuditApplication auditApplication, AuditEntryQueryWalker propertyWalker)
+    {
+        final String applicationName = auditApplication.getKey().substring(1);
+
+        AuditQueryParameters parameters = new AuditQueryParameters();
+        parameters.setApplicationName(applicationName);
+        parameters.setFromTime(propertyWalker.getFromTime());
+        parameters.setToTime(propertyWalker.getToTime());
+        parameters.setFromId(propertyWalker.getFromId());
+        parameters.setToId(propertyWalker.getToId());
+        parameters.setUser(propertyWalker.getCreatedByUser());
+
+        return auditService.getAuditEntriesCountByAppAndProperties(applicationName, parameters);
     }
 }

@@ -62,6 +62,7 @@ import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
 import org.mozilla.javascript.WrapFactory;
 import org.mozilla.javascript.WrappedException;
 import org.springframework.beans.factory.InitializingBean;
@@ -540,7 +541,6 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 scope = cx.newObject(sharedScope);
                 scope.setPrototype(sharedScope);
                 scope.setParentScope(null);
-
             }
             else
             {
@@ -787,8 +787,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                 {
                     try
                     {
-                        ScriptableObject.deleteProperty(scope, id.toString());
-                        scope.delete(id.toString());
+                        deleteProperty(scope, id.toString());
                     }
                     catch (Exception e)
                     {
@@ -804,11 +803,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
             {
                 try
                 {
-                    if (scope != null)
-                    {
-                        ScriptableObject.deleteProperty(scope, key);
-                        scope.delete(key);
-                    }
+                    deleteProperty(scope, key);
 
                     Object obj = model.get(key);
                     if (obj instanceof Scopeable)
@@ -821,6 +816,26 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
                     logger.info("Unable to unset model object " + key + " : ", e);
                 }
             }
+        }
+    }
+
+    /**
+     * Deletes a property from the supplied scope, if property is not removable, then is set to null
+     *
+     * @param scope
+     *            the scope object from where property will be removed
+     * @param name
+     *            the property name to delete
+     */
+    private void deleteProperty(Scriptable scope, String name)
+    {
+        if (scope != null && name != null)
+        {
+            if (!ScriptableObject.deleteProperty(scope, name))
+            {
+                ScriptableObject.putProperty(scope, name, null);
+            }
+            scope.delete(name);
         }
     }
 

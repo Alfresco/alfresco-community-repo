@@ -44,7 +44,6 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.ScriptProcessor;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -53,8 +52,10 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.mozilla.javascript.Undefined;
 import org.springframework.context.ApplicationContext;
 
 import junit.framework.TestCase;
@@ -445,6 +446,46 @@ public class RhinoScriptTest extends TestCase
         assertTrue("Script should have been executed (secure = true)", executed);
     }
 
+    // MNT-23158
+    public void testScope()
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+            new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Exception
+                {
+                    // check that rhino script engine is available
+                    Context cx = Context.enter();
+                    try
+                    {
+                        Scriptable sharedScope = new ImporterTopLevel(cx, true);
+                        Scriptable scope = cx.newObject(sharedScope);
+                        scope.setPrototype(sharedScope);
+                        scope.setParentScope(null);
+
+                        // Now we can evaluate a script. Let's create a new associative array object
+                        // using the object literal notation to create the members
+                        Object result = cx.evaluateString(scope, "var a = 10; var b = 20; var sum = a+b;", "TestJS1", 1, null);
+
+                        Object sum = scope.get("sum", scope);
+                        assertEquals(30.0, Context.toNumber(sum));
+
+                        unsetScope(scope);
+
+                        result = cx.evaluateString(scope, "var test = 'test';", "TestJS2", 1, null);
+                        sum = scope.get("sum", scope);
+                        assertNull(sum);
+                    }
+                    finally
+                    {
+                        Context.exit();
+                    }
+
+                    return null;
+                }
+            });
+    }
+
     private boolean executeSecureScriptString(String script, Boolean secure)
     {
         return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
@@ -474,6 +515,41 @@ public class RhinoScriptTest extends TestCase
                 return true;
             }
         });
+    }
+
+    private void unsetScope(Scriptable scope)
+    {
+        if (scope != null)
+        {
+            Object[] ids = scope.getIds();
+
+            if (ids != null)
+            {
+                for (Object id : ids)
+                {
+                    try
+                    {
+                        deleteProperty(scope, id.toString());
+                    }
+                    catch (Exception e)
+                    {
+                        // Do nothing
+                    }
+                }
+            }
+        }
+    }
+
+    private void deleteProperty(Scriptable scope, String name)
+    {
+        if (scope != null && name != null)
+        {
+            if (!ScriptableObject.deleteProperty(scope, name))
+            {
+                ScriptableObject.putProperty(scope, name, null);
+            }
+            scope.delete(name);
+        }
     }
 
     private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";

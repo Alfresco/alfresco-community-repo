@@ -65,7 +65,7 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
     private static final String FOLDER_MANAGER = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
     private static final String FOLDER_ADMIN = "recordFolder" + generateTestPrefix(FileAsRecordTests.class);
     private FolderModel testFolder;
-    private FileModel document, documentDeclared,inPlaceRecord;
+    private FileModel document,inPlaceRecord;
 
 
     @Autowired

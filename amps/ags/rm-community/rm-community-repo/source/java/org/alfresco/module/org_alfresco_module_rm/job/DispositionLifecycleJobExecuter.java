@@ -215,7 +215,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
                 // execute search
                 ResultSet results = searchService.query(params);
-                if(results != null) {
+                if(results != null)
+                {
                     // filtering out the hold/freezed cases from the result set
                     resultNodes =
                             results.getNodeRefs().stream().filter(node -> nodeService.getPrimaryParent(node) == null ?

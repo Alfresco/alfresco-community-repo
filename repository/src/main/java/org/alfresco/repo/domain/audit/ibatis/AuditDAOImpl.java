@@ -254,6 +254,10 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
             org.alfresco.service.cmr.audit.AuditQueryParameters restParameters)
     {
         AuditQueryParameters params = convertFromRestAuditQueryParameters(restParameters);
+        if (params==null)
+        {
+            return;
+        }
 
         if (maxResults > 0)
         {

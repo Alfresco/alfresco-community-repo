@@ -137,9 +137,6 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
 
 
 
-
-
-
     }
 
     @Test

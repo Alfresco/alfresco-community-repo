@@ -50,6 +50,15 @@
     <!-- Parameter Maps -->
     <!--                -->
 
+    <parameterMap id="parameter_AuditAppId_WhereClauseMap" type="map">
+        <parameter property="auditAppNameId" jdbcType="BIGINT" javaType="Long"/>
+        <parameter property="auditUserId" jdbcType="BIGINT" javaType="Long"/>
+        <parameter property="auditFromTime" jdbcType="BIGINT" javaType="Long"/>
+        <parameter property="auditToTime" jdbcType="BIGINT" javaType="Long"/>
+        <parameter property="auditFromId" jdbcType="BIGINT" javaType="Long"/>
+        <parameter property="auditToId" jdbcType="BIGINT" javaType="Long"/>
+    </parameterMap>
+
     <parameterMap id="parameter_IdMap" type="map">
         <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
@@ -289,6 +298,14 @@
         alf_audit_entry
         where
         alf_audit_entry.audit_app_id = #{auditAppId}
+    </select>
+
+    <select id="select_CountAuditEntryIdWithWhereClause" parameterMap="parameter_AuditAppId_WhereClauseMap" resultType="int">
+        select
+            COUNT(id)
+        from
+            alf_audit_entry as entry
+        <include refid="select_AuditEntriesWhereSnippet"/>
     </select>
 
     <!-- Get the maximum/minimum audit entry id for application -->

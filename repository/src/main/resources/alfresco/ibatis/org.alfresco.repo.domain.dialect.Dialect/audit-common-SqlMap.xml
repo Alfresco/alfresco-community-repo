@@ -302,9 +302,15 @@
 
     <select id="select_CountAuditEntryIdWithWhereClause" parameterMap="parameter_AuditAppId_WhereClauseMap" resultType="int">
         select
-            COUNT(id)
+            COUNT(entry.id)
         from
             alf_audit_entry as entry
+        <if test="auditAppNameId != null">
+            join alf_audit_app app on (entry.audit_app_id = app.id)
+        </if>
+        <if test="keyOrValueSearch == true">
+            join alf_prop_link sp_pl on (sp_pl.root_prop_id = entry.audit_values_id)
+        </if>
         <include refid="select_AuditEntriesWhereSnippet"/>
     </select>
 

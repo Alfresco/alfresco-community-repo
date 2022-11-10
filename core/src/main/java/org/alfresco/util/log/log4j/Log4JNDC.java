@@ -35,6 +35,10 @@ import org.apache.logging.log4j.ThreadContext;
  */
 public class Log4JNDC implements NDCDelegate
 {
+    // Force resolution of the log4j2 ThreadContext class by the classloader (thus forcing an error if unavailable)
+    @SuppressWarnings("unused")
+    private static final Class<?> NDC_REF = ThreadContext.class;
+
     /**
      * Push new diagnostic context information for the current thread.
      * 

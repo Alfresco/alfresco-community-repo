@@ -488,6 +488,15 @@ public class RhinoScriptTest extends TestCase
                         // 'sum' property should be null
                         sum = scope.get("sum", scope);
                         assertNull(sum);
+
+                        // New scope initialization
+                        scope = cx.newObject(sharedScope);
+                        scope.setPrototype(sharedScope);
+                        scope.setParentScope(null);
+
+                        // check 'test' property
+                        Object test = scope.get("test", scope);
+                        assertEquals(test, UniqueTag.NOT_FOUND);
                     }
                     finally
                     {

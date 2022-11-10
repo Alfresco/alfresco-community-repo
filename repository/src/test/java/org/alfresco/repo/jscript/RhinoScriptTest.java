@@ -56,6 +56,7 @@ import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
+import org.mozilla.javascript.UniqueTag;
 import org.springframework.context.ApplicationContext;
 
 import junit.framework.TestCase;
@@ -447,14 +448,13 @@ public class RhinoScriptTest extends TestCase
     }
 
     // MNT-23158
-    public void testScope()
+    public void testScopeData()
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
             new RetryingTransactionCallback<Object>()
             {
                 public Object execute() throws Exception
                 {
-                    // check that rhino script engine is available
                     Context cx = Context.enter();
                     try
                     {
@@ -463,16 +463,29 @@ public class RhinoScriptTest extends TestCase
                         scope.setPrototype(sharedScope);
                         scope.setParentScope(null);
 
-                        // Now we can evaluate a script. Let's create a new associative array object
-                        // using the object literal notation to create the members
+                        // Executes a first script
                         Object result = cx.evaluateString(scope, "var a = 10; var b = 20; var sum = a+b;", "TestJS1", 1, null);
+                        assertTrue(Undefined.isUndefined(result));
 
+                        // Test sum value
                         Object sum = scope.get("sum", scope);
                         assertEquals(30.0, Context.toNumber(sum));
 
+                        // No 'sum' property should be found in the shared scope
+                        sum = sharedScope.get("sum", sharedScope);
+                        assertEquals(sum, UniqueTag.NOT_FOUND);
+
+                        // No 'b' property should be found in the shared scope
+                        Object b = ScriptableObject.getProperty(sharedScope, "b");
+                        assertEquals(b, UniqueTag.NOT_FOUND);
+
+                        // Cleans scope
                         unsetScope(scope);
 
+                        // Executes a second script using the same scope
                         result = cx.evaluateString(scope, "var test = 'test';", "TestJS2", 1, null);
+
+                        // 'sum' property should be null
                         sum = scope.get("sum", scope);
                         assertNull(sum);
                     }

@@ -302,7 +302,7 @@
 
     <select id="select_CountAuditEntryIdWithWhereClause" parameterMap="parameter_AuditAppId_WhereClauseMap" resultType="int">
         select
-            COUNT(id)
+            COUNT(entry.id)
         from
             alf_audit_entry as entry
         <if test="auditAppNameId != null">

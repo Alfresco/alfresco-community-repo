@@ -24,21 +24,17 @@
  */
 package org.alfresco.util.log.log4j;
 
-import org.alfresco.util.log.NDC;
 import org.alfresco.util.log.NDCDelegate;
+import org.apache.logging.log4j.ThreadContext;
 
 /**
- * A stand in for the org.apache.log4j.NDC class that avoids introducing runtime dependencies against the otherwise
+ * A stand in for the org.apache.logging.log4j.ThreadContext class that avoids introducing runtime dependencies against the otherwise
  * optional log4j.
  * 
  * @author dward
  */
 public class Log4JNDC implements NDCDelegate
 {
-    // Force resolution of the log4j NDC class by the classloader (thus forcing an error if unavailable)
-    @SuppressWarnings("unused")
-    private static final Class<?> NDC_REF = NDC.class;
-
     /**
      * Push new diagnostic context information for the current thread.
      * 
@@ -47,7 +43,7 @@ public class Log4JNDC implements NDCDelegate
      */
     public void push(String message)
     {
-        NDC.push(message);
+        ThreadContext.push(message);
     }
 
     /**
@@ -55,6 +51,6 @@ public class Log4JNDC implements NDCDelegate
      */
     public void remove()
     {
-        NDC.remove();
+        ThreadContext.clearAll();
     }
 }

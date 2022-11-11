@@ -58,7 +58,7 @@
 
         <dependency.spring.version>5.3.23</dependency.spring.version>
         <dependency.antlr.version>3.5.3</dependency.antlr.version>
-        <dependency.jackson.version>2.14.0-rc1</dependency.jackson.version>
+        <dependency.jackson.version>2.14.0</dependency.jackson.version>
         <dependency.cxf.version>3.5.4</dependency.cxf.version>
         <dependency.opencmis.version>1.0.0</dependency.opencmis.version>
         <dependency.webscripts.version>8.32</dependency.webscripts.version>

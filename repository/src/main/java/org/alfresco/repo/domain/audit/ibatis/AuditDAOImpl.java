@@ -66,6 +66,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     private static final String INSERT_ENTRY = "alfresco.audit.insert.insert_AuditEntry";
     private static final String SELECT_MINMAX_ENTRY_FOR_APP = "alfresco.audit.select_MinMaxAuditEntryId";
     private static final String SELECT_COUNT_ENTRIES_FOR_APP = "alfresco.audit.select_CountAuditEntryId";
+    private static final String SELECT_COUNT_ENTRIES_FOR_APP_WITH_PROPERTIES = "select_CountAuditEntryIdWithWhereClause";
     
     @SuppressWarnings("unused")
     private static final String SELECT_ENTRIES_SIMPLE = "alfresco.audit.select_AuditEntriesSimple";
@@ -235,68 +236,29 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         return result;
     }
 
+    @Override
+    public int getAuditEntriesCountByAppAndProperties(String applicationName, org.alfresco.service.cmr.audit.AuditQueryParameters parameters)
+    {
+        AuditQueryParameters dbParameters = convertFromRestAuditQueryParameters(parameters);
+
+        int result = template.selectOne(SELECT_COUNT_ENTRIES_FOR_APP_WITH_PROPERTIES, dbParameters);
+
+        return result;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     protected void findAuditEntries(
             final AuditQueryRowHandler rowHandler,
-            boolean forward,
-            String appName, String user,
-            Long fromId, Long toId,
-            Long fromTime, Long toTime,
             int maxResults,
-            String searchKey, Serializable searchValue)
+            org.alfresco.service.cmr.audit.AuditQueryParameters restParameters)
     {
-        AuditQueryParameters params = new AuditQueryParameters();
-        if (appName != null)
+        AuditQueryParameters params = convertFromRestAuditQueryParameters(restParameters);
+        if (params==null)
         {
-            // Look up the application's ID (this is unique)
-            Pair<Long, Serializable> appNamePair = propertyValueDAO.getPropertyValue(appName);
-            if (appNamePair == null)
-            {
-                // No such value
-                return;
-            }
-            params.setAuditAppNameId(appNamePair.getFirst());
+            return;
         }
-        if (user != null)
-        {
-            // Look up the application's ID (this is unique)
-            Pair<Long, Serializable> userPair = propertyValueDAO.getPropertyValue(user);
-            if (userPair == null)
-            {
-                // No such value
-                return;
-            }
-            params.setAuditUserId(userPair.getFirst());
-        }
-        params.setAuditFromId(fromId);
-        params.setAuditToId(toId);
-        params.setAuditFromTime(fromTime);
-        params.setAuditToTime(toTime);
-        if (searchKey != null)
-        {
-            // Look up the ID of the search key
-            Pair<Long, Serializable> searchKeyPair = propertyValueDAO.getPropertyValue(searchKey);
-            if (searchKeyPair == null)
-            {
-                // No such value
-                return;
-            }
-            params.setSearchKeyId(searchKeyPair.getFirst());
-        }
-        if (searchValue != null)
-        {
-            // Look up the ID of the search key
-            Pair<Long, Serializable> searchValuePair = propertyValueDAO.getPropertyValue(searchValue);
-            if (searchValuePair == null)
-            {
-                // No such value
-                return;
-            }
-            params.setSearchValueId(searchValuePair.getFirst());
-        }
-        params.setForward(forward);
-        
+
         if (maxResults > 0)
         {
             // Query without getting the values.  We gather all the results and batch-fetch the audited

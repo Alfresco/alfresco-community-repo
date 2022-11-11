@@ -25,6 +25,10 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.StringJoiner;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -43,9 +47,6 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-
-import java.io.IOException;
-import java.util.StringJoiner;
 
 /**
  * Client class that transfers content (from a ContentReader) to a remote transformation agent together with
@@ -102,28 +103,35 @@ public class RemoteTransformerClient
     HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String sourceExtension,
                                         String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
     {
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        ContentType contentType = ContentType.create(sourceMimetype);
-        builder.addBinaryBody("file", reader.getContentInputStream(), contentType, "tmp."+sourceExtension);
-        builder.addTextBody("targetExtension", targetExtension);
-        sj.add("targetExtension" + '=' + targetExtension);
-        for (int i=0; i< args.length; i+=2)
+        try (InputStream contentStream = reader.getContentInputStream())
         {
-            if (args[i+1] != null)
+            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+            ContentType contentType = ContentType.create(sourceMimetype);
+            builder.addBinaryBody("file", reader.getContentInputStream(), contentType, "tmp." + sourceExtension);
+            builder.addTextBody("targetExtension", targetExtension);
+            sj.add("targetExtension" + '=' + targetExtension);
+            for (int i = 0; i < args.length; i += 2)
             {
-                builder.addTextBody(args[i], args[i + 1]);
+                if (args[i + 1] != null)
+                {
+                    builder.addTextBody(args[i], args[i + 1]);
 
-                sj.add(args[i] + '=' + args[i + 1]);
+                    sj.add(args[i] + '=' + args[i + 1]);
+                }
             }
-        }
 
-        if (timeoutMs > 0)
-        {
-            String timeoutMsString = Long.toString(timeoutMs);
-            builder.addTextBody("timeout", timeoutMsString);
-            sj.add("timeout=" + timeoutMsString);
+            if (timeoutMs > 0)
+            {
+                String timeoutMsString = Long.toString(timeoutMs);
+                builder.addTextBody("timeout", timeoutMsString);
+                sj.add("timeout=" + timeoutMsString);
+            }
+            return builder.build();
         }
-        return builder.build();
+        catch (IOException e)
+        {
+            throw new AlfrescoRuntimeException("Failed to read content from reader", e);
+        }
     }
 
     void request(Log logger, String sourceExtension, String targetExtension, HttpEntity reqEntity, ContentWriter writer, String args)

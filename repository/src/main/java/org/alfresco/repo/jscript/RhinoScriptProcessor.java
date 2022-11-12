@@ -614,29 +614,13 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
         }
         finally
         {
-            if (!secure)
-            {
-                unsetScope(model, scope);
-            }
+            unsetScope(model, scope);
             Context.exit();
             
             if (callLogger.isDebugEnabled())
             {
                 long endTime = System.nanoTime();
-
-                String logMessage = debugScriptName + " End " + (endTime - startTime) / 1000000 + " ms";
-
-                if (cx instanceof AlfrescoScriptContext)
-                {
-                    AlfrescoScriptContext acx = (AlfrescoScriptContext) cx;
-                    long usedMemory = acx.getUsedMemory();
-                    if (usedMemory > 0)
-                    {
-                        logMessage += " - Used memory: " + usedMemory + " bytes";
-                    }
-                }
-
-                callLogger.debug(logMessage);
+                callLogger.debug(debugScriptName+" End " + (endTime - startTime)/1000000 + " ms");
             }
         }
     }

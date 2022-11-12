@@ -58,11 +58,8 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.Undefined;
-import org.mozilla.javascript.UniqueTag;
 import org.springframework.context.ApplicationContext;
 
 
@@ -437,103 +434,7 @@ public class RhinoScriptTest extends TestCase
         });
 
     }
-
-    // MNT-23158
-    public void testScopeData()
-    {
-        transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Object>()
-            {
-                public Object execute() throws Exception
-                {
-                    Context cx = Context.enter();
-                    try
-                    {
-                        Scriptable sharedScope = new ImporterTopLevel(cx, true);
-                        Scriptable scope = cx.newObject(sharedScope);
-                        scope.setPrototype(sharedScope);
-                        scope.setParentScope(null);
-
-                        // Executes a first script
-                        Object result = cx.evaluateString(scope, "var a = 10; var b = 20; var sum = a+b;", "TestJS1", 1, null);
-                        assertTrue(Undefined.isUndefined(result));
-
-                        // Test sum value
-                        Object sum = scope.get("sum", scope);
-                        assertEquals(30.0, Context.toNumber(sum));
-
-                        // No 'sum' property should be found in the shared scope
-                        sum = sharedScope.get("sum", sharedScope);
-                        assertEquals(sum, UniqueTag.NOT_FOUND);
-
-                        // No 'b' property should be found in the shared scope
-                        Object b = ScriptableObject.getProperty(sharedScope, "b");
-                        assertEquals(b, UniqueTag.NOT_FOUND);
-
-                        // Cleans scope
-                        unsetScope(scope);
-
-                        // Executes a second script using the same scope
-                        result = cx.evaluateString(scope, "var test = 'test';", "TestJS2", 1, null);
-
-                        // 'sum' property should be null
-                        sum = scope.get("sum", scope);
-                        assertNull(sum);
-
-                        // New scope initialization
-                        scope = cx.newObject(sharedScope);
-                        scope.setPrototype(sharedScope);
-                        scope.setParentScope(null);
-
-                        // check 'test' property
-                        Object test = scope.get("test", scope);
-                        assertEquals(test, UniqueTag.NOT_FOUND);
-                    }
-                    finally
-                    {
-                        Context.exit();
-                    }
-
-                    return null;
-                }
-            });
-    }
-
-    private void unsetScope(Scriptable scope)
-    {
-        if (scope != null)
-        {
-            Object[] ids = scope.getIds();
-
-            if (ids != null)
-            {
-                for (Object id : ids)
-                {
-                    try
-                    {
-                        deleteProperty(scope, id.toString());
-                    }
-                    catch (Exception e)
-                    {
-                        // Do nothing
-                    }
-                }
-            }
-        }
-    }
-
-    private void deleteProperty(Scriptable scope, String name)
-    {
-        if (scope != null && name != null)
-        {
-            if (!ScriptableObject.deleteProperty(scope, name))
-            {
-                ScriptableObject.putProperty(scope, name, null);
-            }
-            scope.delete(name);
-        }
-    }
-
+    
     private static final String TESTSCRIPT_CLASSPATH1 = "org/alfresco/repo/jscript/test_script1.js";
     private static final String TESTSCRIPT_CLASSPATH2 = "org/alfresco/repo/jscript/test_script2.js";
     private static final String TESTSCRIPT_CLASSPATH3 = "org/alfresco/repo/jscript/test_script3.js";

@@ -347,13 +347,30 @@ public class GetSitesTests extends RestTest
     public void checkPaginationWithSkipCountAndMaxItems() throws Exception
     {
         sites = restClient.authenticateUser(regularUser).withParams("skipCount=10&maxItems=110").withCoreAPI().getSites();
+
+        int expectedCount;
+        if (sites.getPagination().isHasMoreItems())
+        {
+            expectedCount = sites.getPagination().getMaxItems();
+        }
+        else
+        {
+            if (sites.getPagination().getTotalItems() < sites.getPagination().getSkipCount())
+            {
+                expectedCount = 0;
+            }
+            else
+            {
+                expectedCount = sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount();
+            }
+        }
+
         sites.getPagination().assertThat()
                 .field("totalItems").isNotEmpty().and()
                 .field("maxItems").is("110").and()
                 .field("hasMoreItems").is((sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount() > sites.getPagination().getMaxItems())?"true":"false").and()
                 .field("skipCount").is("10").and()
-                .field("count").is((sites.getPagination().isHasMoreItems()) ? sites.getPagination().getMaxItems()
-                : sites.getPagination().getTotalItems() - sites.getPagination().getSkipCount());
+                .field("count").is(expectedCount);
     }
 
     @Test(groups = { TestGroup.REST_API, TestGroup.SITES, TestGroup.REGRESSION})

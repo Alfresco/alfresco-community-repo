@@ -89,49 +89,56 @@ public class RemoteTransformerClient
     public void request(ContentReader reader, ContentWriter writer, String sourceMimetype, String sourceExtension,
                         String targetExtension, long timeoutMs, Log logger, String... args)
     {
-        if (args.length % 2 != 0)
-        {
-            throw new IllegalArgumentException("There should be a value for each request property");
-        }
-
-        StringJoiner sj = new StringJoiner(" ");
-        HttpEntity reqEntity = getRequestEntity(reader, sourceMimetype, sourceExtension, targetExtension, timeoutMs, args, sj);
-
-        request(logger, sourceExtension, targetExtension, reqEntity, writer, sj.toString());
-    }
-
-    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String sourceExtension,
-                                        String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
-    {
         try (InputStream contentStream = reader.getContentInputStream())
         {
-            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            ContentType contentType = ContentType.create(sourceMimetype);
-            builder.addBinaryBody("file", reader.getContentInputStream(), contentType, "tmp." + sourceExtension);
-            builder.addTextBody("targetExtension", targetExtension);
-            sj.add("targetExtension" + '=' + targetExtension);
-            for (int i = 0; i < args.length; i += 2)
+            if (args.length % 2 != 0)
             {
-                if (args[i + 1] != null)
-                {
-                    builder.addTextBody(args[i], args[i + 1]);
-
-                    sj.add(args[i] + '=' + args[i + 1]);
-                }
+                throw new IllegalArgumentException("There should be a value for each request property");
             }
 
-            if (timeoutMs > 0)
-            {
-                String timeoutMsString = Long.toString(timeoutMs);
-                builder.addTextBody("timeout", timeoutMsString);
-                sj.add("timeout=" + timeoutMsString);
-            }
-            return builder.build();
+            StringJoiner sj = new StringJoiner(" ");
+            HttpEntity reqEntity = getRequestEntity(contentStream, sourceMimetype, sourceExtension, targetExtension, timeoutMs,
+                    args, sj);
+
+            request(logger, sourceExtension, targetExtension, reqEntity, writer, sj.toString());
         }
         catch (IOException e)
         {
             throw new AlfrescoRuntimeException("Failed to read content from reader", e);
         }
+    }
+
+    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype, String sourceExtension,
+                                        String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
+    {
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        ContentType contentType = ContentType.create(sourceMimetype);
+        builder.addBinaryBody("file", contentStream, contentType, "tmp." + sourceExtension);
+        builder.addTextBody("targetExtension", targetExtension);
+        sj.add("targetExtension" + '=' + targetExtension);
+        for (int i = 0; i < args.length; i += 2)
+        {
+            if (args[i + 1] != null)
+            {
+                builder.addTextBody(args[i], args[i + 1]);
+
+                sj.add(args[i] + '=' + args[i + 1]);
+            }
+        }
+
+        if (timeoutMs > 0)
+        {
+            String timeoutMsString = Long.toString(timeoutMs);
+            builder.addTextBody("timeout", timeoutMsString);
+            sj.add("timeout=" + timeoutMsString);
+        }
+        return builder.build();
+    }
+
+    HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String sourceExtension, String targetExtension,
+            long timeoutMs, String[] args, StringJoiner sj)
+    {
+        return getRequestEntity(reader.getContentInputStream(), sourceMimetype, sourceExtension, targetExtension, timeoutMs, args, sj);
     }
 
     void request(Log logger, String sourceExtension, String targetExtension, HttpEntity reqEntity, ContentWriter writer, String args)

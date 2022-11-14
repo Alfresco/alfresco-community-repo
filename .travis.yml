@@ -116,7 +116,7 @@ jobs:
     - name: "Repository - MySQL tests"
       if: commit_message !~ /\[skip db\]/
       before_script:
-        - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:5.7.23 --transaction-isolation='READ-COMMITTED'
+        - docker run -d -p 3307:3306 -e MYSQL_ROOT_PASSWORD=alfresco -e MYSQL_USER=alfresco -e MYSQL_DATABASE=alfresco -e MYSQL_PASSWORD=alfresco  mysql:5.7.28 --transaction-isolation='READ-COMMITTED'
         - docker run -d -p 61616:61616 -p 5672:5672 alfresco/alfresco-activemq:5.15.8
       script: travis_wait 20 mvn -B test -pl repository -Dtest=AllDBTestsTestSuite -Ddb.driver=com.mysql.jdbc.Driver -Ddb.name=alfresco -Ddb.url=jdbc:mysql://localhost:3307/alfresco -Ddb.username=alfresco -Ddb.password=alfresco
 

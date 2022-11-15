@@ -32,6 +32,7 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
+import org.alfresco.rest.rm.community.requests.gscore.api.RecordCategoryAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordFolderAPI;
 import org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI;
 import org.alfresco.rest.rm.community.smoke.CreateCategoriesTests;
@@ -102,6 +103,10 @@ public class CopyToRuleOnFoldersTest extends BaseRMRestTest {
         getRestAPIFactory().getNodeAPI(toContentModel( nonElectronicRecord)).move(createBodyForMoveCopy(folder2));
 
         RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        // Delete the record category
+        RecordCategoryAPI recordCategoryAPI = getRestAPIFactory().getRecordCategoryAPI();
+        String recordCategoryId = category.getId();
+        recordCategoryAPI.deleteRecordCategory(recordCategoryId);
         recordsAPI.deleteRecord(electronicRecord);
         recordsAPI.deleteRecord(nonElectronicRecord);
         assertStatusCode(NO_CONTENT);

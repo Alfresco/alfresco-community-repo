@@ -87,16 +87,18 @@ public class RemoteTransformerClient
     }
 
     public void request(ContentReader reader, ContentWriter writer, String sourceMimetype, String sourceExtension,
-                        String targetExtension, long timeoutMs, Log logger, String... args)
+            String targetExtension, long timeoutMs, Log logger, String... args)
     {
+
+        if (args.length % 2 != 0)
+        {
+            throw new IllegalArgumentException("There should be a value for each request property");
+        }
+
+        StringJoiner sj = new StringJoiner(" ");
+
         try (InputStream contentStream = reader.getContentInputStream())
         {
-            if (args.length % 2 != 0)
-            {
-                throw new IllegalArgumentException("There should be a value for each request property");
-            }
-
-            StringJoiner sj = new StringJoiner(" ");
             HttpEntity reqEntity = getRequestEntity(contentStream, sourceMimetype, sourceExtension, targetExtension, timeoutMs,
                     args, sj);
 
@@ -106,33 +108,6 @@ public class RemoteTransformerClient
         {
             throw new AlfrescoRuntimeException("Failed to read content from reader", e);
         }
-    }
-
-    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype, String sourceExtension,
-                                        String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
-    {
-        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        ContentType contentType = ContentType.create(sourceMimetype);
-        builder.addBinaryBody("file", contentStream, contentType, "tmp." + sourceExtension);
-        builder.addTextBody("targetExtension", targetExtension);
-        sj.add("targetExtension" + '=' + targetExtension);
-        for (int i = 0; i < args.length; i += 2)
-        {
-            if (args[i + 1] != null)
-            {
-                builder.addTextBody(args[i], args[i + 1]);
-
-                sj.add(args[i] + '=' + args[i + 1]);
-            }
-        }
-
-        if (timeoutMs > 0)
-        {
-            String timeoutMsString = Long.toString(timeoutMs);
-            builder.addTextBody("timeout", timeoutMsString);
-            sj.add("timeout=" + timeoutMsString);
-        }
-        return builder.build();
     }
 
     HttpEntity getRequestEntity(ContentReader reader, String sourceMimetype, String sourceExtension, String targetExtension,
@@ -344,6 +319,33 @@ public class RemoteTransformerClient
     CloseableHttpResponse execute(CloseableHttpClient httpclient, HttpGet httpGet) throws IOException
     {
         return httpclient.execute(httpGet);
+    }
+
+    private HttpEntity getRequestEntity(InputStream contentStream, String sourceMimetype, String sourceExtension,
+            String targetExtension, long timeoutMs, String[] args, StringJoiner sj)
+    {
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        ContentType contentType = ContentType.create(sourceMimetype);
+        builder.addBinaryBody("file", contentStream, contentType, "tmp." + sourceExtension);
+        builder.addTextBody("targetExtension", targetExtension);
+        sj.add("targetExtension" + '=' + targetExtension);
+        for (int i = 0; i < args.length; i += 2)
+        {
+            if (args[i + 1] != null)
+            {
+                builder.addTextBody(args[i], args[i + 1]);
+
+                sj.add(args[i] + '=' + args[i + 1]);
+            }
+        }
+
+        if (timeoutMs > 0)
+        {
+            String timeoutMsString = Long.toString(timeoutMs);
+            builder.addTextBody("timeout", timeoutMsString);
+            sj.add("timeout=" + timeoutMsString);
+        }
+        return builder.build();
     }
 
     // Strip out just the error message in the response

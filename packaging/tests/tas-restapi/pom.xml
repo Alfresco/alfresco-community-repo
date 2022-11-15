@@ -2,9 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.alfresco.tas</groupId>
-    <artifactId>alfresco-community-repo-restapi-test</artifactId>
-    <name>restapi test</name>
-    <packaging>jar</packaging>
+    <artifactId>restapi</artifactId>
+    <name>alfresco-tas-restapi</name>
 
     <parent>
         <groupId>org.alfresco</groupId>
@@ -12,17 +11,16 @@
         <version>20.17-SNAPSHOT</version>
     </parent>
 
-    <developers>
-        <developer>
-            <name>Paul Brodner</name>
-            <roles>
-                <role>Test Automation Architect</role>
-            </roles>
-        </developer>
-    </developers>
-
     <properties>
         <suiteXmlFile>${project.basedir}/src/test/resources/restapi-suite.xml</suiteXmlFile>
+        <maven.build.sourceVersion>11</maven.build.sourceVersion>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <httpclient-osgi-version>4.5.6</httpclient-osgi-version>
+        <org.glassfish.version>1.1.4</org.glassfish.version>
+        <commons-lang3.version>3.12.0</commons-lang3.version>
+        <scribejava-apis.version>8.3.1</scribejava-apis.version>
+        <license-maven-plugin.version>2.0.1.alfresco-2</license-maven-plugin.version>
+        <java.version>11</java.version>
     </properties>
 
     <profiles>
@@ -47,24 +45,144 @@
     </profiles>
 
     <dependencies>
+        <!-- fix the info log messages related to Could not instantiate TestExecutionListener 
+            [org.springframework.test.context.web.ServletTestExecutionListener -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- alfresco tester settings -->
         <dependency>
             <groupId>org.alfresco.tas</groupId>
-            <artifactId>restapi</artifactId>
-            <scope>test</scope>
+            <artifactId>utility</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>commons-lang3</artifactId>
+                	<groupId>org.apache.commons</groupId>
+                </exclusion>
+                <exclusion>
+                	<artifactId>commons-lang</artifactId>
+                	<groupId>commons-lang</groupId>
+                </exclusion>
+                <exclusion>
+                    <groupId>mysql</groupId>
+                    <artifactId>mysql-connector-java</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
+        </dependency>
+
+        <!-- REST ASSURED -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient-osgi</artifactId>
+            <version>${httpclient-osgi-version}</version>
+        </dependency>
+
         <dependency>
             <groupId>io.rest-assured</groupId>
             <artifactId>rest-assured</artifactId>
-            <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-path</artifactId>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>commons-lang3</artifactId>
+            		<groupId>org.apache.commons</groupId>
+            	</exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>xml-path</artifactId>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>commons-lang3</artifactId>
+            		<groupId>org.apache.commons</groupId>
+            	</exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-schema-validator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.scribejava</groupId>
+            <artifactId>scribejava-apis</artifactId>
+            <version>${scribejava-apis.version}</version>
+        </dependency>
+
+        <!-- JSON to Object -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.glassfish/javax.json -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>${org.glassfish.version}</version>
+        </dependency>
+
+        <!-- swagger parser -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-parser</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-lang3</artifactId>
+                    <groupId>org.apache.commons</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+        </dependency>
+        
+        <!--fixing java.lang.ClassCastException: class [B cannot be cast to class [C ([B and [C are in module java.base of loader 'bootstrap')  -->
+        <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy -->
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>3.0.12</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.codehaus.groovy/groovy-json-->
+        <dependency>
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-json</artifactId>
+            <version>3.0.12</version>
+        </dependency>
+
+       <dependency>
+           <groupId>org.mockito</groupId>
+           <artifactId>mockito-core</artifactId>
+           <scope>test</scope>
+       </dependency>
+
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.json</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

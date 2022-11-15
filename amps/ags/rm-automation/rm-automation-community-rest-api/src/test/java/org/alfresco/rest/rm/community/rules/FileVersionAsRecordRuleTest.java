@@ -32,23 +32,26 @@ import org.alfresco.rest.rm.community.model.recordcategory.RecordCategory;
 import org.alfresco.rest.rm.community.model.recordcategory.RecordCategoryChild;
 import org.alfresco.rest.rm.community.model.rules.ActionsOnRule;
 import org.alfresco.rest.rm.community.model.rules.RuleDefinition;
+import org.alfresco.rest.rm.community.model.unfiledcontainer.UnfiledContainerChildEntry;
 import org.alfresco.rest.rm.community.model.user.UserRoles;
+import org.alfresco.rest.rm.community.requests.gscore.api.UnfiledContainerAPI;
 import org.alfresco.rest.rm.community.smoke.FileAsRecordTests;
 import org.alfresco.rest.v0.RulesAPI;
 import org.alfresco.rest.v0.service.RoleService;
-import org.alfresco.utility.model.FileModel;
-import org.alfresco.utility.model.FolderModel;
-import org.alfresco.utility.model.SiteModel;
-import org.alfresco.utility.model.UserModel;
+import org.alfresco.utility.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.alfresco.rest.core.v0.BaseAPI.NODE_PREFIX;
 import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.FILE_PLAN_ALIAS;
+import static org.alfresco.rest.rm.community.model.fileplancomponents.FilePlanComponentAlias.UNFILED_RECORDS_CONTAINER_ALIAS;
 import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSION_FILING;
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
@@ -57,7 +60,6 @@ import static org.alfresco.utility.report.log.Step.STEP;
 public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
 
     private UserModel nonRMuser, rmManager;
-    private SiteModel publicSite;
     private RecordCategory category_manager, category_admin;
     private RecordCategoryChild folder_admin, folder_manager ;
     private static final String CATEGORY_MANAGER = "catManager" + generateTestPrefix(FileAsRecordTests.class);
@@ -133,7 +135,7 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description")
             .applyToChildren(true)
             .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
-        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + folderWithRule.getId(), ruleDefinition);
+        rulesAPI.createRule(rmManager.getUsername(), rmManager.getPassword(), NODE_PREFIX + testFolder.getNodeRef(), ruleDefinition);
 
 
 
@@ -151,48 +153,46 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
         STEP("Create a rule with Declare as Record action and check that user can select a record folder.");
         RecordCategory recordCategory = new RecordCategory().builder()
             .id(category_manager.getId()).build();
-        RecordCategoryChild folderWithRule = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
+
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description")
             .applyToChildren(true)
             .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
-        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + folderWithRule.getId(), ruleDefinition);
+        rulesAPI.createRule(nonRMuser.getUsername(), nonRMuser.getPassword(), NODE_PREFIX + testFolder.getNodeRef(), ruleDefinition);
 
 
     }
 
     @Test
-    public void triggerFileVersionToRecordFolderRuleAsUserWithPermissions()
-    {
-
-        STEP("Create as rmManager a new file into the folderWithRule in order to trigger the rule");
-        FileModel testFile = dataContent.usingUser(rmManager).usingResource(testFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-
-    }
-
-    @Test
-    public void triggerFileVersionToRecordFolderRuleAsUserWithoutPermissions()
-    {
-
-        STEP("Create as nonRMuser a new file into the folderWithRule in order to trigger the rule");
-        FileModel testFile = dataContent.usingUser(nonRMuser).usingResource(testFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
-    }
-
-    @Test
-    public void triggerDeclareToUnfiledRuleAsNonRMUser()
-    {
+    public void triggerDeclareToUnfiledRuleAsNonRMUser() throws Exception {
 
         STEP("Create a collaboration folder with a rule set to declare and file as record without a record folder location");
 
+
+        FileModel inplaceRecord = dataContent.usingSite(testSite).usingUser(nonRMuser)
+            .createContent(new FileModel("declareAndFileToIntoUnfiledRecordFolder",
+                FileType.TEXT_PLAIN));
+
         RecordCategory recordCategory = new RecordCategory().builder()
             .id(category_manager.getId()).build();
-        RecordCategoryChild folderWithRule = createFolder(recordCategory.getId(), getRandomName("recordFolder"));
+
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description")
             .applyToChildren(true)
             .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
-        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + folderWithRule.getId(), ruleDefinition);
+        rulesAPI.createRule(nonRMuser.getUsername(), nonRMuser.getPassword(), NODE_PREFIX + inplaceRecord.getNodeRef(), ruleDefinition);
 
-        STEP("Create as nonRMuser a new file into the previous folder in order to trigger the rule");
+
+       STEP("Create as nonRMuser a new file into the previous folder in order to trigger the rule");
         inPlaceRecord = dataContent.usingUser(nonRMuser).usingResource(testFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);
+
+        // verify the declared record is in Unfilled Records folder
+        UnfiledContainerAPI unfiledContainersAPI = getRestAPIFactory().getUnfiledContainersAPI();
+        List<UnfiledContainerChildEntry> matchingRecords = unfiledContainersAPI.getUnfiledContainerChildren(UNFILED_RECORDS_CONTAINER_ALIAS)
+            .getEntries()
+            .stream()
+            .filter(e -> e.getEntry().getId().equals(inplaceRecord.getNodeRefWithoutVersion()))
+            .collect(Collectors.toList());
+
+
     }
 
     @AfterClass(alwaysRun = true)
@@ -206,10 +206,10 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
         dataUser.deleteUser(nonRMuser);
         dataUser.deleteUser(rmManager);
 
+
         STEP("Delete categories");
         getRestAPIFactory().getFilePlansAPI().getRootRecordCategories(FILE_PLAN_ALIAS).getEntries().forEach(recordCategoryEntry ->
             deleteRecordCategory(recordCategoryEntry.getEntry().getId()));
-        getRestAPIFactory().getRecordsAPI().deleteRecord(inPlaceRecord.getNodeRefWithoutVersion());
     }
 
 }

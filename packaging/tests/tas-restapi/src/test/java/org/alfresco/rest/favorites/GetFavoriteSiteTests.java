@@ -1,5 +1,7 @@
 package org.alfresco.rest.favorites;
 
+import java.util.UUID;
+
 import org.alfresco.dataprep.CMISUtil;
 import org.alfresco.dataprep.SiteService;
 import org.alfresco.rest.RestTest;
@@ -189,13 +191,13 @@ public class GetFavoriteSiteTests extends RestTest
         sites.assertThat().entriesListIsNotEmpty();
     }
 
-    @Test(groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
-    @TestRail(section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
-            description = "Verify invalid request returns status 401 when user is empty")
-    public void getFavoriteSiteWithEmptyPersonId() throws Exception
+    @Test (groups = { TestGroup.REST_API, TestGroup.PEOPLE, TestGroup.REGRESSION })
+    @TestRail (section = { TestGroup.REST_API, TestGroup.PEOPLE }, executionType = ExecutionType.REGRESSION,
+            description = "Verify invalid request returns status 401 when user does not exist")
+    public void getFavoriteSiteWithFictionalPersonId()
     {
-        UserModel emptyUser = new UserModel("", "password");
-        restClient.authenticateUser(emptyUser).withCoreAPI().usingAuthUser().getFavoriteSite(siteModel1);
+        UserModel fictionalUser = new UserModel("FictionalUser" + UUID.randomUUID(), "password");
+        restClient.authenticateUser(fictionalUser).withCoreAPI().usingAuthUser().getFavoriteSite(siteModel1);
         restClient.assertStatusCodeIs(HttpStatus.UNAUTHORIZED);
     }
 

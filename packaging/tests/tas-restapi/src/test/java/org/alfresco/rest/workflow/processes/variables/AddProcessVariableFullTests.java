@@ -51,21 +51,6 @@ public class AddProcessVariableFullTests  extends RestTest
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, "invalidProcessID"));
     }
 
-    @TestRail(section = {TestGroup.REST_API, TestGroup.WORKFLOW,TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Verify addProcessVariable by any user for empty processID with REST API and status code is NOT_FOUND (404)")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
-    public void addProcessVariableWithEmptyProcessId() throws Exception
-    {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        processModel = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().getProcesses().getOneRandomEntry().onModel();
-        processModel.setId("");
-
-        processVariable = restClient.authenticateUser(userWhoStartsProcess).withWorkflowAPI().usingProcess(processModel)
-                                    .updateProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""));
-    }
-
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 
             description = "Adding process variable in case of having only 'name' field is provided")
     @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })

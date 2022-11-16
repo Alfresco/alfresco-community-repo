@@ -2,7 +2,6 @@ package org.alfresco.rest.workflow.processes.variables;
 
 import org.alfresco.dataprep.CMISUtil.DocumentType;
 import org.alfresco.rest.RestTest;
-import org.alfresco.rest.exception.JsonToModelConversionException;
 import org.alfresco.rest.model.RestErrorModel;
 import org.alfresco.rest.model.RestProcessModel;
 import org.alfresco.rest.model.RestProcessVariableModel;
@@ -74,27 +73,6 @@ public class DeleteProcessVariableCoreTests extends RestTest
         restClient.withWorkflowAPI().usingProcess(restProcessModel).deleteProcessVariable(variableModel);
         restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
             .assertLastError().containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, variableModel.getName()));
-    }
-
-    @TestRail(section = {TestGroup.REST_API,TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION,
-            description = "Remove process variables with empty processId")
-    @Test(groups = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES, TestGroup.REGRESSION })
-    public void deleteProcessVariableEmptyProcessId() throws JsonToModelConversionException, Exception
-    {
-        variableModel = RestProcessVariableModel.getRandomProcessVariableModel("d:text");
-        restProcessModel = restClient.authenticateUser(userWhoStartsTask).withWorkflowAPI()
-                .getProcesses().getProcessModelByProcessDefId(processModel.getId());
-        restClient.withWorkflowAPI().usingProcess(restProcessModel).addProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.CREATED);
-
-        restProcessModel.setId("");
-        restClient.withWorkflowAPI().usingProcess(restProcessModel).deleteProcessVariable(variableModel);
-        restClient.assertStatusCodeIs(HttpStatus.NOT_FOUND)
-                  .assertLastError()
-                  .containsSummary(String.format(RestErrorModel.ENTITY_NOT_FOUND, ""))
-                  .containsErrorKey(RestErrorModel.ENTITY_NOT_FOUND_ERRORKEY)
-                  .descriptionURLIs(RestErrorModel.RESTAPIEXPLORER)
-                  .stackTraceIs(RestErrorModel.STACKTRACE);
     }
 
     @TestRail(section = { TestGroup.REST_API, TestGroup.WORKFLOW, TestGroup.PROCESSES }, executionType = ExecutionType.REGRESSION, 

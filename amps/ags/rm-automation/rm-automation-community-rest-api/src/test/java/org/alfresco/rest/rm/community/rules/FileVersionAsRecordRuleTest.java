@@ -56,6 +56,8 @@ import static org.alfresco.rest.rm.community.model.user.UserPermissions.PERMISSI
 import static org.alfresco.rest.rm.community.util.CommonTestUtils.generateTestPrefix;
 import static org.alfresco.utility.data.RandomData.getRandomName;
 import static org.alfresco.utility.report.log.Step.STEP;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.OK;
 
 public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
 
@@ -117,6 +119,7 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
             .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
         rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX + folderWithRule.getId(), ruleDefinition);
 
+        assertStatusCode(CREATED);
     }
 
     @Test
@@ -137,7 +140,7 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
             .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
         rulesAPI.createRule(rmManager.getUsername(), rmManager.getPassword(), NODE_PREFIX + testFolder.getNodeRef(), ruleDefinition);
 
-
+        assertStatusCode(CREATED);
 
     }
 
@@ -159,6 +162,7 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
             .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
         rulesAPI.createRule(nonRMuser.getUsername(), nonRMuser.getPassword(), NODE_PREFIX + testFolder.getNodeRef(), ruleDefinition);
 
+        assertStatusCode(CREATED);
 
     }
 
@@ -180,6 +184,7 @@ public class FileVersionAsRecordRuleTest  extends BaseRMRestTest {
             .actions(Collections.singletonList(ActionsOnRule.DECLARE_AS_RECORD.getActionValue()));
         rulesAPI.createRule(nonRMuser.getUsername(), nonRMuser.getPassword(), NODE_PREFIX + inplaceRecord.getNodeRef(), ruleDefinition);
 
+        assertStatusCode(CREATED);
 
        STEP("Create as nonRMuser a new file into the previous folder in order to trigger the rule");
         inPlaceRecord = dataContent.usingUser(nonRMuser).usingResource(testFolder).createContent(CMISUtil.DocumentType.TEXT_PLAIN);

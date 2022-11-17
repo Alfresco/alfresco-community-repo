@@ -75,27 +75,28 @@ import static org.testng.Assert.assertNotNull;
 
 public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
 
-    private String unfiledRecordsNodeRef;
 
     private RecordCategoryChild recordFolder2;
     private RecordCategoryChild recordFolder1;
     private String nonElectronicId;
 
-    private Record electronicRecord;
-    private UnfiledContainer unfiledContainer;
+    public Record electronicRecord;
+
     private String ruleType = ConditionsOnRule.UPDATE.getWhenConditionValue();
     private UserModel rmAdmin;
     public RecordCategory RecordCategoryOne;
-    public RestNodeModel RecordCategoryCopy;
     private RecordCategoryChild recordFolder;
     public static final String RECORD_FOLDER_ONE = "record-folder-one";
     private final String TEST_PREFIX = generateTestPrefix(MoveToRuleOnFoldersTest.class);
-    // private final String RM_ADMIN = TEST_PREFIX + "rm_admin";
+
     private final String RECORD_CATEGORY_ONE = TEST_PREFIX + "category";
 
     private final String recordName = "Test record";
     private final String recordTitle = recordName + " title";
     private final String recordDescription = recordName + " description";
+    private Record nonElectrinicRecordModel;
+    private RecordFolderAPI recordFolderAPI;
+    public String title,description,box,file,shelf,storageLocation,name;
     @Autowired
     private RulesAPI rulesAPI;
     @Autowired
@@ -120,11 +121,9 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
        // recordFolder1_id = createRecordFolder(RecordCategoryOne.getId(), getRandomName("recFolder")).getId();
         recordFolder2 = createFolder(getAdminUser(),RecordCategoryOne.getId(),getRandomName("recFolder"));
 
-        String CatName=RecordCategoryOne.getName();
-        String folder2name=recordFolder2.getName();
-        String recfolder2_path="/"+CatName+"/"+folder2name;
+
         STEP("CREATE ELECTRONIC RECORD");
-        RecordFolderAPI recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
+        recordFolderAPI = getRestAPIFactory().getRecordFolderAPI();
         electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder1.getId(), getFile(IMAGE_FILE));
         STEP("Check the electronic record has been created");
         assertStatusCode(CREATED);
@@ -132,23 +131,36 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
 
         STEP("Create a non-electronic record by completing some of the fields");
         // Use these properties for non-electronic record to be created
-        String title = "Title " + getRandomAlphanumeric();
-        String description = "Description " + getRandomAlphanumeric();
-        String box = "Box "+ getRandomAlphanumeric();
-        String file = "File " + getRandomAlphanumeric();
-        String shelf = "Shelf " + getRandomAlphanumeric();
-        String storageLocation = "Storage Location " + getRandomAlphanumeric();
-        String name = "Record " + getRandomAlphanumeric();
+        title = "Title " + getRandomAlphanumeric();
+        description = "Description " + getRandomAlphanumeric();
+        box = "Box "+ getRandomAlphanumeric();
+        file = "File " + getRandomAlphanumeric();
+        shelf = "Shelf " + getRandomAlphanumeric();
+        storageLocation = "Storage Location " + getRandomAlphanumeric();
+        name = "Record " + getRandomAlphanumeric();
         Random random = new Random();
         Integer numberOfCopies = random.nextInt(MAX_VALUE);
         Integer physicalSize = random.nextInt(MAX_VALUE);
 
         // Set values of all available properties for the non electronic records
-        Record nonElectrinicRecordModel = createFullNonElectronicRecordModel(name, title, description, box, file, shelf, storageLocation, numberOfCopies, physicalSize);
+        nonElectrinicRecordModel = createFullNonElectronicRecordModel(name, title, description, box, file, shelf, storageLocation, numberOfCopies, physicalSize);
         // Create non-electronic record
         nonElectronicId = recordFolderAPI.createRecord(nonElectrinicRecordModel, recordFolder1.getId()).getId();
         STEP("Check the non-electronic record has been created");
         assertStatusCode(CREATED);
+
+
+
+
+    }
+
+    @Test
+    public void MoveToRuleFoldersTest()
+    {
+
+        String CatName=RecordCategoryOne.getName();
+        String folder2name=recordFolder2.getName();
+        String recfolder2_path="/"+CatName+"/"+folder2name;
 
         STEP("create a rule MOVE_TO for folder 1");
         RuleDefinition ruleDefinition = RuleDefinition.createNewRule().title("name").description("description1")
@@ -158,6 +170,52 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
 
 
 
+        STEP("Update metadata for Non-Electronic Record");
+        updateRecordMetadata();
+
+        STEP("Delete E and Non-E RECORDS IN FOLDER 2");
+        org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
+        recordsAPI.deleteRecord(electronicRecord.getId());
+        assertStatusCode(NO_CONTENT);
+        recordsAPI.deleteRecord(nonElectronicId);
+        assertStatusCode(NO_CONTENT);
+
+        STEP("RULE CREATION FOR FOLDER 1 WITHOUT RUNNING IN BACKGROUND");
+
+        RuleDefinition ruleDefinition_notinbackground = RuleDefinition.createNewRule().title("name").description("description1")
+            .runInBackground(false).title(title)
+            .actions(Collections.singletonList(ActionsOnRule.MOVE_TO.getActionValue())).ruleType(ruleType).path(recfolder2_path);
+        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX +recordFolder1.getId() , ruleDefinition);
+
+        STEP("CREATE E AND NON E RECORDS");
+        electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder1.getId(), getFile(IMAGE_FILE));
+        STEP("Check the electronic record has been created");
+        assertStatusCode(CREATED);
+        nonElectronicId = recordFolderAPI.createRecord(nonElectrinicRecordModel, recordFolder1.getId()).getId();
+        STEP("Check the non-electronic record has been created");
+        assertStatusCode(CREATED);
+
+        STEP("UPDATE METADATA");
+        updateRecordMetadata();
+
+        STEP("CHECK IF E AND NON-E RECORDS MOVED  TO FOLDER2");
+        updateRecordMetadata();
+    }
+
+    @AfterClass(alwaysRun = true)
+    public void cleanMoveToRuleOnFoldersTest()
+    {
+        deleteRecordCategory(RecordCategoryOne.getId());
+
+        getDataUser().deleteUser(rmAdmin);
+    }
+
+    private String getModifiedPropertyValue(String originalValue) {
+        /* to be used to append to modifications */
+        String MODIFIED_PREFIX = "modified_";
+        return MODIFIED_PREFIX + originalValue;
+    }
+    private void updateRecordMetadata(){
         STEP("Update metadata for Non-Electronic Record");
         org.alfresco.rest.rm.community.requests.gscore.api.RecordsAPI recordsAPI = getRestAPIFactory().getRecordsAPI();
         Record nonelecrecord = recordsAPI.getRecord(nonElectronicId);
@@ -174,103 +232,6 @@ public class MoveToRuleOnFoldersTest extends BaseRMRestTest{
         String elecnewDescription = getModifiedPropertyValue(electronicRecord.getProperties().getDescription());
         recordsAPI.updateRecord(createRecordModel(elecnewName, elecnewDescription, elecnewTitle),elecrecord.getId());
         assertStatusCode(OK);
-
-        STEP("CHECK IF E AND NON-E RECORDS MOVED  TO FOLDER2");
-        //update the e and non-e records which have been moved to folder2 . if update is asserted as ok then record is present
-        STEP("Update metadata for Non-Electronic Record");
-        nonelecrecord = recordsAPI.getRecord(nonElectronicId);
-        nonelecnewName = getModifiedPropertyValue(nonElectrinicRecordModel.getName());
-        nonelecnewTitle = getModifiedPropertyValue(nonElectrinicRecordModel.getProperties().getTitle());
-        nonelecnewDescription = getModifiedPropertyValue(nonElectrinicRecordModel.getProperties().getDescription());
-        recordsAPI.updateRecord(createRecordModel(nonelecnewName, nonelecnewDescription, nonelecnewTitle),nonelecrecord.getId());
-        assertStatusCode(OK);
-
-        STEP("Update metadata for Electronic Record");
-        elecrecord = recordsAPI.getRecord(electronicRecord.getId());
-        elecnewName = getModifiedPropertyValue(electronicRecord.getName());
-        elecnewTitle = getModifiedPropertyValue(electronicRecord.getProperties().getTitle());
-        elecnewDescription = getModifiedPropertyValue(electronicRecord.getProperties().getDescription());
-        recordsAPI.updateRecord(createRecordModel(elecnewName, elecnewDescription, elecnewTitle),elecrecord.getId());
-        assertStatusCode(OK);
-
-        STEP("Delete E and Non-E RECORDS IN FOLDER 2");
-        recordsAPI.deleteRecord(electronicRecord.getId());
-        assertStatusCode(NO_CONTENT);
-        recordsAPI.deleteRecord(nonElectronicId);
-        assertStatusCode(NO_CONTENT);
-        STEP("RULE CREATION FOR FOLDER 1 WITHOUT RUNNING IN BACKGROUND");
-
-        RuleDefinition ruleDefinition_notinbackground = RuleDefinition.createNewRule().title("name").description("description1")
-            .runInBackground(false).title(title)
-            .actions(Collections.singletonList(ActionsOnRule.MOVE_TO.getActionValue())).ruleType(ruleType).path(recfolder2_path);
-        rulesAPI.createRule(getAdminUser().getUsername(), getAdminUser().getPassword(), NODE_PREFIX +recordFolder1.getId() , ruleDefinition);
-
-        STEP("CREATE E AND NON E RECORDS");
-        electronicRecord = recordFolderAPI.createRecord(createElectronicRecordModel(), recordFolder1.getId(), getFile(IMAGE_FILE));
-        STEP("Check the electronic record has been created");
-        assertStatusCode(CREATED);
-        nonElectronicId = recordFolderAPI.createRecord(nonElectrinicRecordModel, recordFolder1.getId()).getId();
-        STEP("Check the non-electronic record has been created");
-        assertStatusCode(CREATED);
-
-
-        STEP("UPDATE METADATA");
-        STEP("Update metadata for Non-Electronic Record");
-
-         nonelecrecord = recordsAPI.getRecord(nonElectronicId);
-         nonelecnewName = getModifiedPropertyValue(nonElectrinicRecordModel.getName());
-         nonelecnewTitle = getModifiedPropertyValue(nonElectrinicRecordModel.getProperties().getTitle());
-         nonelecnewDescription = getModifiedPropertyValue(nonElectrinicRecordModel.getProperties().getDescription());
-        recordsAPI.updateRecord(createRecordModel(nonelecnewName, nonelecnewDescription, nonelecnewTitle),nonelecrecord.getId());
-        assertStatusCode(OK);
-
-        STEP("Update metadata for Electronic Record");
-         elecrecord = recordsAPI.getRecord(electronicRecord.getId());
-         elecnewName = getModifiedPropertyValue(electronicRecord.getName());
-         elecnewTitle = getModifiedPropertyValue(electronicRecord.getProperties().getTitle());
-         elecnewDescription = getModifiedPropertyValue(electronicRecord.getProperties().getDescription());
-        recordsAPI.updateRecord(createRecordModel(elecnewName, elecnewDescription, elecnewTitle),elecrecord.getId());
-        assertStatusCode(OK);
-
-        STEP("CHECK IF E AND NON-E RECORDS MOVED  TO FOLDER2");
-        //update the e and non-e records which have been moved to folder2 . if update is asserted as ok then record is present
-        STEP("Update metadata for Non-Electronic Record");
-        nonelecrecord = recordsAPI.getRecord(nonElectronicId);
-        nonelecnewName = getModifiedPropertyValue(nonElectrinicRecordModel.getName());
-        nonelecnewTitle = getModifiedPropertyValue(nonElectrinicRecordModel.getProperties().getTitle());
-        nonelecnewDescription = getModifiedPropertyValue(nonElectrinicRecordModel.getProperties().getDescription());
-        recordsAPI.updateRecord(createRecordModel(nonelecnewName, nonelecnewDescription, nonelecnewTitle),nonelecrecord.getId());
-        assertStatusCode(OK);
-
-        STEP("Update metadata for Electronic Record");
-        elecrecord = recordsAPI.getRecord(electronicRecord.getId());
-        elecnewName = getModifiedPropertyValue(electronicRecord.getName());
-        elecnewTitle = getModifiedPropertyValue(electronicRecord.getProperties().getTitle());
-        elecnewDescription = getModifiedPropertyValue(electronicRecord.getProperties().getDescription());
-        recordsAPI.updateRecord(createRecordModel(elecnewName, elecnewDescription, elecnewTitle),elecrecord.getId());
-        assertStatusCode(OK);
-
-
-    }
-
-    @Test
-    public void MoveToRuleFoldersTest()
-    {
-        System.out.println("PRECONDITION PASSED");
-    }
-
-    @AfterClass(alwaysRun = true)
-    public void cleanMoveToRuleOnFoldersTest()
-    {
-        deleteRecordCategory(RecordCategoryOne.getId());
-
-        getDataUser().deleteUser(rmAdmin);
-    }
-
-    private String getModifiedPropertyValue(String originalValue) {
-        /* to be used to append to modifications */
-        String MODIFIED_PREFIX = "modified_";
-        return MODIFIED_PREFIX + originalValue;
     }
 }
 

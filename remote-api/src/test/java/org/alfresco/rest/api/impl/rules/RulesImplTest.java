@@ -28,6 +28,7 @@ package org.alfresco.rest.api.impl.rules;
 
 import static java.util.Collections.emptyList;
 
+import static org.alfresco.rest.api.impl.rules.RuleSetLoader.INCLUSION_TYPE;
 import static org.alfresco.rest.api.model.rules.RuleSet.DEFAULT_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -51,8 +52,10 @@ import org.alfresco.repo.action.executer.ExecuteAllRulesActionExecuter;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.mapper.RestModelMapper;
 import org.alfresco.rest.api.model.rules.Action;
+import org.alfresco.rest.api.model.rules.InclusionType;
 import org.alfresco.rest.api.model.rules.Rule;
 import org.alfresco.rest.api.model.rules.RuleExecution;
+import org.alfresco.rest.api.model.rules.RuleSet;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -80,6 +83,7 @@ public class RulesImplTest extends TestCase
     private static final String FOLDER_NODE_ID = "dummy-folder-node-id";
     private static final String RULE_SET_ID = "dummy-rule-set-id";
     private static final String RULE_ID = "dummy-rule-id";
+    private static final String RULE_ID_INHERITED = "dummy-rule-id-inherited";
     private static final NodeRef FOLDER_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, FOLDER_NODE_ID);
     private static final NodeRef RULE_SET_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_SET_ID);
     private static final NodeRef RULE_NODE_REF = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, RULE_ID);
@@ -101,15 +105,20 @@ public class RulesImplTest extends TestCase
     @Mock
     private RuleLoader ruleLoaderMock;
     @Mock
+    private RuleSetLoader ruleSetLoaderMock;
+    @Mock
     private ActionPermissionValidator actionPermissionValidatorMock;
     @Mock
     private org.alfresco.service.cmr.rule.Rule serviceRuleMock;
     @Mock
     private Rule ruleMock;
     @Mock
+    private RuleSet ruleSetMock;
+    @Mock
     private Action actionMock;
 
     private org.alfresco.service.cmr.rule.Rule ruleModel = createRule(RULE_ID);
+    private org.alfresco.service.cmr.rule.Rule ruleModelInherited = createRule(RULE_ID_INHERITED);
 
     @InjectMocks
     private RulesImpl rules;
@@ -118,6 +127,9 @@ public class RulesImplTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        ruleModel.applyToChildren(true);
+        ruleModelInherited.applyToChildren(true);
+
         given(nodeValidatorMock.validateFolderNode(any(), anyBoolean())).willReturn(FOLDER_NODE_REF);
         given(nodeValidatorMock.validateRuleSetNode(any(), any())).willReturn(RULE_SET_NODE_REF);
         given(nodeValidatorMock.validateRuleNode(any(), any())).willReturn(RULE_NODE_REF);
@@ -126,13 +138,15 @@ public class RulesImplTest extends TestCase
         given(ruleServiceMock.getRules(FOLDER_NODE_REF, false)).willReturn(List.of(ruleModel));
         given(ruleServiceMock.getOwningNodeRef(RULE_SET_NODE_REF)).willReturn(FOLDER_NODE_REF);
 
+        given(ruleSetMock.getInclusionType()).willReturn(InclusionType.INHERITED);
+
         given(ruleLoaderMock.loadRule(ruleModel, INCLUDE)).willReturn(ruleMock);
+        given(ruleSetLoaderMock.loadRuleSet(RULE_SET_NODE_REF, FOLDER_NODE_REF, List.of(INCLUSION_TYPE))).willReturn(ruleSetMock);
     }
 
     @Test
     public void testGetRules()
     {
-        given(ruleLoaderMock.loadRule(ruleModel, emptyList())).willReturn(ruleMock);
 
         // when
         final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);
@@ -141,6 +155,68 @@ public class RulesImplTest extends TestCase
         then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
         then(nodeValidatorMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().getOwningNodeRef(RULE_SET_NODE_REF);
+        then(ruleSetLoaderMock).should().loadRuleSet(RULE_SET_NODE_REF, FOLDER_NODE_REF, List.of(INCLUSION_TYPE));
+        then(ruleSetLoaderMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().getRules(FOLDER_NODE_REF, false);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleLoaderMock).should().loadRule(ruleModel, emptyList());
+        then(ruleLoaderMock).shouldHaveNoMoreInteractions();
+        assertThat(rulesPage)
+                .isNotNull()
+                .extracting(CollectionWithPagingInfo::getCollection)
+                .isNotNull()
+                .extracting(Collection::size)
+                .isEqualTo(1);
+        assertThat(rulesPage.getCollection().stream().findFirst().get()).isEqualTo(ruleMock);
+    }
+
+    @Test
+    public void testGetRules_rule_not_applied_to_children()
+    {
+        given(ruleSetMock.getInclusionType()).willReturn(InclusionType.INHERITED);
+        ruleModelInherited.applyToChildren(false);
+
+        //given(ruleSetMock.getInclusionType()).willReturn(InclusionType.OWNED);
+        given(ruleServiceMock.getRules(FOLDER_NODE_REF, false)).willReturn(List.of(ruleModel, ruleModelInherited));
+
+        // when
+        final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().getOwningNodeRef(RULE_SET_NODE_REF);
+        then(ruleSetLoaderMock).should().loadRuleSet(RULE_SET_NODE_REF, FOLDER_NODE_REF, List.of(INCLUSION_TYPE));
+        then(ruleSetLoaderMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().getRules(FOLDER_NODE_REF, false);
+        then(ruleServiceMock).shouldHaveNoMoreInteractions();
+        then(ruleLoaderMock).should().loadRule(ruleModel, emptyList());
+        then(ruleLoaderMock).shouldHaveNoMoreInteractions();
+        assertThat(rulesPage)
+                .isNotNull()
+                .extracting(CollectionWithPagingInfo::getCollection)
+                .isNotNull()
+                .extracting(Collection::size)
+                .isEqualTo(1);
+        assertThat(rulesPage.getCollection().stream().findFirst().get()).isEqualTo(ruleMock);
+    }
+
+    @Test
+    public void testGetRules_inherited_rule_set()
+    {
+        given(ruleSetMock.getInclusionType()).willReturn(InclusionType.INHERITED);
+        ruleModelInherited.applyToChildren(false);
+        given(ruleServiceMock.getRules(FOLDER_NODE_REF, false)).willReturn(List.of(ruleModel, ruleModelInherited));
+
+        // when
+        final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);
+
+        then(nodeValidatorMock).should().validateFolderNode(FOLDER_NODE_ID, false);
+        then(nodeValidatorMock).should().validateRuleSetNode(RULE_SET_ID, FOLDER_NODE_REF);
+        then(nodeValidatorMock).shouldHaveNoMoreInteractions();
+        then(ruleServiceMock).should().getOwningNodeRef(RULE_SET_NODE_REF);
+        then(ruleSetLoaderMock).should().loadRuleSet(RULE_SET_NODE_REF, FOLDER_NODE_REF, List.of(INCLUSION_TYPE));
+        then(ruleSetLoaderMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().getRules(FOLDER_NODE_REF, false);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         then(ruleLoaderMock).should().loadRule(ruleModel, emptyList());
@@ -163,6 +239,8 @@ public class RulesImplTest extends TestCase
         final CollectionWithPagingInfo<Rule> rulesPage = rules.getRules(FOLDER_NODE_ID, RULE_SET_ID, INCLUDE, PAGING);
 
         then(ruleServiceMock).should().getOwningNodeRef(RULE_SET_NODE_REF);
+        then(ruleSetLoaderMock).should().loadRuleSet(RULE_SET_NODE_REF, FOLDER_NODE_REF, List.of(INCLUSION_TYPE));
+        then(ruleSetLoaderMock).shouldHaveNoMoreInteractions();
         then(ruleServiceMock).should().getRules(FOLDER_NODE_REF, false);
         then(ruleServiceMock).shouldHaveNoMoreInteractions();
         assertThat(rulesPage)
